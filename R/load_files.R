@@ -1,5 +1,6 @@
-library(readxl) # openxlsx skip the first emprty rows
-
+library(readxl) # openxlsx skip the first emprty rows and cannot be overridden
+library(readr)
+library(stringr)
 
 load_manifest = function (manifest_file, log_file) {
     # manifest_file is a string or a vector of strings
@@ -11,25 +12,30 @@ load_manifest = function (manifest_file, log_file) {
     } )
 
     # check default headers are in each df
-    headersOK = sapply(manifest_data, function(x)
-            all(c('Barcode', 'Time', 'Template') %in% colnames(x)))
-    stopifnot(all(headersOK)) # --> need better error report
+    sapply(lapply(1:2, function(x) c(manifest_file[x], manifest_data[x])),
+        function(x) check_metadata_names(colnames(x[[2]]), log_file,
+                df_name=x[[1]], df_type='manifest'))
 
     cat_manifest_data = bind_rows(manifest_data)
     # check that barcodes are unique
     stopifnot(dim(cat_manifest_data)[1] == length(unique(cat_manifest_data$Barcode)))
+    cat_manifest_data$Template = basename(cat_manifest_data$Template)
 
     return(cat_manifest_data)
 }
 
 
 load_templates = function (template_file, log_file) {
-    # manifest_file is a string or a vector of strings
+    # template_file is a string or a vector of strings
     # log_file is an open file to sink errors and warnings
 
     # read sheets in files
     template_sheets = lapply(template_file, excel_sheets)
+    # check Gnumber is present in each df
+    sapply(lapply(1:2, function(x) c(template_file[x], template_sheets[x])),
+        function(x) check_metadata_names(x[[2]], log_file, df_name=x[[1]], df_type='template'))
 
+    all_templates = data.frame()
     for (iF in 1:length(template_file)) {
         # first check that the sheet names are ok
         # case of untreated plate
@@ -39,17 +45,19 @@ load_templates = function (template_file, log_file) {
             stopifnot(all(toupper(unlist(df)) %in% c('UNTREATED', 'VEHICLE')))
         } else {
         # normal case
-            stopifnot('Gnumber' %in% template_sheets[[iF]])
-            stopifnot('Concentration' %in% template_sheets[[iF]])
-            # assess if multiple drugs and proper pairing
-            n_drug = agrep('Gnumber', template_sheets[[iF]])
-            n_conc = agrep('Concentration', template_sheets[[iF]])
-            stopifnot(length(n_drug) == length(n_conc))
-            if (length(n_drug)>1) {
-                stopifnot(all(paste0('Gnumber_', 2:length(n_drug)) %in% template_sheets[[iF]]))
-                stopifnot(all(paste0('Concentration_', 2:length(n_drug)) %in%
-                    template_sheets[[iF]]))
-            }
+            check_metadata_names(template_sheets[[iF]], log_file, df_name=template_file[iF],
+                    df_type='template_treatment')
+            # stopifnot('Gnumber' %in% template_sheets[[iF]])
+            # stopifnot('Concentration' %in% template_sheets[[iF]])
+            # # assess if multiple drugs and proper pairing
+            # n_drug = agrep('Gnumber', template_sheets[[iF]])
+            # n_conc = agrep('Concentration', template_sheets[[iF]])
+            # stopifnot(length(n_drug) == length(n_conc))
+            # if (length(n_drug)>1) { # need to have a more verbose message error for typos
+            #     stopifnot(all(paste0('Gnumber_', 2:length(n_drug)) %in% template_sheets[[iF]]))
+            #     stopifnot(all(paste0('Concentration_', 2:length(n_drug)) %in%
+            #         template_sheets[[iF]]))
+            # }
         }
 
         # read the different sheets and check for plate size
@@ -62,6 +70,7 @@ load_templates = function (template_file, log_file) {
         n_col = max(1.5*n_row, n_col)
         plate_range = ifelse(n_col<26, paste0('A1:', LETTERS[n_col], n_row), 'A1:AV32')
 
+        # need to adapt for 1536 well plates
         df_template = expand.grid(WellRow = LETTERS[1:n_row], WellColumn = 1:n_col)
         for (iS in template_sheets[[iF]]) {
             df = read_excel(template_file[[iF]], sheet = iS, col_names = F, range = plate_range)
@@ -71,19 +80,152 @@ load_templates = function (template_file, log_file) {
             df_melted$WellColumn = gsub('X__', '', df_melted$WellColumn)
             df_template = merge(df_template, df_melted, by=c('WellRow', 'WellColumn'))
         }
+        df_template$Template =  basename(template_file[[iF]])
+        all_templates = bind_rows(all_templates, df_template)
+    }
+    return(all_templates)
+}
 
+load_results = function (results_file, log_file) {
+    # results_file is a string or a vector of strings
+    # log_file is an open file to sink errors and warnings
+
+    stopifnot(sapply(results_file, file.exists))
+
+    # test if the result files are .tsv or .xls(x) files
+    isExcel = sapply(results_file, function(x) tryCatch(
+        { excel_sheets(x)
+            return(TRUE) },
+            error = function(x) { return(FALSE) }
+    ))
+
+    # read sheets in files; warning if more than one sheet (unexpected but can be handled)
+    results_sheets = vector('list', length(results_file))
+    results_sheets[!isExcel] = 0
+    results_sheets[isExcel] = lapply(results_file[isExcel], excel_sheets)
+    if (any(lapply(results_sheets, length)>1)) {
+        WarnMsg = paste('multiple sheets in result file:',
+                results_file[lapply(results_sheets, length)>1])
+        writeLines(paste('Warning in ', match.call()[[1]]), log_file)
+        writeLines(WarnMsg, log_file)
+        warning(WarnMsg)
     }
 
+    # read all files and sheets
+    all_results = data.frame()
+    for (iF in 1:length(results_file)) {
+        for (iS in results_sheets[[iF]]) {
+            if (iS == 0) {
+                df = read_tsv(results_file[[iF]], col_names=F, skip_empty_rows=T)
+                # skip_empty_rows flag needs to be TRUE even if it ends up not skipping empty rows
+            } else { # expect an Excel spreadsheet
+                df = read_excel(results_file[[iF]], sheet = iS, col_names = F)
+            }
+            # get the plate size
+            n_col = 1.5*2**ceiling(log2(dim(df)[2]/1.5))
+            n_row = n_col/1.5
 
-    df = read_excel(template_file[[iF]], sheet = 'Gnumber', col_names = F, range = 'A1:AV32')
-                ##### this is an issue as the first rows, if empty, are discarded
+            # get the barcode(s) in the sheet; expected in column C (third one)
+            Barcode_idx = which(as.data.frame(df)[,3] %in% 'Barcode')
+            # run through all plates
+            for (iB in Barcode_idx) {
+                readout = as.matrix(df[iB+6+(1:n_row),1:n_col])
+                # check that the plate size is consistent and contains values
+                stopifnot(all(!is.na(readout)))
+                stopifnot(as.character(df[iB+4,4]) %in% 'Signal')
 
-    (x) {
-        loadWorkbook(x)
-        df = read.xlsx(x, skipEmptyCols=F)
-    } )
+                df_results = data.frame(
+                    Barcode = as.character(df[iB+1,3]),
+                    WellRow = LETTERS[1:n_row],
+                    WellColumn = as.vector(t(matrix(1:n_col,n_col,n_row))),
+                    ReadoutValue = as.numeric(as.vector(readout)),
+                    BackgroundValue = as.numeric(df[iB+5,4])
+                )
+                all_results = rbind(all_results, df_results)
+            }
+        }
+    }
+    return(all_results)
+}
 
-    # check default headers are in each df
-    headersOK = sapply(manifest_data, function(x)
-            all(c('Barcode', 'Time', 'Template') %in% colnames(x)))
-    stopifnot(all(headersOK)) # --> need better error report
+
+check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) {
+
+    # first check for required column names
+    if (!is.null(df_type)) {
+        if (df_type == 'manifest') {
+                ExpectedHeaders = c('Barcode', 'Time', 'Template')
+        }
+        if (df_type == 'template') {
+                ExpectedHeaders = c('Gnumber')
+        }
+        if (df_type == 'template_treatment') {
+                ExpectedHeaders = c('Gnumber', 'Concentration')
+        }
+
+        headersOK = ExpectedHeaders %in% col_df
+        if (any(!headersOK)) {
+            ErrorMsg = paste(df_name,
+                'does not contains all expected headers for a', df_type, '; "',
+                ExpectedHeaders[ !(ExpectedHeaders %in% col_df) ],
+                '" required')
+            writeLines('Error in check_metadata_names:', log_file)
+            writeLines(ErrorMsg, log_file)
+            close(log_file)
+            stop(ErrorMsg)
+        }
+        if (df_type == 'template_treatment') {
+            # assess if multiple drugs and proper pairing
+            n_drug = agrep('Gnumber', col_df)
+            n_conc = agrep('Concentration', col_df)
+            if (length(n_drug) != length(n_conc)) {
+                ErrorMsg = paste('Treatment template', df_name,
+                    'does not contains the same number of Gnumber_* and Concentration_* sheets')
+                writeLines('Error in check_metadata_names:', log_file)
+                writeLines(ErrorMsg, log_file)
+                close(log_file)
+                stop(ErrorMsg)
+            }
+            if (length(n_drug)>1) {
+                trt_sheets = c(paste0('Gnumber_', 2:length(n_drug)),
+                    paste0('Concentration_', 2:length(n_conc)))
+                if (!(all(trt_sheets %in% col_df))) {
+                    ErrorMsg = paste('Treatment template', df_name,
+                        'does not contains "', trt_sheets[!(trt_sheets %in% col_df)], '"')
+                    writeLines('Error in check_metadata_names:', log_file)
+                    writeLines(ErrorMsg, log_file)
+                    close(log_file)
+                    stop(ErrorMsg)
+                }
+            }
+        }
+    }
+
+    corrected_names = col_df
+    # common headers that are written in a specific way
+    # throw warning if close match and correct upper/lower case for consistency
+    ControlledHeaders = c('CLid', 'Media', 'Ligand')
+    for (i in 1:length(ControlledHeaders)) {
+        case_match = setdiff(grep(ControlledHeaders[i], corrected_names, ignore.case = T),
+                                grep(ControlledHeaders[i], corrected_names))
+        if (length(case_match)>0){
+            corrected_names[case_match] = ControlledHeaders[i]
+            WarnMsg = paste('Header', corrected_names[case_match], 'in', df_name,
+                                    'corrected to', ControlledHeaders[i])
+            writeLines('Warning in check_metadata_names:', log_file)
+            writeLines(WarnMsg, log_file)
+            warning(WarnMsg)
+        }
+
+        fuzzy_match = setdiff(agrep(ControlledHeaders[i], corrected_names),
+                                grep(ControlledHeaders[i], corrected_names))
+        if (length(fuzzy_match)>0){
+            WarnMsg = paste('Header', corrected_names[fuzzy_match], 'in', df_name,
+                            'looks similar to', ControlledHeaders[i], '; Please check for typo')
+            writeLines('Warning in check_metadata_names:', log_file)
+            writeLines(WarnMsg, log_file)
+            warning(WarnMsg)
+        }
+    }
+    return(corrected_names)
+}
