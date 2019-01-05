@@ -8,15 +8,20 @@ load_manifest = function (manifest_file, log_file) {
 
     # read files
     manifest_data = lapply(manifest_file, function(x) {
-        df = read_excel(x)
+        df = tryCatch( { read_excel(x, col_names = T) },
+            error = function(e) { read_tsv(x, col_names=T, skip_empty_rows=T) }
+            )
     } )
 
     # check default headers are in each df
-    sapply(lapply(1:2, function(x) c(manifest_file[x], manifest_data[x])),
-        function(x) check_metadata_names(colnames(x[[2]]), log_file,
-                df_name=x[[1]], df_type='manifest'))
+    dump = sapply(lapply(1:length(manifest_file),
+            function(x) c(manifest_file[x], manifest_data[x])),
+                function(x) check_metadata_names(colnames(x[[2]]), log_file,
+                    df_name=x[[1]], df_type='manifest'))
 
     cat_manifest_data = bind_rows(manifest_data)
+    colnames(cat_manifest_data) = check_metadata_names(colnames(cat_manifest_data),
+                    log_file, 'manifest')
     # check that barcodes are unique
     stopifnot(dim(cat_manifest_data)[1] == length(unique(cat_manifest_data$Barcode)))
     cat_manifest_data$Template = basename(cat_manifest_data$Template)
@@ -47,17 +52,6 @@ load_templates = function (template_file, log_file) {
         # normal case
             check_metadata_names(template_sheets[[iF]], log_file, df_name=template_file[iF],
                     df_type='template_treatment')
-            # stopifnot('Gnumber' %in% template_sheets[[iF]])
-            # stopifnot('Concentration' %in% template_sheets[[iF]])
-            # # assess if multiple drugs and proper pairing
-            # n_drug = agrep('Gnumber', template_sheets[[iF]])
-            # n_conc = agrep('Concentration', template_sheets[[iF]])
-            # stopifnot(length(n_drug) == length(n_conc))
-            # if (length(n_drug)>1) { # need to have a more verbose message error for typos
-            #     stopifnot(all(paste0('Gnumber_', 2:length(n_drug)) %in% template_sheets[[iF]]))
-            #     stopifnot(all(paste0('Concentration_', 2:length(n_drug)) %in%
-            #         template_sheets[[iF]]))
-            # }
         }
 
         # read the different sheets and check for plate size
@@ -154,21 +148,21 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
     # first check for required column names
     if (!is.null(df_type)) {
         if (df_type == 'manifest') {
-                ExpectedHeaders = c('Barcode', 'Time', 'Template')
+                expected_headers = c('Barcode', 'Time', 'Template')
         }
         if (df_type == 'template') {
-                ExpectedHeaders = c('Gnumber')
+                expected_headers = c('Gnumber')
         }
         if (df_type == 'template_treatment') {
-                ExpectedHeaders = c('Gnumber', 'Concentration')
+                expected_headers = c('Gnumber', 'Concentration')
         }
 
-        headersOK = ExpectedHeaders %in% col_df
+        headersOK = expected_headers %in% col_df
         if (any(!headersOK)) {
             ErrorMsg = paste(df_name,
-                'does not contains all expected headers for a', df_type, '; "',
-                ExpectedHeaders[ !(ExpectedHeaders %in% col_df) ],
-                '" required')
+                'does not contains all expected headers for a', df_type, '; ',
+                paste(expected_headers[ !(expected_headers %in% col_df) ], collpase = ' ; '),
+                ' required')
             writeLines('Error in check_metadata_names:', log_file)
             writeLines(ErrorMsg, log_file)
             close(log_file)
@@ -191,7 +185,8 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
                     paste0('Concentration_', 2:length(n_conc)))
                 if (!(all(trt_sheets %in% col_df))) {
                     ErrorMsg = paste('Treatment template', df_name,
-                        'does not contains "', trt_sheets[!(trt_sheets %in% col_df)], '"')
+                        'does not contains: ',
+                        paste(trt_sheets[!(trt_sheets %in% col_df)], collapse = ' ; '))
                     writeLines('Error in check_metadata_names:', log_file)
                     writeLines(ErrorMsg, log_file)
                     close(log_file)
@@ -201,27 +196,39 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
         }
     }
 
+    # check for wrong metadata field names (including dash, spaces, starting with number, ... )
+    bad_names = regexpr('\\W', col_df)>0 | regexpr('\\d', col_df)==1
+    if (any(bad_names)) {
+        ErrorMsg = paste('Metadata field names for', df_name,
+            'cannot contain spaces, special characters, or start with a number: ',
+                paste(col_df[bad_names], collapse = ' ; '))
+        writeLines('Error in check_metadata_names:', log_file)
+        writeLines(ErrorMsg, log_file)
+        close(log_file)
+        stop(ErrorMsg)
+    }
+
     corrected_names = col_df
     # common headers that are written in a specific way
     # throw warning if close match and correct upper/lower case for consistency
-    ControlledHeaders = c('CLid', 'Media', 'Ligand')
-    for (i in 1:length(ControlledHeaders)) {
-        case_match = setdiff(grep(ControlledHeaders[i], corrected_names, ignore.case = T),
-                                grep(ControlledHeaders[i], corrected_names))
+    controlled_headers = c('CLid', 'Media', 'Ligand')
+    for (i in 1:length(controlled_headers)) {
+        case_match = setdiff(grep(controlled_headers[i], corrected_names, ignore.case = T),
+                                grep(controlled_headers[i], corrected_names))
         if (length(case_match)>0){
-            corrected_names[case_match] = ControlledHeaders[i]
+            corrected_names[case_match] = controlled_headers[i]
             WarnMsg = paste('Header', corrected_names[case_match], 'in', df_name,
-                                    'corrected to', ControlledHeaders[i])
+                                    'corrected to', controlled_headers[i])
             writeLines('Warning in check_metadata_names:', log_file)
             writeLines(WarnMsg, log_file)
             warning(WarnMsg)
         }
 
-        fuzzy_match = setdiff(agrep(ControlledHeaders[i], corrected_names),
-                                grep(ControlledHeaders[i], corrected_names))
+        fuzzy_match = setdiff(agrep(controlled_headers[i], corrected_names),
+                                grep(controlled_headers[i], corrected_names))
         if (length(fuzzy_match)>0){
             WarnMsg = paste('Header', corrected_names[fuzzy_match], 'in', df_name,
-                            'looks similar to', ControlledHeaders[i], '; Please check for typo')
+                            'looks similar to', controlled_headers[i], '; Please check for typo')
             writeLines('Warning in check_metadata_names:', log_file)
             writeLines(WarnMsg, log_file)
             warning(WarnMsg)
