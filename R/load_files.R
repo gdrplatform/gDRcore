@@ -46,8 +46,9 @@ load_templates = function (template_file, log_file) {
         # case of untreated plate
         if (length(template_sheets[[iF]])==1) {
             stopifnot(template_sheets[[iF]] == 'Gnumber')
-            df = read_excel(template_file[[iF]], sheet = 'Gnumber', col_names = F)
-            stopifnot(all(toupper(unlist(df)) %in% c('UNTREATED', 'VEHICLE')))
+            df = read_excel(template_file[[iF]], sheet = 'Gnumber',
+                    col_names = paste0('x', 1:48), range = 'A1:AV32')
+            stopifnot(all(toupper(unlist(df)[!is.na(unlist(df))]) %in% c('UNTREATED', 'VEHICLE')))
         } else {
         # normal case
             check_metadata_names(template_sheets[[iF]], log_file, df_name=template_file[iF],
@@ -56,7 +57,8 @@ load_templates = function (template_file, log_file) {
 
         # read the different sheets and check for plate size
         # enforce range to avoid skipping empty rows at the beginning
-        df = read_excel(template_file[[iF]], sheet = 'Gnumber', col_names = F, range = 'A1:AV32')
+        df = read_excel(template_file[[iF]], sheet = 'Gnumber',
+                col_names = paste0('x', 1:48), range = 'A1:AV32', col_types="text")
         # get the plate size
         n_row = 2**ceiling(log2(max(which(apply(!is.na(df), 1, any)))))
         n_col = 1.5*2**ceiling(log2(max(which(apply(!is.na(df), 2, any)))/1.5))
@@ -67,11 +69,12 @@ load_templates = function (template_file, log_file) {
         # need to adapt for 1536 well plates
         df_template = expand.grid(WellRow = LETTERS[1:n_row], WellColumn = 1:n_col)
         for (iS in template_sheets[[iF]]) {
-            df = read_excel(template_file[[iF]], sheet = iS, col_names = F, range = plate_range)
+            df = read_excel(template_file[[iF]], sheet = iS,
+                            col_names = paste0('x', 1:n_col), range = plate_range)
             df$WellRow = LETTERS[1:n_row]
             df_melted = melt(df, id='WellRow', value.name = iS)
             colnames(df_melted)[colnames(df_melted) == 'variable'] = 'WellColumn'
-            df_melted$WellColumn = gsub('X__', '', df_melted$WellColumn)
+            df_melted$WellColumn = gsub('x', '', df_melted$WellColumn)
             df_template = merge(df_template, df_melted, by=c('WellRow', 'WellColumn'))
         }
         df_template$Template =  basename(template_file[[iF]])
@@ -113,7 +116,9 @@ load_results = function (results_file, log_file) {
                 df = read_tsv(results_file[[iF]], col_names=F, skip_empty_rows=T)
                 # skip_empty_rows flag needs to be TRUE even if it ends up not skipping empty rows
             } else { # expect an Excel spreadsheet
-                df = read_excel(results_file[[iF]], sheet = iS, col_names = F)
+                df = read_excel(results_file[[iF]], sheet = iS, #col_names = F,
+                        col_names = paste0('x', 1:48), range = 'A1:AV32')
+                df = df[, !apply(df,2,function(x) all(is.na(x)))]
             }
             # get the plate size
             n_col = 1.5*2**ceiling(log2(dim(df)[2]/1.5))
@@ -123,17 +128,29 @@ load_results = function (results_file, log_file) {
             Barcode_idx = which(as.data.frame(df)[,3] %in% 'Barcode')
             # run through all plates
             for (iB in Barcode_idx) {
-                readout = as.matrix(df[iB+6+(1:n_row),1:n_col])
+                # two type of format depending on where Background information is placed
+                if (df[iB+3,1] %in% 'Background information') {
+                    readout_offset = 6
+                    stopifnot(as.character(df[iB+4,4]) %in% 'Signal')
+                    BackgroundValue = as.numeric(df[iB+5,4])
+                } else {
+                    # export without background information
+                    # case of " Exported with EnVision Workstation version 1.13.3009.1409 "
+                    readout_offset = 2
+                    BackgroundValue = 0
+                }
+
+                readout = as.matrix(df[iB+readout_offset+(1:n_row),1:n_col])
+
                 # check that the plate size is consistent and contains values
                 stopifnot(all(!is.na(readout)))
-                stopifnot(as.character(df[iB+4,4]) %in% 'Signal')
 
                 df_results = data.frame(
                     Barcode = as.character(df[iB+1,3]),
                     WellRow = LETTERS[1:n_row],
                     WellColumn = as.vector(t(matrix(1:n_col,n_col,n_row))),
                     ReadoutValue = as.numeric(as.vector(readout)),
-                    BackgroundValue = as.numeric(df[iB+5,4])
+                    BackgroundValue = BackgroundValue
                 )
                 all_results = rbind(all_results, df_results)
             }
@@ -196,19 +213,37 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
         }
     }
 
-    # check for wrong metadata field names (including dash, spaces, starting with number, ... )
-    bad_names = regexpr('\\W', col_df)>0 | regexpr('\\d', col_df)==1
+    corrected_names = col_df
+
+    # remove spaces and convert to WordUppercase
+    names_spaces = regexpr('\\s', corrected_names)>0
+    if (any(names_spaces)) {
+        for (i in which(names_spaces)) {
+            s <- strsplit(corrected_names[i], " ")[[1]]
+            corrected_names[i] = paste(toupper(substring(s, 1, 1)), substring(s, 2),
+              sep = "", collapse = "")
+        }
+
+        WarnMsg = paste('Metadata field names for', df_name,
+            'cannot contain spaces --> corrected to: ',
+                paste(corrected_names[names_spaces], collapse = ' ; '))
+        writeLines('Warning in check_metadata_names:', log_file)
+        writeLines(WarnMsg, log_file)
+        warning(WarnMsg)
+    }
+
+    # check for wrong metadata field names (including dash, starting with number, ... )
+    bad_names = regexpr('\\W', corrected_names)>0 | regexpr('\\d', corrected_names)==1
     if (any(bad_names)) {
         ErrorMsg = paste('Metadata field names for', df_name,
-            'cannot contain spaces, special characters, or start with a number: ',
-                paste(col_df[bad_names], collapse = ' ; '))
+            'cannot contain special characters or start with a number: ',
+                paste(corrected_names[bad_names], collapse = ' ; '))
         writeLines('Error in check_metadata_names:', log_file)
         writeLines(ErrorMsg, log_file)
         close(log_file)
         stop(ErrorMsg)
     }
 
-    corrected_names = col_df
     # common headers that are written in a specific way
     # throw warning if close match and correct upper/lower case for consistency
     controlled_headers = c('CLid', 'Media', 'Ligand')
