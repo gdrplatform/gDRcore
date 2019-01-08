@@ -1,5 +1,9 @@
 library(gCellGenomics) # best reference for cell line and drug names?
 
+library(devtools)
+# install_git('https://stash.intranet.roche.com/stash/scm/~hafnerm6/gcsiutils.git',
+    # ref = 'GRimplementation')
+load_all('~/workspace/Rpackages/gcsiutils/') # local copy of gcsiutils/GRimplementation
 
 Overall_function = function(manifest_file, template_file, results_file, output_files) {
     # output_files should contain file names for :
@@ -10,9 +14,17 @@ Overall_function = function(manifest_file, template_file, results_file, output_f
 
     # output_QC_byPlate(df_raw_data, output_files['QC_file']) # TODO: check column/row bias
 
-    df_normalized = normalize_data(df_raw_data, log_file)
+    Keys = identify_keys(df_raw_data) # may be manually changed
 
-    return(df_normalized)
+    df_normalized = normalize_data(df_raw_data, log_file, Keys)
+    df_averaged = average_replicates(df_normalized, Keys$Trt)
+
+    df_metrics = calculate_DRmetrics(df_averaged, Keys$DoseResp)
+
+    return(list(raw=df_raw_data,
+            normalized=df_normalized,
+            averaged=df_averaged,
+            metrics=df_metrics))
 }
 
 load_merge_data = function(manifest_file, template_file, results_file, log_file) {
@@ -119,64 +131,78 @@ load_merge_data = function(manifest_file, template_file, results_file, log_file)
 
 
 
-normalize_data = function(df_raw_data, log_file) {
+normalize_data = function(df_raw_data, log_file, selected_keys = NULL) {
     # average technical replicates and assign the right controls to each treated well
 
 
     # remove unused columns but keep barcodes to normalize by plate
-    df_averaged = subset(df_raw_data, select=-c(Template, WellRow, WellColumn))
+    df_normalized = subset(df_raw_data, select=-c(Template, WellRow, WellColumn))
 
     # Identify keys for assigning the controls
-    TrtKeys = setdiff(colnames(df_averaged), c("ReadoutValue", "BackgroundValue"))
-    EndpointKeys = setdiff(colnames(df_averaged)[ c(-agrep('Concentration', colnames(df_averaged)),
-        -agrep('Gnumber', colnames(df_averaged)), -agrep('DrugName', colnames(df_averaged)))],
-            c("ReadoutValue", "BackgroundValue"))
+    Keys = identify_keys(df_normalized)
+    if (!is.null(selected_keys)) {
+        Keys[names(selected_keys)] = selected_keys[names(selected_keys)]
+    }
 
-    df_averaged$CorrectedReadout = pmax(df_averaged$ReadoutValue - df_averaged$BackgroundValue,1)
+    df_normalized$CorrectedReadout = pmax(df_normalized$ReadoutValue -
+                                            df_normalized$BackgroundValue,1)
 
     # get the untreated controls at endpoint and perform interquartile mean
-    df_end_untrt = df_averaged[df_averaged$Time>0 &
-            apply(df_averaged[,agrep('Concentration', colnames(df_averaged)),drop=F]==0,1,all), ]
+    df_end_untrt = df_normalized[df_normalized$Time>0 &
+        apply(df_normalized[,agrep('Concentration', colnames(df_normalized)),drop=F]==0,1,all),]
     df_end_mean = aggregate(df_end_untrt[,'CorrectedReadout'],
-                    by = as.list(df_end_untrt[,EndpointKeys]), function(x) mean(x, trim= .25))
+                    by = as.list(df_end_untrt[,Keys$Endpoint]), function(x) mean(x, trim= .25))
     colnames(df_end_mean)[dim(df_end_mean)[2]] = 'UntrtReadout'
 
+
     # get the untreated controls at Day 0 and perform interquartile mean
-    df_day0 = df_averaged[df_averaged$Time==0 &
-            apply(df_averaged[,agrep('Concentration', colnames(df_averaged)),drop=F]==0,1,all), ]
+    df_day0 = df_normalized[df_normalized$Time==0 &
+        apply(df_normalized[,agrep('Concentration', colnames(df_normalized)),drop=F]==0,1,all), ]
     df_day0_mean = aggregate(df_day0[,'CorrectedReadout'],
-                by = as.list(df_day0[,EndpointKeys]), function(x) mean(x, trim= .25))
+                by = as.list(df_day0[,Keys$Day0]), function(x) mean(x, trim= .25))
     colnames(df_day0_mean)[dim(df_day0_mean)[2]] = 'Day0Readout'
 
     df_controls = merge(df_end_mean, subset(df_day0_mean, select=-c(Time, Barcode)), all.x = T)
+    if (length(setdiff(Keys$Endpoint, Keys$Day0))>0) {
+        WarnMsg = paste('Not all control conditions found on the day 0 plate,',
+            'dispatching values for field: ',
+            paste(setdiff(Keys$Endpoint, Keys$Day0), collapse = ' ; '))
+        writeLines('Warning in normalize_data:', log_file)
+        writeLines(WarnMsg, log_file)
+        warning(WarnMsg)
+    }
     # identify missing values in the Day0 that needs to be matched (usually for co-treatments)
     df_controls_NA = which(is.na(df_controls$Day0Readout))
 
     if (length(df_controls_NA)>0) {
         dispatched = NULL
         for (i in df_controls_NA){
-            matches = t(apply(df_day0_mean[, setdiff(EndpointKeys, c('Time', 'Barcode'))], 1,
-                function(x) df_controls[i, setdiff(EndpointKeys, c('Time', 'Barcode')),
+            matches = t(apply(df_day0_mean[, setdiff(Keys$Day0, c('Time', 'Barcode'))], 1,
+                function(x) df_controls[i, setdiff(Keys$Day0, c('Time', 'Barcode')),
                                 drop=F] == x))
-            colnames(matches) = setdiff(EndpointKeys, c('Time', 'Barcode'))
+            colnames(matches) = setdiff(Keys$Day0, c('Time', 'Barcode'))
             # try to find a good match for the day 0 (enforce same cell line)
             idx = rowSums(matches) * matches[,'CLid']
+            if (all(idx==0)) {next}
             match_idx = which.max(idx)
-            mismatch = df_day0_mean[match_idx, setdiff(EndpointKeys, c('Time', 'Barcode'))] !=
-                        df_controls[i, setdiff(EndpointKeys, c('Time', 'Barcode'))]
+            mismatch = df_day0_mean[match_idx, setdiff(Keys$Day0, c('Time', 'Barcode'))] !=
+                        df_controls[i, setdiff(Keys$Day0, c('Time', 'Barcode'))]
             dispatched = c(dispatched, colnames(mismatch)[mismatch])
             df_controls[i, 'Day0Readout'] = df_day0_mean[match_idx, 'Day0Readout']
         }
-        WarnMsg = paste('Not all control conditions found on the day 0 plate,',
-            'dispatching values for mismatches in: ', paste(dispatched, collapse = ' ; '))
+        WarnMsg = paste('Not all control conditions found on the day 0 plate,')
+        WarnMsg = ifelse(length(dispatched)>0,
+                    paste(WarnMsg,'dispatching values for mismatches in field: ',
+                    paste(unique(dispatched), collapse = ' ; ')),
+                    paste(WarnMsg,'some Day0 are not being matched'))
         writeLines('Warning in normalize_data:', log_file)
         writeLines(WarnMsg, log_file)
         warning(WarnMsg)
     }
 
-    # average technical replicates
-    df_normalized = merge(df_averaged[df_averaged$Time>0 &
-            apply(df_averaged[,agrep('Concentration', colnames(df_averaged)),drop=F]!=0,1,any) ,],
+
+    df_normalized = merge(df_normalized[df_normalized$Time>0 &
+        apply(df_normalized[,agrep('Concentration', colnames(df_normalized)),drop=F]!=0,1,any) ,],
                  df_controls)
 
     df_normalized$RelViability = round(df_normalized$CorrectedReadout/df_normalized$UntrtReadout,4)
@@ -187,6 +213,29 @@ normalize_data = function(df_raw_data, log_file) {
     df_normalized$DivisionTime = round( df_normalized$Time /
                     log2(df_normalized$UntrtReadout / df_normalized$Day0Readout) , 4)
 
+
+    if (any(is.na(df_normalized$Day0Readout))) {
+        # need to use the reference doubling Time if day 0 missing
+        InferedIdx = is.na(df_normalized$Day0Readout)
+        filtered = df_normalized$ReferenceDivisionTime > (df_normalized$Time*2) |
+            is.na(df_normalized$ReferenceDivisionTime)
+        WarnMsg = paste('Missing day 0 information --> calculate GR value based on reference',
+            'doubling time')
+        WarnMsg = ifelse(!any(filtered & InferedIdx), WarnMsg,
+            paste(WarnMsg, '; filtering', sum(filtered & InferedIdx),
+                'conditions because of too short assay:',
+                paste(unique(df_normalized$CellLineName[filtered & InferedIdx]), collpase=' ; ')))
+        writeLines('Warning in normalize_data:', log_file)
+        writeLines(WarnMsg, log_file)
+        warning(WarnMsg)
+        InferedIdx = !filtered & InferedIdx
+        # calculate GR values using formula from https://www.nature.com/articles/nbt.3882
+        df_normalized$GRvalue[InferedIdx] = round(2 ^ ( 1 + (log2(pmin(1.25,
+                df_normalized[InferedIdx,'RelViability'])) /
+                (df_normalized$Time[InferedIdx] /
+                        df_normalized$ReferenceDivisionTime[InferedIdx]) ) ),4) - 1
+    }
+
     df_normalized = cbind(df_normalized[, 1:(which(colnames(df_normalized)=='ReadoutValue')-1)],
         df_normalized[, c('GRvalue', 'RelViability', 'DivisionTime')],
         df_normalized[, which(colnames(df_normalized)=='ReadoutValue'):(dim(df_normalized)[2]-3)])
@@ -196,8 +245,77 @@ normalize_data = function(df_raw_data, log_file) {
 
 
 
+average_replicates = function(df_normalized, TrtKeys = NULL) {
+    if (is.null(TrtKeys)) { TrtKeys = identify_keys(df_normalized)$Trt }
+
+    df_averaged = aggregate(df_normalized[, c('GRvalue', 'RelViability', "CorrectedReadout",
+                    "UntrtReadout", "Day0Readout", "DivisionTime", "ReferenceDivisionTime")],
+                    by = as.list(df_normalized[,TrtKeys]), FUN = function(x) mean(x, rm.na=T))
+    return(df_averaged)
+}
 
 
+calculate_DRmetrics = function(df_averaged, DoseRespKeys = NULL, force = FALSE, cap = FALSE) {
+    if (is.null(DoseRespKeys)) { DoseRespKeys = identify_keys(df_averaged)$DoseResp }
+    DoseRespKeys = setdiff(DoseRespKeys, 'Concentration')
+
+    df_GR = df_averaged # may be worthwhile to use consistent variable names at some point
+
+    # colnames(df_GR)[colnames(df_GR) %in% 'GRvalue'] = 'GR'
+    # colnames(df_GR)[colnames(df_GR) %in% 'Concentration'] = 'concentration'
+    # df_metrics = calculate_GRmetrics(df_GR, meta_variables = DoseRespKeys, force=force, cap=cap)
+
+    # copied from  calculate_GRmetrics
+    df_GR$log10Concentration = log10(as.numeric(as.character(df_GR$Concentration)))
+    for (v in DoseRespKeys) df_GR[, v] = as.factor(df_GR[, v])
+    df_metrics = unique(df_GR[, DoseRespKeys])
+    print(paste('Metadata variables for dose response curves:',
+                do.call(paste,as.list(DoseRespKeys)), '(',
+                dim(df_metrics)[1], 'groups)'))
+
+    metrics = names(GRlogisticFit(c(-7,-6,-5,-4),c(1,.6,.3,.3))) # dummy call to get variable names
+    df_metrics = cbind(df_metrics, as.data.frame(matrix(NA, dim(df_metrics)[1], length(metrics))))
+    colnames(df_metrics) = c(DoseRespKeys, metrics)
+    # loop through all conditions
+    for (i in 1:dim(df_metrics)[1]) {
+        sub_meta = !is.na(df_metrics[i,DoseRespKeys])
+        idx = apply(df_GR[,DoseRespKeys[sub_meta]], 1,
+            function(x) all(x == df_metrics[i,DoseRespKeys[sub_meta]]))
+        log10concs = df_GR$log10Concentration[idx]
+        GRvalues = df_GR$GRvalue[idx]
+        if (sum(!is.na(GRvalues))<4) next
+        df_metrics[i, metrics] = GRlogisticFit(log10concs, GRvalues)
+    }
+
+
+    # handling cases where DrugName = Vehicle/Untrt --> these are reference for other conditions
+    df_0 = df_metrics[df_metrics$DrugName %in% c('Vehicle', 'Untreated'),DoseRespKeys]
+    df_metrics = df_metrics[!(df_metrics$DrugName %in% c('Vehicle', 'Untreated')),]
+    df_GR[ df_GR[,DoseRespKeys] %in% df_0 ,]
+
+    return(df_metrics)
+}
+
+
+
+identify_keys = function(df) {
+    # c(paste0('Concentration_', 2:10), paste0('Gnumber_', 2:10), paste0('DrugName_', 2:10)
+    keys = list(Trt = setdiff(colnames(df), "Barcode"),
+            DoseResp = setdiff(colnames(df),  'Barcode'),
+            Endpoint = colnames(df)[ c(-agrep('Concentration', colnames(df)),
+                                            -agrep('Gnumber', colnames(df)),
+                                            -agrep('DrugName', colnames(df)))])
+    keys[['Day0']] = keys[['Endpoint']]
+    keys = lapply(keys, function(x) setdiff(x, c("ReadoutValue", "BackgroundValue",
+            "UntrtReadout", "CorrectedReadout", "Day0Readout", "Template", "WellRow", "WellColumn",
+            'GRvalue', 'RelViability', 'DivisionTime', 'ReferenceDivisionTime')))
+    # check if all values of a key is NA
+    for (k in keys[['Endpoint']]) {
+        if (all(is.na(df[,k]))) {keys = lapply(keys, function(x) setdiff(x, k))}
+        if (all(is.na(df[df$Time==0,k]))) {keys[['Day0']] = setdiff(keys[['Day0']], k)}
+    }
+    return(keys)
+}
 
 
 
@@ -212,9 +330,10 @@ cleanup_metadata = function(df_metadata) {
             agrep('Concentration', colnames(df_metadata)),
             grep('Time|CLid|Barcode|WellRow|WellColumn|Template', colnames(df_metadata)) ))) {
         vals = unique(df_metadata[,c])
-        if (is.numeric(vals)) {
-            df_metadata[is.na(df_metadata[,c]),c] = 0
-        } else if (is.character(vals)) {
+        # if (is.numeric(vals)) {           # removed to ensure that missing annotation is kept NA
+        #     df_metadata[is.na(df_metadata[,c]),c] = 0
+        # } else
+        if (is.character(vals)) {
             num_vals = as.numeric(vals)
             if (sum(is.na(num_vals))>2 || all(is.na(num_vals))) {
                 df_metadata[,c] = factor(df_metadata[,c])
@@ -236,8 +355,8 @@ cleanup_metadata = function(df_metadata) {
     }
 
     # check that CLid are in the format 'CL####' and add common name
-    gCLs = gCellGenomics::getSamples()[,c('clid', 'celllinename', 'tissue')]
-    colnames(gCLs)[2:3] = c('CellLineName', 'Tissue')
+    gCLs = gCellGenomics::getSamples()[,c('clid', 'celllinename', 'tissue', 'doublingtime')]
+    colnames(gCLs)[2:4] = c('CellLineName', 'Tissue', 'ReferenceDivisionTime')
     CLids = unique(df_metadata$CLid)
     bad_CL = !(CLids %in% gCLs$clid)
     if (any(bad_CL)) {

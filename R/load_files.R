@@ -269,5 +269,20 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
             warning(WarnMsg)
         }
     }
+
+    # check for headers that are reserved for downstream analyses
+    ReservedHeaders = c('CellLineName', 'Tissue', 'ReferenceDivisionTime', 'DrugName',
+                    paste0('DrugName_', 2:10), "ReadoutValue", "BackgroundValue",
+                    "CorrectedReadout", "Day0Readout", 'GRvalue', 'RelViability', 'DivisionTime')
+    if (any(corrected_names %in% ReservedHeaders)) {
+        ErrorMsg = paste('Metadata field name: ',
+            paste(intersect(ReservedHeaders, corrected_names), collapse = ' ; '),
+            ' in', df_name, 'is not valid (reserved for output)')
+        writeLines('Error in check_metadata_names:', log_file)
+        writeLines(ErrorMsg, log_file)
+        close(log_file)
+        stop(ErrorMsg)
+    }
+
     return(corrected_names)
 }
