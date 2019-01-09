@@ -5,6 +5,13 @@ library(devtools)
     # ref = 'GRimplementation')
 load_all('~/workspace/Rpackages/gcsiutils/') # local copy of gcsiutils/GRimplementation
 
+
+
+#########################################
+### TODO:
+### Need to put all reserved header names (CLid, DrugName, ...) as global variables
+#########################################
+
 Overall_function = function(manifest_file, template_file, results_file, output_files) {
     # output_files should contain file names for :
     #   log_file, QC_file, raw_result, process_results, metrics_results
@@ -266,32 +273,42 @@ calculate_DRmetrics = function(df_averaged, DoseRespKeys = NULL, force = FALSE, 
     # df_metrics = calculate_GRmetrics(df_GR, meta_variables = DoseRespKeys, force=force, cap=cap)
 
     # copied from  calculate_GRmetrics
-    df_GR$log10Concentration = log10(as.numeric(as.character(df_GR$Concentration)))
-    for (v in DoseRespKeys) df_GR[, v] = as.factor(df_GR[, v])
-    df_metrics = unique(df_GR[, DoseRespKeys])
-    print(paste('Metadata variables for dose response curves:',
-                do.call(paste,as.list(DoseRespKeys)), '(',
-                dim(df_metrics)[1], 'groups)'))
+    df_GR$log10Concentration = log10(df_GR$Concentration)
+    df_metrics = unique(df_GR[!(df_GR$DrugName %in% c('Vehicle', 'Untreated')), DoseRespKeys])
+    # handling cases where DrugName = Vehicle/Untrt --> these are reference for other conditions
+    df_0 = unique(df_GR[df_GR$DrugName %in% c('Vehicle', 'Untreated'), c(DoseRespKeys, 'GRvalue')])
 
-    metrics = names(GRlogisticFit(c(-7,-6,-5,-4),c(1,.6,.3,.3))) # dummy call to get variable names
+    print(paste('Metadata variables for dose response curves:',
+                paste(setdiff(DoseRespKeys, c('Gnumber', 'CLid', paste('Gnumber_', 2:10))),
+                    collapse = ' '), '(', dim(df_metrics)[1], 'groups)'))
+
+    ### ################
+    ### TODO:
+    ### Need to implement the metric calculation for IC50/AAC --> copy from GeneData?
+    ### ################
+
+    metrics = names(GRlogisticFit(c(-7,-6,-5,-4),c(1,.9,.8,.7))) # dummy call to get variable names
     df_metrics = cbind(df_metrics, as.data.frame(matrix(NA, dim(df_metrics)[1], length(metrics))))
     colnames(df_metrics) = c(DoseRespKeys, metrics)
     # loop through all conditions
     for (i in 1:dim(df_metrics)[1]) {
         sub_meta = !is.na(df_metrics[i,DoseRespKeys])
-        idx = apply(df_GR[,DoseRespKeys[sub_meta]], 1,
-            function(x) all(x == df_metrics[i,DoseRespKeys[sub_meta]]))
+        idx = sapply(1:dim(df_GR)[1], function(x) all(df_GR[x,DoseRespKeys[sub_meta]] ==
+                                                df_metrics[i,DoseRespKeys[sub_meta]]))
         log10concs = df_GR$log10Concentration[idx]
         GRvalues = df_GR$GRvalue[idx]
+
+        # test if upper limit may not be 1 based on Vehicle/Untrt data
+        if (dim(df_0)[1]>0) {
+            ref0_meta = setdiff(DoseRespKeys[sub_meta], c('Gnumber', 'DrugName'))
+            idx0 = sapply(1:dim(df_0)[1], function(x) all(df_0[x,ref0_meta] ==
+                                                df_metrics[i,ref0_meta]))
+            ref_GR = ifelse(any(idx0), mean(df_0$GRvalue[idx0]), 1)
+        } else { ref_GR = 1 }
+
         if (sum(!is.na(GRvalues))<4) next
-        df_metrics[i, metrics] = GRlogisticFit(log10concs, GRvalues)
+        df_metrics[i, metrics] = GRlogisticFit(log10concs, GRvalues, upper_GR = ref_GR)[metrics]
     }
-
-
-    # handling cases where DrugName = Vehicle/Untrt --> these are reference for other conditions
-    df_0 = df_metrics[df_metrics$DrugName %in% c('Vehicle', 'Untreated'),DoseRespKeys]
-    df_metrics = df_metrics[!(df_metrics$DrugName %in% c('Vehicle', 'Untreated')),]
-    df_GR[ df_GR[,DoseRespKeys] %in% df_0 ,]
 
     return(df_metrics)
 }
