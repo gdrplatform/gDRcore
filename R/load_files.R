@@ -116,10 +116,18 @@ load_results = function (results_file, log_file) {
                 df = read_tsv(results_file[[iF]], col_names=F, skip_empty_rows=T)
                 # skip_empty_rows flag needs to be TRUE even if it ends up not skipping empty rows
             } else { # expect an Excel spreadsheet
-                df = read_excel(results_file[[iF]], sheet = iS, #col_names = F,
-                        col_names = paste0('x', 1:48), range = 'A1:AV32')
-                df = df[, !apply(df,2,function(x) all(is.na(x)))]
+                if (length(results_sheets[[iF]])>1) {# if multiple sheets, assume 1 plate per sheet
+                    df = read_excel(results_file[[iF]], sheet = iS, #col_names = F,
+                            col_names = paste0('x', 1:48), range = 'A1:AV32')
+                } else {
+                    df = read_excel(results_file[[iF]], sheet = iS, col_names = F)
+                    colnames(df) = col_names = paste0('x', 1:dim(df)[2])
+                }
+                df = df[, !apply(df[1:48,],2,function(x) all(is.na(x)))] # remove extra columns
+                                        # limit to first 48 rows in case Protocol information is
+                                        # exported which generate craps at the end of the file
             }
+            df = df[!apply(df,1,function(x) all(is.na(x))), ] # remove extra rows
             # get the plate size
             n_col = 1.5*2**ceiling(log2(dim(df)[2]/1.5))
             n_row = n_col/1.5
@@ -129,21 +137,40 @@ load_results = function (results_file, log_file) {
             # run through all plates
             for (iB in Barcode_idx) {
                 # two type of format depending on where Background information is placed
-                if (df[iB+3,1] %in% 'Background information') {
-                    readout_offset = 6
-                    stopifnot(as.character(df[iB+4,4]) %in% 'Signal')
-                    BackgroundValue = as.numeric(df[iB+5,4])
+                if (any(as.data.frame(df)[iB+(1:4),1] %in% 'Background information')) {
+                    ref_bckgrd = which(as.data.frame(df)[iB+(1:4),1] %in% 'Background information')
+                    readout_offset = 2 + ref_bckgrd
+                    stopifnot(as.character(df[iB+ref_bckgrd+1,4]) %in% 'Signal')
+                    BackgroundValue = as.numeric(df[iB+ref_bckgrd+2,4])
                 } else {
                     # export without background information
                     # case of " Exported with EnVision Workstation version 1.13.3009.1409 "
-                    readout_offset = 2
+                    readout_offset = 1
                     BackgroundValue = 0
+                }
+
+                # check the structure of file is ok
+                check_values = as.matrix(df[iB+readout_offset+c(0,1, n_row, n_row+1), n_col])
+                if (any(c(is.na(check_values[2:3]), !is.na(check_values[c(1,4)])))) {
+                    ErrorMsg = paste('In result file', results_file[[iF]], '(sheet', iS,
+                        ') readout values are misplaced for plate', as.character(df[iB+1,3]))
+                    writeLines('Error in load_results:', log_file)
+                    writeLines(ErrorMsg, log_file)
+                    close(log_file)
+                    stop(ErrorMsg)
                 }
 
                 readout = as.matrix(df[iB+readout_offset+(1:n_row),1:n_col])
 
                 # check that the plate size is consistent and contains values
-                stopifnot(all(!is.na(readout)))
+                if (any(is.na(readout))) {
+                    ErrorMsg = paste('In result file', results_file[[iF]], '(sheet', iS,
+                        ') readout values are missing for plate', as.character(df[iB+1,3]))
+                    writeLines('Error in load_results:', log_file)
+                    writeLines(ErrorMsg, log_file)
+                    close(log_file)
+                    stop(ErrorMsg)
+                }
 
                 df_results = data.frame(
                     Barcode = as.character(df[iB+1,3]),
@@ -251,9 +278,9 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
         case_match = setdiff(grep(controlled_headers[i], corrected_names, ignore.case = T),
                                 grep(controlled_headers[i], corrected_names))
         if (length(case_match)>0){
-            corrected_names[case_match] = controlled_headers[i]
             WarnMsg = paste('Header', corrected_names[case_match], 'in', df_name,
                                     'corrected to', controlled_headers[i])
+            corrected_names[case_match] = controlled_headers[i]
             writeLines('Warning in check_metadata_names:', log_file)
             writeLines(WarnMsg, log_file)
             warning(WarnMsg)
