@@ -429,6 +429,8 @@ cleanup_metadata = function(df_metadata) {
         colnames(gDrugs_)[2] = paste0(colnames(gDrugs_)[2], substr(colnames(df_metadata)[i], 8, 12))
         df_metadata = merge(df_metadata, gDrugs_, by.x=i, by.y='drug', all.x = T)
     }
+    df_metadata[, colnames(df_metadata)[grepl('DrugName', colnames(df_metadata))] ] =
+        droplevels(df_metadata[,colnames(df_metadata)[grepl('DrugName', colnames(df_metadata))]])
 
     # clean up concentration fields
     for (i in agrep('Concentration', colnames(df_metadata))) {
