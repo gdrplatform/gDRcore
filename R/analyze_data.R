@@ -12,9 +12,11 @@ load_all('~/workspace/Rpackages/gcsiutils/') # local copy of gcsiutils/GRimpleme
 ### Need to put all reserved header names (CLid, DrugName, ...) as global variables
 #########################################
 
-Overall_function = function(manifest_file, template_file, results_file, output_files) {
+Overall_function = function(manifest_file, template_file, results_file,
+                output_files, selected_keys = NULL, key_values = NULL) {
     # output_files should contain file names for :
     #   log_file, QC_file, raw_result, process_results, metrics_results
+
     log_file <- file(output_files['log_file'], open = "wt")
 
     df_raw_data = load_merge_data(manifest_file, template_file, results_file, log_file)
@@ -22,11 +24,16 @@ Overall_function = function(manifest_file, template_file, results_file, output_f
     # output_QC_byPlate(df_raw_data, output_files['QC_file']) # TODO: check column/row bias
 
     Keys = identify_keys(df_raw_data) # may be manually changed
+    if (!is.null(selected_keys)) {
+        Keys[names(selected_keys)] = selected_keys[names(selected_keys)]
+    }
 
-    df_normalized = normalize_data(df_raw_data, log_file, Keys)
+    df_normalized = normalize_data(df_raw_data, log_file, Keys, key_values)
     df_averaged = average_replicates(df_normalized, Keys$Trt)
 
     df_metrics = calculate_DRmetrics(df_averaged, Keys$DoseResp)
+
+    close(log_file)
 
     return(list(raw=df_raw_data,
             normalized=df_normalized,
@@ -35,6 +42,10 @@ Overall_function = function(manifest_file, template_file, results_file, output_f
 }
 
 load_merge_data = function(manifest_file, template_file, results_file, log_file) {
+
+    if (is.character(log_file)) {
+        log_file <- file(log_file, open = "wt")
+    }
 
     manifest = load_manifest(manifest_file, log_file)
     treatments = load_templates(template_file, log_file)
@@ -95,7 +106,7 @@ load_merge_data = function(manifest_file, template_file, results_file, log_file)
     }
 
     # clean up the metadata
-    cleanedup_metadata = cleanup_metadata(df_metadata)
+    cleanedup_metadata = cleanup_metadata(df_metadata, log_file)
     stopifnot( dim(cleanedup_metadata)[1] == dim(df_metadata)[1] ) # should not happen
 
     df_merged = merge(cleanedup_metadata, data, by = c('Barcode', 'WellRow', 'WellColumn'))
@@ -138,9 +149,8 @@ load_merge_data = function(manifest_file, template_file, results_file, log_file)
 
 
 
-normalize_data = function(df_raw_data, log_file, selected_keys = NULL) {
+normalize_data = function(df_raw_data, log_file, selected_keys = NULL, key_values = NULL) {
     # average technical replicates and assign the right controls to each treated well
-
 
     # remove unused columns but keep barcodes to normalize by plate
     df_normalized = subset(df_raw_data, select=-c(Template, WellRow, WellColumn))
@@ -154,8 +164,21 @@ normalize_data = function(df_raw_data, log_file, selected_keys = NULL) {
     df_normalized$CorrectedReadout = pmax(df_normalized$ReadoutValue -
                                             df_normalized$BackgroundValue,1)
 
+    # enforced key values for end points (override selected_keys)
+    Keys$Endpoint = setdiff(Keys$Endpoint, names(key_values))
+    endpoint_value_filter = array(TRUE, dim(df_raw_data)[1])
+    if (!is.null(key_values)) {
+        for (i in 1:length(key_values)) {
+            if (is.numeric(key_values[i])) {
+                endpoint_value_filter = endpoint_value_filter &
+                            (df_normalized[, names(key_values)[i] ] == key_values[i] &
+                                !is.na(df_normalized[, names(key_values)[i] ]))
+            } else {
+                endpoint_value_filter = endpoint_value_filter &
+                            (df_normalized[ ,names(key_values)[i] ] %in% key_values[i])
+            }}}
     # get the untreated controls at endpoint and perform interquartile mean
-    df_end_untrt = df_normalized[df_normalized$Time>0 &
+    df_end_untrt = df_normalized[df_normalized$Time>0 & endpoint_value_filter &
         apply(df_normalized[,agrep('Concentration', colnames(df_normalized)),drop=F]==0,1,all),]
     df_end_mean = aggregate(df_end_untrt[,'CorrectedReadout'],
                     by = as.list(df_end_untrt[,Keys$Endpoint]), function(x) mean(x, trim= .25))
@@ -209,7 +232,8 @@ normalize_data = function(df_raw_data, log_file, selected_keys = NULL) {
 
 
     df_normalized = merge(df_normalized[df_normalized$Time>0 &
-        apply(df_normalized[,agrep('Concentration', colnames(df_normalized)),drop=F]!=0,1,any) ,],
+        (apply(df_normalized[,agrep('Concentration', colnames(df_normalized)),drop=F]!=0,1,any) |
+                !endpoint_value_filter),],
                  df_controls)
 
     df_normalized$RelViability = round(df_normalized$CorrectedReadout/df_normalized$UntrtReadout,4)
@@ -338,7 +362,7 @@ identify_keys = function(df) {
 
 
 
-cleanup_metadata = function(df_metadata) {
+cleanup_metadata = function(df_metadata, log_file) {
 
     # clean up numberic fields
     df_metadata$Time = round(as.numeric(df_metadata$Time),6)
