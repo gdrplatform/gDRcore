@@ -9,7 +9,7 @@ load_all('~/workspace/Rpackages/gcsiutils/') # local copy of gcsiutils/GRimpleme
 
 #########################################
 ### TODO:
-### Need to put all reserved header names (CLid, DrugName, ...) as global variables
+### Need to put all reserved header names (CLID, DrugName, ...) as global variables
 #########################################
 
 Overall_function = function(manifest_file, template_file, results_file,
@@ -92,7 +92,7 @@ load_merge_data = function(manifest_file, template_file, results_file, log_file)
     }
 
     # check for the expected columns
-    expected_headers = c('CLid')
+    expected_headers = c('CLID')
     headersOK = expected_headers %in% colnames(df_metadata)
     if (any(!headersOK)) {
         ErrorMsg = paste('df_metadata',
@@ -116,7 +116,7 @@ load_merge_data = function(manifest_file, template_file, results_file, log_file)
         writeLines(WarnMsg, log_file)
         warning(WarnMsg)
     }
-    if (dim(df_merged)[1] != dim(df_metadata)[1]) {# need to identify issue and output relevant warning
+    if (dim(df_merged)[1]!=dim(df_metadata)[1]) {#need to identify issue and print relevant warning
         WarnMsg = 'Not all treatments have been matched with results; merged table is smaller than metadata table'
         writeLines('Warning in load_merge_data:', log_file)
         writeLines(WarnMsg, log_file)
@@ -212,7 +212,7 @@ normalize_data = function(df_raw_data, log_file, selected_keys = NULL, key_value
                                 drop=F] == x))
             colnames(matches) = setdiff(Keys$Day0, c('Time', 'Barcode'))
             # try to find a good match for the day 0 (enforce same cell line)
-            idx = rowSums(matches) * matches[,'CLid']
+            idx = rowSums(matches) * matches[,'CLID']
             if (all(idx==0)) {next}
             match_idx = which.max(idx)
             mismatch = df_day0_mean[match_idx, setdiff(Keys$Day0, c('Time', 'Barcode'))] !=
@@ -236,7 +236,8 @@ normalize_data = function(df_raw_data, log_file, selected_keys = NULL, key_value
                 !endpoint_value_filter),],
                  df_controls)
 
-    df_normalized$RelViability = round(df_normalized$CorrectedReadout/df_normalized$UntrtReadout,4)
+    df_normalized$RelativeViability = round(df_normalized$CorrectedReadout/
+                                            df_normalized$UntrtReadout,4)
     df_normalized$GRvalue = round(2 ** (
             log2(df_normalized$CorrectedReadout / df_normalized$Day0Readout) /
                 log2(df_normalized$UntrtReadout / df_normalized$Day0Readout) ), 4) - 1
@@ -262,13 +263,13 @@ normalize_data = function(df_raw_data, log_file, selected_keys = NULL, key_value
         InferedIdx = !filtered & InferedIdx
         # calculate GR values using formula from https://www.nature.com/articles/nbt.3882
         df_normalized$GRvalue[InferedIdx] = round(2 ^ ( 1 + (log2(pmin(1.25,
-                df_normalized[InferedIdx,'RelViability'])) /
+                df_normalized[InferedIdx,'RelativeViability'])) /
                 (df_normalized$Time[InferedIdx] /
                         df_normalized$ReferenceDivisionTime[InferedIdx]) ) ),4) - 1
     }
 
     df_normalized = cbind(df_normalized[, 1:(which(colnames(df_normalized)=='ReadoutValue')-1)],
-        df_normalized[, c('GRvalue', 'RelViability', 'DivisionTime')],
+        df_normalized[, c('GRvalue', 'RelativeViability', 'DivisionTime')],
         df_normalized[, which(colnames(df_normalized)=='ReadoutValue'):(dim(df_normalized)[2]-3)])
 }
 
@@ -279,7 +280,7 @@ normalize_data = function(df_raw_data, log_file, selected_keys = NULL, key_value
 average_replicates = function(df_normalized, TrtKeys = NULL) {
     if (is.null(TrtKeys)) { TrtKeys = identify_keys(df_normalized)$Trt }
 
-    df_averaged = aggregate(df_normalized[, c('GRvalue', 'RelViability', "CorrectedReadout",
+    df_averaged = aggregate(df_normalized[, c('GRvalue', 'RelativeViability', "CorrectedReadout",
                     "UntrtReadout", "Day0Readout", "DivisionTime", "ReferenceDivisionTime")],
                     by = as.list(df_normalized[,TrtKeys]), FUN = function(x) mean(x, rm.na=T))
     return(df_averaged)
@@ -303,7 +304,7 @@ calculate_DRmetrics = function(df_averaged, DoseRespKeys = NULL, force = FALSE, 
     df_0 = unique(df_GR[df_GR$DrugName %in% c('Vehicle', 'Untreated'), c(DoseRespKeys, 'GRvalue')])
 
     print(paste('Metadata variables for dose response curves:',
-                paste(setdiff(DoseRespKeys, c('Gnumber', 'CLid', paste('Gnumber_', 2:10))),
+                paste(setdiff(DoseRespKeys, c('Gnumber', 'CLID', paste('Gnumber_', 2:10))),
                     collapse = ' '), '(', dim(df_metrics)[1], 'groups)'))
 
     ### ################
@@ -349,7 +350,7 @@ identify_keys = function(df) {
     keys[['Day0']] = keys[['Endpoint']]
     keys = lapply(keys, function(x) setdiff(x, c("ReadoutValue", "BackgroundValue",
             "UntrtReadout", "CorrectedReadout", "Day0Readout", "Template", "WellRow", "WellColumn",
-            'GRvalue', 'RelViability', 'DivisionTime', 'ReferenceDivisionTime')))
+            'GRvalue', 'RelativeViability', 'DivisionTime', 'ReferenceDivisionTime')))
     # check if all values of a key is NA
     for (k in keys[['Endpoint']]) {
         if (all(is.na(df[,k]))) {keys = lapply(keys, function(x) setdiff(x, k))}
@@ -369,7 +370,7 @@ cleanup_metadata = function(df_metadata, log_file) {
     # identify potential numeric fields and replace NA by 0 - convert strings in factors
     for (c in setdiff(1:dim(df_metadata)[2], c( agrep('Gnumber', colnames(df_metadata)),
             agrep('Concentration', colnames(df_metadata)),
-            grep('Time|CLid|Barcode|WellRow|WellColumn|Template', colnames(df_metadata)) ))) {
+            grep('Time|CLID|Barcode|WellRow|WellColumn|Template', colnames(df_metadata)) ))) {
         vals = unique(df_metadata[,c])
         # if (is.numeric(vals)) {           # removed to ensure that missing annotation is kept NA
         #     df_metadata[is.na(df_metadata[,c]),c] = 0
@@ -395,20 +396,20 @@ cleanup_metadata = function(df_metadata, log_file) {
         }
     }
 
-    # check that CLid are in the format 'CL####' and add common name
+    # check that CLID are in the format 'CL####' and add common name
     gCLs = gCellGenomics::getSamples()[,c('clid', 'celllinename', 'tissue', 'doublingtime')]
-    colnames(gCLs)[2:4] = c('CellLineName', 'Tissue', 'ReferenceDivisionTime')
-    CLids = unique(df_metadata$CLid)
-    bad_CL = !(CLids %in% gCLs$clid)
+    colnames(gCLs) = c('CLID', 'CellLineName', 'Tissue', 'ReferenceDivisionTime')
+    CLIDs = unique(df_metadata$CLID)
+    bad_CL = !(CLIDs %in% gCLs$CLID)
     if (any(bad_CL)) {
-        ErrorMsg = paste('Cell line ID ', paste(CLids[bad_CL], collapse = ' ; '),
+        ErrorMsg = paste('Cell line ID ', paste(CLIDs[bad_CL], collapse = ' ; '),
             ' not found in gCSI database')
         writeLines('Error in load_all_data:', log_file)
         writeLines(ErrorMsg, log_file)
         close(log_file)
         stop(ErrorMsg)
         }
-    df_metadata = merge(df_metadata, gCLs, by.x='CLid', by.y='clid', all.x = T)
+    df_metadata = merge(df_metadata, gCLs, by='CLID', all.x = T)
 
     # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
     untrt_flag = c('Vehicle', 'Untreated')

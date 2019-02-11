@@ -77,7 +77,9 @@ load_templates = function (template_file, log_file) {
             df_melted$WellColumn = gsub('x', '', df_melted$WellColumn)
             df_template = merge(df_template, df_melted, by=c('WellRow', 'WellColumn'))
         }
-        df_template$Template =  basename(template_file[[iF]])
+        df_template$Template = basename(template_file[[iF]])
+        colnames(df_template) = check_metadata_names(colnames(df_template), log_file,
+                            df_name=template_file[iF])
         all_templates = bind_rows(all_templates, df_template)
     }
     return(all_templates)
@@ -273,7 +275,7 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
 
     # common headers that are written in a specific way
     # throw warning if close match and correct upper/lower case for consistency
-    controlled_headers = c('CLid', 'Media', 'Ligand')
+    controlled_headers = c('CLID', 'Media', 'Ligand')
     for (i in 1:length(controlled_headers)) {
         case_match = setdiff(grep(controlled_headers[i], corrected_names, ignore.case = T),
                                 grep(controlled_headers[i], corrected_names))
@@ -300,7 +302,8 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
     # check for headers that are reserved for downstream analyses
     ReservedHeaders = c('CellLineName', 'Tissue', 'ReferenceDivisionTime', 'DrugName',
                     paste0('DrugName_', 2:10), "ReadoutValue", "BackgroundValue",
-                    "CorrectedReadout", "Day0Readout", 'GRvalue', 'RelViability', 'DivisionTime')
+                    "CorrectedReadout", "Day0Readout", 'GRvalue', 'RelativeViability',
+                    'DivisionTime')
     if (any(corrected_names %in% ReservedHeaders)) {
         ErrorMsg = paste('Metadata field name: ',
             paste(intersect(ReservedHeaders, corrected_names), collapse = ' ; '),
