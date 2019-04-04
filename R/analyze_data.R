@@ -1,4 +1,7 @@
-# library(gCellGenomics) # best reference for cell line and drug names?
+
+tryCatch( {
+library(gCellGenomics) # best reference for cell line and drug names?
+}, error = function(x) {print('Failed to load gCellGenomics')})
 
 # library(devtools)
 # install_git('https://stash.intranet.roche.com/stash/scm/~hafnerm6/gcsiutils.git',
