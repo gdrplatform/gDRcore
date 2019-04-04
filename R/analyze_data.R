@@ -1,11 +1,13 @@
-library(gCellGenomics) # best reference for cell line and drug names?
+# library(gCellGenomics) # best reference for cell line and drug names?
 
-library(devtools)
+# library(devtools)
 # install_git('https://stash.intranet.roche.com/stash/scm/~hafnerm6/gcsiutils.git',
     # ref = 'GRimplementation')
-load_all('~/workspace/Rpackages/gcsiutils/') # local copy of gcsiutils/GRimplementation
+# load_all('~/workspace/Rpackages/gcellgenomics/')
+# load_all('~/workspace/Rpackages/gcsiutils/') # local copy of gcsiutils/GRimplementation
 
-
+library(reshape2)
+library(dplyr)
 
 #########################################
 ### TODO:
@@ -19,7 +21,8 @@ Overall_function = function(manifest_file, template_file, results_file,
 
     log_file <- file(output_files['log_file'], open = "wt")
 
-    df_raw_data = load_merge_data(manifest_file, template_file, results_file, log_file)
+    raw_data = load_data(manifest_file, template_file, results_file, log_file)
+    df_merged_data = merge_data(raw_data$manifest, raw_data$treatments, raw_data$data, log_file)
 
     # output_QC_byPlate(df_raw_data, output_files['QC_file']) # TODO: check column/row bias
 
@@ -41,28 +44,7 @@ Overall_function = function(manifest_file, template_file, results_file,
             metrics=df_metrics))
 }
 
-load_merge_data = function(manifest_file, template_file, results_file, log_file) {
-
-    if (is.character(log_file)) {
-        log_file <- file(log_file, open = "wt")
-    }
-
-    manifest = load_manifest(manifest_file, log_file)
-    treatments = load_templates(template_file, log_file)
-    data = load_results(results_file, log_file)
-
-    # check the all template files are available
-    if (!all(unique(manifest$Template[manifest$Barcode %in% data$Barcode])
-                    %in% basename(template_file))) {
-        ErrorMsg = paste('Some template files are missing:',
-                    paste(setdiff(unique(manifest$Template[manifest$Barcode %in% data$Barcode]),
-                                     basename(template_file)), collapse = ' ; '))
-        writeLines('Error in load_merge_data:', log_file)
-        writeLines(ErrorMsg, log_file)
-        close(log_file)
-        stop(ErrorMsg)
-    }
-
+merge_data = function(manifest, treatments, data, log_file) {
 
     # merge manifest and treatment files first
     df_metadata = merge(manifest, treatments, by = 'Template')
@@ -106,7 +88,11 @@ load_merge_data = function(manifest_file, template_file, results_file, log_file)
     }
 
     # clean up the metadata
+    print(colnames(df_metadata))
+    print(dim(df_metadata))
     cleanedup_metadata = cleanup_metadata(df_metadata, log_file)
+    print(colnames(cleanedup_metadata))
+    print(dim(cleanedup_metadata))
     stopifnot( dim(cleanedup_metadata)[1] == dim(df_metadata)[1] ) # should not happen
 
     df_merged = merge(cleanedup_metadata, data, by = c('Barcode', 'WellRow', 'WellColumn'))
@@ -167,7 +153,7 @@ normalize_data = function(df_raw_data, log_file, selected_keys = NULL, key_value
     # enforced key values for end points (override selected_keys)
     Keys$Endpoint = setdiff(Keys$Endpoint, names(key_values))
     endpoint_value_filter = array(TRUE, dim(df_raw_data)[1])
-    if (!is.null(key_values)) {
+    if (!is.null(key_values) & length(key_values)>0) {
         for (i in 1:length(key_values)) {
             if (is.numeric(key_values[i])) {
                 endpoint_value_filter = endpoint_value_filter &
@@ -290,6 +276,7 @@ average_replicates = function(df_normalized, TrtKeys = NULL) {
 calculate_DRmetrics = function(df_averaged, DoseRespKeys = NULL, force = FALSE, cap = FALSE) {
     if (is.null(DoseRespKeys)) { DoseRespKeys = identify_keys(df_averaged)$DoseResp }
     DoseRespKeys = setdiff(DoseRespKeys, 'Concentration')
+    DoseRespKeys = intersect(DoseRespKeys, colnames(df_averaged))
 
     df_GR = df_averaged # may be worthwhile to use consistent variable names at some point
 
@@ -397,7 +384,20 @@ cleanup_metadata = function(df_metadata, log_file) {
     }
 
     # check that CLID are in the format 'CL####' and add common name
-    gCLs = gCellGenomics::getSamples()[,c('clid', 'celllinename', 'tissue', 'doublingtime')]
+
+    # -----------------------
+    if ("gCellGenomics" %in% (.packages())) {
+        gCLs = gCellGenomics::getSamples()[,c('clid', 'celllinename', 'tissue', 'doublingtime')]
+    } else {
+        # for debugging
+        gCLs = data.frame(CLID = unique(as.character(df_metadata$CLID)))
+        gCLs = gCLs[,c(1,1,1,1)]
+        gCLs = gCLs[!is.na(gCLs[,1]),]
+        gCLs[,4] = NA
+        print(gCLs)
+    }
+    # -----------------------
+
     colnames(gCLs) = c('CLID', 'CellLineName', 'Tissue', 'ReferenceDivisionTime')
     CLIDs = unique(df_metadata$CLID)
     bad_CL = !(CLIDs %in% gCLs$CLID)
@@ -418,7 +418,19 @@ cleanup_metadata = function(df_metadata, log_file) {
             df_metadata[grep(w, df_metadata[,i], ignore.case = T),i] = w
         }
     }
-    gDrugs = gCellGenomics::getDrugs()[,c('drug', 'gcsi_drug_name')]
+    # -----------------------
+    if ("gCellGenomics" %in% (.packages())) {
+        gDrugs = gCellGenomics::getDrugs()[,c('drug', 'gcsi_drug_name')]
+    } else {
+        # for debugging
+        gDrugs = data.frame(drug =
+            unique(as.character(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))),
+            gcsi_drug_name = unique(as.character(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))))
+        gDrugs = gDrugs[!is.na(gDrugs$drug) & !(gDrugs$drug %in% c('Vehicle', 'Untreated')),]
+        print(gDrugs)
+    }
+
+    # -----------------------
     gDrugs[is.na(gDrugs$gcsi_drug_name), ]
     gDrugs$drug = substr(gDrugs$drug, 1, 9)
     colnames(gDrugs)[2] = 'DrugName'

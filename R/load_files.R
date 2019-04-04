@@ -2,6 +2,39 @@ library(readxl) # openxlsx skip the first emprty rows and cannot be overridden
 library(readr)
 library(stringr)
 
+
+load_data = function(manifest_file, df_template_files, results_file, log_file) {
+
+    if (is.character(log_file)) {
+        log_file <- file(log_file, open = "wt")
+    }
+
+    if (is.data.frame(df_template_files)) {# for the shiny app
+        template_file = df_template_files$datapath
+        template_filename = df_template_files$name
+    } else {
+        template_filename = template_file
+    }
+
+    manifest = load_manifest(manifest_file, log_file)
+    treatments = load_templates(df_template_files, log_file)
+    data = load_results(results_file, log_file)
+
+    # check the all template files are available
+    if (!all(unique(manifest$Template[manifest$Barcode %in% data$Barcode])
+                    %in% basename(template_filename))) {
+        ErrorMsg = paste('Some template files are missing:',
+                    paste(setdiff(unique(manifest$Template[manifest$Barcode %in% data$Barcode]),
+                                     basename(template_filename)), collapse = ' ; '))
+        writeLines('Error in load_merge_data:', log_file)
+        writeLines(ErrorMsg, log_file)
+        close(log_file)
+        stop(ErrorMsg)
+    }
+    return( list(manifest = manifest, treatments = treatments, data = data) )
+}
+
+
 load_manifest = function (manifest_file, log_file) {
     # manifest_file is a string or a vector of strings
     # log_file is an open file to sink errors and warnings
@@ -30,14 +63,22 @@ load_manifest = function (manifest_file, log_file) {
 }
 
 
-load_templates = function (template_file, log_file) {
+load_templates = function (df_template_files, log_file) {
     # template_file is a string or a vector of strings
     # log_file is an open file to sink errors and warnings
+
+    if (is.data.frame(df_template_files)) {# for the shiny app
+        template_file = df_template_files$datapath
+        template_filename = df_template_files$name
+    } else {
+        template_file = df_template_files
+        template_filename = basename(template_file)
+    }
 
     # read sheets in files
     template_sheets = lapply(template_file, excel_sheets)
     # check Gnumber is present in each df
-    sapply(lapply(1:2, function(x) c(template_file[x], template_sheets[x])),
+    sapply(lapply(1:length(template_file), function(x) c(template_file[x], template_sheets[x])),
         function(x) check_metadata_names(x[[2]], log_file, df_name=x[[1]], df_type='template'))
 
     all_templates = data.frame()
@@ -51,10 +92,10 @@ load_templates = function (template_file, log_file) {
             stopifnot(all(toupper(unlist(df)[!is.na(unlist(df))]) %in% c('UNTREATED', 'VEHICLE')))
         } else {
         # normal case
-            check_metadata_names(template_sheets[[iF]], log_file, df_name=template_file[iF],
+            check_metadata_names(template_sheets[[iF]], log_file,
+                    df_name=template_filename[iF],
                     df_type='template_treatment')
         }
-
         # read the different sheets and check for plate size
         # enforce range to avoid skipping empty rows at the beginning
         df = read_excel(template_file[[iF]], sheet = 'Gnumber',
@@ -68,26 +109,37 @@ load_templates = function (template_file, log_file) {
 
         # need to adapt for 1536 well plates
         df_template = expand.grid(WellRow = LETTERS[1:n_row], WellColumn = 1:n_col)
+
         for (iS in template_sheets[[iF]]) {
-            df = read_excel(template_file[[iF]], sheet = iS,
-                            col_names = paste0('x', 1:n_col), range = plate_range)
+            df = as.data.frame(read_excel(template_file[[iF]], sheet = iS,
+                            col_names = paste0('x', 1:n_col), range = plate_range))
             df$WellRow = LETTERS[1:n_row]
-            df_melted = melt(df, id='WellRow', value.name = iS)
+            df_melted = reshape2::melt(df, id.vars='WellRow')
+            colnames(df_melted)[3] = iS
             colnames(df_melted)[colnames(df_melted) == 'variable'] = 'WellColumn'
             df_melted$WellColumn = gsub('x', '', df_melted$WellColumn)
             df_template = merge(df_template, df_melted, by=c('WellRow', 'WellColumn'))
         }
-        df_template$Template = basename(template_file[[iF]])
+        df_template$Template = template_filename[iF]
         colnames(df_template) = check_metadata_names(colnames(df_template), log_file,
-                            df_name=template_file[iF])
+                            df_name=template_filename[iF])
         all_templates = bind_rows(all_templates, df_template)
+
     }
     return(all_templates)
 }
 
-load_results = function (results_file, log_file) {
+load_results = function(df_results_files, log_file) {
     # results_file is a string or a vector of strings
     # log_file is an open file to sink errors and warnings
+
+    if (is.data.frame(df_results_files)) {# for the shiny app
+        results_file = df_results_files$datapath
+        results_filename = df_results_files$name
+    } else {
+        results_file = df_results_files
+        results_filename = basename(results_file)
+    }
 
     stopifnot(sapply(results_file, file.exists))
 
@@ -154,7 +206,7 @@ load_results = function (results_file, log_file) {
                 # check the structure of file is ok
                 check_values = as.matrix(df[iB+readout_offset+c(0,1, n_row, n_row+1), n_col])
                 if (any(c(is.na(check_values[2:3]), !is.na(check_values[c(1,4)])))) {
-                    ErrorMsg = paste('In result file', results_file[[iF]], '(sheet', iS,
+                    ErrorMsg = paste('In result file', results_filename[[iF]], '(sheet', iS,
                         ') readout values are misplaced for plate', as.character(df[iB+1,3]))
                     writeLines('Error in load_results:', log_file)
                     writeLines(ErrorMsg, log_file)
@@ -166,7 +218,7 @@ load_results = function (results_file, log_file) {
 
                 # check that the plate size is consistent and contains values
                 if (any(is.na(readout))) {
-                    ErrorMsg = paste('In result file', results_file[[iF]], '(sheet', iS,
+                    ErrorMsg = paste('In result file', results_filename[[iF]], '(sheet', iS,
                         ') readout values are missing for plate', as.character(df[iB+1,3]))
                     writeLines('Error in load_results:', log_file)
                     writeLines(ErrorMsg, log_file)
