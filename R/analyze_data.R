@@ -1,13 +1,10 @@
 
 tryCatch( {
-library(gCellGenomics) # best reference for cell line and drug names?
-}, error = function(x) {print('Failed to load gCellGenomics')})
-
-# library(devtools)
-# install_git('https://stash.intranet.roche.com/stash/scm/~hafnerm6/gcsiutils.git',
-    # ref = 'GRimplementation')
-# load_all('~/workspace/Rpackages/gcellgenomics/')
-# load_all('~/workspace/Rpackages/gcsiutils/') # local copy of gcsiutils/GRimplementation
+    library(gCellGenomics) # best reference for cell line and drug names?
+}, error = function(x) {
+    print('Failed to load gCellGenomics --> cell/drug names will be missing')
+    }
+)
 
 library(reshape2)
 library(dplyr)
