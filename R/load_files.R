@@ -3,11 +3,9 @@ library(readr)
 library(stringr)
 
 
-load_data = function(manifest_file, df_template_files, results_file, log_file) {
+load_data = function(manifest_file, df_template_files, results_file, log_str) {
 
-    if (is.character(log_file)) {
-        log_file <- file(log_file, open = "wt")
-    }
+    log_str = c(log_str, '', 'load_merge_data')
 
     if (is.data.frame(df_template_files)) {# for the shiny app
         template_file = df_template_files$datapath
@@ -16,9 +14,9 @@ load_data = function(manifest_file, df_template_files, results_file, log_file) {
         template_filename = template_file
     }
 
-    manifest = load_manifest(manifest_file, log_file)
-    treatments = load_templates(df_template_files, log_file)
-    data = load_results(results_file, log_file)
+    manifest = load_manifest(manifest_file, log_str)
+    treatments = load_templates(df_template_files, log_str)
+    data = load_results(results_file, log_str)
 
     # check the all template files are available
     if (!all(unique(manifest$Template[manifest$Barcode %in% data$Barcode])
@@ -26,18 +24,18 @@ load_data = function(manifest_file, df_template_files, results_file, log_file) {
         ErrorMsg = paste('Some template files are missing:',
                     paste(setdiff(unique(manifest$Template[manifest$Barcode %in% data$Barcode]),
                                      basename(template_filename)), collapse = ' ; '))
-        writeLines('Error in load_merge_data:', log_file)
-        writeLines(ErrorMsg, log_file)
-        close(log_file)
+        log_str = c(log_str, 'Error in load_merge_data:')
+        log_str = c(log_str, ErrorMsg)
         stop(ErrorMsg)
     }
     return( list(manifest = manifest, treatments = treatments, data = data) )
 }
 
 
-load_manifest = function (manifest_file, log_file) {
+load_manifest = function (manifest_file, log_str) {
     # manifest_file is a string or a vector of strings
-    # log_file is an open file to sink errors and warnings
+
+    log_str = c(log_str, '', 'load_manifest')
 
     # read files
     manifest_data = lapply(manifest_file, function(x) {
@@ -57,15 +55,17 @@ load_manifest = function (manifest_file, log_file) {
                     log_file, 'manifest')
     # check that barcodes are unique
     stopifnot(dim(cat_manifest_data)[1] == length(unique(cat_manifest_data$Barcode)))
+    # add error message
+
     cat_manifest_data$Template = basename(cat_manifest_data$Template)
 
     return(cat_manifest_data)
 }
 
 
-load_templates = function (df_template_files, log_file) {
+load_templates = function (df_template_files, log_str) {
     # template_file is a string or a vector of strings
-    # log_file is an open file to sink errors and warnings
+    log_str = c(log_str, '', 'load_templates')
 
     if (is.data.frame(df_template_files)) {# for the shiny app
         template_file = df_template_files$datapath
@@ -129,9 +129,9 @@ load_templates = function (df_template_files, log_file) {
     return(all_templates)
 }
 
-load_results = function(df_results_files, log_file) {
+load_results = function(df_results_files, log_str) {
     # results_file is a string or a vector of strings
-    # log_file is an open file to sink errors and warnings
+    log_str = c(log_str, '', 'load_results')
 
     if (is.data.frame(df_results_files)) {# for the shiny app
         results_file = df_results_files$datapath
@@ -208,9 +208,9 @@ load_results = function(df_results_files, log_file) {
                 if (any(c(is.na(check_values[2:3]), !is.na(check_values[c(1,4)])))) {
                     ErrorMsg = paste('In result file', results_filename[[iF]], '(sheet', iS,
                         ') readout values are misplaced for plate', as.character(df[iB+1,3]))
-                    writeLines('Error in load_results:', log_file)
-                    writeLines(ErrorMsg, log_file)
-                    close(log_file)
+                    log_str = c(log_str, 'Error in load_results:')
+                    log_str = c(log_str, ErrorMsg)
+
                     stop(ErrorMsg)
                 }
 
@@ -220,9 +220,9 @@ load_results = function(df_results_files, log_file) {
                 if (any(is.na(readout))) {
                     ErrorMsg = paste('In result file', results_filename[[iF]], '(sheet', iS,
                         ') readout values are missing for plate', as.character(df[iB+1,3]))
-                    writeLines('Error in load_results:', log_file)
-                    writeLines(ErrorMsg, log_file)
-                    close(log_file)
+                    log_str = c(log_str, 'Error in load_results:')
+                    log_str = c(log_str, ErrorMsg)
+
                     stop(ErrorMsg)
                 }
 
@@ -241,8 +241,9 @@ load_results = function(df_results_files, log_file) {
 }
 
 
-check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) {
+check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
 
+    log_str = c(log_str, '   check_metadata_names')
     # first check for required column names
     if (!is.null(df_type)) {
         if (df_type == 'manifest') {
@@ -261,9 +262,9 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
                 'does not contains all expected headers for a', df_type, '; ',
                 paste(expected_headers[ !(expected_headers %in% col_df) ], collpase = ' ; '),
                 ' required')
-            writeLines('Error in check_metadata_names:', log_file)
-            writeLines(ErrorMsg, log_file)
-            close(log_file)
+            log_str = c(log_str, 'Error in check_metadata_names:')
+            log_str = c(log_str, ErrorMsg)
+
             stop(ErrorMsg)
         }
         if (df_type == 'template_treatment') {
@@ -273,9 +274,9 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
             if (length(n_drug) != length(n_conc)) {
                 ErrorMsg = paste('Treatment template', df_name,
                     'does not contains the same number of Gnumber_* and Concentration_* sheets')
-                writeLines('Error in check_metadata_names:', log_file)
-                writeLines(ErrorMsg, log_file)
-                close(log_file)
+                log_str = c(log_str, 'Error in check_metadata_names:')
+                log_str = c(log_str, ErrorMsg)
+
                 stop(ErrorMsg)
             }
             if (length(n_drug)>1) {
@@ -285,9 +286,9 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
                     ErrorMsg = paste('Treatment template', df_name,
                         'does not contains: ',
                         paste(trt_sheets[!(trt_sheets %in% col_df)], collapse = ' ; '))
-                    writeLines('Error in check_metadata_names:', log_file)
-                    writeLines(ErrorMsg, log_file)
-                    close(log_file)
+                    log_str = c(log_str, 'Error in check_metadata_names:')
+                    log_str = c(log_str, ErrorMsg)
+
                     stop(ErrorMsg)
                 }
             }
@@ -308,8 +309,9 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
         WarnMsg = paste('Metadata field names for', df_name,
             'cannot contain spaces --> corrected to: ',
                 paste(corrected_names[names_spaces], collapse = ' ; '))
-        writeLines('Warning in check_metadata_names:', log_file)
-        writeLines(WarnMsg, log_file)
+        log_str = c(log_str, 'Warning in check_metadata_names:')
+        log_str = c(log_str, WarnMsg)
+
         warning(WarnMsg)
     }
 
@@ -319,9 +321,8 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
         ErrorMsg = paste('Metadata field names for', df_name,
             'cannot contain special characters or start with a number: ',
                 paste(corrected_names[bad_names], collapse = ' ; '))
-        writeLines('Error in check_metadata_names:', log_file)
-        writeLines(ErrorMsg, log_file)
-        close(log_file)
+        log_str = c(log_str, 'Error in check_metadata_names:')
+        log_str = c(log_str, ErrorMsg)
         stop(ErrorMsg)
     }
 
@@ -345,8 +346,8 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
         if (length(fuzzy_match)>0){
             WarnMsg = paste('Header', corrected_names[fuzzy_match], 'in', df_name,
                             'looks similar to', controlled_headers[i], '; Please check for typo')
-            writeLines('Warning in check_metadata_names:', log_file)
-            writeLines(WarnMsg, log_file)
+            log_str = c(log_str, 'Warning in check_metadata_names:')
+            log_str = c(log_str, WarnMsg)
             warning(WarnMsg)
         }
     }
@@ -360,9 +361,8 @@ check_metadata_names = function(col_df, log_file, df_name = '', df_type = NULL) 
         ErrorMsg = paste('Metadata field name: ',
             paste(intersect(ReservedHeaders, corrected_names), collapse = ' ; '),
             ' in', df_name, 'is not valid (reserved for output)')
-        writeLines('Error in check_metadata_names:', log_file)
-        writeLines(ErrorMsg, log_file)
-        close(log_file)
+        log_str = c(log_str, 'Error in check_metadata_names:')
+        log_str = c(log_str, ErrorMsg)
         stop(ErrorMsg)
     }
 
