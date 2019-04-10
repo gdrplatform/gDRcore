@@ -26,10 +26,7 @@ load_data = function(manifest_file, df_template_files, results_file, log_str) {
                                      basename(template_filename)), collapse = ' ; '))
         log_str = c(log_str, 'Error in load_merge_data:')
         log_str = c(log_str, ErrorMsg)
-<<<<<<< HEAD
         writeLines(log_str)
-=======
->>>>>>> 216225916831765fa416672f4113d00fcc4103d0
         stop(ErrorMsg)
     }
     return( list(manifest = manifest, treatments = treatments, data = data) )
@@ -214,11 +211,7 @@ load_results = function(df_results_files, log_str) {
                         ') readout values are misplaced for plate', as.character(df[iB+1,3]))
                     log_str = c(log_str, 'Error in load_results:')
                     log_str = c(log_str, ErrorMsg)
-<<<<<<< HEAD
                     writeLines(log_str)
-=======
-
->>>>>>> 216225916831765fa416672f4113d00fcc4103d0
                     stop(ErrorMsg)
                 }
 
@@ -230,11 +223,7 @@ load_results = function(df_results_files, log_str) {
                         ') readout values are missing for plate', as.character(df[iB+1,3]))
                     log_str = c(log_str, 'Error in load_results:')
                     log_str = c(log_str, ErrorMsg)
-<<<<<<< HEAD
                     writeLines(log_str)
-=======
-
->>>>>>> 216225916831765fa416672f4113d00fcc4103d0
                     stop(ErrorMsg)
                 }
 
@@ -276,11 +265,7 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
                 ' required')
             log_str = c(log_str, 'Error in check_metadata_names:')
             log_str = c(log_str, ErrorMsg)
-<<<<<<< HEAD
             writeLines(log_str)
-=======
-
->>>>>>> 216225916831765fa416672f4113d00fcc4103d0
             stop(ErrorMsg)
         }
         if (df_type == 'template_treatment') {
@@ -292,11 +277,7 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
                     'does not contains the same number of Gnumber_* and Concentration_* sheets')
                 log_str = c(log_str, 'Error in check_metadata_names:')
                 log_str = c(log_str, ErrorMsg)
-<<<<<<< HEAD
                 writeLines(log_str)
-=======
-
->>>>>>> 216225916831765fa416672f4113d00fcc4103d0
                 stop(ErrorMsg)
             }
             if (length(n_drug)>1) {
@@ -308,11 +289,7 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
                         paste(trt_sheets[!(trt_sheets %in% col_df)], collapse = ' ; '))
                     log_str = c(log_str, 'Error in check_metadata_names:')
                     log_str = c(log_str, ErrorMsg)
-<<<<<<< HEAD
                     writeLines(log_str)
-=======
-
->>>>>>> 216225916831765fa416672f4113d00fcc4103d0
                     stop(ErrorMsg)
                 }
             }
@@ -347,10 +324,7 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
                 paste(corrected_names[bad_names], collapse = ' ; '))
         log_str = c(log_str, 'Error in check_metadata_names:')
         log_str = c(log_str, ErrorMsg)
-<<<<<<< HEAD
         writeLines(log_str)
-=======
->>>>>>> 216225916831765fa416672f4113d00fcc4103d0
         stop(ErrorMsg)
     }
 
@@ -391,10 +365,7 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
             ' in', df_name, 'is not valid (reserved for output)')
         log_str = c(log_str, 'Error in check_metadata_names:')
         log_str = c(log_str, ErrorMsg)
-<<<<<<< HEAD
         writeLines(log_str)
-=======
->>>>>>> 216225916831765fa416672f4113d00fcc4103d0
         stop(ErrorMsg)
     }
 
