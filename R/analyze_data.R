@@ -93,7 +93,7 @@ merge_data = function(manifest, treatments, data, log_str) {
     # clean up the metadata
     print(colnames(df_metadata))
     print(dim(df_metadata))
-    cleanedup_metadata = cleanup_metadata(df_metadata, log_file)
+    cleanedup_metadata = cleanup_metadata(df_metadata, log_str)
     print(colnames(cleanedup_metadata))
     print(dim(cleanedup_metadata))
     stopifnot( dim(cleanedup_metadata)[1] == dim(df_metadata)[1] ) # should not happen
