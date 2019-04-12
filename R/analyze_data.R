@@ -255,6 +255,8 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL, key_values
     df_normalized = cbind(df_normalized[, 1:(which(colnames(df_normalized)=='ReadoutValue')-1)],
         df_normalized[, c('GRvalue', 'RelativeViability', 'DivisionTime')],
         df_normalized[, which(colnames(df_normalized)=='ReadoutValue'):(dim(df_normalized)[2]-3)])
+    print('df normalized:')
+    print(head(df_normalized))
 }
 
 
@@ -267,6 +269,8 @@ average_replicates = function(df_normalized, TrtKeys = NULL) {
     df_averaged = aggregate(df_normalized[, c('GRvalue', 'RelativeViability', "CorrectedReadout",
                     "UntrtReadout", "Day0Readout", "DivisionTime", "ReferenceDivisionTime")],
                     by = as.list(df_normalized[,TrtKeys]), FUN = function(x) mean(x, rm.na=T))
+    print('df averaged:')
+    print(head(df_averaged))
     return(df_averaged)
 }
 
