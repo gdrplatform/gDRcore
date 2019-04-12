@@ -13,7 +13,12 @@ Imports:
     reshape2,
     httr,
     XML,
-    plyr
+    plyr,
+    readr,
+    gCellGenomics,
+    dplyr,
+    stringr,
+    readxl
 Suggests:
     gCSIutils
 VignetteBuilder: knitr
