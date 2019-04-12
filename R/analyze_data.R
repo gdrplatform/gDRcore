@@ -277,7 +277,7 @@ average_replicates = function(df_normalized, TrtKeys = NULL) {
     return(df_averaged)
 }
 
-
+#' @export
 calculate_DRmetrics = function(df_averaged, DoseRespKeys = NULL, force = FALSE, cap = FALSE) {
     if (is.null(DoseRespKeys)) { DoseRespKeys = identify_keys(df_averaged)$DoseResp }
     DoseRespKeys = setdiff(DoseRespKeys, 'Concentration')
