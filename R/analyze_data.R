@@ -1,15 +1,7 @@
 
-# tryCatch( {
-require(gCellGenomics) # best reference for cell line and drug names?
-# }, error = function(x) {
-#     print('Failed to load gCellGenomics --> cell/drug names will be missing')
-#     }
-# )
-
+require(gCellGenomics)
 library(reshape2)
 library(dplyr)
-library(readxl) # openxlsx skip the first emprty rows and cannot be overridden
-library(readr)
 
 #########################################
 ### TODO:
@@ -48,6 +40,7 @@ Overall_function = function(manifest_file, template_file, results_file,
             averaged=df_averaged,
             metrics=df_metrics))
 }
+
 
 #' @export
 merge_data = function(manifest, treatments, data, log_str) {
@@ -277,6 +270,8 @@ average_replicates = function(df_normalized, TrtKeys = NULL) {
     return(df_averaged)
 }
 
+
+
 #' @export
 calculate_DRmetrics = function(df_averaged, DoseRespKeys = NULL, force = FALSE, cap = FALSE) {
     if (is.null(DoseRespKeys)) { DoseRespKeys = identify_keys(df_averaged)$DoseResp }
@@ -329,6 +324,8 @@ calculate_DRmetrics = function(df_averaged, DoseRespKeys = NULL, force = FALSE, 
 
     return(df_metrics)
 }
+
+
 
 
 #' @export
@@ -492,7 +489,6 @@ cleanup_metadata = function(df_metadata, log_str) {
         }
         df_metadata[,i] = round(as.numeric(df_metadata[,i]),6) # avoid mismatch due to string truncation
     }
-
 
     return(df_metadata)
 }

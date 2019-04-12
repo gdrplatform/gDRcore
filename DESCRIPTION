@@ -15,11 +15,11 @@ Imports:
     XML,
     plyr,
     readr,
-    gCellGenomics,
     dplyr,
     stringr,
     readxl
 Suggests:
+    gCellGenomics,
     gCSIutils
 VignetteBuilder: knitr
 ByteCompile: TRUE
