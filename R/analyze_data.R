@@ -8,6 +8,8 @@ require(gCellGenomics) # best reference for cell line and drug names?
 
 library(reshape2)
 library(dplyr)
+library(readxl) # openxlsx skip the first emprty rows and cannot be overridden
+library(readr)
 
 #########################################
 ### TODO:
