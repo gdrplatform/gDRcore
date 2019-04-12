@@ -14,6 +14,7 @@ library(dplyr)
 ### Need to put all reserved header names (CLID, DrugName, ...) as global variables
 #########################################
 
+#' @export
 Overall_function = function(manifest_file, template_file, results_file,
                 output_files, selected_keys = NULL, key_values = NULL) {
     # output_files should contain file names for :
@@ -46,6 +47,7 @@ Overall_function = function(manifest_file, template_file, results_file,
             metrics=df_metrics))
 }
 
+#' @export
 merge_data = function(manifest, treatments, data, log_str) {
 
     log_str = c(log_str, '', 'merge_data')
@@ -135,9 +137,7 @@ merge_data = function(manifest, treatments, data, log_str) {
 
 
 
-
-
-
+#' @export
 normalize_data = function(df_raw_data, log_str, selected_keys = NULL, key_values = NULL) {
     # average technical replicates and assign the right controls to each treated well
 
@@ -265,7 +265,7 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL, key_values
 
 
 
-
+#' @export
 average_replicates = function(df_normalized, TrtKeys = NULL) {
     if (is.null(TrtKeys)) { TrtKeys = identify_keys(df_normalized)$Trt }
 
@@ -329,7 +329,7 @@ calculate_DRmetrics = function(df_averaged, DoseRespKeys = NULL, force = FALSE, 
 }
 
 
-
+#' @export
 identify_keys = function(df) {
     # c(paste0('Concentration_', 2:10), paste0('Gnumber_', 2:10), paste0('DrugName_', 2:10)
     keys = list(Trt = setdiff(colnames(df), "Barcode"),
@@ -352,7 +352,7 @@ identify_keys = function(df) {
 
 
 
-
+#' @export
 cleanup_metadata = function(df_metadata, log_str) {
     log_str = c(log_str, '    cleanup_metadata')
     # clean up numberic fields

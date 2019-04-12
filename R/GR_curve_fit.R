@@ -1,9 +1,22 @@
-# library(drc)
 library(reshape2)
 
-# actual fitting function
-# TODO: test properly and match algortihm to GENEDATA
+#' Actual fitting function
+#'
+#' \code{GRlogisticFit} returns fit parameters
+#'
+#' returns fit parameters
+#'
+#' @param log10concs concentrations
+#' @param GRvalues values
+#' @param upper_GR =1 by default
+#' @param force use signifcance or not
+#' @param cap enforce upper_GR
+#' @return vector of values
+#' @examples
+#' sum(1:10)
+#' @export
 GRlogisticFit <- function(log10concs, GRvalues, upper_GR = 1, force = FALSE, cap = FALSE) {
+    # TODO: test properly and match algortihm to GENEDATA
 
     # Implementation of the genedata approach for curve fit: https://screener.genedata.com/documentation/display/DOC15/Business+Rules+for+Dose-Response+Curve+Fitting+Model+Selection+and+Fit+Validity
     #
@@ -104,6 +117,7 @@ GRlogisticFit <- function(log10concs, GRvalues, upper_GR = 1, force = FALSE, cap
 }
 
 # logistic function (not used in the file but useful for plotting externally)
+#' @export
 GRlogistic_4parameters <- function(c, GRinf, GR0, GEC50, h_GR) {
   GRinf + (GR0 - GRinf)/(1 + (c/GEC50)^h_GR)
 }

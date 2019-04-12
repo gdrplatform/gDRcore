@@ -2,7 +2,7 @@ library(readxl) # openxlsx skip the first emprty rows and cannot be overridden
 library(readr)
 library(stringr)
 
-
+#' @export
 load_data = function(manifest_file, df_template_files, results_file, log_str) {
 
     log_str = c(log_str, '', 'load_merge_data')
@@ -32,7 +32,7 @@ load_data = function(manifest_file, df_template_files, results_file, log_str) {
     return( list(manifest = manifest, treatments = treatments, data = data) )
 }
 
-
+#' @export
 load_manifest = function (manifest_file, log_str) {
     # manifest_file is a string or a vector of strings
 
@@ -63,7 +63,7 @@ load_manifest = function (manifest_file, log_str) {
     return(cat_manifest_data)
 }
 
-
+#' @export
 load_templates = function (df_template_files, log_str) {
     # template_file is a string or a vector of strings
     log_str = c(log_str, '', 'load_templates')
@@ -130,6 +130,7 @@ load_templates = function (df_template_files, log_str) {
     return(all_templates)
 }
 
+#' @export
 load_results = function(df_results_files, log_str) {
     # results_file is a string or a vector of strings
     log_str = c(log_str, '', 'load_results')
@@ -241,7 +242,7 @@ load_results = function(df_results_files, log_str) {
     return(all_results)
 }
 
-
+#' @export
 check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
 
     log_str = c(log_str, '   check_metadata_names')
