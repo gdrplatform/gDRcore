@@ -17,9 +17,9 @@ Imports:
     readr,
     dplyr,
     stringr,
+    gCellGenomics,
     readxl
 Suggests:
-    gCellGenomics,
     gCSIutils
 VignetteBuilder: knitr
 ByteCompile: TRUE
