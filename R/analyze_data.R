@@ -257,6 +257,7 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL, key_values
         df_normalized[, which(colnames(df_normalized)=='ReadoutValue'):(dim(df_normalized)[2]-3)])
     print('df normalized:')
     print(head(df_normalized))
+    return(df_normalized)
 }
 
 
