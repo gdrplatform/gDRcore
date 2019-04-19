@@ -1,5 +1,5 @@
 
-require(gCellGenomics)
+library(gCellGenomics)
 library(reshape2)
 library(dplyr)
 
@@ -396,17 +396,17 @@ cleanup_metadata = function(df_metadata, log_str) {
     # check that CLID are in the format 'CL####' and add common name
 
     # -----------------------
-    if ("gCellGenomics" %in% (.packages())) {
+    # if ("gCellGenomics" %in% (.packages())) {
         gCLs = gCellGenomics::getSamples()[,c('clid', 'celllinename', 'tissue', 'doublingtime')]
-    } else {
-        # for debugging
-        print(unique(as.character(df_metadata$CLID)))
-        gCLs = data.frame(CLID = unique(as.character(df_metadata$CLID)))
-        gCLs = gCLs[,c(1,1,1,1)]
-        gCLs = gCLs[!is.na(gCLs[,1]),]
-        gCLs[,4] = NA
-        print(gCLs)
-    }
+    # } else {
+    #     # for debugging
+    #     print(unique(as.character(df_metadata$CLID)))
+    #     gCLs = data.frame(CLID = unique(as.character(df_metadata$CLID)))
+    #     gCLs = gCLs[,c(1,1,1,1)]
+    #     gCLs = gCLs[!is.na(gCLs[,1]),]
+    #     gCLs[,4] = NA
+    #     print(gCLs)
+    # }
     # -----------------------
 
     colnames(gCLs) = c('CLID', 'CellLineName', 'Tissue', 'ReferenceDivisionTime')
@@ -432,16 +432,16 @@ cleanup_metadata = function(df_metadata, log_str) {
         }
     }
     # -----------------------
-    if ("gCellGenomics" %in% (.packages())) {
+    # if ("gCellGenomics" %in% (.packages())) {
         gDrugs = gCellGenomics::getDrugs()[,c('drug', 'gcsi_drug_name')]
-    } else {
-        # for debugging
-        gDrugs = data.frame(drug =
-            unique(as.character(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))),
-            gcsi_drug_name = unique(as.character(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))))
-        gDrugs = gDrugs[!is.na(gDrugs$drug) & !(gDrugs$drug %in% untrt_flag),]
-        print(gDrugs)
-    }
+    # } else {
+    #     # for debugging
+    #     gDrugs = data.frame(drug =
+    #         unique(as.character(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))),
+    #         gcsi_drug_name = unique(as.character(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))))
+    #     gDrugs = gDrugs[!is.na(gDrugs$drug) & !(gDrugs$drug %in% untrt_flag),]
+    #     print(gDrugs)
+    # }
 
     # -----------------------
     gDrugs$drug = substr(gDrugs$drug, 1, 9)
