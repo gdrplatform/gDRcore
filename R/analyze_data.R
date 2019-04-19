@@ -49,6 +49,9 @@ merge_data = function(manifest, treatments, data, log_str) {
 
     # merge manifest and treatment files first
     df_metadata = merge(manifest, treatments, by = 'Template')
+    print('Merging the metadata files:')
+    print(head(df_metadata))
+
     # sort out duplicate metadata columns
     duplicated_col = setdiff(intersect(colnames(manifest), colnames(treatments)), 'Template')
     for (m_col in duplicated_col) {
@@ -397,6 +400,7 @@ cleanup_metadata = function(df_metadata, log_str) {
         gCLs = gCellGenomics::getSamples()[,c('clid', 'celllinename', 'tissue', 'doublingtime')]
     } else {
         # for debugging
+        print(unique(as.character(df_metadata$CLID)))
         gCLs = data.frame(CLID = unique(as.character(df_metadata$CLID)))
         gCLs = gCLs[,c(1,1,1,1)]
         gCLs = gCLs[!is.na(gCLs[,1]),]

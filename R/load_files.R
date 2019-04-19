@@ -62,6 +62,8 @@ load_manifest = function (manifest_file, log_str) {
 
     cat_manifest_data$Template = basename(cat_manifest_data$Template)
 
+    print('Manifest loaded:')
+    print(dim(cat_manifest_data))
     return(cat_manifest_data)
 }
 
@@ -88,6 +90,7 @@ load_templates = function (df_template_files, log_str) {
 
     all_templates = data.frame()
     for (iF in 1:length(template_file)) {
+        print(paste('Loading', template_sheets[[iF]]))
         # first check that the sheet names are ok
         # case of untreated plate
         if (length(template_sheets[[iF]])==1) {
@@ -131,6 +134,8 @@ load_templates = function (df_template_files, log_str) {
         all_templates = bind_rows(all_templates, df_template)
 
     }
+    print('Templates loaded:')
+    print(dim(all_templates))
     return(all_templates)
 }
 
@@ -174,6 +179,7 @@ load_results = function(df_results_files, log_str) {
     all_results = data.frame()
     for (iF in 1:length(results_file)) {
         for (iS in results_sheets[[iF]]) {
+            print(paste('Reading file', results_file[[iF]], '; sheet', iS))
             if (iS == 0) {
                 df = read_tsv(results_file[[iF]], col_names=F, skip_empty_rows=T)
                 # skip_empty_rows flag needs to be TRUE even if it ends up not skipping empty rows
@@ -241,8 +247,11 @@ load_results = function(df_results_files, log_str) {
                     ReadoutValue = as.numeric(as.vector(readout)),
                     BackgroundValue = BackgroundValue
                 )
+                print(paste('Plate', as.character(df[iB+1,3]),
+                        'read;', dim(df_results)[1], 'wells'))
                 all_results = rbind(all_results, df_results)
             }
+            print('File done')
         }
     }
     return(all_results)
