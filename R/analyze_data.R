@@ -1,5 +1,5 @@
 
-library(gCellGenomics)
+require(gCellGenomics)
 library(reshape2)
 library(dplyr)
 
@@ -420,7 +420,9 @@ cleanup_metadata = function(df_metadata, log_str) {
 
         stop(ErrorMsg)
         }
+    print('merge with gCells')
     df_metadata = merge(df_metadata, gCLs, by='CLID', all.x = T)
+    print(dim(df_metadata))
 
     # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
     untrt_flag = c('Vehicle', 'Untreated')
@@ -437,16 +439,15 @@ cleanup_metadata = function(df_metadata, log_str) {
         gDrugs = data.frame(drug =
             unique(as.character(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))),
             gcsi_drug_name = unique(as.character(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))))
-        gDrugs = gDrugs[!is.na(gDrugs$drug) & !(gDrugs$drug %in% c('Vehicle', 'Untreated')),]
+        gDrugs = gDrugs[!is.na(gDrugs$drug) & !(gDrugs$drug %in% untrt_flag),]
         print(gDrugs)
     }
 
     # -----------------------
-    gDrugs[is.na(gDrugs$gcsi_drug_name), ]
     gDrugs$drug = substr(gDrugs$drug, 1, 9)
     colnames(gDrugs)[2] = 'DrugName'
-    gDrugs = rbind(data.frame(drug=untrt_flag, DrugName=untrt_flag),
-                gDrugs)
+    gDrugs = rbind(data.frame(drug=untrt_flag, DrugName=untrt_flag), gDrugs)
+    gDrugs = unique(gDrugs)
     Gnbrs = unique(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))
     bad_Gn = !(Gnbrs %in% gDrugs$drug) & !is.na(Gnbrs)
     if (any(bad_Gn)) {
@@ -469,13 +470,17 @@ cleanup_metadata = function(df_metadata, log_str) {
             stop(ErrorMsg)
         }
     }
+    print('merge with gDrugs for Drug 1')
     df_metadata = merge(df_metadata, gDrugs, by.x='Gnumber', by.y='drug', all.x = T)
+    print(dim(df_metadata))
     # add info for columns Gnumber_*
     for (i in grep('Gnumber_\\d', colnames(df_metadata))) {
         df_metadata[ is.na(df_metadata[,i]), i] = 'Untreated' # set missing values to Untreated
         gDrugs_ = gDrugs
         colnames(gDrugs_)[2] = paste0(colnames(gDrugs_)[2], substr(colnames(df_metadata)[i], 8, 12))
+        print(paste('merge with gDrugs for ', i))
         df_metadata = merge(df_metadata, gDrugs_, by.x=i, by.y='drug', all.x = T)
+        print(dim(df_metadata))
     }
     df_metadata[, colnames(df_metadata)[grepl('DrugName', colnames(df_metadata))] ] =
         droplevels(df_metadata[,colnames(df_metadata)[grepl('DrugName', colnames(df_metadata))]])
