@@ -1,5 +1,5 @@
 
-require(gCellGenomics)
+library(gCellGenomics)
 library(reshape2)
 library(dplyr)
 
