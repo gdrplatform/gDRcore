@@ -1,25 +1,23 @@
-library(gCellGenomics) # best reference for cell line and drug names?
 
-library(devtools)
-# install_git('https://stash.intranet.roche.com/stash/scm/~hafnerm6/gcsiutils.git',
-    # ref = 'GRimplementation')
-load_all('~/workspace/Rpackages/gcsiutils/') # local copy of gcsiutils/GRimplementation
-
-
+library(gCellGenomics)
+library(reshape2)
+library(dplyr)
 
 #########################################
 ### TODO:
 ### Need to put all reserved header names (CLID, DrugName, ...) as global variables
 #########################################
 
+#' @export
 Overall_function = function(manifest_file, template_file, results_file,
                 output_files, selected_keys = NULL, key_values = NULL) {
     # output_files should contain file names for :
     #   log_file, QC_file, raw_result, process_results, metrics_results
 
-    log_file <- file(output_files['log_file'], open = "wt")
+    log_str = 'Report from gDR pipeline'
 
-    df_raw_data = load_merge_data(manifest_file, template_file, results_file, log_file)
+    raw_data = load_data(manifest_file, template_file, results_file, log_str)
+    df_merged_data = merge_data(raw_data$manifest, raw_data$treatments, raw_data$data, log_str)
 
     # output_QC_byPlate(df_raw_data, output_files['QC_file']) # TODO: check column/row bias
 
@@ -28,11 +26,13 @@ Overall_function = function(manifest_file, template_file, results_file,
         Keys[names(selected_keys)] = selected_keys[names(selected_keys)]
     }
 
-    df_normalized = normalize_data(df_raw_data, log_file, Keys, key_values)
+    df_normalized = normalize_data(df_raw_data, log_str, Keys, key_values)
     df_averaged = average_replicates(df_normalized, Keys$Trt)
 
     df_metrics = calculate_DRmetrics(df_averaged, Keys$DoseResp)
 
+    log_file <- file(output_files['log_file'], open = "wt")
+    writeLines(log_str, log_file)
     close(log_file)
 
     return(list(raw=df_raw_data,
@@ -41,31 +41,17 @@ Overall_function = function(manifest_file, template_file, results_file,
             metrics=df_metrics))
 }
 
-load_merge_data = function(manifest_file, template_file, results_file, log_file) {
 
-    if (is.character(log_file)) {
-        log_file <- file(log_file, open = "wt")
-    }
+#' @export
+merge_data = function(manifest, treatments, data, log_str) {
 
-    manifest = load_manifest(manifest_file, log_file)
-    treatments = load_templates(template_file, log_file)
-    data = load_results(results_file, log_file)
-
-    # check the all template files are available
-    if (!all(unique(manifest$Template[manifest$Barcode %in% data$Barcode])
-                    %in% basename(template_file))) {
-        ErrorMsg = paste('Some template files are missing:',
-                    paste(setdiff(unique(manifest$Template[manifest$Barcode %in% data$Barcode]),
-                                     basename(template_file)), collapse = ' ; '))
-        writeLines('Error in load_merge_data:', log_file)
-        writeLines(ErrorMsg, log_file)
-        close(log_file)
-        stop(ErrorMsg)
-    }
-
+    log_str = c(log_str, '', 'merge_data')
 
     # merge manifest and treatment files first
     df_metadata = merge(manifest, treatments, by = 'Template')
+    print('Merging the metadata files:')
+    print(head(df_metadata))
+
     # sort out duplicate metadata columns
     duplicated_col = setdiff(intersect(colnames(manifest), colnames(treatments)), 'Template')
     for (m_col in duplicated_col) {
@@ -83,8 +69,8 @@ load_merge_data = function(manifest_file, template_file, results_file, log_file)
                 WarnMsg = paste('Metadata field', m_col,
                     'found in both the manifest and some templates with inconsistent values;',
                     'values in template supersede the ones in the manifest')
-                writeLines('Warning in load_merge_data:', log_file)
-                writeLines(WarnMsg, log_file)
+                log_str = c(log_str, 'Warning in merge_data:')
+                log_str = c(log_str, WarnMsg)
                 warning(WarnMsg)
             }
         df_metadata[,paste0(m_col,'.x')] = NULL
@@ -99,27 +85,30 @@ load_merge_data = function(manifest_file, template_file, results_file, log_file)
             'does not contains all expected headers: ',
             paste(expected_headers[ !(expected_headers %in% col_df) ], collpase = ' ; '),
             ' required')
-        writeLines('Error in load_merge_data:', log_file)
-        writeLines(ErrorMsg, log_file)
-        close(log_file)
+        log_str = c(log_str, 'Error in merge_data:')
+        log_str = c(log_str, ErrorMsg)
         stop(ErrorMsg)
     }
 
     # clean up the metadata
-    cleanedup_metadata = cleanup_metadata(df_metadata, log_file)
+    print(colnames(df_metadata))
+    print(dim(df_metadata))
+    cleanedup_metadata = cleanup_metadata(df_metadata, log_str)
+    print(colnames(cleanedup_metadata))
+    print(dim(cleanedup_metadata))
     stopifnot( dim(cleanedup_metadata)[1] == dim(df_metadata)[1] ) # should not happen
 
     df_merged = merge(cleanedup_metadata, data, by = c('Barcode', 'WellRow', 'WellColumn'))
     if (dim(df_merged)[1] != dim(data)[1]) {# need to identify issue and output relevant warning
         WarnMsg = 'Not all results have been matched with treatments; merged table is smaller than data table'
-        writeLines('Warning in load_merge_data:', log_file)
-        writeLines(WarnMsg, log_file)
+        log_str = c(log_str, 'Warning in load_merge_data:')
+        log_str = c(log_str, WarnMsg)
         warning(WarnMsg)
     }
     if (dim(df_merged)[1]!=dim(df_metadata)[1]) {#need to identify issue and print relevant warning
         WarnMsg = 'Not all treatments have been matched with results; merged table is smaller than metadata table'
-        writeLines('Warning in load_merge_data:', log_file)
-        writeLines(WarnMsg, log_file)
+        log_str = c(log_str, 'Warning in load_merge_data:')
+        log_str = c(log_str, WarnMsg)
         warning(WarnMsg)
     }
 
@@ -128,7 +117,7 @@ load_merge_data = function(manifest_file, template_file, results_file, log_file)
     WarnMsg = sprintf('%i well loaded, %i discarded for lack of annotation, %i data point selected',
                 dim(data)[1], sum(is.na(df_merged$Gnumber)), dim(df_raw_data)[1])
     print(WarnMsg)
-    writeLines(WarnMsg, log_file)
+    log_str = c(log_str, WarnMsg)
 
     # reorder the columns
     cols = c('CellLineName', 'Tissue', 'DrugName', 'Concentration',
@@ -146,10 +135,8 @@ load_merge_data = function(manifest_file, template_file, results_file, log_file)
 
 
 
-
-
-
-normalize_data = function(df_raw_data, log_file, selected_keys = NULL, key_values = NULL) {
+#' @export
+normalize_data = function(df_raw_data, log_str, selected_keys = NULL, key_values = NULL) {
     # average technical replicates and assign the right controls to each treated well
 
     # remove unused columns but keep barcodes to normalize by plate
@@ -167,7 +154,7 @@ normalize_data = function(df_raw_data, log_file, selected_keys = NULL, key_value
     # enforced key values for end points (override selected_keys)
     Keys$Endpoint = setdiff(Keys$Endpoint, names(key_values))
     endpoint_value_filter = array(TRUE, dim(df_raw_data)[1])
-    if (!is.null(key_values)) {
+    if (!is.null(key_values) & length(key_values)>0) {
         for (i in 1:length(key_values)) {
             if (is.numeric(key_values[i])) {
                 endpoint_value_filter = endpoint_value_filter &
@@ -197,8 +184,8 @@ normalize_data = function(df_raw_data, log_file, selected_keys = NULL, key_value
         WarnMsg = paste('Not all control conditions found on the day 0 plate,',
             'dispatching values for field: ',
             paste(setdiff(Keys$Endpoint, Keys$Day0), collapse = ' ; '))
-        writeLines('Warning in normalize_data:', log_file)
-        writeLines(WarnMsg, log_file)
+        log_str = c(log_str, 'Warning in normalize_data:')
+        log_str = c(log_str, WarnMsg)
         warning(WarnMsg)
     }
     # identify missing values in the Day0 that needs to be matched (usually for co-treatments)
@@ -225,8 +212,8 @@ normalize_data = function(df_raw_data, log_file, selected_keys = NULL, key_value
                     paste(WarnMsg,'dispatching values for mismatches in field: ',
                     paste(unique(dispatched), collapse = ' ; ')),
                     paste(WarnMsg,'some Day0 are not being matched'))
-        writeLines('Warning in normalize_data:', log_file)
-        writeLines(WarnMsg, log_file)
+        log_str = c(log_str, 'Warning in normalize_data:')
+        log_str = c(log_str, WarnMsg)
         warning(WarnMsg)
     }
 
@@ -257,8 +244,8 @@ normalize_data = function(df_raw_data, log_file, selected_keys = NULL, key_value
             paste(WarnMsg, '; filtering', sum(filtered & InferedIdx),
                 'conditions because of too short assay:',
                 paste(unique(df_normalized$CellLineName[filtered & InferedIdx]), collpase=' ; ')))
-        writeLines('Warning in normalize_data:', log_file)
-        writeLines(WarnMsg, log_file)
+        log_str = c(log_str, 'Warning in normalize_data:')
+        log_str = c(log_str, WarnMsg)
         warning(WarnMsg)
         InferedIdx = !filtered & InferedIdx
         # calculate GR values using formula from https://www.nature.com/articles/nbt.3882
@@ -271,25 +258,33 @@ normalize_data = function(df_raw_data, log_file, selected_keys = NULL, key_value
     df_normalized = cbind(df_normalized[, 1:(which(colnames(df_normalized)=='ReadoutValue')-1)],
         df_normalized[, c('GRvalue', 'RelativeViability', 'DivisionTime')],
         df_normalized[, which(colnames(df_normalized)=='ReadoutValue'):(dim(df_normalized)[2]-3)])
+    print('df normalized:')
+    print(head(df_normalized))
+    return(df_normalized)
 }
 
 
 
 
-
+#' @export
 average_replicates = function(df_normalized, TrtKeys = NULL) {
     if (is.null(TrtKeys)) { TrtKeys = identify_keys(df_normalized)$Trt }
 
     df_averaged = aggregate(df_normalized[, c('GRvalue', 'RelativeViability', "CorrectedReadout",
                     "UntrtReadout", "Day0Readout", "DivisionTime", "ReferenceDivisionTime")],
                     by = as.list(df_normalized[,TrtKeys]), FUN = function(x) mean(x, rm.na=T))
+    print('df averaged:')
+    print(head(df_averaged))
     return(df_averaged)
 }
 
 
+
+#' @export
 calculate_DRmetrics = function(df_averaged, DoseRespKeys = NULL, force = FALSE, cap = FALSE) {
     if (is.null(DoseRespKeys)) { DoseRespKeys = identify_keys(df_averaged)$DoseResp }
     DoseRespKeys = setdiff(DoseRespKeys, 'Concentration')
+    DoseRespKeys = intersect(DoseRespKeys, colnames(df_averaged))
 
     df_GR = df_averaged # may be worthwhile to use consistent variable names at some point
 
@@ -340,6 +335,8 @@ calculate_DRmetrics = function(df_averaged, DoseRespKeys = NULL, force = FALSE, 
 
 
 
+
+#' @export
 identify_keys = function(df) {
     # c(paste0('Concentration_', 2:10), paste0('Gnumber_', 2:10), paste0('DrugName_', 2:10)
     keys = list(Trt = setdiff(colnames(df), "Barcode"),
@@ -362,9 +359,9 @@ identify_keys = function(df) {
 
 
 
-
-cleanup_metadata = function(df_metadata, log_file) {
-
+#' @export
+cleanup_metadata = function(df_metadata, log_str) {
+    log_str = c(log_str, '    cleanup_metadata')
     # clean up numberic fields
     df_metadata$Time = round(as.numeric(df_metadata$Time),6)
     # identify potential numeric fields and replace NA by 0 - convert strings in factors
@@ -381,35 +378,51 @@ cleanup_metadata = function(df_metadata, log_file) {
                 df_metadata[,c] = factor(df_metadata[,c])
                 WarnMsg = paste('Metadata field ', colnames(df_metadata)[c],
                                     ' converted to factors')
-                writeLines('Warning in cleanup_metadata:', log_file)
-                writeLines(WarnMsg, log_file)
+                log_str = c(log_str, 'Warning in cleanup_metadata:')
+                log_str = c(log_str, WarnMsg)
                 warning(WarnMsg)
             } else {
                 is.na(df_metadata[,c]) = 0
                 df_metadata[,c] = as.numeric(df_metadata[,c])
                 WarnMsg = paste('Metadata field ', colnames(df_metadata)[c],
                                     ' converted to numeric values')
-                writeLines('Warning in cleanup_metadata:', log_file)
-                writeLines(WarnMsg, log_file)
+                log_str = c(log_str, 'Warning in cleanup_metadata:')
+                log_str = c(log_str, WarnMsg)
                 warning(WarnMsg)
             }
         }
     }
 
     # check that CLID are in the format 'CL####' and add common name
-    gCLs = gCellGenomics::getSamples()[,c('clid', 'celllinename', 'tissue', 'doublingtime')]
+
+    # -----------------------
+    # if ("gCellGenomics" %in% (.packages())) {
+        gCLs = gCellGenomics::getSamples()[,c('clid', 'celllinename', 'tissue', 'doublingtime')]
+    # } else {
+    #     # for debugging
+    #     print(unique(as.character(df_metadata$CLID)))
+    #     gCLs = data.frame(CLID = unique(as.character(df_metadata$CLID)))
+    #     gCLs = gCLs[,c(1,1,1,1)]
+    #     gCLs = gCLs[!is.na(gCLs[,1]),]
+    #     gCLs[,4] = NA
+    #     print(gCLs)
+    # }
+    # -----------------------
+
     colnames(gCLs) = c('CLID', 'CellLineName', 'Tissue', 'ReferenceDivisionTime')
     CLIDs = unique(df_metadata$CLID)
     bad_CL = !(CLIDs %in% gCLs$CLID)
     if (any(bad_CL)) {
         ErrorMsg = paste('Cell line ID ', paste(CLIDs[bad_CL], collapse = ' ; '),
             ' not found in gCSI database')
-        writeLines('Error in load_all_data:', log_file)
-        writeLines(ErrorMsg, log_file)
-        close(log_file)
+        log_str = c(log_str, 'Error in cleanup_metadata:')
+        log_str = c(log_str, ErrorMsg)
+
         stop(ErrorMsg)
         }
+    print('merge with gCells')
     df_metadata = merge(df_metadata, gCLs, by='CLID', all.x = T)
+    print(dim(df_metadata))
 
     # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
     untrt_flag = c('Vehicle', 'Untreated')
@@ -418,12 +431,23 @@ cleanup_metadata = function(df_metadata, log_file) {
             df_metadata[grep(w, df_metadata[,i], ignore.case = T),i] = w
         }
     }
-    gDrugs = gCellGenomics::getDrugs()[,c('drug', 'gcsi_drug_name')]
-    gDrugs[is.na(gDrugs$gcsi_drug_name), ]
+    # -----------------------
+    # if ("gCellGenomics" %in% (.packages())) {
+        gDrugs = gCellGenomics::getDrugs()[,c('drug', 'gcsi_drug_name')]
+    # } else {
+    #     # for debugging
+    #     gDrugs = data.frame(drug =
+    #         unique(as.character(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))),
+    #         gcsi_drug_name = unique(as.character(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))))
+    #     gDrugs = gDrugs[!is.na(gDrugs$drug) & !(gDrugs$drug %in% untrt_flag),]
+    #     print(gDrugs)
+    # }
+
+    # -----------------------
     gDrugs$drug = substr(gDrugs$drug, 1, 9)
     colnames(gDrugs)[2] = 'DrugName'
-    gDrugs = rbind(data.frame(drug=untrt_flag, DrugName=untrt_flag),
-                gDrugs)
+    gDrugs = rbind(data.frame(drug=untrt_flag, DrugName=untrt_flag), gDrugs)
+    gDrugs = unique(gDrugs)
     Gnbrs = unique(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))
     bad_Gn = !(Gnbrs %in% gDrugs$drug) & !is.na(Gnbrs)
     if (any(bad_Gn)) {
@@ -434,25 +458,29 @@ cleanup_metadata = function(df_metadata, log_file) {
                 ' not found in gCSI database; use G# as DrugName')
             gDrugs = rbind(gDrugs, data.frame(drug=Gnbrs[ok_Gn & bad_Gn],
                     DrugName=Gnbrs[ok_Gn & bad_Gn]))
-            writeLines('Warning in cleanup_metadata:', log_file)
-            writeLines(WarnMsg, log_file)
+            log_str = c(log_str, 'Warning in cleanup_metadata:')
+            log_str = c(log_str, WarnMsg)
             warning(WarnMsg)
         } else {
             ErrorMsg = paste('Drug ', paste(Gnbrs[!ok_Gn], collapse = ' ; '),
                 ' not found in gCSI database')
-            writeLines('Error in cleanup_metadata:', log_file)
-            writeLines(ErrorMsg, log_file)
-            close(log_file)
+            log_str = c(log_str, 'Error in cleanup_metadata:')
+            log_str = c(log_str, ErrorMsg)
+
             stop(ErrorMsg)
         }
     }
+    print('merge with gDrugs for Drug 1')
     df_metadata = merge(df_metadata, gDrugs, by.x='Gnumber', by.y='drug', all.x = T)
+    print(dim(df_metadata))
     # add info for columns Gnumber_*
     for (i in grep('Gnumber_\\d', colnames(df_metadata))) {
         df_metadata[ is.na(df_metadata[,i]), i] = 'Untreated' # set missing values to Untreated
         gDrugs_ = gDrugs
         colnames(gDrugs_)[2] = paste0(colnames(gDrugs_)[2], substr(colnames(df_metadata)[i], 8, 12))
+        print(paste('merge with gDrugs for ', i))
         df_metadata = merge(df_metadata, gDrugs_, by.x=i, by.y='drug', all.x = T)
+        print(dim(df_metadata))
     }
     df_metadata[, colnames(df_metadata)[grepl('DrugName', colnames(df_metadata))] ] =
         droplevels(df_metadata[,colnames(df_metadata)[grepl('DrugName', colnames(df_metadata))]])
@@ -469,13 +497,12 @@ cleanup_metadata = function(df_metadata, log_file) {
         if (length(Gnum_0)>0) {
             WarnMsg = paste('Some concentration for ', G_col,
                             ' are 0: ', paste(Gnum_0, collapse = ' ; '))
-            writeLines('Warning in cleanup_metadata:', log_file)
-            writeLines(WarnMsg, log_file)
+            log_str = c(log_str, 'Warning in cleanup_metadata:')
+            log_str = c(log_str, WarnMsg)
             warning(WarnMsg)
         }
         df_metadata[,i] = round(as.numeric(df_metadata[,i]),6) # avoid mismatch due to string truncation
     }
-
 
     return(df_metadata)
 }

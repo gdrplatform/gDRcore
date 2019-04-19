@@ -13,12 +13,17 @@ Imports:
     reshape2,
     httr,
     XML,
-    plyr
+    plyr,
+    readr,
+    dplyr,
+    stringr,
+    gCellGenomics,
+    readxl
 Suggests:
     gCSIutils
 VignetteBuilder: knitr
 ByteCompile: TRUE
-RoxygenNote: 6.0.1.9000
-SwitchrLibrary: GdsCmtMaker
-DeploySubPath: GdsCmtMaker
+RoxygenNote: 6.1.1
+SwitchrLibrary: gDR
+DeploySubPath: gDR
 Encoding: UTF-8
