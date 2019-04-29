@@ -183,6 +183,9 @@ load_results = function(df_results_files, log_str) {
             if (iS == 0) {
                 df = read_tsv(results_file[[iF]], col_names=F, skip_empty_rows=T)
                 # skip_empty_rows flag needs to be TRUE even if it ends up not skipping empty rows
+                if (dim(df)[2] == 1) { # likely a csv file
+                    df = read_csv(results_file[[iF]], col_names=F, skip_empty_rows=T)
+                }
             } else { # expect an Excel spreadsheet
                 if (length(results_sheets[[iF]])>1) {# if multiple sheets, assume 1 plate per sheet
                     df = read_excel(results_file[[iF]], sheet = iS, #col_names = F,
@@ -195,7 +198,11 @@ load_results = function(df_results_files, log_str) {
                                         # limit to first 48 rows in case Protocol information is
                                         # exported which generate craps at the end of the file
             }
-            df = df[!apply(df,1,function(x) all(is.na(x))), ] # remove extra rows
+            full_rows = !apply(df,1,function(x) all(is.na(x))) # not empty rows
+            # if big gap, delete what is at the bottom (Protocol information)
+            gaps = which(full_rows)[ (diff(which(full_rows))>20) ]+1
+            df = df[ which(full_rows)[which(full_rows) <= gaps], ] # remove extra rows
+            df = df[ , !apply(df,2,function(x) all(is.na(x)))] # remove empty columns
             # get the plate size
             n_col = 1.5*2**ceiling(log2(dim(df)[2]/1.5))
             n_row = n_col/1.5
