@@ -200,7 +200,7 @@ load_results = function(df_results_files, log_str) {
             }
             full_rows = !apply(df,1,function(x) all(is.na(x))) # not empty rows
             # if big gap, delete what is at the bottom (Protocol information)
-            gaps = which(full_rows)[ (diff(which(full_rows))>20) ]+1
+            gaps = min(which(full_rows)[ (diff(which(full_rows))>20) ]+1, dim(df)[1])
             df = df[ which(full_rows)[which(full_rows) <= gaps], ] # remove extra rows
             df = df[ , !apply(df,2,function(x) all(is.na(x)))] # remove empty columns
             # get the plate size
