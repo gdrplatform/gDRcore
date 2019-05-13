@@ -282,7 +282,7 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
                 expected_headers = c('Gnumber', 'Concentration')
         }
 
-        headersOK = expected_headers %in% col_df
+        headersOK = toupper(expected_headers) %in% toupper(col_df)
         if (any(!headersOK)) {
             ErrorMsg = paste(df_name,
                 'does not contains all expected headers for a', df_type, '; ',
@@ -295,8 +295,8 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
         }
         if (df_type == 'template_treatment') {
             # assess if multiple drugs and proper pairing
-            n_drug = agrep('Gnumber', col_df)
-            n_conc = agrep('Concentration', col_df)
+            n_drug = agrep('Gnumber', col_df, ignore.case = T)
+            n_conc = agrep('Concentration', col_df, ignore.case = T)
             if (length(n_drug) != length(n_conc)) {
                 ErrorMsg = paste('Treatment template', df_name,
                     'does not contains the same number of Gnumber_* and Concentration_* sheets')
@@ -355,7 +355,7 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
 
     # common headers that are written in a specific way
     # throw warning if close match and correct upper/lower case for consistency
-    controlled_headers = c('CLID', 'Media', 'Ligand')
+    controlled_headers = c('CLID', 'Media', 'Ligand', 'Gnumber', 'Concentration')
     for (i in 1:length(controlled_headers)) {
         case_match = setdiff(grep(controlled_headers[i], corrected_names, ignore.case = T),
                                 grep(controlled_headers[i], corrected_names))

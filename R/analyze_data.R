@@ -1,5 +1,5 @@
 
-library(gCellGenomics)
+library(gneDB)
 library(reshape2)
 library(dplyr)
 
@@ -397,7 +397,8 @@ cleanup_metadata = function(df_metadata, log_str) {
 
     # -----------------------
     # if ("gCellGenomics" %in% (.packages())) {
-        gCLs = gCellGenomics::getSamples()[,c('clid', 'celllinename', 'tissue', 'doublingtime')]
+        gCLs = gneDB::annotateCLIDs(unique(df_metadata$CLID))[,
+            c('clid', 'celllinename', 'primarytissue', 'doublingtime')]
     # } else {
     #     # for debugging
     #     print(unique(as.character(df_metadata$CLID)))
