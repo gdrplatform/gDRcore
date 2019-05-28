@@ -92,12 +92,28 @@ load_templates = function (df_template_files, log_str) {
     for (iF in 1:length(template_file)) {
         print(paste('Loading', template_sheets[[iF]]))
         # first check that the sheet names are ok
+        # identify Gnumber sheet (case insensitive)
+        Gnumber_idx = grep('Gnumber$', template_sheets[[iF]], ignore.case = T)
         # case of untreated plate
         if (length(template_sheets[[iF]])==1) {
-            stopifnot(template_sheets[[iF]] == 'Gnumber')
-            df = read_excel(template_file[[iF]], sheet = 'Gnumber',
+            if(length(Gnumber_idx)==0 || Gnumber_idx!=1) {
+                ErrorMsg = paste('In untreated template file', template_file[[iF]],
+                    ', sheet name must be Gnumber')
+                log_str = c(log_str, 'Error in load_templates:')
+                log_str = c(log_str, ErrorMsg)
+                writeLines(log_str)
+                stop(ErrorMsg)
+            }
+            df = read_excel(template_file[[iF]], sheet = template_sheets[[iF]][1],
                     col_names = paste0('x', 1:48), range = 'A1:AV32')
-            stopifnot(all(toupper(unlist(df)[!is.na(unlist(df))]) %in% c('UNTREATED', 'VEHICLE')))
+            if ( !(all(toupper(unlist(df)[!is.na(unlist(df))]) %in% c('UNTREATED', 'VEHICLE')))) {
+                    ErrorMsg = paste('In untreated template file', template_file[[iF]],
+                        ', entries mush be Vehicle or Untreated')
+                    log_str = c(log_str, 'Error in load_templates:')
+                    log_str = c(log_str, ErrorMsg)
+                    writeLines(log_str)
+                    stop(ErrorMsg)
+            }
         } else {
         # normal case
             check_metadata_names(template_sheets[[iF]], log_str,
@@ -106,7 +122,7 @@ load_templates = function (df_template_files, log_str) {
         }
         # read the different sheets and check for plate size
         # enforce range to avoid skipping empty rows at the beginning
-        df = read_excel(template_file[[iF]], sheet = 'Gnumber',
+        df = read_excel(template_file[[iF]], sheet = template_sheets[[iF]][Gnumber_idx],
                 col_names = paste0('x', 1:48), range = 'A1:AV32', col_types="text")
         # get the plate size
         n_row = 2**ceiling(log2(max(which(apply(!is.na(df), 1, any)))))
@@ -308,10 +324,11 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
             if (length(n_drug)>1) {
                 trt_sheets = c(paste0('Gnumber_', 2:length(n_drug)),
                     paste0('Concentration_', 2:length(n_conc)))
-                if (!(all(trt_sheets %in% col_df))) {
+                if (!(all(toupper(trt_sheets) %in% toupper(col_df)))) {
                     ErrorMsg = paste('Treatment template', df_name,
                         'does not contains: ',
-                        paste(trt_sheets[!(trt_sheets %in% col_df)], collapse = ' ; '))
+                        paste(trt_sheets[!(toupper(trt_sheets) %in% toupper(col_df))],
+                            collapse = ' ; '))
                     log_str = c(log_str, 'Error in check_metadata_names:')
                     log_str = c(log_str, ErrorMsg)
                     writeLines(log_str)
@@ -355,10 +372,12 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
 
     # common headers that are written in a specific way
     # throw warning if close match and correct upper/lower case for consistency
-    controlled_headers = c('CLID', 'Media', 'Ligand', 'Gnumber', 'Concentration')
+    controlled_headers = c('CLID', 'Media', 'Ligand', 'Gnumber', 'Concentration',
+                paste0('Gnumber_', 2:10), paste0('Concentration_', 2:10))
     for (i in 1:length(controlled_headers)) {
-        case_match = setdiff(grep(controlled_headers[i], corrected_names, ignore.case = T),
-                                grep(controlled_headers[i], corrected_names))
+        case_match = setdiff(
+            grep(paste0(controlled_headers[i],'$'), corrected_names, ignore.case = T),
+                        grep(paste0(controlled_headers[i],'$'), corrected_names))
         if (length(case_match)>0){
             WarnMsg = paste('Header', corrected_names[case_match], 'in', df_name,
                                     'corrected to', controlled_headers[i])
@@ -368,15 +387,16 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
             warning(WarnMsg)
         }
 
-        fuzzy_match = setdiff(agrep(controlled_headers[i], corrected_names),
-                                grep(controlled_headers[i], corrected_names))
-        if (length(fuzzy_match)>0){
-            WarnMsg = paste('Header', corrected_names[fuzzy_match], 'in', df_name,
-                            'looks similar to', controlled_headers[i], '; Please check for typo')
-            log_str = c(log_str, 'Warning in check_metadata_names:')
-            log_str = c(log_str, WarnMsg)
-            warning(WarnMsg)
-        }
+        # more noise than actually useful
+        # fuzzy_match = setdiff(agrep(controlled_headers[i], corrected_names),
+        #                         grep(controlled_headers[i], corrected_names))
+        # if (length(fuzzy_match)>0){
+        #     WarnMsg = paste('Header', corrected_names[fuzzy_match], 'in', df_name,
+        #                     'looks similar to', controlled_headers[i], '; Please check for typo')
+        #     log_str = c(log_str, 'Warning in check_metadata_names:')
+        #     log_str = c(log_str, WarnMsg)
+        #     warning(WarnMsg)
+        # }
     }
 
     # check for headers that are reserved for downstream analyses
