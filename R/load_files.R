@@ -372,7 +372,7 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
 
     # common headers that are written in a specific way
     # throw warning if close match and correct upper/lower case for consistency
-    controlled_headers = c('CLID', 'Media', 'Ligand', 'Gnumber', 'Concentration',
+    controlled_headers=c('CLID', 'Time', 'Barcode', 'Template', 'Gnumber', 'Concentration',
                 paste0('Gnumber_', 2:10), paste0('Concentration_', 2:10))
     for (i in 1:length(controlled_headers)) {
         case_match = setdiff(
