@@ -1,7 +1,7 @@
 
-library(gneDB)
-library(reshape2)
-library(dplyr)
+#' @import gneDB
+#' @import reshape2
+#' @import dplyr
 
 #########################################
 ### TODO:
@@ -357,9 +357,9 @@ identify_keys = function(df) {
 }
 
 
-
-
 #' @export
+#' @importFrom gneDB annotateCLIDs
+#' @importFrom gCellGenomics getDrugs
 cleanup_metadata = function(df_metadata, log_str) {
     log_str = c(log_str, '    cleanup_metadata')
     # clean up numberic fields
