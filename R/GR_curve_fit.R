@@ -1,4 +1,3 @@
-library(reshape2)
 
 #' Actual fitting function
 #'
@@ -6,6 +5,7 @@ library(reshape2)
 #'
 #' returns fit parameters
 #'
+#' @import reshape2
 #' @param log10concs concentrations
 #' @param GRvalues values
 #' @param upper_GR =1 by default
