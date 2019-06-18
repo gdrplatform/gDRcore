@@ -23,7 +23,9 @@ Imports:
     gCellGenomics
 Suggests:
     gCSIutils,
-    knitr
+    knitr,
+    readr,
+    yaml
 VignetteBuilder: knitr
 ByteCompile: TRUE
 RoxygenNote: 6.1.1
