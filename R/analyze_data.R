@@ -330,7 +330,7 @@ calculate_DRmetrics = function(df_averaged, DoseRespKeys = NULL, force = FALSE, 
         df_metrics[i, metrics] = GRlogisticFit(log10concs, GRvalues, upper_GR = ref_GR)[metrics]
     }
 
-    return(df_metrics)
+    return(df_metrics %>% dplyr::arrange_at(DoseRespKeys))
 }
 
 
