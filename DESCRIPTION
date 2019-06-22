@@ -1,7 +1,7 @@
 Package: gDR
 Type: Package
 Title: Utility functions and interface to calculate drug dose-response data and calculate GR values
-Version: 0.0.1
+Version: 0.0.5
 Date: 2018-12-21
 Author: Marc Hafner
 Maintainer: Marc Hafner <hafner.marc@gene.com>
@@ -18,9 +18,14 @@ Imports:
     dplyr,
     stringr,
     gneDB,
-    readxl
+    readxl,
+    drc,
+    gCellGenomics
 Suggests:
-    gCSIutils
+    gCSIutils,
+    knitr,
+    readr,
+    yaml
 VignetteBuilder: knitr
 ByteCompile: TRUE
 RoxygenNote: 6.1.1

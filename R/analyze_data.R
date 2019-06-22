@@ -1,7 +1,7 @@
 
-library(gneDB)
-library(reshape2)
-library(dplyr)
+#' @import gneDB
+#' @import reshape2
+#' @import dplyr
 
 #########################################
 ### TODO:
@@ -279,62 +279,83 @@ average_replicates = function(df_normalized, TrtKeys = NULL) {
 }
 
 
-
+#' @importFrom dplyr arrange_at group_by_at left_join summarise
 #' @export
-calculate_DRmetrics = function(df_averaged, DoseRespKeys = NULL, force = FALSE, cap = FALSE) {
-    if (is.null(DoseRespKeys)) { DoseRespKeys = identify_keys(df_averaged)$DoseResp }
+calculate_DRmetrics <-
+  function(df_averaged,
+           DoseRespKeys = NULL,
+           studyGRvalueThresh = 4) {
+    if (is.null(DoseRespKeys)) {
+      DoseRespKeys = identify_keys(df_averaged)$DoseResp
+    }
     DoseRespKeys = setdiff(DoseRespKeys, 'Concentration')
     DoseRespKeys = intersect(DoseRespKeys, colnames(df_averaged))
-
-    df_GR = df_averaged # may be worthwhile to use consistent variable names at some point
-
-    # colnames(df_GR)[colnames(df_GR) %in% 'GRvalue'] = 'GR'
-    # colnames(df_GR)[colnames(df_GR) %in% 'Concentration'] = 'concentration'
-    # df_metrics = calculate_GRmetrics(df_GR, meta_variables = DoseRespKeys, force=force, cap=cap)
-
-    # copied from  calculate_GRmetrics
+    
+    #TODO: may be worthwhile to use consistent variable names at some point
+    df_GR = df_averaged
     df_GR$log10Concentration = log10(df_GR$Concentration)
-    df_metrics = unique(df_GR[!(df_GR$DrugName %in% c('Vehicle', 'Untreated')), DoseRespKeys])
-    # handling cases where DrugName = Vehicle/Untrt --> these are reference for other conditions
-    df_0 = unique(df_GR[df_GR$DrugName %in% c('Vehicle', 'Untreated'), c(DoseRespKeys, 'GRvalue')])
-
-    print(paste('Metadata variables for dose response curves:',
-                paste(setdiff(DoseRespKeys, c('Gnumber', 'CLID', paste('Gnumber_', 2:10))),
-                    collapse = ' '), '(', dim(df_metrics)[1], 'groups)'))
-
+    
+    metrics = names(GRlogisticFit(c(-7, -6, -5, -4), c(1, .9, .8, .7))) # dummy call to get variable names
+    
+    #define set of key for merging control and study data
+    mergeKeys <- setdiff(DoseRespKeys, c('Gnumber', 'DrugName'))
+    
+    #get avereage GRvalue ('GRvalue0') for control data
+    controlSets <-
+      df_GR %>% filter(DrugName %in% c('Vehicle', 'Untreated')) %>%
+      dplyr::group_by_at(mergeKeys) %>% dplyr::summarise(GRvalue0 = mean(GRvalue))
+    
+    #get study data
+    studySets <-
+      df_GR %>% filter(!DrugName %in% c('Vehicle', 'Untreated'))
+    
+    #join study and control data
+    # i.e. get  reference (average control) GRvalue ('GRvalue0') for study data
+    fSets <-
+      dplyr::left_join(studySets, controlSets, by = mergeKeys)
+    # for study sets with no reference GRvalue, assing GRValue0 to 1
+    fSets[is.na(fSets$GRvalue0), "GRvalue0"] <- 1
+    
+    #group study data by 'DoseRespKeys'
+    gSets <- fSets %>% dplyr::group_by_at(DoseRespKeys) %>% group_split()
+    
+    print(paste(
+      'Metadata variables for dose response curves:',
+      paste(setdiff(
+        DoseRespKeys, c('Gnumber', 'CLID', paste('Gnumber_', 2:10))
+      ),
+      collapse = ' '),
+      '(',
+      length(gSets),
+      'groups )'
+    ))
+    
     ### ################
     ### TODO:
     ### Need to implement the metric calculation for IC50/AAC --> copy from GeneData?
     ### ################
-
-    metrics = names(GRlogisticFit(c(-7,-6,-5,-4),c(1,.9,.8,.7))) # dummy call to get variable names
-    df_metrics = cbind(df_metrics, as.data.frame(matrix(NA, dim(df_metrics)[1], length(metrics))))
-    colnames(df_metrics) = c(DoseRespKeys, metrics)
-    # loop through all conditions
-    for (i in 1:dim(df_metrics)[1]) {
-        sub_meta = !is.na(df_metrics[i,DoseRespKeys])
-        idx = sapply(1:dim(df_GR)[1], function(x) all(df_GR[x,DoseRespKeys[sub_meta]] ==
-                                                df_metrics[i,DoseRespKeys[sub_meta]]))
-        log10concs = df_GR$log10Concentration[idx]
-        GRvalues = df_GR$GRvalue[idx]
-
-        # test if upper limit may not be 1 based on Vehicle/Untrt data
-        if (dim(df_0)[1]>0) {
-            ref0_meta = setdiff(DoseRespKeys[sub_meta], c('Gnumber', 'DrugName'))
-            idx0 = sapply(1:dim(df_0)[1], function(x) all(df_0[x,ref0_meta] ==
-                                                df_metrics[i,ref0_meta]))
-            ref_GR = ifelse(any(idx0), mean(df_0$GRvalue[idx0]), 1)
-        } else { ref_GR = 1 }
-
-        if (sum(!is.na(GRvalues))<4) next
-        df_metrics[i, metrics] = GRlogisticFit(log10concs, GRvalues, upper_GR = ref_GR)[metrics]
-    }
-
-    return(df_metrics)
-}
-
-
-
+    
+    #iterate over study groups
+    resL <- lapply(1:length(gSets), function(x) {
+      # the 'DoseRespKeys' columns in given grup are identical for each entry
+      # let's get the first record then
+      repCols <- as.vector(gSets[[x]][1, DoseRespKeys])
+      #get selected columns ('metrics') from GRlogisticFit output
+      # (if at least 4 records with non-NA GRvalue)
+      if (sum(!is.na(gSets[[x]]$GRvalue)) >= studyGRvalueThresh) {
+        grLogCols <-
+          GRlogisticFit(gSets[[x]]$log10Concentration,
+                        gSets[[x]]$GRvalue,
+                        upper_GR = gSets[[x]]$GRvalue0[1])[metrics]
+      } else {
+        grLogCols <- rep(NA, length(metrics))
+      }
+      cbind(repCols, t(grLogCols))
+    })
+    #return final data.frame
+    resDf <- do.call(rbind, resL)
+    return(resDf %>% dplyr::arrange_at(DoseRespKeys))
+  }
 
 #' @export
 identify_keys = function(df) {
@@ -357,9 +378,9 @@ identify_keys = function(df) {
 }
 
 
-
-
 #' @export
+#' @importFrom gneDB annotateCLIDs
+#' @importFrom gCellGenomics getDrugs
 cleanup_metadata = function(df_metadata, log_str) {
     log_str = c(log_str, '    cleanup_metadata')
     # clean up numberic fields

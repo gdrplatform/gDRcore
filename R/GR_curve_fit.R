@@ -1,4 +1,3 @@
-library(reshape2)
 
 #' Actual fitting function
 #'
@@ -6,6 +5,7 @@ library(reshape2)
 #'
 #' returns fit parameters
 #'
+#' @import reshape2
 #' @param log10concs concentrations
 #' @param GRvalues values
 #' @param upper_GR =1 by default
@@ -14,6 +14,7 @@ library(reshape2)
 #' @return vector of values
 #' @examples
 #' sum(1:10)
+#' @importFrom drc drm drmc LL.3u
 #' @export
 GRlogisticFit <- function(log10concs, GRvalues, upper_GR = 1, force = FALSE, cap = FALSE) {
     # TODO: test properly and match algortihm to GENEDATA

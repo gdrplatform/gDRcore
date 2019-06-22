@@ -1,6 +1,8 @@
-library(readxl) # openxlsx skip the first emprty rows and cannot be overridden
-library(readr)
-library(stringr)
+
+# openxlsx skip the first emprty rows and cannot be overridden
+#' @import readxl 
+#' @import readr
+#' @import stringr
 
 #' @export
 load_data = function(manifest_file, df_template_files, results_file, log_str) {
@@ -11,7 +13,7 @@ load_data = function(manifest_file, df_template_files, results_file, log_str) {
         template_file = df_template_files$datapath
         template_filename = df_template_files$name
     } else {
-        template_filename = template_file
+        template_filename = df_template_files
     }
 
     manifest = load_manifest(manifest_file, log_str)
