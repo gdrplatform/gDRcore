@@ -6,6 +6,8 @@
 #########################################
 ### TODO:
 ### Need to put all reserved header names (CLID, DrugName, ...) as global variables
+### Need to put all output header names (GRvalue, RelativeViability, ...) as global variables
+### see identify_keys for all names to protect
 #########################################
 
 #' @export
@@ -290,35 +292,35 @@ calculate_DRmetrics <-
     }
     DoseRespKeys = setdiff(DoseRespKeys, 'Concentration')
     DoseRespKeys = intersect(DoseRespKeys, colnames(df_averaged))
-    
+
     #TODO: may be worthwhile to use consistent variable names at some point
     df_GR = df_averaged
     df_GR$log10Concentration = log10(df_GR$Concentration)
-    
+
     metrics = names(GRlogisticFit(c(-7, -6, -5, -4), c(1, .9, .8, .7))) # dummy call to get variable names
-    
+
     #define set of key for merging control and study data
     mergeKeys <- setdiff(DoseRespKeys, c('Gnumber', 'DrugName'))
-    
+
     #get avereage GRvalue ('GRvalue0') for control data
     controlSets <-
       df_GR %>% filter(DrugName %in% c('Vehicle', 'Untreated')) %>%
       dplyr::group_by_at(mergeKeys) %>% dplyr::summarise(GRvalue0 = mean(GRvalue))
-    
+
     #get study data
     studySets <-
       df_GR %>% filter(!DrugName %in% c('Vehicle', 'Untreated'))
-    
+
     #join study and control data
     # i.e. get  reference (average control) GRvalue ('GRvalue0') for study data
     fSets <-
       dplyr::left_join(studySets, controlSets, by = mergeKeys)
     # for study sets with no reference GRvalue, assing GRValue0 to 1
     fSets[is.na(fSets$GRvalue0), "GRvalue0"] <- 1
-    
+
     #group study data by 'DoseRespKeys'
     gSets <- fSets %>% dplyr::group_by_at(DoseRespKeys) %>% group_split()
-    
+
     print(paste(
       'Metadata variables for dose response curves:',
       paste(setdiff(
@@ -329,12 +331,12 @@ calculate_DRmetrics <-
       length(gSets),
       'groups )'
     ))
-    
+
     ### ################
     ### TODO:
     ### Need to implement the metric calculation for IC50/AAC --> copy from GeneData?
     ### ################
-    
+
     #iterate over study groups
     resL <- lapply(1:length(gSets), function(x) {
       # the 'DoseRespKeys' columns in given grup are identical for each entry
@@ -368,7 +370,13 @@ identify_keys = function(df) {
     keys[['Day0']] = keys[['Endpoint']]
     keys = lapply(keys, function(x) setdiff(x, c("ReadoutValue", "BackgroundValue",
             "UntrtReadout", "CorrectedReadout", "Day0Readout", "Template", "WellRow", "WellColumn",
-            'GRvalue', 'RelativeViability', 'DivisionTime', 'ReferenceDivisionTime')))
+
+            'GRvalue', 'RelativeViability', 'DivisionTime', 'ReferenceDivisionTime',
+
+            "h_GR", "GRinf", "GEC50", "GR50", "GRmax", "GR_AOC", "R_square_GR", "pval_GR",
+            "flat_fit_GR", "maxlog10Concentration", "N_conc", "log10_conc_step", "upper_GR"
+    )))
+
     # check if all values of a key is NA
     for (k in keys[['Endpoint']]) {
         if (all(is.na(df[,k]))) {keys = lapply(keys, function(x) setdiff(x, k))}
