@@ -4,11 +4,14 @@ source("analyze_data.R") # to get the function identify_keys
 
 # mimic the mySQL db
 gdr_projects = data.frame()
-condition_data = data.frame()
+condition_metadata = data.frame()
 condition_codrug = data.frame()
 condition_additional_treatment = data.frame()
+treatment_metadata = data.frame()
+response_metrics = data.frame()
+response_mean = data.frame()
 
-project = 1
+for (project in 3) {
 
 if (project == 1) {
 
@@ -26,52 +29,146 @@ if (project == 1) {
                             'test_Kyle1/ref_df_averaged.tsv',
                             'test_Kyle1/ref_df_metrics.tsv'))
 
-    df_normalized = read.table(paste0('../inst/testdata/',project_processed_files[1,3]), header = T)
-    df_averaged = read.table(paste0('../inst/testdata/', project_processed_files[2,3]), header = T)
-    df_metrics = read.table(paste0('../inst/testdata/', project_processed_files[3,3]), header = T)
-
     project_data = c(project_number = project,
                         username = 'kyle',
                         description = 'Kyle1',
                         approved = NULL,
                         date_processed = date())
+
+
+} else if (project == 2) {
+
+    project_raw_files = data.frame(project_number = project,
+                file_type = c('manifest', 'template', 'template', 'results', 'results'),
+                file_uri = c('test_Kyle2/Manifest_0077vs0068.xls',
+                            'test_Kyle2/Template_0077vs0068_Untreated.xls',
+                            'test_Kyle2/Template_0077_0068_7daytreated.xls',
+                            'test_Kyle2/Result_0077vs0068_day7.xls',
+                            'test_Kyle2/Result_0077vs0068_day0.xls'))
+
+    project_processed_files = data.frame(project_number = project,
+                file_type = c('normalized', 'averaged', 'metrics'),
+                file_uri = c('test_Kyle2/ref_df_normalized.tsv',
+                            'test_Kyle2/ref_df_averaged.tsv',
+                            'test_Kyle2/ref_df_metrics.tsv'))
+
+    project_data = c(project_number = project,
+                        username = 'kyle',
+                        description = 'Kyle2',
+                        approved = T,
+                        date_processed = date())
+
+} else if (project == 3) {
+
+    project_raw_files = data.frame(project_number = project,
+                file_type = c('manifest', 'template', 'template', 'results',
+                                    'results', 'results', 'results'),
+                file_uri = c('test_Wei2/Manifest file_ET&Palbo.xls',
+                            'test_Wei2/Template_untreated.xls',
+                            'test_Wei2/Template_7daytreated.xls',
+                            'test_Wei2/Result_20181024_untreated.xls',
+                            'test_Wei2/Result_20181031_untreated.xls',
+                            'test_Wei2/Result_20181024_7daytreated.xls',
+                            'test_Wei2/Result_20181031_7daytreated.xls'))
+
+    project_processed_files = data.frame(project_number = project,
+                file_type = c('normalized', 'averaged', 'metrics'),
+                file_uri = c('test_Wei2/ref_df_normalized.tsv',
+                            'test_Wei2/ref_df_averaged.tsv',
+                            'test_Wei2/ref_df_metrics.tsv'))
+
+    project_data = c(project_number = project,
+                        username = 'wei',
+                        description = 'Wei2',
+                        approved = T,
+                        date_processed = date())
+
 }
+# will be replace directly by the variable, not the files
+df_normalized = read.table(paste0('../inst/testdata/',project_processed_files[1,3]),
+                    header = T, sep='\t')
+df_averaged = read.table(paste0('../inst/testdata/', project_processed_files[2,3]),
+                    header = T, sep='\t')
+df_metrics = read.table(paste0('../inst/testdata/', project_processed_files[3,3]),
+                    header = T, sep='\t')
+
+print(dim(df_averaged))
+print(dim(df_metrics))
 
 # need to update:
 #  - CLID --> clid
 #  - add DivisionTime in the df_metrics table
 
-keys = identify_keys(df_metrics)$DoseResp
+keys = identify_keys(df_averaged)$DoseResp
 condition_keys = setdiff(keys, c("DrugName", 'Concentration', 'Gnumber', "CellLineName", "Tissue",
-                                keys[grep('DrugName', keys)]))
-sub_condition_data = df_metrics[, condition_keys]   # , 'DivisionTime')]
-stopifnot(dim(sub_condition_data)[1] == dim(unique(sub_condition_data))[1])
-sub_condition_data$project_number = project
-sub_condition_data$condition_number = dim(condition_data)[1] + (1:dim(sub_condition_data)[1])
+                                keys[grep('DrugName', keys)], 'project_number'))
 
-# get the Gnumbers in their own table if any
+all_response_metadata = unique(rbind(df_averaged[, setdiff(keys, 'Concentration')],
+                            df_metrics[,setdiff(keys, 'Concentration')]))
+                            
+response_data_metrics = df_metrics
+response_data_metrics$project_number = project
+
+# define the conditions (all metadata but Gnumber)
+keys = identify_keys(response_data_metrics)$DoseResp
+condition_all_metadata = unique(response_data_metrics[, condition_keys])  # , 'DivisionTime')]
+
+condition_all_metadata$condition_number = dim(condition_metadata)[1] +
+                                            (1:dim(condition_all_metadata)[1])
+
+response_data_metrics = merge(response_data_metrics, condition_all_metadata, by = condition_keys)
+stopifnot(dim(response_data_metrics)[1] == dim(df_metrics)[1])
+
+# get the secondary Gnumbers in their own table if any
 N_add_Drugs = condition_keys[grep('Gnumber', condition_keys)]
 sub_condition_codrug = data.frame()
 for (d in N_add_Drugs) {
-    codrug = sub_condition_data[, c('condition_number', d,
+    codrug = condition_all_metadata[, c('condition_number', d,
                 gsub('Gnumber','Concentration', d))]
     colnames(codrug)[-1] = c('Gnumber','Concentration')
     sub_condition_codrug = rbind(sub_condition_codrug, codrug)
 }
 condition_codrug = rbind(condition_codrug, sub_condition_codrug)
 
-# get the other condition treatments
-add_treatments = setdiff(condition_keys[ c(-agrep('Gnumber', condition_keys),
-                                    -agrep('Concentration', condition_keys))],
-                                c('Time', 'CLID'))
+# get the other conditions if any
+add_treatments = setdiff(condition_keys[ c(-grep('Gnumber', condition_keys),
+                                    -grep('Concentration', condition_keys))],
+                                c('Time', 'CLID', "project_number", "condition_number"))
 sub_condition_additional_treatment = data.frame()
 for (d in add_treatments) {
-    cotrt = cbind(sub_condition_data[, c('condition_number', d)], metadata_field = d)
+    cotrt = cbind(condition_all_metadata[, c('condition_number', d)], metadata_field = d)
     colnames(cotrt)[2] = 'metadata_value'
+    cotrt$metadata_value = as.character(cotrt$metadata_value)
     sub_condition_additional_treatment = rbind(sub_condition_additional_treatment, cotrt)
 }
 condition_additional_treatment = rbind(condition_additional_treatment,
                                     sub_condition_additional_treatment)
 
 
-df_metrics[,keys]
+sub_condition_metadata = condition_all_metadata[,c('CLID', 'Time', 'condition_number')]
+# add division time
+sub_condition_metadata = merge(sub_condition_metadata, unique(response_data_metrics[,
+                        c('project_number', 'condition_number')]), by='condition_number')
+condition_metadata = rbind(condition_metadata, sub_condition_metadata)
+
+
+sub_treatment_metadata = response_data_metrics[, c(setdiff(keys,
+    c('project_number', 'CellLineName', condition_keys, 'Tissue', keys[grep('DrugName', keys)])),
+                                'condition_number')]
+sub_treatment_metadata$treatment_number = dim(treatment_metadata)[1] +
+                                            (1:dim(sub_treatment_metadata)[1])
+
+treatment_metadata = rbind(treatment_metadata, sub_treatment_metadata)
+
+response_metrics = rbind(response_metrics,
+    response_data_metrics[, setdiff(colnames(response_data_metrics), keys)])
+
+df_ = merge(df_averaged, response_data_metrics[, c(keys, 'condition_number')])
+response_mean = rbind(response_mean,
+            df_[, setdiff(colnames(df_), c(keys, 'DivisionTime', 'ReferenceDivisionTime'))] )
+}
+
+
+
+print(dim(treatment_metadata))
+print(dim(response_mean))
