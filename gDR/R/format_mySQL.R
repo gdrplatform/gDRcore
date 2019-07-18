@@ -1,4 +1,4 @@
-source("analyze_data.R") # to get the function identify_keys
+source("../R/analyze_data.R") # to get the function identify_keys
 
 # DB structure is described in https://drive.google.com/open?id=1gX5ja_dSdygr2KYTqYUiENKWxu9HkOEz
 
@@ -109,11 +109,17 @@ extract_mySQL = function(project_number, condition_metadata, condition_additiona
     df_codrug = condition_codrug[condition_codrug$condition_number
                                             %in% df_metadata$condition_number,]
     if (dim(df_codrug)[1]>0) {
-        df_codrug = df_codrug[order( as.character(df_codrug$Gnumber), df_codrug$Concentration),]
-        df_codrug$cumul_condition =  c(1,sapply(2:dim(df_codrug)[1], function(x)
+        # get the more frequent co-drug as Gnumber_2 is more than one additional drug
+        df_codrug = df_codrug[order(
+            factor(df_codrug$Gnumber, levels=names(sort(table(df_codrug$Gnumber), decreasing=T))),
+                    df_codrug$Concentration),]
+        # put the vehicle/untreated conditions at the end
+        df_codrug = rbind(df_codrug[df_codrug$Concentration > 0,],
+                    df_codrug[df_codrug$Concentration == 0,])
+        df_codrug$cumul_condition = c(1,sapply(2:dim(df_codrug)[1], function(x)
                 sum( df_codrug$condition_number[x] == df_codrug$condition_number[seq(1,x-1,1)])+1))
         mx_codrug = unique(df_codrug[,'condition_number', drop=F])
-        N_codrug = max(table(mx_additional_treatment))
+        N_codrug = max(table(df_codrug$condition_number))
         for (codrug in 1:N_codrug) {
             codrug_df = df_codrug[df_codrug$cumul_condition == codrug,
                                         c('condition_number', 'Gnumber', 'Concentration')]

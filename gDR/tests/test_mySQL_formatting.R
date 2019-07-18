@@ -1,4 +1,4 @@
-source("format_mySQL.R") # to get the function identify_keys
+source("../R/format_mySQL.R") # to get the function identify_keys
 
 
 # DB structure is described in https://drive.google.com/open?id=1gX5ja_dSdygr2KYTqYUiENKWxu9HkOEz
@@ -13,7 +13,7 @@ response_metrics = data.frame()
 response_mean = data.frame()
 
 # run through a bunch of projects
-for (project in 1:4) {
+for (project in 6) {
     print('----')
     print(project)
     if (project == 1) {
@@ -104,6 +104,33 @@ for (project in 1:4) {
                             approved = T,
                             date_processed = date())
 
+    } else if (project == 5) {
+
+        project_processed_files = data.frame(project_number = project,
+                    file_type = c('normalized', 'averaged', 'metrics'),
+                    file_uri = c('test_combo1/df_normalized.tsv',
+                                'test_combo1/df_averaged.tsv',
+                                'test_combo1/df_metrics.tsv'))
+
+        project_data = c(project_number = project,
+                            username = 'marc',
+                            description = 'Combo1',
+                            approved = T,
+                            date_processed = date())
+
+    } else if (project == 6) {
+
+        project_processed_files = data.frame(project_number = project,
+                    file_type = c('normalized', 'averaged', 'metrics'),
+                    file_uri = c('test_combo_3d/df_normalized.tsv',
+                                'test_combo_3d/df_averaged.tsv',
+                                'test_combo_3d/df_metrics.tsv'))
+
+        project_data = c(project_number = project,
+                            username = 'marc',
+                            description = 'Combo_3drugs',
+                            approved = T,
+                            date_processed = date())
     }
 
     # will be replace directly by the variable, not the files
@@ -143,7 +170,7 @@ print(dim(treatment_metadata))
 print(dim(response_mean))
 
 
-for (project in 1:4) {
+for (project in unique(condition_metadata$project_number)) {
     print('----')
     print(project)
 
