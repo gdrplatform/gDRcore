@@ -31,9 +31,9 @@ format_mySQL = function(df_averaged, df_metrics, project_number, condition_metad
     N_add_Drugs = condition_keys[grep('Gnumber', condition_keys)]
     sub_condition_codrug = data.frame()
     for (d in N_add_Drugs) {
-        codrug = condition_all_metadata[, c('condition_number', d,
-                    gsub('Gnumber','Concentration', d))]
-        colnames(codrug)[-1] = c('Gnumber','Concentration')
+        codrug = cbind(condition_all_metadata[, c('condition_number', d,
+                gsub('Gnumber','Concentration', d))], gsub('Gnumber_','', d))
+        colnames(codrug)[-1] = c('Gnumber','Concentration','Ordinality')
         sub_condition_codrug = rbind(sub_condition_codrug, codrug)
     }
 
@@ -109,21 +109,13 @@ extract_mySQL = function(project_number, condition_metadata, condition_additiona
     df_codrug = condition_codrug[condition_codrug$condition_number
                                             %in% df_metadata$condition_number,]
     if (dim(df_codrug)[1]>0) {
-        # get the more frequent co-drug as Gnumber_2 is more than one additional drug
-        df_codrug = df_codrug[order(
-            factor(df_codrug$Gnumber, levels=names(sort(table(df_codrug$Gnumber), decreasing=T))),
-                    df_codrug$Concentration),]
-        # put the vehicle/untreated conditions at the end
-        df_codrug = rbind(df_codrug[df_codrug$Concentration > 0,],
-                    df_codrug[df_codrug$Concentration == 0,])
-        df_codrug$cumul_condition = c(1,sapply(2:dim(df_codrug)[1], function(x)
-                sum( df_codrug$condition_number[x] == df_codrug$condition_number[seq(1,x-1,1)])+1))
+
         mx_codrug = unique(df_codrug[,'condition_number', drop=F])
-        N_codrug = max(table(df_codrug$condition_number))
-        for (codrug in 1:N_codrug) {
-            codrug_df = df_codrug[df_codrug$cumul_condition == codrug,
-                                        c('condition_number', 'Gnumber', 'Concentration')]
-            colnames(codrug_df)[2:3] = paste0(c('Gnumber_', 'Concentration_'), codrug+1)
+        N_codrug = unique(df_codrug$Ordinality)
+        for (codrug in N_codrug) {
+            codrug_df = df_codrug[df_codrug$Ordinality == codrug,
+                                    c('condition_number', 'Gnumber', 'Concentration')]
+            colnames(codrug_df)[2:3] = paste0(c('Gnumber_', 'Concentration_'), codrug)
             mx_codrug = merge(mx_codrug, codrug_df)
         }
         df_metadata = merge(df_metadata, mx_codrug, by = 'condition_number', all.x=T)
