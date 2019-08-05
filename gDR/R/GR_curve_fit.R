@@ -8,15 +8,15 @@
 #' @import reshape2
 #' @param log10concs concentrations
 #' @param GRvalues values
-#' @param upper_GR =1 by default
+#' @param GR_0 =1 by default
 #' @param force use signifcance or not
-#' @param cap enforce upper_GR
+#' @param cap enforce GR_0
 #' @return vector of values
 #' @examples
 #' sum(1:10)
 #' @importFrom drc drm drmc LL.3u
 #' @export
-GRlogisticFit <- function(log10concs, GRvalues, upper_GR = 1, force = FALSE, cap = FALSE) {
+GRlogisticFit <- function(log10concs, GRvalues, GR_0 = 1, force = FALSE, cap = FALSE) {
     # TODO: test properly and match algortihm to GENEDATA
 
     # Implementation of the genedata approach for curve fit: https://screener.genedata.com/documentation/display/DOC15/Business+Rules+for+Dose-Response+Curve+Fitting+Model+Selection+and+Fit+Validity
@@ -26,12 +26,12 @@ GRlogisticFit <- function(log10concs, GRvalues, upper_GR = 1, force = FALSE, cap
     data_exp = data.frame(log10conc=log10concs, GRvalue=GRvalues)
     concs = 10**log10concs
     fit_parameters = c('h_GR','GRinf','GEC50')
-    metrics = c('GR50', 'GRmax', 'GR_AOC', 'R_square_GR', 'pval_GR',
-        'flat_fit_GR', 'maxlog10Concentration', 'N_conc', 'log10_conc_step', 'upper_GR')
+    metrics = c('GR50', 'GRmax', 'GR_AOC', 'GR_r2',
+        'flat_fit_GR', 'maxlog10Concentration', 'N_conc', 'log10_conc_step', 'GR_0')
     out = array(NA, length(fit_parameters) + length(metrics))
     names(out) = c(fit_parameters, metrics)
     out['maxlog10Concentration'] = max(log10concs)
-    out['upper_GR'] = upper_GR
+    out['GR_0'] = GR_0
 
     # fit parameters and boundaries
     priors = c(2, 0.1, median(concs))
@@ -49,7 +49,7 @@ GRlogisticFit <- function(log10concs, GRvalues, upper_GR = 1, force = FALSE, cap
             GRvalue ~ log10conc,
             data=data_exp,
             logDose = 10,
-            fct=drc::LL.3u(upper = upper_GR, names = fit_parameters),
+            fct=drc::LL.3u(upper = GR_0, names = fit_parameters),
             start = priors, lowerl = lower, upperl = upper, control = controls,
             na.action = na.omit))
 
@@ -68,8 +68,7 @@ GRlogisticFit <- function(log10concs, GRvalues, upper_GR = 1, force = FALSE, cap
         df2 = (length(na.omit(data_exp$GRvalue)) - Npara + 1)
         f_value = ((RSS1-RSS2)/df1)/(RSS2/df2)
         f_pval = stats::pf(f_value, df1, df2, lower.tail = FALSE)
-        out['pval_GR'] = f_pval
-        out['R_square_GR'] = 1 - RSS2/RSS1
+        out['GR_r2'] = 1 - RSS2/RSS1
     }
 
     # non-fitted metrics
@@ -90,12 +89,12 @@ GRlogisticFit <- function(log10concs, GRvalues, upper_GR = 1, force = FALSE, cap
     #                diff_vector, na.rm = TRUE)/conc_range
 
     # analytical solution for GR50
-    out['GR50'] = out['GEC50']*((upper_GR-out['GRinf'])/(0.5-out['GRinf']) - 1)^(1/out['h_GR'])
+    out['GR50'] = out['GEC50']*((GR_0-out['GRinf'])/(0.5-out['GRinf']) - 1)^(1/out['h_GR'])
 
     # testing the significance of the fit and replacing with flat function if required
     pcutoff = ifelse(force, 1, .05)
-    if(!is.na(out['pval_GR'])) {
-        out['flat_fit_GR'] = ifelse(out['pval_GR'] >= pcutoff |
+    if(!is.na(f_pval)) {
+        out['flat_fit_GR'] = ifelse(f_pval >= pcutoff |
                                  is.na(out['GEC50']), 1, 0)
     } else {
         out['flat_fit_GR'] = ifelse(is.na(out['GEC50']), 1, 0)

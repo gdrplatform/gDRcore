@@ -1,8 +1,43 @@
 
-# openxlsx skip the first emprty rows and cannot be overridden
-#' @import readxl 
+# openxlsx skip the first emprty rows and cannot be overridden --> use readxl
+#' @import readxl
 #' @import readr
 #' @import stringr
+
+##### TODO: this need to be put at the right place
+duration_identifier = 'Duration'
+
+cellline_identifier = 'clid'
+DB_cell_identifier = 'clid'
+
+drug_identifier = 'Gnumber'
+DB_drug_identifier = 'drug'
+drugname_identifier = 'DrugName'
+# corresponds to the fieLd  'gcsi_drug_name' from gCellGenomics::getDrugs()
+untreated_tag = c('untreated', 'vehicle') # flag to identify control treatments
+
+
+#######-------------------------------------------------------
+# these should not be changed and are protected field names
+manifest_headers = c('Barcode', 'Template', duration_identifier)
+raw_data_headers = c("ReadoutValue", "BackgroundValue", 'UntrtReadout', "Day0Readout")
+normalized_results_headers = c("CorrectedReadout", 'GRvalue', 'RelativeViability', 'DivisionTime')
+averaged_results_headers = c('std_GRvalue', 'std_RelativeViability')
+metrics_results_headers = c("maxlog10Concentration", "N_conc",
+    "mean_viability", "ic50", "e_max", "ec50", "e_inf", "e_0", "h_ic", "ic_r2", "flat_fit_ic",
+    "GR_AOC",        "GR50", "GRmax", "GEC50", "GRinf", "GR_0", "h_GR", "GR_r2", "flat_fit_GR")
+
+add_fields_clid = c('CellLineName', 'Tissue', 'ReferenceDivisionTime')
+# corresponds to the fieLd  'celllinename', 'primarytissue', 'doublingtime' from gneDB CLIDs
+
+
+controlled_headers=c(cellline_identifier, manifest_headers, drug_identifier, 'Concentration',
+            paste0(drug_identifier, '_', 2:10), paste0('Concentration_', 2:10))
+
+reserved_headers = c(add_fields_clid, drugname_identifier, paste0(drugname_identifier, '_', 2:10),
+                raw_data_headers, normalized_results_headers,
+                averaged_results_headers, metrics_results_headers, 'WellRow', 'WellColumn')
+
 
 #' @export
 load_data = function(manifest_file, df_template_files, results_file, log_str) {
@@ -49,6 +84,12 @@ load_manifest = function (manifest_file, log_str) {
             )
     } )
 
+    # replace Time by Duration for backwards compatibility
+    manifest_data = lapply(manifest_data, function(x) {
+        if ('Time' %in% colnames(x)) {colnames(x)[colnames(x)=='Time'] = duration_identifier}
+        return(x)
+    })
+
     # check default headers are in each df
     dump = sapply(lapply(1:length(manifest_file),
             function(x) c(manifest_file[x], manifest_data[x])),
@@ -86,7 +127,7 @@ load_templates = function (df_template_files, log_str) {
 
     # read sheets in files
     template_sheets = lapply(template_file, excel_sheets)
-    # check Gnumber is present in each df
+    # check drug_identifier is present in each df
     sapply(lapply(1:length(template_file), function(x) c(template_file[x], template_sheets[x])),
         function(x) check_metadata_names(x[[2]], log_str, df_name=x[[1]], df_type='template'))
 
@@ -94,13 +135,13 @@ load_templates = function (df_template_files, log_str) {
     for (iF in 1:length(template_file)) {
         print(paste('Loading', template_sheets[[iF]]))
         # first check that the sheet names are ok
-        # identify Gnumber sheet (case insensitive)
-        Gnumber_idx = grep('Gnumber$', template_sheets[[iF]], ignore.case = T)
+        # identify drug_identifier sheet (case insensitive)
+        Gnumber_idx = grep(paste0(drug_identifier, '$'), template_sheets[[iF]], ignore.case = T)
         # case of untreated plate
         if (length(template_sheets[[iF]])==1) {
             if(length(Gnumber_idx)==0 || Gnumber_idx!=1) {
                 ErrorMsg = paste('In untreated template file', template_file[[iF]],
-                    ', sheet name must be Gnumber')
+                    ', sheet name must be', drug_identifier)
                 log_str = c(log_str, 'Error in load_templates:')
                 log_str = c(log_str, ErrorMsg)
                 writeLines(log_str)
@@ -108,7 +149,7 @@ load_templates = function (df_template_files, log_str) {
             }
             df = read_excel(template_file[[iF]], sheet = template_sheets[[iF]][1],
                     col_names = paste0('x', 1:48), range = 'A1:AV32')
-            if ( !(all(toupper(unlist(df)[!is.na(unlist(df))]) %in% c('UNTREATED', 'VEHICLE')))) {
+            if ( !(all(toupper(unlist(df)[!is.na(unlist(df))]) %in% toupper(untreated_tag) ))) {
                     ErrorMsg = paste('In untreated template file', template_file[[iF]],
                         ', entries mush be Vehicle or Untreated')
                     log_str = c(log_str, 'Error in load_templates:')
@@ -290,14 +331,13 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
     log_str = c(log_str, '   check_metadata_names')
     # first check for required column names
     if (!is.null(df_type)) {
+    check_headers = reserved_headers
         if (df_type == 'manifest') {
-                expected_headers = c('Barcode', 'Time', 'Template')
-        }
-        if (df_type == 'template') {
-                expected_headers = c('Gnumber')
-        }
-        if (df_type == 'template_treatment') {
-                expected_headers = c('Gnumber', 'Concentration')
+                expected_headers = manifest_headers
+        } else if (df_type == 'template') {
+                expected_headers = drug_identifier
+        } else if (df_type == 'template_treatment') {
+                expected_headers = c(drug_identifier, 'Concentration')
         }
 
         headersOK = toupper(expected_headers) %in% toupper(col_df)
@@ -313,7 +353,7 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
         }
         if (df_type == 'template_treatment') {
             # assess if multiple drugs and proper pairing
-            n_drug = agrep('Gnumber', col_df, ignore.case = T)
+            n_drug = agrep(drug_identifier, col_df, ignore.case = T)
             n_conc = agrep('Concentration', col_df, ignore.case = T)
             if (length(n_drug) != length(n_conc)) {
                 ErrorMsg = paste('Treatment template', df_name,
@@ -324,7 +364,7 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
                 stop(ErrorMsg)
             }
             if (length(n_drug)>1) {
-                trt_sheets = c(paste0('Gnumber_', 2:length(n_drug)),
+                trt_sheets = c(paste0(drug_identifier, '_', 2:length(n_drug)),
                     paste0('Concentration_', 2:length(n_conc)))
                 if (!(all(toupper(trt_sheets) %in% toupper(col_df)))) {
                     ErrorMsg = paste('Treatment template', df_name,
@@ -338,6 +378,8 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
                 }
             }
         }
+    } else {
+        check_headers = setdiff(reserved_headers, c('WellRow', 'WellColumn'))
     }
 
     corrected_names = col_df
@@ -374,8 +416,6 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
 
     # common headers that are written in a specific way
     # throw warning if close match and correct upper/lower case for consistency
-    controlled_headers=c('CLID', 'Time', 'Barcode', 'Template', 'Gnumber', 'Concentration',
-                paste0('Gnumber_', 2:10), paste0('Concentration_', 2:10))
     for (i in 1:length(controlled_headers)) {
         case_match = setdiff(
             grep(paste0(controlled_headers[i],'$'), corrected_names, ignore.case = T),
@@ -388,27 +428,12 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
             log_str = c(log_str, WarnMsg)
             warning(WarnMsg)
         }
-
-        # more noise than actually useful
-        # fuzzy_match = setdiff(agrep(controlled_headers[i], corrected_names),
-        #                         grep(controlled_headers[i], corrected_names))
-        # if (length(fuzzy_match)>0){
-        #     WarnMsg = paste('Header', corrected_names[fuzzy_match], 'in', df_name,
-        #                     'looks similar to', controlled_headers[i], '; Please check for typo')
-        #     log_str = c(log_str, 'Warning in check_metadata_names:')
-        #     log_str = c(log_str, WarnMsg)
-        #     warning(WarnMsg)
-        # }
     }
 
     # check for headers that are reserved for downstream analyses
-    ReservedHeaders = c('CellLineName', 'Tissue', 'ReferenceDivisionTime', 'DrugName',
-                    paste0('DrugName_', 2:10), "ReadoutValue", "BackgroundValue",
-                    "CorrectedReadout", "Day0Readout", 'GRvalue', 'RelativeViability',
-                    'DivisionTime')
-    if (any(corrected_names %in% ReservedHeaders)) {
+    if (any(corrected_names %in% check_headers)) {
         ErrorMsg = paste('Metadata field name: ',
-            paste(intersect(ReservedHeaders, corrected_names), collapse = ' ; '),
+            paste(intersect(check_headers, corrected_names), collapse = ' ; '),
             ' in', df_name, 'is not valid (reserved for output)')
         log_str = c(log_str, 'Error in check_metadata_names:')
         log_str = c(log_str, ErrorMsg)

@@ -10,6 +10,8 @@
 ### see identify_keys for all names to protect
 #########################################
 
+
+
 #' @export
 Overall_function = function(manifest_file, template_file, results_file,
                 output_files, selected_keys = NULL, key_values = NULL) {
@@ -80,7 +82,7 @@ merge_data = function(manifest, treatments, data, log_str) {
     }
 
     # check for the expected columns
-    expected_headers = c('CLID')
+    expected_headers = cellline_identifier
     headersOK = expected_headers %in% colnames(df_metadata)
     if (any(!headersOK)) {
         ErrorMsg = paste('df_metadata',
@@ -115,22 +117,23 @@ merge_data = function(manifest, treatments, data, log_str) {
     }
 
     # remove wells not labeled
-    df_raw_data = df_merged[ !is.na(df_merged$Gnumber), ]
+    df_raw_data = df_merged[ !is.na(df_merged[,drug_identifier]), ]
     WarnMsg = sprintf('%i well loaded, %i discarded for lack of annotation, %i data point selected',
-                dim(data)[1], sum(is.na(df_merged$Gnumber)), dim(df_raw_data)[1])
+                dim(data)[1], sum(is.na(df_merged[,drug_identifier])), dim(df_raw_data)[1])
     print(WarnMsg)
     log_str = c(log_str, WarnMsg)
 
     # reorder the columns
-    cols = c('CellLineName', 'Tissue', 'DrugName', 'Concentration',
-        intersect(paste0(c('DrugName_','Concentration_'),sort(c(2:10,2:10))),colnames(df_raw_data)))
+    cols = c(add_fields_clid[1:2], drugname_identifier, 'Concentration',
+        intersect(paste0(c(paste0(add_fields_clid,'_'),'Concentration_'),
+                        sort(c(2:10,2:10))),colnames(df_raw_data)))
     cols = c(cols, setdiff(colnames(df_metadata), c('Barcode', 'Template', "WellRow", "WellColumn",
-                        cols, 'Gnumber', paste0('Gnumber_', 2:10))))
+                        cols, drug_identifier, paste0(drug_identifier, '_', 2:10))))
     cols = c(cols, "ReadoutValue", "BackgroundValue")
     cols = c(cols, setdiff(colnames(df_raw_data), cols))
     df_raw_data = df_raw_data[, cols ]
-    df_raw_data = df_raw_data[order(df_raw_data$CellLineName, df_raw_data$DrugName,
-                            df_raw_data$Concentration, df_raw_data$Time), ]
+    df_raw_data = df_raw_data[order(df_raw_data$CellLineName, df_raw_data[,drugname_identifier],
+                            df_raw_data$Concentration, df_raw_data[,duration_identifier]), ]
 
     return(df_raw_data)
 }
@@ -167,7 +170,7 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL, key_values
                             (df_normalized[ ,names(key_values)[i] ] %in% key_values[i])
             }}}
     # get the untreated controls at endpoint and perform interquartile mean
-    df_end_untrt = df_normalized[df_normalized$Time>0 & endpoint_value_filter &
+    df_end_untrt = df_normalized[df_normalized[,duration_identifier]>0 & endpoint_value_filter &
         apply(df_normalized[,agrep('Concentration', colnames(df_normalized)),drop=F]==0,1,all),]
     df_end_mean = aggregate(df_end_untrt[,'CorrectedReadout'],
                     by = as.list(df_end_untrt[,Keys$Endpoint]), function(x) mean(x, trim= .25))
@@ -175,13 +178,14 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL, key_values
 
 
     # get the untreated controls at Day 0 and perform interquartile mean
-    df_day0 = df_normalized[df_normalized$Time==0 &
+    df_day0 = df_normalized[df_normalized[,duration_identifier]==0 &
         apply(df_normalized[,agrep('Concentration', colnames(df_normalized)),drop=F]==0,1,all), ]
     df_day0_mean = aggregate(df_day0[,'CorrectedReadout'],
                 by = as.list(df_day0[,Keys$Day0]), function(x) mean(x, trim= .25))
     colnames(df_day0_mean)[dim(df_day0_mean)[2]] = 'Day0Readout'
 
-    df_controls = merge(df_end_mean, subset(df_day0_mean, select=-c(Time, Barcode)), all.x = T)
+    df_controls = merge(df_end_mean, df_day0_mean[, setdiff(colnames(df_day0_mean),
+                    c(duration_identifier, 'Barcode'))], all.x = T)
     if (length(setdiff(Keys$Endpoint, Keys$Day0))>0) {
         WarnMsg = paste('Not all control conditions found on the day 0 plate,',
             'dispatching values for field: ',
@@ -196,16 +200,18 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL, key_values
     if (length(df_controls_NA)>0) {
         dispatched = NULL
         for (i in df_controls_NA){
-            matches = t(apply(df_day0_mean[, setdiff(Keys$Day0, c('Time', 'Barcode'))], 1,
-                function(x) df_controls[i, setdiff(Keys$Day0, c('Time', 'Barcode')),
+            matches = t(apply(df_day0_mean[, setdiff(Keys$Day0,
+                                                c(duration_identifier, 'Barcode'))], 1,
+                function(x) df_controls[i, setdiff(Keys$Day0, c(duration_identifier, 'Barcode')),
                                 drop=F] == x))
-            colnames(matches) = setdiff(Keys$Day0, c('Time', 'Barcode'))
+            colnames(matches) = setdiff(Keys$Day0, c(duration_identifier, 'Barcode'))
             # try to find a good match for the day 0 (enforce same cell line)
-            idx = rowSums(matches) * matches[,'CLID']
+            idx = rowSums(matches) * matches[, cellline_identifier]
             if (all(idx==0)) {next}
             match_idx = which.max(idx)
-            mismatch = df_day0_mean[match_idx, setdiff(Keys$Day0, c('Time', 'Barcode'))] !=
-                        df_controls[i, setdiff(Keys$Day0, c('Time', 'Barcode'))]
+            mismatch = df_day0_mean[match_idx, setdiff(Keys$Day0,
+                                                c(duration_identifier, 'Barcode'))] !=
+                        df_controls[i, setdiff(Keys$Day0, c(duration_identifier, 'Barcode'))]
             dispatched = c(dispatched, colnames(mismatch)[mismatch])
             df_controls[i, 'Day0Readout'] = df_day0_mean[match_idx, 'Day0Readout']
         }
@@ -220,7 +226,7 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL, key_values
     }
 
 
-    df_normalized = merge(df_normalized[df_normalized$Time>0 &
+    df_normalized = merge(df_normalized[df_normalized[,duration_identifier]>0 &
         (apply(df_normalized[,agrep('Concentration', colnames(df_normalized)),drop=F]!=0,1,any) |
                 !endpoint_value_filter),],
                  df_controls)
@@ -231,14 +237,14 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL, key_values
             log2(df_normalized$CorrectedReadout / df_normalized$Day0Readout) /
                 log2(df_normalized$UntrtReadout / df_normalized$Day0Readout) ), 4) - 1
 
-    df_normalized$DivisionTime = round( df_normalized$Time /
+    df_normalized$DivisionTime = round( df_normalized[,duration_identifier] /
                     log2(df_normalized$UntrtReadout / df_normalized$Day0Readout) , 4)
 
 
     if (any(is.na(df_normalized$Day0Readout))) {
         # need to use the reference doubling Time if day 0 missing
         InferedIdx = is.na(df_normalized$Day0Readout)
-        filtered = df_normalized$ReferenceDivisionTime > (df_normalized$Time*2) |
+        filtered = df_normalized$ReferenceDivisionTime > (df_normalized[,duration_identifier]*2) |
             is.na(df_normalized$ReferenceDivisionTime)
         WarnMsg = paste('Missing day 0 information --> calculate GR value based on reference',
             'doubling time')
@@ -253,7 +259,7 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL, key_values
         # calculate GR values using formula from https://www.nature.com/articles/nbt.3882
         df_normalized$GRvalue[InferedIdx] = round(2 ^ ( 1 + (log2(pmin(1.25,
                 df_normalized[InferedIdx,'RelativeViability'])) /
-                (df_normalized$Time[InferedIdx] /
+                (df_normalized[,duration_identifier][InferedIdx] /
                         df_normalized$ReferenceDivisionTime[InferedIdx]) ) ),4) - 1
     }
 
@@ -287,36 +293,40 @@ calculate_DRmetrics <-
   function(df_averaged,
            DoseRespKeys = NULL,
            studyGRvalueThresh = 4) {
-    if (is.null(DoseRespKeys)) {
-      DoseRespKeys = identify_keys(df_averaged)$DoseResp
-    }
-    DoseRespKeys = setdiff(DoseRespKeys, 'Concentration')
-    DoseRespKeys = intersect(DoseRespKeys, colnames(df_averaged))
 
-    #TODO: may be worthwhile to use consistent variable names at some point
-    df_GR = df_averaged
+   df_GR = df_averaged
+   colnames(df_GR)[ colnames(df_GR) == drugname_identifier ] = 'DrugName'
+
+    if (is.null(DoseRespKeys)) {
+      DoseRespKeys = identify_keys(df_GR)$DoseResp
+  } else {
+      DoseRespKeys [ DoseRespKeys == drugname_identifier ] = 'DrugName'
+  }
+    DoseRespKeys = setdiff(DoseRespKeys, 'Concentration')
+    DoseRespKeys = intersect(DoseRespKeys, colnames(df_GR))
+
     df_GR$log10Concentration = log10(df_GR$Concentration)
 
     metrics = names(GRlogisticFit(c(-7, -6, -5, -4), c(1, .9, .8, .7))) # dummy call to get variable names
 
     #define set of key for merging control and study data
-    mergeKeys <- setdiff(DoseRespKeys, c('Gnumber', 'DrugName'))
+    mergeKeys <- setdiff(DoseRespKeys, c(drug_identifier, 'DrugName'))
 
-    #get avereage GRvalue ('GRvalue0') for control data
+    #get avereage GRvalue ('GR_0') for control data
     controlSets <-
-      df_GR %>% filter(DrugName %in% c('Vehicle', 'Untreated')) %>%
-      dplyr::group_by_at(mergeKeys) %>% dplyr::summarise(GRvalue0 = mean(GRvalue))
+      df_GR %>% filter(DrugName %in% untreated_tag) %>%
+      dplyr::group_by_at(mergeKeys) %>% dplyr::summarise(GR_0 = mean(GRvalue))
 
     #get study data
     studySets <-
-      df_GR %>% filter(!DrugName %in% c('Vehicle', 'Untreated'))
+      df_GR %>% filter(!DrugName %in% untreated_tag)
 
     #join study and control data
-    # i.e. get  reference (average control) GRvalue ('GRvalue0') for study data
+    # i.e. get  reference (average control) GRvalue ('GR_0') for study data
     fSets <-
       dplyr::left_join(studySets, controlSets, by = mergeKeys)
     # for study sets with no reference GRvalue, assing GRValue0 to 1
-    fSets[is.na(fSets$GRvalue0), "GRvalue0"] <- 1
+    fSets[is.na(fSets$GR_0), "GR_0"] <- 1
 
     #group study data by 'DoseRespKeys'
     gSets <- fSets %>% dplyr::group_by_at(DoseRespKeys) %>% group_split()
@@ -324,7 +334,7 @@ calculate_DRmetrics <-
     print(paste(
       'Metadata variables for dose response curves:',
       paste(setdiff(
-        DoseRespKeys, c('Gnumber', 'CLID', paste('Gnumber_', 2:10))
+        DoseRespKeys, c(drug_identifier, cellline_identifier, paste(drug_identifier,'_', 2:10))
       ),
       collapse = ' '),
       '(',
@@ -334,7 +344,7 @@ calculate_DRmetrics <-
 
     ### ################
     ### TODO:
-    ### Need to implement the metric calculation for IC50/AAC --> copy from GeneData?
+    ### Need to implement the metric calculation for IC50/AAC
     ### ################
 
     #iterate over study groups
@@ -348,7 +358,7 @@ calculate_DRmetrics <-
         grLogCols <-
           GRlogisticFit(gSets[[x]]$log10Concentration,
                         gSets[[x]]$GRvalue,
-                        upper_GR = gSets[[x]]$GRvalue0[1])[metrics]
+                        GR_0 = gSets[[x]]$GR_0[1])[metrics]
       } else {
         grLogCols <- rep(NA, length(metrics))
       }
@@ -356,31 +366,29 @@ calculate_DRmetrics <-
     })
     #return final data.frame
     resDf <- do.call(rbind, resL)
-    return(resDf %>% dplyr::arrange_at(DoseRespKeys))
+    resDf = resDf %>% dplyr::arrange_at(DoseRespKeys)
+    colnames(resDf)[ colnames(resDf) == 'DrugName'] = drugname_identifier
+    return(resDf)
   }
 
 #' @export
 identify_keys = function(df) {
-    # c(paste0('Concentration_', 2:10), paste0('Gnumber_', 2:10), paste0('DrugName_', 2:10)
+
     keys = list(Trt = setdiff(colnames(df), "Barcode"),
             DoseResp = setdiff(colnames(df),  'Barcode'),
             Endpoint = colnames(df)[ c(-agrep('Concentration', colnames(df)),
-                                            -agrep('Gnumber', colnames(df)),
-                                            -agrep('DrugName', colnames(df)))])
+                                            -agrep(drug_identifier, colnames(df)),
+                                            -agrep(drugname_identifier, colnames(df)))])
     keys[['Day0']] = keys[['Endpoint']]
-    keys = lapply(keys, function(x) setdiff(x, c("ReadoutValue", "BackgroundValue",
-            "UntrtReadout", "CorrectedReadout", "Day0Readout", "Template", "WellRow", "WellColumn",
-
-            'GRvalue', 'RelativeViability', 'DivisionTime', 'ReferenceDivisionTime',
-
-            "h_GR", "GRinf", "GEC50", "GR50", "GRmax", "GR_AOC", "R_square_GR", "pval_GR",
-            "flat_fit_GR", "maxlog10Concentration", "N_conc", "log10_conc_step", "upper_GR"
+    keys = lapply(keys, function(x) setdiff(x, c(raw_data_headers,
+        normalized_results_headers, "Template", "WellRow", "WellColumn", averaged_results_headers,
+            metrics_results_headers, "ReferenceDivisionTime"
     )))
 
     # check if all values of a key is NA
     for (k in keys[['Endpoint']]) {
         if (all(is.na(df[,k]))) {keys = lapply(keys, function(x) setdiff(x, k))}
-        if (all(is.na(df[df$Time==0,k]))) {keys[['Day0']] = setdiff(keys[['Day0']], k)}
+        if (all(is.na(df[df[,duration_identifier]==0,k]))) {keys[['Day0']] = setdiff(keys[['Day0']], k)}
     }
     return(keys)
 }
@@ -392,11 +400,12 @@ identify_keys = function(df) {
 cleanup_metadata = function(df_metadata, log_str) {
     log_str = c(log_str, '    cleanup_metadata')
     # clean up numberic fields
-    df_metadata$Time = round(as.numeric(df_metadata$Time),6)
+    df_metadata[,duration_identifier] = round(as.numeric(df_metadata[,duration_identifier]),6)
     # identify potential numeric fields and replace NA by 0 - convert strings in factors
-    for (c in setdiff(1:dim(df_metadata)[2], c( agrep('Gnumber', colnames(df_metadata)),
+    for (c in setdiff(1:dim(df_metadata)[2], c( agrep(drug_identifier, colnames(df_metadata)),
             agrep('Concentration', colnames(df_metadata)),
-            grep('Time|CLID|Barcode|WellRow|WellColumn|Template', colnames(df_metadata)) ))) {
+            grep(paste(c(cellline_identifier, manifest_headers, 'WellColumn|WellRow'),
+                collapse = '|'), colnames(df_metadata)) ))) {
         vals = unique(df_metadata[,c])
         # if (is.numeric(vals)) {           # removed to ensure that missing annotation is kept NA
         #     df_metadata[is.na(df_metadata[,c]),c] = 0
@@ -422,26 +431,13 @@ cleanup_metadata = function(df_metadata, log_str) {
         }
     }
 
-    # check that CLID are in the format 'CL####' and add common name
+    # TODO: specific to GNE database --> need to be replaced by a function
+    gCLs = gneDB::annotateCLIDs(unique(df_metadata[,cellline_identifier]))[,
+        c(DB_cell_identifier, 'celllinename', 'primarytissue', 'doublingtime')]
 
-    # -----------------------
-    # if ("gCellGenomics" %in% (.packages())) {
-        gCLs = gneDB::annotateCLIDs(unique(df_metadata$CLID))[,
-            c('clid', 'celllinename', 'primarytissue', 'doublingtime')]
-    # } else {
-    #     # for debugging
-    #     print(unique(as.character(df_metadata$CLID)))
-    #     gCLs = data.frame(CLID = unique(as.character(df_metadata$CLID)))
-    #     gCLs = gCLs[,c(1,1,1,1)]
-    #     gCLs = gCLs[!is.na(gCLs[,1]),]
-    #     gCLs[,4] = NA
-    #     print(gCLs)
-    # }
-    # -----------------------
-
-    colnames(gCLs) = c('CLID', 'CellLineName', 'Tissue', 'ReferenceDivisionTime')
-    CLIDs = unique(df_metadata$CLID)
-    bad_CL = !(CLIDs %in% gCLs$CLID)
+    colnames(gCLs) = c(cellline_identifier, add_fields_clid)
+    CLIDs = unique(df_metadata[,cellline_identifier])
+    bad_CL = !(CLIDs %in% gCLs[,cellline_identifier])
     if (any(bad_CL)) {
         ErrorMsg = paste('Cell line ID ', paste(CLIDs[bad_CL], collapse = ' ; '),
             ' not found in gCSI database')
@@ -451,34 +447,27 @@ cleanup_metadata = function(df_metadata, log_str) {
         stop(ErrorMsg)
         }
     print('merge with gCells')
-    df_metadata = merge(df_metadata, gCLs, by='CLID', all.x = T)
+    df_metadata = merge(df_metadata, gCLs, by.x = cellline_identifier,
+                by.y = DB_cell_identifier, all.x = T)
     print(dim(df_metadata))
 
     # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
-    untrt_flag = c('Vehicle', 'Untreated')
-    for (i in agrep('Gnumber', colnames(df_metadata))) { # correct case issues
-        for (w in untrt_flag) {
+
+    for (i in agrep(drug_identifier, colnames(df_metadata))) { # correct case issues
+        for (w in untreated_tag) {
             df_metadata[grep(w, df_metadata[,i], ignore.case = T),i] = w
         }
     }
     # -----------------------
-    # if ("gCellGenomics" %in% (.packages())) {
-        gDrugs = gCellGenomics::getDrugs()[,c('drug', 'gcsi_drug_name')]
-    # } else {
-    #     # for debugging
-    #     gDrugs = data.frame(drug =
-    #         unique(as.character(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))),
-    #         gcsi_drug_name = unique(as.character(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))))
-    #     gDrugs = gDrugs[!is.na(gDrugs$drug) & !(gDrugs$drug %in% untrt_flag),]
-    #     print(gDrugs)
-    # }
+
+    gDrugs = gCellGenomics::getDrugs()[,c(DB_drug_identifier, 'gcsi_drug_name')]
 
     # -----------------------
-    gDrugs$drug = substr(gDrugs$drug, 1, 9)
-    colnames(gDrugs)[2] = 'DrugName'
-    gDrugs = rbind(data.frame(drug=untrt_flag, DrugName=untrt_flag), gDrugs)
+    gDrugs[,1] = substr(gDrugs[,1], 1, 9) # remove batch number from DB_drug_identifier
+    colnames(gDrugs) = c('drug', 'DrugName')
+    gDrugs = rbind(data.frame(drug=untreated_tag, DrugName=untreated_tag), gDrugs)
     gDrugs = unique(gDrugs)
-    Gnbrs = unique(unlist(df_metadata[,agrep('Gnumber', colnames(df_metadata))]))
+    Gnbrs = unique(unlist(df_metadata[,agrep(drug_identifier, colnames(df_metadata))]))
     bad_Gn = !(Gnbrs %in% gDrugs$drug) & !is.na(Gnbrs)
     if (any(bad_Gn)) {
         # G number, but not registered
@@ -500,33 +489,34 @@ cleanup_metadata = function(df_metadata, log_str) {
             stop(ErrorMsg)
         }
     }
+    colnames(gDrugs)[2] = drugname_identifier
     print('merge with gDrugs for Drug 1')
-    df_metadata = merge(df_metadata, gDrugs, by.x='Gnumber', by.y='drug', all.x = T)
+    df_metadata = merge(df_metadata, gDrugs, by.x=drug_identifier, by.y='drug', all.x = T)
     print(dim(df_metadata))
     # add info for columns Gnumber_*
-    for (i in grep('Gnumber_\\d', colnames(df_metadata))) {
-        df_metadata[ is.na(df_metadata[,i]), i] = 'Untreated' # set missing values to Untreated
+    for (i in grep(paste0(drug_identifier,'_\\d'), colnames(df_metadata))) {
+        df_metadata[ is.na(df_metadata[,i]), i] = untreated_tag[1] # set missing values to Untreated
         gDrugs_ = gDrugs
         colnames(gDrugs_)[2] = paste0(colnames(gDrugs_)[2], substr(colnames(df_metadata)[i], 8, 12))
         print(paste('merge with gDrugs for ', i))
         df_metadata = merge(df_metadata, gDrugs_, by.x=i, by.y='drug', all.x = T)
         print(dim(df_metadata))
     }
-    df_metadata[, colnames(df_metadata)[grepl('DrugName', colnames(df_metadata))] ] =
-        droplevels(df_metadata[,colnames(df_metadata)[grepl('DrugName', colnames(df_metadata))]])
+    df_metadata[, colnames(df_metadata)[grepl(drugname_identifier, colnames(df_metadata))] ] =
+        droplevels(df_metadata[,colnames(df_metadata)[grepl(drugname_identifier, colnames(df_metadata))]])
 
     # clean up concentration fields
     for (i in agrep('Concentration', colnames(df_metadata))) {
         trt_n = ifelse(regexpr('_\\d', colnames(df_metadata)[i])>0,
                             substr(colnames(df_metadata)[i], 15,20), 1)
-        G_col = ifelse(trt_n == 1, 'Gnumber', paste0('Gnumber_', trt_n))
-        df_metadata[df_metadata[,G_col] %in% untrt_flag,i] = 0 # set all untreated to 0
+        DrugID_col = ifelse(trt_n == 1, drug_identifier, paste0(drug_identifier, '_', trt_n))
+        df_metadata[df_metadata[,DrugID_col] %in% untreated_tag,i] = 0 # set all untreated to 0
 
-        Gnum_0 = setdiff(unique(df_metadata[ df_metadata[,i] == 0, G_col]), untrt_flag)
-        Gnum_0 = Gnum_0[!is.na(Gnum_0)]
-        if (length(Gnum_0)>0) {
-            WarnMsg = paste('Some concentration for ', G_col,
-                            ' are 0: ', paste(Gnum_0, collapse = ' ; '))
+        DrugID_0 = setdiff(unique(df_metadata[ df_metadata[,i] == 0, DrugID_col]), untreated_tag)
+        DrugID_0 = DrugID_0[!is.na(DrugID_0)]
+        if (length(DrugID_0)>0) {
+            WarnMsg = paste('Some concentration for ', DrugID_col,
+                            ' are 0: ', paste(DrugID_0, collapse = ' ; '))
             log_str = c(log_str, 'Warning in cleanup_metadata:')
             log_str = c(log_str, WarnMsg)
             warning(WarnMsg)
