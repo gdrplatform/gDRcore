@@ -4,8 +4,8 @@ source('../R/GR_curve_fit.R')
 # drug combination ( matrix of 2 x 3 drugs (8 doses by 5 doses including 0) in triplicates, 2 lines)
 df_normalized = data.frame( CellLineName = as.vector(t(matrix(c('COV318', 'HCC2218'), 2, 720))),
                     Tissue = as.vector(t(matrix(c('Ovary', 'Breast'), 2, 720))),
-                    Time = 72,
-                    CLID = as.vector(t(matrix(c('CL586056', 'CL131828'), 2, 720))),
+                    Duration = 72,
+                    clid = as.vector(t(matrix(c('CL586056', 'CL131828'), 2, 720))),
                     Barcode = as.vector(t(matrix(paste0('Plate', 1:6), 6, 240))),
                     DrugName = as.vector(t(matrix(c('Palbociclib', 'Trametinib'), 12, 120))),
                     DrugName_2 = as.vector(t(matrix(c('GDC-0032', 'GDC-0941', 'GDC-0077'), 36,40))),

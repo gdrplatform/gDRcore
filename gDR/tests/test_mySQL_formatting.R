@@ -4,6 +4,7 @@ source("../R/format_mySQL.R") # to get the function identify_keys
 # DB structure is described in https://drive.google.com/open?id=1gX5ja_dSdygr2KYTqYUiENKWxu9HkOEz
 
 # mimic the mySQL db
+
 gdr_projects = data.frame()
 condition_metadata = data.frame()
 condition_codrug = data.frame()
@@ -13,7 +14,7 @@ response_metrics = data.frame()
 response_mean = data.frame()
 
 # run through a bunch of projects
-for (project in 6) {
+for (project in 5:6) {
     print('----')
     print(project)
     if (project == 1) {
@@ -149,6 +150,12 @@ for (project in 6) {
                 dim(condition_metadata)[1], dim(treatment_metadata)[1])
 
     # add the tables to the mySQL database
+
+    #########
+    # when adding to the database, needs to check for already existing co-treatments and
+    #   split the clid and Gnumber tables
+    #######
+
     condition_codrug = rbind(condition_codrug, sub_tables$sub_condition_codrug)
 
     condition_additional_treatment = rbind(condition_additional_treatment,
@@ -170,7 +177,7 @@ print(dim(treatment_metadata))
 print(dim(response_mean))
 
 
-for (project in unique(condition_metadata$project_number)) {
+for (project in unique(condition_metadata$project_id)) {
     print('----')
     print(project)
 
@@ -178,6 +185,10 @@ for (project in unique(condition_metadata$project_number)) {
     response_tables = extract_mySQL(project, condition_metadata, condition_additional_treatment,
                     condition_codrug, treatment_metadata, response_mean, response_metrics)
 
+    #########
+    # when fetching to the database, needs to reconstruct co-treatments and
+    #   metadata from the clid and Gnumber tables
+    #######
     df_averaged_re = response_tables$df_averaged
     df_metrics_re = response_tables$df_metrics
 

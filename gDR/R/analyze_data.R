@@ -307,7 +307,7 @@ average_replicates = function(df_normalized, TrtKeys = NULL) {
 calculate_DRmetrics <-
   function(df_averaged,
            DoseRespKeys = NULL,
-           studyGRvalueThresh = 4) {
+           studyConcThresh = 4) {
 
    df_a = df_averaged
    colnames(df_a)[ colnames(df_a) == drugname_identifier ] = 'DrugName'
@@ -350,6 +350,9 @@ calculate_DRmetrics <-
     #group study data by 'DoseRespKeys'
     gSets <- fSets %>% dplyr::group_by_at(DoseRespKeys) %>% group_split()
 
+    # filter to have at least 4 records with non-NA RelativeViability
+    gSets = gSets[ lapply(gSets, function(x) sum(!is.na(x$RelativeViability))) >= studyConcThresh ]
+
     print(paste(
       'Metadata variables for dose response curves:',
       paste(setdiff(
@@ -361,10 +364,6 @@ calculate_DRmetrics <-
       'groups )'
     ))
 
-    ### ################
-    ### TODO:
-    ### Need to implement the metric calculation for IC50/AAC
-    ### ################
 
     #iterate over study groups
     resL <- lapply(1:length(gSets), function(x) {
@@ -372,8 +371,8 @@ calculate_DRmetrics <-
       # let's get the first record then
       repCols <- as.vector(gSets[[x]][1, DoseRespKeys])
       #get selected columns ('metrics') from GRlogisticFit output
-      # (if at least 4 records with non-NA GRvalue)
-      if (sum(!is.na(gSets[[x]]$GRvalue)) >= studyGRvalueThresh) {
+      # (if at least 4 records with non-NA RelativeViability)
+      if (sum(!is.na(gSets[[x]]$RelativeViability)) >= studyConcThresh) {
         grLogCols <-
           ICGRlogisticFit(gSets[[x]]$log10Concentration,
                         gSets[[x]]$RelativeViability,
@@ -382,11 +381,15 @@ calculate_DRmetrics <-
                         GR_0 = gSets[[x]]$GR_0[1])[metrics]
       } else {
         grLogCols <- rep(NA, length(metrics))
+        names(grLogCols) = metrics
+        grLogCols$N_conc = sum(!is.na(gSets[[x]]$RelativeViability))
       }
       cbind(repCols, t(grLogCols))
     })
+
     #return final data.frame
     resDf <- do.call(rbind, resL)
+    resDf = resDf [resDf$N_conc >= studyConcThresh,]
     resDf = resDf %>% dplyr::arrange_at(DoseRespKeys)
     colnames(resDf)[ colnames(resDf) == 'DrugName'] = drugname_identifier
     return(resDf)
