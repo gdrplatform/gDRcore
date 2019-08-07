@@ -294,32 +294,35 @@ calculate_DRmetrics <-
            DoseRespKeys = NULL,
            studyGRvalueThresh = 4) {
 
-   df_GR = df_averaged
-   colnames(df_GR)[ colnames(df_GR) == drugname_identifier ] = 'DrugName'
+   df_a = df_averaged
+   colnames(df_a)[ colnames(df_a) == drugname_identifier ] = 'DrugName'
 
-    if (is.null(DoseRespKeys)) {
-      DoseRespKeys = identify_keys(df_GR)$DoseResp
-  } else {
-      DoseRespKeys [ DoseRespKeys == drugname_identifier ] = 'DrugName'
-  }
-    DoseRespKeys = setdiff(DoseRespKeys, 'Concentration')
-    DoseRespKeys = intersect(DoseRespKeys, colnames(df_GR))
+   if (is.null(DoseRespKeys)) {
+       DoseRespKeys = identify_keys(df_a)$DoseResp
+   } else {
+       DoseRespKeys [ DoseRespKeys == drugname_identifier ] = 'DrugName'
+   }
+   DoseRespKeys = setdiff(DoseRespKeys, 'Concentration')
+   DoseRespKeys = c(DoseRespKeys, 'DivisionTime')
+   DoseRespKeys = intersect(DoseRespKeys, colnames(df_a))
 
-    df_GR$log10Concentration = log10(df_GR$Concentration)
+   df_a$log10Concentration = log10(df_a$Concentration)
 
-    metrics = names(GRlogisticFit(c(-7, -6, -5, -4), c(1, .9, .8, .7))) # dummy call to get variable names
+   metrics = names(ICGRlogisticFit(c(-7, -6, -5, -4), c(1, .9, .8, .7), c(1, .9, .8, .7)))
+    # dummy call to get variable names
 
     #define set of key for merging control and study data
     mergeKeys <- setdiff(DoseRespKeys, c(drug_identifier, 'DrugName'))
 
     #get avereage GRvalue ('GR_0') for control data
     controlSets <-
-      df_GR %>% filter(DrugName %in% untreated_tag) %>%
-      dplyr::group_by_at(mergeKeys) %>% dplyr::summarise(GR_0 = mean(GRvalue))
+      df_a %>% filter(DrugName %in% untreated_tag) %>%
+      dplyr::group_by_at(mergeKeys) %>%
+        dplyr::summarise(GR_0 = mean(GRvalue), e_0 = mean(RelativeViability))
 
     #get study data
     studySets <-
-      df_GR %>% filter(!DrugName %in% untreated_tag)
+      df_a %>% filter(!DrugName %in% untreated_tag)
 
     #join study and control data
     # i.e. get  reference (average control) GRvalue ('GR_0') for study data
@@ -327,6 +330,7 @@ calculate_DRmetrics <-
       dplyr::left_join(studySets, controlSets, by = mergeKeys)
     # for study sets with no reference GRvalue, assing GRValue0 to 1
     fSets[is.na(fSets$GR_0), "GR_0"] <- 1
+    fSets[is.na(fSets$e_0), "e_0"] <- 1
 
     #group study data by 'DoseRespKeys'
     gSets <- fSets %>% dplyr::group_by_at(DoseRespKeys) %>% group_split()
@@ -356,8 +360,10 @@ calculate_DRmetrics <-
       # (if at least 4 records with non-NA GRvalue)
       if (sum(!is.na(gSets[[x]]$GRvalue)) >= studyGRvalueThresh) {
         grLogCols <-
-          GRlogisticFit(gSets[[x]]$log10Concentration,
+          ICGRlogisticFit(gSets[[x]]$log10Concentration,
+                        gSets[[x]]$RelativeViability,
                         gSets[[x]]$GRvalue,
+                        e_0 = gSets[[x]]$e_0[1],
                         GR_0 = gSets[[x]]$GR_0[1])[metrics]
       } else {
         grLogCols <- rep(NA, length(metrics))
