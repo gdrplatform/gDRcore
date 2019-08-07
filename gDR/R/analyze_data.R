@@ -53,7 +53,7 @@ merge_data = function(manifest, treatments, data, log_str) {
 
     # first unify capitalization in the headers of treatments with manifest
     duplicated_col = setdiff(colnames(treatments)[ toupper(colnames(treatments)) %in%
-                                                    toupper(colnames(manifest)) ], 
+                                                    toupper(colnames(manifest)) ],
                             colnames(treatments)[ colnames(treatments) %in% colnames(manifest) ])
     for (m_col in duplicated_col) {
         colnames(treatments)[ colnames(treatments) == m_col] =
@@ -289,7 +289,13 @@ average_replicates = function(df_normalized, TrtKeys = NULL) {
 
     df_averaged = aggregate(df_normalized[, c('GRvalue', 'RelativeViability', "CorrectedReadout",
                     "UntrtReadout", "Day0Readout", "DivisionTime", "ReferenceDivisionTime")],
-                    by = as.list(df_normalized[,TrtKeys]), FUN = function(x) mean(x, rm.na=T))
+                    by = as.list(df_normalized[,TrtKeys]), FUN = function(x) mean(x, na.rm=T))
+    df_std = aggregate(df_normalized[, c('GRvalue', 'RelativeViability')],
+                        by = as.list(df_normalized[,TrtKeys]), FUN = function(x) sd(x, na.rm=T))
+    colnames(df_std)[colnames(df_std) %in% c('GRvalue', 'RelativeViability')] = paste0('std_',
+            colnames(df_std)[colnames(df_std) %in% c('GRvalue', 'RelativeViability')])
+    df_averaged = merge(df_averaged, df_std, by = TrtKeys)
+
     print('df averaged:')
     print(head(df_averaged))
     return(df_averaged)
