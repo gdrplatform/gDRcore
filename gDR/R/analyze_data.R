@@ -51,6 +51,15 @@ merge_data = function(manifest, treatments, data, log_str) {
 
     log_str = c(log_str, '', 'merge_data')
 
+    # first unify capitalization in the headers of treatments with manifest
+    duplicated_col = setdiff(colnames(treatments)[ toupper(colnames(treatments)) %in%
+                                                    toupper(colnames(manifest)) ], 
+                            colnames(treatments)[ colnames(treatments) %in% colnames(manifest) ])
+    for (m_col in duplicated_col) {
+        colnames(treatments)[ colnames(treatments) == m_col] =
+                colnames(manifest)[ toupper(m_col) == toupper(colnames(manifest))]
+        print(paste('Header', m_col, "in templates corrected to match case with manifest"))
+    }
     # merge manifest and treatment files first
     df_metadata = merge(manifest, treatments, by = 'Template')
     print('Merging the metadata files:')

@@ -131,6 +131,7 @@ load_templates = function (df_template_files, log_str) {
     sapply(lapply(1:length(template_file), function(x) c(template_file[x], template_sheets[x])),
         function(x) check_metadata_names(x[[2]], log_str, df_name=x[[1]], df_type='template'))
 
+    metadata_fields = NULL
     all_templates = data.frame()
     for (iF in 1:length(template_file)) {
         print(paste('Loading', template_sheets[[iF]]))
@@ -182,6 +183,18 @@ load_templates = function (df_template_files, log_str) {
                             col_names = paste0('x', 1:n_col), range = plate_range))
             df$WellRow = LETTERS[1:n_row]
             df_melted = reshape2::melt(df, id.vars='WellRow')
+
+            # check if metadata field already exist and correct capitalization if needed
+            if (!(iS %in% metadata_fields)) {
+                if (!is.null(metadata_fields) &&
+                        toupper(iS) %in% toupper(metadata_fields)) {
+                    oldiS = iS
+                    iS = metadata_fields[toupper(iS) == toupper(metadata_fields)]
+                    print(paste(oldiS, "corrected to match case with ", iS))
+                } else {
+                    metadata_fields = c( metadata_fields, iS )
+                }
+            }
             colnames(df_melted)[3] = iS
             colnames(df_melted)[colnames(df_melted) == 'variable'] = 'WellColumn'
             df_melted$WellColumn = gsub('x', '', df_melted$WellColumn)
