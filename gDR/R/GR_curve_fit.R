@@ -31,8 +31,8 @@ ICGRlogisticFit <- function(log10concs, RelativeViability, GRvalues, e_0 = 1, GR
     ICfit_parameters = c("h_ic", "e_inf", "ec50")
     GRfit_parameters = c('h_GR', 'GRinf', 'GEC50')
 
-    out = array(NA, length(metrics_results_headers))
-    names(out) = metrics_results_headers
+    out = array(NA, length(get_header('metrics_results')))
+    names(out) = get_header('metrics_results')
     out['maxlog10Concentration'] = max(log10concs)
     out['N_conc'] = length(unique(log10concs))
     out['e_0'] = e_0

@@ -1,4 +1,3 @@
-source("../R/analyze_data.R") # to get the function identify_keys
 
 # DB structure is described in https://drive.google.com/open?id=1gX5ja_dSdygr2KYTqYUiENKWxu9HkOEz
 
@@ -19,9 +18,9 @@ format_mySQL = function(df_averaged, df_metrics, project_id, condition_metadata_
     all_response_metadata$project_id = project_id
 
     # define the conditions (all metadata but primary Gnumber)
-    condition_keys = setdiff(keys, c(drugname_identifier, 'Concentration', drug_identifier,
-                                    add_fields_clid,
-                                    keys[grep(drugname_identifier, keys)], 'project_id'))
+    condition_keys = setdiff(keys, c(get_identifier('drugname'), 'Concentration', get_identifier('drug'),
+                                    get_header('add_clid'),
+                                    keys[grep(get_identifier('drugname'), keys)], 'project_id'))
     condition_all_metadata = unique(all_response_metadata[, condition_keys])
 
     condition_all_metadata$condition_id = condition_metadata_table_length +
@@ -31,19 +30,19 @@ format_mySQL = function(df_averaged, df_metrics, project_id, condition_metadata_
                         by = condition_keys)
 
     # get the secondary Gnumbers in their own table if any
-    N_add_Drugs = condition_keys[grep(drug_identifier, condition_keys)]
+    N_add_Drugs = condition_keys[grep(get_identifier('drug'), condition_keys)]
     sub_condition_codrug = data.frame()
     for (d in N_add_Drugs) {
         codrug = cbind(condition_all_metadata[, c('condition_id', d,
-                gsub(drug_identifier,'Concentration', d))], gsub(paste0(drug_identifier,'_'),'', d))
-        colnames(codrug)[-1] = c(drug_identifier,'Concentration','Ordinality')
+                gsub(get_identifier('drug'),'Concentration', d))], gsub(paste0(get_identifier('drug'),'_'),'', d))
+        colnames(codrug)[-1] = c(get_identifier('drug'),'Concentration','Ordinality')
         sub_condition_codrug = rbind(sub_condition_codrug, codrug)
     }
 
     # get the other treatment conditions if any
-    add_treatments = setdiff(condition_keys[ c(-grep(drug_identifier, condition_keys),
+    add_treatments = setdiff(condition_keys[ c(-grep(get_identifier('drug'), condition_keys),
                                         -grep('Concentration', condition_keys))],
-                                    c(duration_identifier, cellline_identifier, "project_id", "condition_id"))
+                                    c(get_identifier('duration'), get_identifier('cellline'), "project_id", "condition_id"))
     sub_condition_additional_treatment = data.frame()
     for (d in add_treatments) {
         cotrt = cbind(condition_all_metadata[, c('condition_id', d)], metadata_field = d)
@@ -53,7 +52,7 @@ format_mySQL = function(df_averaged, df_metrics, project_id, condition_metadata_
     }
 
     # get the properties for a given condition
-    sub_condition_metadata = condition_all_metadata[,c(cellline_identifier, duration_identifier, 'condition_id')]
+    sub_condition_metadata = condition_all_metadata[,c(get_identifier('cellline'), get_identifier('duration'), 'condition_id')]
     # TODO: add division time (DivisionTime)
     sub_condition_metadata = merge(sub_condition_metadata, unique(all_response_metadata[,
                             c('project_id', 'condition_id')]), by='condition_id')
@@ -61,7 +60,7 @@ format_mySQL = function(df_averaged, df_metrics, project_id, condition_metadata_
     # get the different treatments for a given condition
     sub_treatment_metadata = all_response_metadata[, c(setdiff(keys,
         c('project_id', 'CellLineName', condition_keys, 'Tissue',
-                keys[grep(drugname_identifier, keys)])),
+                keys[grep(get_identifier('drugname'), keys)])),
                                     'condition_id')]
     sub_treatment_metadata$treatment_id = treatment_metadata_table_length +
                                                 (1:dim(sub_treatment_metadata)[1])
@@ -125,8 +124,8 @@ extract_mySQL = function(project_id, condition_metadata, condition_additional_tr
         N_codrug = unique(df_codrug$Ordinality)
         for (codrug in N_codrug) {
             codrug_df = df_codrug[df_codrug$Ordinality == codrug,
-                                    c('condition_id', drug_identifier, 'Concentration')]
-            colnames(codrug_df)[2:3] = paste0(c(paste0(drug_identifier,'_'), 'Concentration_'), codrug)
+                                    c('condition_id', get_identifier('drug'), 'Concentration')]
+            colnames(codrug_df)[2:3] = paste0(c(paste0(get_identifier('drug'),'_'), 'Concentration_'), codrug)
             mx_codrug = merge(mx_codrug, codrug_df)
         }
         df_metadata = merge(df_metadata, mx_codrug, by = 'condition_id', all.x=T)

@@ -1,4 +1,4 @@
-source("../R/format_mySQL.R") # to get the function identify_keys
+devtools::load_all('../../gDR')
 
 
 # DB structure is described in https://drive.google.com/open?id=1gX5ja_dSdygr2KYTqYUiENKWxu9HkOEz
