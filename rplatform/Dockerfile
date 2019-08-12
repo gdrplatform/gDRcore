@@ -17,9 +17,9 @@ MAINTAINER Arkadiusz Gladki "arkadiusz.gladki@contractors.roche.com"
 
 ## Define your system dependencies in this Dockerfile
 
+COPY gDR/DESCRIPTION /mnt/vol/gDR/DESCRIPTION
 COPY rplatform/install_dependencies.R /mnt/vol/rplatform/install_dependencies.R
 RUN R -f /mnt/vol/rplatform/install_dependencies.R
-
 
 ## Uncomment following if installing package(s) from Bitbucket. It requires adding rsa keys to repo if it's not public
 #COPY rplatform/ssh_keys/id_rsa /home/rstudio/.ssh/id_rsa
