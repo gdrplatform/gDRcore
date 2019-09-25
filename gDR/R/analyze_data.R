@@ -99,13 +99,20 @@ merge_data = function(manifest, treatments, data, log_str) {
         stop(ErrorMsg)
     }
 
+
+    # remove wells not labeled
+    df_metadata_trimmed = df_metadata[ !is.na(df_metadata[,get_identifier('drug')]), ]
+    WarnMsg = sprintf('%i wells discarded for lack of annotation, %i data point selected',
+                dim(df_metadata_trimmed)[1],
+                sum(is.na(df_metadata[,get_identifier('drug')])))
+
     # clean up the metadata
-    print(colnames(df_metadata))
-    print(dim(df_metadata))
-    cleanedup_metadata = cleanup_metadata(df_metadata, log_str)
+    print(colnames(df_metadata_trimmed))
+    print(dim(df_metadata_trimmed))
+    cleanedup_metadata = cleanup_metadata(df_metadata_trimmed, log_str)
     print(colnames(cleanedup_metadata))
     print(dim(cleanedup_metadata))
-    stopifnot( dim(cleanedup_metadata)[1] == dim(df_metadata)[1] ) # should not happen
+    stopifnot( dim(cleanedup_metadata)[1] == dim(df_metadata_trimmed)[1] ) # should not happen
 
     df_merged = merge(cleanedup_metadata, data, by = c('Barcode', 'WellRow', 'WellColumn'))
     if (dim(df_merged)[1] != dim(data)[1]) {# need to identify issue and output relevant warning
