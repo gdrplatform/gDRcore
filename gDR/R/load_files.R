@@ -171,9 +171,10 @@ load_templates = function (df_template_files, log_str) {
         # identify drug_identifier sheet (case insensitive)
         Gnumber_idx = grep(paste0(get_identifier('drug'), '$'),
                     template_sheets[[iF]], ignore.case = T)
+        Conc_idx = grepl('Concentration', template_sheets[[iF]], ignore.case = T)
         # case of untreated plate
-        if (length(template_sheets[[iF]])==1) {
-            if(length(Gnumber_idx)==0 || Gnumber_idx!=1) {
+        if (sum(Conc_idx)==0) {
+            if(length(Gnumber_idx)==0) {
                 ErrorMsg = paste('In untreated template file', template_file[[iF]],
                     ', sheet name must be', get_identifier('drug'))
                 log_str = c(log_str, 'Error in load_templates:')
@@ -181,11 +182,12 @@ load_templates = function (df_template_files, log_str) {
                 writeLines(log_str)
                 stop(ErrorMsg)
             }
-            df = read_excel(template_file[[iF]], sheet = template_sheets[[iF]][1],
+            df = read_excel(template_file[[iF]], sheet = Gnumber_idx,
                     col_names = paste0('x', 1:48), range = 'A1:AV32')
             if ( !(all(toupper(unlist(df)[!is.na(unlist(df))]) %in% toupper(get_identifier('untreated_tag')) ))) {
                     ErrorMsg = paste('In untreated template file', template_file[[iF]],
-                        ', entries mush be Vehicle or Untreated')
+                        ', entries mush be ',
+                        paste(get_identifier('untreated_tag'), collapse = ' or '))
                     log_str = c(log_str, 'Error in load_templates:')
                     log_str = c(log_str, ErrorMsg)
                     writeLines(log_str)
