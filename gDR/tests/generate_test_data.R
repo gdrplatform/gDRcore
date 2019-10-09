@@ -92,28 +92,76 @@ df_normalized$Gnumber_2[df_normalized$Concentration_2 == 0] = 'Vehicle'
 levels(df_normalized$DrugName_2) = c(levels(df_normalized$DrugName_2), 'Vehicle')
 df_normalized$DrugName_2[df_normalized$Concentration_2 == 0] = 'Vehicle'
 
-Keys = identify_keys(df_normalized)
-df_averaged = average_replicates(df_normalized[df_normalized$Concentration > 0 |
-                                        df_normalized$Concentration_2 > 0, ] , Keys$Trt)
-df_metrics = calculate_DRmetrics(df_averaged, Keys$DoseResp)
+# decompose de table into original files
+df_raw_data = df_normalized[order(df_normalized$Barcode),]
+df_raw_data$Template = 'Template_trt.tsv'
+df_raw_data$WellRow = sort(rep(LETTERS[3:14],20))
+df_raw_data$WellColumn = 3:22
+levels(df_raw_data$Barcode) = paste0('Plate',1:8)
 
-write.table(df_normalized, '../inst/testdata/test_combo1/df_normalized.tsv',
-        sep='\t', quote=F, row.names=F)
-write.table(df_averaged, '../inst/testdata/test_combo1/df_averaged.tsv',
-        sep='\t', quote=F, row.names=F)
-write.table(df_metrics, '../inst/testdata/test_combo1/df_metrics.tsv',
-        sep='\t', quote=F, row.names=F)
+df_day0 = df_raw_data[c(1:(240),(1:240)+3*240) ,]
+df_day0$Duration = 0
+df_day0$Concentration = 0
+df_day0$DrugName = 'Vehicle'
+df_day0$Gnumber = 'Vehicle'
+df_day0$Concentration_2 = 0
+df_day0$DrugName_2 = 'Vehicle'
+df_day0$Gnumber_2 = 'Vehicle'
+df_day0$ReadoutValue = df_day0$Day0Readout + df_day0$BackgroundValue
+df_day0$Template = 'Template_untrt.tsv'
+df_day0$Barcode = factor(ifelse(df_day0$Barcode=='Plate1', 'Plate7', 'Plate8'),
+    level = levels(df_raw_data$Barcode))
+df_raw_data = rbind(df_raw_data, df_day0)
 
 
-# add a third co-treatment
+df_manifest = unique(df_raw_data[, c('Barcode', 'Template', 'Duration', 'clid')])
+df_data = df_raw_data[,c('Barcode', 'WellRow', 'WellColumn', 'ReadoutValue', 'BackgroundValue')]
+df_treatment = unique(df_raw_data[, c('Template', 'WellRow', 'WellColumn', 'Gnumber',
+                'Gnumber_2', 'Concentration', 'Concentration_2')])
+
+dir.create('../inst/testdata/data8')
+write.table(df_manifest, '../inst/testdata/data8/Manifest_data8.tsv',
+        sep='\t', quote=F, row.names=F)
+write.table(df_data, '../inst/testdata/data8/Result_data8.tsv',
+        sep='\t', quote=F, row.names=F)
+for (trt_f in unique(df_treatment$Template)) {
+        write.table(df_treatment[df_treatment$Template==trt_f,
+                setdiff(colnames(df_treatment), 'Template')],
+            paste0('../inst/testdata/data8/', trt_f),
+                sep='\t', quote=F, row.names=F)
+}
+
+# df_raw_data_2 = merge_data(df_manifest, df_treatment, df_data, 'f')
+# head(df_raw_data[order(df_raw_data$ReadoutValue),c('Barcode', 'WellRow', 'WellColumn')], 20)
+# head(df_raw_data_2[order(df_raw_data_2$ReadoutValue),c('Barcode', 'WellRow', 'WellColumn')], 20)
+
+# Keys = identify_keys(df_normalized)
+# df_averaged = average_replicates(df_normalized[df_normalized$Concentration > 0 |
+#                                         df_normalized$Concentration_2 > 0, ] , Keys$Trt)
+# df_metrics = calculate_DRmetrics(df_averaged, Keys$DoseResp)
+#
+# write.table(df_raw_data_2, '../inst/testdata/data8_results/df_raw_data.tsv',
+#         sep='\t', quote=F, row.names=F)
+# write.table(df_normalized, '../inst/testdata/data8_results/df_normalized.tsv',
+#         sep='\t', quote=F, row.names=F)
+# write.table(df_averaged, '../inst/testdata/data8_results/df_averaged.tsv',
+#         sep='\t', quote=F, row.names=F)
+# write.table(df_metrics, '../inst/testdata/data8_results/df_metrics.tsv',
+#         sep='\t', quote=F, row.names=F)
+#
+
+# add a third co-treatment on duplicated plates
 
 df_normalized2 = df_normalized3 = df_normalized
 df_normalized2$DrugName_3 = 'Vehicle'
 df_normalized2$Gnumber_3 = 'Vehicle'
 df_normalized2$Concentration_3 = 0
+df_normalized2$Template = 'Template_trt.tsv'
 df_normalized3$DrugName_3 = 'Erlotinib'
 df_normalized3$Gnumber_3 = 'G00022086'
 df_normalized3$Concentration_3 = .5
+df_normalized3$Template = 'Template_trt_2.tsv'
+levels(df_normalized3$Barcode) = paste0('Plate', 7:12)
 
 df_normalized3$ReadoutValue = pmax(df_normalized3$ReadoutValue * .92 - 5, 4)
 df_normalized3$ReadoutValue[df_normalized3$CellLineName == 'HCC2218'] =
@@ -122,15 +170,62 @@ set.seed(2)
 df_normalized3$ReadoutValue = df_normalized3$ReadoutValue + runif(dim(df_normalized)[1], -1, 2)
 
 df_normalized_3drugs = rbind(df_normalized2, df_normalized3)
-Keys = identify_keys(df_normalized_3drugs)
-df_averaged = average_replicates(df_normalized_3drugs[df_normalized_3drugs$Concentration > 0 |
-            df_normalized_3drugs$Concentration_2 > 0 | df_normalized_3drugs$Concentration_3 > 0, ],
-         Keys$Trt)
-df_metrics = calculate_DRmetrics(df_averaged, Keys$DoseResp)
 
-write.table(df_normalized, '../inst/testdata/test_combo_3d/df_normalized.tsv',
+
+
+# decompose de table into original files
+df_raw_data_3d = df_normalized_3drugs[order(df_normalized_3drugs$Barcode),]
+df_raw_data_3d$WellRow = sort(rep(LETTERS[3:14],20))
+df_raw_data_3d$WellColumn = 3:22
+
+df_day0 = df_raw_data_3d[c(1:240,(1:240)+3*240) ,]
+df_day0$Duration = 0
+df_day0$Concentration = 0
+df_day0$DrugName = 'Vehicle'
+df_day0$Gnumber = 'Vehicle'
+df_day0$Concentration_2 = 0
+df_day0$DrugName_2 = 'Vehicle'
+df_day0$Gnumber_2 = 'Vehicle'
+df_day0$ReadoutValue = df_day0$Day0Readout + df_day0$BackgroundValue
+df_day0$Template = 'Template_untrt.tsv'
+df_day0$Barcode = factor(ifelse(df_day0$Barcode=='Plate1', 'Plate13', 'Plate14'),
+    level = c('Plate13', 'Plate14'))
+df_raw_data_3d = rbind(df_raw_data_3d, df_day0)
+
+
+df_manifest_3d = unique(df_raw_data_3d[, c('Barcode', 'Template', 'Duration', 'clid')])
+df_data_3d = df_raw_data_3d[,c('Barcode', 'WellRow', 'WellColumn',
+                    'ReadoutValue', 'BackgroundValue')]
+df_treatment_3d = unique(df_raw_data_3d[, c('Template', 'WellRow', 'WellColumn', 'Gnumber',
+                'Gnumber_2', 'Gnumber_3', 'Concentration', 'Concentration_2', 'Concentration_3')])
+
+dir.create('../inst/testdata/data9')
+write.table(df_manifest_3d, '../inst/testdata/data9/Manifest_data9.tsv',
         sep='\t', quote=F, row.names=F)
-write.table(df_averaged, '../inst/testdata/test_combo_3d/df_averaged.tsv',
+write.table(df_data_3d, '../inst/testdata/data9/Result_data9.tsv',
         sep='\t', quote=F, row.names=F)
-write.table(df_metrics, '../inst/testdata/test_combo_3d/df_metrics.tsv',
-        sep='\t', quote=F, row.names=F)
+for (trt_f in unique(df_treatment_3d$Template)) {
+    write.table(df_treatment_3d[df_treatment_3d$Template==trt_f,
+            setdiff(colnames(df_treatment_3d), 'Template')],
+        paste0('../inst/testdata/data9/', trt_f),
+            sep='\t', quote=F, row.names=F)
+}
+
+# df_raw_data_3d_2 = merge_data(df_manifest_3d, df_treatment_3d, df_data_3d, 'f')
+# head(df_raw_data_3d[order(df_raw_data_3d$ReadoutValue),c('Barcode', 'WellRow', 'WellColumn')], 10)
+# head(df_raw_data_3d_2[order(df_raw_data_3d_2$ReadoutValue),c('Barcode', 'WellRow', 'WellColumn')], 10)
+
+
+
+# Keys = identify_keys(df_normalized_3drugs)
+# df_averaged = average_replicates(df_normalized_3drugs[df_normalized_3drugs$Concentration > 0 |
+#             df_normalized_3drugs$Concentration_2 > 0 | df_normalized_3drugs$Concentration_3 > 0, ],
+#          Keys$Trt)
+# df_metrics = calculate_DRmetrics(df_averaged, Keys$DoseResp)
+#
+# write.table(df_normalized, '../inst/testdata/data9_results/df_normalized.tsv',
+#         sep='\t', quote=F, row.names=F)
+# write.table(df_averaged, '../inst/testdata/data9_results/df_averaged.tsv',
+#         sep='\t', quote=F, row.names=F)
+# write.table(df_metrics, '../inst/testdata/data9_results/df_metrics.tsv',
+#         sep='\t', quote=F, row.names=F)
