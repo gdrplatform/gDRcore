@@ -10,14 +10,16 @@
 
 #' @export
 Overall_function = function(manifest_file, template_file, results_file,
-                output_files, selected_keys = NULL, key_values = NULL) {
+                output_files, selected_keys = NULL, key_values = NULL,
+                instrument='EnVision') {
     # output_files should contain file names for :
     #   log_file, QC_file, raw_result, process_results, metrics_results
 
     log_str = 'Report from gDR pipeline'
 
-    raw_data = load_data(manifest_file, template_file, results_file, log_str)
-    df_merged_data = merge_data(raw_data$manifest, raw_data$treatments, raw_data$data, log_str)
+    lData = load_data(manifest_file, template_file, results_file,
+                log_str, instrument)
+    df_raw_data = merge_data(lData$manifest, lData$treatments, lData$data, log_str)
 
     # output_QC_byPlate(df_raw_data, output_files['QC_file']) # TODO: check column/row bias
 
@@ -114,7 +116,8 @@ merge_data = function(manifest, treatments, data, log_str) {
     print(dim(cleanedup_metadata))
     stopifnot( dim(cleanedup_metadata)[1] == dim(df_metadata_trimmed)[1] ) # should not happen
 
-    df_merged = merge(cleanedup_metadata, data, by = c('Barcode', 'WellRow', 'WellColumn'))
+    df_merged = merge(cleanedup_metadata, data, by = c('Barcode',
+                                get_identifier('WellPosition')))
     if (dim(df_merged)[1] != dim(data)[1]) {# need to identify issue and output relevant warning
         WarnMsg = 'Not all results have been matched with treatments; merged table is smaller than data table'
         log_str = c(log_str, 'Warning in load_merge_data:')
@@ -144,11 +147,13 @@ merge_data = function(manifest, treatments, data, log_str) {
 
 
 #' @export
-normalize_data = function(df_raw_data, log_str, selected_keys = NULL, key_values = NULL) {
+normalize_data = function(df_raw_data, log_str, selected_keys = NULL,
+                key_values = NULL) {
     # average technical replicates and assign the right controls to each treated well
 
     # remove unused columns but keep barcodes to normalize by plate
-    df_normalized = subset(df_raw_data, select=-c(Template, WellRow, WellColumn))
+    df_normalized = df_raw_data[, setdiff(colnames(df_raw_data),
+                        c('Template', get_identifier('WellPosition')) ) ]
 
     # Identify keys for assigning the controls
     Keys = identify_keys(df_normalized)
@@ -228,11 +233,32 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL, key_values
         warning(WarnMsg)
     }
 
-
-    df_normalized = merge(df_normalized[df_normalized[,get_identifier('duration')]>0 &
+    df_to_norm = df_normalized[df_normalized[,get_identifier('duration')]>0 &
         (apply(df_normalized[,agrep('Concentration', colnames(df_normalized)),drop=F]!=0,1,any) |
-                !endpoint_value_filter),],
-                 df_controls)
+                !endpoint_value_filter),]
+
+    df_to_norm_conditions = unique(df_to_norm[, intersect(colnames(df_to_norm),
+                                colnames(df_controls))])
+
+    # if missing barcodes --> dispatch for similar conditions
+    if (!all(df_to_norm_conditions$Barcode %in% df_controls$Barcode)) {
+        WarnMsg = paste('Not all control conditions found at the end of treatment,')
+        WarnMsg = paste(WarnMsg,'dispatching values for plates: ',
+                    paste(setdiff(df_to_norm_conditions$Barcode, df_controls$Barcode),
+                        collapse = ' ; '))
+        log_str = c(log_str, 'Warning in normalize_data:')
+        log_str = c(log_str, WarnMsg)
+        warning(WarnMsg)
+
+        df_ctrl_mean = aggregate(df_controls[,c('UntrtReadout', 'Day0Readout')],
+                    by = as.list(subset(df_controls,
+                        select = -c(UntrtReadout,Day0Readout,Barcode))), mean)
+        df_controls = rbind(df_controls, merge(df_ctrl_mean,
+                df_to_norm_conditions[!(df_to_norm_conditions$Barcode %in%
+                        df_controls$Barcode),]))
+    }
+
+    df_normalized = merge(df_to_norm, df_controls)
 
     df_normalized$RelativeViability = round(df_normalized$CorrectedReadout/
                                             df_normalized$UntrtReadout,4)
@@ -404,7 +430,7 @@ identify_keys = function(df) {
                                             -agrep(get_identifier('drugname'), colnames(df)))])
     keys[['Day0']] = keys[['Endpoint']]
     keys = lapply(keys, function(x) setdiff(x, c(get_header('raw_data'),
-        get_header('normalized_results'), "Template", "WellRow", "WellColumn", get_header('averaged_results'),
+        get_header('normalized_results'), "Template", get_identifier('WellPosition'), get_header('averaged_results'),
             get_header('metrics_results'), "ReferenceDivisionTime"
     )))
 
@@ -427,7 +453,7 @@ cleanup_metadata = function(df_metadata, log_str) {
     # identify potential numeric fields and replace NA by 0 - convert strings in factors
     for (c in setdiff(1:dim(df_metadata)[2], c( agrep(get_identifier('drug'), colnames(df_metadata)),
             agrep('Concentration', colnames(df_metadata)),
-            grep(paste(c(get_identifier('cellline'), get_header('manifest'), 'WellColumn|WellRow'),
+            grep(paste(c(get_identifier('cellline'), get_header('manifest'), get_identifier('WellPosition')),
                 collapse = '|'), colnames(df_metadata)) ))) {
         vals = unique(df_metadata[,c])
 

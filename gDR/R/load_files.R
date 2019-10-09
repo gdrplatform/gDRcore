@@ -73,7 +73,8 @@ get_header = function(x = NULL) {
 }
 
 #' @export
-load_data = function(manifest_file, df_template_files, results_file, log_str) {
+load_data = function(manifest_file, df_template_files, results_file,
+                log_str, instrument='EnVision') {
 
     log_str = c(log_str, '', 'load_merge_data')
 
@@ -86,7 +87,7 @@ load_data = function(manifest_file, df_template_files, results_file, log_str) {
 
     manifest = load_manifest(manifest_file, log_str)
     treatments = load_templates(df_template_files, log_str)
-    data = load_results(results_file, log_str)
+    data = load_results(results_file, log_str, instrument)
 
     # check the all template files are available
     if (!all(unique(manifest$Template[manifest$Barcode %in% data$Barcode])
@@ -160,14 +161,14 @@ load_templates = function (df_template_files, log_str) {
     }
 
     all_templates = data.frame()
-    if (any(grepl('\\.xlsx', template_filename))) {
-        idx = grepl('\\.xlsx', template_filename)
+    if (any(grepl('\\.xlsx?$', template_filename))) {
+        idx = grepl('\\.xlsx?$', template_filename)
         all_templates_1 = load_templates_xlsx(template_file[idx],
                         template_filename[idx], log_str)
         all_templates = rbind(all_templates, all_templates_1)
     }
-    if (any(grepl('\\.[ct]sv', template_filename))) {
-        idx = grepl('\\.[ct]sv', template_filename)
+    if (any(grepl('\\.[ct]sv$', template_filename))) {
+        idx = grepl('\\.[ct]sv$', template_filename)
         print(paste('Reading', template_filename[idx], 'with load_templates_tsv'))
         all_templates_2 = load_templates_tsv(template_file[idx],
                         template_filename[idx], log_str)
@@ -420,16 +421,6 @@ load_results_EnVision = function(results_file, results_filename, log_str) {
     # results_file is a string or a vector of strings
     log_str = c(log_str, '', 'load_results')
 
-    if (is.data.frame(df_results_files)) {# for the shiny app
-        results_file = df_results_files$datapath
-        results_filename = df_results_files$name
-    } else {
-        results_file = df_results_files
-        results_filename = basename(results_file)
-    }
-
-    stopifnot(sapply(results_file, file.exists))
-
     # test if the result files are .tsv or .xls(x) files
     isExcel = sapply(results_file, function(x) tryCatch(
         { excel_sheets(x)
@@ -472,7 +463,8 @@ load_results_EnVision = function(results_file, results_filename, log_str) {
                                         # limit to first 48 rows in case Protocol information is
                                         # exported which generate craps at the end of the file
             }
-            full_rows = !apply(df,1,function(x) all(is.na(x))) # not empty rows
+            full_rows = !apply(df[,-7:-1],1,function(x) all(is.na(x))) # not empty rows
+                # don't consider the first columns as these may be metadata
             # if big gap, delete what is at the bottom (Protocol information)
             gaps = min(which(full_rows)[ (diff(which(full_rows))>20) ]+1, dim(df)[1])
             df = df[ which(full_rows)[which(full_rows) <= gaps], ] # remove extra rows
