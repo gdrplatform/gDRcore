@@ -18,7 +18,9 @@ get_identifier = function(x = NULL) {
         drugname = 'DrugName',
         # corresponds to the fieLd  'gcsi_drug_name' from gCellGenomics::getDrugs()
 
-        untreated_tag = c('untreated', 'vehicle') # flag to identify control treatments
+        untreated_tag = c('untreated', 'vehicle'), # flag to identify control treatments
+
+        WellPosition = c('WellRow', 'WellColumn')
     )
     if (!is.null(x) && x %in% names(identifiersList)) return(identifiersList[[x]])
     else return(identifiersList)
@@ -39,7 +41,7 @@ get_header = function(x = NULL) {
             "mean_viability", "ic50", "e_max", "ec50", "e_inf", "e_0", "h_ic", "ic_r2", "flat_fit_ic",
             "GR_AOC",        "GR50", "GRmax", "GEC50", "GRinf", "GR_0", "h_GR", "GR_r2", "flat_fit_GR"),
         add_clid = c('CellLineName', 'Tissue', 'ReferenceDivisionTime')
-# corresponds to the fieLd  'celllinename', 'primarytissue', 'doublingtime' from gneDB CLIDs
+        # corresponds to the fieLd  'celllinename', 'primarytissue', 'doublingtime' from gneDB CLIDs
     )
     headersList[['controlled']] = c(get_identifier('cellline'),
                     headersList[['manifest']],
@@ -71,7 +73,8 @@ get_header = function(x = NULL) {
 }
 
 #' @export
-load_data = function(manifest_file, df_template_files, results_file, log_str) {
+load_data = function(manifest_file, df_template_files, results_file,
+                log_str, instrument='EnVision') {
 
     log_str = c(log_str, '', 'load_merge_data')
 
@@ -84,7 +87,7 @@ load_data = function(manifest_file, df_template_files, results_file, log_str) {
 
     manifest = load_manifest(manifest_file, log_str)
     treatments = load_templates(df_template_files, log_str)
-    data = load_results(results_file, log_str)
+    data = load_results(results_file, log_str, instrument)
 
     # check the all template files are available
     if (!all(unique(manifest$Template[manifest$Barcode %in% data$Barcode])
@@ -156,6 +159,132 @@ load_templates = function (df_template_files, log_str) {
         template_file = df_template_files
         template_filename = basename(template_file)
     }
+
+    all_templates = data.frame()
+    if (any(grepl('\\.xlsx?$', template_filename))) {
+        idx = grepl('\\.xlsx?$', template_filename)
+        all_templates_1 = load_templates_xlsx(template_file[idx],
+                        template_filename[idx], log_str)
+        all_templates = rbind(all_templates, all_templates_1)
+    }
+    if (any(grepl('\\.[ct]sv$', template_filename))) {
+        idx = grepl('\\.[ct]sv$', template_filename)
+        print(paste('Reading', template_filename[idx], 'with load_templates_tsv'))
+        all_templates_2 = load_templates_tsv(template_file[idx],
+                        template_filename[idx], log_str)
+        all_templates = rbind(all_templates, all_templates_2)
+    }
+
+    return(all_templates)
+
+}
+
+
+#' @export
+load_results = function(df_results_files, log_str, instrument='EnVision') {
+
+    if (is.data.frame(df_results_files)) {# for the shiny app
+        results_file = df_results_files$datapath
+        results_filename = df_results_files$name
+    } else {
+        results_file = df_results_files
+        results_filename = basename(results_file)
+    }
+    stopifnot(sapply(results_file, file.exists))
+
+    if (instrument == 'EnVision') {
+        all_results = load_results_EnVision(results_file, results_filename, log_str)
+    } else if (instrument == 'long_tsv') {
+        all_results = load_results_tsv(results_file, results_filename, log_str)
+    }
+    return(all_results)
+}
+
+
+
+# individual functions
+
+load_templates_tsv = function(template_file, template_filename, log_str) {
+
+    if (is.null(template_filename)) template_filename = basename(template_file)
+
+    # read columns in files
+    templates = lapply(template_file, function(x)
+                    read_tsv(x, col_names=T, skip_empty_rows=T))
+    names(templates) = template_filename
+    # check WellRow/WellColumn is present in each df
+    sapply(lapply(1:length(template_file), function(x) list(templates[[x]], template_filename[x])),
+        function(x) if(!(all( get_identifier('WellPosition') %in% colnames(x[[1]])))) { print(paste(x[[2]], 'missing', get_identifier('WellPosition'), 'as header'))})
+    # check drug_identifier is present in each df
+    sapply(lapply(1:length(template_file), function(x) list(templates[[x]], template_filename[x])),
+        function(x) check_metadata_names(
+                setdiff(colnames(x[[1]]), get_identifier('WellPosition')),
+                log_str, df_name=x[[2]], df_type='template'))
+
+    metadata_fields = NULL
+    all_templates = data.frame()
+    for (iF in 1:length(template_file)) {
+        print(paste('Loading', template_filename[iF]))
+        # first check that the sheet names are ok
+        # identify drug_identifier sheet (case insensitive)
+        Gnumber_idx = grep(paste0(get_identifier('drug'), '$'),
+                    colnames(templates[[iF]]), ignore.case = T)
+        Conc_idx = grepl('Concentration', colnames(templates[[iF]]), ignore.case = T)
+        # case of untreated plate
+        if (sum(Conc_idx)==0) {
+            if(length(Gnumber_idx)==0) {
+                ErrorMsg = paste('In untreated template file', template_file[iF],
+                    ', sheet name must be', get_identifier('drug'))
+                log_str = c(log_str, 'Error in load_templates:')
+                log_str = c(log_str, ErrorMsg)
+                writeLines(log_str)
+                stop(ErrorMsg)
+            }
+            df = templates[[iF]][,get_identifier('drug')]
+            if ( !(all(toupper(df)[!is.na(df)]) %in% toupper(get_identifier('untreated_tag')) )) {
+                    ErrorMsg = paste('In untreated template file', template_file[iF],
+                        ', entries mush be ',
+                        paste(get_identifier('untreated_tag'), collapse = ' or '))
+                    log_str = c(log_str, 'Error in load_templates:')
+                    log_str = c(log_str, ErrorMsg)
+                    writeLines(log_str)
+                    stop(ErrorMsg)
+            }
+        } else {
+        # normal case
+            check_metadata_names(colnames(templates[[iF]]), log_str,
+                    df_name=template_filename[iF],
+                    df_type='template_treatment')
+        }
+
+        df_template = templates[[iF]]
+        for (iS in colnames(df_template)) {
+            # check if metadata field already exist and correct capitalization if needed
+            if (!(iS %in% metadata_fields)) {
+                if (!is.null(metadata_fields) &&
+                        toupper(iS) %in% toupper(metadata_fields)) {
+                    oldiS = iS
+                    iS = metadata_fields[toupper(iS) == toupper(metadata_fields)]
+                    print(paste(oldiS, "corrected to match case with ", iS))
+                    colnames(df_template)[colnames(df_template) == oldiS] = iS
+                } else {
+                    metadata_fields = c( metadata_fields, iS )
+                }
+            }
+        }
+        df_template$Template = template_filename[iF]
+        colnames(df_template) = check_metadata_names(colnames(df_template), log_str,
+                            df_name=template_filename[iF])
+        all_templates = bind_rows(all_templates, df_template)
+
+    }
+    print('Templates loaded:')
+    print(dim(all_templates))
+    return(all_templates)
+}
+
+
+load_templates_xlsx = function(template_file, template_filename, log_str) {
 
     # read sheets in files
     template_sheets = lapply(template_file, excel_sheets)
@@ -247,21 +376,50 @@ load_templates = function (df_template_files, log_str) {
 }
 
 
-
-#' @export
-load_results = function(df_results_files, log_str) {
+load_results_tsv = function(results_file, results_filename=NULL, log_str) {
     # results_file is a string or a vector of strings
     log_str = c(log_str, '', 'load_results')
 
-    if (is.data.frame(df_results_files)) {# for the shiny app
-        results_file = df_results_files$datapath
-        results_filename = df_results_files$name
-    } else {
-        results_file = df_results_files
-        results_filename = basename(results_file)
-    }
+    if (is.null(results_filename)) results_filename = basename(results_file)
 
-    stopifnot(sapply(results_file, file.exists))
+    # read all files
+    all_results = data.frame()
+    for (iF in 1:length(results_file)) {
+        print(paste('Reading file', results_file[iF]))
+            df = read_tsv(results_file[iF], col_names=T, skip_empty_rows=T)
+                # skip_empty_rows flag needs to be TRUE even if it ends up not skipping empty rows
+            if (dim(df)[2] == 1) { # likely a csv file
+                df = read_csv(results_file[iF], col_names=T, skip_empty_rows=T)
+            }
+
+            for (coln in c('Barcode', get_identifier('WellPosition'), 'ReadoutValue')) {
+                if (!(coln %in% colnames(df))){
+                    ErrorMsg(coln, 'needs to be a column of', results_filename[iF])}
+            }
+            if (dim(unique(df[,c('Barcode', get_identifier('WellPosition'))]))[1] !=
+                dim(df[,c('Barcode', get_identifier('WellPosition'))])[1]) {
+                ErrorMsg('Multiple rows with the same Barcode and Well in',
+                    results_filename[iF])}
+            if ( !('BackgroundValue' %in% colnames(df)) ) df$BackgroundValue = 0
+
+            print(paste('File', results_filename[iF],
+                        'read;', dim(df)[1], 'wells'))
+                all_results = rbind(all_results, df)
+
+            print('File done')
+        }
+
+    if (dim(unique(df[,c('Barcode', get_identifier('WellPosition'))]))[1] !=
+        dim(df[,c('Barcode', get_identifier('WellPosition'))])[1]) {
+        ErrorMsg('Multiple rows with the same Barcode and Well across all files')}
+
+    return(all_results)
+}
+
+
+load_results_EnVision = function(results_file, results_filename, log_str) {
+    # results_file is a string or a vector of strings
+    log_str = c(log_str, '', 'load_results')
 
     # test if the result files are .tsv or .xls(x) files
     isExcel = sapply(results_file, function(x) tryCatch(
@@ -305,7 +463,8 @@ load_results = function(df_results_files, log_str) {
                                         # limit to first 48 rows in case Protocol information is
                                         # exported which generate craps at the end of the file
             }
-            full_rows = !apply(df,1,function(x) all(is.na(x))) # not empty rows
+            full_rows = !apply(df[,-7:-1],1,function(x) all(is.na(x))) # not empty rows
+                # don't consider the first columns as these may be metadata
             # if big gap, delete what is at the bottom (Protocol information)
             gaps = min(which(full_rows)[ (diff(which(full_rows))>20) ]+1, dim(df)[1])
             df = df[ which(full_rows)[which(full_rows) <= gaps], ] # remove extra rows
@@ -379,7 +538,7 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
     log_str = c(log_str, '   check_metadata_names')
     # first check for required column names
     if (!is.null(df_type)) {
-    check_headers = get_header('reserved')
+
         if (df_type == 'manifest') {
                 expected_headers = get_header('manifest')
         } else if (df_type == 'template') {
@@ -427,9 +586,9 @@ check_metadata_names = function(col_df, log_str, df_name = '', df_type = NULL) {
                 }
             }
         }
-    } else {
-        check_headers = setdiff(get_header('reserved'), c('WellRow', 'WellColumn'))
     }
+    check_headers = setdiff(get_header('reserved'), get_identifier('WellPosition'))
+
 
     corrected_names = col_df
 
