@@ -1,4 +1,7 @@
 log*.txt
 ~*
 ._*
-
+*.Rbuildignore
+*.Rhistory
+*.Rproj.user/
+*.Rproj
