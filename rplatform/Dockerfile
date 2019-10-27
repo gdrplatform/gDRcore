@@ -45,4 +45,4 @@ RUN sudo chown rstudio:rstudio -R /home/rstudio/.ssh && \
 COPY rplatform/install_from_source.R /mnt/vol/rplatform/install_from_source.R
 RUN R -f /mnt/vol/rplatform/install_from_source.R
 
-RUN rm -rf /mnt/vol/*
+RUN sudo rm -rf /mnt/vol/*
