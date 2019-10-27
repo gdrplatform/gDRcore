@@ -18,7 +18,7 @@ MAINTAINER Arkadiusz Gladki "arkadiusz.gladki@contractors.roche.com"
 #================= Define your system dependencies in this Dockerfile
 
 # install mysql client
-RUN apt-get update && apt-get install -y \
+RUN sudo apt-get update && sudo apt-get install -y \
     libmariadb-client-lgpl-dev
 
 ## Define your system dependencies in this Dockerfile
