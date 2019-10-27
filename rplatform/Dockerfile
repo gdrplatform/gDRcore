@@ -15,6 +15,12 @@ FROM 10.39.88.188:5000/rocker-rstudio-stable:3.5.1_rp0.0.77
 
 MAINTAINER Arkadiusz Gladki "arkadiusz.gladki@contractors.roche.com"
 
+#================= Define your system dependencies in this Dockerfile
+
+# install mysql client
+RUN apt-get update && apt-get install -y \
+    libmariadb-client-lgpl-dev
+
 ## Define your system dependencies in this Dockerfile
 
 COPY gDR/DESCRIPTION /mnt/vol/gDR/DESCRIPTION
