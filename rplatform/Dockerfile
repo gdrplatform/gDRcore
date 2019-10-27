@@ -19,6 +19,7 @@ MAINTAINER Arkadiusz Gladki "arkadiusz.gladki@contractors.roche.com"
 
 COPY gDR/DESCRIPTION /mnt/vol/gDR/DESCRIPTION
 COPY rplatform/install_dependencies.R /mnt/vol/rplatform/install_dependencies.R
+COPY rplatform/git_dependencies.yml /mnt/vol/rplatform/git_dependencies.yml
 RUN R -f /mnt/vol/rplatform/install_dependencies.R
 
 ## Uncomment following if installing package(s) from Bitbucket. It requires adding rsa keys to repo if it's ## not public
