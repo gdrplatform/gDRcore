@@ -6,6 +6,6 @@ pkgs:
     subdir: gnedb
   gCellGenomics:
     ver: '>=1.14.10'
-    url: ssh://git@stash.intranet.roche.com:7999/bncb_r_packages/shinyplugins.git
+    url: ssh://git@stash.intranet.roche.com:7999/bncb_r_packages/gcellgenomics.git
     ref: master
     subdir: ~
