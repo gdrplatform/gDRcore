@@ -19,7 +19,7 @@ for (nm in names(pkgs))
     install = devtools::install_git,
     url = pkgs[[nm]]$url,
     ref = pkgs[[nm]]$ref,
-    credentials = .ssh_keys,
+    credentials = ssh_keys,
     package = nm,
     # version requirement is taken from DESCRIPTION if not specified manually in yaml
     requirement = if (!is.null(pkgs[[nm]][["ver"]])) pkgs[[nm]][["ver"]] else .deps[[nm]], 
