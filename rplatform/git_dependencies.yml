@@ -1,0 +1,11 @@
+pkgs:
+  gneDB:
+    ver: ">=1.28.6"
+    url: ssh://git@stash.intranet.roche.com:7999/bncb_r_packages/gnedb.git
+    ref: master
+    subdir: gnedb
+  gCellGenomics:
+    ver: '>=1.14.10'
+    url: ssh://git@stash.intranet.roche.com:7999/bncb_r_packages/shinyplugins.git
+    ref: master
+    subdir: ~

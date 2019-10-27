@@ -9,14 +9,21 @@
 
 ## Uncomment following code to install package(s) directly from Bitbucket repository
 ## SSH keys should be copied to container before installation
-# ssh_keys <- git2r::cred_ssh_key(file.path("/home/rstudio/.ssh/id_rsa.pub"), file.path("/home/rstudio/.ssh/id_rsa"))
-# rp::installAndVerify(
-#     install = devtools::install_git,
-#     url = "ssh://git@stash.intranet.roche.com:7999/some/repo/url.git",
-#     ref = "master", # branch name or commit hash
-#     credentials = ssh_keys,
-#     package = "package_name",
-#     requirement = "*",
-#     subdir = NULL, # provide if package is in subdir
-#     upgrade = "never"
-#   )
+ssh_keys <- git2r::cred_ssh_key(file.path("/home/rstudio/.ssh/id_rsa.pub"), file.path("/home/rstudio/.ssh/id_rsa"))
+.wd <- "/mnt/vol"
+.deps <- rp:::collectDependencies(desc.files = file.path(.wd, "gDRshiny/DESCRIPTION"))
+pkgs <- yaml::read_yaml(file.path(.wd, "rplatform", "git_dependencies.yml"))$pkgs
+
+for (nm in names(pkgs))
+  rp::installAndVerify(
+    install = devtools::install_git,
+    url = pkgs[[nm]]$url,
+    ref = pkgs[[nm]]$ref,
+    credentials = .ssh_keys,
+    package = nm,
+    # version requirement is taken from DESCRIPTION if not specified manually in yaml
+    requirement = if (!is.null(pkgs[[nm]][["ver"]])) pkgs[[nm]][["ver"]] else .deps[[nm]], 
+    subdir = pkgs[[nm]]$subdir,
+    upgrade = "never"
+  )
+
