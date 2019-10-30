@@ -5,3 +5,4 @@ log*.txt
 *.Rhistory
 *.Rproj.user/
 *.Rproj
+.Rproj.user

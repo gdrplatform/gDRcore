@@ -23,8 +23,18 @@ options(Ncpus = parallel::detectCores())
 # )
 # rp::installAndVerify(package = pkgs_to_install)
 
-# Or uncomment following and use desc::desc_get_deps() to extract dependencies from DESCRIPTION file
-deps <- desc::desc_get_deps(file.path("/mnt/vol", "gDR/DESCRIPTION"))
+.wd <- "/mnt/vol"
+
+# don't install these packages - they will be installed separately
+git_pkgs <- yaml::read_yaml(file.path(.wd, "rplatform", "git_dependencies.yml"))
+dont.install <- c(
+  names(git_pkgs$pkgs)
+) 
+
+# Extract dependencies from DESCRIPTION file
+deps <- desc::desc_get_deps(file.path(.wd, "gDR/DESCRIPTION"))
+deps <- deps[!(deps$package %in% dont.install), ]
+
 rp::installAndVerify(install = install.packages,
                      package = deps$package,
                      requirement = deps$version)
