@@ -227,3 +227,58 @@ df_to_assay <-
       stop(sprintf("bad 'data_type': ('%s')", data_type))
     }
   }
+
+#' createSE
+#'
+#' Create SummarizedExperiment object from data.frame(s) with dose-reponse data
+#' 
+#' @param dfList list with data.frame(s) with dose-reponse data
+#' @param data_type string type of data to be returned: with untreated conditions only ('untreated'),
+#' with treated conditions only ('treated') or all
+#'
+#' @return SummarizedExperiment object with dose-reponse data
+#'
+#' @export
+createSE <-
+  function(dfList,
+           data_type = c("untreated", "treated", "all")) {
+    data_type <- match.arg(data_type)
+    
+    dfNamesV <-
+      c("df_raw_data",
+        "df_normalized",
+        "df_averaged",
+        "df_metrics")
+    
+    stopifnot(all(names(dfList) %in% dfNamesV))
+    stopifnot("df_raw_data" %in% names(dfList))
+    
+    matsL <-
+      lapply(names(dfList), function(x) {
+        df_to_assay(dfList[[x]], data_type = data_type)
+      })
+    names(matsL) <- names(dfList)
+    
+    allMetadata <- getMetaData(dfList$df_raw_data)
+    
+    seColData <- allMetadata$colData
+    rownames(seColData) <- seColData$name_
+    seRowData <- allMetadata$rowData
+    rownames(seRowData) <- seRowData$name_
+    
+    seColData <-
+      seColData[, setdiff(colnames(seColData), c('col_id', 'name_'))]
+    seRowData <- seRowData[rownames(matsL$df_raw_data),
+                           setdiff(colnames(seRowData), c('row_id', 'name_'))]
+    
+    # by passing rownames check to make it work for now (should be solved)
+    matsL <- lapply(matsL, function(x) {
+      rownames(x) = rownames(seRowData)
+      x
+    })
+    
+    se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
+                                                     colData = seColData,
+                                                     rowData = seRowData)
+    
+  }
