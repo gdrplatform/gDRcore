@@ -174,7 +174,7 @@ df_to_assay <-
     dataCols <- allMetadata$dataCols
     
     complete <-
-      DataFrame(
+      S4Vectors::DataFrame(
         expand.grid(
           row_id = seRowData$row_id,
           col_id = seColData$col_id,
