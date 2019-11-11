@@ -21,12 +21,12 @@ Overall_function = function(manifest_file, template_file, results_file,
                 log_str, instrument)
     df_raw_data = merge_data(lData$manifest, lData$treatments, lData$data, log_str)
    
-    # ### exemplary solution (1) for returning two SEs with df_raw_data
-    # and then adding subsequent assays to the treatedSE
-    #  untreatedSE <-
-    #    gDR::createSE(list(df_raw_data = df_raw_data), data_type = "untreated")
-    #  treatedSE <-
-    #    gDR::createSE(list(df_raw_data = df_raw_data), data_type = "treated")
+    #returning two SEs with 'df_raw_data' assay and creating MAE from it
+    untreatedSE <-
+      gDR::createSE(list(df_raw_data = df_raw_data), data_type = "untreated")
+    treatedSE <-
+      gDR::createSE(list(df_raw_data = df_raw_data), data_type = "treated")
+    mae <- gDR::createMAE(untreatedSE, treatedSE)
     
     # output_QC_byPlate(df_raw_data, output_files['QC_file']) # TODO: check column/row bias
 
@@ -35,20 +35,27 @@ Overall_function = function(manifest_file, template_file, results_file,
         Keys[names(selected_keys)] = selected_keys[names(selected_keys)]
     }
 
-    # # ### exemplary solution (1) - adding df_normalized assay
-    # df_normalized_assay <- get_normalize_data_asay(treatedSE, untreatedSE, log_str, Keys, key_values)
-    # SummarizedExperiment::assay(treatedSE,2) <- df_normalized_assay
-    # SummarizedExperiment::assayNames(treatedSE)[2] <- "df_normalized"
-    # 
-    # # ### exemplary solution (1) - adding averaged
+    # # adding df_normalized assay
+    # df_normalized_assay <- get_normalized_data_asay(mae, log_str, Keys, key_values)
+    # gDR::addAssayToMAE(mae,
+    #                    assay = df_normalized_assay,
+    #                    assay_name = "df_normalized",
+    #                    exp_name = "treated")
+    # # 
+    # adding averaged
     # df_averaged_assay <- get_averaged_data_asay(treatedSE, untreatedSE, Keys$Trt)
-    # SummarizedExperiment::assay(treatedSE,3) <- df_averaged_assay
-    # SummarizedExperiment::assayNames(treatedSE)[3] <- "df_averaged"
+    # gDR::addAssayToMAE(mae,
+    #                    assay = df_averaged_assay,
+    #                    assay_name = "df_averaged",
+    #                    exp_name = "treated")
     
-    # # ### exemplary solution (1) - adding metrics
+    # adding metrics
     # df_metrics_assay <- get_metrics_data_asay(treatedSE, untreatedSE, Keys$DoseResp)
-    # SummarizedExperiment::assay(treatedSE,4) <- df_metrics_assay
-    # SummarizedExperiment::assayNames(treatedSE)[4] <- "df_metrics"
+    # gDR::addAssayToMAE(mae,
+    #                    assay = df_metrics_assay,
+    #                    assay_name = "df_metrics",
+    #                    exp_name = "treated")
+    # return(mae)
     
     df_normalized = normalize_data(df_raw_data, log_str, Keys, key_values)
     df_averaged = average_replicates(df_normalized, Keys$Trt)
@@ -59,25 +66,6 @@ Overall_function = function(manifest_file, template_file, results_file,
     writeLines(log_str, log_file)
     close(log_file)
     
-   # ### exemplary solution (2) for returning MAE from Overall_function 
-   #  dfList <- (
-   #    list(
-   #      df_raw_data = df_raw_data,
-   #      df_normalized = df_normalized,
-   #      df_averaged = df_averaged,
-   #      df_metrics = df_metrics
-   #    )
-   #  )
-   #  untreated <-
-   #    gDR::createSE(list(df_raw_data = dfList$df_raw_data), data_type = "untreated")
-   #  treated <- gDR::createSE(dfList[dfNamesV], data_type = "treated")
-   #  seL <- list(untreated = untreated, treated = treated)
-   #  
-   #  mae <- MultiAssayExperiment::MultiAssayExperiment(
-   #    experiments = MultiAssayExperiment::ExperimentList(seL),
-   #    colData = MultiAssayExperiment::colData(untreated)
-   #  )
-   #  return(mae)
     
     return(list(raw=df_raw_data,
             normalized=df_normalized,
