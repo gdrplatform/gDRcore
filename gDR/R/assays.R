@@ -1,6 +1,11 @@
 #### AUXILIARY FUNCTIONS ####
 .drugNameRegex <- "^DrugName$|^DrugName_[[:digit:]]+$"
 .untreateDrugNameRegex <- "^untreated$|^vehicle$"
+.assayNames <-
+  c("df_raw_data",
+    "df_normalized",
+    "df_averaged",
+    "df_metrics")
 
 #' .get_untreated_conditions
 #'
@@ -244,14 +249,9 @@ createSE <-
            data_type = c("untreated", "treated", "all")) {
     data_type <- match.arg(data_type)
     
-    dfNamesV <-
-      c("df_raw_data",
-        "df_normalized",
-        "df_averaged",
-        "df_metrics")
-    
-    stopifnot(all(names(dfList) %in% dfNamesV))
-    stopifnot("df_raw_data" %in% names(dfList))
+    stopifnot(all(names(dfList) %in% .assayNames))
+    #dfList must contain first assay (i.e. df_raw_data)
+    stopifnot(.assayNames[1] %in% names(dfList)) 
     
     matsL <-
       lapply(names(dfList), function(x) {
@@ -281,4 +281,84 @@ createSE <-
                                                      colData = seColData,
                                                      rowData = seRowData)
     
+  }
+
+#' createMAE
+#'
+#' Create MultiAssayExperiment object from treated/untreated SEs with dose-reponse data
+#' 
+#' @param untreated SummarizedExperiment object with dose-reponse data for 'untreated' conditions
+#' @param treated SummarizedExperiment object with dose-reponse data for 'treated' conditions
+#'
+#' @return MultiAssayExperiment object with dose-reponse data
+#'
+#' @export
+createMAE <- function(untreated, treated) {
+  stopifnot("SummarizedExperiment" %in% class(untreated))
+  stopifnot("SummarizedExperiment" %in% class(treated))
+  
+  stopifnot(all(SummarizedExperiment::assayNames(untreated) %in% .assayNames[1]))
+  stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(untreated))
+  stopifnot(all(SummarizedExperiment::assayNames(treated) %in% .assayNames))
+  stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(treated))
+  
+  MultiAssayExperiment::MultiAssayExperiment(
+    experiments = MultiAssayExperiment::ExperimentList(list(
+      untreated = untreated, treated = treated
+    )),
+    colData = MultiAssayExperiment::colData(untreated)
+  )
+}
+
+#' addAssayToMAE
+#'
+#' Add assay to one of MAEs experiments (i.e. SEs) with dose-reponse data
+#'
+#' @param mae  MultiAssayExperiment object with dose-reponse
+#' @param assay matrix with dose-response data
+#' @param exp_name string name of the MAE experiment (i.e. SEs) to which add the assay
+#' @param assay_name string name of the assay to be used in SE
+#' @param update_assay logical allow for assay update if the assay with 'assay_name' currently exists in given 'exp_name'
+#'
+#' @return MultiAssayExperiment object with dose-reponse data
+#'
+#' @export
+addAssayToMAE <-
+  function(mae,
+           assay,
+           assay_name,
+           exp_name = c("treated", "untreated"),
+           update_assay = FALSE) {
+    stopifnot("MultiAssayExperiment" %in% class(mae))
+    stopifnot(assay_name %in% .assayNames)
+    stopifnot("matrix" %in% class(assay))
+    exp_name <- match.arg(exp_name)
+    #mae must contain SE with at least first assay (i.e. df_raw_data)
+    stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(mae[[exp_name]])) 
+    
+    if (assay_name %in% SummarizedExperiment::assayNames(mae[[exp_name]]) &&
+        update_assay == FALSE) {
+      errMsg1 <-
+        sprintf(
+          "The assay '%s' can't be added to experiment '%s' as it currently exists.
+  Please set 'update_assay' flag to TRUE to be able to update the assay instead of adding it",
+          assay_name,
+          exp_name
+        )
+      stop(errMsg1)
+    }
+    
+    if (!identical(dim(SummarizedExperiment::assay(mae[[exp_name]])), dim(assay))) {
+      errMsg2 <-
+        sprintf(
+          "The assay '%s' can't be added to experiment '%s' as it has different dimensions ('%s') than the assays present in the experiment ('%s').",
+          assay_name,
+          exp_name,
+          paste(dim(assay), collapse = "x"),
+          paste(dim(SummarizedExperiment::assay(mae[[exp_name]])), collapse = "x")
+        )
+      stop(errMsg2)
+    }
+    
+    SummarizedExperiment::assay(mae[[exp_name]], assay_name) <- assay
   }
