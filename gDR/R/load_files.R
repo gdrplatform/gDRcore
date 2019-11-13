@@ -35,7 +35,7 @@ get_header = function(x = NULL) {
         raw_data = c("ReadoutValue", "BackgroundValue",
                     'UntrtReadout', "Day0Readout"),
         normalized_results = c("CorrectedReadout", 'GRvalue',
-                    'RelativeViability', 'DivisionTime'),
+                'RelativeViability', 'DivisionTime', "RefGRvalue", "RefRelativeViability"),
         averaged_results = c('std_GRvalue', 'std_RelativeViability'),
         metrics_results = c("maxlog10Concentration", "N_conc",
             "mean_viability", "ic50", "e_max", "ec50", "e_inf", "e_0", "h_ic", "ic_r2", "flat_fit_ic",

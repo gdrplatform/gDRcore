@@ -1,3 +1,5 @@
+#' @import S4Vectors
+
 #### AUXILIARY FUNCTIONS ####
 .drugNameRegex <- "^DrugName$|^DrugName_[[:digit:]]+$"
 .untreateDrugNameRegex <- "^untreated$|^vehicle$"
@@ -19,7 +21,7 @@
   function(drug_data) {
     as.data.frame(drug_data) %>%
       dplyr::filter(grepl(.untreateDrugNameRegex, DrugName)) %>%
-      dplyr::pull('name_')
+      dplyr::pull('row_name')
   }
 
 #' .get_treated_conditions
@@ -34,8 +36,25 @@
   function(drug_data) {
     as.data.frame(drug_data) %>%
       dplyr::filter(!grepl(.untreateDrugNameRegex, DrugName)) %>%
-      dplyr::pull('name_')
+      dplyr::pull('row_name')
   }
+
+
+#' aapply
+#'
+#' works like sapply but on each nested dataframe of the assay of an SE
+#'
+#' @param function: function to apply on the nested dataframes
+#' @param assay_type: integer or name of the assay on which to apply the function
+#'
+#' @return the same SE object with updated nested dataframe
+#'
+aapply <-
+function(SE, fx, assay_type = 1) {
+    assay(SE, assay_type) = matrix(sapply(assay(SE, assay_type), fx), nrow = nrow(SE), ncol = ncol(SE))
+    return(SE)
+}
+
 
 
 #' getMetaData
@@ -51,7 +70,7 @@
 getMetaData <- function(data,
                         cell_id = "CellLineName") {
   data <- as(data, "DataFrame")
-  
+
   # get the metadata variables
   metavars <-
     setdiff(
@@ -73,7 +92,7 @@ getMetaData <- function(data,
   # get the metadata not directly related to cells
   nocell_metavars <- setdiff(metavars,
                              c(get_identifier('cellline'), gDR::get_header('add_clid')))
-  
+
   constant_metavars <-
     setdiff(
       nocell_metavars[sapply(nocell_metavars,
@@ -97,7 +116,7 @@ getMetaData <- function(data,
   ),
   nocell_metavars[sapply(nocell_metavars, function(x)
     nrow(unique(conditions[, x, drop = F]))) > 1])
-  
+
   # find the cell lines and related data (for the columns in the SE)
   cl_entries <- cell_id
   for (j in setdiff(unique_metavars, cell_id)) {
@@ -114,48 +133,52 @@ getMetaData <- function(data,
                           gDR::get_identifier('drugname'),
                           paste0(gDR::get_identifier('drugname'), '_', 2:10)
                         ))
-  
+
   # temporary removing extra column to avoid bug
   cl_entries <- setdiff(cl_entries, 'ReferenceDivisionTime')
-  
+
   #colData
   colData <- unique(conditions[, cl_entries, drop = F])
   colData$col_id <- 1:nrow(colData)
-  colData$name_ <-
-    apply(colData, 1, function(x)
+  colData$col_name <-
+    apply(sapply(colData,as.character), 1, function(x)
       paste(x, collapse = '_'))
-  
+
   # get all other metadata for the rows
   cond_entries <- setdiff(unique_metavars, cl_entries)
   # temporary removing extra column to avoid bug
   cond_entries <- setdiff(cond_entries, 'ReferenceDivisionTime')
   rowData <- unique(conditions[, cond_entries, drop = F])
   rowData$row_id <- 1:nrow(rowData)
-  rowData$name_ <-
-    apply(rowData, 1, function(x)
+  rowData$row_name <-
+    apply(sapply(rowData,as.character), 1, function(x)
       paste(x, collapse = '_'))
-  
+
   # get the remaining columns as data
   dataCols <- setdiff(colnames(data), metavars)
-  
+
+  # constant metadata (useful for annotation of the experiment)
+  csteData = unique(conditions[,constant_metavars,drop=F])
+
   return(list(
     colData = colData,
     rowData = rowData,
-    dataCols = dataCols
+    dataCols = dataCols,
+    csteData = csteData
   ))
 }
 
 #' df_to_assay
 #'
 #' Convert data.frame with dose-reponse data to the assay.
-#' 
+#'
 #' The 'assay' object is simply a matrix with rownames being the treatment ids,
-#' colnames being the ids of the cell lines and values being the DataFrames with 
+#' colnames being the ids of the cell lines and values being the DataFrames with
 #' dose-response data for given cell lines under given conditions.
 #'
 #' @param data tibble or data.frame with drug-response data
 #' @param treatment_id string id of the column with the treatment conditions data (in 'data' object)
-#' @param data_type string type of data to be returned: all, for untreated conditions only ('untreated') 
+#' @param data_type string type of data to be returned: all, for untreated conditions only ('untreated')
 #' or for treated conditions only ('treated')
 #'
 #' @return matrix
@@ -163,21 +186,20 @@ getMetaData <- function(data,
 #' @export
 df_to_assay <-
   function(data,
-           treatment_id = "row_id",
            data_type = c("all", "treated", "untreated")) {
     data <- as(data, "DataFrame")
-    
+
     ####
-    
-    allMetadata <- getMetaData(data)
-    
+
+    allMetadata <- gDR::getMetaData(data)
+
     seColData <- allMetadata$colData
-    cl_entries <- setdiff(colnames(seColData), c('col_id', 'name_'))
+    cl_entries <- setdiff(colnames(seColData), c('col_id', 'col_name'))
     seRowData <- allMetadata$rowData
     cond_entries <-
-      setdiff(colnames(seRowData), c('row_id', 'name_'))
+      setdiff(colnames(seRowData), c('row_id', 'row_name'))
     dataCols <- allMetadata$dataCols
-    
+
     complete <-
       S4Vectors::DataFrame(
         expand.grid(
@@ -188,23 +210,25 @@ df_to_assay <-
       )
     complete <- merge(merge(complete, seRowData, by = 'row_id'),
                       seColData, by = 'col_id')
+    complete = complete[ order(complete$col_id, complete$row_id), ]
     complete$factor_id <- 1:nrow(complete)
     data_assigned <-
       merge(data, complete, by = c(cond_entries, cl_entries))
-    
+
     by_factor <- lapply(1:nrow(complete), function(x)
       data_assigned[data_assigned$factor_id == x, dataCols])
     names(by_factor) <- 1:nrow(complete)
-    
+
     stopifnot(nrow(data) == sum(sapply(by_factor, nrow)))
-    
-    full.set <- vector("list", nrow(complete))
-    full.set[as.integer(names(by_factor))] <- by_factor
-    
-    
+    stopifnot(length(by_factor) == nrow(complete))
+
+    # full.set <- vector("list", nrow(complete))
+    # full.set[as.integer(names(by_factor))] <- by_factor
+    full.set <- by_factor
+
     dim(full.set) <- c(nrow(seRowData), nrow(seColData))
-    dimnames(full.set) <- list(seRowData$name_, seColData$name_)
-    
+    dimnames(full.set) <- list(seRowData$row_name, seColData$col_name)
+
     #add NAs for treatments not present in the given assay
     # ---------------
     # removed as it should be added when combining different assays
@@ -218,7 +242,7 @@ df_to_assay <-
     #
     # ---------------
     final.set <- full.set
-    
+
     if (data_type == "untreated") {
       untreatedConds <-
         .get_untreated_conditions(seRowData)
@@ -236,7 +260,7 @@ df_to_assay <-
 #' createSE
 #'
 #' Create SummarizedExperiment object from data.frame(s) with dose-reponse data
-#' 
+#'
 #' @param dfList list with data.frame(s) with dose-reponse data
 #' @param data_type string type of data to be returned: with untreated conditions only ('untreated'),
 #' with treated conditions only ('treated') or all
@@ -245,63 +269,58 @@ df_to_assay <-
 #'
 #' @export
 createSE <-
-  function(dfList,
-           data_type = c("untreated", "treated", "all")) {
+  function(df_data,
+           data_type = c("untreated", "treated", "all"),
+           readout = 'ReadoutValue') {
     data_type <- match.arg(data_type)
-    
-    stopifnot(all(names(dfList) %in% .assayNames))
-    #dfList must contain first assay (i.e. df_raw_data)
-    stopifnot(.assayNames[1] %in% names(dfList)) 
-    
-    matsL <-
-      lapply(names(dfList), function(x) {
-        df_to_assay(dfList[[x]], data_type = data_type)
-      })
-    names(matsL) <- names(dfList)
-    
-    allMetadata <- getMetaData(dfList$df_raw_data)
-    
+
+    # stopifnot(all(names(dfList) %in% .assayNames))
+    # #dfList must contain first assay (i.e. df_raw_data)
+    # stopifnot(.assayNames[1] %in% names(dfList))
+
+    mats <- df_to_assay(df_data, data_type = data_type)
+
+    allMetadata <- getMetaData(df_data)
+
     seColData <- allMetadata$colData
-    rownames(seColData) <- seColData$name_
+    rownames(seColData) <- seColData$col_name
     seRowData <- allMetadata$rowData
-    rownames(seRowData) <- seRowData$name_
-    
+    rownames(seRowData) <- seRowData$row_name
+
     seColData <-
-      seColData[, setdiff(colnames(seColData), c('col_id', 'name_'))]
-    seRowData <- seRowData[rownames(matsL$df_raw_data),
-                           setdiff(colnames(seRowData), c('row_id', 'name_'))]
-    
-    # by passing rownames check to make it work for now (should be solved)
-    matsL <- lapply(matsL, function(x) {
-      rownames(x) = rownames(seRowData)
-      x
-    })
-    
+      seColData[colnames(mats), setdiff(colnames(seColData), c('col_id', 'col_name'))]
+    seRowData <- seRowData[rownames(mats),
+                           setdiff(colnames(seRowData), c('row_id', 'row_name'))]
+    matsL = list(mats)
+    names(matsL) = readout
     se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
                                                      colData = seColData,
                                                      rowData = seRowData)
-    
+
   }
 
-#' createMAE
+#' createMAE_raw
 #'
-#' Create MultiAssayExperiment object from treated/untreated SEs with dose-reponse data
-#' 
+#' Create MultiAssayExperiment object from raw data in treated/untreated SEs
+#'
 #' @param untreated SummarizedExperiment object with dose-reponse data for 'untreated' conditions
 #' @param treated SummarizedExperiment object with dose-reponse data for 'treated' conditions
 #'
 #' @return MultiAssayExperiment object with dose-reponse data
 #'
 #' @export
-createMAE <- function(untreated, treated) {
+createMAE_raw <- function(untreated, treated) {
   stopifnot("SummarizedExperiment" %in% class(untreated))
   stopifnot("SummarizedExperiment" %in% class(treated))
-  
-  stopifnot(all(SummarizedExperiment::assayNames(untreated) %in% .assayNames[1]))
-  stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(untreated))
-  stopifnot(all(SummarizedExperiment::assayNames(treated) %in% .assayNames))
-  stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(treated))
-  
+
+  stopifnot(all(all(MultiAssayExperiment::colData(untreated) ==
+    MultiAssayExperiment::colData(treated))))
+
+  # stopifnot(all(SummarizedExperiment::assayNames(untreated) %in% .assayNames[1]))
+  # stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(untreated))
+  # stopifnot(all(SummarizedExperiment::assayNames(treated) %in% .assayNames))
+  # stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(treated))
+
   MultiAssayExperiment::MultiAssayExperiment(
     experiments = MultiAssayExperiment::ExperimentList(list(
       untreated = untreated, treated = treated
@@ -334,8 +353,8 @@ addAssayToMAE <-
     stopifnot("matrix" %in% class(assay))
     exp_name <- match.arg(exp_name)
     #mae must contain SE with at least first assay (i.e. df_raw_data)
-    stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(mae[[exp_name]])) 
-    
+    stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(mae[[exp_name]]))
+
     if (assay_name %in% SummarizedExperiment::assayNames(mae[[exp_name]]) &&
         update_assay == FALSE) {
       errMsg1 <-
@@ -347,7 +366,7 @@ addAssayToMAE <-
         )
       stop(errMsg1)
     }
-    
+
     if (!identical(dim(SummarizedExperiment::assay(mae[[exp_name]])), dim(assay))) {
       errMsg2 <-
         sprintf(
@@ -359,6 +378,6 @@ addAssayToMAE <-
         )
       stop(errMsg2)
     }
-    
+
     SummarizedExperiment::assay(mae[[exp_name]], assay_name) <- assay
   }

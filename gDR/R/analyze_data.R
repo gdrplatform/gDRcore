@@ -20,16 +20,17 @@ Overall_function = function(manifest_file, template_file, results_file,
     lData = load_data(manifest_file, template_file, results_file,
                 log_str, instrument)
     df_raw_data = merge_data(lData$manifest, lData$treatments, lData$data, log_str)
-   
+
     #returning two SEs with 'df_raw_data' assay and creating MAE from it
     untreatedSE <-
-      gDR::createSE(list(df_raw_data = df_raw_data), data_type = "untreated")
+      gDR::createSE(df_raw_data, data_type = "untreated")
     treatedSE <-
-      gDR::createSE(list(df_raw_data = df_raw_data), data_type = "treated")
-    mae <- gDR::createMAE(untreatedSE, treatedSE)
-    
+      gDR::createSE(df_raw_data, data_type = "treated")
+    rawMAE <- gDR::createMAE_raw(untreatedSE, treatedSE)
+
     # output_QC_byPlate(df_raw_data, output_files['QC_file']) # TODO: check column/row bias
 
+    # TODO: this function could be overload to have an MAE as input; ok for now
     Keys = identify_keys(df_raw_data) # may be manually changed
     if (!is.null(selected_keys)) {
         Keys[names(selected_keys)] = selected_keys[names(selected_keys)]
@@ -41,14 +42,14 @@ Overall_function = function(manifest_file, template_file, results_file,
     #                    assay = df_normalized_assay,
     #                    assay_name = "df_normalized",
     #                    exp_name = "treated")
-    # # 
+    # #
     # adding averaged
     # df_averaged_assay <- get_averaged_data_asay(treatedSE, untreatedSE, Keys$Trt)
     # gDR::addAssayToMAE(mae,
     #                    assay = df_averaged_assay,
     #                    assay_name = "df_averaged",
     #                    exp_name = "treated")
-    
+
     # adding metrics
     # df_metrics_assay <- get_metrics_data_asay(treatedSE, untreatedSE, Keys$DoseResp)
     # gDR::addAssayToMAE(mae,
@@ -56,17 +57,17 @@ Overall_function = function(manifest_file, template_file, results_file,
     #                    assay_name = "df_metrics",
     #                    exp_name = "treated")
     # return(mae)
-    
+
     df_normalized = normalize_data(df_raw_data, log_str, Keys, key_values)
     df_averaged = average_replicates(df_normalized, Keys$Trt)
 
     df_metrics = calculate_DRmetrics(df_averaged, Keys$DoseResp)
-    
+
     log_file <- file(output_files['log_file'], open = "wt")
     writeLines(log_str, log_file)
     close(log_file)
-    
-    
+
+
     return(list(raw=df_raw_data,
             normalized=df_normalized,
             averaged=df_averaged,
@@ -177,6 +178,187 @@ merge_data = function(manifest, treatments, data, log_str) {
 
 
 #' @export
+normalize_MAE = function(rawMAE, log_str, selected_keys = NULL,
+                key_values = NULL) {
+    # average technical replicates and assign the right controls to each treated well
+
+
+    Keys = identify_keys(rawMAE)
+    if (!is.null(selected_keys)) {
+        Keys[names(selected_keys)] = selected_keys[names(selected_keys)]
+    }
+
+    # enforced key values for end points (override selected_keys) --> for rows of the MAE
+    Keys$untrt_Endpoint = setdiff(Keys$untrt_Endpoint, names(key_values))
+    row_endpoint_value_filter = array(TRUE, nrow(rawMAE[['untreated']]))
+    if (!is.null(key_values) & length(key_values)>0) {
+        for (i in which(names(key_values) %in% names(rowData(rawMAE[['untreated']])))) {
+            if (is.numeric(key_values[i])) {
+                row_endpoint_value_filter = row_endpoint_value_filter &
+                    (rowData(rawMAE[['untreated']])[, names(key_values)[i] ] == key_values[i] &
+                            !is.na(rowData(rawMAE[['untreated']])[, names(key_values)[i] ]))
+            } else {
+                row_endpoint_value_filter = row_endpoint_value_filter &
+                    (rowData(rawMAE[['untreated']])[ ,names(key_values)[i] ] %in% key_values[i])
+            }}}
+
+    # perform the mapping for normalization
+    # first the rows
+    row_maps_end = unlist(sapply(rownames(rawMAE[['treated']]), function(x) {
+        # define matix with matching metadata
+        match_mx = c(
+            (rowData(rawMAE[['untreated']]) == (rowData(rawMAE[['treated']])[x,]))[
+                intersect(Keys$untrt_Endpoint,names(rowData(rawMAE[['untreated']])))],
+            LogicalList(key_values = row_endpoint_value_filter,
+                conc = apply(cbind(array(0, nrow(rawMAE[['untreated']])),# padding to avoid empty df
+                    rowData(rawMAE[['untreated']])[,agrep('Concentration',
+                    colnames(rowData(rawMAE[['untreated']]))),drop=F]),1,
+                        function(x) all(x==0))))
+        match_idx = which(apply(as.matrix(match_mx), 2, all))
+        if (length(match_idx)==0) {
+            # if not exact match, try to find best match
+            WarnMsg = paste('Missing intreated contol for:', x)
+            idx = apply(as.matrix(match_mx), 2, function(y) sum(y, na.rm=T)) *
+                            match_mx[[get_identifier('duration')]]
+            if (any(idx>0)) {
+                match_idx = which.max(idx)
+                WarnMsg = paste(WarnMsg,'; found partial match:',
+                        rownames(rawMAE[['untreated']])[match_idx])
+            } else WarnMsg = paste(WarnMsg,'; no partial match found')
+            warning(WarnMsg)
+        }
+        return(match_idx)
+    }))
+
+    row_maps_cotrt = unlist(sapply(rownames(rawMAE[['treated']]), function(x)
+        which(apply(as.matrix(c(
+            (rowData(rawMAE[['untreated']]) == (rowData(rawMAE[['treated']])[x,]))[
+                intersect(Keys$ref_Endpoint,names(rowData(rawMAE[['untreated']])))],
+            LogicalList(key_values = row_endpoint_value_filter)) ),
+            2, all))))
+
+    row_maps_T0 = unlist(sapply(rownames(rawMAE[['treated']]), function(x) {
+        # define matix with matching metadata
+        match_mx = c(
+            (rowData(rawMAE[['untreated']]) == (rowData(rawMAE[['treated']])[x,]))[
+                intersect(Keys$Day0,names(rowData(rawMAE[['untreated']])))],
+            LogicalList(#key_values = row_endpoint_value_filter,
+                T0 = rowData(rawMAE[['untreated']])[, get_identifier('duration')] == 0,
+                conc = apply(cbind(array(0, nrow(rawMAE[['untreated']])),# padding to avoid empty df
+                    rowData(rawMAE[['untreated']])[,agrep('Concentration',
+                    colnames(rowData(rawMAE[['untreated']]))),drop=F]),1,
+                        function(x) all(x==0)) ))
+        match_idx = which(apply(as.matrix(match_mx), 2, all))
+        if (length(match_idx)==0) {
+            # if not exact match, try to find best match
+            WarnMsg = paste('Missing day 0 plate for:', x)
+            idx = apply(as.matrix(match_mx), 2, function(y) sum(y, na.rm=T)) *
+                            match_mx[['T0']]
+            if (any(idx>0)) {
+                match_idx = which.max(idx)
+                WarnMsg = paste(WarnMsg,'; found partial match:',
+                        rownames(rawMAE[['untreated']])[match_idx])
+            } else WarnMsg = paste(WarnMsg,'; no partial match found')
+            warning(WarnMsg)
+        }
+        return(match_idx)
+    }))
+
+    # mapping for columns; 1 to 1 unless overridden by key_values
+    col_maps = array(1:ncol(rawMAE[['treated']]), dimnames = list(colnames(rawMAE[['treated']])))
+    if (any(names(key_values) %in% names(colData(rawMAE[['treated']])))) {
+        col_maps[] = which(key_values[names(key_values) %in% names(colData(rawMAE[['treated']]))] ==
+        colData(rawMAE[['treated']])[, names(key_values) %in% names(colData(rawMAE[['treated']]))])
+    }
+
+
+    # the normalized SE only contains the treated conditions
+    normSE = rawMAE[['treated']]
+    assayNames(normSE) = 'Normalized'
+    ctrlSE = rawMAE[['untreated']]
+
+    # remove background value to readout
+    normSE = aapply(normSE, function(x) {
+        x$CorrectedReadout = pmax(x$ReadoutValue - x$BackgroundValue,1)
+        return(x)},
+        'Normalized')
+    ctrlSE = aapply(ctrlSE, function(x) {
+        x$CorrectedReadout = pmax(x$ReadoutValue - x$BackgroundValue,1)
+        return(x)})
+
+    assay(normSE, 'Controls') <- matrix(lapply(1:prod(dim(normSE)), function(x) DataFrame()),
+            nrow = nrow(normSE), ncol = ncol(normSE))
+
+    # run through all conditions to assign controls and normalize the data
+    # TODO: optimize (could that be replaced by a lapply?? or dyplr function??)
+    for (i in rownames(normSE)) {
+        for (j in colnames(normSE)) {
+
+            if (nrow(assay(normSE,'Normalized')[[i,j]]) == 0) next # skip if no data
+
+            df_end = assay(ctrlSE)[[row_maps_end[i], col_maps[j]]]
+            df_end = df_end[, c('CorrectedReadout',
+                    intersect(Keys$untrt_Endpoint,colnames(df_end)))]
+            colnames(df_end)[1] = 'UntrtReadout'
+            df_end = aggregate(df_end[,1,drop=F], by = as.list(df_end[,-1,drop=F]),
+                function(x) mean(x, trim= .25))
+
+            # not always present
+            if (i %in% names(row_maps_cotrt)) {
+                df_ref = assay(ctrlSE)[[row_maps_cotrt[i], col_maps[j]]]
+                df_ref = df_ref[, c('CorrectedReadout',
+                        intersect(Keys$ref_Endpoint,colnames(df_ref)))]
+                colnames(df_ref)[1] = 'RefReadout'
+                df_ref = aggregate(df_ref[,1,drop=F], by = as.list(df_ref[,-1,drop=F]),
+                    function(x) mean(x, trim= .25))
+                df_end = merge(df_end, df_ref, by='Barcode')
+            } else {
+                df_end$RefReadout = df_end$UntrtReadout
+            }
+
+            df_0 = assay(ctrlSE)[[row_maps_T0[i], col_maps[j]]]
+            df_0 = df_0[, c('CorrectedReadout', intersect(Keys$Day0,colnames(df_0)))]
+            colnames(df_0)[1] = 'Day0Readout'
+            df_0 = aggregate(df_0[,1,drop=F], by = as.list(df_0[,-1,drop=F]),
+                function(x) mean(x, trim= .25))
+
+            df_ctrl = merge(df_0[, setdiff(colnames(df_0), 'Barcode')], df_end, all.y = T)
+            colnames(df_ctrl)[1] = 'Day0Readout'
+            df_ctrl$DivisionTime = round(
+                    rowData(normSE)[i,get_identifier('duration')] /
+                        log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout) , 4)
+            assay(normSE, 'Controls')[[i,j]] = df_ctrl
+
+            # TODO:
+            # if missing barcodes --> dispatch for similar conditions
+
+
+            # merge the data with the controls
+            df_merged = merge(assay(normSE, 'Normalized')[[i,j]],
+                    df_ctrl, by = 'Barcode', all.x = T)
+
+            # calculate the normalized values
+            assay(normSE, 'Normalized')[[i,j]]$RelativeViability =
+                round(df_merged$CorrectedReadout/df_merged$UntrtReadout,4)
+
+            assay(normSE, 'Normalized')[[i,j]]$RefRelativeViability =
+                round(df_merged$RefReadout/df_merged$UntrtReadout,4)
+
+            assay(normSE, 'Normalized')[[i,j]]$GRvalue = round(2 ** (
+                    log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
+                    log2(df_merged$UntrtReadout / df_merged$Day0Readout) ), 4) - 1
+
+            assay(normSE, 'Normalized')[[i,j]]$RefGRvalue = round(2 ** (
+                log2(df_merged$RefReadout / df_merged$Day0Readout) /
+                log2(df_merged$UntrtReadout / df_merged$Day0Readout) ), 4) - 1
+
+        }
+    }
+
+    return(normSE)
+}
+
+#' @export
 normalize_data = function(df_raw_data, log_str, selected_keys = NULL,
                 key_values = NULL) {
     # average technical replicates and assign the right controls to each treated well
@@ -195,7 +377,7 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL,
                                             df_normalized$BackgroundValue,1)
 
     # enforced key values for end points (override selected_keys)
-    Keys$Endpoint = setdiff(Keys$Endpoint, names(key_values))
+    Keys$untrt_Endpoint = setdiff(Keys$untrt_Endpoint, names(key_values))
     endpoint_value_filter = array(TRUE, dim(df_raw_data)[1])
     if (!is.null(key_values) & length(key_values)>0) {
         for (i in 1:length(key_values)) {
@@ -211,7 +393,7 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL,
     df_end_untrt = df_normalized[df_normalized[,get_identifier('duration')]>0 & endpoint_value_filter &
         apply(df_normalized[,agrep('Concentration', colnames(df_normalized)),drop=F]==0,1,all),]
     df_end_mean = aggregate(df_end_untrt[,'CorrectedReadout'],
-                    by = as.list(df_end_untrt[,Keys$Endpoint]), function(x) mean(x, trim= .25))
+                    by = as.list(df_end_untrt[,Keys$untrt_Endpoint]), function(x) mean(x, trim= .25))
     colnames(df_end_mean)[dim(df_end_mean)[2]] = 'UntrtReadout'
 
 
@@ -224,10 +406,10 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL,
 
     df_controls = merge(df_end_mean, df_day0_mean[, setdiff(colnames(df_day0_mean),
                     c(get_identifier('duration'), 'Barcode'))], all.x = T)
-    if (length(setdiff(Keys$Endpoint, Keys$Day0))>0) {
+    if (length(setdiff(Keys$untrt_Endpoint, Keys$Day0))>0) {
         WarnMsg = paste('Not all control conditions found on the day 0 plate,',
             'dispatching values for field: ',
-            paste(setdiff(Keys$Endpoint, Keys$Day0), collapse = ' ; '))
+            paste(setdiff(Keys$untrt_Endpoint, Keys$Day0), collapse = ' ; '))
         log_str = c(log_str, 'Warning in normalize_data:')
         log_str = c(log_str, WarnMsg)
         warning(WarnMsg)
@@ -333,6 +515,34 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL,
 
 
 
+#' @export
+average_MAE = function(normSE, TrtKeys = NULL) {
+    if (is.null(TrtKeys)) { TrtKeys = identify_keys(normSE)$Trt }
+
+    avgSE = aapply(normSE, function(x) {
+        if (nrow(x) > 0) {
+            subKeys = intersect(TrtKeys, colnames(x))
+            df_av = aggregate(x[, c('GRvalue', 'RelativeViability',
+                    'RefGRvalue', 'RefRelativeViability', "CorrectedReadout")],
+                            by = as.list(x[,subKeys,drop=F]), FUN = function(y) mean(y, na.rm=T))
+            df_std = aggregate(x[, c('GRvalue', 'RelativeViability')],
+                                by = as.list(x[,subKeys,drop=F]), FUN = function(x) sd(x, na.rm=T))
+            colnames(df_std)[colnames(df_std) %in% c('GRvalue', 'RelativeViability')] =
+                paste0('std_',
+                    colnames(df_std)[colnames(df_std) %in% c('GRvalue', 'RelativeViability')])
+            return( merge(df_av, df_std, by = subKeys) )
+        } else return(x)
+    }, 'Normalized')
+
+    avgSE = aapply(avgSE, function(x) {
+        if (nrow(x) > 0) {
+            subKeys = intersect(TrtKeys, colnames(x))
+            df_av = apply(x[, c('Day0Readout', 'UntrtReadout',
+                    'RefReadout', 'DivisionTime')], 2, FUN = function(y) mean(y, na.rm=T))
+            return( df_av )
+        } else return(x)
+    }, 'Controls')
+}
 
 #' @export
 average_replicates = function(df_normalized, TrtKeys = NULL) {
@@ -451,23 +661,62 @@ calculate_DRmetrics <-
   }
 
 #' @export
-identify_keys = function(df) {
+identify_keys = function(df_se_mae) {
 
-    keys = list(Trt = setdiff(colnames(df), "Barcode"),
-            DoseResp = setdiff(colnames(df),  'Barcode'),
-            Endpoint = colnames(df)[ c(-agrep('Concentration', colnames(df)),
-                                            -agrep(get_identifier('drug'), colnames(df)),
-                                            -agrep(get_identifier('drugname'), colnames(df)))])
-    keys[['Day0']] = keys[['Endpoint']]
+    if (class(df_se_mae) %in% c('MultiAssayExperiment', 'SummarizedExperiment')) {
+        if (class(df_se_mae) %in% 'MultiAssayExperiment') {
+            # if MAE, convert to SE based on the treated SE (could be optimized)
+            df_se_mae = df_se_mae[['treated']]
+            se_untrt =  df_se_mae[['untreated']]
+        } else se_untrt = NULL
+        all_keys = unique(c(
+            colnames(rowData(df_se_mae)),
+            colnames(colData(df_se_mae)),
+            unlist(lapply(assay(df_se_mae), colnames))))
+    } else { # case of a data frame
+        all_keys = colnames(df_se_mae)
+    }
+
+    keys = list(Trt = setdiff(all_keys, "Barcode"),
+            DoseResp = setdiff(all_keys,  'Barcode'),
+            ref_Endpoint = setdiff(all_keys, c('Concentration',
+                                            get_identifier('drug'),
+                                            get_identifier('drugname'))),
+            untrt_Endpoint = all_keys[ c(-agrep('Concentration', all_keys),
+                                            -agrep(get_identifier('drug'), all_keys),
+                                            -agrep(get_identifier('drugname'), all_keys))])
+    keys[['Day0']] = setdiff(keys[['untrt_Endpoint']], get_identifier('duration'))
     keys = lapply(keys, function(x) setdiff(x, c(get_header('raw_data'),
         get_header('normalized_results'), "Template", get_identifier('WellPosition'), get_header('averaged_results'),
             get_header('metrics_results'), "ReferenceDivisionTime"
     )))
+    keys = lapply(keys, sort)
 
     # check if all values of a key is NA
-    for (k in keys[['Endpoint']]) {
-        if (all(is.na(df[,k]))) {keys = lapply(keys, function(x) setdiff(x, k))}
-        if (all(is.na(df[df[,get_identifier('duration')]==0,k]))) {keys[['Day0']] = setdiff(keys[['Day0']], k)}
+    for (k in keys[['untrt_Endpoint']]) {
+
+        if (class(df_se_mae) %in% 'SummarizedExperiment') {
+            # check the metadata fields for NA
+            if (k %in% colnames(rowData(df_se_mae))) df_ = rowData(df_se_mae)
+            else if (k %in% colnames(colData(df_se_mae))) df_ = colData(df_se_mae)
+            else next # not a metadata
+
+            if (all(is.na(df_[,k]))) keys = lapply(keys, function(x) setdiff(x, k))
+
+            if (!is.null(se_untrt) && k %in% colnames(rowData(se_untrt))) {
+                df_ = rowData(se_untrt)
+                if (all(is.na(df_[df_[,get_identifier('duration')]==0,k]))) {
+                    keys[['Day0']] = setdiff(keys[['Day0']], k)
+                }
+            }
+        } else { # case of a data frame
+            if (all(is.na(df_se_mae[,k]))) {
+                keys = lapply(keys, function(x) setdiff(x, k))
+            }
+            if (all(is.na(df_se_mae[df_se_mae[,get_identifier('duration')]==0,k]))) {
+                keys[['Day0']] = setdiff(keys[['Day0']], k)
+            }
+        }
     }
     return(keys)
 }

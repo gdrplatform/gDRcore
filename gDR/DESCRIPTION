@@ -20,7 +20,8 @@ Imports:
     gneDB,
     readxl,
     drc,
-    gCellGenomics
+    gCellGenomics,
+    S4Vectors
 Suggests:
     gCSIutils,
     knitr,
