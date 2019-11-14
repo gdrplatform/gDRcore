@@ -37,12 +37,19 @@ get_header = function(x = NULL) {
         normalized_results = c("CorrectedReadout", 'GRvalue',
                 'RelativeViability', 'DivisionTime', "RefGRvalue", "RefRelativeViability"),
         averaged_results = c('std_GRvalue', 'std_RelativeViability'),
-        metrics_results = c("maxlog10Concentration", "N_conc",
-            "mean_viability", "ic50", "e_max", "ec50", "e_inf", "e_0", "h_ic", "ic_r2", "flat_fit_ic",
-            "GR_AOC",        "GR50", "GRmax", "GEC50", "GRinf", "GR_0", "h_GR", "GR_r2", "flat_fit_GR"),
+        response_metrics = c("x_mean", "xc50", "x_max", "c50",
+                                "x_inf", "x_0", "h", "r2", "flat_fit"),
         add_clid = c('CellLineName', 'Tissue', 'ReferenceDivisionTime')
         # corresponds to the fieLd  'celllinename', 'primarytissue', 'doublingtime' from gneDB CLIDs
     )
+    headersList[['IC_metrics']] = array(c('mean_viability', 'ic50', 'e_max', 'ec50',
+                                        'e_inf', 'e_0', 'h_ic', 'ic_r2', 'flat_fit_ic'),
+            dimnames = headersList['response_metrics'])
+    headersList[['GR_metrics']] = array(c('GR_AOC', 'GR50', 'GR_max', 'GEC50',
+                                        'GR_inf', 'GR_0', 'h_GR', 'GR_r2', 'flat_fit_GR'),
+            dimnames = headersList['response_metrics'])
+    headersList[['metrics_results']] = c("maxlog10Concentration", "N_conc",
+        headersList[['response_metrics']], headersList[['IC_metrics']], headersList[['GR_metrics']])
     headersList[['controlled']] = c(get_identifier('cellline'),
                     headersList[['manifest']],
                     get_identifier('drug'), 'Concentration',

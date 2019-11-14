@@ -299,35 +299,6 @@ createSE <-
 
   }
 
-#' createMAE_raw
-#'
-#' Create MultiAssayExperiment object from raw data in treated/untreated SEs
-#'
-#' @param untreated SummarizedExperiment object with dose-reponse data for 'untreated' conditions
-#' @param treated SummarizedExperiment object with dose-reponse data for 'treated' conditions
-#'
-#' @return MultiAssayExperiment object with dose-reponse data
-#'
-#' @export
-createMAE_raw <- function(untreated, treated) {
-  stopifnot("SummarizedExperiment" %in% class(untreated))
-  stopifnot("SummarizedExperiment" %in% class(treated))
-
-  stopifnot(all(all(MultiAssayExperiment::colData(untreated) ==
-    MultiAssayExperiment::colData(treated))))
-
-  # stopifnot(all(SummarizedExperiment::assayNames(untreated) %in% .assayNames[1]))
-  # stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(untreated))
-  # stopifnot(all(SummarizedExperiment::assayNames(treated) %in% .assayNames))
-  # stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(treated))
-
-  MultiAssayExperiment::MultiAssayExperiment(
-    experiments = MultiAssayExperiment::ExperimentList(list(
-      untreated = untreated, treated = treated
-    )),
-    colData = MultiAssayExperiment::colData(untreated)
-  )
-}
 
 #' addAssayToMAE
 #'
