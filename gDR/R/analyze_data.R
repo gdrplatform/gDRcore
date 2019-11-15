@@ -718,8 +718,8 @@ calculate_DRmetrics <-
 #' @export
 identify_keys = function(df_se_mae) {
 
-    if (class(df_se_mae) %in% c('MultiAssayExperiment', 'SummarizedExperiment')) {
-        if (class(df_se_mae) %in% 'MultiAssayExperiment') {
+    if (any(class(df_se_mae) %in% c('MultiAssayExperiment', 'SummarizedExperiment'))) {
+        if ('MultiAssayExperiment' %in% class(df_se_mae)) {
             # if MAE, convert to SE based on the treated SE (could be optimized)
             df_se_mae = df_se_mae[['treated']]
             se_untrt =  df_se_mae[['untreated']]
@@ -750,7 +750,7 @@ identify_keys = function(df_se_mae) {
     # check if all values of a key is NA
     for (k in keys[['untrt_Endpoint']]) {
 
-        if (class(df_se_mae) %in% 'SummarizedExperiment') {
+        if ('SummarizedExperiment' %in% class(df_se_mae)) {
             # check the metadata fields for NA
             if (k %in% colnames(rowData(df_se_mae))) df_ = rowData(df_se_mae)
             else if (k %in% colnames(colData(df_se_mae))) df_ = colData(df_se_mae)
