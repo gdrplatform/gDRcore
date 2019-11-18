@@ -4,13 +4,14 @@
 \alias{createSE}
 \title{createSE}
 \usage{
-createSE(dfList, data_type = c("untreated", "treated", "all"))
+createSE(df_data, data_type = c("untreated", "treated", "all"),
+  readout = "ReadoutValue")
 }
 \arguments{
-\item{dfList}{list with data.frame(s) with dose-reponse data}
-
 \item{data_type}{string type of data to be returned: with untreated conditions only ('untreated'),
 with treated conditions only ('treated') or all}
+
+\item{dfList}{list with data.frame(s) with dose-reponse data}
 }
 \value{
 SummarizedExperiment object with dose-reponse data
