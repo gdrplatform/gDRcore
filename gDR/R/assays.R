@@ -352,3 +352,44 @@ addAssayToMAE <-
 
     SummarizedExperiment::assay(mae[[exp_name]], assay_name) <- assay
   }
+
+#' assay_to_df
+#'
+#' Convert SE assay to data.frame
+#'
+#' @param se  SummarizedExperiment object with dose-response data
+#' @param assay_name string name of the assay
+#'
+#' @return data.frame with dose-reponse data
+#'
+#' @export
+assay_to_df <- function(se, assay_name) {
+  stopifnot(any("SummarizedExperiment" %in% class(se)))
+  #checkmate::assertString(assay_name)
+  
+  # define data.frame with data from rowData/colData
+  ids <- expand.grid(rownames(rowData(se)), rownames(colData(se)))
+  colnames(ids) <- c("rId", "cId")
+  ids[] <- lapply(ids, as.character)
+  rData <- data.frame(rowData(se), stringsAsFactors = FALSE)
+  rData$rId <- rownames(rData)
+  cData <- data.frame(colData(se), stringsAsFactors = FALSE)
+  cData$cId <- rownames(cData)
+  annotTbl <-
+    dplyr::left_join(ids, rData, by = "rId")
+  annotTbl <-
+    dplyr::left_join(annotTbl, cData, by = "cId")
+  
+  #merge assay data with data from colData/rowData
+  asL <- lapply(1:nrow(colData(se)), function(x) {
+    myL <- assay(metricsSE, asName)[, x]
+    myV <- vapply(myL, nrow, integer(1))
+    rCol <- rep(names(myV), as.numeric(myV))
+    
+    df <- data.frame(do.call(rbind, myL))
+    df$rId <- rCol
+    df$cId <- rownames(colData(se))[x]
+    full.df <- left_join(df, annotTbl, by = c("rId", "cId"))
+  })
+  asDf <- data.frame(do.call(rbind, asL))
+}  
