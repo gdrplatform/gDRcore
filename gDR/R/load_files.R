@@ -470,8 +470,14 @@ load_results_EnVision = function(results_file, results_filename, log_str) {
                                         # limit to first 48 rows in case Protocol information is
                                         # exported which generate craps at the end of the file
             }
-            full_rows = !apply(df[,-7:-1],1,function(x) all(is.na(x))) # not empty rows
+            full_rows = !apply(df[,-6:-1],1,function(x) all(is.na(x))) # not empty rows
                 # don't consider the first columns as these may be metadata
+            # before discarding the rows; move ''Background information'' in the next row
+            Bckd_info_idx = which(as.data.frame(df)[,1] %in% 'Background information')
+            if (length(Bckd_info_idx)>0) {
+                df[Bckd_info_idx+1,1] = df[Bckd_info_idx,1]
+                df[Bckd_info_idx,1] = ''
+            }
             # if big gap, delete what is at the bottom (Protocol information)
             gaps = min(which(full_rows)[ (diff(which(full_rows))>20) ]+1, dim(df)[1])
             df = df[ which(full_rows)[which(full_rows) <= gaps], ] # remove extra rows
@@ -487,9 +493,9 @@ load_results_EnVision = function(results_file, results_filename, log_str) {
                 # two type of format depending on where Background information is placed
                 if (any(as.data.frame(df)[iB+(1:4),1] %in% 'Background information')) {
                     ref_bckgrd = which(as.data.frame(df)[iB+(1:4),1] %in% 'Background information')
-                    readout_offset = 2 + ref_bckgrd
-                    stopifnot(as.character(df[iB+ref_bckgrd+1,4]) %in% 'Signal')
-                    BackgroundValue = as.numeric(df[iB+ref_bckgrd+2,4])
+                    readout_offset = 1 + ref_bckgrd
+                    stopifnot(as.character(df[iB+ref_bckgrd,4]) %in% 'Signal')
+                    BackgroundValue = as.numeric(df[iB+ref_bckgrd+1,4])
                 } else {
                     # export without background information
                     # case of " Exported with EnVision Workstation version 1.13.3009.1409 "
