@@ -127,6 +127,17 @@ get_header <- function(x = NULL) {
     return(headersList)
 }
 
+#' Load data
+#' 
+#' This functions loads and checks the data file(s)
+#' 
+#' @param manifest_file character, file path(s) to manifest(s)
+#' @param df_template_files data.frame, with datapaths and names of results file(s)
+#' or character with file path of templates file(s)
+#' @param results_file  data.frame, with datapaths and names of results file(s)
+#' or character with file path of results file(s)
+#' @param log_str character, file path to logs
+#' @param instrument character
 #' @export
 load_data <-
   function(manifest_file,
@@ -156,9 +167,6 @@ load_data <-
                           unique(manifest$Template[manifest$Barcode %in% data$Barcode]),
                           basename(template_filename)
                         ), collapse = " ; "))
-      log_str <- c(log_str, "Error in load_merge_data:")
-      log_str <- c(log_str, ErrorMsg)
-      writeLines(log_str)
       stop(ErrorMsg)
     }
     return(list(
@@ -170,20 +178,49 @@ load_data <-
 
 
 
+#' Load manifest
+#' 
+#' This functions loads and checks the manifest file(s)
+#' 
+#' @param manifest_file character, file path(s) to manifest(s)
+#' @param log_str character, file path to logs
 #' @export
 load_manifest <- function (manifest_file, log_str) {
   # manifest_file is a string or a vector of strings
   
   log_str <- c(log_str, "", "load_manifest")
+  available_formats <- c("text/tsv",
+                         "text/tab-separated-values",
+                         "xlsx", "xls", "tsv")
   
   # read files
   manifest_data <- lapply(manifest_file, function(x) {
-    df <- tryCatch({
-      read_excel(x, col_names = TRUE)
-    },
-    error = function(e) {
-      read_tsv(x, col_names = TRUE, skip_empty_rows = TRUE)
-    })
+    manifest_ext <- tools::file_ext(x)
+    if (manifest_ext %in% c("xlsx", "xls")) {
+      df <- tryCatch({
+        readxl::read_excel(x, col_names = TRUE)
+      }, error = function(e) {
+        stop(sprintf("Error reading the Manifest file. Please see the logs:\n%s", e))
+      }) 
+    } else if (manifest_ext %in% c("text/tsv",
+                                   "text/tab-separated-values",
+                                   ".tsv")) {
+      df <- tryCatch({
+        readr::read_tsv(x, col_names = TRUE, skip_empty_rows = TRUE)
+      }, error = function(e) {
+        stop(sprintf("Error reading the Manifest file. Please see the logs:\n%s", e))
+      })
+    } else {
+      stop(
+        stop(sprintf(
+          "%s file format is not supported.
+          Please convert your file to one of the follwoing: %s",
+          manifest_ext,
+          stringi::stri_flatten(available_formats, collapse = ", ")
+        )
+        )
+      )
+    }
   })
   
   # replace Time by Duration for backwards compatibility
@@ -196,33 +233,38 @@ load_manifest <- function (manifest_file, log_str) {
   })
   
   # check default headers are in each df
-  dump <- sapply(lapply(1:length(manifest_file),
-                        function(x)
-                          c(manifest_file[x], manifest_data[x])),
-                 function(x)
+  dump <- sapply(1:length(manifest_file),
+                 function(i)
                    check_metadata_names(
-                     colnames(x[[2]]),
+                     colnames(manifest_data[[i]]),
                      log_str,
-                     df_name = x[[1]],
+                     df_name = manifest_file[[i]],
                      df_type = "manifest"
                    ))
   
-  cat_manifest_data <- bind_rows(manifest_data)
+  cat_manifest_data <- dplyr::bind_rows(manifest_data)
   colnames(cat_manifest_data) <-
     check_metadata_names(colnames(cat_manifest_data),
                          log_str, "manifest")
+  
   # check that barcodes are unique
-  stopifnot(dim(cat_manifest_data)[1] == length(unique(cat_manifest_data$Barcode)))
-  # add error message
+  if (dim(cat_manifest_data)[1] != length(unique(cat_manifest_data$Barcode)))
+    stop("Barcodes in Manifest must be unique!")
   
   cat_manifest_data$Template <- basename(cat_manifest_data$Template)
   
-  print("Manifest loaded")
+  print("Manifest loaded successfully")
   return(cat_manifest_data)
 }
 
 
-
+#' Load templates from
+#' 
+#' This functions loads and checks the template file(s)
+#' 
+#' @param df_template_files data.frame, with datapaths and names of results file(s)
+#' or character with file path of templates file(s)
+#' @param log_str character, file path to logs
 #' @export
 load_templates <- function (df_template_files, log_str) {
   # template_file is a string or a vector of strings
@@ -256,7 +298,15 @@ load_templates <- function (df_template_files, log_str) {
   
 }
 
-
+#' Load results
+#' 
+#' This functions loads and checks the results file(s)
+#' 
+#' @param df_results_files  data.frame, with datapaths and names of results file(s)
+#' or character with file path of results file(s)
+#' @param log_str character, file path to logs
+#' @param intrument character
+#' @export
 #' @export
 load_results <-
   function(df_results_files, log_str, instrument = "EnVision") {
@@ -284,36 +334,43 @@ load_results <-
 
 # individual functions
 
+#' Load templates from tsv
+#' 
+#' This functions loads and checks the template file(s)
+#' 
+#' @param template_file character, file path(s) to template(s)
+#' @param log_str character, file path to logs
 load_templates_tsv <-
   function(template_file,
-           template_filename,
            log_str) {
-    if (is.null(template_filename))
-      template_filename <- basename(template_file)
+    template_filename <- basename(template_file)
     
     # read columns in files
     templates <- lapply(template_file, function(x)
-      read_tsv(x, col_names = TRUE, skip_empty_rows = TRUE))
+      readr::read_tsv(x, col_names = TRUE, skip_empty_rows = TRUE))
     names(templates) <- template_filename
     # check WellRow/WellColumn is present in each df
-    sapply(lapply(1:length(template_file), function(x)
-      list(templates[[x]], template_filename[x])),
-      function(x)
-        if (!(all(
-          get_identifier("WellPosition") %in% colnames(x[[1]])
-        ))) {
-          print(paste(x[[2]], "missing", get_identifier("WellPosition"), "as header"))
-        })
+    dump <- sapply(1:length(template_file),
+                   function(i)
+                     if (!(all(
+                       get_identifier("WellPosition") %in% colnames(templates[[i]])
+                     ))) {
+                       print(paste(
+                         template_filename[[i]],
+                         "missing",
+                         get_identifier("WellPosition"),
+                         "as header"
+                       ))
+                     })
     # check drug_identifier is present in each df
-    sapply(lapply(1:length(template_file), function(x)
-      list(templates[[x]], template_filename[x])),
-      function(x)
-        check_metadata_names(
-          setdiff(colnames(x[[1]]), get_identifier("WellPosition")),
-          log_str,
-          df_name = x[[2]],
-          df_type = "template"
-        ))
+    dump <- sapply(1:length(template_file),
+                   function(i)
+                     check_metadata_names(
+                       setdiff(colnames(templates[[i]]), get_identifier("WellPosition")),
+                       log_str,
+                       df_name = template_filename[[i]],
+                       df_type = "template"
+                     ))
     
     metadata_fields <- NULL
     all_templates <- data.frame()
@@ -329,29 +386,20 @@ load_templates_tsv <-
       # case of untreated plate
       if (sum(Conc_idx) == 0) {
         if (length(Gnumber_idx) == 0) {
-          ErrorMsg <- paste(
-            "In untreated template file",
-            template_file[iF],
-            ", sheet name must be",
+          ErrorMsg <- sprintf(
+            "In untreated template file %s, sheet name must be %",
+            template_file[[i]],
             get_identifier("drug")
           )
-          log_str <- c(log_str, "Error in load_templates:")
-          log_str <- c(log_str, ErrorMsg)
-          writeLines(log_str)
           stop(ErrorMsg)
         }
         df <- templates[[iF]][, get_identifier("drug")]
         if (!(all(toupper(df)[!is.na(df)]) %in% toupper(get_identifier("untreated_tag")))) {
-          ErrorMsg <- paste(
-            "In untreated template file",
-            template_file[iF],
-            ", entries mush be ",
+          ErrorMsg <- sprintf(
+            "In untreated template file %s, entries must be %s",
+            template_file[[i]],
             paste(get_identifier("untreated_tag"), collapse = " or ")
           )
-          log_str <-
-            c(log_str, "Error in load_templates:")
-          log_str <- c(log_str, ErrorMsg)
-          writeLines(log_str)
           stop(ErrorMsg)
         }
       } else {
@@ -383,90 +431,97 @@ load_templates_tsv <-
       colnames(df_template) <-
         check_metadata_names(colnames(df_template), log_str,
                              df_name = template_filename[iF])
-      all_templates <- bind_rows(all_templates, df_template)
+      all_templates <- dplyr::bind_rows(all_templates, df_template)
       
     }
-    print("Templates loaded:")
-    print(dim(all_templates))
+    print("Templates loaded successfully!")
     return(all_templates)
   }
 
-
+#' Load templates from xlsx
+#' 
+#' This functions loads and checks the template file(s)
+#' 
+#' @param template_file character, file path(s) to template(s)
+#' @param log_str character, file path to logs
 load_templates_xlsx <-
   function(template_file,
-           template_filename,
            log_str) {
+    template_filename <- basename(template_file)
     # read sheets in files
-    template_sheets <- lapply(template_file, excel_sheets)
+    template_sheets <- lapply(template_file, readxl::excel_sheets)
     # check drug_identifier is present in each df
-    sapply(lapply(1:length(template_file), function(x)
-      c(template_file[x], template_sheets[x])),
-      function(x)
-        check_metadata_names(x[[2]], log_str, df_name = x[[1]], df_type = "template"))
+    dump <- sapply(1:length(template_file),
+                   function(i)
+                     check_metadata_names(
+                       template_sheets[[i]],
+                       log_str,
+                       df_name = template_file[[i]],
+                       df_type = "template"
+                     ))
     
     metadata_fields <- NULL
     all_templates <- data.frame()
     for (iF in 1:length(template_file)) {
-      print(paste("Loading", template_sheets[[iF]]))
+      print(paste("Loading", template_filename[iF]))
       # first check that the sheet names are ok
       # identify drug_identifier sheet (case insensitive)
       Gnumber_idx <- grep(paste0(get_identifier("drug"), "$"),
                           template_sheets[[iF]],
                           ignore.case = TRUE)
-      Conc_idx = grepl("Concentration", template_sheets[[iF]], ignore.case = TRUE)
+      Conc_idx <- grepl("Concentration", template_sheets[[iF]], ignore.case = TRUE)
       # case of untreated plate
       if (sum(Conc_idx) == 0) {
         if (length(Gnumber_idx) == 0) {
-          ErrorMsg <- paste(
-            "In untreated template file",
-            template_file[[iF]],
-            ", sheet name must be",
+          ErrorMsg <- sprintf(
+            "In untreated template file %s, sheet name must be %",
+            template_file[[i]],
             get_identifier("drug")
           )
-          log_str <- c(log_str, "Error in load_templates:")
-          log_str <- c(log_str, ErrorMsg)
-          writeLines(log_str)
           stop(ErrorMsg)
         }
-        df <-
-          read_excel(
+        tryCatch({
+          df <-
+            readxl::read_excel(
+              template_file[[iF]],
+              sheet = Gnumber_idx,
+              col_names = paste0("x", 1:48),
+              range = "A1:AV32"
+            )
+        }, error = function(e) {
+          stop(sprintf("Error loading template. See logs: %s", e))
+        })
+        if (!(all(toupper(unlist(df)[!is.na(unlist(df))]) %in% 
+                  toupper(get_identifier("untreated_tag"))))) {
+          
+          ErrorMsg <- sprintf(
+            "In untreated template file %s, entries must be %s",
             template_file[[iF]],
-            sheet = Gnumber_idx,
-            col_names = paste0("x", 1:48),
-            range = "A1:AV32"
-          )
-        if (!(all(toupper(unlist(df)[!is.na(unlist(df))]) %in% toupper(get_identifier(
-          "untreated_tag"
-        ))))) {
-          ErrorMsg <- paste(
-            "In untreated template file",
-            template_file[[iF]],
-            ", entries mush be ",
             paste(get_identifier("untreated_tag"), collapse = " or ")
           )
-          log_str <-
-            c(log_str, "Error in load_templates:")
-          log_str <- c(log_str, ErrorMsg)
-          writeLines(log_str)
           stop(ErrorMsg)
         }
       } else {
         # normal case
-        check_metadata_names(template_sheets[[iF]],
-                             log_str,
-                             df_name = template_filename[iF],
-                             df_type = "template_treatment")
+        dump <- check_metadata_names(template_sheets[[iF]],
+                                     log_str,
+                                     df_name = template_filename[iF],
+                                     df_type = "template_treatment")
       }
       # read the different sheets and check for plate size
       # enforce range to avoid skipping empty rows at the beginning
-      df <-
-        read_excel(
-          template_file[[iF]],
-          sheet = template_sheets[[iF]][Gnumber_idx],
-          col_names = paste0("x", 1:48),
-          range = "A1:AV32",
-          col_types = "text"
-        )
+      tryCatch({
+        df <-
+          readxl::read_excel(
+            template_file[[iF]],
+            sheet = template_sheets[[iF]][Gnumber_idx],
+            col_names = paste0("x", 1:48),
+            range = "A1:AV32",
+            col_types = "text"
+          )
+      }, error = function(e) {
+        stop(sprintf("Error loading template. See logs: %s", e))
+      })
       # get the plate size
       n_row <-
         2 ** ceiling(log2(max(which(
@@ -483,15 +538,19 @@ load_templates_xlsx <-
       
       # need to adapt for 1536 well plates
       df_template <-
-        expand.grid(WellRow = LETTERS[1:n_row], WellColumn = 1:n_col)
+        base::expand.grid(WellRow = LETTERS[1:n_row], WellColumn = 1:n_col)
       
       for (iS in template_sheets[[iF]]) {
-        df <- as.data.frame(read_excel(
-          template_file[[iF]],
-          sheet = iS,
-          col_names = paste0("x", 1:n_col),
-          range = plate_range
-        ))
+        tryCatch({
+          df <- as.data.frame(readxl::read_excel(
+            template_file[[iF]],
+            sheet = iS,
+            col_names = paste0("x", 1:n_col),
+            range = plate_range
+          ))
+        }, error = function(e) {
+          stop(sprintf("Error loading %s. Please check logs: %s", template_file[[iF]], e))
+        })
         df$WellRow <- LETTERS[1:n_row]
         df_melted <- reshape2::melt(df, id.vars = "WellRow")
         
@@ -499,10 +558,10 @@ load_templates_xlsx <-
         if (!(iS %in% metadata_fields)) {
           if (!is.null(metadata_fields) &&
               toupper(iS) %in% toupper(metadata_fields)) {
-            oldiS <- iS
+            oldj <- iS
             iS <-
               metadata_fields[toupper(iS) == toupper(metadata_fields)]
-            print(paste(oldiS, "corrected to match case with ", iS))
+            print(paste(oldj, "corrected to match case with ", iS))
           } else {
             metadata_fields <- c(metadata_fields, iS)
           }
@@ -513,44 +572,55 @@ load_templates_xlsx <-
         df_melted$WellColumn <-
           gsub("x", "", df_melted$WellColumn)
         df_template <-
-          merge(df_template, df_melted, by = c("WellRow", "WellColumn"))
+          base::merge(df_template, df_melted, by = c("WellRow", "WellColumn"))
       }
-      df_template$Template <- template_filename[iF]
+      df_template$Template <- template_filename[i]
       colnames(df_template) <-
         check_metadata_names(colnames(df_template), log_str,
-                             df_name = template_filename[iF])
-      all_templates <- bind_rows(all_templates, df_template)
+                             df_name = template_filename[i])
+      all_templates <- dplyr::bind_rows(all_templates, df_template)
       
     }
-    print("Templates loaded:")
-    print(dim(all_templates))
+    print("Templates loaded successfully!")
     return(all_templates)
   }
 
-
+#' Load results from tsv
+#' 
+#' This functions loads and checks the results file(s)
+#' 
+#' @param results_file character, file path(s) to template(s)
+#' @param log_str character, file path to logs
 load_results_tsv <-
-  function(results_file, results_filename = NULL, log_str) {
+  function(results_file, log_str) {
     # results_file is a string or a vector of strings
-    log_str = c(log_str, "", "load_results")
+    log_str <- c(log_str, "", "load_results")
     
-    if (is.null(results_filename))
-      results_filename <- basename(results_file)
+    results_filename <- basename(results_file)
     
     # read all files
     all_results <- data.frame()
     for (iF in 1:length(results_file)) {
       print(paste("Reading file", results_file[iF]))
-      df <-
-        read_tsv(results_file[iF],
-                 col_names = TRUE,
-                 skip_empty_rows = TRUE)
+      tryCatch({
+        df <-
+          readr::read_tsv(results_file[iF],
+                          col_names = TRUE,
+                          skip_empty_rows = TRUE)
+      }, error = function(e) {
+        stop(sprintf("Error reading %s", results_file[[iF]]))
+      })
       # skip_empty_rows flag needs to be TRUE even if it ends up not skipping empty rows
       if (dim(df)[2] == 1) {
-        # likely a csv file
-        df <-
-          read_csv(results_file[iF],
-                   col_names = TRUE,
-                   skip_empty_rows = TRUE)
+        tryCatch({
+          # likely a csv file
+          df <-
+            read_csv(results_file[iF],
+                     col_names = TRUE,
+                     skip_empty_rows = TRUE)
+        }, error = function(e) {
+          stop(sprintf("Error reading %s", results_file[[iF]]))
+        })
       }
       
       for (coln in c("Barcode",
@@ -584,20 +654,22 @@ load_results_tsv <-
   }
 
 
+#' Load results from xlsx
+#' 
+#' This functions loads and checks the results file(s)
+#' 
+#' @param results_file character, file path(s) to template(s)
+#' @param log_str character, file path to logs
 load_results_EnVision <-
-  function(results_file, results_filename, log_str) {
+  function(results_file, log_str) {
+    results_filename <- basename(results_file)
     # results_file is a string or a vector of strings
     log_str <- c(log_str, "", "load_results")
     
     # test if the result files are .tsv or .xls(x) files
-    isExcel <- sapply(results_file, function(x)
-      tryCatch({
-        excel_sheets(x)
-        return(TRUE)
-      },
-      error = function(x) {
-        return(FALSE)
-      }))
+    isExcel <- sapply(results_file, function(x) {
+      return(tools::file_ext(x) %in% c("xlsx", "xls"))
+    })
     
     # read sheets in files; warning if more than one sheet (unexpected but can be handled)
     results_sheets <- vector("list", length(results_file))
@@ -607,9 +679,6 @@ load_results_EnVision <-
     if (any(lapply(results_sheets, length) > 1)) {
       WarnMsg <- paste("multiple sheets in result file:",
                        results_file[lapply(results_sheets, length) > 1])
-      log_str <-
-        c(log_str, paste("Warning in ", match.call()[[1]]))
-      log_str <- c(log_str, WarnMsg)
       warning(WarnMsg)
     }
     
@@ -619,48 +688,62 @@ load_results_EnVision <-
       for (iS in results_sheets[[iF]]) {
         print(paste("Reading file", results_file[[iF]], "; sheet", iS))
         if (iS == 0) {
-          df <-
-            read_tsv(results_file[[iF]],
-                     col_names = FALSE,
-                     skip_empty_rows = TRUE)
+          tryCatch({
+            df <-
+              readr::read_tsv(results_file[[iF]],
+                              col_names = FALSE,
+                              skip_empty_rows = TRUE)
+          }, error = function(e) {
+            stop(sprintf("Error reading %s, sheet %s", results_file[[iF]], iS))
+          })
           # skip_empty_rows flag needs to be TRUE even if it ends up not skipping empty rows
           if (dim(df)[2] == 1) {
-            # likely a csv file
-            df <-
-              read_csv(results_file[[iF]],
-                       col_names = FALSE,
-                       skip_empty_rows = TRUE)
+            tryCatch({
+              # likely a csv file
+              df <-
+                readr::read_csv(results_file[[iF]],
+                                col_names = FALSE,
+                                skip_empty_rows = TRUE)
+            }, error = function(e) {
+              stop(sprintf("Error reading %s, sheet %s", results_file[[iF]], iS))
+            })
           }
         } else {
           # expect an Excel spreadsheet
           if (length(results_sheets[[iF]]) > 1) {
             # if multiple sheets, assume 1 plate per sheet
-            df <-
-              read_excel(
-                results_file[[iF]],
-                sheet = iS,
-                #col_names = FALSE,
-                col_names = paste0("x", 1:48),
-                range = "A1:AV32"
-              )
+            tryCatch({
+              df <-
+                readxl::read_excel(
+                  results_file[[iF]],
+                  sheet = iS,
+                  col_names = paste0("x", 1:48),
+                  range = "A1:AV32"
+                )
+            }, error = function(e) {
+              stop(sprintf("Error reading %s, sheet %s", results_file[[iF]], iS))
+            })
           } else {
-            df <- read_excel(results_file[[iF]],
-                             sheet = iS,
-                             col_names = FALSE)
+            tryCatch({
+              df <- readxl::read_excel(results_file[[iF]],
+                                       sheet = iS,
+                                       col_names = FALSE)
+            }, error = function(e) {
+              stop(sprintf("Error reading %s, sheet %s", results_file[[iF]], iS))
+            })
             colnames(df) <-
               col_names <- paste0("x", 1:dim(df)[2])
           }
           df <-
-            df[,!apply(df[1:48,], 2, function(x)
-              all(is.na(x)))] # remove extra columns
+            df[, !apply(df[1:48, ], 2, function(x) all(is.na(x)))] 
+          # remove extra columns
           # limit to first 48 rows in case Protocol information is
           # exported which generate craps at the end of the file
         }
-        full_rows <-
-          !apply(df[,-6:-1], 1, function(x)
-            all(is.na(x))) # not empty rows
+        full_rows <- !apply(df[,-6:-1], 1, function(x) all(is.na(x)))
+        # not empty rows
         # before discarding the rows; move ''Background information'' in the next row
-        Bckd_info_idx = which(as.data.frame(df)[, 1] %in% 'Background information')
+        Bckd_info_idx <- which(as.data.frame(df)[, 1] %in% 'Background information')
         if (length(Bckd_info_idx) > 0) {
           df[Bckd_info_idx + 1, 1] = df[Bckd_info_idx, 1]
           df[Bckd_info_idx, 1] = ''
@@ -671,10 +754,11 @@ load_results_EnVision <-
         gaps <-
           min(which(full_rows)[(diff(which(full_rows)) > 20)] + 1, dim(df)[1])
         df <-
-          df[which(full_rows)[which(full_rows) <= gaps],] # remove extra rows
+          df[which(full_rows)[which(full_rows) <= gaps], ] # remove extra rows
         df <-
-          df[,!apply(df, 2, function(x)
-            all(is.na(x)))] # remove empty columns
+          df[, !apply(df, 2, function(x) all(is.na(x)))] 
+        # remove empty columns
+        
         # get the plate size
         n_col <- 1.5 * 2 ** ceiling(log2(dim(df)[2] / 1.5))
         n_row <- n_col / 1.5
@@ -712,9 +796,6 @@ load_results_EnVision <-
                 ") readout values are misplaced for plate",
                 as.character(df[iB + 1, 3])
               )
-            log_str <- c(log_str, "Error in load_results:")
-            log_str <- c(log_str, ErrorMsg)
-            writeLines(log_str)
             stop(ErrorMsg)
           }
           
@@ -732,9 +813,6 @@ load_results_EnVision <-
                 ") readout values are missing for plate",
                 as.character(df[iB + 1, 3])
               )
-            log_str <- c(log_str, "Error in load_results:")
-            log_str <- c(log_str, ErrorMsg)
-            writeLines(log_str)
             stop(ErrorMsg)
           }
           
