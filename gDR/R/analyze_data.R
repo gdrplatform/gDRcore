@@ -59,7 +59,7 @@ Overall_function <-
   }
 
 
-#" @export
+#' @export
 merge_data <- function(manifest, treatments, data, log_str) {
   log_str <- c(log_str, "", "merge_data")
   
