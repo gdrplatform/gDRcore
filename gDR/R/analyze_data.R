@@ -813,23 +813,8 @@ cleanup_metadata = function(df_metadata, log_str) {
     }
 
     # TODO: specific to GNE database --> need to be replaced by a function
-    gCLs = gneDB::annotateCLIDs(unique(df_metadata[,get_identifier('cellline')]))[,
-        c(get_identifier('DB_cell'), 'celllinename', 'primarytissue', 'doublingtime')]
+    df_metadata = gDR::add_CellLine_annotation(df_metadata)
 
-    colnames(gCLs) = c(get_identifier('cellline'), get_header('add_clid'))
-    CLIDs = unique(df_metadata[,get_identifier('cellline')])
-    bad_CL = !(CLIDs %in% gCLs[,get_identifier('cellline')])
-    if (any(bad_CL)) {
-        ErrorMsg = paste('Cell line ID ', paste(CLIDs[bad_CL], collapse = ' ; '),
-            ' not found in cell line database')
-        log_str = c(log_str, 'Error in cleanup_metadata:')
-        log_str = c(log_str, ErrorMsg)
-
-        stop(ErrorMsg)
-        }
-    print('merge with gCells')
-    df_metadata = merge(df_metadata, gCLs, by.x = get_identifier('cellline'),
-                by.y = get_identifier('DB_cell'), all.x = T)
     print(dim(df_metadata))
 
     # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
@@ -841,50 +826,7 @@ cleanup_metadata = function(df_metadata, log_str) {
     }
     # -----------------------
 
-    gDrugs = gCellGenomics::getDrugs()[,c(get_identifier('DB_drug'), 'gcsi_drug_name')]
-
-    # -----------------------
-    gDrugs[,1] = substr(gDrugs[,1], 1, 9) # remove batch number from get_identifier('DB_drug')
-    colnames(gDrugs) = c('drug', 'DrugName')
-    gDrugs = rbind(data.frame(drug=get_identifier('untreated_tag'), DrugName=get_identifier('untreated_tag')), gDrugs)
-    gDrugs = unique(gDrugs)
-    Gnbrs = unique(unlist(df_metadata[,agrep(get_identifier('drug'), colnames(df_metadata))]))
-    bad_Gn = !(Gnbrs %in% gDrugs$drug) & !is.na(Gnbrs)
-    if (any(bad_Gn)) {
-        # G number, but not registered
-        ok_Gn = attr(regexpr('^G\\d*',Gnbrs), 'match.length')==9
-        if (any(ok_Gn)) {
-            WarnMsg = paste('Drug ', paste(Gnbrs[ok_Gn & bad_Gn], collapse = ' ; '),
-                ' not found in gCSI database; use G# as DrugName')
-            gDrugs = rbind(gDrugs, data.frame(drug=Gnbrs[ok_Gn & bad_Gn],
-                    DrugName=Gnbrs[ok_Gn & bad_Gn]))
-            log_str = c(log_str, 'Warning in cleanup_metadata:')
-            log_str = c(log_str, WarnMsg)
-            warning(WarnMsg)
-        } else {
-            ErrorMsg = paste('Drug ', paste(Gnbrs[!ok_Gn], collapse = ' ; '),
-                ' not found in gCSI database')
-            log_str = c(log_str, 'Error in cleanup_metadata:')
-            log_str = c(log_str, ErrorMsg)
-
-            stop(ErrorMsg)
-        }
-    }
-    colnames(gDrugs)[2] = get_identifier('drugname')
-    print('merge with gDrugs for Drug 1')
-    df_metadata = merge(df_metadata, gDrugs, by.x=get_identifier('drug'), by.y='drug', all.x = T)
-    print(dim(df_metadata))
-    # add info for columns Gnumber_*
-    for (i in grep(paste0(get_identifier('drug'),'_\\d'), colnames(df_metadata))) {
-        df_metadata[ is.na(df_metadata[,i]), i] = get_identifier('untreated_tag')[1] # set missing values to Untreated
-        gDrugs_ = gDrugs
-        colnames(gDrugs_)[2] = paste0(colnames(gDrugs_)[2], substr(colnames(df_metadata)[i], 8, 12))
-        print(paste('merge with gDrugs for ', i))
-        df_metadata = merge(df_metadata, gDrugs_, by.x=i, by.y='drug', all.x = T)
-        print(dim(df_metadata))
-    }
-    df_metadata[, colnames(df_metadata)[grepl(get_identifier('drugname'), colnames(df_metadata))] ] =
-        droplevels(df_metadata[,colnames(df_metadata)[grepl(get_identifier('drugname'), colnames(df_metadata))]])
+    df_metadata = add_Drug_annotation(df_metadata)
 
     # clean up concentration fields
     for (i in agrep('Concentration', colnames(df_metadata))) {
@@ -925,4 +867,113 @@ Order_result_df = function (df_) {
     df_ = df_[do.call(order, df_[,row_order_col]), cols]
 
     return(df_)
+}
+
+
+#
+add_CellLine_annotation = function(df_metadata) {
+
+    DB_cellid_header = 'clid'
+    DB_cell_annotate = c('celllinename', 'primarytissue', 'doublingtime')
+    # corresponds to columns get_header('add_clid'): name, tissue, doubling time
+    CLs_info = tryCatch( {
+        CLs_info = gneDB::annotateCLIDs(unique(df_metadata[,get_identifier('cellline')]))
+        CLs_info = CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
+        return(CLs_info)
+    }, error = function(e) {
+        print('failed to load cell line info from DB')
+        print(e)
+        return(data.frame())
+    })
+
+    if (nrow(CLs_info)==0) return(df_metadata)
+
+    colnames(CLs_info) = c(get_identifier('cellline'), get_header('add_clid'))
+    CLIDs = unique(df_metadata[,get_identifier('cellline')])
+    bad_CL = !(CLIDs %in% CLs_info[,get_identifier('cellline')])
+    if (any(bad_CL)) {
+        ErrorMsg = paste('Cell line ID ', paste(CLIDs[bad_CL], collapse = ' ; '),
+            ' not found in cell line database')
+        log_str = c(log_str, 'Error in cleanup_metadata:')
+        log_str = c(log_str, ErrorMsg)
+
+        stop(ErrorMsg)
+        }
+
+    print('merge with Cell line info')
+    nrows_df = nrow(df_metadata)
+    df_metadata = merge(df_metadata, CLs_info, by.x = get_identifier('cellline'),
+                by.y = DB_cellid_header, all.x = T)
+    stopifnot(nrows_df == nrow(df_metadata))
+
+    return(df_metadata)
+
+}
+
+
+add_Drug_annotation = function(df_metadata) {
+        nrows_df = nrow(df_metadata)
+
+        DB_drug_identifier = 'drug'
+        Drug_info = tryCatch( {
+                gDrugs = gCellGenomics::getDrugs()[,c(DB_drug_identifier, 'gcsi_drug_name')]
+                gDrugs[,1] = substr(gDrugs[,1], 1, 9) # remove batch number from DB_drug_identifier
+                retrun(gDrugs)
+        }, error = function(e) {
+            print('failed to load drug info from DB')
+            print(e)
+            return(data.frame())
+        })
+
+        if (nrow(Drug_info) == 0) {
+            df_metadata[, get_identifier('drugname')] = df_metadata[,get_identifier('drug')]
+            return(df_metadata)
+        }
+        # -----------------------
+
+        colnames(Drug_info) = c('drug', 'DrugName')
+        Drug_info = rbind(data.frame(drug=get_identifier('untreated_tag'), DrugName=get_identifier('untreated_tag')), Drug_info)
+        Drug_info = unique(Drug_info)
+        DrIDs = unique(unlist(df_metadata[,agrep(get_identifier('drug'), colnames(df_metadata))]))
+        bad_DrID = !(DrIDs %in% Drug_info$drug) & !is.na(DrIDs)
+        if (any(bad_DrID)) {
+            # G number, but not registered
+            ok_DrID = attr(regexpr('^G\\d*',DrIDs), 'match.length')==9
+            if (any(ok_DrID)) {
+                WarnMsg = paste('Drug ', paste(DrIDs[ok_DrID & bad_DrID], collapse = ' ; '),
+                    ' not found in gCSI database; use G# as DrugName')
+                Drug_info = rbind(Drug_info, data.frame(drug=DrIDs[ok_DrID & bad_DrID],
+                        DrugName=DrIDs[ok_DrID & bad_DrID]))
+                log_str = c(log_str, 'Warning in cleanup_metadata:')
+                log_str = c(log_str, WarnMsg)
+                warning(WarnMsg)
+            } else {
+                ErrorMsg = paste('Drug ', paste(DrIDs[!ok_DrID], collapse = ' ; '),
+                    ' not found in gCSI database')
+                log_str = c(log_str, 'Error in cleanup_metadata:')
+                log_str = c(log_str, ErrorMsg)
+
+                stop(ErrorMsg)
+            }
+        }
+        colnames(Drug_info)[2] = get_identifier('drugname')
+        print('merge with Drug_info for Drug 1')
+        df_metadata = merge(df_metadata, Drug_info, by.x=get_identifier('drug'), by.y='drug', all.x = T)
+        print(dim(df_metadata))
+        # add info for columns Gnumber_*
+        for (i in grep(paste0(get_identifier('drug'),'_\\d'), colnames(df_metadata))) {
+            df_metadata[ is.na(df_metadata[,i]), i] = get_identifier('untreated_tag')[1] # set missing values to Untreated
+            Drug_info_ = Drug_info
+            colnames(Drug_info_)[2] = paste0(colnames(Drug_info_)[2], substr(colnames(df_metadata)[i], 8, 12))
+            print(paste('merge with Drug_info for ', i))
+            df_metadata = merge(df_metadata, Drug_info_, by.x=i, by.y='drug', all.x = T)
+            print(dim(df_metadata))
+        }
+        df_metadata[, colnames(df_metadata)[grepl(get_identifier('drugname'), colnames(df_metadata))] ] =
+            droplevels(df_metadata[,colnames(df_metadata)[grepl(get_identifier('drugname'), colnames(df_metadata))]])
+
+    stopifnot(nrows_df == nrow(df_metadata))
+
+    return(df_metadata)
+
 }

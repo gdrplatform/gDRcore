@@ -11,10 +11,8 @@ get_identifier = function(x = NULL) {
         duration = 'Duration',
 
         cellline = 'clid',
-        DB_cell = 'clid',
 
         drug = 'Gnumber',
-        DB_drug = 'drug',
         drugname = 'DrugName',
         # corresponds to the fieLd  'gcsi_drug_name' from gCellGenomics::getDrugs()
 
