@@ -382,7 +382,7 @@ assay_to_df <- function(se, assay_name) {
   
   #merge assay data with data from colData/rowData
   asL <- lapply(1:nrow(colData(se)), function(x) {
-    myL <- assay(metricsSE, asName)[, x]
+    myL <- assay(se, assay_name)[, x]
     myV <- vapply(myL, nrow, integer(1))
     rCol <- rep(names(myV), as.numeric(myV))
     
