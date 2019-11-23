@@ -208,7 +208,7 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
 
     # perform the mapping for normalization
     # first the rows
-    row_maps_end = unlist(sapply(rownames(normSE), function(x) {
+    row_maps_end = lapply(rownames(normSE), function(x) {
         # define matix with matching metadata
         match_mx = c(
             (rowData(ctrlSE) == (rowData(normSE)[x,]))[
@@ -232,16 +232,18 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
             warning(WarnMsg)
         }
         return(rownames(ctrlSE)[match_idx])
-    }))
+    })
+    names(row_maps_end) = rownames(normSE)
 
-    row_maps_cotrt = unlist(sapply(rownames(normSE), function(x)
+    row_maps_cotrt = lapply(rownames(normSE), function(x)
         rownames(ctrlSE)[which(apply(as.matrix(c(
             (rowData(ctrlSE) == (rowData(normSE)[x,]))[
                 intersect(Keys$ref_Endpoint,names(rowData(ctrlSE)))],
             LogicalList(key_values = row_endpoint_value_filter)) ),
-            2, all))]))
+            2, all))])
+    names(row_maps_cotrt) = rownames(normSE)
 
-    row_maps_T0 = sapply(rownames(normSE), function(x) {
+    row_maps_T0 = lapply(rownames(normSE), function(x) {
         # define matix with matching metadata
         match_mx = c(
             (rowData(ctrlSE) == (rowData(normSE)[x,]))[
@@ -267,6 +269,7 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
         }
         return(rownames(ctrlSE)[match_idx])
     })
+    names(row_maps_T0) = rownames(normSE)
 
     # mapping for columns; 1 to 1 unless overridden by key_values
     col_maps = array(colnames(ctrlSE), dimnames = list(colnames(normSE)))
@@ -297,7 +300,8 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
 
             if (nrow(assay(normSE,'Normalized')[[i,j]]) == 0) next # skip if no data
 
-            df_end = assay(ctrlSE)[[row_maps_end[i], col_maps[j]]]
+            df_end = do.call(rbind,
+                    lapply(row_maps_end[[i]], function(x) assay(ctrlSE)[[x, col_maps[j]]]))
             df_end = df_end[, c('CorrectedReadout',
                     intersect(Keys$untrt_Endpoint,colnames(df_end)))]
             colnames(df_end)[1] = 'UntrtReadout'
@@ -306,7 +310,8 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
 
             # not always present
             if (i %in% names(row_maps_cotrt)) {
-                df_ref = assay(ctrlSE)[[row_maps_cotrt[i], col_maps[j]]]
+                df_ref = do.call(rbind,
+                        lapply(row_maps_cotrt[[i]], function(x) assay(ctrlSE)[[x, col_maps[j]]]))
                 df_ref = df_ref[, c('CorrectedReadout',
                         intersect(Keys$ref_Endpoint,colnames(df_ref)))]
                 colnames(df_ref)[1] = 'RefReadout'
@@ -317,7 +322,8 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
                 df_end$RefReadout = df_end$UntrtReadout
             }
 
-            df_0 = assay(ctrlSE)[[row_maps_T0[i], col_maps[j]]]
+            df_0 = do.call(rbind,
+                    lapply(row_maps_T0[[i]], function(x) assay(ctrlSE)[[x, col_maps[j]]]))
             df_0 = df_0[, c('CorrectedReadout', intersect(Keys$Day0,colnames(df_0)))]
             colnames(df_0)[1] = 'Day0Readout'
             df_0 = aggregate(df_0[,1,drop=F], by = as.list(df_0[,-1,drop=F]),
