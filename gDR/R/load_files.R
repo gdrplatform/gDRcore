@@ -204,20 +204,18 @@ load_manifest <- function (manifest_file, log_str) {
       }) 
     } else if (manifest_ext %in% c("text/tsv",
                                    "text/tab-separated-values",
-                                   ".tsv")) {
+                                   "tsv")) {
       df <- tryCatch({
         readr::read_tsv(x, col_names = TRUE, skip_empty_rows = TRUE)
       }, error = function(e) {
         stop(sprintf("Error reading the Manifest file. Please see the logs:\n%s", e))
       })
     } else {
-      stop(
         stop(sprintf(
           "%s file format is not supported.
           Please convert your file to one of the follwoing: %s",
           manifest_ext,
           stringi::stri_flatten(available_formats, collapse = ", ")
-        )
         )
       )
     }
@@ -282,15 +280,13 @@ load_templates <- function (df_template_files, log_str) {
   all_templates <- data.frame()
   if (any(grepl("\\.xlsx?$", template_filename))) {
     idx <- grepl("\\.xlsx?$", template_filename)
-    all_templates_1 <- load_templates_xlsx(template_file[idx],
-                                           template_filename[idx], log_str)
+    all_templates_1 <- load_templates_xlsx(template_file[idx], log_str)
     all_templates <- rbind(all_templates, all_templates_1)
   }
   if (any(grepl("\\.[ct]sv$", template_filename))) {
     idx <- grepl("\\.[ct]sv$", template_filename)
     print(paste("Reading", template_filename[idx], "with load_templates_tsv"))
-    all_templates_2 <- load_templates_tsv(template_file[idx],
-                                          template_filename[idx], log_str)
+    all_templates_2 <- load_templates_tsv(template_file[idx], log_str)
     all_templates <- rbind(all_templates, all_templates_2)
   }
   
@@ -322,10 +318,10 @@ load_results <-
     
     if (instrument == "EnVision") {
       all_results <-
-        load_results_EnVision(results_file, results_filename, log_str)
+        load_results_EnVision(results_file, log_str)
     } else if (instrument == "long_tsv") {
       all_results <-
-        load_results_tsv(results_file, results_filename, log_str)
+        load_results_tsv(results_file, log_str)
     }
     return(all_results)
   }
@@ -388,7 +384,7 @@ load_templates_tsv <-
         if (length(Gnumber_idx) == 0) {
           ErrorMsg <- sprintf(
             "In untreated template file %s, sheet name must be %",
-            template_file[[i]],
+            template_file[[iF]],
             get_identifier("drug")
           )
           stop(ErrorMsg)
@@ -397,7 +393,7 @@ load_templates_tsv <-
         if (!(all(toupper(df)[!is.na(df)]) %in% toupper(get_identifier("untreated_tag")))) {
           ErrorMsg <- sprintf(
             "In untreated template file %s, entries must be %s",
-            template_file[[i]],
+            template_file[[iF]],
             paste(get_identifier("untreated_tag"), collapse = " or ")
           )
           stop(ErrorMsg)
@@ -475,7 +471,7 @@ load_templates_xlsx <-
         if (length(Gnumber_idx) == 0) {
           ErrorMsg <- sprintf(
             "In untreated template file %s, sheet name must be %",
-            template_file[[i]],
+            template_file[[iF]],
             get_identifier("drug")
           )
           stop(ErrorMsg)
@@ -574,10 +570,10 @@ load_templates_xlsx <-
         df_template <-
           base::merge(df_template, df_melted, by = c("WellRow", "WellColumn"))
       }
-      df_template$Template <- template_filename[i]
+      df_template$Template <- template_filename[iF]
       colnames(df_template) <-
         check_metadata_names(colnames(df_template), log_str,
-                             df_name = template_filename[i])
+                             df_name = template_filename[iF])
       all_templates <- dplyr::bind_rows(all_templates, df_template)
       
     }
