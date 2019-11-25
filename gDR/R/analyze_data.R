@@ -923,7 +923,7 @@ add_Drug_annotation = function(df_metadata) {
         Drug_info = tryCatch( {
                 gDrugs = gCellGenomics::getDrugs()[,c(DB_drug_identifier, 'gcsi_drug_name')]
                 gDrugs[,1] = substr(gDrugs[,1], 1, 9) # remove batch number from DB_drug_identifier
-                retrun(gDrugs)
+                return(gDrugs)
         }, error = function(e) {
             print('failed to load drug info from DB')
             print(e)
