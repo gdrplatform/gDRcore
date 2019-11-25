@@ -176,7 +176,6 @@ merge_data = function(manifest, treatments, data, log_str) {
 }
 
 
-
 #' @export
 normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
                 key_values = NULL) {
@@ -189,21 +188,21 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
 
     # the normalized SE only contains the treated conditions
     normSE = gDR::createSE(df_raw_data, data_type = "treated")
-    assayNames(normSE) = 'Normalized'
+    SummarizedExperiment::assayNames(normSE) = 'Normalized'
     ctrlSE = gDR::createSE(df_raw_data, data_type = "untreated")
 
     # enforced key values for end points (override selected_keys) --> for rows of the MAE
     Keys$untrt_Endpoint = setdiff(Keys$untrt_Endpoint, names(key_values))
     row_endpoint_value_filter = array(TRUE, nrow(ctrlSE))
     if (!is.null(key_values) & length(key_values)>0) {
-        for (i in which(names(key_values) %in% names(rowData(ctrlSE)))) {
+        for (i in which(names(key_values) %in% names(SummarizedExperiment::rowData(ctrlSE)))) {
             if (is.numeric(key_values[i])) {
                 row_endpoint_value_filter = row_endpoint_value_filter &
-                    (rowData(ctrlSE)[, names(key_values)[i] ] == key_values[i] &
-                            !is.na(rowData(ctrlSE)[, names(key_values)[i] ]))
+                    (SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ] == key_values[i] &
+                            !is.na(SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ]))
             } else {
                 row_endpoint_value_filter = row_endpoint_value_filter &
-                    (rowData(ctrlSE)[ ,names(key_values)[i] ] %in% key_values[i])
+                    (SummarizedExperiment::rowData(ctrlSE)[ ,names(key_values)[i] ] %in% key_values[i])
             }}}
 
     # perform the mapping for normalization
@@ -211,12 +210,12 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
     row_maps_end = lapply(rownames(normSE), function(x) {
         # define matix with matching metadata
         match_mx = c(
-            (rowData(ctrlSE) == (rowData(normSE)[x,]))[
-                intersect(Keys$untrt_Endpoint,names(rowData(ctrlSE)))],
-            LogicalList(key_values = row_endpoint_value_filter,
+            (SummarizedExperiment::rowData(ctrlSE) == (SummarizedExperiment::rowData(normSE)[x,]))[
+                intersect(Keys$untrt_Endpoint,names(SummarizedExperiment::rowData(ctrlSE)))],
+            IRanges::LogicalList(key_values = row_endpoint_value_filter,
                 conc = apply(cbind(array(0, nrow(ctrlSE)),# padding to avoid empty df
-                    rowData(ctrlSE)[,agrep('Concentration',
-                    colnames(rowData(ctrlSE))),drop=F]),1,
+                    SummarizedExperiment::rowData(ctrlSE)[,agrep('Concentration',
+                    colnames(SummarizedExperiment::rowData(ctrlSE))),drop=F]),1,
                         function(x) all(x==0))))
         match_idx = which(apply(as.matrix(match_mx), 2, all))
         if (length(match_idx)==0) {
@@ -237,22 +236,22 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
 
     row_maps_cotrt = lapply(rownames(normSE), function(x)
         rownames(ctrlSE)[which(apply(as.matrix(c(
-            (rowData(ctrlSE) == (rowData(normSE)[x,]))[
-                intersect(Keys$ref_Endpoint,names(rowData(ctrlSE)))],
-            LogicalList(key_values = row_endpoint_value_filter)) ),
+            (SummarizedExperiment::rowData(ctrlSE) == (SummarizedExperiment::rowData(normSE)[x,]))[
+                intersect(Keys$ref_Endpoint,names(SummarizedExperiment::rowData(ctrlSE)))],
+            IRanges::LogicalList(key_values = row_endpoint_value_filter)) ),
             2, all))])
     names(row_maps_cotrt) = rownames(normSE)
 
     row_maps_T0 = lapply(rownames(normSE), function(x) {
         # define matix with matching metadata
         match_mx = c(
-            (rowData(ctrlSE) == (rowData(normSE)[x,]))[
-                intersect(Keys$Day0,names(rowData(ctrlSE)))],
-            LogicalList(#key_values = row_endpoint_value_filter,
-                T0 = rowData(ctrlSE)[, get_identifier('duration')] == 0,
+            (SummarizedExperiment::rowData(ctrlSE) == (SummarizedExperiment::rowData(normSE)[x,]))[
+                intersect(Keys$Day0,names(SummarizedExperiment::rowData(ctrlSE)))],
+            IRanges::LogicalList(#key_values = row_endpoint_value_filter,
+                T0 = SummarizedExperiment::rowData(ctrlSE)[, get_identifier('duration')] == 0,
                 conc = apply(cbind(array(0, nrow(ctrlSE)),# padding to avoid empty df
-                    rowData(ctrlSE)[,agrep('Concentration',
-                    colnames(rowData(ctrlSE))),drop=F]),1,
+                    SummarizedExperiment::rowData(ctrlSE)[,agrep('Concentration',
+                    colnames(SummarizedExperiment::rowData(ctrlSE))),drop=F]),1,
                         function(x) all(x==0)) ))
         match_idx = which(apply(as.matrix(match_mx), 2, all))
         if (length(match_idx)==0) {
@@ -273,10 +272,10 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
 
     # mapping for columns; 1 to 1 unless overridden by key_values
     col_maps = array(colnames(ctrlSE), dimnames = list(colnames(normSE)))
-    if (any(names(key_values) %in% names(colData(normSE)))) {
+    if (any(names(key_values) %in% names(SummarizedExperiment::colData(normSE)))) {
         col_maps[] = colnames(ctrlSE)[
-                which(key_values[names(key_values) %in% names(colData(normSE))] ==
-                    colData(ctrlSE)[, names(colData(ctrlSE)) %in% names(key_values)])]
+                which(key_values[names(key_values) %in% names(SummarizedExperiment::colData(normSE))] ==
+                    SummarizedExperiment::colData(ctrlSE)[, names(SummarizedExperiment::colData(ctrlSE)) %in% names(key_values)])]
     }
 
 
@@ -290,7 +289,7 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
         x$CorrectedReadout = pmax(x$ReadoutValue - x$BackgroundValue,1)
         return(x)})
 
-    assay(normSE, 'Controls') <- matrix(lapply(1:prod(dim(normSE)), function(x) DataFrame()),
+    SummarizedExperiment::assay(normSE, 'Controls') <- matrix(lapply(1:prod(dim(normSE)), function(x) DataFrame()),
             nrow = nrow(normSE), ncol = ncol(normSE))
 
     # run through all conditions to assign controls and normalize the data
@@ -298,10 +297,10 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
     for (i in rownames(normSE)) {
         for (j in colnames(normSE)) {
 
-            if (nrow(assay(normSE,'Normalized')[[i,j]]) == 0) next # skip if no data
+            if (nrow(SummarizedExperiment::assay(normSE,'Normalized')[[i,j]]) == 0) next # skip if no data
 
             df_end = do.call(rbind,
-                    lapply(row_maps_end[[i]], function(x) assay(ctrlSE)[[x, col_maps[j]]]))
+                    lapply(row_maps_end[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
             df_end = df_end[, c('CorrectedReadout',
                     intersect(Keys$untrt_Endpoint,colnames(df_end)))]
             colnames(df_end)[1] = 'UntrtReadout'
@@ -311,7 +310,7 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
             # not always present
             if (i %in% names(row_maps_cotrt)) {
                 df_ref = do.call(rbind,
-                        lapply(row_maps_cotrt[[i]], function(x) assay(ctrlSE)[[x, col_maps[j]]]))
+                        lapply(row_maps_cotrt[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
                 df_ref = df_ref[, c('CorrectedReadout',
                         intersect(Keys$ref_Endpoint,colnames(df_ref)))]
                 colnames(df_ref)[1] = 'RefReadout'
@@ -323,7 +322,7 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
             }
 
             df_0 = do.call(rbind,
-                    lapply(row_maps_T0[[i]], function(x) assay(ctrlSE)[[x, col_maps[j]]]))
+                    lapply(row_maps_T0[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
             df_0 = df_0[, c('CorrectedReadout', intersect(Keys$Day0,colnames(df_0)))]
             colnames(df_0)[1] = 'Day0Readout'
             df_0 = aggregate(df_0[,1,drop=F], by = as.list(df_0[,-1,drop=F]),
@@ -339,23 +338,23 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
                     log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout) ), 4) - 1
 
             df_ctrl$DivisionTime = round(
-                    rowData(normSE)[i,get_identifier('duration')] /
+                    SummarizedExperiment::rowData(normSE)[i,get_identifier('duration')] /
                         log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout) , 4)
-            assay(normSE, 'Controls')[[i,j]] = DataFrame(df_ctrl)
+            SummarizedExperiment::assay(normSE, 'Controls')[[i,j]] = DataFrame(df_ctrl)
 
             # TODO:
             # if missing barcodes --> dispatch for similar conditions
 
 
             # merge the data with the controls
-            df_merged = merge(assay(normSE, 'Normalized')[[i,j]],
+            df_merged = merge(SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]],
                     df_ctrl, by = 'Barcode', all.x = T)
 
             # calculate the normalized values
-            assay(normSE, 'Normalized')[[i,j]]$RelativeViability =
+            SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]$RelativeViability =
                 round(df_merged$CorrectedReadout/df_merged$UntrtReadout,4)
 
-            assay(normSE, 'Normalized')[[i,j]]$GRvalue = round(2 ** (
+            SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]$GRvalue = round(2 ** (
                     log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
                     log2(df_merged$UntrtReadout / df_merged$Day0Readout) ), 4) - 1
 
@@ -540,7 +539,7 @@ average_SE = function(normSE, TrtKeys = NULL) {
     }
 
     avgSE = normSE
-    assay(avgSE, 'Averaged') = assay(avgSE, 'Normalized')
+    SummarizedExperiment::assay(avgSE, 'Averaged') = SummarizedExperiment::assay(avgSE, 'Normalized')
     avgSE = aapply(avgSE, function(x) {
         if (nrow(x) > 1) {
             subKeys = intersect(TrtKeys, colnames(x))
@@ -555,7 +554,7 @@ average_SE = function(normSE, TrtKeys = NULL) {
         } else return(x)
     }, 'Averaged')
 
-    assay(avgSE, 'Avg_Controls') = assay(avgSE, 'Controls')
+    SummarizedExperiment::assay(avgSE, 'Avg_Controls') = SummarizedExperiment::assay(avgSE, 'Controls')
     avgSE = aapply(avgSE, function(x) {
         if (nrow(x) > 1) {
             subKeys = intersect(TrtKeys, colnames(x))
@@ -603,21 +602,21 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
     # }
 
     metricsSE = avgSE
-    assay(metricsSE, 'Metrics') = assay(metricsSE, 'Averaged')
+    SummarizedExperiment::assay(metricsSE, 'Metrics') = SummarizedExperiment::assay(metricsSE, 'Averaged')
 
     for (i in rownames(metricsSE)) {
         for (j in colnames(metricsSE)) {
-            df_ = assay(metricsSE, 'Averaged')[[i,j]]
+            df_ = SummarizedExperiment::assay(metricsSE, 'Averaged')[[i,j]]
             if (length(unique(df_$Concentration)) >= studyConcThresh) {
-                assay(metricsSE, 'Metrics')[[i,j]] = DataFrame(ICGRfits(df_,
-                    e_0 = assay(metricsSE, 'Avg_Controls')[[i,j]]$RefRelativeViability,
-                    GR_0 = assay(metricsSE, 'Avg_Controls')[[i,j]]$RefGRvalue))
+                SummarizedExperiment::assay(metricsSE, 'Metrics')[[i,j]] = DataFrame(ICGRfits(df_,
+                    e_0 = SummarizedExperiment::assay(metricsSE, 'Avg_Controls')[[i,j]]$RefRelativeViability,
+                    GR_0 = SummarizedExperiment::assay(metricsSE, 'Avg_Controls')[[i,j]]$RefGRvalue))
             } else {
                 out = DataFrame(matrix(NA, 2, length(get_header('response_metrics'))))
                 colnames(out) = get_header('response_metrics')
                 out$maxlog10Concentration = max(log10(df_$Concentration))
                 out$N_conc = length(unique(df_$Concentration))
-                assay(metricsSE, 'Metrics')[[i,j]] = out
+                SummarizedExperiment::assay(metricsSE, 'Metrics')[[i,j]] = out
             }
         }
 
@@ -731,9 +730,9 @@ identify_keys = function(df_se_mae) {
             se_untrt =  df_se_mae[['untreated']]
         } else se_untrt = NULL
         all_keys = unique(c(
-            colnames(rowData(df_se_mae)),
-            colnames(colData(df_se_mae)),
-            unlist(lapply(assay(df_se_mae), colnames))))
+            colnames(SummarizedExperiment::rowData(df_se_mae)),
+            colnames(SummarizedExperiment::colData(df_se_mae)),
+            unlist(lapply(SummarizedExperiment::assay(df_se_mae), colnames))))
     } else { # case of a data frame
         all_keys = colnames(df_se_mae)
     }
@@ -758,14 +757,14 @@ identify_keys = function(df_se_mae) {
 
         if ('SummarizedExperiment' %in% class(df_se_mae)) {
             # check the metadata fields for NA
-            if (k %in% colnames(rowData(df_se_mae))) df_ = rowData(df_se_mae)
-            else if (k %in% colnames(colData(df_se_mae))) df_ = colData(df_se_mae)
+            if (k %in% colnames(SummarizedExperiment::rowData(df_se_mae))) df_ = SummarizedExperiment::rowData(df_se_mae)
+            else if (k %in% colnames(SummarizedExperiment::colData(df_se_mae))) df_ = SummarizedExperiment::colData(df_se_mae)
             else next # not a metadata
 
             if (all(is.na(df_[,k]))) keys = lapply(keys, function(x) setdiff(x, k))
 
-            if (!is.null(se_untrt) && k %in% colnames(rowData(se_untrt))) {
-                df_ = rowData(se_untrt)
+            if (!is.null(se_untrt) && k %in% colnames(SummarizedExperiment::rowData(se_untrt))) {
+                df_ = SummarizedExperiment::rowData(se_untrt)
                 if (all(is.na(df_[df_[,get_identifier('duration')]==0,k]))) {
                     keys[['Day0']] = setdiff(keys[['Day0']], k)
                 }

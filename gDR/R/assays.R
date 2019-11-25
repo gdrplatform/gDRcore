@@ -51,7 +51,7 @@
 #'
 aapply <-
 function(SE, fx, assay_type = 1) {
-    assay(SE, assay_type) = matrix(sapply(assay(SE, assay_type), fx), nrow = nrow(SE), ncol = ncol(SE))
+    SummarizedExperiment::assay(SE, assay_type) = matrix(sapply(SummarizedExperiment::assay(SE, assay_type), fx), nrow = nrow(SE), ncol = ncol(SE))
     return(SE)
 }
 
@@ -368,12 +368,12 @@ assay_to_df <- function(se, assay_name) {
   #checkmate::assertString(assay_name)
   
   # define data.frame with data from rowData/colData
-  ids <- expand.grid(rownames(rowData(se)), rownames(colData(se)))
+  ids <- expand.grid(rownames(SummarizedExperiment::rowData(se)), rownames(SummarizedExperiment::colData(se)))
   colnames(ids) <- c("rId", "cId")
   ids[] <- lapply(ids, as.character)
-  rData <- data.frame(rowData(se), stringsAsFactors = FALSE)
+  rData <- data.frame(SummarizedExperiment::rowData(se), stringsAsFactors = FALSE)
   rData$rId <- rownames(rData)
-  cData <- data.frame(colData(se), stringsAsFactors = FALSE)
+  cData <- data.frame(SummarizedExperiment::colData(se), stringsAsFactors = FALSE)
   cData$cId <- rownames(cData)
   annotTbl <-
     dplyr::left_join(ids, rData, by = "rId")
@@ -381,14 +381,14 @@ assay_to_df <- function(se, assay_name) {
     dplyr::left_join(annotTbl, cData, by = "cId")
   
   #merge assay data with data from colData/rowData
-  asL <- lapply(1:nrow(colData(se)), function(x) {
-    myL <- assay(se, assay_name)[, x]
+  asL <- lapply(1:nrow(SummarizedExperiment::colData(se)), function(x) {
+    myL <- SummarizedExperiment::assay(se, assay_name)[, x]
     myV <- vapply(myL, nrow, integer(1))
     rCol <- rep(names(myV), as.numeric(myV))
     
     df <- data.frame(do.call(rbind, myL))
     df$rId <- rCol
-    df$cId <- rownames(colData(se))[x]
+    df$cId <- rownames(SummarizedExperiment::colData(se))[x]
     full.df <- left_join(df, annotTbl, by = c("rId", "cId"))
   })
   asDf <- data.frame(do.call(rbind, asL))
