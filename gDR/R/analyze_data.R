@@ -884,11 +884,11 @@ add_CellLine_annotation = function(df_metadata) {
     CLs_info = tryCatch( {
         CLs_info = gneDB::annotateCLIDs(unique(df_metadata[,get_identifier('cellline')]))
         CLs_info = CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
-        return(CLs_info)
+        CLs_info
     }, error = function(e) {
         print('failed to load cell line info from DB')
         print(e)
-        return(data.frame())
+        data.frame()
     })
 
     if (nrow(CLs_info)==0) return(df_metadata)
@@ -923,11 +923,11 @@ add_Drug_annotation = function(df_metadata) {
         Drug_info = tryCatch( {
                 gDrugs = gCellGenomics::getDrugs()[,c(DB_drug_identifier, 'gcsi_drug_name')]
                 gDrugs[,1] = substr(gDrugs[,1], 1, 9) # remove batch number from DB_drug_identifier
-                return(gDrugs)
+                gDrugs
         }, error = function(e) {
             print('failed to load drug info from DB')
             print(e)
-            return(data.frame())
+            data.frame()
         })
 
         if (nrow(Drug_info) == 0) {
