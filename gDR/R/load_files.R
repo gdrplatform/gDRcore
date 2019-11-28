@@ -213,7 +213,7 @@ load_manifest <- function (manifest_file, log_str) {
     } else {
         stop(sprintf(
           "%s file format is not supported.
-          Please convert your file to one of the follwoing: %s",
+          Please convert your file to one of the following: %s",
           manifest_ext,
           stringi::stri_flatten(available_formats, collapse = ", ")
         )
@@ -256,7 +256,7 @@ load_manifest <- function (manifest_file, log_str) {
 }
 
 
-#' Load templates from
+#' Load templates
 #' 
 #' This functions loads and checks the template file(s)
 #' 
@@ -554,10 +554,10 @@ load_templates_xlsx <-
         if (!(iS %in% metadata_fields)) {
           if (!is.null(metadata_fields) &&
               toupper(iS) %in% toupper(metadata_fields)) {
-            oldj <- iS
+            oldiS <- iS
             iS <-
               metadata_fields[toupper(iS) == toupper(metadata_fields)]
-            print(paste(oldj, "corrected to match case with ", iS))
+            print(paste(oldiS, "corrected to match case with ", iS))
           } else {
             metadata_fields <- c(metadata_fields, iS)
           }
@@ -611,7 +611,7 @@ load_results_tsv <-
         tryCatch({
           # likely a csv file
           df <-
-            read_csv(results_file[iF],
+            readr::read_csv(results_file[iF],
                      col_names = TRUE,
                      skip_empty_rows = TRUE)
         }, error = function(e) {
@@ -690,7 +690,7 @@ load_results_EnVision <-
                               col_names = FALSE,
                               skip_empty_rows = TRUE)
           }, error = function(e) {
-            stop(sprintf("Error reading %s, sheet %s", results_file[[iF]], iS))
+            stop(sprintf("Error reading %s", results_file[[iF]]))
           })
           # skip_empty_rows flag needs to be TRUE even if it ends up not skipping empty rows
           if (dim(df)[2] == 1) {
@@ -701,7 +701,7 @@ load_results_EnVision <-
                                 col_names = FALSE,
                                 skip_empty_rows = TRUE)
             }, error = function(e) {
-              stop(sprintf("Error reading %s, sheet %s", results_file[[iF]], iS))
+              stop(sprintf("Error reading %s", results_file[[iF]]))
             })
           }
         } else {

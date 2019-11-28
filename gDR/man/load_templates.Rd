@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_files.R
 \name{load_templates}
 \alias{load_templates}
-\title{Load templates from}
+\title{Load templates}
 \usage{
 load_templates(df_template_files, log_str)
 }
