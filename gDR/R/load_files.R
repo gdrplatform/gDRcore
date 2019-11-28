@@ -280,13 +280,13 @@ load_templates <- function (df_template_files, log_str) {
   all_templates <- data.frame()
   if (any(grepl("\\.xlsx?$", template_filename))) {
     idx <- grepl("\\.xlsx?$", template_filename)
-    all_templates_1 <- load_templates_xlsx(template_file[idx], log_str)
+    all_templates_1 <- load_templates_xlsx(template_file[idx], template_filename[idx], log_str)
     all_templates <- rbind(all_templates, all_templates_1)
   }
   if (any(grepl("\\.[ct]sv$", template_filename))) {
     idx <- grepl("\\.[ct]sv$", template_filename)
     print(paste("Reading", template_filename[idx], "with load_templates_tsv"))
-    all_templates_2 <- load_templates_tsv(template_file[idx], log_str)
+    all_templates_2 <- load_templates_tsv(template_file[idx], template_filename[idx], log_str)
     all_templates <- rbind(all_templates, all_templates_2)
   }
   
@@ -335,11 +335,14 @@ load_results <-
 #' This functions loads and checks the template file(s)
 #' 
 #' @param template_file character, file path(s) to template(s)
+#' @param template_filename character, file name(s)
 #' @param log_str character, file path to logs
 load_templates_tsv <-
   function(template_file,
+           template_filename = NULL,
            log_str) {
-    template_filename <- basename(template_file)
+    if (is.null(template_filename))
+      template_filename <- basename(template_file)
     
     # read columns in files
     templates <- lapply(template_file, function(x)
@@ -439,11 +442,15 @@ load_templates_tsv <-
 #' This functions loads and checks the template file(s)
 #' 
 #' @param template_file character, file path(s) to template(s)
+#' @param template_filename character, file name(s)
 #' @param log_str character, file path to logs
 load_templates_xlsx <-
   function(template_file,
+           template_filename = NULL,
            log_str) {
-    template_filename <- basename(template_file)
+    
+    if (is.null(template_filename))
+      template_filename <- basename(template_file)
     # read sheets in files
     template_sheets <- lapply(template_file, readxl::excel_sheets)
     # check drug_identifier is present in each df
