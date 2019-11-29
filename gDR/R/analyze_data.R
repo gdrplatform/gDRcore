@@ -346,18 +346,18 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
             # if missing barcodes --> dispatch for similar conditions
 
 
-            # merge the data with the controls
-            df_merged = merge(SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]],
-                    df_ctrl, by = 'Barcode', all.x = T)
+            # merge the data with the controls assuring that the order of the records is preseved
+            df_merged = dplyr::left_join(data.frame(SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]),
+                    df_ctrl, by = c('Barcode'))
 
             # calculate the normalized values
             SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]$RelativeViability =
                 round(df_merged$CorrectedReadout/df_merged$UntrtReadout,4)
-
+            
             SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]$GRvalue = round(2 ** (
                     log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
                     log2(df_merged$UntrtReadout / df_merged$Day0Readout) ), 4) - 1
-
+           
         }
     }
     metadata(normSE) = c(metadata(normSE),
