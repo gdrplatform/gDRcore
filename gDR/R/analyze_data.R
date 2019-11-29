@@ -241,7 +241,11 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
             IRanges::LogicalList(key_values = row_endpoint_value_filter)) ),
             2, all))])
     names(row_maps_cotrt) = rownames(normSE)
-
+   
+    #keep only valid row_maps_cotrt
+    row_maps_cotrt <-
+      row_maps_cotrt[vapply(row_maps_cotrt, length, numeric(1)) > 0]
+    
     row_maps_T0 = lapply(rownames(normSE), function(x) {
         # define matix with matching metadata
         match_mx = c(
