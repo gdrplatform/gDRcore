@@ -597,6 +597,7 @@ average_SE = function(normSE, TrtKeys = NULL) {
             return( df_av )
         } else return(x)
     }, 'Avg_Controls')
+  browser()
 
     return(avgSE)
 }
