@@ -205,6 +205,7 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
                     (SummarizedExperiment::rowData(ctrlSE)[ ,names(key_values)[i] ] %in% key_values[i])
             }}}
 
+    #TODO gladkia: move mapping code to the separate function
     # perform the mapping for normalization
     # first the rows
     row_maps_end = lapply(rownames(normSE), function(x) {
@@ -321,6 +322,19 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
                 df_ref = aggregate(df_ref[,1,drop=F], by = as.list(df_ref[,-1,drop=F]),
                     function(x) mean(x, trim= .25))
                 df_end = merge(df_end, df_ref, by='Barcode')
+                
+                #gladkia: assert for control data
+                if (nrow(df_end) == 0) {
+                  errMsg1 <-
+                    sprintf(
+                      "Control data for the drug and co-drugs do not refer to the same Barcode.
+                      Treatment Id: '%s'
+                      Cell_line Id: %s",
+                      i,
+                      j
+                    )
+                  stop(errMsg1)
+                }
             } else {
                 df_end$RefReadout = df_end$UntrtReadout
             }
@@ -348,7 +362,22 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
 
             # TODO:
             # if missing barcodes --> dispatch for similar conditions
-
+                
+            #gladkia: assert for merged study/control data
+            ctrl_bcodes <- sort(unique(df_ctrl$Barcode))
+            trt_bcodes <-
+              sort(unique(SummarizedExperiment::assay(normSE, 'Normalized')[[i, j]]$Barcode))
+            if (!identical(ctrl_bcodes, trt_bcodes)) {
+              errMsg2 <-
+                sprintf(
+                  "Barcodes of treatment and control data are not the same.
+                  Treatment Id: '%s'
+                  Cell_line Id: %s",
+                  i,
+                  j
+                )
+              stop(errMsg2)
+            }
 
             # merge the data with the controls assuring that the order of the records is preseved
             df_merged = dplyr::left_join(data.frame(SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]),
