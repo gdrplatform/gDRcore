@@ -327,6 +327,7 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
                 
                 #gladkia: assert for control data
                 if (nrow(df_end) == 0) {
+                  browser()
                   errMsg1 <-
                     sprintf(
                       "Control data for the drug and co-drugs do not refer to the same Barcode.
