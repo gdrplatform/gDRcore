@@ -323,14 +323,34 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
                 colnames(df_ref)[1] = 'RefReadout'
                 df_ref = aggregate(df_ref[,1,drop=F], by = as.list(df_ref[,-1,drop=F]),
                     function(x) mean(x, trim= .25))
-                df_end = merge(df_end, df_ref, by='Barcode')
+                # check if control and co-treated wells are on the same plate
+                if (all(df_end$Barcode %in% df_ref$Barcode) && all(df_ref$Barcode %in% df_end$Barcode)) {
+                  df_end = merge(df_end, df_ref, by='Barcode')                  
+                } else {
+                  wrnMsg1 <-
+                    sprintf(
+                      "Control data for the drug are propagated to other plates with co-drug controls.
+                      Treatment Id: %s
+                      Cell_line Id: %s",
+                      i,
+                      j
+                    )
+                  warning(wrnMsg1)
+                  # propagate average values to the other plates
+                  df_end = merge(df_end, df_ref, by='Barcode', all=T)
+                  mean_UntrtReadout = mean(df_end$UntrtReadout, na.rm=T)
+                  mean_RefReadout = mean(df_end$RefReadout, na.rm=T)
+                  df_end$UntrtReadout[is.na(df_end$UntrtReadout)] = mean_UntrtReadout
+                  df_end$RefReadout[is.na(df_end$RefReadout)] = mean_RefReadout
+                }
+                  
+
                 
                 #gladkia: assert for control data
                 if (nrow(df_end) == 0) {
-                  browser()
                   errMsg1 <-
                     sprintf(
-                      "Control data for the drug and co-drugs do not refer to the same Barcode.
+                      "Control dataframe failed.
                       Treatment Id: '%s'
                       Cell_line Id: %s",
                       i,
@@ -363,25 +383,24 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
                         log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout) , 4)
             SummarizedExperiment::assay(normSE, 'Controls')[[i,j]] = DataFrame(df_ctrl)
 
-            # TODO:
-            # if missing barcodes --> dispatch for similar conditions
-                
             #gladkia: assert for merged study/control data
             ctrl_bcodes <- sort(unique(df_ctrl$Barcode))
             trt_bcodes <-
               sort(unique(SummarizedExperiment::assay(normSE, 'Normalized')[[i, j]]$Barcode))
-            if (!identical(ctrl_bcodes, trt_bcodes)) {
-              errMsg2 <-
+            if (!all(trt_bcodes %in% ctrl_bcodes)) {
+              wrnMsg1 <-
                 sprintf(
-                  "Barcodes of treatment and control data are not the same.
-                  Treatment Id: '%s'
-                  Cell_line Id: %s",
-                  i,
-                  j
+                  "Control data are averaged and propagated to treatment plates.
+                      Treatment Id: %s (plates %s)
+                      Control plates: %s",
+                  i, paste(trt_bcodes, collapse = ', '),
+                  paste(ctrl_bcodes, collapse = ', ')
                 )
-              stop(errMsg2)
+              warning(wrnMsg1)
+              bind_rows(df_ctrl, cbind(data.frame(Barcode = setdiff(trt_bcodes, ctrl_bcodes)),
+                        t(colMeans(df_ctrl[, setdiff(colnames(df_ctrl), 'Barcode')]))))
             }
-
+            
             # merge the data with the controls assuring that the order of the records is preseved
             df_merged = dplyr::left_join(data.frame(SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]),
                     df_ctrl, by = c('Barcode'))
