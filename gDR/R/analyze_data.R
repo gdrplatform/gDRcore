@@ -191,7 +191,7 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
     SummarizedExperiment::assayNames(normSE) = 'Normalized'
     ctrlSE = gDR::createSE(df_raw_data, data_type = "untreated")
 
-    # enforced key values for end points (override selected_keys) --> for rows of the MAE
+    # enforced key values for end points (override selected_keys) --> for rows of the SE
     Keys$untrt_Endpoint = setdiff(Keys$untrt_Endpoint, names(key_values))
     row_endpoint_value_filter = array(TRUE, nrow(ctrlSE))
     if (!is.null(key_values) & length(key_values)>0) {
@@ -208,6 +208,7 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
     #TODO gladkia: move mapping code to the separate function
     # perform the mapping for normalization
     # first the rows
+    # matching the reference end point without any treatment
     row_maps_end = lapply(rownames(normSE), function(x) {
         # define matix with matching metadata
         match_mx = c(
@@ -221,7 +222,7 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
         match_idx = which(apply(as.matrix(match_mx), 2, all))
         if (length(match_idx)==0) {
             # if not exact match, try to find best match
-            WarnMsg = paste('Missing intreated contol for:', x)
+            WarnMsg = paste('Missing treated contols for:', x)
             idx = apply(as.matrix(match_mx), 2, function(y) sum(y, na.rm=T)) *
                             match_mx[[get_identifier('duration')]]
             if (any(idx>0)) {
@@ -235,18 +236,19 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
     })
     names(row_maps_end) = rownames(normSE)
 
+    # matching the reference end point with the same co-treatment (all the same but conc=0/Gnumber='vehicle')
     row_maps_cotrt = lapply(rownames(normSE), function(x)
-        rownames(ctrlSE)[which(apply(as.matrix(c(
+        rownames(ctrlSE)[which(apply(as.matrix(
             (SummarizedExperiment::rowData(ctrlSE) == (SummarizedExperiment::rowData(normSE)[x,]))[
-                intersect(Keys$ref_Endpoint,names(SummarizedExperiment::rowData(ctrlSE)))],
-            IRanges::LogicalList(key_values = row_endpoint_value_filter)) ),
+                intersect(Keys$ref_Endpoint,names(SummarizedExperiment::rowData(ctrlSE)))] ),
             2, all))])
     names(row_maps_cotrt) = rownames(normSE)
    
-    #keep only valid row_maps_cotrt
-    row_maps_cotrt <-
-      row_maps_cotrt[vapply(row_maps_cotrt, length, numeric(1)) > 0]
+    #keep only valid row_maps_cotrt ---> that should not be necessary
+    #row_maps_cotrt <-
+     # row_maps_cotrt[vapply(row_maps_cotrt, length, numeric(1)) > 0]
     
+    # matching the reference at time 0 (if available)
     row_maps_T0 = lapply(rownames(normSE), function(x) {
         # define matix with matching metadata
         match_mx = c(
