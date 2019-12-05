@@ -68,7 +68,7 @@ function(SE, fx, assay_type = 1) {
 #'
 #' @export
 getMetaData <- function(data,
-                        cell_id = "CellLineName",
+                        cell_id = gDR::get_identifier('cellline'),
                         discard_keys = NULL) {
   data <- as(data, "DataFrame")
 
