@@ -68,7 +68,8 @@ function(SE, fx, assay_type = 1) {
 #'
 #' @export
 getMetaData <- function(data,
-                        cell_id = gDR::get_identifier('cellline')) {
+                        cell_id = gDR::get_identifier('cellline'),
+                        discard_keys = NULL) {
   data <- as(data, "DataFrame")
 
   # get the metadata variables
@@ -147,7 +148,7 @@ getMetaData <- function(data,
   # get all other metadata for the rows
   cond_entries <- setdiff(unique_metavars, cl_entries)
   # temporary removing extra column to avoid bug
-  cond_entries <- setdiff(cond_entries, 'ReferenceDivisionTime')
+  cond_entries <- setdiff(cond_entries, c('ReferenceDivisionTime', discard_keys))
   rowData <- unique(conditions[, cond_entries, drop = F])
   rowData$row_id <- 1:nrow(rowData)
   rowData$row_name <-
@@ -155,7 +156,7 @@ getMetaData <- function(data,
       paste(x, collapse = '_'))
 
   # get the remaining columns as data
-  dataCols <- setdiff(colnames(data), metavars)
+  dataCols <- setdiff(colnames(data), setdiff(metavars, discard_keys))
 
   # constant metadata (useful for annotation of the experiment)
   csteData = unique(conditions[,constant_metavars,drop=F])
@@ -186,12 +187,13 @@ getMetaData <- function(data,
 #' @export
 df_to_assay <-
   function(data,
-           data_type = c("all", "treated", "untreated")) {
+           data_type = c("all", "treated", "untreated"),
+           discard_keys = NULL) {
     data <- as(data, "DataFrame")
 
     ####
 
-    allMetadata <- gDR::getMetaData(data)
+    allMetadata <- gDR::getMetaData(data, discard_keys = discard_keys)
 
     seColData <- allMetadata$colData
     cl_entries <- setdiff(colnames(seColData), c('col_id', 'col_name'))
@@ -271,16 +273,16 @@ df_to_assay <-
 createSE <-
   function(df_data,
            data_type = c("untreated", "treated", "all"),
-           readout = 'ReadoutValue') {
+           readout = 'ReadoutValue', discard_keys = NULL) {
     data_type <- match.arg(data_type)
 
     # stopifnot(all(names(dfList) %in% .assayNames))
     # #dfList must contain first assay (i.e. df_raw_data)
     # stopifnot(.assayNames[1] %in% names(dfList))
 
-    mats <- df_to_assay(df_data, data_type = data_type)
+    mats <- df_to_assay(df_data, data_type = data_type, discard_keys = discard_keys)
 
-    allMetadata <- getMetaData(df_data)
+    allMetadata <- getMetaData(df_data, discard_keys = discard_keys)
 
     seColData <- allMetadata$colData
     rownames(seColData) <- seColData$col_name
@@ -293,6 +295,7 @@ createSE <-
                            setdiff(colnames(seRowData), c('row_id', 'row_name'))]
     matsL = list(mats)
     names(matsL) = readout
+    
     se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
                                                      colData = seColData,
                                                      rowData = seRowData)

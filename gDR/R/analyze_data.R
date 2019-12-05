@@ -178,18 +178,22 @@ merge_data = function(manifest, treatments, data, log_str) {
 
 #' @export
 normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
-                key_values = NULL) {
+                key_values = NULL, discard_keys = NULL) {
     # average technical replicates and assign the right controls to each treated well
 
     Keys = identify_keys(df_raw_data)
+    Keys$discard_keys = discard_keys
     if (!is.null(selected_keys)) {
         Keys[names(selected_keys)] = selected_keys[names(selected_keys)]
     }
+    if (!is.null(discard_keys)) {
+      Keys$DoseResp = setdiff(Keys$DoseResp, discard_keys)
+    }
 
     # the normalized SE only contains the treated conditions
-    normSE = gDR::createSE(df_raw_data, data_type = "treated")
+    normSE = gDR::createSE(df_raw_data, data_type = "treated", discard_keys = discard_keys)
     SummarizedExperiment::assayNames(normSE) = 'Normalized'
-    ctrlSE = gDR::createSE(df_raw_data, data_type = "untreated")
+    ctrlSE = gDR::createSE(df_raw_data, data_type = "untreated", discard_keys = discard_keys)
 
     # enforced key values for end points (override selected_keys) --> for rows of the SE
     Keys$untrt_Endpoint = setdiff(Keys$untrt_Endpoint, names(key_values))
@@ -323,9 +327,10 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
                 colnames(df_ref)[1] = 'RefReadout'
                 df_ref = aggregate(df_ref[,1,drop=F], by = as.list(df_ref[,-1,drop=F]),
                     function(x) mean(x, trim= .25))
+
                 # check if control and co-treated wells are on the same plate
                 if (all(df_end$Barcode %in% df_ref$Barcode) && all(df_ref$Barcode %in% df_end$Barcode)) {
-                  df_end = merge(df_end, df_ref, by='Barcode')                  
+                  df_end = merge(df_end, df_ref, by=c('Barcode', Keys$discard_keys))
                 } else {
                   wrnMsg1 <-
                     sprintf(
@@ -343,8 +348,6 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
                   df_end$UntrtReadout[is.na(df_end$UntrtReadout)] = mean_UntrtReadout
                   df_end$RefReadout[is.na(df_end$RefReadout)] = mean_RefReadout
                 }
-                  
-
                 
                 #gladkia: assert for control data
                 if (nrow(df_end) == 0) {
@@ -369,8 +372,12 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
             df_0 = aggregate(df_0[,1,drop=F], by = as.list(df_0[,-1,drop=F]),
                 function(x) mean(x, trim= .25))
 
-            df_ctrl = merge(df_0[, setdiff(colnames(df_0), 'Barcode')], df_end, all.y = T)
-            colnames(df_ctrl)[1] = 'Day0Readout'
+            if (!is.null(Keys$discard_keys) && all(Keys$discard_keys %in% colnames(df_0))) {
+              df_ctrl = merge(df_0[, setdiff(colnames(df_0), 'Barcode')], df_end, all.y = T, by = Keys$discard_keys)
+            } else {
+              df_ctrl = merge(df_0[, setdiff(colnames(df_0), 'Barcode')], df_end, all.y = T)
+              colnames(df_ctrl)[1] = 'Day0Readout'
+            }
 
             df_ctrl$RefRelativeViability = round(df_ctrl$RefReadout/df_ctrl$UntrtReadout,4)
 
@@ -403,9 +410,10 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
             
             # merge the data with the controls assuring that the order of the records is preseved
             df_merged = dplyr::left_join(data.frame(SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]),
-                    df_ctrl, by = c('Barcode'))
+                    data.frame(df_ctrl), by = c('Barcode', Keys$discard_keys))
 
             # calculate the normalized values
+            
             SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]$RelativeViability =
                 round(df_merged$CorrectedReadout/df_merged$UntrtReadout,4)
             
@@ -585,15 +593,16 @@ normalize_data = function(df_raw_data, log_str, selected_keys = NULL,
 
 #' @export
 average_SE = function(normSE, TrtKeys = NULL) {
-
-    if (is.null(TrtKeys)) {
-        if ('Keys' %in% names(metadata(normSE))) TrtKeys = metadata(normSE)$Keys$Trt
-        else TrtKeys = identify_keys(normSE)$Trt
-    } else {
-        metadata(normSE)$Keys$Trt = TrtKeys
-    }
-
+  
     avgSE = normSE
+    if (is.null(TrtKeys)) {
+        if ('Keys' %in% names(metadata(normSE))) {
+          TrtKeys = metadata(normSE)$Keys$Trt
+          TrtKeys = setdiff(TrtKeys, metadata(normSE)$Keys$discard_keys)
+        } else TrtKeys = identify_keys(normSE)$Trt
+    }
+    metadata(normSE)$Keys$Trt = TrtKeys
+      
     SummarizedExperiment::assay(avgSE, 'Averaged') = SummarizedExperiment::assay(avgSE, 'Normalized')
     avgSE = aapply(avgSE, function(x) {
         if (nrow(x) > 1) {
@@ -619,7 +628,7 @@ average_SE = function(normSE, TrtKeys = NULL) {
             return( df_av )
         } else return(x)
     }, 'Avg_Controls')
-
+    
     return(avgSE)
 }
 
