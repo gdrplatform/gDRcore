@@ -675,6 +675,10 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
                 SummarizedExperiment::assay(metricsSE, 'Metrics')[[i,j]] = DataFrame(ICGRfits(df_,
                     e_0 = SummarizedExperiment::assay(metricsSE, 'Avg_Controls')[[i,j]]$RefRelativeViability,
                     GR_0 = SummarizedExperiment::assay(metricsSE, 'Avg_Controls')[[i,j]]$RefGRvalue))
+            } else if (nrow(df_) == 0) {
+                out = DataFrame(matrix(NA, 0, length(get_header('response_metrics'))+2))
+                colnames(out) = c(get_header('response_metrics'), 'maxlog10Concentration', 'N_conc')
+                SummarizedExperiment::assay(metricsSE, 'Metrics')[[i,j]] = out
             } else {
                 out = DataFrame(matrix(NA, 2, length(get_header('response_metrics'))))
                 colnames(out) = get_header('response_metrics')

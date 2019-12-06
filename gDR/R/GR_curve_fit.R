@@ -9,8 +9,8 @@
 #' @param log10concs concentrations
 #' @param RelativeViability values
 #' @param GRvalues values
-#' @param e_0 =1 by default
-#' @param GR_0 =1 by default
+#' @param e_0 = 1 by default
+#' @param GR_0 = 1 by default
 #' @param force use signifcance or not
 #' @param cap enforce e_0 and GR_0
 #' @return vector of parameters
@@ -19,15 +19,13 @@
 #' @importFrom drc drm drmc LL.3u
 #' @export
 ICGRfits <- function(df_, e_0 = 1, GR_0 = 1,
-                    force = FALSE, cap = FALSE) {
-
-    log10concs = log10(df_$Concentration)
+                    force = FALSE) {
 
     df_metrics = rbind(
-        gDR::logisticFit(log10concs, df_$RelativeViability, x_0 = e_0, curve_type = 'IC',
-                        force = force, cap = cap),
-        gDR::logisticFit(log10concs, df_$GRvalue, x_0 = GR_0, curve_type = 'GR',
-                            force = force, cap = cap))
+        gDR::logisticFit(df_$Concentration, df_$RelativeViability, x_0 = e_0, curve_type = 'IC',
+                        force = force),
+        gDR::logisticFit(df_$Concentration, df_$GRvalue, x_0 = GR_0, curve_type = 'GR',
+                            force = force))
     rownames(df_metrics) = c('IC', 'GR')
 
     return(df_metrics)
@@ -54,15 +52,16 @@ ICGRfits <- function(df_, e_0 = 1, GR_0 = 1,
 #' sum(1:10)
 #' @importFrom drc drm drmc LL.3u
 #' @export
-logisticFit <- function(log10concs, normValues, x_0 = 1, curve_type = c('IC', 'GR'),
-                    force = FALSE, cap = FALSE) {
+logisticFit <- function(concs, normValues, x_0 = 1, curve_type = c('IC', 'GR'),
+                    force = FALSE, cap = 0.1) {
 
     # Implementation of the genedata approach for curve fit: https://screener.genedata.com/documentation/display/DOC15/Business+Rules+for+Dose-Response+Curve+Fitting+Model+Selection+and+Fit+Validity
     #
 
     # define variables and prepare data
-    df_ = data.frame(log10conc=log10concs, normValues = normValues)
-    concs = 10**log10concs
+    log10concs = log10(concs)  
+    df_ = data.frame(log10conc=log10concs, normValues = pmin(normValues, normValues+cap))
+    
     fit_para = c("h", "x_inf", "c50")
 
     out = array(NA, length(get_header('response_metrics')))
@@ -79,7 +78,7 @@ logisticFit <- function(log10concs, normValues, x_0 = 1, curve_type = c('IC', 'G
         priors = c(2, 0.1, median(concs))
         lower = c(.1, -1, min(concs)/10)
     }
-    upper = c(5, 1, max(concs)*10)
+    upper = c(5, min(x_0+.1,1), max(concs)*10)
 
     controls = drc::drmc()
     controls$relTol = 1e-06
@@ -123,8 +122,9 @@ logisticFit <- function(log10concs, normValues, x_0 = 1, curve_type = c('IC', 'G
     l = dim(xAvg)[1]
 
     out['x_max'] = min(xAvg$normValues[c(l,l-1)], na.rm = TRUE)
-
+    
     out['x_mean'] = mean(xAvg$normValues)
+    out['x_AOC'] = 1-mean(xAvg$normValues)
 
     # analytical solution for ic50
     out['xc50'] = out['c50']*((x_0-out['x_inf'])/(0.5-out['x_inf']) - 1)^(1/out['h'])
