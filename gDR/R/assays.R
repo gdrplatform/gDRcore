@@ -395,4 +395,8 @@ assay_to_df <- function(se, assay_name) {
     full.df <- left_join(df, annotTbl, by = c("rId", "cId"))
   })
   asDf <- data.frame(do.call(rbind, asL))
+  if (assay_name == "Metrics") {
+    asDf$dr_metric <- c("IC", "GR")
+  }
+  asDf
 }  
