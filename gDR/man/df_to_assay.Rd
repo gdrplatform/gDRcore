@@ -4,7 +4,8 @@
 \alias{df_to_assay}
 \title{df_to_assay}
 \usage{
-df_to_assay(data, data_type = c("all", "treated", "untreated"))
+df_to_assay(data, data_type = c("all", "treated", "untreated"),
+  discard_keys = NULL)
 }
 \arguments{
 \item{data}{tibble or data.frame with drug-response data}

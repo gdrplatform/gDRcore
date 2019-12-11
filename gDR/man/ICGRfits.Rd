@@ -4,22 +4,22 @@
 \alias{ICGRfits}
 \title{Actual fitting function}
 \usage{
-ICGRfits(df_, e_0 = 1, GR_0 = 1, force = FALSE, cap = FALSE)
+ICGRfits(df_, e_0 = 1, GR_0 = 1, force = FALSE)
 }
 \arguments{
-\item{e_0}{=1 by default}
+\item{e_0}{= 1 by default}
 
-\item{GR_0}{=1 by default}
+\item{GR_0}{= 1 by default}
 
 \item{force}{use signifcance or not}
-
-\item{cap}{enforce e_0 and GR_0}
 
 \item{log10concs}{concentrations}
 
 \item{RelativeViability}{values}
 
 \item{GRvalues}{values}
+
+\item{cap}{enforce e_0 and GR_0}
 }
 \value{
 vector of parameters

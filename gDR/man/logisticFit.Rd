@@ -4,12 +4,10 @@
 \alias{logisticFit}
 \title{Actual fitting function}
 \usage{
-logisticFit(log10concs, normValues, x_0 = 1, curve_type = c("IC",
-  "GR"), force = FALSE, cap = FALSE)
+logisticFit(concs, normValues, x_0 = 1, curve_type = c("IC", "GR"),
+  force = FALSE, cap = 0.1)
 }
 \arguments{
-\item{log10concs}{log10 of concentrations}
-
 \item{normValues}{values}
 
 \item{x_0}{upper limit; =1 by default )}
@@ -19,6 +17,8 @@ logisticFit(log10concs, normValues, x_0 = 1, curve_type = c("IC",
 \item{force}{use signifcance or not}
 
 \item{cap}{enforce x_0}
+
+\item{log10concs}{log10 of concentrations}
 }
 \value{
 vector of parameters

@@ -5,7 +5,7 @@
 \title{createSE}
 \usage{
 createSE(df_data, data_type = c("untreated", "treated", "all"),
-  readout = "ReadoutValue")
+  readout = "ReadoutValue", discard_keys = NULL)
 }
 \arguments{
 \item{data_type}{string type of data to be returned: with untreated conditions only ('untreated'),
