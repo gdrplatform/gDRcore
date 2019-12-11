@@ -4,10 +4,12 @@
 \alias{load_templates_tsv}
 \title{Load templates from tsv}
 \usage{
-load_templates_tsv(template_file, log_str)
+load_templates_tsv(template_file, template_filename = NULL, log_str)
 }
 \arguments{
 \item{template_file}{character, file path(s) to template(s)}
+
+\item{template_filename}{character, file name(s)}
 
 \item{log_str}{character, file path to logs}
 }

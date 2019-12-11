@@ -30,14 +30,22 @@ Overall_function <-
                        instrument)
     df_raw_data <-
       merge_data(lData$manifest, lData$treatments, lData$data, log_str)
-    
-    # output_QC_byPlate(df_raw_data, output_files["QC_file"]) # TODO: check column/row bias
-    
-    Keys <- identify_keys(df_raw_data) # may be manually changed
+
+    #returning two SEs with 'df_raw_data' assay and creating MAE from it
+    untreatedSE <-
+      gDR::createSE(df_raw_data, data_type = "untreated")
+    treatedSE <-
+      gDR::createSE(df_raw_data, data_type = "treated")
+    rawMAE <- gDR::createMAE_raw(untreatedSE, treatedSE)
+
+    # output_QC_byPlate(df_raw_data, output_files['QC_file']) # TODO: check column/row bias
+
+    # TODO: this function could be overload to have an MAE as input; ok for now
+    Keys = identify_keys(df_raw_data) # may be manually changed
     if (!is.null(selected_keys)) {
       Keys[names(selected_keys)] <- selected_keys[names(selected_keys)]
     }
-    
+
     df_normalized <-
       normalize_data(df_raw_data, log_str, Keys, key_values)
     df_averaged <- average_replicates(df_normalized, Keys$Trt)
@@ -188,6 +196,263 @@ merge_data <- function(manifest, treatments, data, log_str) {
 }
 
 
+#' @export
+normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
+                key_values = NULL, discard_keys = NULL) {
+    # average technical replicates and assign the right controls to each treated well
+
+    Keys = identify_keys(df_raw_data)
+    Keys$discard_keys = discard_keys
+    if (!is.null(selected_keys)) {
+        Keys[names(selected_keys)] = selected_keys[names(selected_keys)]
+    }
+    if (!is.null(discard_keys)) {
+      Keys$DoseResp = setdiff(Keys$DoseResp, discard_keys)
+    }
+
+    # the normalized SE only contains the treated conditions
+    normSE = gDR::createSE(df_raw_data, data_type = "treated", discard_keys = discard_keys)
+    SummarizedExperiment::assayNames(normSE) = 'Normalized'
+    ctrlSE = gDR::createSE(df_raw_data, data_type = "untreated", discard_keys = discard_keys)
+
+    # enforced key values for end points (override selected_keys) --> for rows of the SE
+    Keys$untrt_Endpoint = setdiff(Keys$untrt_Endpoint, names(key_values))
+    row_endpoint_value_filter = array(TRUE, nrow(ctrlSE))
+    if (!is.null(key_values) & length(key_values)>0) {
+        for (i in which(names(key_values) %in% names(SummarizedExperiment::rowData(ctrlSE)))) {
+            if (is.numeric(key_values[i])) {
+                row_endpoint_value_filter = row_endpoint_value_filter &
+                    (SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ] == key_values[i] &
+                            !is.na(SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ]))
+            } else {
+                row_endpoint_value_filter = row_endpoint_value_filter &
+                    (SummarizedExperiment::rowData(ctrlSE)[ ,names(key_values)[i] ] %in% key_values[i])
+            }}}
+
+    #TODO gladkia: move mapping code to the separate function
+    # perform the mapping for normalization
+    # first the rows
+    # matching the reference end point without any treatment
+    row_maps_end = lapply(rownames(normSE), function(x) {
+        # define matix with matching metadata
+        match_mx = c(
+            (SummarizedExperiment::rowData(ctrlSE) == (SummarizedExperiment::rowData(normSE)[x,]))[
+                intersect(Keys$untrt_Endpoint,names(SummarizedExperiment::rowData(ctrlSE)))],
+            IRanges::LogicalList(key_values = row_endpoint_value_filter,
+                conc = apply(cbind(array(0, nrow(ctrlSE)),# padding to avoid empty df
+                    SummarizedExperiment::rowData(ctrlSE)[,agrep('Concentration',
+                    colnames(SummarizedExperiment::rowData(ctrlSE))),drop=F]),1,
+                        function(x) all(x==0))))
+        match_idx = which(apply(as.matrix(match_mx), 2, all))
+        if (length(match_idx)==0) {
+            # if not exact match, try to find best match
+            WarnMsg = paste('Missing treated contols for:', x)
+            idx = apply(as.matrix(match_mx), 2, function(y) sum(y, na.rm=T)) *
+                            match_mx[[get_identifier('duration')]]
+            if (any(idx>0)) {
+                match_idx = which.max(idx)
+                WarnMsg = paste(WarnMsg,'; found partial match:',
+                        rownames(ctrlSE)[match_idx])
+            } else WarnMsg = paste(WarnMsg,'; no partial match found')
+            warning(WarnMsg)
+        }
+        return(rownames(ctrlSE)[match_idx])
+    })
+    names(row_maps_end) = rownames(normSE)
+
+    # matching the reference end point with the same co-treatment (all the same but conc=0/Gnumber='vehicle')
+    row_maps_cotrt = lapply(rownames(normSE), function(x)
+        rownames(ctrlSE)[which(apply(as.matrix(
+            (SummarizedExperiment::rowData(ctrlSE) == (SummarizedExperiment::rowData(normSE)[x,]))[
+                intersect(Keys$ref_Endpoint,names(SummarizedExperiment::rowData(ctrlSE)))] ),
+            2, all))])
+    names(row_maps_cotrt) = rownames(normSE)
+   
+    #keep only valid row_maps_cotrt ---> that should not be necessary
+    #row_maps_cotrt <-
+     # row_maps_cotrt[vapply(row_maps_cotrt, length, numeric(1)) > 0]
+    
+    # matching the reference at time 0 (if available)
+    row_maps_T0 = lapply(rownames(normSE), function(x) {
+        # define matix with matching metadata
+        match_mx = c(
+            (SummarizedExperiment::rowData(ctrlSE) == (SummarizedExperiment::rowData(normSE)[x,]))[
+                intersect(Keys$Day0,names(SummarizedExperiment::rowData(ctrlSE)))],
+            IRanges::LogicalList(#key_values = row_endpoint_value_filter,
+                T0 = SummarizedExperiment::rowData(ctrlSE)[, get_identifier('duration')] == 0,
+                conc = apply(cbind(array(0, nrow(ctrlSE)),# padding to avoid empty df
+                    SummarizedExperiment::rowData(ctrlSE)[,agrep('Concentration',
+                    colnames(SummarizedExperiment::rowData(ctrlSE))),drop=F]),1,
+                        function(x) all(x==0)) ))
+        match_idx = which(apply(as.matrix(match_mx), 2, all))
+        if (length(match_idx)==0) {
+            # if not exact match, try to find best match
+            WarnMsg = paste('Missing day 0 plate for:', x)
+            idx = apply(as.matrix(match_mx), 2, function(y) sum(y, na.rm=T)) *
+                            match_mx[['T0']]
+            if (any(idx>0)) {
+                match_idx = which.max(idx)
+                WarnMsg = paste(WarnMsg,'; found partial match:',
+                        rownames(ctrlSE)[match_idx])
+            } else WarnMsg = paste(WarnMsg,'; no partial match found')
+            warning(WarnMsg)
+        }
+        return(rownames(ctrlSE)[match_idx])
+    })
+    names(row_maps_T0) = rownames(normSE)
+
+    # mapping for columns; 1 to 1 unless overridden by key_values
+    col_maps = array(colnames(ctrlSE), dimnames = list(colnames(normSE)))
+    if (any(names(key_values) %in% names(SummarizedExperiment::colData(normSE)))) {
+        col_maps[] = colnames(ctrlSE)[
+                which(key_values[names(key_values) %in% names(SummarizedExperiment::colData(normSE))] ==
+                    SummarizedExperiment::colData(ctrlSE)[, names(SummarizedExperiment::colData(ctrlSE)) %in% names(key_values)])]
+    }
+
+
+
+    # remove background value to readout
+    normSE = aapply(normSE, function(x) {
+        x$CorrectedReadout = pmax(x$ReadoutValue - x$BackgroundValue,1)
+        return(x)},
+        'Normalized')
+    ctrlSE = aapply(ctrlSE, function(x) {
+        x$CorrectedReadout = pmax(x$ReadoutValue - x$BackgroundValue,1)
+        return(x)})
+
+    SummarizedExperiment::assay(normSE, 'Controls') <- matrix(lapply(1:prod(dim(normSE)), function(x) DataFrame()),
+            nrow = nrow(normSE), ncol = ncol(normSE))
+
+    # run through all conditions to assign controls and normalize the data
+    # TODO: optimize (could that be replaced by a lapply?? or dyplr function??)
+    for (i in rownames(normSE)) {
+        for (j in colnames(normSE)) {
+
+            if (nrow(SummarizedExperiment::assay(normSE,'Normalized')[[i,j]]) == 0) next # skip if no data
+
+            df_end = do.call(rbind,
+                    lapply(row_maps_end[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
+            df_end = df_end[, c('CorrectedReadout',
+                    intersect(Keys$untrt_Endpoint,colnames(df_end)))]
+            colnames(df_end)[1] = 'UntrtReadout'
+            df_end = aggregate(df_end[,1,drop=F], by = as.list(df_end[,-1,drop=F]),
+                function(x) mean(x, trim= .25))
+
+            # not always present
+            if (i %in% names(row_maps_cotrt)) {
+                df_ref = do.call(rbind,
+                        lapply(row_maps_cotrt[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
+                df_ref = df_ref[, c('CorrectedReadout',
+                        intersect(Keys$ref_Endpoint,colnames(df_ref)))]
+                colnames(df_ref)[1] = 'RefReadout'
+                df_ref = aggregate(df_ref[,1,drop=F], by = as.list(df_ref[,-1,drop=F]),
+                    function(x) mean(x, trim= .25))
+
+                # check if control and co-treated wells are on the same plate
+                if (all(df_end$Barcode %in% df_ref$Barcode) && all(df_ref$Barcode %in% df_end$Barcode)) {
+                  df_end = merge(df_end, df_ref, by=c('Barcode', Keys$discard_keys))
+                } else {
+                  wrnMsg1 <-
+                    sprintf(
+                      "Control data for the drug are propagated to other plates with co-drug controls.
+                      Treatment Id: %s
+                      Cell_line Id: %s",
+                      i,
+                      j
+                    )
+                  warning(wrnMsg1)
+                  # propagate average values to the other plates
+                  df_end = merge(df_end, df_ref, by='Barcode', all=T)
+                  mean_UntrtReadout = mean(df_end$UntrtReadout, na.rm=T)
+                  mean_RefReadout = mean(df_end$RefReadout, na.rm=T)
+                  df_end$UntrtReadout[is.na(df_end$UntrtReadout)] = mean_UntrtReadout
+                  df_end$RefReadout[is.na(df_end$RefReadout)] = mean_RefReadout
+                }
+                
+                #gladkia: assert for control data
+                if (nrow(df_end) == 0) {
+                  errMsg1 <-
+                    sprintf(
+                      "Control dataframe failed.
+                      Treatment Id: '%s'
+                      Cell_line Id: %s",
+                      i,
+                      j
+                    )
+                  stop(errMsg1)
+                }
+            } else {
+                df_end$RefReadout = df_end$UntrtReadout
+            }
+
+            df_0 = do.call(rbind,
+                    lapply(row_maps_T0[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
+            df_0 = df_0[, c('CorrectedReadout', intersect(Keys$Day0,colnames(df_0)))]
+            colnames(df_0)[1] = 'Day0Readout'
+            df_0 = aggregate(df_0[,1,drop=F], by = as.list(df_0[,-1,drop=F]),
+                function(x) mean(x, trim= .25))
+
+            if (!is.null(Keys$discard_keys) && all(Keys$discard_keys %in% colnames(df_0))) {
+              df_ctrl = merge(df_0[, setdiff(colnames(df_0), 'Barcode')], df_end, all.y = T, by = Keys$discard_keys)
+            } else {
+              df_ctrl = merge(df_0[, setdiff(colnames(df_0), 'Barcode')], df_end, all.y = T)
+              colnames(df_ctrl)[1] = 'Day0Readout'
+            }
+
+            df_ctrl$RefRelativeViability = round(df_ctrl$RefReadout/df_ctrl$UntrtReadout,4)
+
+            df_ctrl$RefGRvalue = round(2 ** (
+                    log2(df_ctrl$RefReadout / df_ctrl$Day0Readout) /
+                    log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout) ), 4) - 1
+
+            df_ctrl$DivisionTime = round(
+                    SummarizedExperiment::rowData(normSE)[i,get_identifier('duration')] /
+                        log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout) , 4)
+            SummarizedExperiment::assay(normSE, 'Controls')[[i,j]] = DataFrame(df_ctrl)
+
+            #gladkia: assert for merged study/control data
+            ctrl_bcodes <- sort(unique(df_ctrl$Barcode))
+            trt_bcodes <-
+              sort(unique(SummarizedExperiment::assay(normSE, 'Normalized')[[i, j]]$Barcode))
+            if (!all(trt_bcodes %in% ctrl_bcodes)) {
+              wrnMsg1 <-
+                sprintf(
+                  "Control data are averaged and propagated to treatment plates.
+                      Treatment Id: %s (plates %s)
+                      Control plates: %s",
+                  i, paste(trt_bcodes, collapse = ', '),
+                  paste(ctrl_bcodes, collapse = ', ')
+                )
+              warning(wrnMsg1)
+              bind_rows(df_ctrl, cbind(data.frame(Barcode = setdiff(trt_bcodes, ctrl_bcodes)),
+                        t(colMeans(df_ctrl[, setdiff(colnames(df_ctrl), 'Barcode')]))))
+            }
+            
+            # merge the data with the controls assuring that the order of the records is preseved
+            df_merged = dplyr::left_join(data.frame(SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]),
+                    data.frame(df_ctrl), by = c('Barcode', Keys$discard_keys))
+
+            # calculate the normalized values
+            
+            SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]$RelativeViability =
+                round(df_merged$CorrectedReadout/df_merged$UntrtReadout,4)
+            
+            SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]$GRvalue = round(2 ** (
+                    log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
+                    log2(df_merged$UntrtReadout / df_merged$Day0Readout) ), 4) - 1
+           
+        }
+    }
+    metadata(normSE) = c(metadata(normSE),
+            list(df_raw_data = df_raw_data,
+                Keys = Keys,
+                row_maps = list(end = row_maps_end,
+                                cotrt = row_maps_cotrt,
+                                T0 = row_maps_T0)
+                ))
+
+    return(normSE)
+}
 
 #' @export
 normalize_data <-
@@ -213,53 +478,42 @@ normalize_data <-
            1)
     
     # enforced key values for end points (override selected_keys)
-    Keys$Endpoint <- setdiff(Keys$Endpoint, names(key_values))
+    Keys$untrt_Endpoint <- setdiff(Keys$untrt_Endpoint, names(key_values))
     endpoint_value_filter <- array(TRUE, dim(df_raw_data)[1])
-    if (!is.null(key_values) & length(key_values) > 0) {
-      for (i in 1:length(key_values)) {
-        if (is.numeric(key_values[i])) {
-          endpoint_value_filter <- endpoint_value_filter &
-            (df_normalized[, names(key_values)[i]] == key_values[i] &
-               !is.na(df_normalized[, names(key_values)[i]]))
-        } else {
-          endpoint_value_filter <- endpoint_value_filter &
-            (df_normalized[, names(key_values)[i]] %in% key_values[i])
-        }
-      }
-    }
+    if (!is.null(key_values) & length(key_values)>0) {
+        for (i in 1:length(key_values)) {
+            if (is.numeric(key_values[i])) {
+                endpoint_value_filter <- endpoint_value_filter &
+                            (df_normalized[, names(key_values)[i] ] == key_values[i] &
+                                !is.na(df_normalized[, names(key_values)[i] ]))
+            } else {
+                endpoint_value_filter <- endpoint_value_filter &
+                            (df_normalized[ ,names(key_values)[i] ] %in% key_values[i])
+            }}}
     # get the untreated controls at endpoint and perform interquartile mean
-    df_end_untrt <-
-      df_normalized[df_normalized[, get_identifier("duration")] > 0 &
-                      endpoint_value_filter &
-                      apply(df_normalized[, agrep("Concentration", colnames(df_normalized)), drop = FALSE] == 0, 1, all),]
-    df_end_mean <- aggregate(df_end_untrt[, "CorrectedReadout"],
-                             by = as.list(df_end_untrt[, Keys$Endpoint]), function(x)
-                               mean(x, trim = .25))
-    colnames(df_end_mean)[dim(df_end_mean)[2]] <- "UntrtReadout"
-    
-    
+    df_end_untrt <- df_normalized[df_normalized[,get_identifier('duration')]>0 & endpoint_value_filter &
+        apply(df_normalized[,agrep('Concentration', colnames(df_normalized)),drop=FALSE]==0,1,all),]
+    df_end_mean = aggregate(df_end_untrt[,'CorrectedReadout'],
+                    by = as.list(df_end_untrt[,Keys$untrt_Endpoint]), function(x) mean(x, trim= .25))
+    colnames(df_end_mean)[dim(df_end_mean)[2]] <- 'UntrtReadout'
+
+
     # get the untreated controls at Day 0 and perform interquartile mean
-    df_day0 <-
-      df_normalized[df_normalized[, get_identifier("duration")] == 0 &
-                      apply(df_normalized[, agrep("Concentration", colnames(df_normalized)), drop = FALSE] == 0, 1, all),]
-    df_day0_mean <- aggregate(df_day0[, "CorrectedReadout"],
-                              by = as.list(df_day0[, Keys$Day0]), function(x)
-                                mean(x, trim = .25))
-    colnames(df_day0_mean)[dim(df_day0_mean)[2]] <- "Day0Readout"
-    
-    df_controls <-
-      merge(df_end_mean, df_day0_mean[, setdiff(colnames(df_day0_mean),
-                                                c(get_identifier("duration"), "Barcode"))], all.x = TRUE)
-    if (length(setdiff(Keys$Endpoint, Keys$Day0)) > 0) {
-      WarnMsg <-
-        paste(
-          "Not all control conditions found on the day 0 plate,",
-          "dispatching values for field: ",
-          paste(setdiff(Keys$Endpoint, Keys$Day0), collapse = " ; ")
-        )
-      log_str <- c(log_str, "Warning in normalize_data:")
-      log_str <- c(log_str, WarnMsg)
-      warning(WarnMsg)
+    df_day0 <- df_normalized[df_normalized[,get_identifier('duration')]==0 &
+        apply(df_normalized[,agrep('Concentration', colnames(df_normalized)),drop=FALSE]==0,1,all), ]
+    df_day0_mean <- aggregate(df_day0[,'CorrectedReadout'],
+                by = as.list(df_day0[,Keys$Day0]), function(x) mean(x, trim= .25))
+    colnames(df_day0_mean)[dim(df_day0_mean)[2]] <- 'Day0Readout'
+
+    df_controls <- merge(df_end_mean, df_day0_mean[, setdiff(colnames(df_day0_mean),
+                    c(get_identifier('duration'), 'Barcode'))], all.x = TRUE)
+    if (length(setdiff(Keys$untrt_Endpoint, Keys$Day0))>0) {
+        WarnMsg <- paste('Not all control conditions found on the day 0 plate,',
+            'dispatching values for field: ',
+            paste(setdiff(Keys$untrt_Endpoint, Keys$Day0), collapse = ' ; '))
+        log_str <- c(log_str, 'Warning in normalize_data:')
+        log_str <- c(log_str, WarnMsg)
+        warning(WarnMsg)
     }
     # identify missing values in the Day0 that needs to be matched (usually for co-treatments)
     df_controls_NA <- which(is.na(df_controls$Day0Readout))
@@ -404,6 +658,46 @@ normalize_data <-
 
 
 
+#' @export
+average_SE = function(normSE, TrtKeys = NULL) {
+  
+    avgSE = normSE
+    if (is.null(TrtKeys)) {
+        if ('Keys' %in% names(metadata(normSE))) {
+          TrtKeys = metadata(normSE)$Keys$Trt
+          TrtKeys = setdiff(TrtKeys, metadata(normSE)$Keys$discard_keys)
+        } else TrtKeys = identify_keys(normSE)$Trt
+    }
+    metadata(normSE)$Keys$Trt = TrtKeys
+      
+    SummarizedExperiment::assay(avgSE, 'Averaged') = SummarizedExperiment::assay(avgSE, 'Normalized')
+    avgSE = aapply(avgSE, function(x) {
+        if (nrow(x) > 1) {
+            subKeys = intersect(TrtKeys, colnames(x))
+            df_av = aggregate(x[, c('GRvalue', 'RelativeViability',"CorrectedReadout")],
+                            by = as.list(x[,subKeys,drop=F]), FUN = function(y) mean(y, na.rm=T))
+            df_std = aggregate(x[, c('GRvalue', 'RelativeViability')],
+                                by = as.list(x[,subKeys,drop=F]), FUN = function(x) sd(x, na.rm=T))
+            colnames(df_std)[colnames(df_std) %in% c('GRvalue', 'RelativeViability')] =
+                paste0('std_',
+                    colnames(df_std)[colnames(df_std) %in% c('GRvalue', 'RelativeViability')])
+            return( merge(df_av, df_std, by = subKeys) )
+        } else return(x)
+    }, 'Averaged')
+
+    SummarizedExperiment::assay(avgSE, 'Avg_Controls') = SummarizedExperiment::assay(avgSE, 'Controls')
+    avgSE = aapply(avgSE, function(x) {
+        if (nrow(x) > 1) {
+            subKeys = intersect(TrtKeys, colnames(x))
+            df_av = DataFrame(lapply(x[, c('Day0Readout', 'UntrtReadout',
+                    'RefGRvalue', 'RefRelativeViability',
+                    'RefReadout', 'DivisionTime')], FUN = function(y) mean(y, na.rm=T)))
+            return( df_av )
+        } else return(x)
+    }, 'Avg_Controls')
+    
+    return(avgSE)
+}
 
 #' @export
 average_replicates <- function(df_normalized, TrtKeys = NULL) {
@@ -445,6 +739,46 @@ average_replicates <- function(df_normalized, TrtKeys = NULL) {
   print(head(df_averaged))
   return(df_averaged)
 }
+
+
+#' @export
+metrics_SE = function(avgSE, studyConcThresh = 4) {
+
+    # this is not used as we enforce the same conditions as the input SE; not collapsing allowed
+    # if (is.null(DoseRespKeys)) {
+    #     if ('Keys' %in% names(metadata(avgSE))) DoseResp = metadata(avgSE)$Keys$DoseResp
+    #     else DoseRespKeys = identify_keys(avgSE)$DoseResp
+    # } else {
+    #     metadata(avgSE)$Keys$DoseResp = DoseRespKeys
+    # }
+
+    metricsSE = avgSE
+    SummarizedExperiment::assay(metricsSE, 'Metrics') = SummarizedExperiment::assay(metricsSE, 'Averaged')
+
+    for (i in rownames(metricsSE)) {
+        for (j in colnames(metricsSE)) {
+            df_ = SummarizedExperiment::assay(metricsSE, 'Averaged')[[i,j]]
+            if (length(unique(df_$Concentration)) >= studyConcThresh) {
+                SummarizedExperiment::assay(metricsSE, 'Metrics')[[i,j]] = DataFrame(ICGRfits(df_,
+                    e_0 = SummarizedExperiment::assay(metricsSE, 'Avg_Controls')[[i,j]]$RefRelativeViability,
+                    GR_0 = SummarizedExperiment::assay(metricsSE, 'Avg_Controls')[[i,j]]$RefGRvalue))
+            } else if (nrow(df_) == 0) {
+                out = DataFrame(matrix(NA, 0, length(get_header('response_metrics'))+2))
+                colnames(out) = c(get_header('response_metrics'), 'maxlog10Concentration', 'N_conc')
+                SummarizedExperiment::assay(metricsSE, 'Metrics')[[i,j]] = out
+            } else {
+                out = DataFrame(matrix(NA, 2, length(get_header('response_metrics'))))
+                colnames(out) = get_header('response_metrics')
+                out$maxlog10Concentration = max(log10(df_$Concentration))
+                out$N_conc = length(unique(df_$Concentration))
+                SummarizedExperiment::assay(metricsSE, 'Metrics')[[i,j]] = out
+            }
+        }
+
+    }
+    return(metricsSE)
+}
+
 
 
 #' @importFrom dplyr arrange_at group_by_at left_join summarise
@@ -559,40 +893,63 @@ calculate_DRmetrics <-
   }
 
 #' @export
-identify_keys <- function(df) {
-  keys <- list(
-    Trt = setdiff(colnames(df), "Barcode"),
-    DoseResp = setdiff(colnames(df),  "Barcode"),
-    Endpoint = colnames(df)[c(
-      -agrep("Concentration", colnames(df)),-agrep(get_identifier("drug"), colnames(df)),-agrep(get_identifier("drugname"), colnames(df))
-    )]
-  )
-  keys[["Day0"]] <- keys[["Endpoint"]]
-  keys <-
-    lapply(keys, function(x)
-      setdiff(
-        x,
-        c(
-          get_header("raw_data"),
-          get_header("normalized_results"),
-          "Template",
-          get_identifier("WellPosition"),
-          get_header("averaged_results"),
-          get_header("metrics_results"),
-          "ReferenceDivisionTime"
-        )
-      ))
-  
-  # check if all values of a key is NA
-  for (k in keys[["Endpoint"]]) {
-    if (all(is.na(df[, k]))) {
-      keys <- lapply(keys, function(x)
-        setdiff(x, k))
+identify_keys = function(df_se_mae) {
+
+    if (any(class(df_se_mae) %in% c("MultiAssayExperiment", "SummarizedExperiment"))) {
+        if ("MultiAssayExperiment" %in% class(df_se_mae)) {
+            # if MAE, convert to SE based on the treated SE (could be optimized)
+            df_se_mae <- df_se_mae[["treated"]]
+            se_untrt <-  df_se_mae[["untreated"]]
+        } else se_untrt <- NULL
+        all_keys <- unique(c(
+            colnames(SummarizedExperiment::rowData(df_se_mae)),
+            colnames(SummarizedExperiment::colData(df_se_mae)),
+            unlist(lapply(SummarizedExperiment::assay(df_se_mae), colnames))))
+    } else { # case of a data frame
+        all_keys <- colnames(df_se_mae)
     }
-    if (all(is.na(df[df[, get_identifier("duration")] == 0, k]))) {
-      keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
+
+    keys <- list(Trt = setdiff(all_keys, "Barcode"),
+            DoseResp = setdiff(all_keys,  "Barcode"),
+            ref_Endpoint = setdiff(all_keys, c("Concentration",
+                                            get_identifier("drug"),
+                                            get_identifier("drugname"))),
+            untrt_Endpoint = all_keys[ c(-agrep("Concentration", all_keys),
+                                            -agrep(get_identifier("drug"), all_keys),
+                                            -agrep(get_identifier("drugname"), all_keys))])
+    keys[["Day0"]] <- setdiff(keys[["untrt_Endpoint"]], get_identifier("duration"))
+    keys <- lapply(keys, function(x) setdiff(x, c(get_header("raw_data"),
+        get_header("normalized_results"), "Template", get_identifier("WellPosition"), get_header("averaged_results"),
+            get_header("metrics_results"), "ReferenceDivisionTime"
+    )))
+    keys <- lapply(keys, sort)
+
+    # check if all values of a key is NA
+    for (k in keys[["untrt_Endpoint"]]) {
+
+        if ("SummarizedExperiment" %in% class(df_se_mae)) {
+            # check the metadata fields for NA
+            if (k %in% colnames(SummarizedExperiment::rowData(df_se_mae))) df_ = SummarizedExperiment::rowData(df_se_mae)
+            else if (k %in% colnames(SummarizedExperiment::colData(df_se_mae))) df_ = SummarizedExperiment::colData(df_se_mae)
+            else next # not a metadata
+
+            if (all(is.na(df_[,k]))) keys = lapply(keys, function(x) setdiff(x, k))
+
+            if (!is.null(se_untrt) && k %in% colnames(SummarizedExperiment::rowData(se_untrt))) {
+                df_ <- SummarizedExperiment::rowData(se_untrt)
+                if (all(is.na(df_[df_[,get_identifier("duration")]==0,k]))) {
+                    keys[["Day0"]] = setdiff(keys[["Day0"]], k)
+                }
+            }
+        } else { # case of a data frame
+            if (all(is.na(df_se_mae[,k]))) {
+                keys <- lapply(keys, function(x) setdiff(x, k))
+            }
+            if (all(is.na(df_se_mae[df_se_mae[,get_identifier("duration")]==0,k]))) {
+                keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
+            }
+        }
     }
-  }
   return(keys)
 }
 
@@ -645,149 +1002,38 @@ cleanup_metadata <- function(df_metadata, log_str) {
         warning(WarnMsg)
       }
     }
-  }
-  
-  # TODO: specific to GNE database --> need to be replaced by a function
-  gCLs <-
-    gneDB::annotateCLIDs(unique(df_metadata[, get_identifier("cellline")]))[,
-                                                                            c(get_identifier("DB_cell"),
-                                                                              "celllinename",
-                                                                              "primarytissue",
-                                                                              "doublingtime")]
-  
-  colnames(gCLs) <-
-    c(get_identifier("cellline"), get_header("add_clid"))
-  CLIDs <- unique(df_metadata[, get_identifier("cellline")])
-  bad_CL <- !(CLIDs %in% gCLs[, get_identifier("cellline")])
-  if (any(bad_CL)) {
-    ErrorMsg <-
-      paste("Cell line ID ",
-            paste(CLIDs[bad_CL], collapse = " ; "),
-            " not found in cell line database")
-    log_str <- c(log_str, "Error in cleanup_metadata:")
-    log_str <- c(log_str, ErrorMsg)
-    
-    stop(ErrorMsg)
-  }
-  print("merge with gCells")
-  df_metadata <-
-    merge(
-      df_metadata,
-      gCLs,
-      by.x = get_identifier("cellline"),
-      by.y = get_identifier("DB_cell"),
-      all.x = TRUE
-    )
-  print(dim(df_metadata))
-  
-  # check that Gnumber_* are in the format "G####" and add common name (or Vehicle or Untreated)
-  
-  for (i in agrep(get_identifier("drug"), colnames(df_metadata))) {
-    # correct case issues
-    for (w in get_identifier("untreated_tag")) {
-      df_metadata[grep(w, df_metadata[, i], ignore.case = TRUE), i] <- w
+
+    # TODO: specific to GNE database --> need to be replaced by a function
+    df_metadata <- gDR::add_CellLine_annotation(df_metadata)
+
+    # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
+
+    for (i in agrep(get_identifier("drug"), colnames(df_metadata))) { # correct case issues
+        for (w in get_identifier("untreated_tag")) {
+            df_metadata[grep(w, df_metadata[,i], ignore.case = T),i] <- w
+        }
     }
-  }
-  # -----------------------
-  
-  gDrugs <-
-    gCellGenomics::getDrugs()[, c(get_identifier("DB_drug"), "gcsi_drug_name")]
-  
-  # -----------------------
-  gDrugs[, 1] <-
-    substr(gDrugs[, 1], 1, 9) # remove batch number from get_identifier("DB_drug")
-  colnames(gDrugs) <- c("drug", "DrugName")
-  gDrugs <-
-    rbind(data.frame(
-      drug = get_identifier("untreated_tag"),
-      DrugName = get_identifier("untreated_tag")
-    ),
-    gDrugs)
-  gDrugs <- unique(gDrugs)
-  Gnbrs <-
-    unique(unlist(df_metadata[, agrep(get_identifier("drug"), colnames(df_metadata))]))
-  bad_Gn <- !(Gnbrs %in% gDrugs$drug) & !is.na(Gnbrs)
-  if (any(bad_Gn)) {
-    # G number, but not registered
-    ok_Gn <- attr(regexpr("^G\\d*", Gnbrs), "match.length") == 9
-    if (any(ok_Gn)) {
-      WarnMsg <-
-        paste(
-          "Drug ",
-          paste(Gnbrs[ok_Gn & bad_Gn], collapse = " ; "),
-          " not found in gCSI database; use G# as DrugName"
-        )
-      gDrugs <-
-        rbind(gDrugs, data.frame(drug = Gnbrs[ok_Gn & bad_Gn],
-                                 DrugName = Gnbrs[ok_Gn & bad_Gn]))
-      log_str <- c(log_str, "Warning in cleanup_metadata:")
-      log_str <- c(log_str, WarnMsg)
-      warning(WarnMsg)
-    } else {
-      ErrorMsg <- paste("Drug ",
-                        paste(Gnbrs[!ok_Gn], collapse = " ; "),
-                        " not found in gCSI database")
-      log_str <- c(log_str, "Error in cleanup_metadata:")
-      log_str <- c(log_str, ErrorMsg)
-      
-      stop(ErrorMsg)
-    }
-  }
-  colnames(gDrugs)[2] <- get_identifier("drugname")
-  print("merge with gDrugs for Drug 1")
-  df_metadata <-
-    merge(
-      df_metadata,
-      gDrugs,
-      by.x = get_identifier("drug"),
-      by.y = "drug",
-      all.x = TRUE
-    )
-  print(dim(df_metadata))
-  # add info for columns Gnumber_*
-  for (i in grep(paste0(get_identifier("drug"), "_\\d"), colnames(df_metadata))) {
-    df_metadata[is.na(df_metadata[, i]), i] <-
-      get_identifier("untreated_tag")[1] # set missing values to Untreated
-    gDrugs_ <- gDrugs
-    colnames(gDrugs_)[2] <-
-      paste0(colnames(gDrugs_)[2], substr(colnames(df_metadata)[i], 8, 12))
-    print(paste("merge with gDrugs for ", i))
-    df_metadata <-
-      merge(
-        df_metadata,
-        gDrugs_,
-        by.x = i,
-        by.y = "drug",
-        all.x = TRUE
-      )
-    print(dim(df_metadata))
-  }
-  df_metadata[, colnames(df_metadata)[grepl(get_identifier("drugname"), colnames(df_metadata))]] <-
-    droplevels(df_metadata[, colnames(df_metadata)[grepl(get_identifier("drugname"), colnames(df_metadata))]])
-  
-  # clean up concentration fields
-  for (i in agrep("Concentration", colnames(df_metadata))) {
-    trt_n <- ifelse(regexpr("_\\d", colnames(df_metadata)[i]) > 0,
-                    substr(colnames(df_metadata)[i], 15, 20),
-                    1)
-    DrugID_col <-
-      ifelse(trt_n == 1,
-             get_identifier("drug"),
-             paste0(get_identifier("drug"), "_", trt_n))
-    df_metadata[df_metadata[, DrugID_col] %in% get_identifier("untreated_tag"), i] <-
-      0 # set all untreated to 0
-    
-    DrugID_0 <-
-      setdiff(unique(df_metadata[df_metadata[, i] == 0, DrugID_col]), get_identifier("untreated_tag"))
-    DrugID_0 <- DrugID_0[!is.na(DrugID_0)]
-    if (length(DrugID_0) > 0) {
-      WarnMsg <- paste("Some concentration for ",
-                       DrugID_col,
-                       " are 0: ",
-                       paste(DrugID_0, collapse = " ; "))
-      log_str <- c(log_str, "Warning in cleanup_metadata:")
-      log_str <- c(log_str, WarnMsg)
-      warning(WarnMsg)
+    # -----------------------
+
+    df_metadata <- add_Drug_annotation(df_metadata)
+
+    # clean up concentration fields
+    for (i in agrep("Concentration", colnames(df_metadata))) {
+        trt_n <- ifelse(regexpr("_\\d", colnames(df_metadata)[i])>0,
+                            substr(colnames(df_metadata)[i], 15,20), 1)
+        DrugID_col <- ifelse(trt_n == 1, get_identifier("drug"), paste0(get_identifier("drug"), "_", trt_n))
+        df_metadata[df_metadata[,DrugID_col] %in% get_identifier("untreated_tag"),i] <- 0 # set all untreated to 0
+
+        DrugID_0 <- setdiff(unique(df_metadata[ df_metadata[,i] == 0, DrugID_col]), get_identifier("untreated_tag"))
+        DrugID_0 <- DrugID_0[!is.na(DrugID_0)]
+        if (length(DrugID_0)>0) {
+            WarnMsg <- paste("Some concentration for ", DrugID_col,
+                            " are 0: ", paste(DrugID_0, collapse = " ; "))
+            log_str <- c(log_str, "Warning in cleanup_metadata:")
+            log_str <- c(log_str, WarnMsg)
+            warning(WarnMsg)
+        }
+        df_metadata[,i] <- round(as.numeric(df_metadata[,i]),6) # avoid mismatch due to string truncation
     }
     df_metadata[, i] <-
       round(as.numeric(df_metadata[, i]), 6) # avoid mismatch due to string truncation
@@ -828,4 +1074,113 @@ Order_result_df <- function (df_) {
   df_ <- df_[do.call(order, df_[, row_order_col]), cols]
   
   return(df_)
+}
+
+
+#
+add_CellLine_annotation = function(df_metadata) {
+
+    DB_cellid_header = 'clid'
+    DB_cell_annotate = c('celllinename', 'primarytissue', 'doublingtime')
+    # corresponds to columns get_header('add_clid'): name, tissue, doubling time
+    CLs_info = tryCatch( {
+        CLs_info = gneDB::annotateCLIDs(unique(df_metadata[,get_identifier('cellline')]))
+        CLs_info = CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
+        CLs_info
+    }, error = function(e) {
+        print('failed to load cell line info from DB')
+        print(e)
+        data.frame()
+    })
+
+    if (nrow(CLs_info)==0) return(df_metadata)
+
+    colnames(CLs_info) = c(get_identifier('cellline'), get_header('add_clid'))
+    CLIDs = unique(df_metadata[,get_identifier('cellline')])
+    bad_CL = !(CLIDs %in% CLs_info[,get_identifier('cellline')])
+    if (any(bad_CL)) {
+        ErrorMsg = paste('Cell line ID ', paste(CLIDs[bad_CL], collapse = ' ; '),
+            ' not found in cell line database')
+        log_str = c(log_str, 'Error in cleanup_metadata:')
+        log_str = c(log_str, ErrorMsg)
+
+        stop(ErrorMsg)
+        }
+
+    print('merge with Cell line info')
+    nrows_df = nrow(df_metadata)
+    df_metadata = merge(df_metadata, CLs_info, by.x = get_identifier('cellline'),
+                by.y = DB_cellid_header, all.x = T)
+    stopifnot(nrows_df == nrow(df_metadata))
+
+    return(df_metadata)
+
+}
+
+
+add_Drug_annotation = function(df_metadata) {
+        nrows_df = nrow(df_metadata)
+
+        DB_drug_identifier = 'drug'
+        Drug_info = tryCatch( {
+                gDrugs = gCellGenomics::getDrugs()[,c(DB_drug_identifier, 'gcsi_drug_name')]
+                gDrugs[,1] = substr(gDrugs[,1], 1, 9) # remove batch number from DB_drug_identifier
+                gDrugs
+        }, error = function(e) {
+            print('failed to load drug info from DB')
+            print(e)
+            data.frame()
+        })
+
+        if (nrow(Drug_info) == 0) {
+            df_metadata[, get_identifier('drugname')] = df_metadata[,get_identifier('drug')]
+            return(df_metadata)
+        }
+        # -----------------------
+
+        colnames(Drug_info) = c('drug', 'DrugName')
+        Drug_info = rbind(data.frame(drug=get_identifier('untreated_tag'), DrugName=get_identifier('untreated_tag')), Drug_info)
+        Drug_info = unique(Drug_info)
+        DrIDs = unique(unlist(df_metadata[,agrep(get_identifier('drug'), colnames(df_metadata))]))
+        bad_DrID = !(DrIDs %in% Drug_info$drug) & !is.na(DrIDs)
+        if (any(bad_DrID)) {
+            # G number, but not registered
+            ok_DrID = attr(regexpr('^G\\d*',DrIDs), 'match.length')==9
+            if (any(ok_DrID)) {
+                WarnMsg = paste('Drug ', paste(DrIDs[ok_DrID & bad_DrID], collapse = ' ; '),
+                    ' not found in gCSI database; use G# as DrugName')
+                Drug_info = rbind(Drug_info, data.frame(drug=DrIDs[ok_DrID & bad_DrID],
+                        DrugName=DrIDs[ok_DrID & bad_DrID]))
+                log_str = c(log_str, 'Warning in cleanup_metadata:')
+                log_str = c(log_str, WarnMsg)
+                warning(WarnMsg)
+            } else {
+                ErrorMsg = paste('Drug ', paste(DrIDs[!ok_DrID], collapse = ' ; '),
+                    ' not found in gCSI database')
+                log_str = c(log_str, 'Error in cleanup_metadata:')
+                log_str = c(log_str, ErrorMsg)
+
+                stop(ErrorMsg)
+            }
+        }
+        colnames(Drug_info)[2] = get_identifier('drugname')
+        print('merge with Drug_info for Drug 1')
+        df_metadata = merge(df_metadata, Drug_info, by.x=get_identifier('drug'), by.y='drug', all.x = T)
+        print(dim(df_metadata))
+        # add info for columns Gnumber_*
+        for (i in grep(paste0(get_identifier('drug'),'_\\d'), colnames(df_metadata))) {
+            df_metadata[ is.na(df_metadata[,i]), i] = get_identifier('untreated_tag')[1] # set missing values to Untreated
+            Drug_info_ = Drug_info
+            colnames(Drug_info_)[2] = paste0(colnames(Drug_info_)[2], substr(colnames(df_metadata)[i], 8, 12))
+            print(paste('merge with Drug_info for ', i))
+            df_metadata = merge(df_metadata, Drug_info_, by.x=i, by.y='drug', all.x = T)
+            print(dim(df_metadata))
+        }
+        df_metadata[, colnames(df_metadata)[grepl(get_identifier('drugname'), colnames(df_metadata))] ] =
+            droplevels(df_metadata[,colnames(df_metadata)[grepl(get_identifier('drugname'), colnames(df_metadata))]])
+
+    stopifnot(nrows_df == nrow(df_metadata))
+
+    return(df_metadata)
+
 }
