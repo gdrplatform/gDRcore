@@ -1084,7 +1084,7 @@ add_CellLine_annotation = function(df_metadata) {
     DB_cellid_header = 'clid'
     DB_cell_annotate = c('celllinename', 'primarytissue', 'doublingtime')
     # corresponds to columns get_header('add_clid'): name, tissue, doubling time
-    warning(packageVersion("gneDB")
+    warning(packageVersion("gneDB"))
     CLs_info = tryCatch( {
         CLs_info = gneDB::annotateCLIDs(unique(df_metadata[,get_identifier('cellline')]))
         CLs_info = CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
