@@ -1096,7 +1096,6 @@ add_CellLine_annotation = function(df_metadata) {
     })
     message("##### TEST INFO ##### TODO: remove it.")
     message(CLs_info)
-    message(paste(colnames(df_normalized), collapse = "\n"))        
 
     if (nrow(CLs_info)==0) return(df_metadata)
 
