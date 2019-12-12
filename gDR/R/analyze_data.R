@@ -704,8 +704,6 @@ average_replicates <- function(df_normalized, TrtKeys = NULL) {
   if (is.null(TrtKeys)) {
     TrtKeys <- identify_keys(df_normalized)$Trt
   }
-  message(paste(TrtKeys, collapse = "\n"))
-  message(paste(colnames(df_normalized), collapse = "\n"))
   df_averaged <-
     aggregate(
       df_normalized[, c(
@@ -1084,7 +1082,6 @@ add_CellLine_annotation = function(df_metadata) {
     DB_cellid_header = 'clid'
     DB_cell_annotate = c('celllinename', 'primarytissue', 'doublingtime')
     # corresponds to columns get_header('add_clid'): name, tissue, doubling time
-    warning(packageVersion("gneDB"))
     CLs_info = tryCatch( {
         CLs_info = gneDB::annotateCLIDs(unique(df_metadata[,get_identifier('cellline')]))
         CLs_info = CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
@@ -1094,8 +1091,6 @@ add_CellLine_annotation = function(df_metadata) {
         print(e)
         data.frame()
     })
-    message("##### TEST INFO ##### TODO: remove it.")
-    message(CLs_info)
 
     if (nrow(CLs_info)==0) return(df_metadata)
 
