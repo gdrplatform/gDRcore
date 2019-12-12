@@ -704,7 +704,8 @@ average_replicates <- function(df_normalized, TrtKeys = NULL) {
   if (is.null(TrtKeys)) {
     TrtKeys <- identify_keys(df_normalized)$Trt
   }
-  
+  message(paste(TrtKeys, collapse = "\n"))
+  message(paste(colnames(df_normalized), collapse = "\n"))
   df_averaged <-
     aggregate(
       df_normalized[, c(
