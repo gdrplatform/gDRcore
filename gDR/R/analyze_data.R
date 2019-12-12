@@ -1005,7 +1005,7 @@ cleanup_metadata <- function(df_metadata, log_str) {
     }
 
     # TODO: specific to GNE database --> need to be replaced by a function
-    df_metadata <- gDR:::add_CellLine_annotation(df_metadata)
+    df_metadata <- add_CellLine_annotation(df_metadata)
 
     # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
 
@@ -1084,6 +1084,7 @@ add_CellLine_annotation = function(df_metadata) {
     DB_cellid_header = 'clid'
     DB_cell_annotate = c('celllinename', 'primarytissue', 'doublingtime')
     # corresponds to columns get_header('add_clid'): name, tissue, doubling time
+    warning(packageVersion("gneDB")
     CLs_info = tryCatch( {
         CLs_info = gneDB::annotateCLIDs(unique(df_metadata[,get_identifier('cellline')]))
         CLs_info = CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
@@ -1093,6 +1094,9 @@ add_CellLine_annotation = function(df_metadata) {
         print(e)
         data.frame()
     })
+    message("##### TEST INFO ##### TODO: remove it.")
+    message(CLs_info)
+    message(paste(colnames(df_normalized), collapse = "\n"))        
 
     if (nrow(CLs_info)==0) return(df_metadata)
 
