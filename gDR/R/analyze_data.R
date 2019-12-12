@@ -1004,7 +1004,7 @@ cleanup_metadata <- function(df_metadata, log_str) {
     }
 
     # TODO: specific to GNE database --> need to be replaced by a function
-    df_metadata <- gDR::add_CellLine_annotation(df_metadata)
+    df_metadata <- gDR:::add_CellLine_annotation(df_metadata)
 
     # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
 
@@ -1015,7 +1015,7 @@ cleanup_metadata <- function(df_metadata, log_str) {
     }
     # -----------------------
 
-    df_metadata <- add_Drug_annotation(df_metadata)
+    df_metadata <- add_Drug_annotation(df_metadata, log_str)
 
     # clean up concentration fields
     for (i in agrep("Concentration", colnames(df_metadata))) {
@@ -1118,7 +1118,7 @@ add_CellLine_annotation = function(df_metadata) {
 }
 
 
-add_Drug_annotation = function(df_metadata) {
+add_Drug_annotation = function(df_metadata, log_str) {
         nrows_df = nrow(df_metadata)
 
         DB_drug_identifier = 'drug'
