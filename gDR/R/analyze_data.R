@@ -263,6 +263,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                         rownames(ctrlSE)[match_idx])
             } else {
               futile.logger::flog.warn("No partial match found")
+            }
         }
         return(rownames(ctrlSE)[match_idx])
     })

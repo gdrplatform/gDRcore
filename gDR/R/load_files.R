@@ -305,14 +305,14 @@ load_templates <- function (df_template_files) {
   all_templates <- data.frame()
   if (any(grepl("\\.xlsx?$", template_filename))) {
     idx <- grepl("\\.xlsx?$", template_filename)
-    futile.logger::flog.info("Reading %s with load_templates_xlsx", template_filename[idx]))
+    futile.logger::flog.info("Reading %s with load_templates_xlsx", template_filename[idx])
     all_templates_1 <-
       load_templates_xlsx(template_file[idx], template_filename[idx])
     all_templates <- rbind(all_templates, all_templates_1)
   }
   if (any(grepl("\\.[ct]sv$", template_filename))) {
     idx <- grepl("\\.[ct]sv$", template_filename)
-    futile.logger::flog.info("Reading %s with load_templates_tsv", template_filename[idx]))
+    futile.logger::flog.info("Reading %s with load_templates_tsv", template_filename[idx])
     all_templates_2 <-
       load_templates_tsv(template_file[idx], template_filename[idx])
     all_templates <- rbind(all_templates, all_templates_2)
@@ -437,7 +437,7 @@ load_templates_tsv <-
             oldiS <- iS
             iS <-
               metadata_fields[toupper(iS) == toupper(metadata_fields)]
-            futile.logger::flog.info("%s corrected to match case with %s", oldiS, iS))
+            futile.logger::flog.info("%s corrected to match case with %s", oldiS, iS)
             colnames(df_template)[colnames(df_template) == oldiS] <-
               iS
           } else {
@@ -584,7 +584,7 @@ load_templates_xlsx <-
             oldiS <- iS
             iS <-
               metadata_fields[toupper(iS) == toupper(metadata_fields)]
-            futile.logger::flog.info("%s corrected to match case with %s", oldiS, iS))
+            futile.logger::flog.info("%s corrected to match case with %s", oldiS, iS)
           } else {
             metadata_fields <- c(metadata_fields, iS)
           }
@@ -702,7 +702,7 @@ load_results_EnVision <-
     all_results <- data.frame()
     for (iF in 1:length(results_file)) {
       for (iS in results_sheets[[iF]]) {
-        futile.logger::flog.info("Reading file %s, sheet %s", results_file[[iF]], iS))
+        futile.logger::flog.info("Reading file %s, sheet %s", results_file[[iF]], iS)
         if (iS == 0) {
           tryCatch({
             df <-
@@ -844,7 +844,7 @@ load_results_EnVision <-
           )
           futile.logger::flog.info("Plate %s read; %d wells",
                                    as.character(df[iB + 1, 3]),
-                                   dim(df_results)[1]))
+                                   dim(df_results)[1])
           all_results <- rbind(all_results, df_results)
         }
         futile.logger::flog.info("File done")
