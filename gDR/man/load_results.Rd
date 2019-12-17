@@ -4,13 +4,11 @@
 \alias{load_results}
 \title{Load results}
 \usage{
-load_results(df_results_files, log_str, instrument = "EnVision")
+load_results(df_results_files, instrument = "EnVision")
 }
 \arguments{
 \item{df_results_files}{data.frame, with datapaths and names of results file(s)
 or character with file path of results file(s)}
-
-\item{log_str}{character, file path to logs}
 
 \item{intrument}{character}
 }
