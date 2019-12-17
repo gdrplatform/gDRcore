@@ -111,7 +111,7 @@ merge_data <- function(manifest, treatments, data) {
   headersOK <- expected_headers %in% colnames(df_metadata)
   if (any(!headersOK)) {
     futile.logger::flog.error("df_metadata does not contains all expected headers: %s required",
-                              paste(expected_headers[!(expected_headers %in% col_df)], collpase = " ; "),
+                              paste(expected_headers[!(expected_headers %in% col_df)], collpase = " ; ")
                               )
     stop()
   }
@@ -139,7 +139,7 @@ merge_data <- function(manifest, treatments, data) {
   if (dim(df_merged)[1] != dim(df_metadata)[1]) {
     # need to identify issue and print relevant warning
     futile.logger::flog.warn("merge_data: Not all treatments have been matched with results;
-                             merged table is smaller than metadata table"
+                             merged table is smaller than metadata table")
   }
   
   # remove wells not labeled
@@ -399,7 +399,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             SummarizedExperiment::assay(normSE, "Normalized")[[i, j]]$RelativeViability <- 
                 round(df_merged$CorrectedReadout/df_merged$UntrtReadout, 4)
             
-            SummarizedExperiment::assay(normSE, "Normalized")[[i,j]]$GRvalue <- round(2 ** (
+            SummarizedExperiment::assay(normSE, "Normalized")[[i, j]]$GRvalue <- round(2 ** (
                     log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
                     log2(df_merged$UntrtReadout / df_merged$Day0Readout) ), 4) - 1
            
@@ -468,13 +468,9 @@ normalize_data <-
 
     df_controls <- merge(df_end_mean, df_day0_mean[, setdiff(colnames(df_day0_mean),
                     c(get_identifier("duration"), "Barcode"))], all.x = TRUE)
-    if (length(setdiff(Keys$untrt_Endpoint, Keys$Day0))>0) {
-        WarnMsg <- paste("Not all control conditions found on the day 0 plate,",
-            "dispatching values for field: ",
+    if (length(setdiff(Keys$untrt_Endpoint, Keys$Day0)) > 0) {
+      futile.logger::flog.warn("Not all control conditions found on the day 0 plate, dispatching values for field: %s",
             paste(setdiff(Keys$untrt_Endpoint, Keys$Day0), collapse = " ; "))
-        log_str <- c(log_str, "Warning in normalize_data:")
-        log_str <- c(log_str, WarnMsg)
-        warning(WarnMsg)
     }
     # identify missing values in the Day0 that needs to be matched (usually for co-treatments)
     df_controls_NA <- which(is.na(df_controls$Day0Readout))
@@ -504,20 +500,15 @@ normalize_data <-
         df_controls[i, "Day0Readout"] <-
           df_day0_mean[match_idx, "Day0Readout"]
       }
-      WarnMsg <-
-        paste("Not all control conditions found on the day 0 plate,")
-      WarnMsg <- ifelse(
-        length(dispatched) > 0,
-        paste(
-          WarnMsg,
-          "dispatching values for mismatches in field: ",
-          paste(unique(dispatched), collapse = " ; ")
-        ),
-        paste(WarnMsg, "some Day0 are not being matched")
-      )
-      log_str <- c(log_str, "Warning in normalize_data:")
-      log_str <- c(log_str, WarnMsg)
-      warning(WarnMsg)
+      futile.logger::flog.warn("Not all control conditions found on the day 0 plate")
+        if(length(dispatched) > 0) {
+          futile.logger::flog.warn(
+            "dispatching values for mismatches in field: ",
+            paste(unique(dispatched), collapse = " ; ")
+          )
+      } else {
+        futile.logger::flog.warn("some Day0 are not being matched")
+      }
     }
     
     df_to_norm <-
@@ -531,17 +522,12 @@ normalize_data <-
     
     # if missing barcodes --> dispatch for similar conditions
     if (!all(df_to_norm_conditions$Barcode %in% df_controls$Barcode)) {
-      WarnMsg <-
-        paste("Not all control conditions found at the end of treatment,")
-      WarnMsg <- paste(WarnMsg,
-                       "dispatching values for plates: ",
+      futile.logger::flog.warn("Not all control conditions found at the end of treatment, 
+                               dispatching values for plates: %s",
                        paste(
                          setdiff(df_to_norm_conditions$Barcode, df_controls$Barcode),
                          collapse = " ; "
                        ))
-      log_str <- c(log_str, "Warning in normalize_data:")
-      log_str <- c(log_str, WarnMsg)
-      warning(WarnMsg)
       
       df_ctrl_mean <-
         aggregate(df_controls[, c("UntrtReadout", "Day0Readout")],
@@ -574,27 +560,18 @@ normalize_data <-
       # need to use the reference doubling Time if day 0 missing
       InferedIdx <- is.na(df_normalized$Day0Readout)
       filtered <-
-        df_normalized$ReferenceDivisionTime > (df_normalized[, get_identifier("duration")] *
-                                                 2) |
+        df_normalized$ReferenceDivisionTime > (df_normalized[, get_identifier("duration")] * 2) |
         is.na(df_normalized$ReferenceDivisionTime)
-      WarnMsg <-
-        paste("Missing day 0 information --> calculate GR value based on reference",
-              "doubling time")
-      WarnMsg <- ifelse(
-        !any(filtered & InferedIdx),
-        WarnMsg,
-        paste(
-          WarnMsg,
-          "; filtering",
-          sum(filtered & InferedIdx),
-          "conditions because of too short assay:",
-          paste(unique(df_normalized$CellLineName[filtered &
-                                                    InferedIdx]), collpase = " ; ")
-        )
-      )
-      log_str <- c(log_str, "Warning in normalize_data:")
-      log_str <- c(log_str, WarnMsg)
-      warning(WarnMsg)
+      futile.logger::flog.warn(
+        "Missing day 0 information --> calculate GR value based on reference doubling time")
+      
+        if (any(filtered & InferedIdx)) {
+          futile.logger::flog.warn("Filtering %s conditions because of too short assay: %s",
+            paste(unique(df_normalized$CellLineName[filtered &
+                                                      InferedIdx]), collpase = " ; ")
+          )
+        }
+        
       InferedIdx <- !filtered & InferedIdx
       # calculate GR values using formula from https://www.nature.com/articles/nbt.3882
       df_normalized$GRvalue[InferedIdx] <-
@@ -611,8 +588,7 @@ normalize_data <-
             df_normalized[, c("GRvalue", "RelativeViability", "DivisionTime")],
             df_normalized[, which(colnames(df_normalized) == "ReadoutValue"):(dim(df_normalized)[2] - 3)])
     df_normalized <- Order_result_df(df_normalized)
-    print("df normalized:")
-    print(head(df_normalized))
+    futile.logger::flog.info("df normalized")
     return(df_normalized)
   }
 
@@ -698,8 +674,7 @@ average_replicates <- function(df_normalized, TrtKeys = NULL) {
   #reorganize column order:
   df_averaged <- Order_result_df(df_averaged)
   
-  print("df averaged:")
-  print(head(df_averaged))
+  futile.logger::flog.info("df averaged")
   return(df_averaged)
 }
 
@@ -770,11 +745,11 @@ calculate_DRmetrics <-
       names(ICGRlogisticFit(c(-7, -6, -5, -4), c(1, .9, .8, .7), c(1, .9, .8, .7)))
     # dummy call to get variable names
     
-    #define set of key for merging control and study data
+    # define set of key for merging control and study data
     mergeKeys <-
       setdiff(DoseRespKeys, c(get_identifier("drug"), "DrugName"))
     
-    #get avereage GRvalue ("GR_0") for control data
+    # get avereage GRvalue ("GR_0") for control data
     controlSets <-
       df_a %>% 
       dplyr::filter(DrugName %in% get_identifier("untreated_tag")) %>%
@@ -782,11 +757,11 @@ calculate_DRmetrics <-
       dplyr::summarise(GR_0 = mean(GRvalue),
                        e_0 = mean(RelativeViability))
     
-    #get study data
+    # get study data
     studySets <-
       df_a %>% dplyr::filter(!DrugName %in% get_identifier("untreated_tag"))
     
-    #join study and control data
+    # join study and control data
     # i.e. get  reference (average control) GRvalue ("GR_0") for study data
     fSets <-
       dplyr::left_join(studySets, controlSets, by = mergeKeys)
@@ -803,21 +778,17 @@ calculate_DRmetrics <-
       gSets[lapply(gSets, function(x)
         sum(!is.na(x$RelativeViability))) >= studyConcThresh]
     
-    print(
-      paste(
-        "Metadata variables for dose response curves:",
-        paste(setdiff(
-          DoseRespKeys, c(
-            get_identifier("drug"),
-            get_identifier("cellline"),
-            paste(get_identifier("drug"), "_", 2:10)
-          )
-        ),
-        collapse = " "),
-        "(",
-        length(gSets),
-        "groups )"
-      )
+    futile.logger::flog.info(
+      "Metadata variables for dose response curves: %s (%d groups)",
+      paste(setdiff(
+        DoseRespKeys, c(
+          get_identifier("drug"),
+          get_identifier("cellline"),
+          paste(get_identifier("drug"), "_", 2:10)
+        )
+      ),
+      collapse = " "),
+      length(gSets)
     )
     
     
@@ -921,8 +892,7 @@ identify_keys <- function(df_se_mae) {
 #' @export
 #' @importFrom gneDB annotateCLIDs
 #' @importFrom gCellGenomics getDrugs
-cleanup_metadata <- function(df_metadata, log_str) {
-  log_str <- c(log_str, "    cleanup_metadata")
+cleanup_metadata <- function(df_metadata) {
   # clean up numberic fields
   df_metadata[, get_identifier("duration")] <-
     round(as.numeric(df_metadata[, get_identifier("duration")]), 6)
@@ -945,25 +915,13 @@ cleanup_metadata <- function(df_metadata, log_str) {
       num_vals <- as.numeric(vals)
       if (sum(is.na(num_vals)) > 2 || all(is.na(num_vals))) {
         df_metadata[, c] <- factor(df_metadata[, c])
-        WarnMsg <-
-          paste("Metadata field ",
-                colnames(df_metadata)[c],
-                " converted to factors")
-        log_str <-
-          c(log_str, "Warning in cleanup_metadata:")
-        log_str <- c(log_str, WarnMsg)
-        warning(WarnMsg)
+        futile.logger::flog.warn("Metadata field %s converted to factors",
+                colnames(df_metadata)[c])
       } else {
         is.na(df_metadata[, c]) <- 0
         df_metadata[, c] <- as.numeric(df_metadata[, c])
-        WarnMsg <-
-          paste("Metadata field ",
-                colnames(df_metadata)[c],
-                " converted to numeric values")
-        log_str <-
-          c(log_str, "Warning in cleanup_metadata:")
-        log_str <- c(log_str, WarnMsg)
-        warning(WarnMsg)
+        futile.logger::flog.warn("Metadata field %s converted to numeric values",
+                colnames(df_metadata)[c])
       }
     }
 
@@ -991,11 +949,10 @@ cleanup_metadata <- function(df_metadata, log_str) {
         DrugID_0 <- setdiff(unique(df_metadata[ df_metadata[,i] == 0, DrugID_col]), get_identifier("untreated_tag"))
         DrugID_0 <- DrugID_0[!is.na(DrugID_0)]
         if (length(DrugID_0) > 0) {
-            WarnMsg <- paste("Some concentration for ", DrugID_col,
-                            " are 0: ", paste(DrugID_0, collapse = " ; "))
-            log_str <- c(log_str, "Warning in cleanup_metadata:")
-            log_str <- c(log_str, WarnMsg)
-            warning(WarnMsg)
+          futile.logger::flog.warn("Some concentration for %s are 0: %s",
+                                   DrugID_col,
+                                   paste(DrugID_0, collapse = " ; "))
+          
         }
         df_metadata[,i] <- round(as.numeric(df_metadata[, i]), 6) # avoid mismatch due to string truncation
     }
@@ -1052,8 +1009,7 @@ add_CellLine_annotation <- function(df_metadata) {
         CLs_info <- CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
         CLs_info
     }, error = function(e) {
-        print("failed to load cell line info from DB")
-        print(e)
+      futile.logger::flog.error("Failed to load cell line info from DB: %s", e)
         data.frame()
     })
 
@@ -1063,15 +1019,12 @@ add_CellLine_annotation <- function(df_metadata) {
     CLIDs <- unique(df_metadata[,get_identifier("cellline")])
     bad_CL <- !(CLIDs %in% CLs_info[,get_identifier("cellline")])
     if (any(bad_CL)) {
-        ErrorMsg = paste("Cell line ID ", paste(CLIDs[bad_CL], collapse = " ; "),
-            " not found in cell line database")
-        log_str = c(log_str, "Error in cleanup_metadata:")
-        log_str = c(log_str, ErrorMsg)
-
-        stop(ErrorMsg)
+      futile.logger::flog.error("Cell line ID %s not found in cell line database",
+                                paste(CLIDs[bad_CL], collapse = " ; "))
+        stop()
         }
 
-    print("merge with Cell line info")
+    futile.logger::flog.info("Merge with Cell line info")
     nrows_df <- nrow(df_metadata)
     df_metadata <- merge(df_metadata, CLs_info, by.x = get_identifier("cellline"),
                 by.y = DB_cellid_header, all.x = TRUE)
@@ -1091,8 +1044,7 @@ add_Drug_annotation <- function(df_metadata) {
                 gDrugs[,1] <- substr(gDrugs[,1], 1, 9) # remove batch number from DB_drug_identifier
                 gDrugs
         }, error = function(e) {
-            print("failed to load drug info from DB")
-            print(e)
+          futile.logger::flog.error("Failed to load drug info from DB: %s", e)
             data.frame()
         })
 
@@ -1103,7 +1055,12 @@ add_Drug_annotation <- function(df_metadata) {
         # -----------------------
 
         colnames(Drug_info) <- c("drug", "DrugName")
-        Drug_info <- rbind(data.frame(drug=get_identifier("untreated_tag"), DrugName=get_identifier("untreated_tag")), Drug_info)
+        Drug_info <-
+          rbind(data.frame(
+            drug = get_identifier("untreated_tag"),
+            DrugName = get_identifier("untreated_tag")
+          ),
+          Drug_info)
         Drug_info <- unique(Drug_info)
         DrIDs <- unique(unlist(df_metadata[,agrep(get_identifier("drug"), colnames(df_metadata))]))
         bad_DrID <- !(DrIDs %in% Drug_info$drug) & !is.na(DrIDs)
@@ -1111,38 +1068,30 @@ add_Drug_annotation <- function(df_metadata) {
             # G number, but not registered
             ok_DrID <- attr(regexpr("^G\\d*",DrIDs), "match.length")==9
             if (any(ok_DrID)) {
-                WarnMsg = paste("Drug ", paste(DrIDs[ok_DrID & bad_DrID], collapse = " ; "),
-                    " not found in gCSI database; use G# as DrugName")
-                Drug_info <- rbind(Drug_info, data.frame(drug=DrIDs[ok_DrID & bad_DrID],
-                        DrugName=DrIDs[ok_DrID & bad_DrID]))
-                log_str = c(log_str, "Warning in cleanup_metadata:")
-                log_str = c(log_str, WarnMsg)
-                warning(WarnMsg)
+              futile.logger::flog.warn("cleanup_metadata: Drug %s  not found in gCSI database; use G# as DrugName",
+                                       paste(DrIDs[ok_DrID & bad_DrID], collapse = " ; "))
+              Drug_info <-
+                rbind(Drug_info, data.frame(drug = DrIDs[ok_DrID & bad_DrID],
+                                            DrugName = DrIDs[ok_DrID & bad_DrID]))
             } else {
-                ErrorMsg = paste("Drug ", paste(DrIDs[!ok_DrID], collapse = " ; "),
-                    " not found in gCSI database")
-                log_str = c(log_str, "Error in cleanup_metadata:")
-                log_str = c(log_str, ErrorMsg)
-
-                stop(ErrorMsg)
+              futile.logger::flog.error("Drug %s not found in gCSI database")
+                stop()
             }
         }
         colnames(Drug_info)[2] <- get_identifier("drugname")
-        print("merge with Drug_info for Drug 1")
-        df_metadata <- merge(df_metadata, Drug_info, by.x=get_identifier("drug"), by.y="drug", all.x = T)
-        print(dim(df_metadata))
+        futile.logger::flog.info("Merge with Drug_info for Drug 1")
+        df_metadata <- merge(df_metadata, Drug_info, by.x = get_identifier("drug"), by.y = "drug", all.x = TRUE)
         # add info for columns Gnumber_*
         for (i in grep(paste0(get_identifier("drug"),"_\\d"), colnames(df_metadata))) {
             df_metadata[ is.na(df_metadata[,i]), i] = get_identifier("untreated_tag")[1] # set missing values to Untreated
             Drug_info_ <- Drug_info
             colnames(Drug_info_)[2] <- paste0(colnames(Drug_info_)[2], substr(colnames(df_metadata)[i], 8, 12))
-            print(paste("merge with Drug_info for ", i))
-            df_metadata <- merge(df_metadata, Drug_info_, by.x=i, by.y="drug", all.x = TRUE)
-            print(dim(df_metadata))
+            futile.logger::flog.info("Merge with Drug_info for %s", i)
+            df_metadata <- merge(df_metadata, Drug_info_, by.x = i, by.y = "drug", all.x = TRUE)
         }
-        df_metadata[, colnames(df_metadata)[grepl(get_identifier("drugname"), colnames(df_metadata))] ] =
-            droplevels(df_metadata[,colnames(df_metadata)[grepl(get_identifier("drugname"), colnames(df_metadata))]])
-
+        df_metadata[, colnames(df_metadata)[grepl(get_identifier("drugname"), colnames(df_metadata))]] =
+          droplevels(df_metadata[, colnames(df_metadata)[grepl(get_identifier("drugname"), colnames(df_metadata))]])
+        
     stopifnot(nrows_df == nrow(df_metadata))
 
     return(df_metadata)
