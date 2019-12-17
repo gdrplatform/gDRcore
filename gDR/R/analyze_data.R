@@ -391,21 +391,21 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             }
             
             # merge the data with the controls assuring that the order of the records is preseved
-            df_merged = dplyr::left_join(data.frame(SummarizedExperiment::assay(normSE, "Normalized")[[i,j]]),
+            df_merged <- dplyr::left_join(data.frame(SummarizedExperiment::assay(normSE, "Normalized")[[i, j]]),
                     data.frame(df_ctrl), by = c("Barcode", Keys$discard_keys))
 
             # calculate the normalized values
             
-            SummarizedExperiment::assay(normSE, "Normalized")[[i,j]]$RelativeViability =
-                round(df_merged$CorrectedReadout/df_merged$UntrtReadout,4)
+            SummarizedExperiment::assay(normSE, "Normalized")[[i, j]]$RelativeViability <- 
+                round(df_merged$CorrectedReadout/df_merged$UntrtReadout, 4)
             
-            SummarizedExperiment::assay(normSE, "Normalized")[[i,j]]$GRvalue = round(2 ** (
+            SummarizedExperiment::assay(normSE, "Normalized")[[i,j]]$GRvalue <- round(2 ** (
                     log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
                     log2(df_merged$UntrtReadout / df_merged$Day0Readout) ), 4) - 1
            
         }
     }
-    metadata(normSE) = c(metadata(normSE),
+    metadata(normSE) <- c(metadata(normSE),
             list(df_raw_data = df_raw_data,
                 Keys = Keys,
                 row_maps = list(end = row_maps_end,
@@ -419,7 +419,6 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
 #' @export
 normalize_data <-
   function(df_raw_data,
-           log_str,
            selected_keys = NULL,
            key_values = NULL) {
     # average technical replicates and assign the right controls to each treated well
@@ -442,7 +441,7 @@ normalize_data <-
     # enforced key values for end points (override selected_keys)
     Keys$untrt_Endpoint <- setdiff(Keys$untrt_Endpoint, names(key_values))
     endpoint_value_filter <- array(TRUE, dim(df_raw_data)[1])
-    if (!is.null(key_values) & length(key_values)>0) {
+    if (!is.null(key_values) & length(key_values) > 0) {
         for (i in 1:length(key_values)) {
             if (is.numeric(key_values[i])) {
                 endpoint_value_filter <- endpoint_value_filter &
@@ -450,21 +449,21 @@ normalize_data <-
                                 !is.na(df_normalized[, names(key_values)[i] ]))
             } else {
                 endpoint_value_filter <- endpoint_value_filter &
-                            (df_normalized[ ,names(key_values)[i] ] %in% key_values[i])
+                            (df_normalized[, names(key_values)[i] ] %in% key_values[i])
             }}}
     # get the untreated controls at endpoint and perform interquartile mean
-    df_end_untrt <- df_normalized[df_normalized[,get_identifier("duration")]>0 & endpoint_value_filter &
-        apply(df_normalized[,agrep("Concentration", colnames(df_normalized)),drop=FALSE]==0,1,all),]
-    df_end_mean = aggregate(df_end_untrt[,"CorrectedReadout"],
-                    by = as.list(df_end_untrt[,Keys$untrt_Endpoint]), function(x) mean(x, trim= .25))
+    df_end_untrt <- df_normalized[df_normalized[, get_identifier("duration")] > 0 & endpoint_value_filter &
+        apply(df_normalized[, agrep("Concentration", colnames(df_normalized)), drop = FALSE] == 0, 1, all), ]
+    df_end_mean <- aggregate(df_end_untrt[, "CorrectedReadout"],
+                    by = as.list(df_end_untrt[, Keys$untrt_Endpoint]), function(x) mean(x, trim = .25))
     colnames(df_end_mean)[dim(df_end_mean)[2]] <- "UntrtReadout"
 
 
     # get the untreated controls at Day 0 and perform interquartile mean
-    df_day0 <- df_normalized[df_normalized[,get_identifier("duration")]==0 &
-        apply(df_normalized[,agrep("Concentration", colnames(df_normalized)),drop=FALSE]==0,1,all), ]
+    df_day0 <- df_normalized[df_normalized[,get_identifier("duration")] == 0 &
+        apply(df_normalized[, agrep("Concentration", colnames(df_normalized)), drop = FALSE] == 0, 1, all), ]
     df_day0_mean <- aggregate(df_day0[,"CorrectedReadout"],
-                by = as.list(df_day0[,Keys$Day0]), function(x) mean(x, trim= .25))
+                by = as.list(df_day0[,Keys$Day0]), function(x) mean(x, trim = .25))
     colnames(df_day0_mean)[dim(df_day0_mean)[2]] <- "Day0Readout"
 
     df_controls <- merge(df_end_mean, df_day0_mean[, setdiff(colnames(df_day0_mean),
@@ -552,7 +551,7 @@ normalize_data <-
                   )), mean)
       df_controls <- rbind(df_controls, merge(df_ctrl_mean,
                                               df_to_norm_conditions[!(df_to_norm_conditions$Barcode %in%
-                                                                        df_controls$Barcode),]))
+                                                                        df_controls$Barcode), ]))
     }
     
     df_normalized <- merge(df_to_norm, df_controls)
@@ -568,8 +567,7 @@ normalize_data <-
     
     df_normalized$DivisionTime <-
       round(df_normalized[, get_identifier("duration")] /
-              log2(df_normalized$UntrtReadout / df_normalized$Day0Readout) ,
-            4)
+              log2(df_normalized$UntrtReadout / df_normalized$Day0Readout), 4)
     
     
     if (any(is.na(df_normalized$Day0Readout))) {
@@ -621,25 +619,27 @@ normalize_data <-
 
 
 #' @export
-average_SE = function(normSE, TrtKeys = NULL) {
+average_SE <- function(normSE, TrtKeys = NULL) {
   
-    avgSE = normSE
+    avgSE <- normSE
     if (is.null(TrtKeys)) {
         if ("Keys" %in% names(metadata(normSE))) {
-          TrtKeys = metadata(normSE)$Keys$Trt
-          TrtKeys = setdiff(TrtKeys, metadata(normSE)$Keys$discard_keys)
-        } else TrtKeys = identify_keys(normSE)$Trt
+          TrtKeys <- metadata(normSE)$Keys$Trt
+          TrtKeys <- setdiff(TrtKeys, metadata(normSE)$Keys$discard_keys)
+        } else {
+          TrtKeys <- identify_keys(normSE)$Trt
+        }
     }
-    metadata(normSE)$Keys$Trt = TrtKeys
+    metadata(normSE)$Keys$Trt <- TrtKeys
       
-    SummarizedExperiment::assay(avgSE, "Averaged") = SummarizedExperiment::assay(avgSE, "Normalized")
-    avgSE = aapply(avgSE, function(x) {
+    SummarizedExperiment::assay(avgSE, "Averaged") <- SummarizedExperiment::assay(avgSE, "Normalized")
+    avgSE <- aapply(avgSE, function(x) {
         if (nrow(x) > 1) {
-            subKeys = intersect(TrtKeys, colnames(x))
-            df_av = aggregate(x[, c("GRvalue", "RelativeViability","CorrectedReadout")],
-                            by = as.list(x[,subKeys,drop=F]), FUN = function(y) mean(y, na.rm=T))
-            df_std = aggregate(x[, c("GRvalue", "RelativeViability")],
-                                by = as.list(x[,subKeys,drop=F]), FUN = function(x) sd(x, na.rm=T))
+            subKeys <- intersect(TrtKeys, colnames(x))
+            df_av <- aggregate(x[, c("GRvalue", "RelativeViability","CorrectedReadout")],
+                            by = as.list(x[, subKeys, drop = FALSE]), FUN = function(y) mean(y, na.rm = TRUE))
+            df_std <- aggregate(x[, c("GRvalue", "RelativeViability")],
+                                by = as.list(x[, subKeys, drop = FALSE]), FUN = function(x) sd(x, na.rm = TRUE))
             colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")] =
                 paste0("std_",
                     colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")])
@@ -647,13 +647,13 @@ average_SE = function(normSE, TrtKeys = NULL) {
         } else return(x)
     }, "Averaged")
 
-    SummarizedExperiment::assay(avgSE, "Avg_Controls") = SummarizedExperiment::assay(avgSE, "Controls")
-    avgSE = aapply(avgSE, function(x) {
+    SummarizedExperiment::assay(avgSE, "Avg_Controls") <- SummarizedExperiment::assay(avgSE, "Controls")
+    avgSE <- aapply(avgSE, function(x) {
         if (nrow(x) > 1) {
-            subKeys = intersect(TrtKeys, colnames(x))
-            df_av = DataFrame(lapply(x[, c("Day0Readout", "UntrtReadout",
+            subKeys <- intersect(TrtKeys, colnames(x))
+            df_av <- DataFrame(lapply(x[, c("Day0Readout", "UntrtReadout",
                     "RefGRvalue", "RefRelativeViability",
-                    "RefReadout", "DivisionTime")], FUN = function(y) mean(y, na.rm=T)))
+                    "RefReadout", "DivisionTime")], FUN = function(y) mean(y, na.rm = TRUE)))
             return( df_av )
         } else return(x)
     }, "Avg_Controls")
@@ -715,26 +715,26 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
     #     metadata(avgSE)$Keys$DoseResp = DoseRespKeys
     # }
 
-    metricsSE = avgSE
-    SummarizedExperiment::assay(metricsSE, "Metrics") = SummarizedExperiment::assay(metricsSE, "Averaged")
+    metricsSE <- avgSE
+    SummarizedExperiment::assay(metricsSE, "Metrics") <- SummarizedExperiment::assay(metricsSE, "Averaged")
 
     for (i in rownames(metricsSE)) {
         for (j in colnames(metricsSE)) {
-            df_ = SummarizedExperiment::assay(metricsSE, "Averaged")[[i,j]]
+            df_ <- SummarizedExperiment::assay(metricsSE, "Averaged")[[i, j]]
             if (length(unique(df_$Concentration)) >= studyConcThresh) {
-                SummarizedExperiment::assay(metricsSE, "Metrics")[[i,j]] = DataFrame(ICGRfits(df_,
-                    e_0 = SummarizedExperiment::assay(metricsSE, "Avg_Controls")[[i,j]]$RefRelativeViability,
-                    GR_0 = SummarizedExperiment::assay(metricsSE, "Avg_Controls")[[i,j]]$RefGRvalue))
+                SummarizedExperiment::assay(metricsSE, "Metrics")[[i, j]] <- DataFrame(ICGRfits(df_,
+                    e_0 = SummarizedExperiment::assay(metricsSE, "Avg_Controls")[[i, j]]$RefRelativeViability,
+                    GR_0 = SummarizedExperiment::assay(metricsSE, "Avg_Controls")[[i, j]]$RefGRvalue))
             } else if (nrow(df_) == 0) {
-                out = DataFrame(matrix(NA, 0, length(get_header("response_metrics"))+2))
-                colnames(out) = c(get_header("response_metrics"), "maxlog10Concentration", "N_conc")
-                SummarizedExperiment::assay(metricsSE, "Metrics")[[i,j]] = out
+                out <- DataFrame(matrix(NA, 0, length(get_header("response_metrics")) + 2))
+                colnames(out) <- c(get_header("response_metrics"), "maxlog10Concentration", "N_conc")
+                SummarizedExperiment::assay(metricsSE, "Metrics")[[i,j]] <- out
             } else {
-                out = DataFrame(matrix(NA, 2, length(get_header("response_metrics"))))
-                colnames(out) = get_header("response_metrics")
-                out$maxlog10Concentration = max(log10(df_$Concentration))
-                out$N_conc = length(unique(df_$Concentration))
-                SummarizedExperiment::assay(metricsSE, "Metrics")[[i,j]] = out
+                out <- DataFrame(matrix(NA, 2, length(get_header("response_metrics"))))
+                colnames(out) <- get_header("response_metrics")
+                out$maxlog10Concentration <- max(log10(df_$Concentration))
+                out$N_conc <- length(unique(df_$Concentration))
+                SummarizedExperiment::assay(metricsSE, "Metrics")[[i,j]] <- out
             }
         }
 
@@ -767,7 +767,7 @@ calculate_DRmetrics <-
     df_a$log10Concentration <- log10(df_a$Concentration)
     
     metrics <-
-      names(ICGRlogisticFit(c(-7,-6,-5,-4), c(1, .9, .8, .7), c(1, .9, .8, .7)))
+      names(ICGRlogisticFit(c(-7, -6, -5, -4), c(1, .9, .8, .7), c(1, .9, .8, .7)))
     # dummy call to get variable names
     
     #define set of key for merging control and study data
@@ -776,14 +776,15 @@ calculate_DRmetrics <-
     
     #get avereage GRvalue ("GR_0") for control data
     controlSets <-
-      df_a %>% filter(DrugName %in% get_identifier("untreated_tag")) %>%
+      df_a %>% 
+      dplyr::filter(DrugName %in% get_identifier("untreated_tag")) %>%
       dplyr::group_by_at(mergeKeys) %>%
       dplyr::summarise(GR_0 = mean(GRvalue),
                        e_0 = mean(RelativeViability))
     
     #get study data
     studySets <-
-      df_a %>% filter(!DrugName %in% get_identifier("untreated_tag"))
+      df_a %>% dplyr::filter(!DrugName %in% get_identifier("untreated_tag"))
     
     #join study and control data
     # i.e. get  reference (average control) GRvalue ("GR_0") for study data
@@ -856,7 +857,7 @@ calculate_DRmetrics <-
   }
 
 #' @export
-identify_keys = function(df_se_mae) {
+identify_keys <- function(df_se_mae) {
 
     if (any(class(df_se_mae) %in% c("MultiAssayExperiment", "SummarizedExperiment"))) {
         if ("MultiAssayExperiment" %in% class(df_se_mae)) {
@@ -892,23 +893,23 @@ identify_keys = function(df_se_mae) {
 
         if ("SummarizedExperiment" %in% class(df_se_mae)) {
             # check the metadata fields for NA
-            if (k %in% colnames(SummarizedExperiment::rowData(df_se_mae))) df_ = SummarizedExperiment::rowData(df_se_mae)
-            else if (k %in% colnames(SummarizedExperiment::colData(df_se_mae))) df_ = SummarizedExperiment::colData(df_se_mae)
+            if (k %in% colnames(SummarizedExperiment::rowData(df_se_mae))) df_ <- SummarizedExperiment::rowData(df_se_mae)
+            else if (k %in% colnames(SummarizedExperiment::colData(df_se_mae))) df_ <- SummarizedExperiment::colData(df_se_mae)
             else next # not a metadata
 
-            if (all(is.na(df_[,k]))) keys = lapply(keys, function(x) setdiff(x, k))
+            if (all(is.na(df_[,k]))) keys <- lapply(keys, function(x) setdiff(x, k))
 
             if (!is.null(se_untrt) && k %in% colnames(SummarizedExperiment::rowData(se_untrt))) {
                 df_ <- SummarizedExperiment::rowData(se_untrt)
-                if (all(is.na(df_[df_[,get_identifier("duration")]==0,k]))) {
-                    keys[["Day0"]] = setdiff(keys[["Day0"]], k)
+                if (all(is.na(df_[df_[,get_identifier("duration")] == 0, k]))) {
+                    keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
                 }
             }
         } else { # case of a data frame
-            if (all(is.na(df_se_mae[,k]))) {
+            if (all(is.na(df_se_mae[, k]))) {
                 keys <- lapply(keys, function(x) setdiff(x, k))
             }
-            if (all(is.na(df_se_mae[df_se_mae[,get_identifier("duration")]==0,k]))) {
+            if (all(is.na(df_se_mae[df_se_mae[,get_identifier("duration")] == 0, k]))) {
                 keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
             }
         }
@@ -982,21 +983,21 @@ cleanup_metadata <- function(df_metadata, log_str) {
 
     # clean up concentration fields
     for (i in agrep("Concentration", colnames(df_metadata))) {
-        trt_n <- ifelse(regexpr("_\\d", colnames(df_metadata)[i])>0,
-                            substr(colnames(df_metadata)[i], 15,20), 1)
+        trt_n <- ifelse(regexpr("_\\d", colnames(df_metadata)[i]) > 0,
+                            substr(colnames(df_metadata)[i], 15, 20), 1)
         DrugID_col <- ifelse(trt_n == 1, get_identifier("drug"), paste0(get_identifier("drug"), "_", trt_n))
-        df_metadata[df_metadata[,DrugID_col] %in% get_identifier("untreated_tag"),i] <- 0 # set all untreated to 0
+        df_metadata[df_metadata[,DrugID_col] %in% get_identifier("untreated_tag"), i] <- 0 # set all untreated to 0
 
         DrugID_0 <- setdiff(unique(df_metadata[ df_metadata[,i] == 0, DrugID_col]), get_identifier("untreated_tag"))
         DrugID_0 <- DrugID_0[!is.na(DrugID_0)]
-        if (length(DrugID_0)>0) {
+        if (length(DrugID_0) > 0) {
             WarnMsg <- paste("Some concentration for ", DrugID_col,
                             " are 0: ", paste(DrugID_0, collapse = " ; "))
             log_str <- c(log_str, "Warning in cleanup_metadata:")
             log_str <- c(log_str, WarnMsg)
             warning(WarnMsg)
         }
-        df_metadata[,i] <- round(as.numeric(df_metadata[,i]),6) # avoid mismatch due to string truncation
+        df_metadata[,i] <- round(as.numeric(df_metadata[, i]), 6) # avoid mismatch due to string truncation
     }
     df_metadata[, i] <-
       round(as.numeric(df_metadata[, i]), 6) # avoid mismatch due to string truncation
@@ -1041,14 +1042,14 @@ Order_result_df <- function (df_) {
 
 
 #
-add_CellLine_annotation = function(df_metadata) {
+add_CellLine_annotation <- function(df_metadata) {
 
-    DB_cellid_header = "clid"
-    DB_cell_annotate = c("celllinename", "primarytissue", "doublingtime")
+    DB_cellid_header <- "clid"
+    DB_cell_annotate <- c("celllinename", "primarytissue", "doublingtime")
     # corresponds to columns get_header("add_clid"): name, tissue, doubling time
-    CLs_info = tryCatch( {
-        CLs_info = gneDB::annotateCLIDs(unique(df_metadata[,get_identifier("cellline")]))
-        CLs_info = CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
+    CLs_info <- tryCatch( {
+        CLs_info <- gneDB::annotateCLIDs(unique(df_metadata[,get_identifier("cellline")]))
+        CLs_info <- CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
         CLs_info
     }, error = function(e) {
         print("failed to load cell line info from DB")
@@ -1056,11 +1057,11 @@ add_CellLine_annotation = function(df_metadata) {
         data.frame()
     })
 
-    if (nrow(CLs_info)==0) return(df_metadata)
+    if (nrow(CLs_info) == 0) return(df_metadata)
 
-    colnames(CLs_info) = c(get_identifier("cellline"), get_header("add_clid"))
-    CLIDs = unique(df_metadata[,get_identifier("cellline")])
-    bad_CL = !(CLIDs %in% CLs_info[,get_identifier("cellline")])
+    colnames(CLs_info) <- c(get_identifier("cellline"), get_header("add_clid"))
+    CLIDs <- unique(df_metadata[,get_identifier("cellline")])
+    bad_CL <- !(CLIDs %in% CLs_info[,get_identifier("cellline")])
     if (any(bad_CL)) {
         ErrorMsg = paste("Cell line ID ", paste(CLIDs[bad_CL], collapse = " ; "),
             " not found in cell line database")
@@ -1071,9 +1072,9 @@ add_CellLine_annotation = function(df_metadata) {
         }
 
     print("merge with Cell line info")
-    nrows_df = nrow(df_metadata)
-    df_metadata = merge(df_metadata, CLs_info, by.x = get_identifier("cellline"),
-                by.y = DB_cellid_header, all.x = T)
+    nrows_df <- nrow(df_metadata)
+    df_metadata <- merge(df_metadata, CLs_info, by.x = get_identifier("cellline"),
+                by.y = DB_cellid_header, all.x = TRUE)
     stopifnot(nrows_df == nrow(df_metadata))
 
     return(df_metadata)
@@ -1081,13 +1082,13 @@ add_CellLine_annotation = function(df_metadata) {
 }
 
 
-add_Drug_annotation = function(df_metadata) {
-        nrows_df = nrow(df_metadata)
+add_Drug_annotation <- function(df_metadata) {
+        nrows_df <- nrow(df_metadata)
 
-        DB_drug_identifier = "drug"
-        Drug_info = tryCatch( {
-                gDrugs = gCellGenomics::getDrugs()[,c(DB_drug_identifier, "gcsi_drug_name")]
-                gDrugs[,1] = substr(gDrugs[,1], 1, 9) # remove batch number from DB_drug_identifier
+        DB_drug_identifier <- "drug"
+        Drug_info <- tryCatch( {
+                gDrugs <- gCellGenomics::getDrugs()[,c(DB_drug_identifier, "gcsi_drug_name")]
+                gDrugs[,1] <- substr(gDrugs[,1], 1, 9) # remove batch number from DB_drug_identifier
                 gDrugs
         }, error = function(e) {
             print("failed to load drug info from DB")
@@ -1096,23 +1097,23 @@ add_Drug_annotation = function(df_metadata) {
         })
 
         if (nrow(Drug_info) == 0) {
-            df_metadata[, get_identifier("drugname")] = df_metadata[,get_identifier("drug")]
+            df_metadata[, get_identifier("drugname")] = df_metadata[, get_identifier("drug")]
             return(df_metadata)
         }
         # -----------------------
 
-        colnames(Drug_info) = c("drug", "DrugName")
-        Drug_info = rbind(data.frame(drug=get_identifier("untreated_tag"), DrugName=get_identifier("untreated_tag")), Drug_info)
-        Drug_info = unique(Drug_info)
-        DrIDs = unique(unlist(df_metadata[,agrep(get_identifier("drug"), colnames(df_metadata))]))
-        bad_DrID = !(DrIDs %in% Drug_info$drug) & !is.na(DrIDs)
+        colnames(Drug_info) <- c("drug", "DrugName")
+        Drug_info <- rbind(data.frame(drug=get_identifier("untreated_tag"), DrugName=get_identifier("untreated_tag")), Drug_info)
+        Drug_info <- unique(Drug_info)
+        DrIDs <- unique(unlist(df_metadata[,agrep(get_identifier("drug"), colnames(df_metadata))]))
+        bad_DrID <- !(DrIDs %in% Drug_info$drug) & !is.na(DrIDs)
         if (any(bad_DrID)) {
             # G number, but not registered
-            ok_DrID = attr(regexpr("^G\\d*",DrIDs), "match.length")==9
+            ok_DrID <- attr(regexpr("^G\\d*",DrIDs), "match.length")==9
             if (any(ok_DrID)) {
                 WarnMsg = paste("Drug ", paste(DrIDs[ok_DrID & bad_DrID], collapse = " ; "),
                     " not found in gCSI database; use G# as DrugName")
-                Drug_info = rbind(Drug_info, data.frame(drug=DrIDs[ok_DrID & bad_DrID],
+                Drug_info <- rbind(Drug_info, data.frame(drug=DrIDs[ok_DrID & bad_DrID],
                         DrugName=DrIDs[ok_DrID & bad_DrID]))
                 log_str = c(log_str, "Warning in cleanup_metadata:")
                 log_str = c(log_str, WarnMsg)
@@ -1126,17 +1127,17 @@ add_Drug_annotation = function(df_metadata) {
                 stop(ErrorMsg)
             }
         }
-        colnames(Drug_info)[2] = get_identifier("drugname")
+        colnames(Drug_info)[2] <- get_identifier("drugname")
         print("merge with Drug_info for Drug 1")
-        df_metadata = merge(df_metadata, Drug_info, by.x=get_identifier("drug"), by.y="drug", all.x = T)
+        df_metadata <- merge(df_metadata, Drug_info, by.x=get_identifier("drug"), by.y="drug", all.x = T)
         print(dim(df_metadata))
         # add info for columns Gnumber_*
         for (i in grep(paste0(get_identifier("drug"),"_\\d"), colnames(df_metadata))) {
             df_metadata[ is.na(df_metadata[,i]), i] = get_identifier("untreated_tag")[1] # set missing values to Untreated
-            Drug_info_ = Drug_info
-            colnames(Drug_info_)[2] = paste0(colnames(Drug_info_)[2], substr(colnames(df_metadata)[i], 8, 12))
+            Drug_info_ <- Drug_info
+            colnames(Drug_info_)[2] <- paste0(colnames(Drug_info_)[2], substr(colnames(df_metadata)[i], 8, 12))
             print(paste("merge with Drug_info for ", i))
-            df_metadata = merge(df_metadata, Drug_info_, by.x=i, by.y="drug", all.x = T)
+            df_metadata <- merge(df_metadata, Drug_info_, by.x=i, by.y="drug", all.x = TRUE)
             print(dim(df_metadata))
         }
         df_metadata[, colnames(df_metadata)[grepl(get_identifier("drugname"), colnames(df_metadata))] ] =
