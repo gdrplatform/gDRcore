@@ -677,6 +677,7 @@ average_replicates <- function(df_normalized, TrtKeys = NULL) {
 #' @export
 metrics_SE = function(avgSE, studyConcThresh = 4) {
 
+    stopifnot(is.numeric(studyConcThresh))
     # this is not used as we enforce the same conditions as the input SE; not collapsing allowed
     # if (is.null(DoseRespKeys)) {
     #     if ("Keys" %in% names(metadata(avgSE))) DoseResp = metadata(avgSE)$Keys$DoseResp
