@@ -110,10 +110,10 @@ merge_data <- function(manifest, treatments, data) {
   expected_headers <- get_identifier("cellline")
   headersOK <- expected_headers %in% colnames(df_metadata)
   if (any(!headersOK)) {
-    futile.logger::flog.error("df_metadata does not contains all expected headers: %s required",
-                              paste(expected_headers[!(expected_headers %in% col_df)], collpase = " ; ")
-                              )
-    stop()
+    stop(sprintf(
+      "df_metadata does not contains all expected headers: %s required",
+      paste(expected_headers[!(expected_headers %in% col_df)], collpase = " ; ")
+    ))
   }
   
   
@@ -336,14 +336,11 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                 
                 #gladkia: assert for control data
                 if (nrow(df_end) == 0) {
-                  futile.logger::flog.error(
-                      "Control dataframe failed.
+                  stop(sprintf("Control dataframe failed.
                       Treatment Id: '%s'
                       Cell_line Id: %s",
-                      i,
-                      j
-                    )
-                  stop()
+                               i,
+                               j))
                 }
             } else {
                 df_end$RefReadout <- df_end$UntrtReadout
@@ -1017,9 +1014,8 @@ add_CellLine_annotation <- function(df_metadata) {
     CLIDs <- unique(df_metadata[,get_identifier("cellline")])
     bad_CL <- !(CLIDs %in% CLs_info[,get_identifier("cellline")])
     if (any(bad_CL)) {
-      futile.logger::flog.error("Cell line ID %s not found in cell line database",
-                                paste(CLIDs[bad_CL], collapse = " ; "))
-        stop()
+        stop(sprintf("Cell line ID %s not found in cell line database",
+                     paste(CLIDs[bad_CL], collapse = " ; ")))
         }
 
     futile.logger::flog.info("Merge with Cell line info")
@@ -1072,8 +1068,7 @@ add_Drug_annotation <- function(df_metadata) {
                 rbind(Drug_info, data.frame(drug = DrIDs[ok_DrID & bad_DrID],
                                             DrugName = DrIDs[ok_DrID & bad_DrID]))
             } else {
-              futile.logger::flog.error("Drug %s not found in gCSI database")
-                stop()
+              stop(sprintf("Drug %s not found in gCSI database", paste(DrIDs[!ok_DrID], collapse = ' ; ')))
             }
         }
         colnames(Drug_info)[2] <- get_identifier("drugname")

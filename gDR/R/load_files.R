@@ -162,16 +162,13 @@ get_header <- function(x = NULL) {
 #' or character with file path of templates file(s)
 #' @param results_file  data.frame, with datapaths and names of results file(s)
 #' or character with file path of results file(s)
-#' @param log_str character, file path to logs
 #' @param instrument character
 #' @export
 load_data <-
   function(manifest_file,
            df_template_files,
            results_file,
-           log_str,
            instrument = "EnVision") {
-    log_str <- c(log_str, "", "load_merge_data")
     
     if (is.data.frame(df_template_files)) {
       # for the shiny app
@@ -181,19 +178,20 @@ load_data <-
       template_filename <- df_template_files
     }
     
-    manifest <- load_manifest(manifest_file, log_str)
-    treatments <- load_templates(df_template_files, log_str)
-    data <- load_results(results_file, log_str, instrument)
+    manifest <- load_manifest(manifest_file)
+    treatments <- load_templates(df_template_files)
+    data <- load_results(results_file, instrument)
     
     # check the all template files are available
     if (!all(unique(manifest$Template[manifest$Barcode %in% data$Barcode])
              %in% basename(template_filename))) {
-      ErrorMsg <- paste("Some template files are missing:",
-                        paste(setdiff(
-                          unique(manifest$Template[manifest$Barcode %in% data$Barcode]),
-                          basename(template_filename)
-                        ), collapse = " ; "))
-      stop(ErrorMsg)
+      stop(sprintf(
+        "Some template files are missing: %s",
+        paste(setdiff(
+          unique(manifest$Template[manifest$Barcode %in% data$Barcode]),
+          basename(template_filename)
+        ), collapse = " ; ")
+      ))
     }
     return(list(
       manifest = manifest,
@@ -209,12 +207,9 @@ load_data <-
 #' This functions loads and checks the manifest file(s)
 #'
 #' @param manifest_file character, file path(s) to manifest(s)
-#' @param log_str character, file path to logs
 #' @export
-load_manifest <- function (manifest_file, log_str) {
+load_manifest <- function (manifest_file) {
   # manifest_file is a string or a vector of strings
-  
-  log_str <- c(log_str, "", "load_manifest")
   available_formats <- c("text/tsv",
                          "text/tab-separated-values",
                          "xlsx",
@@ -270,15 +265,13 @@ load_manifest <- function (manifest_file, log_str) {
                  function(i)
                    check_metadata_names(
                      colnames(manifest_data[[i]]),
-                     log_str,
                      df_name = manifest_file[[i]],
                      df_type = "manifest"
                    ))
   
   cat_manifest_data <- dplyr::bind_rows(manifest_data)
   colnames(cat_manifest_data) <-
-    check_metadata_names(colnames(cat_manifest_data),
-                         log_str, "manifest")
+    check_metadata_names(colnames(cat_manifest_data), "manifest")
   
   # check that barcodes are unique
   if (dim(cat_manifest_data)[1] != length(unique(cat_manifest_data$Barcode)))
@@ -286,7 +279,7 @@ load_manifest <- function (manifest_file, log_str) {
   
   cat_manifest_data$Template <- basename(cat_manifest_data$Template)
   
-  print("Manifest loaded successfully")
+  futile.logger::flog.info("Manifest loaded successfully")
   return(cat_manifest_data)
 }
 
@@ -297,12 +290,9 @@ load_manifest <- function (manifest_file, log_str) {
 #'
 #' @param df_template_files data.frame, with datapaths and names of results file(s)
 #' or character with file path of templates file(s)
-#' @param log_str character, file path to logs
 #' @export
-load_templates <- function (df_template_files, log_str) {
+load_templates <- function (df_template_files) {
   # template_file is a string or a vector of strings
-  log_str <- c(log_str, "", "load_templates")
-  
   if (is.data.frame(df_template_files)) {
     # for the shiny app
     template_file <- df_template_files$datapath
@@ -315,15 +305,16 @@ load_templates <- function (df_template_files, log_str) {
   all_templates <- data.frame()
   if (any(grepl("\\.xlsx?$", template_filename))) {
     idx <- grepl("\\.xlsx?$", template_filename)
+    futile.logger::flog.info("Reading %s with load_templates_xlsx", template_filename[idx]))
     all_templates_1 <-
-      load_templates_xlsx(template_file[idx], template_filename[idx], log_str)
+      load_templates_xlsx(template_file[idx], template_filename[idx])
     all_templates <- rbind(all_templates, all_templates_1)
   }
   if (any(grepl("\\.[ct]sv$", template_filename))) {
     idx <- grepl("\\.[ct]sv$", template_filename)
-    print(paste("Reading", template_filename[idx], "with load_templates_tsv"))
+    futile.logger::flog.info("Reading %s with load_templates_tsv", template_filename[idx]))
     all_templates_2 <-
-      load_templates_tsv(template_file[idx], template_filename[idx], log_str)
+      load_templates_tsv(template_file[idx], template_filename[idx])
     all_templates <- rbind(all_templates, all_templates_2)
   }
   
@@ -337,12 +328,11 @@ load_templates <- function (df_template_files, log_str) {
 #'
 #' @param df_results_files  data.frame, with datapaths and names of results file(s)
 #' or character with file path of results file(s)
-#' @param log_str character, file path to logs
 #' @param intrument character
 #' @export
 #' @export
 load_results <-
-  function(df_results_files, log_str, instrument = "EnVision") {
+  function(df_results_files, instrument = "EnVision") {
     if (is.data.frame(df_results_files)) {
       # for the shiny app
       results_file <- df_results_files$datapath
@@ -355,10 +345,10 @@ load_results <-
     
     if (instrument == "EnVision") {
       all_results <-
-        load_results_EnVision(results_file, log_str)
+        load_results_EnVision(results_file)
     } else if (instrument == "long_tsv") {
       all_results <-
-        load_results_tsv(results_file, log_str)
+        load_results_tsv(results_file)
     }
     return(all_results)
   }
@@ -373,11 +363,9 @@ load_results <-
 #'
 #' @param template_file character, file path(s) to template(s)
 #' @param template_filename character, file name(s)
-#' @param log_str character, file path to logs
 load_templates_tsv <-
   function(template_file,
-           template_filename = NULL,
-           log_str) {
+           template_filename = NULL) {
     if (is.null(template_filename))
       template_filename <- basename(template_file)
     
@@ -391,19 +379,16 @@ load_templates_tsv <-
                      if (!(all(
                        get_identifier("WellPosition") %in% colnames(templates[[i]])
                      ))) {
-                       print(paste(
+                       futile.logger::flog.info("%s missing, %s as header",
                          template_filename[[i]],
-                         "missing",
-                         get_identifier("WellPosition"),
-                         "as header"
-                       ))
+                         get_identifier("WellPosition")
+                       )
                      })
     # check drug_identifier is present in each df
     dump <- sapply(1:length(template_file),
                    function(i)
                      check_metadata_names(
                        setdiff(colnames(templates[[i]]), get_identifier("WellPosition")),
-                       log_str,
                        df_name = template_filename[[i]],
                        df_type = "template"
                      ))
@@ -411,7 +396,7 @@ load_templates_tsv <-
     metadata_fields <- NULL
     all_templates <- data.frame()
     for (iF in 1:length(template_file)) {
-      print(paste("Loading", template_filename[iF]))
+      futile.logger::flog.info("Loading %s", template_filename[iF])
       # first check that the sheet names are ok
       # identify drug_identifier sheet (case insensitive)
       Gnumber_idx <- grep(paste0(get_identifier("drug"), "$"),
@@ -422,26 +407,23 @@ load_templates_tsv <-
       # case of untreated plate
       if (sum(Conc_idx) == 0) {
         if (length(Gnumber_idx) == 0) {
-          ErrorMsg <- sprintf(
+          stop(sprintf(
             "In untreated template file %s, sheet name must be %",
             template_file[[iF]],
             get_identifier("drug")
-          )
-          stop(ErrorMsg)
+          ))
         }
         df <- templates[[iF]][, get_identifier("drug")]
         if (!(all(toupper(df)[!is.na(df)]) %in% toupper(get_identifier("untreated_tag")))) {
-          ErrorMsg <- sprintf(
+          stop(sprintf(
             "In untreated template file %s, entries must be %s",
             template_file[[iF]],
             paste(get_identifier("untreated_tag"), collapse = " or ")
-          )
-          stop(ErrorMsg)
+          ))
         }
       } else {
         # normal case
         check_metadata_names(colnames(templates[[iF]]),
-                             log_str,
                              df_name = template_filename[iF],
                              df_type = "template_treatment")
       }
@@ -455,7 +437,7 @@ load_templates_tsv <-
             oldiS <- iS
             iS <-
               metadata_fields[toupper(iS) == toupper(metadata_fields)]
-            print(paste(oldiS, "corrected to match case with ", iS))
+            futile.logger::flog.info("%s corrected to match case with %s", oldiS, iS))
             colnames(df_template)[colnames(df_template) == oldiS] <-
               iS
           } else {
@@ -465,12 +447,12 @@ load_templates_tsv <-
       }
       df_template$Template <- template_filename[iF]
       colnames(df_template) <-
-        check_metadata_names(colnames(df_template), log_str,
+        check_metadata_names(colnames(df_template),
                              df_name = template_filename[iF])
       all_templates <- dplyr::bind_rows(all_templates, df_template)
       
     }
-    print("Templates loaded successfully!")
+    futile.logger::flog.info("Templates loaded successfully!")
     return(all_templates)
   }
 
@@ -480,11 +462,9 @@ load_templates_tsv <-
 #'
 #' @param template_file character, file path(s) to template(s)
 #' @param template_filename character, file name(s)
-#' @param log_str character, file path to logs
 load_templates_xlsx <-
   function(template_file,
-           template_filename = NULL,
-           log_str) {
+           template_filename = NULL) {
     if (is.null(template_filename))
       template_filename <- basename(template_file)
     # read sheets in files
@@ -494,7 +474,6 @@ load_templates_xlsx <-
                    function(i)
                      check_metadata_names(
                        template_sheets[[i]],
-                       log_str,
                        df_name = template_file[[i]],
                        df_type = "template"
                      ))
@@ -502,7 +481,7 @@ load_templates_xlsx <-
     metadata_fields <- NULL
     all_templates <- data.frame()
     for (iF in 1:length(template_file)) {
-      print(paste("Loading", template_filename[iF]))
+      futile.logger::flog.info("Loading", template_filename[iF])
       # first check that the sheet names are ok
       # identify drug_identifier sheet (case insensitive)
       Gnumber_idx <- grep(paste0(get_identifier("drug"), "$"),
@@ -513,12 +492,11 @@ load_templates_xlsx <-
       # case of untreated plate
       if (sum(Conc_idx) == 0) {
         if (length(Gnumber_idx) == 0) {
-          ErrorMsg <- sprintf(
+          stop(sprintf(
             "In untreated template file %s, sheet name must be %",
             template_file[[iF]],
             get_identifier("drug")
-          )
-          stop(ErrorMsg)
+          ))
         }
         tryCatch({
           df <-
@@ -535,17 +513,15 @@ load_templates_xlsx <-
                   toupper(get_identifier(
                     "untreated_tag"
                   ))))) {
-          ErrorMsg <- sprintf(
+          stop(sprintf(
             "In untreated template file %s, entries must be %s",
             template_file[[iF]],
             paste(get_identifier("untreated_tag"), collapse = " or ")
-          )
-          stop(ErrorMsg)
+          ))
         }
       } else {
         # normal case
         dump <- check_metadata_names(template_sheets[[iF]],
-                                     log_str,
                                      df_name = template_filename[iF],
                                      df_type = "template_treatment")
       }
@@ -608,7 +584,7 @@ load_templates_xlsx <-
             oldiS <- iS
             iS <-
               metadata_fields[toupper(iS) == toupper(metadata_fields)]
-            print(paste(oldiS, "corrected to match case with ", iS))
+            futile.logger::flog.info("%s corrected to match case with %s", oldiS, iS))
           } else {
             metadata_fields <- c(metadata_fields, iS)
           }
@@ -623,12 +599,12 @@ load_templates_xlsx <-
       }
       df_template$Template <- template_filename[iF]
       colnames(df_template) <-
-        check_metadata_names(colnames(df_template), log_str,
+        check_metadata_names(colnames(df_template),
                              df_name = template_filename[iF])
       all_templates <- dplyr::bind_rows(all_templates, df_template)
       
     }
-    print("Templates loaded successfully!")
+    futile.logger::flog.info("Templates loaded successfully!")
     return(all_templates)
   }
 
@@ -637,18 +613,15 @@ load_templates_xlsx <-
 #' This functions loads and checks the results file(s)
 #'
 #' @param results_file character, file path(s) to template(s)
-#' @param log_str character, file path to logs
 load_results_tsv <-
-  function(results_file, log_str) {
+  function(results_file) {
     # results_file is a string or a vector of strings
-    log_str <- c(log_str, "", "load_results")
-    
     results_filename <- basename(results_file)
     
     # read all files
     all_results <- data.frame()
     for (iF in 1:length(results_file)) {
-      print(paste("Reading file", results_file[iF]))
+      futile.logger::flog.info("Reading file", results_file[iF])
       tryCatch({
         df <-
           readr::read_tsv(results_file[iF],
@@ -674,27 +647,26 @@ load_results_tsv <-
                      get_identifier("WellPosition"),
                      "ReadoutValue")) {
         if (!(coln %in% colnames(df))) {
-          ErrorMsg(coln, "needs to be a column of", results_filename[iF])
+          futile.logger::flog.error("%s needs to be a column of %s", coln, results_filename[iF])
         }
       }
       if (dim(unique(df[, c("Barcode", get_identifier("WellPosition"))]))[1] !=
           dim(df[, c("Barcode", get_identifier("WellPosition"))])[1]) {
-        ErrorMsg("Multiple rows with the same Barcode and Well in",
+        futile.logger::flog.error("Multiple rows with the same Barcode and Well in %s",
                  results_filename[iF])
       }
       if (!("BackgroundValue" %in% colnames(df)))
         df$BackgroundValue <- 0
       
-      print(paste("File", results_filename[iF],
-                  "read;", dim(df)[1], "wells"))
+      futile.logger::flog.info("File %s read; %d wells", results_filename[iF], dim(df)[1])
       all_results <- rbind(all_results, df)
       
-      print("File done")
+      futile.logger::flog.info("File done")
     }
     
     if (dim(unique(df[, c("Barcode", get_identifier("WellPosition"))]))[1] !=
         dim(df[, c("Barcode", get_identifier("WellPosition"))])[1]) {
-      ErrorMsg("Multiple rows with the same Barcode and Well across all files")
+      futile.logger::flog.error("Multiple rows with the same Barcode and Well across all files")
     }
     
     return(all_results)
@@ -706,12 +678,10 @@ load_results_tsv <-
 #' This functions loads and checks the results file(s)
 #'
 #' @param results_file character, file path(s) to template(s)
-#' @param log_str character, file path to logs
 load_results_EnVision <-
-  function(results_file, log_str) {
+  function(results_file) {
     results_filename <- basename(results_file)
     # results_file is a string or a vector of strings
-    log_str <- c(log_str, "", "load_results")
     
     # test if the result files are .tsv or .xls(x) files
     isExcel <- sapply(results_file, function(x) {
@@ -724,16 +694,15 @@ load_results_EnVision <-
     results_sheets[isExcel] <-
       lapply(results_file[isExcel], excel_sheets)
     if (any(lapply(results_sheets, length) > 1)) {
-      WarnMsg <- paste("multiple sheets in result file:",
+      futile.logger::flog.warn("Multiple sheets in result file: %s",
                        results_file[lapply(results_sheets, length) > 1])
-      warning(WarnMsg)
     }
     
     # read all files and sheets
     all_results <- data.frame()
     for (iF in 1:length(results_file)) {
       for (iS in results_sheets[[iF]]) {
-        print(paste("Reading file", results_file[[iF]], "; sheet", iS))
+        futile.logger::flog.info("Reading file %s, sheet %s", results_file[[iF]], iS))
         if (iS == 0) {
           tryCatch({
             df <-
@@ -838,17 +807,15 @@ load_results_EnVision <-
           # check the structure of file is ok
           check_values <-
             as.matrix(df[iB + readout_offset + c(0, 1, n_row, n_row + 1), n_col])
-          if (any(c(is.na(check_values[2:3]), !is.na(check_values[c(1, 4)])))) {
-            ErrorMsg <-
-              paste(
-                "In result file",
+          if (any(c(is.na(check_values[2:3]),!is.na(check_values[c(1, 4)])))) {
+            stop(
+              sprintf(
+                "In result file %s (sheet %s) readout values are misplaced for plate %s",
                 results_filename[[iF]],
-                "(sheet",
                 iS,
-                ") readout values are misplaced for plate",
                 as.character(df[iB + 1, 3])
               )
-            stop(ErrorMsg)
+            )
           }
           
           readout <-
@@ -856,16 +823,14 @@ load_results_EnVision <-
           
           # check that the plate size is consistent and contains values
           if (any(is.na(readout))) {
-            ErrorMsg <-
-              paste(
-                "In result file",
+            stop(
+              sprintf(
+                "In result file %s (sheet %s) readout values are misplaced for plate %s",
                 results_filename[[iF]],
-                "(sheet",
                 iS,
-                ") readout values are missing for plate",
                 as.character(df[iB + 1, 3])
               )
-            stop(ErrorMsg)
+            )
           }
           
           df_results <- data.frame(
@@ -877,16 +842,12 @@ load_results_EnVision <-
             ReadoutValue = as.numeric(as.vector(readout)),
             BackgroundValue = BackgroundValue
           )
-          print(paste(
-            "Plate",
-            as.character(df[iB + 1, 3]),
-            "read;",
-            dim(df_results)[1],
-            "wells"
-          ))
+          futile.logger::flog.info("Plate %s read; %d wells",
+                                   as.character(df[iB + 1, 3]),
+                                   dim(df_results)[1]))
           all_results <- rbind(all_results, df_results)
         }
-        print("File done")
+        futile.logger::flog.info("File done")
       }
     }
     return(all_results)
@@ -895,10 +856,8 @@ load_results_EnVision <-
 #' @export
 check_metadata_names <-
   function(col_df,
-           log_str,
            df_name = "",
            df_type = NULL) {
-    log_str <- c(log_str, "   check_metadata_names")
     # first check for required column names
     if (!is.null(df_type)) {
       if (df_type == "manifest") {
@@ -911,18 +870,14 @@ check_metadata_names <-
       
       headersOK <- toupper(expected_headers) %in% toupper(col_df)
       if (any(!headersOK)) {
-        ErrorMsg <- paste(
-          df_name,
-          "does not contains all expected headers for a",
-          df_type,
-          "; ",
-          paste(expected_headers[!(expected_headers %in% col_df)], collpase = " ; "),
-          " required"
+        stop(
+          sprintf(
+            "%s does not contains all expected headers for a %s; %s required",
+            df_name,
+            df_type,
+            paste(expected_headers[!(expected_headers %in% col_df)], collpase = " ; ")
+          )
         )
-        log_str <- c(log_str, "Error in check_metadata_names:")
-        log_str <- c(log_str, ErrorMsg)
-        writeLines(log_str)
-        stop(ErrorMsg)
       }
       if (df_type == "template_treatment") {
         # assess if multiple drugs and proper pairing
@@ -931,16 +886,12 @@ check_metadata_names <-
         n_conc <-
           agrep("Concentration", col_df, ignore.case = TRUE)
         if (length(n_drug) != length(n_conc)) {
-          ErrorMsg <- paste(
-            "Treatment template",
-            df_name,
-            "does not contains the same number of Gnumber_* and Concentration_* sheets"
+          stop(
+            sprintf(
+              "Treatment template %s does not contains the same number of Gnumber_* and Concentration_* sheets",
+              df_name
+            )
           )
-          log_str <-
-            c(log_str, "Error in check_metadata_names:")
-          log_str <- c(log_str, ErrorMsg)
-          writeLines(log_str)
-          stop(ErrorMsg)
         }
         if (length(n_drug) > 1) {
           trt_sheets <- c(
@@ -949,18 +900,12 @@ check_metadata_names <-
             paste0("Concentration_", 2:length(n_conc))
           )
           if (!(all(toupper(trt_sheets) %in% toupper(col_df)))) {
-            ErrorMsg <- paste(
-              "Treatment template",
+            stop(sprintf(
+              "Treatment template %s does not contain: %s",
               df_name,
-              "does not contains: ",
               paste(trt_sheets[!(toupper(trt_sheets) %in% toupper(col_df))],
                     collapse = " ; ")
-            )
-            log_str <-
-              c(log_str, "Error in check_metadata_names:")
-            log_str <- c(log_str, ErrorMsg)
-            writeLines(log_str)
-            stop(ErrorMsg)
+            ))
           }
         }
       }
@@ -982,17 +927,11 @@ check_metadata_names <-
                 sep = "",
                 collapse = "")
       }
-      
-      WarnMsg <- paste(
-        "Metadata field names for",
+      futile.logger::flog.warn(
+        "Metadata field names for %s cannot contain spaces --> corrected to: %s",
         df_name,
-        "cannot contain spaces --> corrected to: ",
         paste(corrected_names[names_spaces], collapse = " ; ")
       )
-      log_str <- c(log_str, "Warning in check_metadata_names:")
-      log_str <- c(log_str, WarnMsg)
-      
-      warning(WarnMsg)
     }
     
     # check for wrong metadata field names (including dash, starting with number, ... )
@@ -1000,16 +939,13 @@ check_metadata_names <-
       regexpr("\\W", corrected_names) > 0 |
       regexpr("\\d", corrected_names) == 1
     if (any(bad_names)) {
-      ErrorMsg <- paste(
-        "Metadata field names for",
-        df_name,
-        "cannot contain special characters or start with a number: ",
-        paste(corrected_names[bad_names], collapse = " ; ")
+      stop(
+        sprintf(
+          "Metadata field names for %s cannot contain special characters or start with a number: ",
+          df_name,
+          paste(corrected_names[bad_names], collapse = " ; ")
+        )
       )
-      log_str <- c(log_str, "Error in check_metadata_names:")
-      log_str <- c(log_str, ErrorMsg)
-      writeLines(log_str)
-      stop(ErrorMsg)
     }
     
     # common headers that are written in a specific way
@@ -1020,37 +956,20 @@ check_metadata_names <-
         grep(paste0(get_header("controlled")[i], "$"), corrected_names)
       )
       if (length(case_match) > 0) {
-        WarnMsg <-
-          paste(
-            "Header",
-            corrected_names[case_match],
-            "in",
-            df_name,
-            "corrected to",
-            get_header("controlled")[i]
-          )
-        corrected_names[case_match] <-
-          get_header("controlled")[i]
-        log_str <-
-          c(log_str, "Warning in check_metadata_names:")
-        log_str <- c(log_str, WarnMsg)
-        warning(WarnMsg)
+        futile.logger::flog.warn("Header %s in %s corrected to %s",
+                                 corrected_names[case_match],
+                                 df_name,
+                                 get_header("controlled")[i])
       }
     }
     
     # check for headers that are reserved for downstream analyses
     if (any(corrected_names %in% check_headers)) {
-      ErrorMsg <- paste(
-        "Metadata field name: ",
+      stop(sprintf(
+        "Metadata field name: %s in %s is not valid (reserved for output)",
         paste(intersect(check_headers, corrected_names), collapse = " ; "),
-        " in",
-        df_name,
-        "is not valid (reserved for output)"
-      )
-      log_str <- c(log_str, "Error in check_metadata_names:")
-      log_str <- c(log_str, ErrorMsg)
-      writeLines(log_str)
-      stop(ErrorMsg)
+        df_name
+      ))
     }
     
     return(corrected_names)
