@@ -1003,7 +1003,7 @@ cleanup_metadata <- function(df_metadata, log_str) {
         warning(WarnMsg)
       }
     }
-
+  }
     # TODO: specific to GNE database --> need to be replaced by a function
     df_metadata <- add_CellLine_annotation(df_metadata)
 
@@ -1038,7 +1038,6 @@ cleanup_metadata <- function(df_metadata, log_str) {
     }
     df_metadata[, i] <-
       round(as.numeric(df_metadata[, i]), 6) # avoid mismatch due to string truncation
-  }
   
   return(df_metadata)
 }
@@ -1121,7 +1120,6 @@ add_CellLine_annotation = function(df_metadata) {
 
 add_Drug_annotation = function(df_metadata, log_str) {
         nrows_df = nrow(df_metadata)
-
         DB_drug_identifier = 'drug'
         Drug_info = tryCatch( {
                 gDrugs = gCellGenomics::getDrugs()[,c(DB_drug_identifier, 'gcsi_drug_name')]
