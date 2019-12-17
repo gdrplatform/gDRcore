@@ -1,5 +1,3 @@
-
-
 # openxlsx skip the first emprty rows and cannot be overridden --> use readxl
 #' @import readxl
 #' @import readr
@@ -7,81 +5,158 @@
 
 
 #' @export
-get_identifier = function(x = NULL) {
-    identifiersList <- list(
-        duration = "Duration",
-
-        cellline = "clid",
-
-        drug = "Gnumber",
-        drugname = "DrugName",
-        # corresponds to the fieLd  'gcsi_drug_name' from gCellGenomics::getDrugs()
-
-        untreated_tag = c("untreated", "vehicle"), # flag to identify control treatments
-
-        WellPosition = c("WellRow", "WellColumn")
-    )
-    if (!is.null(x) && x %in% names(identifiersList)) return(identifiersList[[x]])
-    else return(identifiersList)
+get_identifier <- function(x = NULL) {
+  identifiersList <- list(
+    duration = "Duration",
+    
+    cellline = "clid",
+    
+    drug = "Gnumber",
+    drugname = "DrugName",
+    # corresponds to the fieLd  'gcsi_drug_name' from gCellGenomics::getDrugs()
+    
+    untreated_tag = c("untreated", "vehicle"),
+    # flag to identify control treatments
+    
+    WellPosition = c("WellRow", "WellColumn")
+  )
+  if (!is.null(x) &&
+      x %in% names(identifiersList))
+    return(identifiersList[[x]])
+  else
+    return(identifiersList)
 }
 
 #######-------------------------------------------------------
 # these should not be changed and are protected field names
 #' @export
-get_header = function(x = NULL) {
-    headersList <- list(
-        manifest = c("Barcode", "Template", get_identifier("duration")),
-        raw_data = c("ReadoutValue", "BackgroundValue",
-                    "UntrtReadout", "Day0Readout"),
-        normalized_results = c("CorrectedReadout", "GRvalue",
-                "RelativeViability", "DivisionTime", "RefGRvalue", "RefRelativeViability"),
-        averaged_results = c("std_GRvalue", "std_RelativeViability"),
-        response_metrics = c("x_mean", "x_AOC", "xc50", "x_max", "c50",
-                                "x_inf", "x_0", "h", "r2", "flat_fit"),
-        add_clid = c("CellLineName", "Tissue", "ReferenceDivisionTime")
-        # corresponds to the fieLd  "celllinename", "primarytissue", "doublingtime" from gneDB CLIDs
+get_header <- function(x = NULL) {
+  headersList <- list(
+    manifest = c("Barcode", "Template", get_identifier("duration")),
+    raw_data = c(
+      "ReadoutValue",
+      "BackgroundValue",
+      "UntrtReadout",
+      "Day0Readout"
+    ),
+    normalized_results = c(
+      "CorrectedReadout",
+      "GRvalue",
+      "RelativeViability",
+      "DivisionTime",
+      "RefGRvalue",
+      "RefRelativeViability"
+    ),
+    averaged_results = c("std_GRvalue", "std_RelativeViability"),
+    response_metrics = c(
+      "x_mean",
+      "x_AOC",
+      "xc50",
+      "x_max",
+      "c50",
+      "x_inf",
+      "x_0",
+      "h",
+      "r2",
+      "flat_fit"
+    ),
+    add_clid = c("CellLineName", "Tissue", "ReferenceDivisionTime")
+    # corresponds to the fieLd  "celllinename", "primarytissue", "doublingtime" from gneDB CLIDs
+  )
+  headersList[["IC_metrics"]] <-
+    array(
+      c(
+        "mean_viability",
+        "ic_AOC",
+        "ic50",
+        "e_max",
+        "ec50",
+        "e_inf",
+        "e_0",
+        "h_ic",
+        "ic_r2",
+        "flat_fit_ic"
+      ),
+      dimnames = headersList["response_metrics"]
     )
-    headersList[["IC_metrics"]] <- array(c("mean_viability", "ic_AOC", "ic50", "e_max", "ec50",
-                                        "e_inf", "e_0", "h_ic", "ic_r2", "flat_fit_ic"),
-            dimnames = headersList["response_metrics"])
-    headersList[["GR_metrics"]] <- array(c("mean_GR", "GR_AOC", "GR50", "GR_max", "GEC50",
-                                        "GR_inf", "GR_0", "h_GR", "GR_r2", "flat_fit_GR"),
-            dimnames = headersList["response_metrics"])
-    headersList[["metrics_results"]] <- c("maxlog10Concentration", "N_conc",
-        headersList[["response_metrics"]], headersList[["IC_metrics"]], headersList[["GR_metrics"]])
-    headersList[["controlled"]] <- c(get_identifier("cellline"),
-                    headersList[["manifest"]],
-                    get_identifier("drug"), "Concentration",
-                    paste0(get_identifier("drug"), "_", 2:10),
-                    paste0("Concentration_", 2:10))
-    headersList[["reserved"]] <- c(headersList[["add_clid"]], get_identifier("drugname"),
-                paste0(get_identifier("drugname"), "_", 2:10),
-                headersList[["raw_data"]], headersList[["normalized_results"]],
-                headersList[["averaged_results"]], headersList[["metrics_results"]],
-                "WellRow", "WellColumn")
-
-    headersList[["ordered_1"]] <- c(headersList[["add_clid"]][1:2],
-        get_identifier("duration"), get_identifier("drugname"), "Concentration",
-        paste0(c(paste0(get_identifier("drugname"),"_"),"Concentration_"),
-                            sort(c(2:10,2:10))))
-    headersList[["ordered_2"]] <- c(
-        headersList[["normalized_results"]],
-        headersList[["averaged_results"]],
-        headersList[["metrics_results"]],
-        headersList[["raw_data"]],
-        headersList[["add_clid"]][-2:-1],
-        get_identifier("cellline"),
-        get_identifier("drug"), paste0(get_identifier("drug"),"_", 2:10),
-        headersList[["manifest"]], "WellRow", "WellColumn")
-
-    if (!is.null(x) && x %in% names(headersList)) return(headersList[[x]])
-    else return(headersList)
+  headersList[["GR_metrics"]] <-
+    array(
+      c(
+        "mean_GR",
+        "GR_AOC",
+        "GR50",
+        "GR_max",
+        "GEC50",
+        "GR_inf",
+        "GR_0",
+        "h_GR",
+        "GR_r2",
+        "flat_fit_GR"
+      ),
+      dimnames = headersList["response_metrics"]
+    )
+  headersList[["metrics_results"]] <-
+    c("maxlog10Concentration",
+      "N_conc",
+      headersList[["response_metrics"]],
+      headersList[["IC_metrics"]],
+      headersList[["GR_metrics"]])
+  headersList[["controlled"]] <- c(
+    get_identifier("cellline"),
+    headersList[["manifest"]],
+    get_identifier("drug"),
+    "Concentration",
+    paste0(get_identifier("drug"), "_", 2:10),
+    paste0("Concentration_", 2:10)
+  )
+  headersList[["reserved"]] <-
+    c(
+      headersList[["add_clid"]],
+      get_identifier("drugname"),
+      paste0(get_identifier("drugname"), "_", 2:10),
+      headersList[["raw_data"]],
+      headersList[["normalized_results"]],
+      headersList[["averaged_results"]],
+      headersList[["metrics_results"]],
+      "WellRow",
+      "WellColumn"
+    )
+  
+  headersList[["ordered_1"]] <- c(
+    headersList[["add_clid"]][1:2],
+    get_identifier("duration"),
+    get_identifier("drugname"),
+    "Concentration",
+    paste0(c(
+      paste0(get_identifier("drugname"), "_"), "Concentration_"
+    ),
+    sort(c(2:10, 2:10)))
+  )
+  headersList[["ordered_2"]] <- c(
+    headersList[["normalized_results"]],
+    headersList[["averaged_results"]],
+    headersList[["metrics_results"]],
+    headersList[["raw_data"]],
+    headersList[["add_clid"]][-2:-1],
+    get_identifier("cellline"),
+    get_identifier("drug"),
+    paste0(get_identifier("drug"), "_", 2:10),
+    headersList[["manifest"]],
+    "WellRow",
+    "WellColumn"
+  )
+  
+  if (!is.null(x) &&
+      x %in% names(headersList))
+    return(headersList[[x]])
+  else
+    return(headersList)
 }
 
 #' Load data
-#' 
+#'
 #' This functions loads and checks the data file(s)
-#' 
+#'
 #' @param manifest_file character, file path(s) to manifest(s)
 #' @param df_template_files data.frame, with datapaths and names of results file(s)
 #' or character with file path of templates file(s)
@@ -130,9 +205,9 @@ load_data <-
 
 
 #' Load manifest
-#' 
+#'
 #' This functions loads and checks the manifest file(s)
-#' 
+#'
 #' @param manifest_file character, file path(s) to manifest(s)
 #' @param log_str character, file path to logs
 #' @export
@@ -142,7 +217,9 @@ load_manifest <- function (manifest_file, log_str) {
   log_str <- c(log_str, "", "load_manifest")
   available_formats <- c("text/tsv",
                          "text/tab-separated-values",
-                         "xlsx", "xls", "tsv")
+                         "xlsx",
+                         "xls",
+                         "tsv")
   
   # read files
   manifest_data <- lapply(manifest_file, function(x) {
@@ -151,18 +228,25 @@ load_manifest <- function (manifest_file, log_str) {
       df <- tryCatch({
         readxl::read_excel(x, col_names = TRUE)
       }, error = function(e) {
-        stop(sprintf("Error reading the Manifest file. Please see the logs:\n%s", e))
-      }) 
+        stop(sprintf(
+          "Error reading the Manifest file. Please see the logs:\n%s",
+          e
+        ))
+      })
     } else if (manifest_ext %in% c("text/tsv",
                                    "text/tab-separated-values",
                                    "tsv")) {
       df <- tryCatch({
         readr::read_tsv(x, col_names = TRUE, skip_empty_rows = TRUE)
       }, error = function(e) {
-        stop(sprintf("Error reading the Manifest file. Please see the logs:\n%s", e))
+        stop(sprintf(
+          "Error reading the Manifest file. Please see the logs:\n%s",
+          e
+        ))
       })
     } else {
-        stop(sprintf(
+      stop(
+        sprintf(
           "%s file format is not supported.
           Please convert your file to one of the following: %s",
           manifest_ext,
@@ -208,9 +292,9 @@ load_manifest <- function (manifest_file, log_str) {
 
 
 #' Load templates
-#' 
+#'
 #' This functions loads and checks the template file(s)
-#' 
+#'
 #' @param df_template_files data.frame, with datapaths and names of results file(s)
 #' or character with file path of templates file(s)
 #' @param log_str character, file path to logs
@@ -231,13 +315,15 @@ load_templates <- function (df_template_files, log_str) {
   all_templates <- data.frame()
   if (any(grepl("\\.xlsx?$", template_filename))) {
     idx <- grepl("\\.xlsx?$", template_filename)
-    all_templates_1 <- load_templates_xlsx(template_file[idx], template_filename[idx], log_str)
+    all_templates_1 <-
+      load_templates_xlsx(template_file[idx], template_filename[idx], log_str)
     all_templates <- rbind(all_templates, all_templates_1)
   }
   if (any(grepl("\\.[ct]sv$", template_filename))) {
     idx <- grepl("\\.[ct]sv$", template_filename)
     print(paste("Reading", template_filename[idx], "with load_templates_tsv"))
-    all_templates_2 <- load_templates_tsv(template_file[idx], template_filename[idx], log_str)
+    all_templates_2 <-
+      load_templates_tsv(template_file[idx], template_filename[idx], log_str)
     all_templates <- rbind(all_templates, all_templates_2)
   }
   
@@ -246,9 +332,9 @@ load_templates <- function (df_template_files, log_str) {
 }
 
 #' Load results
-#' 
+#'
 #' This functions loads and checks the results file(s)
-#' 
+#'
 #' @param df_results_files  data.frame, with datapaths and names of results file(s)
 #' or character with file path of results file(s)
 #' @param log_str character, file path to logs
@@ -282,9 +368,9 @@ load_results <-
 # individual functions
 
 #' Load templates from tsv
-#' 
+#'
 #' This functions loads and checks the template file(s)
-#' 
+#'
 #' @param template_file character, file path(s) to template(s)
 #' @param template_filename character, file name(s)
 #' @param log_str character, file path to logs
@@ -389,9 +475,9 @@ load_templates_tsv <-
   }
 
 #' Load templates from xlsx
-#' 
+#'
 #' This functions loads and checks the template file(s)
-#' 
+#'
 #' @param template_file character, file path(s) to template(s)
 #' @param template_filename character, file name(s)
 #' @param log_str character, file path to logs
@@ -399,7 +485,6 @@ load_templates_xlsx <-
   function(template_file,
            template_filename = NULL,
            log_str) {
-    
     if (is.null(template_filename))
       template_filename <- basename(template_file)
     # read sheets in files
@@ -423,7 +508,8 @@ load_templates_xlsx <-
       Gnumber_idx <- grep(paste0(get_identifier("drug"), "$"),
                           template_sheets[[iF]],
                           ignore.case = TRUE)
-      Conc_idx <- grepl("Concentration", template_sheets[[iF]], ignore.case = TRUE)
+      Conc_idx <-
+        grepl("Concentration", template_sheets[[iF]], ignore.case = TRUE)
       # case of untreated plate
       if (sum(Conc_idx) == 0) {
         if (length(Gnumber_idx) == 0) {
@@ -445,9 +531,10 @@ load_templates_xlsx <-
         }, error = function(e) {
           stop(sprintf("Error loading template. See logs: %s", e))
         })
-        if (!(all(toupper(unlist(df)[!is.na(unlist(df))]) %in% 
-                  toupper(get_identifier("untreated_tag"))))) {
-          
+        if (!(all(toupper(unlist(df)[!is.na(unlist(df))]) %in%
+                  toupper(get_identifier(
+                    "untreated_tag"
+                  ))))) {
           ErrorMsg <- sprintf(
             "In untreated template file %s, entries must be %s",
             template_file[[iF]],
@@ -496,14 +583,20 @@ load_templates_xlsx <-
       
       for (iS in template_sheets[[iF]]) {
         tryCatch({
-          df <- as.data.frame(readxl::read_excel(
-            template_file[[iF]],
-            sheet = iS,
-            col_names = paste0("x", 1:n_col),
-            range = plate_range
-          ))
+          df <- as.data.frame(
+            readxl::read_excel(
+              template_file[[iF]],
+              sheet = iS,
+              col_names = paste0("x", 1:n_col),
+              range = plate_range
+            )
+          )
         }, error = function(e) {
-          stop(sprintf("Error loading %s. Please check logs: %s", template_file[[iF]], e))
+          stop(sprintf(
+            "Error loading %s. Please check logs: %s",
+            template_file[[iF]],
+            e
+          ))
         })
         df$WellRow <- LETTERS[1:n_row]
         df_melted <- reshape2::melt(df, id.vars = "WellRow")
@@ -540,9 +633,9 @@ load_templates_xlsx <-
   }
 
 #' Load results from tsv
-#' 
+#'
 #' This functions loads and checks the results file(s)
-#' 
+#'
 #' @param results_file character, file path(s) to template(s)
 #' @param log_str character, file path to logs
 load_results_tsv <-
@@ -570,8 +663,8 @@ load_results_tsv <-
           # likely a csv file
           df <-
             readr::read_csv(results_file[iF],
-                     col_names = TRUE,
-                     skip_empty_rows = TRUE)
+                            col_names = TRUE,
+                            skip_empty_rows = TRUE)
         }, error = function(e) {
           stop(sprintf("Error reading %s", results_file[[iF]]))
         })
@@ -609,9 +702,9 @@ load_results_tsv <-
 
 
 #' Load results from xlsx
-#' 
+#'
 #' This functions loads and checks the results file(s)
-#' 
+#'
 #' @param results_file character, file path(s) to template(s)
 #' @param log_str character, file path to logs
 load_results_EnVision <-
@@ -689,15 +782,19 @@ load_results_EnVision <-
               col_names <- paste0("x", 1:dim(df)[2])
           }
           df <-
-            df[, !apply(df[1:48, ], 2, function(x) all(is.na(x)))] 
+            df[,!apply(df[1:48,], 2, function(x)
+              all(is.na(x)))]
           # remove extra columns
           # limit to first 48 rows in case Protocol information is
           # exported which generate craps at the end of the file
         }
-        full_rows <- !apply(df[,-6:-1], 1, function(x) all(is.na(x)))
+        full_rows <-
+          !apply(df[, -6:-1], 1, function(x)
+            all(is.na(x)))
         # not empty rows
         # before discarding the rows; move ''Background information'' in the next row
-        Bckd_info_idx <- which(as.data.frame(df)[, 1] %in% 'Background information')
+        Bckd_info_idx <-
+          which(as.data.frame(df)[, 1] %in% 'Background information')
         if (length(Bckd_info_idx) > 0) {
           df[Bckd_info_idx + 1, 1] = df[Bckd_info_idx, 1]
           df[Bckd_info_idx, 1] = ''
@@ -708,9 +805,10 @@ load_results_EnVision <-
         gaps <-
           min(which(full_rows)[(diff(which(full_rows)) > 20)] + 1, dim(df)[1])
         df <-
-          df[which(full_rows)[which(full_rows) <= gaps], ] # remove extra rows
+          df[which(full_rows)[which(full_rows) <= gaps],] # remove extra rows
         df <-
-          df[, !apply(df, 2, function(x) all(is.na(x)))] 
+          df[,!apply(df, 2, function(x)
+            all(is.na(x)))]
         # remove empty columns
         
         # get the plate size
@@ -740,7 +838,7 @@ load_results_EnVision <-
           # check the structure of file is ok
           check_values <-
             as.matrix(df[iB + readout_offset + c(0, 1, n_row, n_row + 1), n_col])
-          if (any(c(is.na(check_values[2:3]),!is.na(check_values[c(1, 4)])))) {
+          if (any(c(is.na(check_values[2:3]), !is.na(check_values[c(1, 4)])))) {
             ErrorMsg <-
               paste(
                 "In result file",
