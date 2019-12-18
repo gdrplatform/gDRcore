@@ -704,8 +704,7 @@ average_replicates <- function(df_normalized, TrtKeys = NULL) {
   if (is.null(TrtKeys)) {
     TrtKeys <- identify_keys(df_normalized)$Trt
   }
-  message(paste(TrtKeys, collapse = "\n"))
-  message(paste(colnames(df_normalized), collapse = "\n"))
+
   df_averaged <-
     aggregate(
       df_normalized[, c(
@@ -1004,9 +1003,9 @@ cleanup_metadata <- function(df_metadata, log_str) {
         warning(WarnMsg)
       }
     }
-
+  }
     # TODO: specific to GNE database --> need to be replaced by a function
-    df_metadata <- gDR::add_CellLine_annotation(df_metadata)
+    df_metadata <- add_CellLine_annotation(df_metadata)
 
     # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
 
@@ -1017,7 +1016,7 @@ cleanup_metadata <- function(df_metadata, log_str) {
     }
     # -----------------------
 
-    df_metadata <- add_Drug_annotation(df_metadata)
+    df_metadata <- add_Drug_annotation(df_metadata, log_str)
 
     # clean up concentration fields
     for (i in agrep("Concentration", colnames(df_metadata))) {
@@ -1039,7 +1038,6 @@ cleanup_metadata <- function(df_metadata, log_str) {
     }
     df_metadata[, i] <-
       round(as.numeric(df_metadata[, i]), 6) # avoid mismatch due to string truncation
-  }
   
   return(df_metadata)
 }
@@ -1120,9 +1118,8 @@ add_CellLine_annotation = function(df_metadata) {
 }
 
 
-add_Drug_annotation = function(df_metadata) {
+add_Drug_annotation = function(df_metadata, log_str) {
         nrows_df = nrow(df_metadata)
-
         DB_drug_identifier = 'drug'
         Drug_info = tryCatch( {
                 gDrugs = gCellGenomics::getDrugs()[,c(DB_drug_identifier, 'gcsi_drug_name')]
