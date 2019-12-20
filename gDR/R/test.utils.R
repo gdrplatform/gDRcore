@@ -64,10 +64,10 @@ test_se <- function(se, lRef) {
   #assays check
   myL <- lapply(SummarizedExperiment::assayNames(se), function(x) {
     print(x)
-    xAs <- gDR::assay_to_df(se, x)
+    xAs <- gDR::assay_to_df(se, x, merge_metrics = FALSE)
     xDf <- lRef[[paste0("assay_", x)]]
     expect_true(nrow(xAs) == nrow(xDf))
-    expect_equal(standardize_df(xAs), data.frame(standardize_df(xDf)))
+    expect_equal(xAs, data.frame(xDf), tolerance = 1e-5)
   })
 }
 
