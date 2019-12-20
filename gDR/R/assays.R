@@ -397,14 +397,21 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   if (assay_name == "Metrics") {
     asDf$dr_metric <- c("IC", "GR")
     if (merge_metrics) {
+      old_colnames <- c("x_mean", "x_AOC", "xc50", "x_max", "c50", "x_inf", "x_0", 
+                        "h", "r2", "flat_fit", "maxlog10Concentration", "N_conc")
+      new_colnames <- gsub("x_", "", old_colnames)
+      IC_colnames <- paste("IC", new_colnames, sep = "_")
+      GR_colnames <- paste("GR", new_colnames, sep = "_")
+      
       Df_IC <- subset(asDf, dr_metric == "IC")
-      Df_GR <- subset(asDf, dr_metric == "GR", select = c("rId", "cId", "x_mean", "x_AOC", "xc50", "x_max", "c50", "x_inf", "x_0", "h", "r2", "flat_fit", "maxlog10Concentration", "N_conc"))
+      Df_GR <- subset(asDf, dr_metric == "GR", select = c("rId", "cId", old_colnames))
+      
       data.table::setnames(Df_IC, 
-                           old = c("x_mean", "x_AOC", "xc50", "x_max", "c50", "x_inf", "x_0", "h", "r2", "flat_fit", "maxlog10Concentration", "N_conc"), 
-                           new = c("IC_mean", "IC_AOC", "IC_xc50", "IC_max", "IC_c50", "IC_inf", "IC_0", "IC_h", "IC_r2", "IC_flat_fit", "IC_maxlog10Conc", "IC_N_conc"))
+                           old = old_colnames, 
+                           new = IC_colnames)
       data.table::setnames(Df_GR, 
-                           old = c("x_mean", "x_AOC", "xc50", "x_max", "c50", "x_inf", "x_0", "h", "r2", "flat_fit", "maxlog10Concentration", "N_conc"), 
-                           new = c("GR_mean", "GR_AOC", "GR_xc50", "GR_max", "GR_c50", "GR_inf", "GR_0", "GR_h", "GR_r2", "GR_flat_fit", "GR_maxlog10Conc", "GR_N_conc"))
+                           old = old_colnames, 
+                           new = GR_colnames)
       asDf <- merge(Df_IC, Df_GR)
     }
   }
