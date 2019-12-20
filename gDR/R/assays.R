@@ -365,7 +365,7 @@ addAssayToMAE <-
 #' @return data.frame with dose-reponse data
 #'
 #' @export
-assay_to_df <- function(se, assay_name) {
+assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   stopifnot(any("SummarizedExperiment" %in% class(se)))
   #checkmate::assertString(assay_name)
   
@@ -396,6 +396,17 @@ assay_to_df <- function(se, assay_name) {
   asDf <- data.frame(do.call(rbind, asL))
   if (assay_name == "Metrics") {
     asDf$dr_metric <- c("IC", "GR")
+    if (merge_metrics) {
+      Df_IC <- subset(asDf, dr_metric == "IC")
+      Df_GR <- subset(asDf, dr_metric == "GR", select = c("rId", "cId", "x_mean", "x_AOC", "xc50", "x_max", "c50", "x_inf", "x_0", "h", "r2", "flat_fit", "maxlog10Concentration", "N_conc"))
+      data.table::setnames(Df_IC, 
+                           old = c("x_mean", "x_AOC", "xc50", "x_max", "c50", "x_inf", "x_0", "h", "r2", "flat_fit", "maxlog10Concentration", "N_conc"), 
+                           new = c("IC_mean", "IC_AOC", "IC_xc50", "IC_max", "IC_c50", "IC_inf", "IC_0", "IC_h", "IC_r2", "IC_flat_fit", "IC_maxlog10Conc", "IC_N_conc"))
+      data.table::setnames(Df_GR, 
+                           old = c("x_mean", "x_AOC", "xc50", "x_max", "c50", "x_inf", "x_0", "h", "r2", "flat_fit", "maxlog10Concentration", "N_conc"), 
+                           new = c("GR_mean", "GR_AOC", "GR_xc50", "GR_max", "GR_c50", "GR_inf", "GR_0", "GR_h", "GR_r2", "GR_flat_fit", "GR_maxlog10Conc", "GR_N_conc"))
+      asDf <- merge(Df_IC, Df_GR)
+    }
   }
   asDf
 }  
