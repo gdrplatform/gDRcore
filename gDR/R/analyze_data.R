@@ -934,7 +934,7 @@ cleanup_metadata <- function(df_metadata) {
     }
     # -----------------------
 
-    df_metadata <- add_Drug_annotation(df_metadata, log_str)
+    df_metadata <- add_Drug_annotation(df_metadata)
 
     # clean up concentration fields
     for (i in agrep("Concentration", colnames(df_metadata))) {
