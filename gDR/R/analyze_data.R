@@ -195,9 +195,8 @@ merge_data <- function(manifest, treatments, data, log_str) {
   return(df_raw_data)
 }
 
-
 #' @export
-normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
+normalize_SE <- function(df_raw_data, log_str, selected_keys = NULL,
                 key_values = NULL, discard_keys = NULL) {
     # average technical replicates and assign the right controls to each treated well
 
@@ -325,8 +324,13 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
 
     # run through all conditions to assign controls and normalize the data
     # TODO: optimize (could that be replaced by a lapply?? or dyplr function??)
-    for (i in rownames(normSE)) {
-        for (j in colnames(normSE)) {
+    
+    # temporary optimization (use 'normSE_n' and 'normSE_c' to avoid using 'assay<-` in a foor loops)
+    # TODO: refactor this part of code once we switch to DataFrameMatrix class
+    normSE_n <- SummarizedExperiment::assay(normSE, "Normalized")
+    normSE_c <- SummarizedExperiment::assay(normSE, "Controls")
+    for (i in rownames(normSE_n)) {
+        for (j in colnames(normSE_n)) {
 
             if (nrow(SummarizedExperiment::assay(normSE,'Normalized')[[i,j]]) == 0) next # skip if no data
 
@@ -408,7 +412,7 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
             df_ctrl$DivisionTime = round(
                     SummarizedExperiment::rowData(normSE)[i,get_identifier('duration')] /
                         log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout) , 4)
-            SummarizedExperiment::assay(normSE, 'Controls')[[i,j]] = DataFrame(df_ctrl)
+            normSE_c[[i,j]] <- DataFrame(df_ctrl)
 
             #gladkia: assert for merged study/control data
             ctrl_bcodes <- sort(unique(df_ctrl$Barcode))
@@ -434,12 +438,13 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
 
             # calculate the normalized values
             
-            SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]$RelativeViability =
-                round(df_merged$CorrectedReadout/df_merged$UntrtReadout,4)
+            normSE_n[[i, j]]$RelativeViability <-
+              round(df_merged$CorrectedReadout / df_merged$UntrtReadout, 4)
             
-            SummarizedExperiment::assay(normSE, 'Normalized')[[i,j]]$GRvalue = round(2 ** (
-                    log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
-                    log2(df_merged$UntrtReadout / df_merged$Day0Readout) ), 4) - 1
+            normSE_n[[i, j]]$GRvalue = round(2 ** (
+              log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
+                log2(df_merged$UntrtReadout / df_merged$Day0Readout)
+            ), 4) - 1
            
         }
     }
@@ -450,9 +455,13 @@ normalize_SE = function(df_raw_data, log_str, selected_keys = NULL,
                                 cotrt = row_maps_cotrt,
                                 T0 = row_maps_T0)
                 ))
+    
+    SummarizedExperiment::assay(normSE, 'Normalized') <- normSE_n
+    SummarizedExperiment::assay(normSE, 'Controls') <- normSE_c
 
     return(normSE)
 }
+
 
 #' @export
 normalize_data <-
@@ -660,7 +669,7 @@ normalize_data <-
 
 #' @export
 average_SE = function(normSE, TrtKeys = NULL) {
-  
+ 
     avgSE = normSE
     if (is.null(TrtKeys)) {
         if ('Keys' %in% names(metadata(normSE))) {
@@ -756,27 +765,31 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
     metricsSE = avgSE
     SummarizedExperiment::assay(metricsSE, 'Metrics') = SummarizedExperiment::assay(metricsSE, 'Averaged')
 
+    # temporary optimization (use 'normSE_n' and 'normSE_c' to avoid using 'assay<-` in a foor loops)
+    # TODO: refactor this part of code once we switch to DataFrameMatrix class
+    mSE_m <- SummarizedExperiment::assay(metricsSE, "Metrics")
     for (i in rownames(metricsSE)) {
         for (j in colnames(metricsSE)) {
             df_ = SummarizedExperiment::assay(metricsSE, 'Averaged')[[i,j]]
             if (length(unique(df_$Concentration)) >= studyConcThresh) {
-                SummarizedExperiment::assay(metricsSE, 'Metrics')[[i,j]] = DataFrame(ICGRfits(df_,
+                mSE_m[[i,j]] = DataFrame(ICGRfits(df_,
                     e_0 = SummarizedExperiment::assay(metricsSE, 'Avg_Controls')[[i,j]]$RefRelativeViability,
                     GR_0 = SummarizedExperiment::assay(metricsSE, 'Avg_Controls')[[i,j]]$RefGRvalue))
             } else if (nrow(df_) == 0) {
                 out = DataFrame(matrix(NA, 0, length(get_header('response_metrics'))+2))
                 colnames(out) = c(get_header('response_metrics'), 'maxlog10Concentration', 'N_conc')
-                SummarizedExperiment::assay(metricsSE, 'Metrics')[[i,j]] = out
+                mSE_m[[i,j]] <- out
             } else {
                 out = DataFrame(matrix(NA, 2, length(get_header('response_metrics'))))
                 colnames(out) = get_header('response_metrics')
                 out$maxlog10Concentration = max(log10(df_$Concentration))
                 out$N_conc = length(unique(df_$Concentration))
-                SummarizedExperiment::assay(metricsSE, 'Metrics')[[i,j]] = out
+                mSE_m[[i,j]] <- out
             }
         }
 
     }
+    SummarizedExperiment::assay(metricsSE, 'Metrics') <- mSE_m
     return(metricsSE)
 }
 
