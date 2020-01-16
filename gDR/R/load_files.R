@@ -208,7 +208,7 @@ load_data <-
 #'
 #' @param manifest_file character, file path(s) to manifest(s)
 #' @export
-load_manifest <- function (manifest_file) {
+load_manifest <- function(manifest_file) {
   # manifest_file is a string or a vector of strings
   available_formats <- c("text/tsv",
                          "text/tab-separated-values",
@@ -956,6 +956,7 @@ check_metadata_names <-
         grep(paste0(get_header("controlled")[i], "$"), corrected_names)
       )
       if (length(case_match) > 0) {
+        corrected_names[case_match] <- get_header("controlled")[i]
         futile.logger::flog.warn("Header %s in %s corrected to %s",
                                  corrected_names[case_match],
                                  df_name,
