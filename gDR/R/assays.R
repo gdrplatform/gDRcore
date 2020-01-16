@@ -363,7 +363,7 @@ addAssayToMAE <-
 #' @return data.frame with dose-reponse data
 #'
 #' @export
-assay_to_df <- function(se, assay_name) {
+assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   stopifnot(any("SummarizedExperiment" %in% class(se)))
   #checkmate::assertString(assay_name)
   
@@ -394,6 +394,24 @@ assay_to_df <- function(se, assay_name) {
   asDf <- data.frame(do.call(rbind, asL))
   if (assay_name == "Metrics") {
     asDf$dr_metric <- c("IC", "GR")
+    if (merge_metrics) {
+      old_colnames <- c("x_mean", "x_AOC", "xc50", "x_max", "c50", "x_inf", "x_0", 
+                        "h", "r2", "flat_fit", "maxlog10Concentration", "N_conc")
+      new_colnames <- gsub("x_", "", old_colnames)
+      IC_colnames <- paste("IC", new_colnames, sep = "_")
+      GR_colnames <- paste("GR", new_colnames, sep = "_")
+      
+      Df_IC <- subset(asDf, dr_metric == "IC") %>% dplyr::select(-dr_metric)
+      Df_GR <- subset(asDf, dr_metric == "GR", select = c("rId", "cId", old_colnames))
+      
+      data.table::setnames(Df_IC, 
+                           old = old_colnames, 
+                           new = IC_colnames)
+      data.table::setnames(Df_GR, 
+                           old = old_colnames, 
+                           new = GR_colnames)
+      asDf <- dplyr::full_join(Df_IC, Df_GR, by = c("rId", "cId"))
+    }
   }
   asDf
 }  
