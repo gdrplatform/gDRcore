@@ -4,7 +4,7 @@
 \alias{assay_to_df}
 \title{assay_to_df}
 \usage{
-assay_to_df(se, assay_name)
+assay_to_df(se, assay_name, merge_metrics = FALSE)
 }
 \arguments{
 \item{se}{SummarizedExperiment object with dose-response data}
