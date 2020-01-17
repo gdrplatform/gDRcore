@@ -401,8 +401,8 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
       colnames_IC <- get_header("IC_metrics")
       colnames_GR <- get_header("GR_metrics")
       
-      Df_IC <- subset(asDf, dr_metric == "IC") %>% dplyr::select(-dr_metric)
-      Df_GR <- subset(asDf, dr_metric == "GR", select = c("rId", "cId", names(colnames_GR)))
+      Df_IC <- subset(asDf, dr_metric == "IC", select = c("rId", "cId", names(colnames_IC))) 
+      Df_GR <- subset(asDf, dr_metric == "GR") %>% dplyr::select(-dr_metric)
       
       data.table::setnames(Df_IC, 
                            old = names(colnames_IC), 
