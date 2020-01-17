@@ -397,22 +397,19 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   if (assay_name == "Metrics") {
     asDf$dr_metric <- c("IC", "GR")
     if (merge_metrics) {
-      old_colnames <- c("x_mean", "x_AOC", "xc50", "x_max", "c50", "x_inf", "x_0", 
-                        "h", "r2", "flat_fit", "maxlog10Concentration", "N_conc")
-      new_colnames_IC = c("mean_viability", "ic_AOC", "ic50", "e_max", "ec50",
-                          "e_inf", "e_0", "h_ic", "ic_r2", "flat_fit_ic")
-      new_colnames_GR = c("mean_GR", "GR_AOC", "GR50", "GR_max", "GEC50",
-                          "GR_inf", "GR_0", "h_GR", "GR_r2", "flat_fit_GR")
-
+      
+      colnames_IC <- get_header("IC_metrics")
+      colnames_GR <- get_header("GR_metrics")
+      
       Df_IC <- subset(asDf, dr_metric == "IC") %>% dplyr::select(-dr_metric)
-      Df_GR <- subset(asDf, dr_metric == "GR", select = c("rId", "cId", old_colnames))
+      Df_GR <- subset(asDf, dr_metric == "GR", select = c("rId", "cId", names(colnames_GR)))
       
       data.table::setnames(Df_IC, 
-                           old = old_colnames, 
-                           new = new_colnames_IC)
+                           old = names(colnames_IC), 
+                           new = unname(colnames_IC))
       data.table::setnames(Df_GR, 
-                           old = old_colnames, 
-                           new = new_colnames_GR)
+                           old = names(colnames_GR), 
+                           new = unname(colnames_GR))
       asDf <- dplyr::full_join(Df_IC, Df_GR, by = c("rId", "cId"))
     }
   }
