@@ -642,10 +642,13 @@ load_results_EnVision <-
       for (iS in results_sheets[[iF]]) {
         print(paste("Reading file", results_file[[iF]], "; sheet", iS))
         if (iS == 0) {
-            df <- read_EnVision(
+            fInfo <- read_EnVision(
                 results_file[[iF]]
             )
+            df = fInfo$df
+            isEdited = fInfo$isEdited
         } else {
+            isEdited = T
           # expect an Excel spreadsheet
           if (length(results_sheets[[iF]]) > 1) {
             # if multiple sheets, assume 1 plate per sheet
@@ -677,7 +680,7 @@ load_results_EnVision <-
           # limit to first 24 rows in case Protocol information is
           # exported which generate craps at the end of the file
         }
-        full_rows <- !apply(df[,-6:-1], 1, function(x) all(is.na(x)))
+
         # not empty rows
         # before discarding the rows; move ''Background information'' in the next row
         Bckd_info_idx <- which(as.data.frame(df)[, 1] %in% 'Background information')
@@ -685,80 +688,119 @@ load_results_EnVision <-
           df[Bckd_info_idx + 1, 1] = df[Bckd_info_idx, 1]
           df[Bckd_info_idx, 1] = ''
         }
+        if (isEdited) {
+            # need to do some heuristic to find where the data is
+            full_rows <- !apply(df[,-6:-1], 1, function(x) all(is.na(x)))
+            # don't consider the first columns as these may be metadata
+            # if big gap, delete what is at the bottom (Protocol information)
+            gaps <-
+              min(which(full_rows)[(diff(which(full_rows)) > 20)] + 1, dim(df)[1])
+            df <-
+              df[which(full_rows)[which(full_rows) <= gaps], ] # remove extra rows
+            # df <-
+            #   df[, !apply(df, 2, function(x) all(is.na(x)))] # remove empty columns
 
-        # don't consider the first columns as these may be metadata
-        # if big gap, delete what is at the bottom (Protocol information)
-        gaps <-
-          min(which(full_rows)[(diff(which(full_rows)) > 20)] + 1, dim(df)[1])
-        df <-
-          df[which(full_rows)[which(full_rows) <= gaps], ] # remove extra rows
-        # df <-
-        #   df[, !apply(df, 2, function(x) all(is.na(x)))] # remove empty columns
+            # get the plate size
+            n_col <- 1.5 * 2 ** ceiling(log2( (dim(df)[2]-2) / 1.5)) # -2 ot have some buffer
+            n_row <- n_col / 1.5
 
-        # get the plate size
-        n_col <- 1.5 * 2 ** ceiling(log2( (dim(df)[2]-2) / 1.5)) # -2 ot have some buffer
-        n_row <- n_col / 1.5
+            # add empty column to complete plate (assume left column is #1)
+            if (ncol(df)<n_col) {
+                df[, (ncol(df)+1):n_col] = NA
+            }
 
-        # add empty column to complete plate (assume left column is #1)
-        if (ncol(df)<n_col) {
-            df[, (ncol(df)+1):n_col] = NA
-        }
+            # get the barcode(s) in the sheet; expected in column C (third one)
+            Barcode_idx <-
+              which(as.data.frame(df)[, 3] %in% "Barcode")
+            # run through all plates
+            for (iB in Barcode_idx) {
+              # two type of format depending on where Background information is placed
+              if (any(as.data.frame(df)[iB + (1:4), 1] %in% "Background information")) {
+                ref_bckgrd <-
+                  which(as.data.frame(df)[iB + (1:4), 1] %in% "Background information")
+                readout_offset <- 1 + ref_bckgrd
+                stopifnot(as.character(df[iB + ref_bckgrd, 4]) %in% 'Signal')
+                BackgroundValue <-
+                  as.numeric(df[iB + ref_bckgrd + 1, 4])
+              } else {
+                # export without background information
+                # case of " Exported with EnVision Workstation version 1.13.3009.1409 "
+                readout_offset <- 1
+                BackgroundValue <- 0
+              }
 
-        # get the barcode(s) in the sheet; expected in column C (third one)
-        Barcode_idx <-
-          which(as.data.frame(df)[, 3] %in% "Barcode")
-        # run through all plates
-        for (iB in Barcode_idx) {
-          # two type of format depending on where Background information is placed
-          if (any(as.data.frame(df)[iB + (1:4), 1] %in% "Background information")) {
-            ref_bckgrd <-
-              which(as.data.frame(df)[iB + (1:4), 1] %in% "Background information")
-            readout_offset <- 1 + ref_bckgrd
-            stopifnot(as.character(df[iB + ref_bckgrd, 4]) %in% 'Signal')
-            BackgroundValue <-
-              as.numeric(df[iB + ref_bckgrd + 1, 4])
-          } else {
-            # export without background information
-            # case of " Exported with EnVision Workstation version 1.13.3009.1409 "
-            readout_offset <- 1
-            BackgroundValue <- 0
-          }
+              # check the structure of file is ok
+              check_values <-
+                as.matrix(df[iB + readout_offset + c(0, 1, n_row, n_row + 1), n_col])
+              if (any(c(is.na(check_values[2:3]),!is.na(check_values[c(1, 4)])))) {
+                ErrorMsg <-
+                  paste(
+                    "In result file",
+                    results_filename[[iF]],
+                    "(sheet",
+                    iS,
+                    ") readout values are misplaced for plate",
+                    as.character(df[iB + 1, 3])
+                  )
+                stop(ErrorMsg)
+              }
 
-          # check the structure of file is ok
-          check_values <-
-            as.matrix(df[iB + readout_offset + c(0, 1, n_row, n_row + 1), n_col])
-          if (any(c(is.na(check_values[2:3]),!is.na(check_values[c(1, 4)])))) {
-            ErrorMsg <-
-              paste(
-                "In result file",
-                results_filename[[iF]],
-                "(sheet",
-                iS,
-                ") readout values are misplaced for plate",
-                as.character(df[iB + 1, 3])
+              Barcode = as.character(df[iB + 1, 3])
+              readout <-
+                as.matrix(df[iB + readout_offset + (1:n_row), 1:n_col])
+
+              # check that the plate size is consistent and contains values
+              if (any(is.na(readout))) {
+                ErrorMsg <-
+                  paste(
+                    "In result file",
+                    results_filename[[iF]],
+                    "(sheet",
+                    iS,
+                    ") readout values are missing for plate",
+                    as.character(df[iB + 1, 3])
+                  )
+                stop(ErrorMsg)
+              }
+              df_results <- data.frame(
+                Barcode = Barcode,
+                WellRow = LETTERS[1:n_row],
+                WellColumn = as.vector(t(matrix(
+                  1:n_col, n_col, n_row
+                ))),
+                ReadoutValue = as.numeric(as.vector(readout)),
+                BackgroundValue = BackgroundValue
               )
-            stop(ErrorMsg)
+              print(paste(
+                "Plate",
+                as.character(df[iB + 1, 3]),
+                "read;",
+                dim(df_results)[1],
+                "wells"
+              ))
+              all_results <- rbind(all_results, df_results)
           }
 
-          readout <-
-            as.matrix(df[iB + readout_offset + (1:n_row), 1:n_col])
 
-          # check that the plate size is consistent and contains values
-          if (any(is.na(readout))) {
-            ErrorMsg <-
-              paste(
-                "In result file",
-                results_filename[[iF]],
-                "(sheet",
-                iS,
-                ") readout values are missing for plate",
-                as.character(df[iB + 1, 3])
-              )
-            stop(ErrorMsg)
-          }
+        } else {
+            # proper original EnVision file
+            n_row = fInfo$n_row
+            n_col = fInfo$n_col
+            Barcode = df[3,3]
+            readout <-
+              as.matrix(df[4 + (1:n_row), 1:n_col])
 
+             if (any(as.data.frame(df)[, 1] %in% "Background information")) {
+               ref_bckgrd <-
+                 which(as.data.frame(df)[, 1] %in% "Background information")
+               BackgroundValue <-
+                 as.numeric(df[ref_bckgrd + 1, 4])
+             } else {
+               # export without background information
+               BackgroundValue <- 0
+             }
           df_results <- data.frame(
-            Barcode = as.character(df[iB + 1, 3]),
+            Barcode = Barcode,
             WellRow = LETTERS[1:n_row],
             WellColumn = as.vector(t(matrix(
               1:n_col, n_col, n_row
@@ -768,15 +810,15 @@ load_results_EnVision <-
           )
           print(paste(
             "Plate",
-            as.character(df[iB + 1, 3]),
+            as.character(Barcode),
             "read;",
             dim(df_results)[1],
             "wells"
           ))
           all_results <- rbind(all_results, df_results)
         }
-        print("File done")
-      }
+    }
+    print("File done")
     }
     return(all_results)
   }
@@ -1034,7 +1076,7 @@ read_EnVision = function(file,
     #     return(df_row)
     # }))
     rownames(df_) = NULL
-    return(df_)
+    return(list(df = df_, n_col = n_col, n_row = n_row, isEdited = isEdited))
 }
 
 #' return some specs regarding delimited files
