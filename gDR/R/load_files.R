@@ -380,9 +380,8 @@ load_templates_tsv <-
                        get_identifier("WellPosition") %in% colnames(templates[[i]])
                      ))) {
                        futile.logger::flog.info("%s missing, %s as header",
-                         template_filename[[i]],
-                         get_identifier("WellPosition")
-                       )
+                                                template_filename[[i]],
+                                                get_identifier("WellPosition"))
                      })
     # check drug_identifier is present in each df
     dump <- sapply(1:length(template_file),
@@ -653,7 +652,7 @@ load_results_tsv <-
       if (dim(unique(df[, c("Barcode", get_identifier("WellPosition"))]))[1] !=
           dim(df[, c("Barcode", get_identifier("WellPosition"))])[1]) {
         futile.logger::flog.error("Multiple rows with the same Barcode and Well in %s",
-                 results_filename[iF])
+                                  results_filename[iF])
       }
       if (!("BackgroundValue" %in% colnames(df)))
         df$BackgroundValue <- 0
@@ -695,7 +694,7 @@ load_results_EnVision <-
       lapply(results_file[isExcel], excel_sheets)
     if (any(lapply(results_sheets, length) > 1)) {
       futile.logger::flog.warn("Multiple sheets in result file: %s",
-                       results_file[lapply(results_sheets, length) > 1])
+                               results_file[lapply(results_sheets, length) > 1])
     }
     
     # read all files and sheets
@@ -704,19 +703,11 @@ load_results_EnVision <-
       for (iS in results_sheets[[iF]]) {
         futile.logger::flog.info("Reading file %s, sheet %s", results_file[[iF]], iS)
         if (iS == 0) {
-          tryCatch({
-            fInfo <- .guess_specs_of_delim_file(results_file[[iF]])
-            df <-
-              readr::read_delim(
-                results_file[[iF]],
-                col_names = paste0("x", 1:fInfo[["ncols"]]),
-                delim = fInfo[["sep"]],
-                skip_empty_rows = TRUE
-              )
-          }, error = function(e) {
-            stop(sprintf("Error reading %s", results_file[[iF]]))
-          })
+          fInfo <- read_EnVision(results_file[[iF]])
+          df <- fInfo$df
+          isEdited <- fInfo$isEdited
         } else {
+          isEdited <- TRUE
           # expect an Excel spreadsheet
           if (length(results_sheets[[iF]]) > 1) {
             # if multiple sheets, assume 1 plate per sheet
@@ -743,15 +734,13 @@ load_results_EnVision <-
               col_names <- paste0("x", 1:dim(df)[2])
           }
           df <-
-            df[,!apply(df[1:48,], 2, function(x)
+            df[,!apply(df[1:24,], 2, function(x)
               all(is.na(x)))]
           # remove extra columns
-          # limit to first 48 rows in case Protocol information is
+          # limit to first 24 rows in case Protocol information is
           # exported which generate craps at the end of the file
         }
-        full_rows <-
-          !apply(df[, -6:-1], 1, function(x)
-            all(is.na(x)))
+        
         # not empty rows
         # before discarding the rows; move ''Background information'' in the next row
         Bckd_info_idx <-
@@ -761,72 +750,112 @@ load_results_EnVision <-
           df[Bckd_info_idx, 1] = ''
         }
         
-        # don't consider the first columns as these may be metadata
-        # if big gap, delete what is at the bottom (Protocol information)
-        gaps <-
-          min(which(full_rows)[(diff(which(full_rows)) > 20)] + 1, dim(df)[1])
-        df <-
-          df[which(full_rows)[which(full_rows) <= gaps],] # remove extra rows
-        df <-
-          df[,!apply(df, 2, function(x)
-            all(is.na(x)))]
-        # remove empty columns
-        
-        # get the plate size
-        n_col <- 1.5 * 2 ** ceiling(log2(dim(df)[2] / 1.5))
-        n_row <- n_col / 1.5
-        
-        # get the barcode(s) in the sheet; expected in column C (third one)
-        Barcode_idx <-
-          which(as.data.frame(df)[, 3] %in% "Barcode")
-        # run through all plates
-        for (iB in Barcode_idx) {
-          # two type of format depending on where Background information is placed
-          if (any(as.data.frame(df)[iB + (1:4), 1] %in% "Background information")) {
-            ref_bckgrd <-
-              which(as.data.frame(df)[iB + (1:4), 1] %in% "Background information")
-            readout_offset <- 1 + ref_bckgrd
-            stopifnot(as.character(df[iB + ref_bckgrd, 4]) %in% 'Signal')
-            BackgroundValue <-
-              as.numeric(df[iB + ref_bckgrd + 1, 4])
+        if (isEdited) {
+          # need to do some heuristic to find where the data is
+          full_rows <-
+            !apply(df[,-6:-1], 1, function(x)
+              all(is.na(x)))
+          # don't consider the first columns as these may be metadata
+          # if big gap, delete what is at the bottom (Protocol information)
+          gaps <-
+            min(which(full_rows)[(diff(which(full_rows)) > 20)] + 1, dim(df)[1])
+          df <-
+            df[which(full_rows)[which(full_rows) <= gaps],] # remove extra rows
+          
+          # get the plate size
+          n_col <-
+            1.5 * 2 ** ceiling(log2((dim(df)[2] - 2) / 1.5)) # -2 ot have some buffer
+          n_row <- n_col / 1.5
+          
+          # add empty column to complete plate (assume left column is #1)
+          if (ncol(df) < n_col) {
+            df[, (ncol(df) + 1):n_col] <- NA
+          }
+          
+          # get the barcode(s) in the sheet; expected in column C (third one)
+          Barcode_idx <-
+            which(as.data.frame(df)[, 3] %in% "Barcode")
+          # run through all plates
+          for (iB in Barcode_idx) {
+            # two type of format depending on where Background information is placed
+            if (any(as.data.frame(df)[iB + (1:4), 1] %in% "Background information")) {
+              ref_bckgrd <-
+                which(as.data.frame(df)[iB + (1:4), 1] %in% "Background information")
+              readout_offset <- 1 + ref_bckgrd
+              stopifnot(as.character(df[iB + ref_bckgrd, 4]) %in% 'Signal')
+              BackgroundValue <-
+                as.numeric(df[iB + ref_bckgrd + 1, 4])
+            } else {
+              # export without background information
+              # case of " Exported with EnVision Workstation version 1.13.3009.1409 "
+              readout_offset <- 1
+              BackgroundValue <- 0
+            }
+            
+            # check the structure of file is ok
+            check_values <-
+              as.matrix(df[iB + readout_offset + c(0, 1, n_row, n_row + 1), n_col])
+            Barcode <- as.character(df[iB + 1, 3])
+            if (any(c(is.na(check_values[2:3]),!is.na(check_values[c(1, 4)])))) {
+              stop(
+                sprintf(
+                  "In result file %s (sheet %s) readout values are misplaced for plate %s",
+                  results_filename[[iF]],
+                  iS,
+                  as.character(df[iB + 1, 3])
+                )
+              )
+            }
+            
+            readout <-
+              as.matrix(df[iB + readout_offset + (1:n_row), 1:n_col])
+            
+            # check that the plate size is consistent and contains values
+            if (any(is.na(readout))) {
+              stop(
+                sprintf(
+                  "In result file %s (sheet %s) readout values are misplaced for plate %s",
+                  results_filename[[iF]],
+                  iS,
+                  as.character(df[iB + 1, 3])
+                )
+              )
+            }
+            
+            df_results <- data.frame(
+              Barcode = Barcode,
+              WellRow = LETTERS[1:n_row],
+              WellColumn = as.vector(t(matrix(
+                1:n_col, n_col, n_row
+              ))),
+              ReadoutValue = as.numeric(as.vector(readout)),
+              BackgroundValue = BackgroundValue
+            )
+            futile.logger::flog.info("Plate %s read; %d wells",
+                                     as.character(df[iB + 1, 3]),
+                                     dim(df_results)[1])
+            all_results <- rbind(all_results, df_results)
+	  }
           } else {
-            # export without background information
-            # case of " Exported with EnVision Workstation version 1.13.3009.1409 "
-            readout_offset <- 1
-            BackgroundValue <- 0
-          }
-          
-          # check the structure of file is ok
-          check_values <-
-            as.matrix(df[iB + readout_offset + c(0, 1, n_row, n_row + 1), n_col])
-          if (any(c(is.na(check_values[2:3]),!is.na(check_values[c(1, 4)])))) {
-            stop(
-              sprintf(
-                "In result file %s (sheet %s) readout values are misplaced for plate %s",
-                results_filename[[iF]],
-                iS,
-                as.character(df[iB + 1, 3])
-              )
-            )
-          }
-          
-          readout <-
-            as.matrix(df[iB + readout_offset + (1:n_row), 1:n_col])
-          
-          # check that the plate size is consistent and contains values
-          if (any(is.na(readout))) {
-            stop(
-              sprintf(
-                "In result file %s (sheet %s) readout values are misplaced for plate %s",
-                results_filename[[iF]],
-                iS,
-                as.character(df[iB + 1, 3])
-              )
-            )
-          }
+            # proper original EnVision file
+            n_row = fInfo$n_row
+            n_col = fInfo$n_col
+            Barcode = df[3, 3]
+            readout <-
+              as.matrix(df[4 + (1:n_row), 1:n_col])
+            
+            if (any(as.data.frame(df)[, 1] %in% "Background information")) {
+              ref_bckgrd <-
+                which(as.data.frame(df)[, 1] %in% "Background information")
+              BackgroundValue <-
+                as.numeric(df[ref_bckgrd + 1, 4])
+            } else {
+              # export without background information
+              BackgroundValue <- 0
+            }
           
           df_results <- data.frame(
-            Barcode = as.character(df[iB + 1, 3]),
+            Barcode = Barcode,
             WellRow = LETTERS[1:n_row],
             WellColumn = as.vector(t(matrix(
               1:n_col, n_col, n_row
@@ -834,13 +863,18 @@ load_results_EnVision <-
             ReadoutValue = as.numeric(as.vector(readout)),
             BackgroundValue = BackgroundValue
           )
-          futile.logger::flog.info("Plate %s read; %d wells",
-                                   as.character(df[iB + 1, 3]),
-                                   dim(df_results)[1])
+          print(paste(
+            "Plate",
+            as.character(Barcode),
+            "read;",
+            dim(df_results)[1],
+            "wells"
+          ))
           all_results <- rbind(all_results, df_results)
         }
-        futile.logger::flog.info("File done")
+        
       }
+      futile.logger::flog.info("File done")
     }
     return(all_results)
   }
@@ -1005,3 +1039,104 @@ check_metadata_names <-
     
     list(sep = pSep, ncols = pCols)
   }
+
+
+read_EnVision = function(file,
+                         nrows = 10000,
+                         seps = c(',', '\t')) {
+  con <- file(file)
+  open(con)
+  
+  results.list <- list()
+  
+  current.line <- 1
+  while (length(line <-
+                readLines(con, n = 1, warn = FALSE)) > 0 & current.line < nrows) {
+    results.list[[current.line]] <- line
+    current.line <- current.line + 1
+  }
+  close(con)
+  
+  n_sep <- colSums(vapply(seps, function(sep) {
+    vapply(results.list[1:10], function(line)
+      length(unlist(strsplit(line, split = sep))),
+      integer(length = 1))
+  }, integer(length = 10)))
+  sep <- n_sep [n_sep == max(n_sep)]
+  if (sep < 30) {
+    stop(sprintf("Can't guess separator of the delimited file: %s", file))
+  }
+  sep <- names(sep)
+  
+  results.list <-
+    lapply(results.list, function(line)
+      unlist(strsplit(line, split = sep)))
+  
+  # identify if original csv file or not
+  if (which(vapply(results.list, function(x)
+    grepl("Plate information", x[1]), logical(1))) != 1) {
+    # fails if not the right header
+    stop(sprintf(
+      "Error reading %s: not an original EnVision .csv file",
+      results_file[[iF]]
+    ))
+  }
+  # has been open/saved in a spreadsheet software --> first line is padded with empty columns
+  isEdited <- (length(results.list[[1]]) > 1) |
+    !any(vapply(results.list, function(x)
+      grepl("EnVision Workstation", x[1]), logical(1)))
+  
+  if (isEdited) {
+    # may be altered and miss columns
+    n_col <- max(vapply(results.list[5:10], length, integer(length =
+                                                             1)))
+    n_col <- 1.5 * 2 ** ceiling(log2((n_col - 1) / 1.5))
+    n_row <- which(vapply(results.list, function(x) {
+      grepl("Basic assay information", x[1]) |
+        grepl("Plate information", x[1])
+    },
+    logical(1)))
+    if (length(n_row) == 1 && n_row == 1) {
+      # only the top line with "Plate information" was found
+      n_row <- length(results.list) - 4
+    } else {
+      # scrap a few rows above "Basic assay information"
+      n_row <- min(n_row[n_row > 1]) - 7
+    }
+    if (length(n_row) != 1 ||
+        abs(log2(1.5 * n_row / n_col)) > .5)  {
+      stop(sprintf("Error reading %s: wrong plate size", results_file[[iF]]))
+    }
+    n_row <- n_col / 1.5
+  } else {
+    n_col <- max(vapply(results.list[5:10], length, integer(length = 1)))
+    n_row <- sum(vapply(results.list[5:which(vapply(results.list, function(x)
+      grepl("Basic assay information", x[1]), logical(1)))],
+      length, integer(1)) == n_col)
+    if (log2(1.5 * n_row / n_col) != 0)  {
+      stop(sprintf("Error reading %s: wrong plate size", results_file[[iF]]))
+    }
+  }
+  
+  # pad the lines with NA if not full before creating the dataframe
+  results.list <- lapply(results.list, function(x) {
+    if (length(x) < n_col) {
+      x <- c(x, array(NA, n_col - length(x)))
+    } else if (length(x) > n_col) {
+      x <- x[1:n_col]
+    }
+    x[x == '' & !is.na(x)] <- NA
+    return(x)
+  })
+  df_ <- as.data.frame(do.call(rbind, results.list), stringsAsFactors = F)
+  colnames(df_) <- paste0('x', 1:n_col)
+  
+  rownames(df_) <- NULL
+  return(list(
+    df = df_,
+    n_col = n_col,
+    n_row = n_row,
+    isEdited = isEdited
+  ))
+}
+
