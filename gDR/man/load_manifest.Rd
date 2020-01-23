@@ -4,12 +4,10 @@
 \alias{load_manifest}
 \title{Load manifest}
 \usage{
-load_manifest(manifest_file, log_str)
+load_manifest(manifest_file)
 }
 \arguments{
 \item{manifest_file}{character, file path(s) to manifest(s)}
-
-\item{log_str}{character, file path to logs}
 }
 \description{
 This functions loads and checks the manifest file(s)

@@ -68,7 +68,7 @@ function(SE, fx, assay_type = 1) {
 #'
 #' @export
 getMetaData <- function(data,
-                        cell_id = gDR::get_identifier('cellline'),
+                        cell_id = gDR::get_identifier("cellline"),
                         discard_keys = NULL) {
   data <- as(data, "DataFrame")
 
@@ -292,8 +292,8 @@ createSE <-
       seColData[colnames(mats), setdiff(colnames(seColData), c('col_id', 'name_'))]
     seRowData <- seRowData[rownames(mats),
                            setdiff(colnames(seRowData), c('row_id', 'name_'))]
-    matsL = list(mats)
-    names(matsL) = readout
+    matsL <- list(mats)
+    names(matsL) <- readout
     
     se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
                                                      colData = seColData,
@@ -330,26 +330,24 @@ addAssayToMAE <-
 
     if (assay_name %in% SummarizedExperiment::assayNames(mae[[exp_name]]) &&
         update_assay == FALSE) {
-      errMsg1 <-
-        sprintf(
+      futile.logger::flog.error(
           "The assay '%s' can't be added to experiment '%s' as it currently exists.
   Please set 'update_assay' flag to TRUE to be able to update the assay instead of adding it",
           assay_name,
           exp_name
         )
-      stop(errMsg1)
+      stop()
     }
 
     if (!identical(dim(SummarizedExperiment::assay(mae[[exp_name]])), dim(assay))) {
-      errMsg2 <-
-        sprintf(
+      futile.logger::flog.error(
           "The assay '%s' can't be added to experiment '%s' as it has different dimensions ('%s') than the assays present in the experiment ('%s').",
           assay_name,
           exp_name,
           paste(dim(assay), collapse = "x"),
           paste(dim(SummarizedExperiment::assay(mae[[exp_name]])), collapse = "x")
         )
-      stop(errMsg2)
+      stop()
     }
 
     SummarizedExperiment::assay(mae[[exp_name]], assay_name) <- assay

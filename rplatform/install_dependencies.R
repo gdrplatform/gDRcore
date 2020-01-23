@@ -34,6 +34,10 @@ dont.install <- c(
 # Extract dependencies from DESCRIPTION file
 deps <- desc::desc_get_deps(file.path(.wd, "gDR/DESCRIPTION"))
 deps <- deps[!(deps$package %in% dont.install), ]
+# packages needed in gDRshiny
+deps <- rbind(deps, data.frame(type = rep("Suggests", 6),
+                               package = c("DT", "shiny", "shinyjs", "shinyBS", "shinyalert","shinydashboard"),
+                               version = rep("*", 6)))
 
 rp::installAndVerify(install = install.packages,
                      package = deps$package,

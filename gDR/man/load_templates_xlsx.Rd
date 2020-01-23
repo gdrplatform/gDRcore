@@ -4,14 +4,12 @@
 \alias{load_templates_xlsx}
 \title{Load templates from xlsx}
 \usage{
-load_templates_xlsx(template_file, template_filename = NULL, log_str)
+load_templates_xlsx(template_file, template_filename = NULL)
 }
 \arguments{
 \item{template_file}{character, file path(s) to template(s)}
 
 \item{template_filename}{character, file name(s)}
-
-\item{log_str}{character, file path to logs}
 }
 \description{
 This functions loads and checks the template file(s)

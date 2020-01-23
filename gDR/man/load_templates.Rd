@@ -4,13 +4,11 @@
 \alias{load_templates}
 \title{Load templates}
 \usage{
-load_templates(df_template_files, log_str)
+load_templates(df_template_files)
 }
 \arguments{
 \item{df_template_files}{data.frame, with datapaths and names of results file(s)
 or character with file path of templates file(s)}
-
-\item{log_str}{character, file path to logs}
 }
 \description{
 This functions loads and checks the template file(s)

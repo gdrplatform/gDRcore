@@ -4,12 +4,10 @@
 \alias{load_results_tsv}
 \title{Load results from tsv}
 \usage{
-load_results_tsv(results_file, log_str)
+load_results_tsv(results_file)
 }
 \arguments{
 \item{results_file}{character, file path(s) to template(s)}
-
-\item{log_str}{character, file path to logs}
 }
 \description{
 This functions loads and checks the results file(s)

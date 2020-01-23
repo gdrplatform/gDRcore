@@ -23,6 +23,7 @@ Imports:
     gCellGenomics,
     S4Vectors
 Suggests:
+    futile.logger,
     gCSIutils,
     knitr,
     readr,

@@ -4,7 +4,7 @@
 \alias{load_data}
 \title{Load data}
 \usage{
-load_data(manifest_file, df_template_files, results_file, log_str,
+load_data(manifest_file, df_template_files, results_file,
   instrument = "EnVision")
 }
 \arguments{
@@ -15,8 +15,6 @@ or character with file path of templates file(s)}
 
 \item{results_file}{data.frame, with datapaths and names of results file(s)
 or character with file path of results file(s)}
-
-\item{log_str}{character, file path to logs}
 
 \item{instrument}{character}
 }
