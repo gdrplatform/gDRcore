@@ -4,6 +4,7 @@ standardize_df <- function(df) {
   df %>% dplyr::mutate_all(as.character)
 }
 
+#' @export
 read_ref_data <- function(inDir, prefix = "ref") { 
   files <- list.files(inDir, paste0(prefix, "_.+\\.tsv$"), full.names = TRUE)
   lFiles <- lapply(files, function(x) { readr::read_delim(x, delim = "\t")})
