@@ -1,9 +1,2 @@
-log*.txt
-~*
-._*
-*.Rbuildignore
-*.Rhistory
-*.Rproj.user/
-*.Rproj
-.Rproj.user
-dev/*
+
+.rplatform.cookie
