@@ -170,12 +170,22 @@ load_data <-
            results_file,
            instrument = "EnVision") {
     
+    assertthat::assert_that(is.character(manifest_file), msg = "'manifest_file' must be a character vector")
+    assertthat::assert_that(assertthat::is.readable(manifest_file), msg = "'manifest_file' must be a readable path")
+    assertthat::assert_that(is.character(df_template_files) || is.data.frame(df_template_files), 
+                msg = "'df_template_files' must be a character vector or data.frame")
+    assertthat::assert_that(is.character(results_file) || is.data.frame(results_file), 
+                msg = "'results_file' must be a character vector or data.frame")
+    assertthat::assert_that(assertthat::is.string(instrument), msg = "'instrument' must be a character vector")
+    
     if (is.data.frame(df_template_files)) {
       # for the shiny app
       template_file <- df_template_files$datapath
+      is.readables(template_file)
       template_filename <- df_template_files$name
     } else {
       template_filename <- df_template_files
+      is.readables(template_filename)
     }
     
     manifest <- load_manifest(manifest_file)
