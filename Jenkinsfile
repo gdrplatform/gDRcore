@@ -74,7 +74,7 @@ DockerfilePipeline(
     // create new tag from branch's name (and commit for devel and master)
     def tag = null
     def image = null
-    def cbs_docker_image = "${registry}/githubroche/gdrplatform/gdrcore"
+    def cbs_docker_image = "${registry}/githubroche/gdrplatform/gdr_core"
     def commit_11 = sh returnStdout: true, script: "echo ${GIT_COMMIT} | head -c 11"
     if ("${GIT_BRANCH}" == "master" || "${GIT_BRANCH}" == "devel") {
         // master goes to CBS registry
