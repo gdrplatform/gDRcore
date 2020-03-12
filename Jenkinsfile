@@ -2,7 +2,7 @@ DockerfilePipeline(
   preBuild: { tags,labels, rpServiceUrl, rpCookie ->
     def rpsession_cookie = "${rpCookie}"
     def rp_service_url = "${rpServiceUrl}"
-    def rp_project_id = "531"
+    def rp_project_id = "550"
     def GIT_URL = env.GIT_URL ? env.GIT_URL : env.GIT_URL_1
 
     // create new tag from branch's name (and commit for devel and master)
@@ -43,7 +43,7 @@ DockerfilePipeline(
   onFailure: { tags,labels, rpServiceUrl, rpCookie ->
     def rpsession_cookie = "${rpCookie}"
     def rp_service_url = "${rpServiceUrl}"
-    def rp_project_id = "531"
+    def rp_project_id = "550"
 
     sh 'export PYTHONWARNINGS="ignore:Unverified HTTPS request"'
     sh 'printenv | sort'
@@ -60,7 +60,7 @@ DockerfilePipeline(
   onSuccess: { tags,labels,rpServiceUrl,rpCookie ->
     def rpsession_cookie = "${rpCookie}"
     def rp_service_url = "${rpServiceUrl}"
-    def rp_project_id = "531"
+    def rp_project_id = "550"
     sh 'printenv | sort'
 
     // overwrite docker credentials and registry address
