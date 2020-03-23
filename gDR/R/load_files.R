@@ -181,11 +181,11 @@ load_data <-
     if (is.data.frame(df_template_files)) {
       # for the shiny app
       template_file <- df_template_files$datapath
-      is.readables(template_file)
+      is.readable.v(template_file)
       template_filename <- df_template_files$name
     } else {
       template_filename <- df_template_files
-      is.readables(template_filename)
+      is.readable.v(template_filename)
     }
     
     manifest <- load_manifest(manifest_file)
