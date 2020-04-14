@@ -50,10 +50,10 @@
 #' @return the same SE object with updated nested dataframe
 #'
 aapply <-
-function(SE, fx, assay_type = 1) {
+  function(SE, fx, assay_type = 1) {
     SummarizedExperiment::assay(SE, assay_type) = matrix(sapply(SummarizedExperiment::assay(SE, assay_type), fx), nrow = nrow(SE), ncol = ncol(SE))
     return(SE)
-}
+  }
 
 
 
@@ -71,7 +71,7 @@ getMetaData <- function(data,
                         cell_id = gDR::get_identifier("cellline"),
                         discard_keys = NULL) {
   data <- as(data, "DataFrame")
-
+  
   # get the metadata variables
   metavars <-
     setdiff(
@@ -116,7 +116,7 @@ getMetaData <- function(data,
   ),
   nocell_metavars[sapply(nocell_metavars, function(x)
     nrow(unique(conditions[, x, drop = FALSE]))) > 1])
-
+  
   # find the cell lines and related data (for the columns in the SE)
   cl_entries <- cell_id
   for (j in setdiff(unique_metavars, cell_id)) {
@@ -133,7 +133,7 @@ getMetaData <- function(data,
                           gDR::get_identifier("drugname"),
                           paste0(gDR::get_identifier("drugname"), "_", 2:10)
                         ))
-
+  
   # temporary removing extra column to avoid bug
   cl_entries <- setdiff(cl_entries, "ReferenceDivisionTime")
   
@@ -156,10 +156,10 @@ getMetaData <- function(data,
   
   # get the remaining columns as data
   dataCols <- setdiff(colnames(data), setdiff(metavars, discard_keys))
-
+  
   # constant metadata (useful for annotation of the experiment)
   csteData = unique(conditions[,constant_metavars,drop=F])
-
+  
   return(list(
     colData = colData,
     rowData = rowData,
@@ -189,18 +189,18 @@ df_to_assay <-
            data_type = c("all", "treated", "untreated"),
            discard_keys = NULL) {
     data <- as(data, "DataFrame")
-
+    
     ####
-
+    
     allMetadata <- gDR::getMetaData(data, discard_keys = discard_keys)
-
+    
     seColData <- allMetadata$colData
     cl_entries <- setdiff(colnames(seColData), c("col_id", "name_"))
     seRowData <- allMetadata$rowData
     cond_entries <-
       setdiff(colnames(seRowData), c("row_id", "name_"))
     dataCols <- allMetadata$dataCols
-
+    
     complete <-
       S4Vectors::DataFrame(
         expand.grid(
@@ -215,21 +215,21 @@ df_to_assay <-
     complete$factor_id <- 1:nrow(complete)
     data_assigned <-
       merge(data, complete, by = c(cond_entries, cl_entries))
-
+    
     by_factor <- lapply(1:nrow(complete), function(x)
       data_assigned[data_assigned$factor_id == x, dataCols])
     names(by_factor) <- 1:nrow(complete)
-
+    
     stopifnot(nrow(data) == sum(sapply(by_factor, nrow)))
     stopifnot(length(by_factor) == nrow(complete))
-
+    
     # full.set <- vector("list", nrow(complete))
     # full.set[as.integer(names(by_factor))] <- by_factor
     full.set <- by_factor
-
+    
     dim(full.set) <- c(nrow(seRowData), nrow(seColData))
     dimnames(full.set) <- list(seRowData$name_, seColData$name_)
-
+    
     #add NAs for treatments not present in the given assay
     # ---------------
     # removed as it should be added when combining different assays
@@ -243,7 +243,7 @@ df_to_assay <-
     #
     # ---------------
     final.set <- full.set
-
+    
     if (data_type == "untreated") {
       untreatedConds <-
         .get_untreated_conditions(seRowData)
@@ -274,20 +274,20 @@ createSE <-
            data_type = c("untreated", "treated", "all"),
            readout = 'ReadoutValue', discard_keys = NULL) {
     data_type <- match.arg(data_type)
-
+    
     # stopifnot(all(names(dfList) %in% .assayNames))
     # #dfList must contain first assay (i.e. df_raw_data)
     # stopifnot(.assayNames[1] %in% names(dfList))
-
+    
     mats <- df_to_assay(df_data, data_type = data_type, discard_keys = discard_keys)
-
+    
     allMetadata <- getMetaData(df_data, discard_keys = discard_keys)
-
+    
     seColData <- allMetadata$colData
     rownames(seColData) <- seColData$name_
     seRowData <- allMetadata$rowData
     rownames(seRowData) <- seRowData$name_
-
+    
     seColData <-
       seColData[colnames(mats), setdiff(colnames(seColData), c('col_id', 'name_'))]
     seRowData <- seRowData[rownames(mats),
@@ -298,7 +298,7 @@ createSE <-
     se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
                                                      colData = seColData,
                                                      rowData = seRowData)
-
+    
   }
 
 
@@ -327,29 +327,29 @@ addAssayToMAE <-
     exp_name <- match.arg(exp_name)
     #mae must contain SE with at least first assay (i.e. df_raw_data)
     stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(mae[[exp_name]]))
-
+    
     if (assay_name %in% SummarizedExperiment::assayNames(mae[[exp_name]]) &&
         update_assay == FALSE) {
       futile.logger::flog.error(
-          "The assay '%s' can't be added to experiment '%s' as it currently exists.
-  Please set 'update_assay' flag to TRUE to be able to update the assay instead of adding it",
-          assay_name,
-          exp_name
-        )
+        "The assay '%s' can't be added to experiment '%s' as it currently exists.
+        Please set 'update_assay' flag to TRUE to be able to update the assay instead of adding it",
+        assay_name,
+        exp_name
+      )
       stop()
     }
-
+    
     if (!identical(dim(SummarizedExperiment::assay(mae[[exp_name]])), dim(assay))) {
       futile.logger::flog.error(
-          "The assay '%s' can't be added to experiment '%s' as it has different dimensions ('%s') than the assays present in the experiment ('%s').",
-          assay_name,
-          exp_name,
-          paste(dim(assay), collapse = "x"),
-          paste(dim(SummarizedExperiment::assay(mae[[exp_name]])), collapse = "x")
-        )
+        "The assay '%s' can't be added to experiment '%s' as it has different dimensions ('%s') than the assays present in the experiment ('%s').",
+        assay_name,
+        exp_name,
+        paste(dim(assay), collapse = "x"),
+        paste(dim(SummarizedExperiment::assay(mae[[exp_name]])), collapse = "x")
+      )
       stop()
     }
-
+    
     SummarizedExperiment::assay(mae[[exp_name]], assay_name) <- assay
   }
 

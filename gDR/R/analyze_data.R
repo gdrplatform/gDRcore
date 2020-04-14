@@ -161,7 +161,6 @@ merge_data <- function(manifest, treatments, data) {
 normalize_SE <- function(df_raw_data, selected_keys = NULL,
                 key_values = NULL, discard_keys = NULL) {
     # average technical replicates and assign the right controls to each treated well
-
     Keys <- identify_keys(df_raw_data)
     Keys$discard_keys <- discard_keys
     if (!is.null(selected_keys)) {
@@ -172,6 +171,32 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
     }
 
     # the normalized SE only contains the treated conditions
+    if(length(Keys$Day0)==0){
+      df_raw_data$CorrectedReadout <- pmax(df_raw_data$ReadoutValue - df_raw_data$BackgroundValue, 1)
+      df_raw_data$UntrtReadout <- df_raw_data$CorrectedReadout
+      
+      df_ctrl <- aggregate(df_raw_data$CorrectedReadout[ df_raw_data$Concentration == 0],
+                          by = list(clid = df_raw_data$clid[ df_raw_data$Concentration == 0]),
+                          function(x) mean(x, trim = .25))
+      df_raw_data$RelativeViability <- df_raw_data$CorrectedReadout / df_raw_data$UntrtReadout
+      df_raw_data$GRvalue = round(2 ^ (1 + (
+        log2(pmin(1.25,
+                  df_raw_data[, "RelativeViability"])) /
+          (df_raw_data$Duration / df_raw_data$ReferenceDivisionTime)
+      )), 4) - 1
+      
+      df_raw_data <-
+        cbind(df_raw_data[, 1:(which(colnames(df_raw_data) == "ReadoutValue") - 1)],
+              df_raw_data[, c("GRvalue", "RelativeViability", "ReferenceDivisionTime")],
+              df_raw_data[, which(colnames(df_raw_data) == "ReadoutValue"):(dim(df_raw_data)[2] - 3)])
+      df_raw_data <- Order_result_df(df_raw_data)
+      normSE <- gDR::createSE(df_raw_data, data_type = "all", discard_keys = discard_keys)
+      SummarizedExperiment::assayNames(normSE) = "Normalized"
+      
+    }
+
+    else{
+    
     normSE <- gDR::createSE(df_raw_data, data_type = "treated", discard_keys = discard_keys)
     SummarizedExperiment::assayNames(normSE) = "Normalized"
     ctrlSE <- gDR::createSE(df_raw_data, data_type = "untreated", discard_keys = discard_keys)
@@ -287,7 +312,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
         x$CorrectedReadout <- pmax(x$ReadoutValue - x$BackgroundValue, 1)
         return(x)})
 
-    SummarizedExperiment::assay(normSE, "Controls") <- matrix(lapply(1:prod(dim(normSE)), function(x) DataFrame()),
+    SummarizedExperiment::assay(normSE, "Controls") <- matrix(lapply(1:prod(dim(normSE)), function(x) S4Vectors::DataFrame()),
             nrow = nrow(normSE), ncol = ncol(normSE))
 
     # run through all conditions to assign controls and normalize the data
@@ -410,7 +435,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
     metadata(normSE) <- c(metadata(normSE),
             list(df_raw_data = df_raw_data,
                 Keys = Keys,
-                row_maps = list(end = row_maps_end,
+                row_maps = list(end = row_maps_end, # empty list?2
                                 cotrt = row_maps_cotrt,
                                 T0 = row_maps_T0)
                 ))
@@ -420,7 +445,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
 
     return(normSE)
 }
-
+}
 
 #' @export
 normalize_data <-
@@ -463,7 +488,6 @@ normalize_data <-
     df_end_mean <- aggregate(df_end_untrt[, "CorrectedReadout"],
                     by = as.list(df_end_untrt[, Keys$untrt_Endpoint]), function(x) mean(x, trim = .25))
     colnames(df_end_mean)[dim(df_end_mean)[2]] <- "UntrtReadout"
-
 
     # get the untreated controls at Day 0 and perform interquartile mean
     df_day0 <- df_normalized[df_normalized[,get_identifier("duration")] == 0 &
@@ -591,7 +615,7 @@ normalize_data <-
     
     df_normalized <-
       cbind(df_normalized[, 1:(which(colnames(df_normalized) == "ReadoutValue") - 1)],
-            df_normalized[, c("GRvalue", "RelativeViability", "DivisionTime")],
+            df_normalized[, c("GRvalue", "RelativeViability", "ReferenceDivisionTime")],
             df_normalized[, which(colnames(df_normalized) == "ReadoutValue"):(dim(df_normalized)[2] - 3)])
     df_normalized <- Order_result_df(df_normalized)
     futile.logger::flog.info("df normalized")
