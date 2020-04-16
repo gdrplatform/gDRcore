@@ -385,8 +385,15 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
     myL <- SummarizedExperiment::assay(se, assay_name)[, x]
     myV <- vapply(myL, nrow, integer(1))
     rCol <- rep(names(myV), as.numeric(myV))
+   
+    # there might be DataFrames with different number of columns
+    # let's fill with NAs where necessary
+    if (length(unique(sapply(myL, ncol))) > 1) {
+      df <- do.call(plyr::rbind.fill, lapply(myL, data.frame))
+    } else {
+      df <- data.frame(do.call(rbind, myL))
+    }
     
-    df <- data.frame(do.call(rbind, myL))
     df$rId <- rCol
     df$cId <- rownames(SummarizedExperiment::colData(se))[x]
     full.df <- left_join(df, annotTbl, by = c("rId", "cId"))
