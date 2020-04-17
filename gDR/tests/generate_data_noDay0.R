@@ -54,13 +54,12 @@ for (cl in df_ctrl$clid) {
     df_normalized$UntrtReadout[df_normalized$clid == cl] = df_ctrl$x[df_ctrl$clid == cl]
 }
 
+df_normalized$RelativeViability = df_normalized$CorrectedReadout / df_normalized$UntrtReadout
 df_normalized$GRvalue = round(2 ^ (1 + (
           log2(pmin(1.25,
                     df_normalized[, "RelativeViability"])) /
             (df_normalized$Duration / df_normalized$ReferenceDivisionTime)
         )), 4) - 1
-df_normalized$RelativeViability = df_normalized$CorrectedReadout / df_normalized$UntrtReadout
-
 
 # decompose de table into original files
 df_raw_data = df_normalized[order(df_normalized$Barcode),]
@@ -69,10 +68,10 @@ df_raw_data$WellRow = sort(rep(LETTERS[3:14],20))
 df_raw_data$WellColumn = 3:22
 levels(df_raw_data$Barcode) = paste0('Plate',1:8)
 
-df_manifest = unique(df_raw_data[, c('Barcode', 'Template', 'Duration', 'clid')])
+df_manifest = unique(df_raw_data[, c('Barcode', 'Template', 'Duration')])
 df_data = df_raw_data[,c('Barcode', 'WellRow', 'WellColumn', 'ReadoutValue', 'BackgroundValue')]
 df_treatment = unique(df_raw_data[, c('Template', 'WellRow', 'WellColumn',
-        'Gnumber', 'Concentration')])
+        'Gnumber', 'Concentration', 'clid')])
 
 dir.create('../inst/testdata/data11')
 write.table(df_manifest, '../inst/testdata/data11/Manifest_data11.tsv',
