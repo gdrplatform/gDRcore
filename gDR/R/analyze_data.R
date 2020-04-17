@@ -413,7 +413,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                     data.frame(df_ctrl), by = c("Barcode", Keys$discard_keys))
 
             # calculate the normalized values
-            normSE_n[[i, j]]$RelativeViability <-
+            normSE_n[[i, j]]$RelativeViability = df_merged$RelativeViability <-
               round(df_merged$CorrectedReadout / df_merged$UntrtReadout, 4)
 
             df_merged$GRvalue = round(2 ** (
@@ -439,7 +439,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                         "--> GR values are NA"))
                  } else {
 
-                  refDivisionTime = colData(normSE)[j,'ReferenceDivisionTime']
+                  refDivisionTime = colData(normSE)[j, get_header('add_clid')[3]]
 
                   futile.logger::flog.warn(paste(
                     "Missing day 0 information --> calculate GR value based on reference doubling time for", colData(normSE)[j,get_header('add_clid')[1]]))

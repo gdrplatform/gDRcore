@@ -137,8 +137,8 @@ getMetaData <- function(data,
                           gDR::get_identifier("duration")
                         ))
 
-  # temporary removing extra column to avoid bug
-  cl_entries <- setdiff(cl_entries, "ReferenceDivisionTime")
+  # # temporary removing extra column to avoid bug
+  # cl_entries <- setdiff(cl_entries, "ReferenceDivisionTime")
 
   #colData
   colData <- unique(conditions[, cl_entries, drop = FALSE])
