@@ -362,18 +362,23 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                 df_end$RefReadout <- df_end$UntrtReadout
             }
 
-            df_0 <- do.call(rbind,
-                    lapply(row_maps_T0[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
-            df_0 <- df_0[, c("CorrectedReadout", intersect(Keys$Day0, colnames(df_0)))]
-            colnames(df_0)[1] <- "Day0Readout"
-            df_0 <- aggregate(df_0[, 1, drop = FALSE], by = as.list(df_0[, -1, drop = FALSE]),
-                function(x) mean(x, trim = .25))
+            if (length(row_maps_T0[[i]]) > 0) {
+              df_0 <- do.call(rbind,
+                      lapply(row_maps_T0[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
+              df_0 <- df_0[, c("CorrectedReadout", intersect(Keys$Day0, colnames(df_0)))]
+              colnames(df_0)[1] <- "Day0Readout"
+              df_0 <- aggregate(df_0[, 1, drop = FALSE], by = as.list(df_0[, -1, drop = FALSE]),
+                  function(x) mean(x, trim = .25))
 
-            if (!is.null(Keys$discard_keys) && all(Keys$discard_keys %in% colnames(df_0))) {
-              df_ctrl <- merge(df_0[, setdiff(colnames(df_0), "Barcode")], df_end, all.y = TRUE, by = Keys$discard_keys)
+              if (!is.null(Keys$discard_keys) && all(Keys$discard_keys %in% colnames(df_0))) {
+                df_ctrl <- merge(df_0[, setdiff(colnames(df_0), "Barcode")], df_end, all.y = TRUE, by = Keys$discard_keys)
+              } else {
+                df_ctrl <- merge(df_0[, setdiff(colnames(df_0), "Barcode")], df_end, all.y = TRUE)
+                colnames(df_ctrl)[1] <- "Day0Readout"
+              }
             } else {
-              df_ctrl <- merge(df_0[, setdiff(colnames(df_0), "Barcode")], df_end, all.y = TRUE)
-              colnames(df_ctrl)[1] <- "Day0Readout"
+              df_ctrl = df_end
+              df_ctrl$Day0Readout = NA
             }
 
             df_ctrl$RefRelativeViability <- round(df_ctrl$RefReadout/df_ctrl$UntrtReadout, 4)
