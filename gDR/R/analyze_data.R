@@ -390,7 +390,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             df_ctrl$DivisionTime <- round(
                     SummarizedExperiment::rowData(normSE)[i,get_identifier("duration")] /
                         log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout), 4)
-            normSE_c[[i,j]] <- DataFrame(df_ctrl)
+
 
             #gladkia: assert for merged study/control data
             ctrl_bcodes <- sort(unique(df_ctrl$Barcode))
@@ -416,11 +416,52 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             normSE_n[[i, j]]$RelativeViability <-
               round(df_merged$CorrectedReadout / df_merged$UntrtReadout, 4)
 
-            normSE_n[[i, j]]$GRvalue = round(2 ** (
+            df_merged$GRvalue = round(2 ** (
               log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
                 log2(df_merged$UntrtReadout / df_merged$Day0Readout)
             ), 4) - 1
 
+            # use the reference doubling Time (ReferenceDivisionTime) for GRvalue if day 0 missing
+            if ( any(is.na(df_merged$Day0Readout)) ) {
+
+                if ( !(get_header('add_clid')[3] %in% colnames(colData(normSE))) ||
+                  is.na(colData(normSE)[j, get_header('add_clid')[3]]) ) {
+                    futile.logger::flog.warn(paste(
+                      "No day 0 information and no reference doubling time for cell line", colData(normSE)[j,get_header('add_clid')[1]],
+                      "--> GR values are NA"))
+                } else if (colData(normSE)[j, get_header('add_clid')[3]] >
+                    1.5 * rowData(normSE)[i, get_identifier("duration")]) {
+                      futile.logger::flog.warn(paste( "Reference doubling time for cell line",
+                        colData(normSE)[j,get_header('add_clid')[1]], "is",
+                        colData(normSE)[j, get_header('add_clid')[3]],
+                        "which is too long for GR calculation compared to assay duration (",
+                        rowData(normSE)[i, get_identifier("duration")],
+                        "--> GR values are NA"))
+                 } else {
+
+                  refDivisionTime = colData(normSE)[j,'ReferenceDivisionTime']
+
+                  futile.logger::flog.warn(paste(
+                    "Missing day 0 information --> calculate GR value based on reference doubling time for", colData(normSE)[j,get_header('add_clid')[1]]))
+
+                  df_merged$GRvalue <-
+                  round(2 ^ (1 + (
+                    log2(pmin(1.25, # capping to avoid artefacts
+                              df_merged[, "RelativeViability"])) /
+                      (rowData(normSE)[i, get_identifier("duration")] / refDivisionTime)
+                  )), 4) - 1
+
+                  df_ctrl$RefGRvalue <-
+                  round(2 ^ (1 + (
+                    log2(pmin(1.25, # capping to avoid artefacts
+                              df_ctrl[, "RefRelativeViability"])) /
+                      (rowData(normSE)[i, get_identifier("duration")] / refDivisionTime)
+                  )), 4) - 1
+                }
+            }
+
+            normSE_n[[i, j]]$GRvalue = df_merged$GRvalue
+            normSE_c[[i,j]] <- DataFrame(df_ctrl)
         }
     }
     metadata(normSE) <- c(metadata(normSE),
@@ -605,7 +646,7 @@ normalize_data <-
 
     df_normalized <-
       cbind(df_normalized[, 1:(which(colnames(df_normalized) == "ReadoutValue") - 1)],
-            df_normalized[, c("GRvalue", "RelativeViability", "ReferenceDivisionTime")],
+            df_normalized[, c("GRvalue", "RelativeViability", "DivisionTime")],
             df_normalized[, which(colnames(df_normalized) == "ReadoutValue"):(dim(df_normalized)[2] - 3)])
     df_normalized <- Order_result_df(df_normalized)
     futile.logger::flog.info("df normalized")
