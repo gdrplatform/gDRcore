@@ -194,20 +194,22 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
     # matching the reference end point without any treatment
     row_maps_end <- lapply(rownames(normSE), function(x) {
       # define matix with matching metadata
-      match_mx <- c(
-        (
-          SummarizedExperiment::rowData(ctrlSE) == (SummarizedExperiment::rowData(normSE)[x,])
-        )[intersect(Keys$untrt_Endpoint,
-                    names(SummarizedExperiment::rowData(ctrlSE)))],
-        IRanges::LogicalList(
-          key_values = row_endpoint_value_filter,
+      ctrl_metadata_idx = intersect(Keys$untrt_Endpoint,
+                            names(SummarizedExperiment::rowData(ctrlSE)))
+      names(ctrl_metadata_idx) = ctrl_metadata_idx
+      match_mx <-
+        IRanges::LogicalList(c(
+          lapply(ctrl_metadata_idx, function(y)
+                SummarizedExperiment::rowData(ctrlSE)[,y] ==
+                  SummarizedExperiment::rowData(normSE)[x,y]),
+          list(key_values = row_endpoint_value_filter,
           conc = apply(cbind(array(0, nrow(ctrlSE)), # padding to avoid empty df
                              SummarizedExperiment::rowData(ctrlSE)[, agrep("Concentration",
                                                                            colnames(SummarizedExperiment::rowData(ctrlSE))), drop = FALSE]), 1,
                        function(x)
                          all(x == 0))
-        )
-      )
+
+      )))
       match_idx <- which(apply(as.matrix(match_mx), 2, all))
       if (length(match_idx) == 0) {
         # if not exact match, try to find best match
@@ -229,25 +231,36 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
     names(row_maps_end) <- rownames(normSE)
 
     # matching the reference end point with the same co-treatment (all the same but conc=0/Gnumber="vehicle")
-    row_maps_cotrt <- lapply(rownames(normSE), function(x)
-        rownames(ctrlSE)[which(apply(as.matrix(
-            (SummarizedExperiment::rowData(ctrlSE) == (SummarizedExperiment::rowData(normSE)[x, ]))[
-                intersect(Keys$ref_Endpoint, names(SummarizedExperiment::rowData(ctrlSE)))]),
-            2, all))])
+    row_maps_cotrt <- lapply(rownames(normSE), function(x) {
+      ref_metadata_idx = intersect(Keys$ref_Endpoint,
+                            names(SummarizedExperiment::rowData(ctrlSE)))
+      names(ref_metadata_idx) = ref_metadata_idx
+
+      rownames(ctrlSE)[which(apply(as.matrix(  IRanges::LogicalList(
+            lapply(ref_metadata_idx, function(y)
+              SummarizedExperiment::rowData(ctrlSE)[,y] ==
+                  (SummarizedExperiment::rowData(normSE)[x, y])
+            ))),
+            2, all))]
+        })
     names(row_maps_cotrt) <- rownames(normSE)
 
     # matching the reference at time 0 (if available)
     row_maps_T0 <- lapply(rownames(normSE), function(x) {
         # define matix with matching metadata
-        match_mx <- c(
-            (SummarizedExperiment::rowData(ctrlSE) == (SummarizedExperiment::rowData(normSE)[x,]))[
-                intersect(Keys$Day0, names(SummarizedExperiment::rowData(ctrlSE)))],
-            IRanges::LogicalList(#key_values = row_endpoint_value_filter,
-                T0 = SummarizedExperiment::rowData(ctrlSE)[, get_identifier("duration")] == 0,
+        T0_metadata_idx = intersect(Keys$Day0,
+                              names(SummarizedExperiment::rowData(ctrlSE)))
+        names(T0_metadata_idx) = T0_metadata_idx
+        match_mx <- IRanges::LogicalList(c(
+            lapply(T0_metadata_idx, function(y)
+              SummarizedExperiment::rowData(ctrlSE)[,y] ==
+                (SummarizedExperiment::rowData(normSE)[x,y])),
+            list(T0 = SummarizedExperiment::rowData(ctrlSE)[, get_identifier("duration")] == 0,
                 conc = apply(cbind(array(0, nrow(ctrlSE)),# padding to avoid empty df
                     SummarizedExperiment::rowData(ctrlSE)[, agrep("Concentration",
                     colnames(SummarizedExperiment::rowData(ctrlSE))), drop = FALSE]), 1,
-                        function(x) all(x == 0)) ))
+                        function(x) all(x == 0))
+          )))
         match_idx <- which(apply(as.matrix(match_mx), 2, all))
         if (length(match_idx) == 0) {
             # if not exact match, try to find best match
@@ -417,7 +430,6 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
     SummarizedExperiment::assay(normSE, 'Controls') <- normSE_c
 
     return(normSE)
-}
 }
 
 #' @export
