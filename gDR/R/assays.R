@@ -71,7 +71,7 @@ getMetaData <- function(data,
                         cell_id = gDR::get_identifier("cellline"),
                         discard_keys = NULL) {
   data <- as(data, "DataFrame")
-  
+
   # get the metadata variables
   metavars <-
     setdiff(
@@ -98,11 +98,12 @@ getMetaData <- function(data,
       nocell_metavars[sapply(nocell_metavars,
                              function(x)
                                nrow(unique(conditions[, x, drop = FALSE]))) == 1],
-      # protect cell line and drug name
+      # protect cell line and drug name and duration
       c(
         gDR::get_header("add_clid"),
         gDR::get_identifier("drug"),
-        gDR::get_identifier("drugname")
+        gDR::get_identifier("drugname"),
+        gDR::get_identifier("duration")
       )
     )
   unique_metavars <- c(intersect(
@@ -110,13 +111,14 @@ getMetaData <- function(data,
       gDR::get_identifier("cellline"),
       gDR::get_header("add_clid"),
       gDR::get_identifier("drug"),
-      gDR::get_identifier("drugname")
+      gDR::get_identifier("drugname"),
+      gDR::get_identifier("duration")
     ),
     metavars
   ),
   nocell_metavars[sapply(nocell_metavars, function(x)
     nrow(unique(conditions[, x, drop = FALSE]))) > 1])
-  
+
   # find the cell lines and related data (for the columns in the SE)
   cl_entries <- cell_id
   for (j in setdiff(unique_metavars, cell_id)) {
@@ -131,19 +133,20 @@ getMetaData <- function(data,
                           gDR::get_identifier("drug"),
                           paste0(gDR::get_identifier("drug"), "_", 2:10),
                           gDR::get_identifier("drugname"),
-                          paste0(gDR::get_identifier("drugname"), "_", 2:10)
+                          paste0(gDR::get_identifier("drugname"), "_", 2:10),
+                          gDR::get_identifier("duration")
                         ))
-  
+
   # temporary removing extra column to avoid bug
   cl_entries <- setdiff(cl_entries, "ReferenceDivisionTime")
-  
+
   #colData
   colData <- unique(conditions[, cl_entries, drop = FALSE])
   colData$col_id <- 1:nrow(colData)
   colData$name_ <-
     apply(colData, 1, function(x)
       paste(x, collapse = "_"))
-  
+
   # get all other metadata for the rows
   cond_entries <- setdiff(unique_metavars, cl_entries)
   # temporary removing extra column to avoid bug
@@ -153,13 +156,13 @@ getMetaData <- function(data,
   rowData$name_ <-
     apply(rowData, 1, function(x)
       paste(x, collapse = "_"))
-  
+
   # get the remaining columns as data
   dataCols <- setdiff(colnames(data), setdiff(metavars, discard_keys))
-  
+
   # constant metadata (useful for annotation of the experiment)
   csteData = unique(conditions[,constant_metavars,drop=F])
-  
+
   return(list(
     colData = colData,
     rowData = rowData,
@@ -189,18 +192,18 @@ df_to_assay <-
            data_type = c("all", "treated", "untreated"),
            discard_keys = NULL) {
     data <- as(data, "DataFrame")
-    
+
     ####
-    
+
     allMetadata <- gDR::getMetaData(data, discard_keys = discard_keys)
-    
+
     seColData <- allMetadata$colData
     cl_entries <- setdiff(colnames(seColData), c("col_id", "name_"))
     seRowData <- allMetadata$rowData
     cond_entries <-
       setdiff(colnames(seRowData), c("row_id", "name_"))
     dataCols <- allMetadata$dataCols
-    
+
     complete <-
       S4Vectors::DataFrame(
         expand.grid(
@@ -215,21 +218,21 @@ df_to_assay <-
     complete$factor_id <- 1:nrow(complete)
     data_assigned <-
       merge(data, complete, by = c(cond_entries, cl_entries))
-    
+
     by_factor <- lapply(1:nrow(complete), function(x)
       data_assigned[data_assigned$factor_id == x, dataCols])
     names(by_factor) <- 1:nrow(complete)
-    
+
     stopifnot(nrow(data) == sum(sapply(by_factor, nrow)))
     stopifnot(length(by_factor) == nrow(complete))
-    
+
     # full.set <- vector("list", nrow(complete))
     # full.set[as.integer(names(by_factor))] <- by_factor
     full.set <- by_factor
-    
+
     dim(full.set) <- c(nrow(seRowData), nrow(seColData))
     dimnames(full.set) <- list(seRowData$name_, seColData$name_)
-    
+
     #add NAs for treatments not present in the given assay
     # ---------------
     # removed as it should be added when combining different assays
@@ -243,14 +246,14 @@ df_to_assay <-
     #
     # ---------------
     final.set <- full.set
-    
+
     if (data_type == "untreated") {
       untreatedConds <-
         .get_untreated_conditions(seRowData)
-      return(final.set[rownames(final.set) %in% untreatedConds, ])
+      return(final.set[rownames(final.set) %in% untreatedConds, , drop = F])
     } else if (data_type == "treated") {
       treatedConds <- .get_treated_conditions(seRowData)
-      return(final.set[rownames(final.set) %in% treatedConds, ])
+      return(final.set[rownames(final.set) %in% treatedConds, , drop = F])
     } else if (data_type == "all") {
       return(final.set)
     } else {
@@ -274,31 +277,31 @@ createSE <-
            data_type = c("untreated", "treated", "all"),
            readout = 'ReadoutValue', discard_keys = NULL) {
     data_type <- match.arg(data_type)
-    
+
     # stopifnot(all(names(dfList) %in% .assayNames))
     # #dfList must contain first assay (i.e. df_raw_data)
     # stopifnot(.assayNames[1] %in% names(dfList))
-    
+
     mats <- df_to_assay(df_data, data_type = data_type, discard_keys = discard_keys)
-    
+
     allMetadata <- getMetaData(df_data, discard_keys = discard_keys)
-    
+
     seColData <- allMetadata$colData
     rownames(seColData) <- seColData$name_
     seRowData <- allMetadata$rowData
     rownames(seRowData) <- seRowData$name_
-    
+
     seColData <-
       seColData[colnames(mats), setdiff(colnames(seColData), c('col_id', 'name_'))]
     seRowData <- seRowData[rownames(mats),
                            setdiff(colnames(seRowData), c('row_id', 'name_'))]
     matsL <- list(mats)
     names(matsL) <- readout
-    
+
     se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
                                                      colData = seColData,
                                                      rowData = seRowData)
-    
+
   }
 
 
@@ -327,7 +330,7 @@ addAssayToMAE <-
     exp_name <- match.arg(exp_name)
     #mae must contain SE with at least first assay (i.e. df_raw_data)
     stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(mae[[exp_name]]))
-    
+
     if (assay_name %in% SummarizedExperiment::assayNames(mae[[exp_name]]) &&
         update_assay == FALSE) {
       futile.logger::flog.error(
@@ -338,7 +341,7 @@ addAssayToMAE <-
       )
       stop()
     }
-    
+
     if (!identical(dim(SummarizedExperiment::assay(mae[[exp_name]])), dim(assay))) {
       futile.logger::flog.error(
         "The assay '%s' can't be added to experiment '%s' as it has different dimensions ('%s') than the assays present in the experiment ('%s').",
@@ -349,7 +352,7 @@ addAssayToMAE <-
       )
       stop()
     }
-    
+
     SummarizedExperiment::assay(mae[[exp_name]], assay_name) <- assay
   }
 
@@ -366,7 +369,7 @@ addAssayToMAE <-
 assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   stopifnot(any("SummarizedExperiment" %in% class(se)))
   #checkmate::assertString(assay_name)
-  
+
   # define data.frame with data from rowData/colData
   ids <- expand.grid(rownames(SummarizedExperiment::rowData(se)), rownames(SummarizedExperiment::colData(se)))
   colnames(ids) <- c("rId", "cId")
@@ -379,13 +382,13 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
     dplyr::left_join(ids, rData, by = "rId")
   annotTbl <-
     dplyr::left_join(annotTbl, cData, by = "cId")
-  
+
   #merge assay data with data from colData/rowData
   asL <- lapply(1:nrow(SummarizedExperiment::colData(se)), function(x) {
     myL <- SummarizedExperiment::assay(se, assay_name)[, x]
     myV <- vapply(myL, nrow, integer(1))
     rCol <- rep(names(myV), as.numeric(myV))
-    
+
     df <- data.frame(do.call(rbind, myL))
     df$rId <- rCol
     df$cId <- rownames(SummarizedExperiment::colData(se))[x]
@@ -395,21 +398,21 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   if (assay_name == "Metrics") {
     asDf$dr_metric <- c("IC", "GR")
     if (merge_metrics) {
-      
+
       colnames_IC <- get_header("IC_metrics")
       colnames_GR <- get_header("GR_metrics")
-      
-      Df_IC <- subset(asDf, dr_metric == "IC", select = c("rId", "cId", names(colnames_IC))) 
+
+      Df_IC <- subset(asDf, dr_metric == "IC", select = c("rId", "cId", names(colnames_IC)))
       Df_GR <- subset(asDf, dr_metric == "GR") %>% dplyr::select(-dr_metric)
-      
-      data.table::setnames(Df_IC, 
-                           old = names(colnames_IC), 
+
+      data.table::setnames(Df_IC,
+                           old = names(colnames_IC),
                            new = unname(colnames_IC))
-      data.table::setnames(Df_GR, 
-                           old = names(colnames_GR), 
+      data.table::setnames(Df_GR,
+                           old = names(colnames_GR),
                            new = unname(colnames_GR))
       asDf <- dplyr::full_join(Df_IC, Df_GR, by = c("rId", "cId"))
     }
   }
   asDf
-}  
+}
