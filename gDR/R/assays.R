@@ -383,9 +383,16 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   #merge assay data with data from colData/rowData
   asL <- lapply(1:nrow(SummarizedExperiment::colData(se)), function(x) {
     myL <- SummarizedExperiment::assay(se, assay_name)[, x]
+   
+    # in some datasets there might be no data for given drug/cell_line combination
+    # under such circumstances DataFrame will be empty
+    # and should be filtered out
+    # example: testdata 7 - SummarizedExperiment::assay(seL[[7]],"Normalized")[5:8,1]
+    myL <- myL[vapply(myL, nrow, integer(1)) > 0]
+    
     myV <- vapply(myL, nrow, integer(1))
     rCol <- rep(names(myV), as.numeric(myV))
-   
+  
     # there might be DataFrames with different number of columns
     # let's fill with NAs where necessary
     if (length(unique(sapply(myL, ncol))) > 1) {
