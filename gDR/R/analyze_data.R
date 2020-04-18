@@ -289,13 +289,13 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
 
 
 
-    # remove background value to readout
+    # remove background value to readout (at least 1e-10 to avoid artefactual normalized values)
     normSE <- aapply(normSE, function(x) {
-        x$CorrectedReadout <- pmax(x$ReadoutValue - x$BackgroundValue, 1)
+        x$CorrectedReadout <- pmax(x$ReadoutValue - x$BackgroundValue, 1e-10)
         return(x)},
         "Normalized")
     ctrlSE <- aapply(ctrlSE, function(x) {
-        x$CorrectedReadout <- pmax(x$ReadoutValue - x$BackgroundValue, 1)
+        x$CorrectedReadout <- pmax(x$ReadoutValue - x$BackgroundValue, 1e-10)
         return(x)})
 
     SummarizedExperiment::assay(normSE, "Controls") <- matrix(lapply(1:prod(dim(normSE)), function(x) S4Vectors::DataFrame()),
@@ -316,24 +316,34 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             df_end <- do.call(rbind,
                     lapply(row_maps_end[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
             df_end <- df_end[, c("CorrectedReadout",
-                    intersect(Keys$untrt_Endpoint, colnames(df_end)))]
+                    intersect(Keys$untrt_Endpoint, colnames(df_end))), drop = F]
             colnames(df_end)[1] <- "UntrtReadout"
-            df_end <- aggregate(df_end[, 1, drop = FALSE], by = as.list(df_end[, -1, drop = FALSE]),
+            if (ncol(df_end)>1) {
+              df_end <- aggregate(df_end[, 1, drop = FALSE],
+                by = as.list(df_end[, -1, drop = FALSE]),
                 function(x) mean(x, trim = .25))
-
+            } else {
+              df_end = DataFrame(UntrtReadout = mean(df_end$UntrtReadout, trim = .25))
+            }
             # not always present
             if (i %in% names(row_maps_cotrt)) {
                 df_ref <- do.call(rbind,
                         lapply(row_maps_cotrt[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
                 df_ref <- df_ref[, c("CorrectedReadout",
-                        intersect(Keys$ref_Endpoint, colnames(df_ref)))]
+                        intersect(Keys$ref_Endpoint, colnames(df_ref))), drop = F]
                 colnames(df_ref)[1] <- "RefReadout"
-                df_ref <- aggregate(df_ref[, 1, drop = FALSE], by = as.list(df_ref[, -1, drop = FALSE]),
+                if (ncol(df_ref)>1) {
+                  df_ref <- aggregate(df_ref[, 1, drop = FALSE],
+                    by = as.list(df_ref[, -1, drop = FALSE]),
                     function(x) mean(x, trim = .25))
+                } else {
+                  df_ref = DataFrame(RefReadout = mean(df_ref$RefReadout, trim = .25))
+                }
 
                 # check if control and co-treated wells are on the same plate
                 if (all(df_end$Barcode %in% df_ref$Barcode) && all(df_ref$Barcode %in% df_end$Barcode)) {
-                  df_end <- merge(df_end, df_ref, by = c("Barcode", Keys$discard_keys))
+                  df_end <- merge(df_end, df_ref,
+                    by = intersect(colnames(df_end), c('Barcode', Keys$discard_keys)))
                 } else {
                   futile.logger::flog.warn(
                       "Control data for the drug are propagated to other plates with co-drug controls.
@@ -409,8 +419,11 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             }
 
             # merge the data with the controls assuring that the order of the records is preseved
-            df_merged <- dplyr::left_join(data.frame(SummarizedExperiment::assay(normSE, "Normalized")[[i, j]]),
-                    data.frame(df_ctrl), by = c("Barcode", Keys$discard_keys))
+            df_merged <- merge(
+              data.frame(SummarizedExperiment::assay(normSE, "Normalized")[[i, j]]),
+                    data.frame(df_ctrl),
+                    by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)),
+                    all.x = T)
 
             # calculate the normalized values
             normSE_n[[i, j]]$RelativeViability = df_merged$RelativeViability <-
