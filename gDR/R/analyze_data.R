@@ -306,15 +306,17 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
 
     # temporary optimization (use 'normSE_n' and 'normSE_c' to avoid using 'assay<-` in a foor loops)
     # TODO: refactor this part of code once we switch to DataFrameMatrix class
+    normSE_original = SummarizedExperiment::assay(normSE, "Normalized")
+    ctrl_original = SummarizedExperiment::assay(ctrlSE)
     normSE_n <- SummarizedExperiment::assay(normSE, "Normalized")
     normSE_c <- SummarizedExperiment::assay(normSE, "Controls")
     for (i in rownames(normSE_n)) {
         for (j in colnames(normSE_n)) {
 
-            if (nrow(SummarizedExperiment::assay(normSE, "Normalized")[[i, j]]) == 0) next # skip if no data
+            if (nrow(normSE_original[[i, j]]) == 0) next # skip if no data
 
             df_end <- do.call(rbind,
-                    lapply(row_maps_end[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
+                    lapply(row_maps_end[[i]], function(x) ctrl_original[[x, col_maps[j]]]))
             df_end <- df_end[, c("CorrectedReadout",
                     intersect(Keys$untrt_Endpoint, colnames(df_end))), drop = F]
             colnames(df_end)[1] <- "UntrtReadout"
@@ -328,7 +330,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             # not always present
             if (i %in% names(row_maps_cotrt)) {
                 df_ref <- do.call(rbind,
-                        lapply(row_maps_cotrt[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
+                        lapply(row_maps_cotrt[[i]], function(x) ctrl_original[[x, col_maps[j]]]))
                 df_ref <- df_ref[, c("CorrectedReadout",
                         intersect(Keys$ref_Endpoint, colnames(df_ref))), drop = F]
                 colnames(df_ref)[1] <- "RefReadout"
@@ -374,7 +376,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
 
             if (length(row_maps_T0[[i]]) > 0) {
               df_0 <- do.call(rbind,
-                      lapply(row_maps_T0[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
+                      lapply(row_maps_T0[[i]], function(x) ctrl_original[[x, col_maps[j]]]))
               df_0 <- df_0[, c("CorrectedReadout", intersect(Keys$Day0, colnames(df_0)))]
               colnames(df_0)[1] <- "Day0Readout"
               df_0 <- aggregate(df_0[, 1, drop = FALSE], by = as.list(df_0[, -1, drop = FALSE]),
@@ -405,7 +407,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             #gladkia: assert for merged study/control data
             ctrl_bcodes <- sort(unique(df_ctrl$Barcode))
             trt_bcodes <-
-              sort(unique(SummarizedExperiment::assay(normSE, "Normalized")[[i, j]]$Barcode))
+              sort(unique(normSE_original[[i, j]]$Barcode))
             if (!all(trt_bcodes %in% ctrl_bcodes)) {
               futile.logger::flog.warn(
                   "Control data are averaged and propagated to treatment plates.
@@ -420,7 +422,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
 
             # merge the data with the controls assuring that the order of the records is preseved
             df_merged <- merge(
-              data.frame(SummarizedExperiment::assay(normSE, "Normalized")[[i, j]]),
+              data.frame(normSE_original[[i, j]]),
                     data.frame(df_ctrl),
                     by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)),
                     all.x = T)
