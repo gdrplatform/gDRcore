@@ -384,8 +384,9 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
     dplyr::left_join(annotTbl, cData, by = "cId")
 
   #merge assay data with data from colData/rowData
+  SE_assay = SummarizedExperiment::assay(se, assay_name)
   asL <- lapply(1:nrow(SummarizedExperiment::colData(se)), function(x) {
-    myL <- SummarizedExperiment::assay(se, assay_name)[, x]
+    myL <- SE_assay[, x]
 
     # in some datasets there might be no data for given drug/cell_line combination
     # under such circumstances DataFrame will be empty
