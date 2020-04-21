@@ -170,6 +170,9 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
       Keys$DoseResp <- setdiff(Keys$DoseResp, discard_keys)
     }
 
+    # remove background value to readout (at least 1e-10 to avoid artefactual normalized values)
+    df_raw_data$CorrectedReadout = pmax(df_raw_data$ReadoutValue -
+                    df_raw_data$BackgroundValue, 1e-10)
     normSE <- gDR::createSE(df_raw_data, data_type = "treated", discard_keys = discard_keys)
     SummarizedExperiment::assayNames(normSE) = "Normalized"
     ctrlSE <- gDR::createSE(df_raw_data, data_type = "untreated", discard_keys = discard_keys)
@@ -290,13 +293,13 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
 
 
     # remove background value to readout (at least 1e-10 to avoid artefactual normalized values)
-    normSE <- aapply(normSE, function(x) {
-        x$CorrectedReadout <- pmax(x$ReadoutValue - x$BackgroundValue, 1e-10)
-        return(x)},
-        "Normalized")
-    ctrlSE <- aapply(ctrlSE, function(x) {
-        x$CorrectedReadout <- pmax(x$ReadoutValue - x$BackgroundValue, 1e-10)
-        return(x)})
+    # normSE <- aapply(normSE, function(x) {
+    #     x$CorrectedReadout <- pmax(x$ReadoutValue - x$BackgroundValue, 1e-10)
+    #     return(x)},
+    #     "Normalized")
+    # ctrlSE <- aapply(ctrlSE, function(x) {
+    #     x$CorrectedReadout <- pmax(x$ReadoutValue - x$BackgroundValue, 1e-10)
+    #     return(x)})
 
     SummarizedExperiment::assay(normSE, "Controls") <- matrix(lapply(1:prod(dim(normSE)), function(x) S4Vectors::DataFrame()),
             nrow = nrow(normSE), ncol = ncol(normSE))
