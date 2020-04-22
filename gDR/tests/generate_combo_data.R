@@ -24,32 +24,32 @@ df_normalized = data.frame( CellLineName = as.vector(t(matrix(c('COV318', 'HCC22
                     Day0Readout = as.vector(t(matrix(c(42,57), 2, 720))))
 
 # apply the drug effect
-GEC50 = matrix(c(.08, 2, .5, .2),2,2)
-colnames(GEC50) = c('COV318', 'HCC2218')
-rownames(GEC50) = c('Palbociclib', 'Trametinib')
+ec50 = matrix(c(.08, 2, .5, .2),2,2)
+colnames(ec50) = c('COV318', 'HCC2218')
+rownames(ec50) = c('Palbociclib', 'Trametinib')
 
-GRmax = matrix(c(.62, .9, .75, .6),2,2)
-colnames(GRmax) = c('COV318', 'HCC2218')
-rownames(GRmax) = c('Palbociclib', 'Trametinib')
+e_max = matrix(c(.62, .9, .75, .6),2,2)
+colnames(e_max) = c('COV318', 'HCC2218')
+rownames(e_max) = c('Palbociclib', 'Trametinib')
 
 df_normalized$ReadoutValue = 100 * apply( df_normalized, 1, function(x)
-    GRmax[x['DrugName'],x['CellLineName']] + (1-GRmax[x['DrugName'],x['CellLineName']])*
-        (GEC50[x['DrugName'],x['CellLineName']]**2 / (as.numeric(x['Concentration'])**2 +
-            GEC50[x['DrugName'],x['CellLineName']]**2)))
+    e_max[x['DrugName'],x['CellLineName']] + (1-e_max[x['DrugName'],x['CellLineName']])*
+        (ec50[x['DrugName'],x['CellLineName']]**2 / (as.numeric(x['Concentration'])**2 +
+            ec50[x['DrugName'],x['CellLineName']]**2)))
 
 # apply the 2nd drug
-GEC50_2 = matrix(c(.03, .2, 2,   .02, 3, .5),3,2)
-colnames(GEC50_2) = c('COV318', 'HCC2218')
-rownames(GEC50_2) = c('GDC-0032', 'GDC-0941', 'GDC-0077')
+ec50_2 = matrix(c(.03, .2, 2,   .02, 3, .5),3,2)
+colnames(ec50_2) = c('COV318', 'HCC2218')
+rownames(ec50_2) = c('GDC-0032', 'GDC-0941', 'GDC-0077')
 
-GRmax_2 = matrix(c(.75, .85, 1,  .7, .95, .8),3,2)
-colnames(GRmax_2) = c('COV318', 'HCC2218')
-rownames(GRmax_2) = c('GDC-0032', 'GDC-0941', 'GDC-0077')
+e_max_2 = matrix(c(.75, .85, 1,  .7, .95, .8),3,2)
+colnames(e_max_2) = c('COV318', 'HCC2218')
+rownames(e_max_2) = c('GDC-0032', 'GDC-0941', 'GDC-0077')
 
 df_normalized$ReadoutValue = df_normalized$ReadoutValue * apply( df_normalized, 1, function(x)
-    GRmax_2[x['DrugName_2'],x['CellLineName']] + (1-GRmax_2[x['DrugName_2'],x['CellLineName']])*
-        (GEC50_2[x['DrugName_2'],x['CellLineName']]**2 / (as.numeric(x['Concentration_2'])**2 +
-            GEC50_2[x['DrugName_2'],x['CellLineName']]**2)))
+    e_max_2[x['DrugName_2'],x['CellLineName']] + (1-e_max_2[x['DrugName_2'],x['CellLineName']])*
+        (ec50_2[x['DrugName_2'],x['CellLineName']]**2 / (as.numeric(x['Concentration_2'])**2 +
+            ec50_2[x['DrugName_2'],x['CellLineName']]**2)))
 
 # add some synergy/antagonism
 idx = df_normalized$CellLineName == 'HCC2218' & df_normalized$DrugName == 'Trametinib' &

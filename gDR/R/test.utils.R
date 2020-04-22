@@ -66,7 +66,11 @@ test_se <- function(se, lRef) {
   myL <- lapply(SummarizedExperiment::assayNames(se), function(x) {
     print(x)
     xAs <- gDR::assay_to_df(se, x, merge_metrics = TRUE)
+    xAs$DrugName <- as.character(xAs$DrugName)
     xDf <- lRef[[paste0("assay_", x)]]
+    if(x %in% c("Controls", "Avg_Controls")){
+    xDf$DivisionTime <- as.numeric(xDf$DivisionTime)
+    }
     expect_true(nrow(xAs) == nrow(xDf))
     expect_equal(xAs, data.frame(xDf), tolerance = 1e-5)
   })

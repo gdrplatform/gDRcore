@@ -50,10 +50,10 @@
 #' @return the same SE object with updated nested dataframe
 #'
 aapply <-
-function(SE, fx, assay_type = 1) {
+  function(SE, fx, assay_type = 1) {
     SummarizedExperiment::assay(SE, assay_type) = matrix(sapply(SummarizedExperiment::assay(SE, assay_type), fx), nrow = nrow(SE), ncol = ncol(SE))
     return(SE)
-}
+  }
 
 
 
@@ -98,11 +98,12 @@ getMetaData <- function(data,
       nocell_metavars[sapply(nocell_metavars,
                              function(x)
                                nrow(unique(conditions[, x, drop = FALSE]))) == 1],
-      # protect cell line and drug name
+      # protect cell line and drug name and duration
       c(
         gDR::get_header("add_clid"),
         gDR::get_identifier("drug"),
-        gDR::get_identifier("drugname")
+        gDR::get_identifier("drugname"),
+        gDR::get_identifier("duration")
       )
     )
   unique_metavars <- c(intersect(
@@ -110,7 +111,8 @@ getMetaData <- function(data,
       gDR::get_identifier("cellline"),
       gDR::get_header("add_clid"),
       gDR::get_identifier("drug"),
-      gDR::get_identifier("drugname")
+      gDR::get_identifier("drugname"),
+      gDR::get_identifier("duration")
     ),
     metavars
   ),
@@ -131,19 +133,20 @@ getMetaData <- function(data,
                           gDR::get_identifier("drug"),
                           paste0(gDR::get_identifier("drug"), "_", 2:10),
                           gDR::get_identifier("drugname"),
-                          paste0(gDR::get_identifier("drugname"), "_", 2:10)
+                          paste0(gDR::get_identifier("drugname"), "_", 2:10),
+                          gDR::get_identifier("duration")
                         ))
 
-  # temporary removing extra column to avoid bug
-  cl_entries <- setdiff(cl_entries, "ReferenceDivisionTime")
-  
+  # # temporary removing extra column to avoid bug
+  # cl_entries <- setdiff(cl_entries, "ReferenceDivisionTime")
+
   #colData
   colData <- unique(conditions[, cl_entries, drop = FALSE])
   colData$col_id <- 1:nrow(colData)
   colData$name_ <-
     apply(colData, 1, function(x)
       paste(x, collapse = "_"))
-  
+
   # get all other metadata for the rows
   cond_entries <- setdiff(unique_metavars, cl_entries)
   # temporary removing extra column to avoid bug
@@ -153,7 +156,7 @@ getMetaData <- function(data,
   rowData$name_ <-
     apply(rowData, 1, function(x)
       paste(x, collapse = "_"))
-  
+
   # get the remaining columns as data
   dataCols <- setdiff(colnames(data), setdiff(metavars, discard_keys))
 
@@ -247,10 +250,10 @@ df_to_assay <-
     if (data_type == "untreated") {
       untreatedConds <-
         .get_untreated_conditions(seRowData)
-      return(final.set[rownames(final.set) %in% untreatedConds, ])
+      return(final.set[rownames(final.set) %in% untreatedConds, , drop = F])
     } else if (data_type == "treated") {
       treatedConds <- .get_treated_conditions(seRowData)
-      return(final.set[rownames(final.set) %in% treatedConds, ])
+      return(final.set[rownames(final.set) %in% treatedConds, , drop = F])
     } else if (data_type == "all") {
       return(final.set)
     } else {
@@ -294,7 +297,7 @@ createSE <-
                            setdiff(colnames(seRowData), c('row_id', 'name_'))]
     matsL <- list(mats)
     names(matsL) <- readout
-    
+
     se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
                                                      colData = seColData,
                                                      rowData = seRowData)
@@ -331,22 +334,22 @@ addAssayToMAE <-
     if (assay_name %in% SummarizedExperiment::assayNames(mae[[exp_name]]) &&
         update_assay == FALSE) {
       futile.logger::flog.error(
-          "The assay '%s' can't be added to experiment '%s' as it currently exists.
-  Please set 'update_assay' flag to TRUE to be able to update the assay instead of adding it",
-          assay_name,
-          exp_name
-        )
+        "The assay '%s' can't be added to experiment '%s' as it currently exists.
+        Please set 'update_assay' flag to TRUE to be able to update the assay instead of adding it",
+        assay_name,
+        exp_name
+      )
       stop()
     }
 
     if (!identical(dim(SummarizedExperiment::assay(mae[[exp_name]])), dim(assay))) {
       futile.logger::flog.error(
-          "The assay '%s' can't be added to experiment '%s' as it has different dimensions ('%s') than the assays present in the experiment ('%s').",
-          assay_name,
-          exp_name,
-          paste(dim(assay), collapse = "x"),
-          paste(dim(SummarizedExperiment::assay(mae[[exp_name]])), collapse = "x")
-        )
+        "The assay '%s' can't be added to experiment '%s' as it has different dimensions ('%s') than the assays present in the experiment ('%s').",
+        assay_name,
+        exp_name,
+        paste(dim(assay), collapse = "x"),
+        paste(dim(SummarizedExperiment::assay(mae[[exp_name]])), collapse = "x")
+      )
       stop()
     }
 
@@ -366,7 +369,7 @@ addAssayToMAE <-
 assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   stopifnot(any("SummarizedExperiment" %in% class(se)))
   #checkmate::assertString(assay_name)
-  
+
   # define data.frame with data from rowData/colData
   ids <- expand.grid(rownames(SummarizedExperiment::rowData(se)), rownames(SummarizedExperiment::colData(se)))
   colnames(ids) <- c("rId", "cId")
@@ -379,20 +382,20 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
     dplyr::left_join(ids, rData, by = "rId")
   annotTbl <-
     dplyr::left_join(annotTbl, cData, by = "cId")
-  
+
   #merge assay data with data from colData/rowData
+  SE_assay = SummarizedExperiment::assay(se, assay_name)
   asL <- lapply(1:nrow(SummarizedExperiment::colData(se)), function(x) {
-    myL <- SummarizedExperiment::assay(se, assay_name)[, x]
-   
+    myL <- SE_assay[, x]
+
     # in some datasets there might be no data for given drug/cell_line combination
     # under such circumstances DataFrame will be empty
     # and should be filtered out
     # example: testdata 7 - SummarizedExperiment::assay(seL[[7]],"Normalized")[5:8,1]
     myL <- myL[vapply(myL, nrow, integer(1)) > 0]
-    
+
     myV <- vapply(myL, nrow, integer(1))
     rCol <- rep(names(myV), as.numeric(myV))
-  
     # there might be DataFrames with different number of columns
     # let's fill with NAs where necessary
     if (length(unique(sapply(myL, ncol))) > 1) {
@@ -400,7 +403,7 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
     } else {
       df <- data.frame(do.call(rbind, myL))
     }
-    
+
     df$rId <- rCol
     df$cId <- rownames(SummarizedExperiment::colData(se))[x]
     full.df <- left_join(df, annotTbl, by = c("rId", "cId"))
@@ -409,21 +412,21 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   if (assay_name == "Metrics") {
     asDf$dr_metric <- c("IC", "GR")
     if (merge_metrics) {
-      
+
       colnames_IC <- get_header("IC_metrics")
       colnames_GR <- get_header("GR_metrics")
-      
-      Df_IC <- subset(asDf, dr_metric == "IC", select = c("rId", "cId", names(colnames_IC))) 
+
+      Df_IC <- subset(asDf, dr_metric == "IC", select = c("rId", "cId", names(colnames_IC)))
       Df_GR <- subset(asDf, dr_metric == "GR") %>% dplyr::select(-dr_metric)
-      
-      data.table::setnames(Df_IC, 
-                           old = names(colnames_IC), 
+
+      data.table::setnames(Df_IC,
+                           old = names(colnames_IC),
                            new = unname(colnames_IC))
-      data.table::setnames(Df_GR, 
-                           old = names(colnames_GR), 
+      data.table::setnames(Df_GR,
+                           old = names(colnames_GR),
                            new = unname(colnames_GR))
       asDf <- dplyr::full_join(Df_IC, Df_GR, by = c("rId", "cId"))
     }
   }
   asDf
-}  
+}
