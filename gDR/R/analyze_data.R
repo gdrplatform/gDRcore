@@ -440,38 +440,38 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             # use the reference doubling Time (ReferenceDivisionTime) for GRvalue if day 0 missing
             if ( any(is.na(df_merged$Day0Readout)) ) {
 
-                if ( !(get_header('add_clid')[3] %in% colnames(colData(normSE))) ||
-                  is.na(colData(normSE)[j, get_header('add_clid')[3]]) ) {
+                if ( !(get_header('add_clid')[3] %in% colnames(SummarizedExperiment::colData(normSE))) ||
+                  is.na(SummarizedExperiment::colData(normSE)[j, get_header('add_clid')[3]]) ) {
                     futile.logger::flog.warn(paste(
-                      "No day 0 information and no reference doubling time for cell line", colData(normSE)[j,get_header('add_clid')[1]],
+                      "No day 0 information and no reference doubling time for cell line", SummarizedExperiment::colData(normSE)[j,get_header('add_clid')[1]],
                       "--> GR values are NA"))
-                } else if (colData(normSE)[j, get_header('add_clid')[3]] >
-                    1.5 * rowData(normSE)[i, get_identifier("duration")]) {
+                } else if (SummarizedExperiment::colData(normSE)[j, get_header('add_clid')[3]] >
+                    1.5 * SummarizedExperiment::rowData(normSE)[i, get_identifier("duration")]) {
                       futile.logger::flog.warn(paste( "Reference doubling time for cell line",
-                        colData(normSE)[j,get_header('add_clid')[1]], "is",
-                        colData(normSE)[j, get_header('add_clid')[3]],
+                      SummarizedExperiment::colData(normSE)[j,get_header('add_clid')[1]], "is",
+                      SummarizedExperiment::colData(normSE)[j, get_header('add_clid')[3]],
                         "which is too long for GR calculation compared to assay duration (",
-                        rowData(normSE)[i, get_identifier("duration")],
+                      SummarizedExperiment::rowData(normSE)[i, get_identifier("duration")],
                         "--> GR values are NA"))
                  } else {
 
-                  refDivisionTime = colData(normSE)[j, get_header('add_clid')[3]]
+                  refDivisionTime = SummarizedExperiment::colData(normSE)[j, get_header('add_clid')[3]]
 
                   futile.logger::flog.warn(paste(
-                    "Missing day 0 information --> calculate GR value based on reference doubling time for", colData(normSE)[j,get_header('add_clid')[1]]))
+                    "Missing day 0 information --> calculate GR value based on reference doubling time for", SummarizedExperiment::colData(normSE)[j,get_header('add_clid')[1]]))
 
                   df_merged$GRvalue <-
                   round(2 ^ (1 + (
                     log2(pmin(1.25, # capping to avoid artefacts
                               df_merged[, "RelativeViability"])) /
-                      (rowData(normSE)[i, get_identifier("duration")] / refDivisionTime)
+                      (SummarizedExperiment::rowData(normSE)[i, get_identifier("duration")] / refDivisionTime)
                   )), 4) - 1
 
                   df_ctrl$RefGRvalue <-
                   round(2 ^ (1 + (
                     log2(pmin(1.25, # capping to avoid artefacts
                               df_ctrl[, "RefRelativeViability"])) /
-                      (rowData(normSE)[i, get_identifier("duration")] / refDivisionTime)
+                      (SummarizedExperiment::rowData(normSE)[i, get_identifier("duration")] / refDivisionTime)
                   )), 4) - 1
                 }
             }
