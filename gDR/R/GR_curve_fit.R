@@ -417,6 +417,21 @@ ICGRlogisticFit <-
   }
 
 
+range_mv <- function(c50, x_inf, hillCoefficient, x_0 = 1, linear_conc_range_uM = c(5e-3, 5)) {
+   # c50 in uM
+   # linear_conc_range_uM in uM (from 5nM to 5uM by default)
+
+  conc_values = 10 ** seq(log10(linear_conc_range_uM[1]), log10(linear_conc_range_uM[2]), .01)
+
+  viab = sapply(conc_values, function(x) logistic_4parameters(x, x_inf, x_0, c50, hillCoefficient))
+
+  RV = (viab + 100)/100
+  MV = mean(RV)
+
+  return(MV)
+}
+
+
 # logistic function (not used in the file but useful for plotting externally)
 #' @export
 logistic_4parameters <- function(c, Vinf, V0, EC50, h) {

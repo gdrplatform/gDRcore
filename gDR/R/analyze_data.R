@@ -1,4 +1,4 @@
-
+normSE_original
 
 #' @import gneDB
 #' @import reshape2
@@ -248,6 +248,26 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
         })
     names(row_maps_cotrt) <- rownames(normSE)
 
+    # reassess the cases without a match to find equivalent drug and concentration (only 2 drugs)
+    # test if one can use one of the treatment as a reference
+    if ('Gnumber_2' %in% colnames(rowData(normSE))) {
+      for (rnames in names(row_maps_cotrt)[sapply(row_maps_cotrt, length)==0]) {
+
+        ref_metadata_idx = setdiff(intersect(Keys$ref_Endpoint,
+                              names(SummarizedExperiment::rowData(ctrlSE))),
+                            c('Gnumber_2', "DrugName_2", 'Concentration_2'))
+        names(ref_metadata_idx) = ref_metadata_idx
+
+        row_maps_cotrt[rnames] = rownames(normSE)[which(apply(as.matrix(  c(IRanges::LogicalList(
+              lapply(ref_metadata_idx, function(y)
+                SummarizedExperiment::rowData(normSE)[,y, drop=F] ==
+                    (SummarizedExperiment::rowData(normSE)[rnames, y, drop=F])
+              )),
+              list( Gnumber = rowData(normSE)$Gnumber == rowData(normSE)[rnames,'Gnumber_2']))),
+              2, all))]
+      }
+    }
+
     # matching the reference at time 0 (if available)
     row_maps_T0 <- lapply(rownames(normSE), function(x) {
         # define matix with matching metadata
@@ -291,16 +311,6 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
     }
 
 
-
-    # remove background value to readout (at least 1e-10 to avoid artefactual normalized values)
-    # normSE <- aapply(normSE, function(x) {
-    #     x$CorrectedReadout <- pmax(x$ReadoutValue - x$BackgroundValue, 1e-10)
-    #     return(x)},
-    #     "Normalized")
-    # ctrlSE <- aapply(ctrlSE, function(x) {
-    #     x$CorrectedReadout <- pmax(x$ReadoutValue - x$BackgroundValue, 1e-10)
-    #     return(x)})
-
     SummarizedExperiment::assay(normSE, "Controls") <- matrix(lapply(1:prod(dim(normSE)), function(x) S4Vectors::DataFrame()),
             nrow = nrow(normSE), ncol = ncol(normSE))
 
@@ -309,15 +319,16 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
 
     # temporary optimization (use 'normSE_n' and 'normSE_c' to avoid using 'assay<-` in a foor loops)
     # TODO: refactor this part of code once we switch to DataFrameMatrix class
-    normSE_n <- SummarizedExperiment::assay(normSE, "Normalized")
+    ctrlSE_original <- SummarizedExperiment::assay(ctrlSE)
+    normSE_n <- normSE_original <- SummarizedExperiment::assay(normSE, "Normalized")
     normSE_c <- SummarizedExperiment::assay(normSE, "Controls")
     for (i in rownames(normSE_n)) {
         for (j in colnames(normSE_n)) {
 
-            if (nrow(SummarizedExperiment::assay(normSE, "Normalized")[[i, j]]) == 0) next # skip if no data
+            if (nrow(normSE_original[[i, j]]) == 0) next # skip if no data
 
             df_end <- do.call(rbind,
-                    lapply(row_maps_end[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
+                    lapply(row_maps_end[[i]], function(x) ctrlSE_original[[x, col_maps[j]]]))
             df_end <- df_end[, c("CorrectedReadout",
                     intersect(Keys$untrt_Endpoint, colnames(df_end))), drop = F]
             colnames(df_end)[1] <- "UntrtReadout"
@@ -329,9 +340,10 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
               df_end = DataFrame(UntrtReadout = mean(df_end$UntrtReadout, trim = .25))
             }
             # not always present
-            if (i %in% names(row_maps_cotrt)) {
+            if (i %in% names(row_maps_cotrt) && length(row_maps_cotrt[[i]])>0) {
+              if (all(row_maps_cotrt[[i]] %in% rownames(ctrlSE))) {
                 df_ref <- do.call(rbind,
-                        lapply(row_maps_cotrt[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
+                        lapply(row_maps_cotrt[[i]], function(x) ctrlSE_original[[x, col_maps[j]]]))
                 df_ref <- df_ref[, c("CorrectedReadout",
                         intersect(Keys$ref_Endpoint, colnames(df_ref))), drop = F]
                 colnames(df_ref)[1] <- "RefReadout"
@@ -371,13 +383,56 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                                i,
                                j))
                 }
+              } else if (all(row_maps_cotrt[[i]] %in% rownames(normSE))) {
+                ref_conc = rowData(normSE)[i,'Concentration_2']
+                df_ref <- do.call(rbind,
+                        lapply(row_maps_cotrt[[i]], function(x) normSE_original[[x, col_maps[j]]][
+                          normSE_original[[x, col_maps[j]]]$Concentration ==
+                            ref_conc,]))
+                df_ref <- df_ref[, c("CorrectedReadout",
+                        intersect(Keys$ref_Endpoint, colnames(df_ref))), drop = F]
+                colnames(df_ref)[1] <- "RefReadout"
+                if (ncol(df_ref)>1) {
+                  df_ref <- aggregate(df_ref[, 1, drop = FALSE],
+                    by = as.list(df_ref[, -1, drop = FALSE]),
+                    function(x) mean(x, trim = .25))
+                } else {
+                  df_ref = DataFrame(RefReadout = mean(df_ref$RefReadout, trim = .25))
+                }
+
+                # check if control and co-treated wells are on the same plate
+                if (all(df_end$Barcode %in% df_ref$Barcode) && all(df_ref$Barcode %in% df_end$Barcode)) {
+                  df_end <- merge(df_end, df_ref,
+                    by = intersect(colnames(df_end), c('Barcode', Keys$discard_keys)))
+                } else {
+                  futile.logger::flog.warn(
+                      "Control data for the drug are propagated to other plates with co-drug controls.
+                      Treatment Id: %s
+                      Cell_line Id: %s",
+                      i,
+                      j
+                    )
+                  # propagate average values to the other plates
+                  df_end <- merge(df_end, df_ref, by = "Barcode", all = TRUE)
+                  mean_UntrtReadout <- mean(df_end$UntrtReadout, na.rm = TRUE)
+                  mean_RefReadout <- mean(df_end$RefReadout, na.rm = TRUE)
+                  df_end$UntrtReadout[is.na(df_end$UntrtReadout)] <- mean_UntrtReadout
+                  df_end$RefReadout[is.na(df_end$RefReadout)] <- mean_RefReadout
+                }
+              } else {
+                stop(sprintf("unexpected case for cotrt reference.
+                    Treatment Id: '%s'
+                    Cell_line Id: %s",
+                             i,
+                             j))
+              }
             } else {
                 df_end$RefReadout <- df_end$UntrtReadout
             }
 
             if (length(row_maps_T0[[i]]) > 0) {
               df_0 <- do.call(rbind,
-                      lapply(row_maps_T0[[i]], function(x) SummarizedExperiment::assay(ctrlSE)[[x, col_maps[j]]]))
+                      lapply(row_maps_T0[[i]], function(x) ctrlSE_original[[x, col_maps[j]]]))
               df_0 <- df_0[, c("CorrectedReadout", intersect(Keys$Day0, colnames(df_0)))]
               colnames(df_0)[1] <- "Day0Readout"
               df_0 <- aggregate(df_0[, 1, drop = FALSE], by = as.list(df_0[, -1, drop = FALSE]),
@@ -408,7 +463,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             #gladkia: assert for merged study/control data
             ctrl_bcodes <- sort(unique(df_ctrl$Barcode))
             trt_bcodes <-
-              sort(unique(SummarizedExperiment::assay(normSE, "Normalized")[[i, j]]$Barcode))
+              sort(unique(normSE_original[[i, j]]$Barcode))
             if (!all(trt_bcodes %in% ctrl_bcodes)) {
               futile.logger::flog.warn(
                   "Control data are averaged and propagated to treatment plates.
@@ -421,16 +476,21 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                         t(colMeans(df_ctrl[, setdiff(colnames(df_ctrl), "Barcode")]))))
             }
 
+            # merge change order --> was a mistake
+            # df_merged <- merge(
+            #   data.frame(normSE_original[[i, j]]),
+            #         data.frame(df_ctrl),
+            #         by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)),
+            #         all.x = T)
+
             # merge the data with the controls assuring that the order of the records is preseved
-            df_merged <- merge(
-              data.frame(SummarizedExperiment::assay(normSE, "Normalized")[[i, j]]),
+            df_merged <- dplyr::left_join(
+                    data.frame(normSE_original[[i, j]]),
                     data.frame(df_ctrl),
-                    by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)),
-                    all.x = T)
+                    by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)))
 
             # calculate the normalized values
-            normSE_n[[i, j]]$RelativeViability = df_merged$RelativeViability <-
-              round(df_merged$CorrectedReadout / df_merged$UntrtReadout, 4)
+            df_merged$RelativeViability <- round(df_merged$CorrectedReadout / df_merged$UntrtReadout, 4)
 
             df_merged$GRvalue = round(2 ** (
               log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
@@ -476,7 +536,9 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                 }
             }
 
-            normSE_n[[i, j]]$GRvalue = df_merged$GRvalue
+            # more robust assignment in case the order of df_merged has changed
+            normSE_n[[i, j]] = merge(normSE_n[[i, j]], df_merged[, c(colnames(normSE_n[[i, j]]),
+                    'GRvalue', 'RelativeViability')])
             normSE_c[[i,j]] <- DataFrame(df_ctrl)
         }
     }
