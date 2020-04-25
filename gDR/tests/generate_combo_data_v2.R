@@ -11,7 +11,7 @@ df_normalized = data.frame( CellLineName = as.vector(t(matrix(c('COV318', 'HCC22
                         'G02001876', 'G02442104', 'G02001876', 'G02442104'), 54, 10))),
                     Gnumber_2 = as.vector(t(matrix(
                       c('Vehicle', 'Vehicle', 'Vehicle', 'Vehicle', 'Vehicle',
-                      'G00505032', 'G00033829','G00505032', 'G00033829'), 54, 10))),
+                      'G00505032', 'G00033829','G00033829', 'G00505032'), 54, 10))),
                     Concentration = as.vector(matrix(c(0, 10**(seq(-2.5,1,.5))), 540, 1)),
                     Concentration_2 = 0,
                     RelativeViability = 1,
