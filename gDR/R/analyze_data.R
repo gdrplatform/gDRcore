@@ -1,4 +1,3 @@
-normSE_original
 
 #' @import gneDB
 #' @import reshape2
@@ -250,7 +249,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
 
     # reassess the cases without a match to find equivalent drug and concentration (only 2 drugs)
     # test if one can use one of the treatment as a reference
-    if ('Gnumber_2' %in% colnames(rowData(normSE))) {
+    if ('Gnumber_2' %in% colnames(SummarizedExperiment::rowData(normSE))) {
       for (rnames in names(row_maps_cotrt)[sapply(row_maps_cotrt, length)==0]) {
 
         ref_metadata_idx = setdiff(intersect(Keys$ref_Endpoint,
@@ -263,7 +262,8 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                 SummarizedExperiment::rowData(normSE)[,y, drop=F] ==
                     (SummarizedExperiment::rowData(normSE)[rnames, y, drop=F])
               )),
-              list( Gnumber = rowData(normSE)$Gnumber == rowData(normSE)[rnames,'Gnumber_2']))),
+              list( Gnumber = SummarizedExperiment::rowData(normSE)$Gnumber ==
+                SummarizedExperiment::rowData(normSE)[rnames,'Gnumber_2']))),
               2, all))]
       }
     }
@@ -384,7 +384,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                                j))
                 }
               } else if (all(row_maps_cotrt[[i]] %in% rownames(normSE))) {
-                ref_conc = rowData(normSE)[i,'Concentration_2']
+                ref_conc = SummarizedExperiment::rowData(normSE)[i,'Concentration_2']
                 df_ref <- do.call(rbind,
                         lapply(row_maps_cotrt[[i]], function(x) normSE_original[[x, col_maps[j]]][
                           normSE_original[[x, col_maps[j]]]$Concentration ==
@@ -476,18 +476,19 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                         t(colMeans(df_ctrl[, setdiff(colnames(df_ctrl), "Barcode")]))))
             }
 
-            # merge change order --> was a mistake
-            # df_merged <- merge(
-            #   data.frame(normSE_original[[i, j]]),
-            #         data.frame(df_ctrl),
-            #         by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)),
-            #         all.x = T)
+            # works with by = character(0) but changes the order of rows
+            df_merged <- merge(
+              data.frame(normSE_original[[i, j]]),
+                    data.frame(df_ctrl),
+                    by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)),
+                    all.x = T)
 
             # merge the data with the controls assuring that the order of the records is preseved
-            df_merged <- dplyr::left_join(
-                    data.frame(normSE_original[[i, j]]),
-                    data.frame(df_ctrl),
-                    by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)))
+            # removing this line because failed when   by = character(0)
+            # df_merged <- dplyr::left_join(
+            #         data.frame(normSE_original[[i, j]]),
+            #         data.frame(df_ctrl),
+            #         by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)))
 
             # calculate the normalized values
             df_merged$RelativeViability <- round(df_merged$CorrectedReadout / df_merged$UntrtReadout, 4)
@@ -537,8 +538,9 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             }
 
             # more robust assignment in case the order of df_merged has changed
-            normSE_n[[i, j]] = merge(normSE_n[[i, j]], df_merged[, c(colnames(normSE_n[[i, j]]),
-                    'GRvalue', 'RelativeViability')])
+            normSE_n[[i, j]] = merge(normSE_n[[i, j]],
+                df_merged[, c(colnames(normSE_n[[i, j]]), 'GRvalue', 'RelativeViability')],
+                by = colnames(normSE_n[[i, j]]))
             normSE_c[[i,j]] <- DataFrame(df_ctrl)
         }
     }
