@@ -249,6 +249,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
 
     # reassess the cases without a match to find equivalent drug and concentration (only 2 drugs)
     # test if one can use one of the treatment as a reference
+
     if ('Gnumber_2' %in% colnames(SummarizedExperiment::rowData(normSE))) {
       for (rnames in names(row_maps_cotrt)[sapply(row_maps_cotrt, length)==0]) {
 
@@ -257,14 +258,15 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                             c('Gnumber_2', "DrugName_2", 'Concentration_2'))
         names(ref_metadata_idx) = ref_metadata_idx
 
-        row_maps_cotrt[rnames] = rownames(normSE)[which(apply(as.matrix(  c(IRanges::LogicalList(
+        ref_match = apply(as.matrix(  c(IRanges::LogicalList(
               lapply(ref_metadata_idx, function(y)
                 SummarizedExperiment::rowData(normSE)[,y, drop=F] ==
                     (SummarizedExperiment::rowData(normSE)[rnames, y, drop=F])
               )),
               list( Gnumber = SummarizedExperiment::rowData(normSE)$Gnumber ==
                 SummarizedExperiment::rowData(normSE)[rnames,'Gnumber_2']))),
-              2, all))]
+              2, all)
+        if (any(ref_match)) row_maps_cotrt[rnames] = rownames(normSE)[which(ref_match)]
       }
     }
 
@@ -384,11 +386,37 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                                j))
                 }
               } else if (all(row_maps_cotrt[[i]] %in% rownames(normSE))) {
+                # case of the reference being with Gnumber == Gnumber_2
                 ref_conc = SummarizedExperiment::rowData(normSE)[i,'Concentration_2']
                 df_ref <- do.call(rbind,
-                        lapply(row_maps_cotrt[[i]], function(x) normSE_original[[x, col_maps[j]]][
-                          normSE_original[[x, col_maps[j]]]$Concentration ==
-                            ref_conc,]))
+                        lapply(row_maps_cotrt[[i]], function(x) {
+                          if (any(normSE_original[[x, col_maps[j]]]$Concentration == ref_conc)) {
+                            # the reference value with same concentration is found
+                            normSE_original[[x, col_maps[j]]][
+                              normSE_original[[x, col_maps[j]]]$Concentration == ref_conc,]
+                          } else {
+                            # the reference with proper concentration will be inferred
+                            ref_drc = normSE_original[[x, col_maps[j]]]
+                            drc_fit = drc::drm(
+                              CorrectedReadout ~ Concentration,
+                              data = ref_drc,
+                              fct = drc::LL.4(), # para = c(Hill, x_inf, x0, c50)
+                              start = c(2, min(ref_drc$CorrectedReadout),
+                                          max(ref_drc$CorrectedReadout),
+                                          median(ref_drc$Concentration)),
+                              lowerl = c(1e-5, min(ref_drc$CorrectedReadout)*.8,
+                                          min(ref_drc$CorrectedReadout)*.9,
+                                          min(ref_drc$Concentration)/1e3),
+                              upperl =  c(12, max(ref_drc$CorrectedReadout)*1.1,
+                                          max(ref_drc$CorrectedReadout)*1.2,
+                                          min(ref_drc$Concentration)*1e3)
+                            )
+                            df_ref = data.frame(Concentration = ref_conc,
+                                  CorrectedReadout = predict(drc_fit,
+                                          data.frame(Concentration = ref_conc)))
+                          }
+                          }))
+
                 df_ref <- df_ref[, c("CorrectedReadout",
                         intersect(Keys$ref_Endpoint, colnames(df_ref))), drop = F]
                 colnames(df_ref)[1] <- "RefReadout"
@@ -420,14 +448,21 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                   df_end$RefReadout[is.na(df_end$RefReadout)] <- mean_RefReadout
                 }
               } else {
-                stop(sprintf("unexpected case for cotrt reference.
+                stop(sprintf("Reference failed.
                     Treatment Id: '%s'
                     Cell_line Id: %s",
                              i,
                              j))
               }
+            } else if (i %in% names(row_maps_cotrt) && length(row_maps_cotrt[[i]])==0) {
+              futile.logger::flog.warn("No reference condition found for
+                  Treatment Id: '%s'
+                  Cell_line Id: %s",
+                           i,
+                           j)
+              df_end$RefReadout <- NA
             } else {
-                df_end$RefReadout <- df_end$UntrtReadout
+              df_end$RefReadout <- df_end$UntrtReadout
             }
 
             if (length(row_maps_T0[[i]]) > 0) {
