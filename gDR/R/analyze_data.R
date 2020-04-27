@@ -876,23 +876,17 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
     for (i in rownames(metricsSE)) {
         for (j in colnames(metricsSE)) {
             df_ <- a_SE[[i, j]]
-            if (length(unique(df_$Concentration)) >= studyConcThresh) {
-                mSE_m[[i, j]] <- DataFrame(ICGRfits(df_,
+            if (nrow(df_) > 0) { # studyConcThresh is embeded in RVGRfits
+                mSE_m[[i, j]] <- DataFrame(gDRutils::RVGRfits(df_,
                     e_0 = aCtrl_SE[[i, j]]$RefRelativeViability,
-                    GR_0 = aCtrl_SE[[i, j]]$RefGRvalue))
-            } else if (nrow(df_) == 0) {
-                out <- DataFrame(matrix(NA, 0, length(get_header("response_metrics")) + 2))
-                colnames(out) <- c(get_header("response_metrics"), "maxlog10Concentration", "N_conc")
-                mSE_m[[i, j]] <- out
+                    GR_0 = aCtrl_SE[[i, j]]$RefGRvalue,
+                    n_point_cutoff = studyConcThresh))
             } else {
-                out <- DataFrame(matrix(NA, 2, length(get_header("response_metrics"))))
-                colnames(out) <- get_header("response_metrics")
-                out$maxlog10Concentration <- max(log10(df_$Concentration))
-                out$N_conc <- length(unique(df_$Concentration))
+                out <- DataFrame(matrix(NA, 0, length(gDRutils::get_header("response_metrics"))+2))
+                colnames(out) <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
                 mSE_m[[i, j]] <- out
             }
         }
-
     }
     SummarizedExperiment::assay(metricsSE, "Metrics") <- mSE_m
     return(metricsSE)

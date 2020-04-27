@@ -21,7 +21,8 @@ Imports:
     readxl,
     drc,
     gCellGenomics,
-    S4Vectors
+    S4Vectors,
+    gDRutils
 Suggests:
     futile.logger,
     gCSIutils,
