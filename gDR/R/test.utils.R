@@ -76,3 +76,31 @@ test_se <- function(se, lRef) {
   })
 }
 
+#' @export
+save_file_type_info <-
+  function(v,
+           save_dir,
+           normKeysFileName = "normKeys.json",
+           dfRawDataFileName = "dfRawData.tsv",
+           fileTypeInfoName = "fileTypeInfo.csv") {
+    checkmate::assert_true(all(c("Manifest", "Template", "RawData") %in% names(v)))
+    
+    tbl <- tibble::tibble(
+      data_type = c(
+        rep("manifest", length(v$Manifest$name)),
+        rep("template", length(v$Template$name)),
+        rep("rawData", length(v$RawData$name)),
+        "normKeys",
+        "dfRawData"
+      ),
+      name = c(
+        v$Manifest$name,
+        v$Template$name,
+        v$RawData$name,
+        normKeysFileName,
+        dfRawDataFileName
+      )
+    )
+    outFile <- file.path(save_dir, fileTypeInfoName)
+    write.csv(tbl, outFile, row.names = FALSE)
+  }
