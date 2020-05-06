@@ -88,8 +88,8 @@ logisticFit <-
 
     fit_para <- c("h", "x_inf", "c50")
 
-    out <- array(NA, length(get_header("response_metrics")))
-    names(out) <- get_header("response_metrics")
+    out <- array(NA, length(gDRutils::get_header("response_metrics")))
+    names(out) <- gDRutils::get_header("response_metrics")
     out["maxlog10Concentration"] <- max(log10concs)
     out["N_conc"] <- length(unique(log10concs))
 
@@ -242,8 +242,8 @@ ICGRlogisticFit <-
     ICfit_parameters <- c("h_ic", "e_inf", "ec50")
     GRfit_parameters <- c("h_GR", "GRinf", "GEC50")
 
-    out <- array(NA, length(get_header("metrics_results")))
-    names(out) <- get_header("metrics_results")
+    out <- array(NA, length(gDRutils::get_header("metrics_results")))
+    names(out) <- gDRutils::get_header("metrics_results")
     out["maxlog10Concentration"] <- max(log10concs)
     out["N_conc"] <- length(unique(log10concs))
     out["e_0"] <- e_0
