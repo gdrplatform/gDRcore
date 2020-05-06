@@ -91,7 +91,7 @@ df_treatment = unique(df_raw_data[, c('Template', 'WellRow', 'WellColumn', 'Gnum
 dir.create('../inst/testdata/data12')
 write.table(df_manifest, '../inst/testdata/data12/Manifest_data12.tsv',
         sep='\t', quote=F, row.names=F)
-write.table(df_data, '../inst/testdata/data12/Result_data12.tsv',
+write.table(df_data, '../inst/testdata/data12/RawData_data12.tsv',
         sep='\t', quote=F, row.names=F)
 for (trt_f in unique(df_treatment$Template)) {
         write.table(df_treatment[df_treatment$Template==trt_f,
@@ -99,3 +99,6 @@ for (trt_f in unique(df_treatment$Template)) {
             paste0('../inst/testdata/data12/', trt_f),
                 sep='\t', quote=F, row.names=F)
 }
+
+write.table(df_normalized, '../inst/testdata/data12/calculated_normalized_data.tsv',
+            sep='\t', quote=F, row.names=F)
