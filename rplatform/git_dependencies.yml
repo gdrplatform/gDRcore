@@ -14,3 +14,8 @@ pkgs:
     url: ssh://git@stash.intranet.roche.com:7999/bncb_r_packages/gcellgenomics.git
     ref: 623356f0b758d2db515e5b513b0817fa93cf94e8
     subdir: ~
+  gDRutils:
+    ver: ">=0.0.2"
+    url: https://github.roche.com/gdrplatform/gDRutils.git
+    ref: HTSEQ-633
+    subdir: gDRutils
