@@ -18,11 +18,6 @@
 if (!require(parallel)) rp::installAndVerify(package = "parallel", requirement = "*")
 options(Ncpus = parallel::detectCores())
 
-# pkgs_to_install <- c(
-#  # Add your dependencies here
-# )
-# rp::installAndVerify(package = pkgs_to_install)
-
 .wd <- "/mnt/vol"
 
 # don't install these packages - they will be installed separately
@@ -32,15 +27,26 @@ dont.install <- c(
 ) 
 
 # Extract dependencies from DESCRIPTION file
-deps <- desc::desc_get_deps(file.path(.wd, "gDR/DESCRIPTION"))
-deps <- deps[!(deps$package %in% dont.install), ]
+deps <- yaml::read_yaml(file.path(.wd, "rplatform", "DESCRIPTION_dependencies.yaml"))
+deps <- deps[!names(deps) %in% dont.install]
+
 # packages needed in gDRshiny
-deps <- rbind(deps, data.frame(type = rep("Suggests", 6),
-                               package = c("DT", "shiny", "shinyjs", "shinyBS", "shinyalert","shinydashboard"),
-                               version = rep("*", 6)))
+deps <- c(deps, 
+          "DT" = "*", 
+          "shiny" = "*", 
+          "shinyjs" = "*", 
+          "shinyBS" = "*", 
+          "shinyalert" = "*", 
+          "shinydashboard" = "*", 
+          "plotly" = "*")
+
+### new version of mclust (eg. 5.4.6) causes errors:
+####  *** caught illegal operation ***
+#### address 0x7f3bedee8c18, cause 'illegal operand'
+devtools::install_version("mclust", version = "4.0", repos = "https://cloud.r-project.org")                               
 
 rp::installAndVerify(install = install.packages,
-                     package = deps$package,
-                     requirement = deps$version)
+                     package = names(deps),
+                     requirement = deps)
 
 

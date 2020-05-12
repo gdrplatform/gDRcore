@@ -9,12 +9,18 @@
 
 ## Uncomment following code to install package(s) directly from Bitbucket repository
 ## SSH keys should be copied to container before installation
-ssh_keys <- git2r::cred_ssh_key(file.path("/home/rstudio/.ssh/id_rsa.pub"), file.path("/home/rstudio/.ssh/id_rsa"))
 .wd <- "/mnt/vol"
 .deps <- rp:::collectDependencies(desc.files = file.path(.wd, "gDR/DESCRIPTION"))
 pkgs <- yaml::read_yaml(file.path(.wd, "rplatform", "git_dependencies.yml"))$pkgs
 
-for (nm in names(pkgs))
+remove.packages("git2r")
+devtools::install_version("git2r", version = "0.25.2", repos = "https://cloud.r-project.org")
+ssh_keys <- git2r::cred_ssh_key(file.path("/home/rstudio/.ssh/id_rsa.pub"), file.path("/home/rstudio/.ssh/id_rsa"))
+
+git2r::libgit2_features()
+
+for (nm in names(pkgs)){
+  git2r::libgit2_features()
   rp::installAndVerify(
     install = devtools::install_git,
     url = pkgs[[nm]]$url,
@@ -26,4 +32,6 @@ for (nm in names(pkgs))
     subdir = pkgs[[nm]]$subdir,
     upgrade = "never"
   )
+}
+  
 

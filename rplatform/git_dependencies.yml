@@ -1,16 +1,6 @@
 pkgs:
-  gneDB:
-    ver: ">=1.28.6"
-    url: ssh://git@stash.intranet.roche.com:7999/bncb_r_packages/gnedb.git
-    ref: 38e34bd83231b816b78db349105b8376e69b7f2a
-    subdir: gnedb
   DataSetDB:
     ver: '>=0.11.2'
     url: ssh://git@stash.intranet.roche.com:7999/bncb_r_packages/datasetdb.git
     ref: 5f194ad0c8d094fde225270a6cdf07ed9ddad04c
     subdir: datasetdb
-  gCellGenomics:
-    ver: '>=1.14.10'
-    url: ssh://git@stash.intranet.roche.com:7999/bncb_r_packages/gcellgenomics.git
-    ref: 623356f0b758d2db515e5b513b0817fa93cf94e8
-    subdir: ~
