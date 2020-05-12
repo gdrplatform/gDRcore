@@ -55,6 +55,24 @@ test_lData <- function(lData, lRef) {
                standardize_df(data.frame(lRef$lData_treatments)))
 }
 
+test_se_normalized <- function(se, lRef) {
+  expect_equal(standardize_df(metadata(se)$df_raw_data),
+               standardize_df(data.frame(lRef$df_raw_data)))
+  expect_equal(yaml::as.yaml(metadata(se)$Keys), paste0(lRef$ref_keys, "\n"))
+  expect_equal(yaml::as.yaml(metadata(se)$row_maps),
+               paste0(lRef$ref_row_maps, "\n"))
+  
+    x = "Normalized"
+    xAs <- gDR::assay_to_df(se, x, merge_metrics = TRUE)
+    xAs$DrugName <- as.character(xAs$DrugName)
+    xDf <- lRef[[paste0("assay_", x)]]
+    if(x %in% c("Controls", "Avg_Controls")){
+      xDf$DivisionTime <- as.numeric(xDf$DivisionTime)
+    }
+    expect_true(nrow(xAs) == nrow(xDf))
+    expect_equal(xAs, data.frame(xDf), tolerance = 1e-5)
+}
+
 test_se <- function(se, lRef) {
   expect_equal(standardize_df(metadata(se)$df_raw_data),
                standardize_df(data.frame(lRef$df_raw_data)))
@@ -74,6 +92,13 @@ test_se <- function(se, lRef) {
     expect_true(nrow(xAs) == nrow(xDf))
     expect_equal(xAs, data.frame(xDf), tolerance = 1e-5)
   })
+}
+
+test_synthetic_normalization <- function(se, refNormalizedTsv){
+  xAs <- gDR::assay_to_df(se, "Normalized", merge_metrics = TRUE)[, c("GRvalue", "RelativeViability")]
+  xRef <- refNormalizedTsv[, c("GRvalue", "RelativeViability")]
+  expect_true(nrow(xAs) == nrow(xRef))
+  expect_equal(xAs, data.frame(xRef), tolerance = 0)
 }
 
 #' @export
