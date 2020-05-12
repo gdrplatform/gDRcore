@@ -107,7 +107,7 @@ merge_data <- function(manifest, treatments, data) {
   }
 
   # check for the expected columns
-  expected_headers <- get_identifier("cellline")
+  expected_headers <- gDRutils::get_identifier("cellline")
   headersOK <- expected_headers %in% colnames(df_metadata)
   if (any(!headersOK)) {
     stop(sprintf(
@@ -119,10 +119,10 @@ merge_data <- function(manifest, treatments, data) {
 
   # remove wells not labeled
   df_metadata_trimmed <-
-    df_metadata[!is.na(df_metadata[, get_identifier("drug")]),]
+    df_metadata[!is.na(df_metadata[, gDRutils::get_identifier("drug")]),]
   futile.logger::flog.warn("%i wells discarded for lack of annotation, %i data point selected",
                            dim(df_metadata_trimmed)[1],
-                           sum(is.na(df_metadata[, get_identifier("drug")])))
+                           sum(is.na(df_metadata[, gDRutils::get_identifier("drug")])))
 
   # clean up the metadata
   cleanedup_metadata <-
@@ -130,7 +130,7 @@ merge_data <- function(manifest, treatments, data) {
   stopifnot(dim(cleanedup_metadata)[1] == dim(df_metadata_trimmed)[1]) # should not happen
 
   df_merged <- merge(cleanedup_metadata, data, by = c("Barcode",
-                                                      get_identifier("WellPosition")))
+                                                      gDRutils::get_identifier("WellPosition")))
   if (dim(df_merged)[1] != dim(data)[1]) {
     # need to identify issue and output relevant warning
     futile.logger::flog.warn("merge_data: Not all results have been matched with treatments;
@@ -144,10 +144,10 @@ merge_data <- function(manifest, treatments, data) {
 
   # remove wells not labeled
   df_raw_data <-
-    df_merged[!is.na(df_merged[, get_identifier("drug")]), ]
+    df_merged[!is.na(df_merged[, gDRutils::get_identifier("drug")]), ]
   futile.logger::flog.warn("%i well loaded, %i discarded for lack of annotation, %i data point selected",
       dim(data)[1],
-      sum(is.na(df_merged[, get_identifier("drug")])),
+      sum(is.na(df_merged[, gDRutils::get_identifier("drug")])),
       dim(df_raw_data)[1]
     )
 
@@ -220,7 +220,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
         idx <-
           apply(as.matrix(match_mx), 2, function(y)
             sum(y, na.rm = TRUE)) *
-          match_mx[[get_identifier("duration")]]
+          match_mx[[gDRutils::get_identifier("duration")]]
         if (any(idx > 0)) {
           match_idx <- which.max(idx)
           futile.logger::flog.warn("Found partial match:",
@@ -258,7 +258,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             lapply(T0_metadata_idx, function(y)
               SummarizedExperiment::rowData(ctrlSE)[,y] ==
                 (SummarizedExperiment::rowData(normSE)[x,y])),
-            list(T0 = SummarizedExperiment::rowData(ctrlSE)[, get_identifier("duration")] == 0,
+            list(T0 = SummarizedExperiment::rowData(ctrlSE)[, gDRutils::get_identifier("duration")] == 0,
                 conc = apply(cbind(array(0, nrow(ctrlSE)),# padding to avoid empty df
                     SummarizedExperiment::rowData(ctrlSE)[, agrep("Concentration",
                     colnames(SummarizedExperiment::rowData(ctrlSE))), drop = FALSE]), 1,
@@ -403,7 +403,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                     log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout) ), 4) - 1
 
             df_ctrl$DivisionTime <- round(
-                    SummarizedExperiment::rowData(normSE)[i,get_identifier("duration")] /
+                    SummarizedExperiment::rowData(normSE)[i,gDRutils::get_identifier("duration")] /
                         log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout), 4)
 
 
@@ -442,38 +442,38 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             # use the reference doubling Time (ReferenceDivisionTime) for GRvalue if day 0 missing
             if ( any(is.na(df_merged$Day0Readout)) ) {
 
-                if ( !(get_header('add_clid')[3] %in% colnames(SummarizedExperiment::colData(normSE))) ||
-                  is.na(SummarizedExperiment::colData(normSE)[j, get_header('add_clid')[3]]) ) {
+                if ( !(gDRutils::get_header('add_clid')[3] %in% colnames(SummarizedExperiment::colData(normSE))) ||
+                  is.na(SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]]) ) {
                     futile.logger::flog.warn(paste(
-                      "No day 0 information and no reference doubling time for cell line", SummarizedExperiment::colData(normSE)[j,get_header('add_clid')[1]],
+                      "No day 0 information and no reference doubling time for cell line", SummarizedExperiment::colData(normSE)[j,gDRutils::get_header('add_clid')[1]],
                       "--> GR values are NA"))
-                } else if (SummarizedExperiment::colData(normSE)[j, get_header('add_clid')[3]] >
-                    1.5 * SummarizedExperiment::rowData(normSE)[i, get_identifier("duration")]) {
+                } else if (SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]] >
+                    1.5 * SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")]) {
                       futile.logger::flog.warn(paste( "Reference doubling time for cell line",
-                      SummarizedExperiment::colData(normSE)[j,get_header('add_clid')[1]], "is",
-                      SummarizedExperiment::colData(normSE)[j, get_header('add_clid')[3]],
+                      SummarizedExperiment::colData(normSE)[j,gDRutils::get_header('add_clid')[1]], "is",
+                      SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]],
                         "which is too long for GR calculation compared to assay duration (",
-                      SummarizedExperiment::rowData(normSE)[i, get_identifier("duration")],
+                      SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")],
                         "--> GR values are NA"))
                  } else {
 
-                  refDivisionTime = SummarizedExperiment::colData(normSE)[j, get_header('add_clid')[3]]
+                  refDivisionTime = SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]]
 
                   futile.logger::flog.warn(paste(
-                    "Missing day 0 information --> calculate GR value based on reference doubling time for", SummarizedExperiment::colData(normSE)[j,get_header('add_clid')[1]]))
+                    "Missing day 0 information --> calculate GR value based on reference doubling time for", SummarizedExperiment::colData(normSE)[j,gDRutils::get_header('add_clid')[1]]))
 
                   df_merged$GRvalue <-
                   round(2 ^ (1 + (
                     log2(pmin(1.25, # capping to avoid artefacts
                               df_merged[, "RelativeViability"])) /
-                      (SummarizedExperiment::rowData(normSE)[i, get_identifier("duration")] / refDivisionTime)
+                      (SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")] / refDivisionTime)
                   )), 4) - 1
 
                   df_ctrl$RefGRvalue <-
                   round(2 ^ (1 + (
                     log2(pmin(1.25, # capping to avoid artefacts
                               df_ctrl[, "RefRelativeViability"])) /
-                      (SummarizedExperiment::rowData(normSE)[i, get_identifier("duration")] / refDivisionTime)
+                      (SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")] / refDivisionTime)
                   )), 4) - 1
                 }
             }
@@ -505,7 +505,7 @@ normalize_data <-
 
     # remove unused columns but keep barcodes to normalize by plate
     df_normalized <- df_raw_data[, setdiff(colnames(df_raw_data),
-                                           c("Template", get_identifier("WellPosition")))]
+                                           c("Template", gDRutils::get_identifier("WellPosition")))]
 
     # Identify keys for assigning the controls
     Keys <- identify_keys(df_normalized)
@@ -532,21 +532,21 @@ normalize_data <-
                             (df_normalized[, names(key_values)[i] ] %in% key_values[i])
             }}}
     # get the untreated controls at endpoint and perform interquartile mean
-    df_end_untrt <- df_normalized[df_normalized[, get_identifier("duration")] > 0 & endpoint_value_filter &
+    df_end_untrt <- df_normalized[df_normalized[, gDRutils::get_identifier("duration")] > 0 & endpoint_value_filter &
         apply(df_normalized[, agrep("Concentration", colnames(df_normalized)), drop = FALSE] == 0, 1, all), ]
     df_end_mean <- aggregate(df_end_untrt[, "CorrectedReadout"],
                     by = as.list(df_end_untrt[, Keys$untrt_Endpoint]), function(x) mean(x, trim = .25))
     colnames(df_end_mean)[dim(df_end_mean)[2]] <- "UntrtReadout"
 
     # get the untreated controls at Day 0 and perform interquartile mean
-    df_day0 <- df_normalized[df_normalized[,get_identifier("duration")] == 0 &
+    df_day0 <- df_normalized[df_normalized[,gDRutils::get_identifier("duration")] == 0 &
         apply(df_normalized[, agrep("Concentration", colnames(df_normalized)), drop = FALSE] == 0, 1, all), ]
     df_day0_mean <- aggregate(df_day0[,"CorrectedReadout"],
                 by = as.list(df_day0[,Keys$Day0]), function(x) mean(x, trim = .25))
     colnames(df_day0_mean)[dim(df_day0_mean)[2]] <- "Day0Readout"
 
     df_controls <- merge(df_end_mean, df_day0_mean[, setdiff(colnames(df_day0_mean),
-                    c(get_identifier("duration"), "Barcode"))], all.x = TRUE)
+                    c(gDRutils::get_identifier("duration"), "Barcode"))], all.x = TRUE)
     if (length(setdiff(Keys$untrt_Endpoint, Keys$Day0)) > 0) {
       futile.logger::flog.warn("Not all control conditions found on the day 0 plate, dispatching values for field: %s",
             paste(setdiff(Keys$untrt_Endpoint, Keys$Day0), collapse = " ; "))
@@ -558,22 +558,22 @@ normalize_data <-
       dispatched <- NULL
       for (i in df_controls_NA) {
         matches <- t(apply(df_day0_mean[, setdiff(Keys$Day0,
-                                                  c(get_identifier("duration"), "Barcode"))], 1,
+                                                  c(gDRutils::get_identifier("duration"), "Barcode"))], 1,
                            function(x)
-                             df_controls[i, setdiff(Keys$Day0, c(get_identifier("duration"), "Barcode")),
+                             df_controls[i, setdiff(Keys$Day0, c(gDRutils::get_identifier("duration"), "Barcode")),
                                          drop = FALSE] == x))
         colnames(matches) <-
-          setdiff(Keys$Day0, c(get_identifier("duration"), "Barcode"))
+          setdiff(Keys$Day0, c(gDRutils::get_identifier("duration"), "Barcode"))
         # try to find a good match for the day 0 (enforce same cell line)
         idx <-
-          rowSums(matches) * matches[, get_identifier("cellline")]
+          rowSums(matches) * matches[, gDRutils::get_identifier("cellline")]
         if (all(idx == 0)) {
           next
         }
         match_idx <- which.max(idx)
         mismatch <- df_day0_mean[match_idx, setdiff(Keys$Day0,
-                                                    c(get_identifier("duration"), "Barcode"))] !=
-          df_controls[i, setdiff(Keys$Day0, c(get_identifier("duration"), "Barcode"))]
+                                                    c(gDRutils::get_identifier("duration"), "Barcode"))] !=
+          df_controls[i, setdiff(Keys$Day0, c(gDRutils::get_identifier("duration"), "Barcode"))]
         dispatched <-
           c(dispatched, colnames(mismatch)[mismatch])
         df_controls[i, "Day0Readout"] <-
@@ -591,7 +591,7 @@ normalize_data <-
     }
 
     df_to_norm <-
-      df_normalized[df_normalized[, get_identifier("duration")] > 0 &
+      df_normalized[df_normalized[, gDRutils::get_identifier("duration")] > 0 &
                       (apply(df_normalized[, agrep("Concentration", colnames(df_normalized)), drop = FALSE] != 0, 1, any) |
                          !endpoint_value_filter),]
 
@@ -631,7 +631,7 @@ normalize_data <-
     ), 4) - 1
 
     df_normalized$DivisionTime <-
-      round(df_normalized[, get_identifier("duration")] /
+      round(df_normalized[, gDRutils::get_identifier("duration")] /
               log2(df_normalized$UntrtReadout / df_normalized$Day0Readout), 4)
 
 
@@ -639,7 +639,7 @@ normalize_data <-
       # need to use the reference doubling Time if day 0 missing
       InferedIdx <- is.na(df_normalized$Day0Readout)
       filtered <-
-        df_normalized$ReferenceDivisionTime > (df_normalized[, get_identifier("duration")] * 2) |
+        df_normalized$ReferenceDivisionTime > (df_normalized[, gDRutils::get_identifier("duration")] * 2) |
         is.na(df_normalized$ReferenceDivisionTime)
       futile.logger::flog.warn(
         "Missing day 0 information --> calculate GR value based on reference doubling time")
@@ -657,7 +657,7 @@ normalize_data <-
         round(2 ^ (1 + (
           log2(pmin(1.25,
                     df_normalized[InferedIdx, "RelativeViability"])) /
-            (df_normalized[, get_identifier("duration")][InferedIdx] /
+            (df_normalized[, gDRutils::get_identifier("duration")][InferedIdx] /
                df_normalized$ReferenceDivisionTime[InferedIdx])
         )), 4) - 1
     }
@@ -784,12 +784,12 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
                     e_0 = aCtrl_SE[[i, j]]$RefRelativeViability,
                     GR_0 = aCtrl_SE[[i, j]]$RefGRvalue))
             } else if (nrow(df_) == 0) {
-                out <- DataFrame(matrix(NA, 0, length(get_header("response_metrics")) + 2))
-                colnames(out) <- c(get_header("response_metrics"), "maxlog10Concentration", "N_conc")
+                out <- DataFrame(matrix(NA, 0, length(gDRutils::get_header("response_metrics")) + 2))
+                colnames(out) <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
                 mSE_m[[i, j]] <- out
             } else {
-                out <- DataFrame(matrix(NA, 2, length(get_header("response_metrics"))))
-                colnames(out) <- get_header("response_metrics")
+                out <- DataFrame(matrix(NA, 2, length(gDRutils::get_header("response_metrics"))))
+                colnames(out) <- gDRutils::get_header("response_metrics")
                 out$maxlog10Concentration <- max(log10(df_$Concentration))
                 out$N_conc <- length(unique(df_$Concentration))
                 mSE_m[[i, j]] <- out
@@ -810,13 +810,13 @@ calculate_DRmetrics <-
            DoseRespKeys = NULL,
            studyConcThresh = 4) {
     df_a <- df_averaged
-    colnames(df_a)[colnames(df_a) == get_identifier("drugname")] <-
+    colnames(df_a)[colnames(df_a) == gDRutils::get_identifier("drugname")] <-
       "DrugName"
 
     if (is.null(DoseRespKeys)) {
       DoseRespKeys <- identify_keys(df_a)$DoseResp
     } else {
-      DoseRespKeys [DoseRespKeys == get_identifier("drugname")] <-
+      DoseRespKeys [DoseRespKeys == gDRutils::get_identifier("drugname")] <-
         "DrugName"
     }
     DoseRespKeys <- setdiff(DoseRespKeys, "Concentration")
@@ -831,19 +831,19 @@ calculate_DRmetrics <-
 
     # define set of key for merging control and study data
     mergeKeys <-
-      setdiff(DoseRespKeys, c(get_identifier("drug"), "DrugName"))
+      setdiff(DoseRespKeys, c(gDRutils::get_identifier("drug"), "DrugName"))
 
     # get avereage GRvalue ("GR_0") for control data
     controlSets <-
       df_a %>%
-      dplyr::filter(DrugName %in% get_identifier("untreated_tag")) %>%
+      dplyr::filter(DrugName %in% gDRutils::get_identifier("untreated_tag")) %>%
       dplyr::group_by_at(mergeKeys) %>%
       dplyr::summarise(GR_0 = mean(GRvalue),
                        e_0 = mean(RelativeViability))
 
     # get study data
     studySets <-
-      df_a %>% dplyr::filter(!DrugName %in% get_identifier("untreated_tag"))
+      df_a %>% dplyr::filter(!DrugName %in% gDRutils::get_identifier("untreated_tag"))
 
     # join study and control data
     # i.e. get  reference (average control) GRvalue ("GR_0") for study data
@@ -866,9 +866,9 @@ calculate_DRmetrics <-
       "Metadata variables for dose response curves: %s (%d groups)",
       paste(setdiff(
         DoseRespKeys, c(
-          get_identifier("drug"),
-          get_identifier("cellline"),
-          paste(get_identifier("drug"), "_", 2:10)
+          gDRutils::get_identifier("drug"),
+          gDRutils::get_identifier("cellline"),
+          paste(gDRutils::get_identifier("drug"), "_", 2:10)
         )
       ),
       collapse = " "),
@@ -906,7 +906,7 @@ calculate_DRmetrics <-
     resDf <- resDf [resDf$N_conc >= studyConcThresh,]
     resDf <- resDf %>% dplyr::arrange_at(DoseRespKeys)
     colnames(resDf)[colnames(resDf) == "DrugName"] <-
-      get_identifier("drugname")
+      gDRutils::get_identifier("drugname")
     resDf <- Order_result_df(resDf)
     return(resDf)
   }
@@ -931,15 +931,15 @@ identify_keys <- function(df_se_mae) {
     keys <- list(Trt = setdiff(all_keys, "Barcode"),
             DoseResp = setdiff(all_keys,  "Barcode"),
             ref_Endpoint = setdiff(all_keys, c("Concentration",
-                                            get_identifier("drug"),
-                                            get_identifier("drugname"))),
+                                            gDRutils::get_identifier("drug"),
+                                            gDRutils::get_identifier("drugname"))),
             untrt_Endpoint = all_keys[ c(-agrep("Concentration", all_keys),
-                                            -agrep(get_identifier("drug"), all_keys),
-                                            -agrep(get_identifier("drugname"), all_keys))])
-    keys[["Day0"]] <- setdiff(keys[["untrt_Endpoint"]], get_identifier("duration"))
-    keys <- lapply(keys, function(x) setdiff(x, c(get_header("raw_data"),
-        get_header("normalized_results"), "Template", get_identifier("WellPosition"), get_header("averaged_results"),
-            get_header("metrics_results"), "ReferenceDivisionTime"
+                                            -agrep(gDRutils::get_identifier("drug"), all_keys),
+                                            -agrep(gDRutils::get_identifier("drugname"), all_keys))])
+    keys[["Day0"]] <- setdiff(keys[["untrt_Endpoint"]], gDRutils::get_identifier("duration"))
+    keys <- lapply(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),
+        gDRutils::get_header("normalized_results"), "Template", gDRutils::get_identifier("WellPosition"), gDRutils::get_header("averaged_results"),
+            gDRutils::get_header("metrics_results"), "ReferenceDivisionTime"
     )))
     keys <- lapply(keys, sort)
 
@@ -956,7 +956,7 @@ identify_keys <- function(df_se_mae) {
 
             if (!is.null(se_untrt) && k %in% colnames(SummarizedExperiment::rowData(se_untrt))) {
                 df_ <- SummarizedExperiment::rowData(se_untrt)
-                if (all(is.na(df_[df_[,get_identifier("duration")] == 0, k]))) {
+                if (all(is.na(df_[df_[,gDRutils::get_identifier("duration")] == 0, k]))) {
                     keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
                 }
             }
@@ -964,7 +964,7 @@ identify_keys <- function(df_se_mae) {
             if (all(is.na(df_se_mae[, k]))) {
                 keys <- lapply(keys, function(x) setdiff(x, k))
             }
-            if (all(is.na(df_se_mae[df_se_mae[,get_identifier("duration")] == 0, k]))) {
+            if (all(is.na(df_se_mae[df_se_mae[,gDRutils::get_identifier("duration")] == 0, k]))) {
                 keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
             }
         }
@@ -978,17 +978,17 @@ identify_keys <- function(df_se_mae) {
 #' @importFrom gCellGenomics getDrugs
 cleanup_metadata <- function(df_metadata) {
   # clean up numberic fields
-  df_metadata[, get_identifier("duration")] <-
-    round(as.numeric(df_metadata[, get_identifier("duration")]), 6)
+  df_metadata[, gDRutils::get_identifier("duration")] <-
+    round(as.numeric(df_metadata[, gDRutils::get_identifier("duration")]), 6)
   # identify potential numeric fields and replace NA by 0 - convert strings in factors
   for (c in setdiff(1:dim(df_metadata)[2], c(
-    agrep(get_identifier("drug"), colnames(df_metadata)),
+    agrep(gDRutils::get_identifier("drug"), colnames(df_metadata)),
     agrep("Concentration", colnames(df_metadata)),
     grep(paste(
       c(
-        get_identifier("cellline"),
-        get_header("manifest"),
-        get_identifier("WellPosition")
+        gDRutils::get_identifier("cellline"),
+        gDRutils::get_header("manifest"),
+        gDRutils::get_identifier("WellPosition")
       ),
       collapse = "|"
     ), colnames(df_metadata))
@@ -1014,8 +1014,8 @@ cleanup_metadata <- function(df_metadata) {
 
     # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
 
-    for (i in agrep(get_identifier("drug"), colnames(df_metadata))) { # correct case issues
-        for (w in get_identifier("untreated_tag")) {
+    for (i in agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))) { # correct case issues
+        for (w in gDRutils::get_identifier("untreated_tag")) {
             df_metadata[grep(w, df_metadata[,i], ignore.case = T),i] <- w
         }
     }
@@ -1027,10 +1027,10 @@ cleanup_metadata <- function(df_metadata) {
     for (i in agrep("Concentration", colnames(df_metadata))) {
         trt_n <- ifelse(regexpr("_\\d", colnames(df_metadata)[i]) > 0,
                             substr(colnames(df_metadata)[i], 15, 20), 1)
-        DrugID_col <- ifelse(trt_n == 1, get_identifier("drug"), paste0(get_identifier("drug"), "_", trt_n))
-        df_metadata[df_metadata[,DrugID_col] %in% get_identifier("untreated_tag"), i] <- 0 # set all untreated to 0
+        DrugID_col <- ifelse(trt_n == 1, gDRutils::get_identifier("drug"), paste0(gDRutils::get_identifier("drug"), "_", trt_n))
+        df_metadata[df_metadata[,DrugID_col] %in% gDRutils::get_identifier("untreated_tag"), i] <- 0 # set all untreated to 0
 
-        DrugID_0 <- setdiff(unique(df_metadata[ df_metadata[,i] == 0, DrugID_col]), get_identifier("untreated_tag"))
+        DrugID_0 <- setdiff(unique(df_metadata[ df_metadata[,i] == 0, DrugID_col]), gDRutils::get_identifier("untreated_tag"))
         DrugID_0 <- DrugID_0[!is.na(DrugID_0)]
         if (length(DrugID_0) > 0) {
           futile.logger::flog.warn("Some concentration for %s are 0: %s",
@@ -1049,27 +1049,27 @@ cleanup_metadata <- function(df_metadata) {
 
 #' @export
 Order_result_df <- function (df_) {
-  cols <- c(get_header("ordered_1"),
+  cols <- c(gDRutils::get_header("ordered_1"),
             setdiff(colnames(df_),
                     c(
-                      get_header("ordered_1"), get_header("ordered_2")
+                      gDRutils::get_header("ordered_1"), gDRutils::get_header("ordered_2")
                     )),
-            get_header("ordered_2"))
+            gDRutils::get_header("ordered_2"))
   cols <- intersect(cols, colnames(df_))
 
   row_order_col <-
     intersect(
       c(
-        get_header("add_clid")[1],
-        get_identifier("duration"),
-        get_identifier("drugname"),
+        gDRutils::get_header("add_clid")[1],
+        gDRutils::get_identifier("duration"),
+        gDRutils::get_identifier("drugname"),
         "Concentration",
         paste0(c(
-          paste0(get_identifier("drugname"), "_"), "Concentration_"
+          paste0(gDRutils::get_identifier("drugname"), "_"), "Concentration_"
         ),
         sort(c(2:10, 2:10))),
         setdiff(colnames(df_), c(
-          get_header("ordered_1"), get_header("ordered_2")
+          gDRutils::get_header("ordered_1"), gDRutils::get_header("ordered_2")
         ))
       ),
       cols
@@ -1086,9 +1086,9 @@ add_CellLine_annotation <- function(df_metadata) {
 
     DB_cellid_header <- "clid"
     DB_cell_annotate <- c("celllinename", "primarytissue", "doublingtime")
-    # corresponds to columns get_header("add_clid"): name, tissue, doubling time
+    # corresponds to columns gDRutils::get_header("add_clid"): name, tissue, doubling time
     CLs_info <- tryCatch( {
-        CLs_info <- gneDB::annotateCLIDs(unique(df_metadata[,get_identifier("cellline")]))
+        CLs_info <- gneDB::annotateCLIDs(unique(df_metadata[,gDRutils::get_identifier("cellline")]))
         CLs_info <- CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
         CLs_info
     }, error = function(e) {
@@ -1098,9 +1098,9 @@ add_CellLine_annotation <- function(df_metadata) {
 
     if (nrow(CLs_info) == 0) return(df_metadata)
 
-    colnames(CLs_info) <- c(get_identifier("cellline"), get_header("add_clid"))
-    CLIDs <- unique(df_metadata[,get_identifier("cellline")])
-    bad_CL <- !(CLIDs %in% CLs_info[,get_identifier("cellline")])
+    colnames(CLs_info) <- c(gDRutils::get_identifier("cellline"), gDRutils::get_header("add_clid"))
+    CLIDs <- unique(df_metadata[,gDRutils::get_identifier("cellline")])
+    bad_CL <- !(CLIDs %in% CLs_info[,gDRutils::get_identifier("cellline")])
     if (any(bad_CL)) {
         stop(sprintf("Cell line ID %s not found in cell line database",
                      paste(CLIDs[bad_CL], collapse = " ; ")))
@@ -1108,7 +1108,7 @@ add_CellLine_annotation <- function(df_metadata) {
 
     futile.logger::flog.info("Merge with Cell line info")
     nrows_df <- nrow(df_metadata)
-    df_metadata <- merge(df_metadata, CLs_info, by.x = get_identifier("cellline"),
+    df_metadata <- merge(df_metadata, CLs_info, by.x = gDRutils::get_identifier("cellline"),
                 by.y = DB_cellid_header, all.x = TRUE)
     stopifnot(nrows_df == nrow(df_metadata))
 
@@ -1130,7 +1130,7 @@ add_Drug_annotation <- function(df_metadata) {
         })
 
         if (nrow(Drug_info) == 0) {
-            df_metadata[, get_identifier("drugname")] = df_metadata[, get_identifier("drug")]
+            df_metadata[, gDRutils::get_identifier("drugname")] = df_metadata[, gDRutils::get_identifier("drug")]
             return(df_metadata)
         }
         # -----------------------
@@ -1138,12 +1138,12 @@ add_Drug_annotation <- function(df_metadata) {
         colnames(Drug_info) <- c("drug", "DrugName")
         Drug_info <-
           rbind(data.frame(
-            drug = get_identifier("untreated_tag"),
-            DrugName = get_identifier("untreated_tag")
+            drug = gDRutils::get_identifier("untreated_tag"),
+            DrugName = gDRutils::get_identifier("untreated_tag")
           ),
           Drug_info)
         Drug_info <- unique(Drug_info)
-        DrIDs <- unique(unlist(df_metadata[,agrep(get_identifier("drug"), colnames(df_metadata))]))
+        DrIDs <- unique(unlist(df_metadata[,agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))]))
         bad_DrID <- !(DrIDs %in% Drug_info$drug) & !is.na(DrIDs)
         if (any(bad_DrID)) {
             # G number, but not registered
@@ -1158,19 +1158,19 @@ add_Drug_annotation <- function(df_metadata) {
               stop(sprintf("Drug %s not found in gCSI database", paste(DrIDs[!ok_DrID], collapse = ' ; ')))
             }
         }
-        colnames(Drug_info)[2] <- get_identifier("drugname")
+        colnames(Drug_info)[2] <- gDRutils::get_identifier("drugname")
         futile.logger::flog.info("Merge with Drug_info for Drug 1")
-        df_metadata <- merge(df_metadata, Drug_info, by.x = get_identifier("drug"), by.y = "drug", all.x = TRUE)
+        df_metadata <- merge(df_metadata, Drug_info, by.x = gDRutils::get_identifier("drug"), by.y = "drug", all.x = TRUE)
         # add info for columns Gnumber_*
-        for (i in grep(paste0(get_identifier("drug"),"_\\d"), colnames(df_metadata))) {
-            df_metadata[ is.na(df_metadata[,i]), i] = get_identifier("untreated_tag")[1] # set missing values to Untreated
+        for (i in grep(paste0(gDRutils::get_identifier("drug"),"_\\d"), colnames(df_metadata))) {
+            df_metadata[ is.na(df_metadata[,i]), i] = gDRutils::get_identifier("untreated_tag")[1] # set missing values to Untreated
             Drug_info_ <- Drug_info
             colnames(Drug_info_)[2] <- paste0(colnames(Drug_info_)[2], substr(colnames(df_metadata)[i], 8, 12))
             futile.logger::flog.info("Merge with Drug_info for %s", i)
             df_metadata <- merge(df_metadata, Drug_info_, by.x = i, by.y = "drug", all.x = TRUE)
         }
-        df_metadata[, colnames(df_metadata)[grepl(get_identifier("drugname"), colnames(df_metadata))]] =
-          droplevels(df_metadata[, colnames(df_metadata)[grepl(get_identifier("drugname"), colnames(df_metadata))]])
+        df_metadata[, colnames(df_metadata)[grepl(gDRutils::get_identifier("drugname"), colnames(df_metadata))]] =
+          droplevels(df_metadata[, colnames(df_metadata)[grepl(gDRutils::get_identifier("drugname"), colnames(df_metadata))]])
 
     stopifnot(nrows_df == nrow(df_metadata))
 

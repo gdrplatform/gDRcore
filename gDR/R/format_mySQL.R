@@ -31,11 +31,11 @@ format_mySQL <-
       setdiff(
         keys,
         c(
-          get_identifier("drugname"),
+          gDRutils::get_identifier("drugname"),
           "Concentration",
-          get_identifier("drug"),
-          get_header("add_clid"),
-          keys[grep(get_identifier("drugname"), keys)],
+          gDRutils::get_identifier("drug"),
+          gDRutils::get_header("add_clid"),
+          keys[grep(gDRutils::get_identifier("drugname"), keys)],
           "project_id"
         )
       )
@@ -53,25 +53,25 @@ format_mySQL <-
     
     # get the secondary Gnumbers in their own table if any
     N_add_Drugs <-
-      condition_keys[grep(get_identifier("drug"), condition_keys)]
+      condition_keys[grep(gDRutils::get_identifier("drug"), condition_keys)]
     sub_condition_codrug <- data.frame()
     for (d in N_add_Drugs) {
       codrug <- cbind(condition_all_metadata[, c("condition_id",
                                                  d,
-                                                 gsub(get_identifier("drug"), "Concentration", d))], gsub(paste0(get_identifier("drug"), "_"), "", d))
+                                                 gsub(gDRutils::get_identifier("drug"), "Concentration", d))], gsub(paste0(gDRutils::get_identifier("drug"), "_"), "", d))
       colnames(codrug)[-1] <-
-        c(get_identifier("drug"), "Concentration", "Ordinality")
+        c(gDRutils::get_identifier("drug"), "Concentration", "Ordinality")
       sub_condition_codrug <- rbind(sub_condition_codrug, codrug)
     }
     
     # get the other treatment conditions if any
     add_treatments <-
       setdiff(
-        condition_keys[c(-grep(get_identifier("drug"), condition_keys),
+        condition_keys[c(-grep(gDRutils::get_identifier("drug"), condition_keys),
                          -grep("Concentration", condition_keys))],
         c(
-          get_identifier("duration"),
-          get_identifier("cellline"),
+          gDRutils::get_identifier("duration"),
+          gDRutils::get_identifier("cellline"),
           "project_id",
           "condition_id"
         )
@@ -88,8 +88,8 @@ format_mySQL <-
     
     # get the properties for a given condition
     sub_condition_metadata <-
-      condition_all_metadata[, c(get_identifier("cellline"),
-                                 get_identifier("duration"),
+      condition_all_metadata[, c(gDRutils::get_identifier("cellline"),
+                                 gDRutils::get_identifier("duration"),
                                  "condition_id")]
     # TODO: add division time (DivisionTime)
     sub_condition_metadata <-
@@ -107,7 +107,7 @@ format_mySQL <-
           "CellLineName",
           condition_keys,
           "Tissue",
-          keys[grep(get_identifier("drugname"), keys)]
+          keys[grep(gDRutils::get_identifier("drugname"), keys)]
         )
       ),
       "condition_id")]
@@ -196,10 +196,10 @@ extract_mySQL <-
       for (codrug in N_codrug) {
         codrug_df <- df_codrug[df_codrug$Ordinality == codrug,
                                c("condition_id",
-                                 get_identifier("drug"),
+                                 gDRutils::get_identifier("drug"),
                                  "Concentration")]
         colnames(codrug_df)[2:3] <-
-          paste0(c(paste0(get_identifier("drug"), "_"), "Concentration_"), codrug)
+          paste0(c(paste0(gDRutils::get_identifier("drug"), "_"), "Concentration_"), codrug)
         mx_codrug <- merge(mx_codrug, codrug_df)
       }
       df_metadata <-
