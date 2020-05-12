@@ -424,7 +424,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
             }
 
             # merge the data with the controls assuring that the order of the records is preseved
-            df_merged <- merge(
+            df_merged <- dplyr::left_join(
               data.frame(normSE_original[[i, j]]),
                     data.frame(df_ctrl),
                     by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)),
