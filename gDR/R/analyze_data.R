@@ -1,4 +1,5 @@
 
+
 #' @import gneDB
 #' @import reshape2
 #' @import dplyr
@@ -247,29 +248,6 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
         })
     names(row_maps_cotrt) <- rownames(normSE)
 
-    # reassess the cases without a match to find equivalent drug and concentration (only 2 drugs)
-    # test if one can use one of the treatment as a reference
-
-    if ('Gnumber_2' %in% colnames(SummarizedExperiment::rowData(normSE))) {
-      for (rnames in names(row_maps_cotrt)[sapply(row_maps_cotrt, length)==0]) {
-
-        ref_metadata_idx = setdiff(intersect(Keys$ref_Endpoint,
-                              names(SummarizedExperiment::rowData(ctrlSE))),
-                            c('Gnumber_2', "DrugName_2", 'Concentration_2'))
-        names(ref_metadata_idx) = ref_metadata_idx
-
-        ref_match = apply(as.matrix(  c(IRanges::LogicalList(
-              lapply(ref_metadata_idx, function(y)
-                SummarizedExperiment::rowData(normSE)[,y, drop=F] ==
-                    (SummarizedExperiment::rowData(normSE)[rnames, y, drop=F])
-              )),
-              list( Gnumber = SummarizedExperiment::rowData(normSE)$Gnumber ==
-                SummarizedExperiment::rowData(normSE)[rnames,'Gnumber_2']))),
-              2, all)
-        if (any(ref_match)) row_maps_cotrt[rnames] = rownames(normSE)[which(ref_match)]
-      }
-    }
-
     # matching the reference at time 0 (if available)
     row_maps_T0 <- lapply(rownames(normSE), function(x) {
         # define matix with matching metadata
@@ -313,6 +291,16 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
     }
 
 
+
+    # remove background value to readout (at least 1e-10 to avoid artefactual normalized values)
+    # normSE <- aapply(normSE, function(x) {
+    #     x$CorrectedReadout <- pmax(x$ReadoutValue - x$BackgroundValue, 1e-10)
+    #     return(x)},
+    #     "Normalized")
+    # ctrlSE <- aapply(ctrlSE, function(x) {
+    #     x$CorrectedReadout <- pmax(x$ReadoutValue - x$BackgroundValue, 1e-10)
+    #     return(x)})
+
     SummarizedExperiment::assay(normSE, "Controls") <- matrix(lapply(1:prod(dim(normSE)), function(x) S4Vectors::DataFrame()),
             nrow = nrow(normSE), ncol = ncol(normSE))
 
@@ -343,8 +331,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
               df_end = DataFrame(UntrtReadout = mean(df_end$UntrtReadout, trim = .25))
             }
             # not always present
-            if (i %in% names(row_maps_cotrt) && length(row_maps_cotrt[[i]])>0) {
-              if (all(row_maps_cotrt[[i]] %in% rownames(ctrlSE))) {
+            if (i %in% names(row_maps_cotrt)) {
                 df_ref <- do.call(rbind,
                         lapply(row_maps_cotrt[[i]], function(x) ctrl_original[[x, col_maps[j]]]))
                 df_ref <- df_ref[, c("CorrectedReadout",
@@ -386,84 +373,8 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                                i,
                                j))
                 }
-              } else if (all(row_maps_cotrt[[i]] %in% rownames(normSE))) {
-                # case of the reference being with Gnumber == Gnumber_2
-                ref_conc = SummarizedExperiment::rowData(normSE)[i,'Concentration_2']
-                df_ref <- do.call(rbind,
-                        lapply(row_maps_cotrt[[i]], function(x) {
-                          if (any(normSE_original[[x, col_maps[j]]]$Concentration == ref_conc)) {
-                            # the reference value with same concentration is found
-                            normSE_original[[x, col_maps[j]]][
-                              normSE_original[[x, col_maps[j]]]$Concentration == ref_conc,]
-                          } else {
-                            # the reference with proper concentration will be inferred
-                            ref_drc = normSE_original[[x, col_maps[j]]]
-                            drc_fit = drc::drm(
-                              CorrectedReadout ~ Concentration,
-                              data = ref_drc,
-                              fct = drc::LL.4(), # para = c(Hill, x_inf, x0, c50)
-                              start = c(2, min(ref_drc$CorrectedReadout),
-                                          max(ref_drc$CorrectedReadout),
-                                          median(ref_drc$Concentration)),
-                              lowerl = c(1e-5, min(ref_drc$CorrectedReadout)*.8,
-                                          min(ref_drc$CorrectedReadout)*.9,
-                                          min(ref_drc$Concentration)/1e3),
-                              upperl =  c(12, max(ref_drc$CorrectedReadout)*1.1,
-                                          max(ref_drc$CorrectedReadout)*1.2,
-                                          min(ref_drc$Concentration)*1e3)
-                            )
-                            df_ref = data.frame(Concentration = ref_conc,
-                                  CorrectedReadout = predict(drc_fit,
-                                          data.frame(Concentration = ref_conc)))
-                          }
-                          }))
-
-                df_ref <- df_ref[, c("CorrectedReadout",
-                        intersect(Keys$ref_Endpoint, colnames(df_ref))), drop = F]
-                colnames(df_ref)[1] <- "RefReadout"
-                if (ncol(df_ref)>1) {
-                  df_ref <- aggregate(df_ref[, 1, drop = FALSE],
-                    by = as.list(df_ref[, -1, drop = FALSE]),
-                    function(x) mean(x, trim = .25))
-                } else {
-                  df_ref = DataFrame(RefReadout = mean(df_ref$RefReadout, trim = .25))
-                }
-
-                # check if control and co-treated wells are on the same plate
-                if (all(df_end$Barcode %in% df_ref$Barcode) && all(df_ref$Barcode %in% df_end$Barcode)) {
-                  df_end <- merge(df_end, df_ref,
-                    by = intersect(colnames(df_end), c('Barcode', Keys$discard_keys)))
-                } else {
-                  futile.logger::flog.warn(
-                      "Control data for the drug are propagated to other plates with co-drug controls.
-                      Treatment Id: %s
-                      Cell_line Id: %s",
-                      i,
-                      j
-                    )
-                  # propagate average values to the other plates
-                  df_end <- merge(df_end, df_ref, by = "Barcode", all = TRUE)
-                  mean_UntrtReadout <- mean(df_end$UntrtReadout, na.rm = TRUE)
-                  mean_RefReadout <- mean(df_end$RefReadout, na.rm = TRUE)
-                  df_end$UntrtReadout[is.na(df_end$UntrtReadout)] <- mean_UntrtReadout
-                  df_end$RefReadout[is.na(df_end$RefReadout)] <- mean_RefReadout
-                }
-              } else {
-                stop(sprintf("Reference failed.
-                    Treatment Id: '%s'
-                    Cell_line Id: %s",
-                             i,
-                             j))
-              }
-            } else if (i %in% names(row_maps_cotrt) && length(row_maps_cotrt[[i]])==0) {
-              futile.logger::flog.warn("No reference condition found for
-                  Treatment Id: '%s'
-                  Cell_line Id: %s",
-                           i,
-                           j)
-              df_end$RefReadout <- NA
             } else {
-              df_end$RefReadout <- df_end$UntrtReadout
+                df_end$RefReadout <- df_end$UntrtReadout
             }
 
             if (length(row_maps_T0[[i]]) > 0) {
@@ -512,22 +423,16 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                         t(colMeans(df_ctrl[, setdiff(colnames(df_ctrl), "Barcode")]))))
             }
 
-            # works with by = character(0) but changes the order of rows
+            # merge the data with the controls assuring that the order of the records is preseved
             df_merged <- merge(
               data.frame(normSE_original[[i, j]]),
                     data.frame(df_ctrl),
                     by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)),
                     all.x = T)
 
-            # merge the data with the controls assuring that the order of the records is preseved
-            # removing this line because failed when   by = character(0)
-            # df_merged <- dplyr::left_join(
-            #         data.frame(normSE_original[[i, j]]),
-            #         data.frame(df_ctrl),
-            #         by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)))
-
             # calculate the normalized values
-            df_merged$RelativeViability <- round(df_merged$CorrectedReadout / df_merged$UntrtReadout, 4)
+            normSE_n[[i, j]]$RelativeViability = df_merged$RelativeViability <-
+              round(df_merged$CorrectedReadout / df_merged$UntrtReadout, 4)
 
             df_merged$GRvalue = round(2 ** (
               log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
@@ -573,10 +478,7 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
                 }
             }
 
-            # more robust assignment in case the order of df_merged has changed
-            normSE_n[[i, j]] = merge(normSE_n[[i, j]],
-                df_merged[, c(colnames(normSE_n[[i, j]]), 'GRvalue', 'RelativeViability')],
-                by = colnames(normSE_n[[i, j]]))
+            normSE_n[[i, j]]$GRvalue = df_merged$GRvalue
             normSE_c[[i,j]] <- DataFrame(df_ctrl)
         }
     }
@@ -877,17 +779,23 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
     for (i in rownames(metricsSE)) {
         for (j in colnames(metricsSE)) {
             df_ <- a_SE[[i, j]]
-            if (nrow(df_) > 0) { # studyConcThresh is embeded in RVGRfits
-                mSE_m[[i, j]] <- DataFrame(gDRutils::RVGRfits(df_,
+            if (length(unique(df_$Concentration)) >= studyConcThresh) {
+                mSE_m[[i, j]] <- DataFrame(ICGRfits(df_,
                     e_0 = aCtrl_SE[[i, j]]$RefRelativeViability,
-                    GR_0 = aCtrl_SE[[i, j]]$RefGRvalue,
-                    n_point_cutoff = studyConcThresh))
-            } else {
-                out <- DataFrame(matrix(NA, 0, length(gDRutils::get_header("response_metrics"))+2))
+                    GR_0 = aCtrl_SE[[i, j]]$RefGRvalue))
+            } else if (nrow(df_) == 0) {
+                out <- DataFrame(matrix(NA, 0, length(gDRutils::get_header("response_metrics")) + 2))
                 colnames(out) <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
+                mSE_m[[i, j]] <- out
+            } else {
+                out <- DataFrame(matrix(NA, 2, length(gDRutils::get_header("response_metrics"))))
+                colnames(out) <- gDRutils::get_header("response_metrics")
+                out$maxlog10Concentration <- max(log10(df_$Concentration))
+                out$N_conc <- length(unique(df_$Concentration))
                 mSE_m[[i, j]] <- out
             }
         }
+
     }
     SummarizedExperiment::assay(metricsSE, "Metrics") <- mSE_m
     return(metricsSE)
