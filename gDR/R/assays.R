@@ -68,7 +68,7 @@ aapply <-
 #'
 #' @export
 getMetaData <- function(data,
-                        cell_id = gDR::get_identifier("cellline"),
+                        cell_id = gDRutils::get_identifier("cellline"),
                         discard_keys = NULL) {
   data <- as(data, "DataFrame")
 
@@ -77,11 +77,11 @@ getMetaData <- function(data,
     setdiff(
       colnames(data),
       c(
-        gDR::get_header("raw_data"),
-        gDR::get_header("normalized_results"),
-        gDR::get_header("averaged_results"),
-        gDR::get_header("metrics_results"),
-        gDR::get_identifier("WellPosition"),
+        gDRutils::get_header("raw_data"),
+        gDRutils::get_header("normalized_results"),
+        gDRutils::get_header("averaged_results"),
+        gDRutils::get_header("metrics_results"),
+        gDRutils::get_identifier("WellPosition"),
         "Barcode",
         "Template",
         # not sure how to handle these ones ....    < --------
@@ -92,7 +92,7 @@ getMetaData <- function(data,
   conditions <- unique(data[, metavars])
   # get the metadata not directly related to cells
   nocell_metavars <- setdiff(metavars,
-                             c(get_identifier("cellline"), gDR::get_header("add_clid")))
+                             c(get_identifier("cellline"), gDRutils::get_header("add_clid")))
   constant_metavars <-
     setdiff(
       nocell_metavars[sapply(nocell_metavars,
@@ -100,19 +100,19 @@ getMetaData <- function(data,
                                nrow(unique(conditions[, x, drop = FALSE]))) == 1],
       # protect cell line and drug name and duration
       c(
-        gDR::get_header("add_clid"),
-        gDR::get_identifier("drug"),
-        gDR::get_identifier("drugname"),
-        gDR::get_identifier("duration")
+        gDRutils::get_header("add_clid"),
+        gDRutils::get_identifier("drug"),
+        gDRutils::get_identifier("drugname"),
+        gDRutils::get_identifier("duration")
       )
     )
   unique_metavars <- c(intersect(
     c(
-      gDR::get_identifier("cellline"),
-      gDR::get_header("add_clid"),
-      gDR::get_identifier("drug"),
-      gDR::get_identifier("drugname"),
-      gDR::get_identifier("duration")
+      gDRutils::get_identifier("cellline"),
+      gDRutils::get_header("add_clid"),
+      gDRutils::get_identifier("drug"),
+      gDRutils::get_identifier("drugname"),
+      gDRutils::get_identifier("duration")
     ),
     metavars
   ),
@@ -130,11 +130,11 @@ getMetaData <- function(data,
   # --> not very robust --> need testing
   cl_entries <- setdiff(cl_entries,
                         c(
-                          gDR::get_identifier("drug"),
-                          paste0(gDR::get_identifier("drug"), "_", 2:10),
-                          gDR::get_identifier("drugname"),
-                          paste0(gDR::get_identifier("drugname"), "_", 2:10),
-                          gDR::get_identifier("duration")
+                          gDRutils::get_identifier("drug"),
+                          paste0(gDRutils::get_identifier("drug"), "_", 2:10),
+                          gDRutils::get_identifier("drugname"),
+                          paste0(gDRutils::get_identifier("drugname"), "_", 2:10),
+                          gDRutils::get_identifier("duration")
                         ))
 
   # # temporary removing extra column to avoid bug
@@ -413,8 +413,8 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
     asDf$dr_metric <- c("IC", "GR")
     if (merge_metrics) {
 
-      colnames_IC <- get_header("IC_metrics")
-      colnames_GR <- get_header("GR_metrics")
+      colnames_IC <- gDRutils::get_header("RV_metrics")
+      colnames_GR <- gDRutils::get_header("GR_metrics")
 
       Df_IC <- subset(asDf, dr_metric == "IC", select = c("rId", "cId", names(colnames_IC)))
       Df_GR <- subset(asDf, dr_metric == "GR") %>% dplyr::select(-dr_metric)

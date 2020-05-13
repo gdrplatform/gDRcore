@@ -4,3 +4,8 @@ pkgs:
     url: ssh://git@stash.intranet.roche.com:7999/bncb_r_packages/datasetdb.git
     ref: 5f194ad0c8d094fde225270a6cdf07ed9ddad04c
     subdir: datasetdb
+  gDRutils:
+    ver: ">=0.0.2"
+    url: https://github.roche.com/gdrplatform/gDRutils.git
+    ref: HTSEQ-633
+    subdir: gDRutils

@@ -15,13 +15,13 @@
 #' @return vector of parameters
 #' @examples
 #' sum(1:10)
-#' @importFrom drc drm drmc LL.3u
+#' @importFrom drc drm drmc LL.3u LL.4
 #' @export
 ICGRfits <- function(df_,
                      e_0 = 1,
                      GR_0 = 1,
                      force = FALSE) {
-  if (is.na(e_0) || sum(!is.na(df_$RelativeViability))<5) {
+  if (sum(!is.na(df_$RelativeViability))<5) {
     df_IC = NA
   } else {
     df_IC = gDR::logisticFit(
@@ -32,7 +32,7 @@ ICGRfits <- function(df_,
       force = force
     )
   }
-  if (is.na(GR_0) || sum(!is.na(df_$GRvalue))<5) {
+  if (sum(!is.na(df_$GRvalue))<5) {
     df_GR = NA
   } else {
     df_GR = gDR::logisticFit(
@@ -88,11 +88,10 @@ logisticFit <-
 
     fit_para <- c("h", "x_inf", "c50")
 
-    out <- array(NA, length(get_header("response_metrics")))
-    names(out) <- get_header("response_metrics")
+    out <- array(NA, length(gDRutils::get_header("response_metrics")))
+    names(out) <- gDRutils::get_header("response_metrics")
     out["maxlog10Concentration"] <- max(log10concs)
     out["N_conc"] <- length(unique(log10concs))
-    out["x_0"] <- x_0
 
     # fit parameters and boundaries
     if (curve_type == "IC") {
@@ -102,7 +101,6 @@ logisticFit <-
       priors <- c(2, 0.1, median(concs))
       lower <- c(.1,-1, min(concs) / 10)
     }
-    upper <- c(5, min(x_0 + .1, 1), max(concs) * 10)
 
     controls <- drc::drmc()
     controls$relTol <- 1e-06
@@ -112,25 +110,43 @@ logisticFit <-
 
     ######################################
     # IC curve fitting
-    output_model_new = try(drc::drm(
-      normValues ~ log10conc,
-      data = df_,
-      logDose = 10,
-      fct = drc::LL.3u(upper = x_0, names = fit_para),
-      start = priors,
-      lowerl = lower,
-      upperl = upper,
-      control = controls,
-      na.action = na.omit
-    ))
+    if (!is.na(x_0)) {
+      out["x_0"] <- x_0
+      upper <- c(5, min(x_0 + .1, 1), max(concs) * 10)
 
+      output_model_new = try(drc::drm(
+        normValues ~ log10conc,
+        data = df_,
+        logDose = 10,
+        fct = drc::LL.3u(upper = x_0, names = fit_para),
+        start = priors,
+        lowerl = lower,
+        upperl = upper,
+        control = controls,
+        na.action = na.omit
+      ))
+    } else {
+      fit_para <- c("h", "x_inf", 'x_0', "c50")
+      output_model_new = try(drc::drm(
+        normValues ~ log10conc,
+        data = df_,
+        logDose = 10,
+        fct = drc::LL.4(names = fit_para),
+        start = c(priors[1:2], 1, priors[3]),
+        lowerl = lower[c(1:2, 2, 3)],
+        upperl = c(5, 1, 1, max(concs) * 10),
+        control = controls,
+        na.action = na.omit
+      ))
+
+    }
     # assuming proper fit result
     if (class(output_model_new) != "try-error") {
       for (p in fit_para) {
         out[p] = stats::coef(output_model_new)[paste0(p, ":(Intercept)")]
       }
       # F-test for the significance of the sigmoidal fit
-      Npara <- 3 # N of parameters in the growth curve
+      Npara <- 3 + (is.na(x_0)*1) # N of parameters in the growth curve
       Npara_flat <- 1 # F-test for the models
       RSS2 <- sum(stats::residuals(output_model_new) ^ 2, na.rm = TRUE)
       RSS1 <- sum((df_$normValues - mean(df_$normValues,
@@ -226,8 +242,8 @@ ICGRlogisticFit <-
     ICfit_parameters <- c("h_ic", "e_inf", "ec50")
     GRfit_parameters <- c("h_GR", "GRinf", "GEC50")
 
-    out <- array(NA, length(get_header("metrics_results")))
-    names(out) <- get_header("metrics_results")
+    out <- array(NA, length(gDRutils::get_header("metrics_results")))
+    names(out) <- gDRutils::get_header("metrics_results")
     out["maxlog10Concentration"] <- max(log10concs)
     out["N_conc"] <- length(unique(log10concs))
     out["e_0"] <- e_0
@@ -415,6 +431,21 @@ ICGRlogisticFit <-
 
     out
   }
+
+
+range_mv <- function(c50, x_inf, hillCoefficient, x_0 = 1, linear_conc_range_uM = c(5e-3, 5)) {
+   # c50 in uM
+   # linear_conc_range_uM in uM (from 5nM to 5uM by default)
+
+  conc_values = 10 ** seq(log10(linear_conc_range_uM[1]), log10(linear_conc_range_uM[2]), .01)
+
+  viab = sapply(conc_values, function(x) logistic_4parameters(x, x_inf, x_0, c50, hillCoefficient))
+
+  RV = (viab + 100)/100
+  MV = mean(RV)
+
+  return(MV)
+}
 
 
 # logistic function (not used in the file but useful for plotting externally)

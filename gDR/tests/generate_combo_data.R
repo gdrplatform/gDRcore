@@ -122,7 +122,7 @@ df_treatment = unique(df_raw_data[, c('Template', 'WellRow', 'WellColumn', 'Gnum
 dir.create('../inst/testdata/data8')
 write.table(df_manifest, '../inst/testdata/data8/Manifest_data8.tsv',
         sep='\t', quote=F, row.names=F)
-write.table(df_data, '../inst/testdata/data8/Result_data8.tsv',
+write.table(df_data, '../inst/testdata/data8/RawData_data8.tsv',
         sep='\t', quote=F, row.names=F)
 for (trt_f in unique(df_treatment$Template)) {
         write.table(df_treatment[df_treatment$Template==trt_f,
@@ -130,6 +130,9 @@ for (trt_f in unique(df_treatment$Template)) {
             paste0('../inst/testdata/data8/', trt_f),
                 sep='\t', quote=F, row.names=F)
 }
+
+write.table(df_normalized, '../inst/testdata/data8/calculated_normalized_data.tsv',
+            sep='\t', quote=F, row.names=F)
 
 # df_raw_data_2 = merge_data(df_manifest, df_treatment, df_data, 'f')
 # head(df_raw_data[order(df_raw_data$ReadoutValue),c('Barcode', 'WellRow', 'WellColumn')], 20)
@@ -202,7 +205,7 @@ df_treatment_3d = unique(df_raw_data_3d[, c('Template', 'WellRow', 'WellColumn',
 dir.create('../inst/testdata/data9')
 write.table(df_manifest_3d, '../inst/testdata/data9/Manifest_data9.tsv',
         sep='\t', quote=F, row.names=F)
-write.table(df_data_3d, '../inst/testdata/data9/Result_data9.tsv',
+write.table(df_data_3d, '../inst/testdata/data9/RawData_data9.tsv',
         sep='\t', quote=F, row.names=F)
 for (trt_f in unique(df_treatment_3d$Template)) {
     write.table(df_treatment_3d[df_treatment_3d$Template==trt_f,
@@ -210,6 +213,9 @@ for (trt_f in unique(df_treatment_3d$Template)) {
         paste0('../inst/testdata/data9/', trt_f),
             sep='\t', quote=F, row.names=F)
 }
+
+write.table(df_normalized, '../inst/testdata/data9/calculated_normalized_data.tsv',
+            sep='\t', quote=F, row.names=F)
 
 # df_raw_data_3d_2 = merge_data(df_manifest_3d, df_treatment_3d, df_data_3d, 'f')
 # head(df_raw_data_3d[order(df_raw_data_3d$ReadoutValue),c('Barcode', 'WellRow', 'WellColumn')], 10)
