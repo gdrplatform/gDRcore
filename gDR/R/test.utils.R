@@ -95,7 +95,7 @@ test_se <- function(se, lRef) {
 }
 
 test_synthetic_normalization <- function(se, refNormalizedTsv){
-  xAs <- gDR::assay_to_df(se, "Normalized", merge_metrics = TRUE)[, c("GRvalue", "RelativeViability")]
+  xAs <- gDR::assay_to_df(se, "Normalized")[, c("GRvalue", "RelativeViability")]
   xRef <- refNormalizedTsv[, c("GRvalue", "RelativeViability")]
   expect_true(nrow(xAs) == nrow(xRef))
   expect_equal(xAs, data.frame(xRef), tolerance = 0)
