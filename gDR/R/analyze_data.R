@@ -259,9 +259,9 @@ normalize_SE <- function(df_raw_data, selected_keys = NULL,
         names(ref_metadata_idx) = ref_metadata_idx
 
         ref_match = apply(as.matrix(  c(IRanges::LogicalList(
-              lapply(ref_metadata_idx, function(y)
-                SummarizedExperiment::rowData(normSE)[,y, drop=F] ==
-                    (SummarizedExperiment::rowData(normSE)[rnames, y, drop=F])
+          lapply(ref_metadata_idx, function(y)
+                unlist(SummarizedExperiment::rowData(normSE)[,y, drop=F] ==
+                    (SummarizedExperiment::rowData(normSE)[rnames, y, drop=F]))
               )),
               list( Gnumber = SummarizedExperiment::rowData(normSE)$Gnumber ==
                 SummarizedExperiment::rowData(normSE)[rnames,'Gnumber_2']))),
