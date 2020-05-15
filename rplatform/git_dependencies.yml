@@ -18,4 +18,4 @@ pkgs:
     ver: ">=0.0.2"
     url: https://github.roche.com/gdrplatform/gDRutils.git
     ref: master
-    subdir: gDRutils 
+    subdir: gDRutils
