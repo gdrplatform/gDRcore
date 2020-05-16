@@ -70,7 +70,6 @@ load_manifest <- function(manifest_file) {
                          "xlsx",
                          "xls",
                          "tsv")
-  
   # read files
   manifest_data <- lapply(manifest_file, function(x) {
     manifest_ext <- tools::file_ext(x)
@@ -147,6 +146,7 @@ load_manifest <- function(manifest_file) {
 #' or character with file path of templates file(s)
 #' @export
 load_templates <- function (df_template_files) {
+
   # template_file is a string or a vector of strings
   if (is.data.frame(df_template_files)) {
     # for the shiny app
@@ -173,6 +173,8 @@ load_templates <- function (df_template_files) {
     all_templates <- rbind(all_templates, all_templates_2)
   }
   
+  all_templates$Gnumber <- standardize_record_values(all_templates$Gnumber, dictionary = DICTIONARY)
+  
   return(all_templates)
   
 }
@@ -188,6 +190,7 @@ load_templates <- function (df_template_files) {
 #' @export
 load_results <-
   function(df_results_files, instrument = "EnVision") {
+
     if (is.data.frame(df_results_files)) {
       # for the shiny app
       results_file <- df_results_files$datapath
@@ -430,7 +433,6 @@ load_templates_xlsx <-
         })
         df$WellRow <- LETTERS[1:n_row]
         df_melted <- reshape2::melt(df, id.vars = "WellRow")
-        
         # check if metadata field already exist and correct capitalization if needed
         if (!(iS %in% metadata_fields)) {
           if (!is.null(metadata_fields) &&
