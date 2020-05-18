@@ -13,12 +13,12 @@ df_normalized = data.frame(
             Concentration = as.vector(matrix(c(0, 10**(seq(-3,1,.5))), 24, 10)),
             GRvalue = 1,
             RelativeViability = 1,
-            ReadoutValue = 100,
+            ReadoutValue = 101,
             BackgroundValue = 1,
             Gnumber = as.vector(t(matrix(c('G02001876', 'G02442104'), 12, 10))),
             ReferenceDivisionTime = as.vector(t(matrix(c(57,85, 30, NA), 4, 60))), # from gneDB
-            CorrectedReadout = 99,
-            UntrtReadout = 99,
+            CorrectedReadout = 100,
+            UntrtReadout = 100,
             Day0Readout = NA)
 
 # apply the drug effect
@@ -30,7 +30,7 @@ e_max = matrix(c(.62, .9, .2, .6, .1, .3, .5, .3),2,4)
 colnames(e_max) = c('COV318', 'HCC2218', 'MCF-7', 'HCC1008')
 rownames(e_max) = c('Palbociclib', 'Trametinib')
 
-df_normalized$ReadoutValue = 100 * apply( df_normalized, 1, function(x)
+df_normalized$CorrectedReadout = 100 * apply( df_normalized, 1, function(x)
     e_max[x['DrugName'],x['CellLineName']] + (1-e_max[x['DrugName'],x['CellLineName']])*
         (ec50[x['DrugName'],x['CellLineName']]**2 / (as.numeric(x['Concentration'])**2 +
             ec50[x['DrugName'],x['CellLineName']]**2)))
@@ -41,11 +41,11 @@ levels(df_normalized$DrugName) = c(levels(df_normalized$DrugName), 'Vehicle')
 df_normalized$DrugName[df_normalized$Concentration == 0] = 'Vehicle'
 # add some noise
 set.seed(1)
-df_normalized$ReadoutValue = df_normalized$ReadoutValue + runif(dim(df_normalized)[1], -2, 3)
+df_normalized$CorrectedReadout = df_normalized$CorrectedReadout + runif(dim(df_normalized)[1], -2,3)
 
 # recalculate the normalized values
 
-df_normalized$CorrectedReadout = df_normalized$ReadoutValue - df_normalized$BackgroundValue
+df_normalized$ReadoutValue = df_normalized$CorrectedReadout + df_normalized$BackgroundValue
 
 df_ctrl = aggregate(df_normalized$CorrectedReadout[ df_normalized$Concentration == 0],
         by = list(clid = df_normalized$clid[ df_normalized$Concentration == 0]),
@@ -54,7 +54,8 @@ for (cl in df_ctrl$clid) {
     df_normalized$UntrtReadout[df_normalized$clid == cl] = df_ctrl$x[df_ctrl$clid == cl]
 }
 
-df_normalized$RelativeViability = df_normalized$CorrectedReadout / df_normalized$UntrtReadout
+df_normalized$RelativeViability = round(df_normalized$CorrectedReadout /
+          df_normalized$UntrtReadout, 4)
 df_normalized$GRvalue = round(2 ^ (1 + (
           log2(pmin(1.25,
                     df_normalized[, "RelativeViability"])) /
@@ -62,15 +63,15 @@ df_normalized$GRvalue = round(2 ^ (1 + (
         )), 4) - 1
 
 # decompose de table into original files
-df_raw_data = df_normalized[order(df_normalized$Barcode),]
-df_raw_data$Template = 'Template_trt.tsv'
-df_raw_data$WellRow = sort(rep(LETTERS[3:14],20))
-df_raw_data$WellColumn = 3:22
-levels(df_raw_data$Barcode) = paste0('Plate',1:8)
+df_normalized = df_normalized[order(df_normalized$Barcode),]
+df_normalized$Template = 'Template_trt.tsv'
+df_normalized$WellRow = sort(rep(LETTERS[3:14],20))
+df_normalized$WellColumn = 3:22
+levels(df_normalized$Barcode) = paste0('Plate',1:8)
 
-df_manifest = unique(df_raw_data[, c('Barcode', 'Template', 'Duration')])
-df_data = df_raw_data[,c('Barcode', 'WellRow', 'WellColumn', 'ReadoutValue', 'BackgroundValue')]
-df_treatment = unique(df_raw_data[, c('Template', 'WellRow', 'WellColumn',
+df_manifest = unique(df_normalized[, c('Barcode', 'Template', 'Duration')])
+df_data = df_normalized[,c('Barcode', 'WellRow', 'WellColumn', 'ReadoutValue', 'BackgroundValue')]
+df_treatment = unique(df_normalized[, c('Template', 'WellRow', 'WellColumn',
         'Gnumber', 'Concentration', 'clid')])
 
 dir.create('../inst/testdata/data11')
