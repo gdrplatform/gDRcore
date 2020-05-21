@@ -546,7 +546,7 @@ load_results_EnVision <-
     results_sheets <- vector("list", length(results_file))
     results_sheets[!isExcel] <- 0
     results_sheets[isExcel] <-
-      lapply(results_file[isExcel], excel_sheets)
+      lapply(results_file[isExcel], readxl::excel_sheets)
     if (any(lapply(results_sheets, length) > 1)) {
       futile.logger::flog.warn("Multiple sheets in result file: %s",
                                results_file[lapply(results_sheets, length) > 1])
