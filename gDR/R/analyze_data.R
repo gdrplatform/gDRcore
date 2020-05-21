@@ -590,7 +590,7 @@ average_SE <- function(normSE, TrtKeys = NULL) {
 metrics_SE = function(avgSE, studyConcThresh = 4) {
   
     # Assertions:
-    checkmate::assert_class(normSE, "SummarizedExperiment")
+    checkmate::assert_class(avgSE, "SummarizedExperiment")
     checkmate::assert_number(studyConcThresh)
   
     stopifnot(is.numeric(studyConcThresh))
