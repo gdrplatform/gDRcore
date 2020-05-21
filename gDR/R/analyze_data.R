@@ -10,7 +10,9 @@
 #' @export
 #'
 #' @examples
+#'\dontrun{
 #' merge_data(manifest, treatments, data)
+#' }
 merge_data <- function(manifest, treatments, data) {
   # Assertions:
   stopifnot(inherits(manifest, "data.frame"))
@@ -125,7 +127,9 @@ merge_data <- function(manifest, treatments, data) {
 #' @export
 #'
 #' @examples
+#'\dontrun{
 #' normalize_SE(df_raw_data)
+#' }
 normalize_SE <- function(df_raw_data,
                   selected_keys = NULL,
                   key_values = NULL, 
@@ -527,7 +531,9 @@ normalize_SE <- function(df_raw_data,
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' average_SE(normSE)
+#' }
 average_SE <- function(normSE, TrtKeys = NULL) {
   
   # Assertions:
@@ -586,7 +592,9 @@ average_SE <- function(normSE, TrtKeys = NULL) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' metrics_SE(avgSE)
+#' }
 metrics_SE = function(avgSE, studyConcThresh = 4) {
   
     # Assertions:
@@ -639,7 +647,9 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
 #' @export 
 #'
 #' @examples
+#' \dontrun{
 #' identify_keys(normSE)
+#' }
 identify_keys <- function(df_se_mae) {
   
   # Assertions:
@@ -716,7 +726,9 @@ identify_keys <- function(df_se_mae) {
 #' @importFrom gneDB annotateCLIDs
 #' @importFrom gCellGenomics getDrugs
 #' @examples
+#' \dontrun{
 #' cleanup_metadata(df_metadata)
+#' }
 cleanup_metadata <- function(df_metadata) {
   
   # Assertions:
@@ -803,7 +815,9 @@ cleanup_metadata <- function(df_metadata) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' Order_result_df(df_)
+#' }
 Order_result_df <- function (df_) {
   
   # Assertions:
@@ -851,7 +865,9 @@ Order_result_df <- function (df_) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' add_CellLine_annotation(df_metadata)
+#' }
 add_CellLine_annotation <- function(df_metadata) {
   
     # Assertions:
@@ -899,7 +915,9 @@ add_CellLine_annotation <- function(df_metadata) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' add_Drug_annotation(df_metadata)
+#' }
 add_Drug_annotation <- function(df_metadata) {
   
         # Assertions:
@@ -978,7 +996,9 @@ add_Drug_annotation <- function(df_metadata) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' mapSE(normSE, ctrlSE, row_endpoint_value_filter)
+#' }
 mapSE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
     # Assertions:
     checkmate::assert_class(normSE, "SummarizedExperiment")
