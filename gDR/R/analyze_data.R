@@ -988,10 +988,12 @@ mapSE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
     checkmate::assert_logical(T0)
     
     mappingFactor <- ifelse(T0, "Day0", "untrt_Endpoint")
-    keyValuesList <- ifelse(T0,
-                            SummarizedExperiment::rowData(ctrlSE)[, gDRutils::get_identifier("duration")] == 0,
-                            row_endpoint_value_filter)
-    key_values <- ifelse(T0, "T0", "key_values")                        
+    
+    keyValuesList <- list(key_values = row_endpoint_value_filter)
+    if(T0){
+      keyValuesList <- list(T0 = SummarizedExperiment::rowData(ctrlSE)[, gDRutils::get_identifier("duration")] == 0)
+    }
+
     matchFactor <- ifelse(T0, "T0", gDRutils::get_identifier("duration"))
     
     lapply(rownames(normSE), function(x) {
@@ -1004,14 +1006,13 @@ mapSE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
           lapply(ctrl_metadata_idx, function(y) # matching the metadata
             SummarizedExperiment::rowData(ctrlSE)[,y] ==
               SummarizedExperiment::rowData(normSE)[x,y]),
-          list(key_values = keyValuesList,
-               conc = apply(cbind(array(0, nrow(ctrlSE)), # padding to avoid empty df
+          c(keyValuesList, list(conc = apply(cbind(array(0, nrow(ctrlSE)), # padding to avoid empty df
                                   SummarizedExperiment::rowData(ctrlSE)[, agrep("Concentration",
                                                                                 colnames(SummarizedExperiment::rowData(ctrlSE))), drop = FALSE]), 1,
                             function(x)
                               all(x == 0))
                
-          )))
+          ))))
       match_idx <- which(apply(as.matrix(match_mx), 2, all)) # test matching conditions
       if (length(match_idx) == 0) {
         # if not exact match, try to find best match (as many metadata fields as possible)

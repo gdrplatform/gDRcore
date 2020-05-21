@@ -92,7 +92,7 @@ getMetaData <- function(data,
   conditions <- unique(data[, metavars])
   # get the metadata not directly related to cells
   nocell_metavars <- setdiff(metavars,
-                             c(get_identifier("cellline"), gDRutils::get_header("add_clid")))
+                             c(gDRutils::get_identifier("cellline"), gDRutils::get_header("add_clid")))
   constant_metavars <-
     setdiff(
       nocell_metavars[sapply(nocell_metavars,
