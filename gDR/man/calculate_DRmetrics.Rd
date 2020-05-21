@@ -21,5 +21,7 @@ a dataframe with with metrics
 Calculate metrics for DR data
 }
 \examples{
+\dontrun{
 calculate_DRmetrics(df_averaged)
+}
 }

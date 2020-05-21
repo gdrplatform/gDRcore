@@ -16,5 +16,7 @@ a ordered dataframe with results
 Order a dataframe with results
 }
 \examples{
+\dontrun{
 Order_result_df(df_)
+}
 }

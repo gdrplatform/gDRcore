@@ -18,5 +18,7 @@ a SummarizedExperiment with additional assay with metrics
 Calculate metrics for DR data
 }
 \examples{
+\dontrun{
 metrics_SE(avgSE)
+}
 }

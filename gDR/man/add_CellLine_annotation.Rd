@@ -16,5 +16,7 @@ a dataframe with metadata with annotated cell lines
 add cellline annotation to a dataframe with metadata
 }
 \examples{
+\dontrun{
 add_CellLine_annotation(df_metadata)
+}
 }

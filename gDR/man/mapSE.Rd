@@ -18,5 +18,7 @@ a list of mapping
 Perfmorm mapping for normalization
 }
 \examples{
+\dontrun{
 mapSE(normSE, ctrlSE, row_endpoint_value_filter)
+}
 }

@@ -28,5 +28,7 @@ a SummarizedExperiment object with normalized assays
 Normalize raw DR data
 }
 \examples{
+\dontrun{
 normalize_SE(df_raw_data)
+}
 }

@@ -16,5 +16,7 @@ a list of keys
 Identify keys in the DR data represented by dataframe or SummarizedExperiment or MultiAssayExperiment objects
 }
 \examples{
+\dontrun{
 identify_keys(normSE)
+}
 }

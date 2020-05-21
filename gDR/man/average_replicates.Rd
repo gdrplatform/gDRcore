@@ -18,5 +18,7 @@ a dataframe with averaged replicated of DR data
 average_replicates
 }
 \examples{
+\dontrun{
 average_replicates(df_normalized)
+}
 }

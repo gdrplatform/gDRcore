@@ -20,5 +20,7 @@ a dataframe with normalization
 Normalize raw DR data
 }
 \examples{
+\dontrun{
 normalize_data(df_raw_data)
+}
 }
