@@ -406,7 +406,7 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
 
     df$rId <- rCol
     df$cId <- rownames(SummarizedExperiment::colData(se))[x]
-    full.df <- left_join(df, annotTbl, by = c("rId", "cId"))
+    full.df <- dplyr::left_join(df, annotTbl, by = c("rId", "cId"))
   })
   asDf <- data.frame(do.call(rbind, asL))
   if (assay_name == "Metrics") {
