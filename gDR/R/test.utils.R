@@ -1,11 +1,36 @@
 library(magrittr)
 
+#' standardize_df
+#'
+#' Transform all the columns in a dataframe to character type
+#'
+#' @param df a dataframe for standardization
+#'
+#' @return a standardized dataframe
+#' @export
+#'
 standardize_df <- function(df) {
+  # Assertions:
+  stopifnot(inherits(df, "data.frame"))
   df %>% dplyr::mutate_all(as.character)
 }
 
+#' read_ref_data
+#' 
+#' Read reference data 
+#'
+#' @param inDir a directory path of reference data
+#' @param prefix a prefix of reference file names ('ref' by default)
+#'
+#' @return a list of reference data
 #' @export
+#'
 read_ref_data <- function(inDir, prefix = "ref") {
+  # Assertions:
+  checkmate::assert_string(inDir)
+  checkmate::assert_string(prefix)
+
+
   files <- list.files(inDir, paste0(prefix, "_.+\\.tsv$"), full.names = TRUE)
   lFiles <- lapply(files, function(x) { readr::read_delim(x, delim = "\t")})
   names(lFiles) <- gsub("\\.tsv", "", gsub(paste0("^", prefix, "_"), "", basename(files)))
@@ -16,8 +41,23 @@ read_ref_data <- function(inDir, prefix = "ref") {
   lFiles
 }
 
+#' write_ref_data_df
+#' 
+#' Write reference dataframe
+#'
+#' @param lData a list with dataset
+#' @param outDir an output directory
+#' @param prefix a prefix of reference file names ('ref' by default)
+#'
+#' @return 
+#' @export
+#'
 write_ref_data_df <- function(lData, outDir, prefix = "ref") {
-
+  # Assertions:
+  checkmate::assert_list(outDir)
+  checkmate::assert_string(outDir)
+  checkmate::assert_string(prefix)
+  
   myL <- lapply(1:length(lData), function(x) {
     outFile <- file.path(outDir, paste0(prefix, "_lData_", names(lData)[x], ".tsv"))
     readr::write_delim(lData[[x]], outFile, delim = "\t")
@@ -25,9 +65,21 @@ write_ref_data_df <- function(lData, outDir, prefix = "ref") {
 
 }
 
+#' write_ref_data_se
+#'
+#' @param se a SummarizedExperiment with DR data
+#' @param outDir an output directory
+#' @param prefix a prefix of reference file names ('ref' by default)
+#'
+#' @return
+#' @export
+#'
 write_ref_data_se <- function(se, outDir, prefix = "ref") {
-
-  #assays
+  # Assertions:
+  checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_string(outDir)
+  checkmate::assert_string(prefix)
+#assays
   myL <- lapply(SummarizedExperiment::assayNames(se), function(x) {
     outFile <- file.path(outDir, paste0(prefix, "_assay_", x, ".tsv"))
     readr::write_delim(gDR::assay_to_df(se, x, merge_metrics = TRUE), outFile, delim = "\t")
@@ -44,10 +96,24 @@ write_ref_data_se <- function(se, outDir, prefix = "ref") {
   yaml::write_yaml(row_maps_yaml, file.path(outDir, paste0(prefix,"_row_maps.yaml")))
 }
 
+#' test_lData
+#'
+#' Test raw data against reference data
+#'
+#' @param lData a list with dataset
+#' @param lRef a list with reference data
+#'
+#' @return
+#' @export
+#'
 test_lData <- function(lData, lRef) {
+  # Assertions:
   testthat::expect_true(all(vapply(lData, function(x) {
     any(class(x) %in% "data.frame")
   }, logical(1L))))
+  checkmate::assert_list(lData)
+  checkmate::assert_list(lRef)
+  
   testthat::expect_equal(names(lData), c("manifest", "treatments", "data"))
   expect_equal(lData$manifest, lRef$lData_manifest)
   expect_equal(standardize_df(lData$data), standardize_df(data.frame(lRef$lData_data)))
@@ -55,7 +121,19 @@ test_lData <- function(lData, lRef) {
                standardize_df(data.frame(lRef$lData_treatments)))
 }
 
+#' test_se_normalized
+#'
+#' Compare calculated normalization with the reference
+#'
+#' @param se a SummarizedExperiment object with the Normalized assay
+#' @param lRef a list of reference datasets
+#'
+#' @return
+#' @export
+#'
+
 test_se_normalized <- function(se, lRef) {
+  
   expect_equal(standardize_df(metadata(se)$df_raw_data),
                standardize_df(data.frame(lRef$df_raw_data)))
   expect_equal(yaml::as.yaml(metadata(se)$Keys), paste0(lRef$ref_keys, "\n"))
@@ -73,7 +151,22 @@ test_se_normalized <- function(se, lRef) {
     expect_equal(xAs, data.frame(xDf), tolerance = 1e-5)
 }
 
+#' test_se
+#'
+#' Compare all the assays in the SummarizedExperiment object with the reference
+#'
+#' @param se a SummarizedExperiment object with the calculated assay
+#' @param lRef a list of reference datasets
+#'
+#' @return
+#' @export
+#'
+
 test_se <- function(se, lRef) {
+  # Assertions:
+  checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_list(lRef)
+  
   expect_equal(standardize_df(metadata(se)$df_raw_data),
                standardize_df(data.frame(lRef$df_raw_data)))
   expect_equal(yaml::as.yaml(metadata(se)$Keys), paste0(lRef$ref_keys, "\n"))
@@ -94,7 +187,22 @@ test_se <- function(se, lRef) {
   })
 }
 
+#' test_synthetic_normalization
+#'
+#' Compare calculated normalization with the reference in synthetic data
+#'
+#' @param se a SummarizedExperiment object with the calculated assay
+#' @param refNormalizedTsv a tsv file with the reference normalized synthetic data
+#'
+#' @return
+#' @export
+#'
+
 test_synthetic_normalization <- function(se, refNormalizedTsv) {
+  # Assertions:
+  checkmate::assert_class(se, "SummarizedExperiment")
+  stopifnot(inherits(refNormalizedTsv, "data.frame"))
+  
   xAs <- gDR::assay_to_df(se, "Normalized")
   xRef <- refNormalizedTsv[refNormalizedTsv$Concentration>0 , ]
   expect_true(nrow(xAs) == nrow(xRef))
@@ -114,13 +222,32 @@ test_synthetic_normalization <- function(se, refNormalizedTsv) {
   expect_equal(xMerge[,paste0(data_cols, '.x')], xMerge[,paste0(data_cols, '.y')], tolerance = 1e-4)
 }
 
+
+#' save_file_type_info
+#'
+#' Save information about file types
+#'
+#' @param v a list with filenames
+#' @param save_dir an output directory
+#' @param normKeysFileName a filename with normalization keys ('normKeys.json' by default)
+#' @param dfRawDataFileName a filename with rawdata ('dfRawData.tsv' by default)
+#' @param fileTypeInfoName a filename with file type information ('fileTypeInfo.csv' by default)
+#'
+#' @return
 #' @export
+#'
+
 save_file_type_info <-
   function(v,
            save_dir,
            normKeysFileName = "normKeys.json",
            dfRawDataFileName = "dfRawData.tsv",
            fileTypeInfoName = "fileTypeInfo.csv") {
+    # Assertions:
+    checkmate::assert_list(v)
+    checkmate::assert_string(normKeysFileName)
+    checkmate::assert_string(dfRawDataFileName)
+    checkmate::assert_string(fileTypeInfoName)
     checkmate::assert_true(all(c("Manifest", "Template", "RawData") %in% names(v)))
 
     tbl <- tibble::tibble(

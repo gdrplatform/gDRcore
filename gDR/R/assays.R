@@ -92,7 +92,7 @@ getMetaData <- function(data,
   conditions <- unique(data[, metavars])
   # get the metadata not directly related to cells
   nocell_metavars <- setdiff(metavars,
-                             c(get_identifier("cellline"), gDRutils::get_header("add_clid")))
+                             c(gDRutils::get_identifier("cellline"), gDRutils::get_header("add_clid")))
   constant_metavars <-
     setdiff(
       nocell_metavars[sapply(nocell_metavars,
@@ -406,7 +406,7 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
 
     df$rId <- rCol
     df$cId <- rownames(SummarizedExperiment::colData(se))[x]
-    full.df <- left_join(df, annotTbl, by = c("rId", "cId"))
+    full.df <- dplyr::left_join(df, annotTbl, by = c("rId", "cId"))
   })
   asDf <- data.frame(do.call(rbind, asL))
   if (assay_name == "Metrics") {
