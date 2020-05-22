@@ -20,8 +20,3 @@ a dataframe with with metrics
 \description{
 Calculate metrics for DR data
 }
-\examples{
-\dontrun{
-calculate_DRmetrics(df_averaged)
-}
-}

@@ -17,8 +17,3 @@ a SummarizedExperiment with additional assay with metrics
 \description{
 Calculate metrics for DR data
 }
-\examples{
-\dontrun{
-metrics_SE(avgSE)
-}
-}

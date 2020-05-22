@@ -19,8 +19,3 @@ a dataframe with merged data
 \description{
 Merge all the input data into a single dataframe
 }
-\examples{
-\dontrun{
-merge_data(manifest, treatments, data)
-}
-}

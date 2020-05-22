@@ -15,8 +15,3 @@ a ordered dataframe with results
 \description{
 Order a dataframe with results
 }
-\examples{
-\dontrun{
-Order_result_df(df_)
-}
-}

@@ -15,8 +15,3 @@ a dataframe with cleaned metadata
 \description{
 Cleanup a dataframe with metadata
 }
-\examples{
-\dontrun{
-cleanup_metadata(df_metadata)
-}
-}

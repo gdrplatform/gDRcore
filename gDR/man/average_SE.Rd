@@ -17,8 +17,3 @@ a SummarizedExperiment with additional assay with averaged DR data
 \description{
 Avereage normalized SummarizedExperiment of DR data
 }
-\examples{
-\dontrun{
-average_SE(normSE)
-}
-}

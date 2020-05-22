@@ -9,6 +9,12 @@ mapSE(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE)
 \arguments{
 \item{normSE}{a SummarizedExperiment with normalization assaay}
 
+\item{ctrlSE}{a SummarizedExperiment object with information for controls}
+
+\item{row_endpoint_value_filter}{an array with key values for end points}
+
+\item{Keys}{a list of all identified keys}
+
 \item{T0}{a logical indicating if the mapping should be performer for Time=0 (FALSE by default)}
 }
 \value{
@@ -16,9 +22,4 @@ a list of mapping
 }
 \description{
 Perfmorm mapping for normalization
-}
-\examples{
-\dontrun{
-mapSE(normSE, ctrlSE, row_endpoint_value_filter)
-}
 }

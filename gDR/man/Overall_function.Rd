@@ -29,8 +29,3 @@ a list with the raw, normalized, averaged, and metrics dataframes
 \description{
 Process DR data using set of manifest, template and results files
 }
-\examples{
-\dontrun{
-Overall_function(ManifestFile, TemplateFile, ResultsFile, OutputFile)
-}
-}

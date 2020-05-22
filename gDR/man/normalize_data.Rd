@@ -19,8 +19,3 @@ a dataframe with normalization
 \description{
 Normalize raw DR data
 }
-\examples{
-\dontrun{
-normalize_data(df_raw_data)
-}
-}

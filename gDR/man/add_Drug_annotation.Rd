@@ -15,8 +15,3 @@ a dataframe with metadata with annotated drugs
 \description{
 add drug annotation to a dataframe with metadata
 }
-\examples{
-\dontrun{
-add_Drug_annotation(df_metadata)
-}
-}
