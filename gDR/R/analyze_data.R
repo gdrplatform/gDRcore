@@ -988,6 +988,9 @@ add_Drug_annotation <- function(df_metadata) {
 #' Perfmorm mapping for normalization
 #'
 #' @param normSE a SummarizedExperiment with normalization assaay
+#' @param ctrlSE a SummarizedExperiment object with information for controls
+#' @param row_endpoint_value_filter an array with key values for end points
+#' @param Keys a list of all identified keys
 #' @param T0 a logical indicating if the mapping should be performer for Time=0 (FALSE by default)
 #'
 #' @return a list of mapping

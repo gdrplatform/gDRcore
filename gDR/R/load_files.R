@@ -734,7 +734,19 @@ load_results_EnVision <-
     return(all_results)
   }
 
+
+#' check_metadata_names
+#'
+#' Check whether all metadata names are correct
+#'
+#' @param col_df a dataframe with coldata
+#' @param df_name a name of dataframe ("" by default)
+#' @param df_type a type of a dataframe (NULL by default)
+#'
+#' @return
 #' @export
+#'
+#' @examples
 check_metadata_names <-
   function(col_df,
            df_name = "",
