@@ -12,13 +12,6 @@
 #' @param instrument character
 #' @return a list with the raw, normalized, averaged, and metrics dataframes
 #' 
-#' @examples
-#' \dontrun{
-#' Overall_function(ManifestFile, TemplateFile, ResultsFile, OutputFile)
-#' }
-#' @import gneDB
-#' @import reshape2
-#' @import dplyr
 Overall_function <-
   function(manifest_file,
            template_file,
@@ -90,10 +83,6 @@ Overall_function <-
 #' @return a dataframe with normalization
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' normalize_data(df_raw_data)
-#' }
 normalize_data <-
   function(df_raw_data,
            selected_keys = NULL,
@@ -282,10 +271,6 @@ normalize_data <-
 #' @return a dataframe with averaged replicated of DR data
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' average_replicates(df_normalized)
-#' }
 average_replicates <- function(df_normalized, TrtKeys = NULL) {
   .Deprecated(msg = "The average_replicates is deprecated. Use average_SE function with SE object to average DR data")
   # Assertions
@@ -339,12 +324,8 @@ average_replicates <- function(df_normalized, TrtKeys = NULL) {
 #'
 #' @return a dataframe with with metrics
 #'
-#' @importFrom dplyr arrange_at group_by_at left_join summarise
 #' @export 
-#' @examples
-#' \dontrun{
-#' calculate_DRmetrics(df_averaged)
-#' }
+
 calculate_DRmetrics <-
   function(df_averaged,
            DoseRespKeys = NULL,

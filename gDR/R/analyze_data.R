@@ -8,11 +8,7 @@
 #'
 #' @return a dataframe with merged data
 #' @export
-#'
-#' @examples
-#'\dontrun{
-#' merge_data(manifest, treatments, data)
-#' }
+
 merge_data <- function(manifest, treatments, data) {
   # Assertions:
   stopifnot(inherits(manifest, "data.frame"))
@@ -126,10 +122,6 @@ merge_data <- function(manifest, treatments, data) {
 #' @return a SummarizedExperiment object with normalized assays
 #' @export
 #'
-#' @examples
-#'\dontrun{
-#' normalize_SE(df_raw_data)
-#' }
 normalize_SE <- function(df_raw_data,
                   selected_keys = NULL,
                   key_values = NULL, 
@@ -530,10 +522,7 @@ normalize_SE <- function(df_raw_data,
 #' @return a SummarizedExperiment with additional assay with averaged DR data
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' average_SE(normSE)
-#' }
+
 average_SE <- function(normSE, TrtKeys = NULL) {
   
   # Assertions:
@@ -591,10 +580,7 @@ average_SE <- function(normSE, TrtKeys = NULL) {
 #' @return a SummarizedExperiment with additional assay with metrics
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' metrics_SE(avgSE)
-#' }
+
 metrics_SE = function(avgSE, studyConcThresh = 4) {
   
     # Assertions:
@@ -646,10 +632,7 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
 #' @return a list of keys 
 #' @export 
 #'
-#' @examples
-#' \dontrun{
-#' identify_keys(normSE)
-#' }
+
 identify_keys <- function(df_se_mae) {
   
   # Assertions:
@@ -723,10 +706,7 @@ identify_keys <- function(df_se_mae) {
 #' @return a dataframe with cleaned metadata
 #'
 #' @export
-#' @examples
-#' \dontrun{
-#' cleanup_metadata(df_metadata)
-#' }
+
 cleanup_metadata <- function(df_metadata) {
   
   # Assertions:
@@ -811,11 +791,7 @@ cleanup_metadata <- function(df_metadata) {
 #'
 #' @return a ordered dataframe with results
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' Order_result_df(df_)
-#' }
+
 Order_result_df <- function (df_) {
   
   # Assertions:
@@ -861,11 +837,7 @@ Order_result_df <- function (df_) {
 #'
 #' @return a dataframe with metadata with annotated cell lines
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' add_CellLine_annotation(df_metadata)
-#' }
+
 add_CellLine_annotation <- function(df_metadata) {
   
     # Assertions:
@@ -911,11 +883,7 @@ add_CellLine_annotation <- function(df_metadata) {
 #'
 #' @return a dataframe with metadata with annotated drugs
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' add_Drug_annotation(df_metadata)
-#' }
+
 add_Drug_annotation <- function(df_metadata) {
   
         # Assertions:
@@ -995,11 +963,7 @@ add_Drug_annotation <- function(df_metadata) {
 #'
 #' @return a list of mapping
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' mapSE(normSE, ctrlSE, row_endpoint_value_filter)
-#' }
+
 mapSE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
     # Assertions:
     checkmate::assert_class(normSE, "SummarizedExperiment")
@@ -1027,7 +991,7 @@ mapSE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
           lapply(ctrl_metadata_idx, function(y) # matching the metadata
             SummarizedExperiment::rowData(ctrlSE)[,y] ==
               SummarizedExperiment::rowData(normSE)[x,y]),
-          c(keyValuesList, list(conc = apply(cbind(array(0, nrow(ctrlSE)), # padding to avoid empty df
+          c(keyValuesList, list(conc = apply(cbind(array(0, nrow(ctrlSE)), # padding to avoid empty df;
                                   SummarizedExperiment::rowData(ctrlSE)[, agrep("Concentration",
                                                                                 colnames(SummarizedExperiment::rowData(ctrlSE))), drop = FALSE]), 1,
                             function(x)

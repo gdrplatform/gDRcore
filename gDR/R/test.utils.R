@@ -9,10 +9,6 @@ library(magrittr)
 #' @return a standardized dataframe
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' standardize_df(df)
-#' }
 standardize_df <- function(df) {
   # Assertions:
   stopifnot(inherits(df, "data.frame"))
@@ -29,10 +25,6 @@ standardize_df <- function(df) {
 #' @return a list of reference data
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' read_ref_data(inDir)
-#' }
 read_ref_data <- function(inDir, prefix = "ref") {
   # Assertions:
   checkmate::assert_string(inDir)
@@ -60,10 +52,6 @@ read_ref_data <- function(inDir, prefix = "ref") {
 #' @return 
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' write_ref_data_df(lData, outDir)
-#' }
 write_ref_data_df <- function(lData, outDir, prefix = "ref") {
   # Assertions:
   checkmate::assert_list(outDir)
@@ -86,10 +74,6 @@ write_ref_data_df <- function(lData, outDir, prefix = "ref") {
 #' @return
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' write_ref_data_se(se, outDir)
-#' }
 write_ref_data_se <- function(se, outDir, prefix = "ref") {
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
@@ -122,10 +106,6 @@ write_ref_data_se <- function(se, outDir, prefix = "ref") {
 #' @return
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' test_lData(lData, lRef)
-#' }
 test_lData <- function(lData, lRef) {
   # Assertions:
   testthat::expect_true(all(vapply(lData, function(x) {
@@ -151,10 +131,7 @@ test_lData <- function(lData, lRef) {
 #' @return
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' test_se_normalized(se, lRef)
-#' }
+
 test_se_normalized <- function(se, lRef) {
   
   expect_equal(standardize_df(metadata(se)$df_raw_data),
@@ -184,10 +161,7 @@ test_se_normalized <- function(se, lRef) {
 #' @return
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' test_se_normalized(se, lRef)
-#' }
+
 test_se <- function(se, lRef) {
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
@@ -223,10 +197,7 @@ test_se <- function(se, lRef) {
 #' @return
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' test_se_normalized(se, lRef)
-#' }
+
 test_synthetic_normalization <- function(se, refNormalizedTsv) {
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
@@ -265,10 +236,7 @@ test_synthetic_normalization <- function(se, refNormalizedTsv) {
 #' @return
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' save_file_type_info(list(manifest = filename), save_dir)
-#' }
+
 save_file_type_info <-
   function(v,
            save_dir,

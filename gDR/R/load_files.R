@@ -746,7 +746,6 @@ load_results_EnVision <-
 #' @return
 #' @export
 #'
-#' @examples
 check_metadata_names <-
   function(col_df,
            df_name = "",
