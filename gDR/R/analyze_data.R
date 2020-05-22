@@ -723,8 +723,6 @@ identify_keys <- function(df_se_mae) {
 #' @return a dataframe with cleaned metadata
 #'
 #' @export
-#' @importFrom gneDB annotateCLIDs
-#' @importFrom gCellGenomics getDrugs
 #' @examples
 #' \dontrun{
 #' cleanup_metadata(df_metadata)
