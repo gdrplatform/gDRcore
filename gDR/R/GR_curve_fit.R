@@ -4,7 +4,6 @@
 #'
 #' returns fit parameters
 #'
-#' @import reshape2
 #' @param log10concs concentrations
 #' @param RelativeViability values
 #' @param GRvalues values
@@ -13,9 +12,6 @@
 #' @param force use signifcance or not
 #' @param cap enforce e_0 and GR_0
 #' @return vector of parameters
-#' @examples
-#' sum(1:10)
-#' @importFrom drc drm drmc LL.3u LL.4
 #' @export
 ICGRfits <- function(df_,
                      e_0 = 1,
@@ -59,7 +55,6 @@ ICGRfits <- function(df_,
 #'
 #' returns fit parameters
 #'
-#' @import reshape2
 #' @param log10concs log10 of concentrations
 #' @param normValues values
 #' @param x_0 upper limit; =1 by default )
@@ -67,9 +62,6 @@ ICGRfits <- function(df_,
 #' @param force use signifcance or not
 #' @param cap enforce x_0
 #' @return vector of parameters
-#' @examples
-#' sum(1:10)
-#' @importFrom drc drm drmc LL.3u
 #' @export
 logisticFit <-
   function(concs,
@@ -209,7 +201,6 @@ logisticFit <-
 #'
 #' returns fit parameters
 #'
-#' @import reshape2
 #' @param log10concs concentrations
 #' @param RelativeViability values
 #' @param GRvalues values
@@ -218,9 +209,6 @@ logisticFit <-
 #' @param force use signifcance or not
 #' @param cap enforce e_0 and GR_0
 #' @return vector of parameters
-#' @examples
-#' sum(1:10)
-#' @importFrom drc drm drmc LL.3u
 #' @export
 ICGRlogisticFit <-
   function(log10concs,

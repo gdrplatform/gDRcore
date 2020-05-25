@@ -1,6 +1,4 @@
 
-source('../R/analyze_data.R')
-source('../R/GR_curve_fit.R')
 # drug combination ( matrix of 2 x 3 drugs (8 doses by 5 doses including 0) in triplicates, 2 lines)
 df_normalized = data.frame( CellLineName = as.vector(t(matrix(c('COV318', 'HCC2218'), 2, 720))),
                     Tissue = as.vector(t(matrix(c('Ovary', 'Breast'), 2, 720))),
@@ -14,13 +12,13 @@ df_normalized = data.frame( CellLineName = as.vector(t(matrix(c('COV318', 'HCC22
                     GRvalue = 1,
                     RelativeViability = 1,
                     DivisionTime = as.vector(t(matrix(c(58,90), 2, 720))),
-                    ReadoutValue = 100,
+                    ReadoutValue = 101,
                     BackgroundValue = 1,
                     Gnumber = as.vector(t(matrix(c('G02001876', 'G02442104'), 12, 120))),
                     Gnumber_2 = as.vector(t(matrix(c('G00505032','G00033829','G02967907'), 36,40))),
                     ReferenceDivisionTime = as.vector(t(matrix(c(60,85), 2, 720))),
-                    CorrectedReadout = 99,
-                    UntrtReadout = 99,
+                    CorrectedReadout = 100,
+                    UntrtReadout = 100,
                     Day0Readout = as.vector(t(matrix(c(42,57), 2, 720))))
 
 # apply the drug effect
@@ -32,7 +30,7 @@ e_max = matrix(c(.62, .9, .75, .6),2,2)
 colnames(e_max) = c('COV318', 'HCC2218')
 rownames(e_max) = c('Palbociclib', 'Trametinib')
 
-df_normalized$ReadoutValue = 100 * apply( df_normalized, 1, function(x)
+df_normalized$CorrectedReadout = 100 * apply( df_normalized, 1, function(x)
     e_max[x['DrugName'],x['CellLineName']] + (1-e_max[x['DrugName'],x['CellLineName']])*
         (ec50[x['DrugName'],x['CellLineName']]**2 / (as.numeric(x['Concentration'])**2 +
             ec50[x['DrugName'],x['CellLineName']]**2)))
@@ -46,7 +44,8 @@ e_max_2 = matrix(c(.75, .85, 1,  .7, .95, .8),3,2)
 colnames(e_max_2) = c('COV318', 'HCC2218')
 rownames(e_max_2) = c('GDC-0032', 'GDC-0941', 'GDC-0077')
 
-df_normalized$ReadoutValue = df_normalized$ReadoutValue * apply( df_normalized, 1, function(x)
+df_normalized$CorrectedReadout = df_normalized$CorrectedReadout *
+  apply( df_normalized, 1, function(x)
     e_max_2[x['DrugName_2'],x['CellLineName']] + (1-e_max_2[x['DrugName_2'],x['CellLineName']])*
         (ec50_2[x['DrugName_2'],x['CellLineName']]**2 / (as.numeric(x['Concentration_2'])**2 +
             ec50_2[x['DrugName_2'],x['CellLineName']]**2)))
@@ -54,64 +53,64 @@ df_normalized$ReadoutValue = df_normalized$ReadoutValue * apply( df_normalized, 
 # add some synergy/antagonism
 idx = df_normalized$CellLineName == 'HCC2218' & df_normalized$DrugName == 'Trametinib' &
                     df_normalized$DrugName_2 == 'GDC-0941'
-df_normalized$ReadoutValue[idx] = df_normalized$ReadoutValue[idx] +
-                            .2 * (df_normalized$ReadoutValue[idx] - 100)
+df_normalized$CorrectedReadout[idx] = df_normalized$CorrectedReadout[idx] +
+                            .2 * (df_normalized$CorrectedReadout[idx] - 100)
 
 
 idx = df_normalized$CellLineName == 'HCC2218' & df_normalized$DrugName == 'Trametinib' &
                                 df_normalized$DrugName_2 == 'GDC-0077'
-df_normalized$ReadoutValue[idx] = df_normalized$ReadoutValue[idx] -
-                            .1 * (df_normalized$ReadoutValue[idx] - 100)
+df_normalized$CorrectedReadout[idx] = df_normalized$CorrectedReadout[idx] -
+                            .1 * (df_normalized$CorrectedReadout[idx] - 100)
 
 idx = df_normalized$CellLineName == 'COV318' & df_normalized$DrugName == 'Palbociclib'
-df_normalized$ReadoutValue[idx] = df_normalized$ReadoutValue[idx] +
-                            .1 * (df_normalized$ReadoutValue[idx] - 100)
+df_normalized$CorrectedReadout[idx] = df_normalized$CorrectedReadout[idx] +
+                            .1 * (df_normalized$CorrectedReadout[idx] - 100)
 
 idx = df_normalized$CellLineName == 'COV318' & df_normalized$DrugName_2 != 'GDC-0032'
-df_normalized$ReadoutValue[idx] = df_normalized$ReadoutValue[idx] -
-                            .11 * (df_normalized$ReadoutValue[idx] - 100)
+df_normalized$CorrectedReadout[idx] = df_normalized$CorrectedReadout[idx] -
+                            .11 * (df_normalized$CorrectedReadout[idx] - 100)
 
-df_normalized$ReadoutValue = pmin(df_normalized$ReadoutValue, 100)
+df_normalized$CorrectedReadout = pmin(df_normalized$CorrectedReadout, 100)
 
 # add some noise
-set.seed(1)
-df_normalized$ReadoutValue = df_normalized$ReadoutValue + runif(dim(df_normalized)[1], -2, 3)
+# set.seed(1)
+# df_normalized$CorrectedReadout = df_normalized$CorrectedReadout +runif(dim(df_normalized)[1], -2, 3)
 
 # recalculate the GR values
-df_normalized$CorrectedReadout = df_normalized$ReadoutValue - df_normalized$BackgroundValue
+df_normalized$ReadoutValue = df_normalized$CorrectedReadout + df_normalized$BackgroundValue
 df_normalized$GRvalue = 2 ** ( log2( df_normalized$CorrectedReadout / df_normalized$Day0Readout) /
             log2( df_normalized$UntrtReadout / df_normalized$Day0Readout)) - 1
 df_normalized$RelativeViability = df_normalized$CorrectedReadout / df_normalized$UntrtReadout
 
-levels(df_normalized$Gnumber) = c(levels(df_normalized$Gnumber), 'Vehicle')
-df_normalized$Gnumber[df_normalized$Concentration == 0] = 'Vehicle'
-levels(df_normalized$DrugName) = c(levels(df_normalized$DrugName), 'Vehicle')
-df_normalized$DrugName[df_normalized$Concentration == 0] = 'Vehicle'
-levels(df_normalized$Gnumber_2) = c(levels(df_normalized$Gnumber_2), 'Vehicle')
-df_normalized$Gnumber_2[df_normalized$Concentration_2 == 0] = 'Vehicle'
-levels(df_normalized$DrugName_2) = c(levels(df_normalized$DrugName_2), 'Vehicle')
-df_normalized$DrugName_2[df_normalized$Concentration_2 == 0] = 'Vehicle'
+levels(df_normalized$Gnumber) = c(levels(df_normalized$Gnumber), 'vehicle')
+df_normalized$Gnumber[df_normalized$Concentration == 0] = 'vehicle'
+levels(df_normalized$DrugName) = c(levels(df_normalized$DrugName), 'vehicle')
+df_normalized$DrugName[df_normalized$Concentration == 0] = 'vehicle'
+levels(df_normalized$Gnumber_2) = c(levels(df_normalized$Gnumber_2), 'vehicle')
+df_normalized$Gnumber_2[df_normalized$Concentration_2 == 0] = 'vehicle'
+levels(df_normalized$DrugName_2) = c(levels(df_normalized$DrugName_2), 'vehicle')
+df_normalized$DrugName_2[df_normalized$Concentration_2 == 0] = 'vehicle'
 
 # decompose de table into original files
-df_raw_data = df_normalized[order(df_normalized$Barcode),]
-df_raw_data$Template = 'Template_trt.tsv'
-df_raw_data$WellRow = sort(rep(LETTERS[3:14],20))
-df_raw_data$WellColumn = 3:22
-levels(df_raw_data$Barcode) = paste0('Plate',1:8)
+df_normalized = df_normalized[order(df_normalized$Barcode),]
+df_normalized$Template = 'Template_trt.tsv'
+df_normalized$WellRow = sort(rep(LETTERS[3:14],20))
+df_normalized$WellColumn = 3:22
+levels(df_normalized$Barcode) = paste0('Plate',1:8)
 
-df_day0 = df_raw_data[c(1:(240),(1:240)+3*240) ,]
+df_day0 = df_normalized[c(1:(240),(1:240)+3*240) ,]
 df_day0$Duration = 0
 df_day0$Concentration = 0
-df_day0$DrugName = 'Vehicle'
-df_day0$Gnumber = 'Vehicle'
+df_day0$DrugName = 'vehicle'
+df_day0$Gnumber = 'vehicle'
 df_day0$Concentration_2 = 0
-df_day0$DrugName_2 = 'Vehicle'
-df_day0$Gnumber_2 = 'Vehicle'
+df_day0$DrugName_2 = 'vehicle'
+df_day0$Gnumber_2 = 'vehicle'
 df_day0$ReadoutValue = df_day0$Day0Readout + df_day0$BackgroundValue
 df_day0$Template = 'Template_untrt.tsv'
 df_day0$Barcode = factor(ifelse(df_day0$Barcode=='Plate1', 'Plate7', 'Plate8'),
-    level = levels(df_raw_data$Barcode))
-df_raw_data = rbind(df_raw_data, df_day0)
+    level = levels(df_normalized$Barcode))
+df_raw_data = rbind(df_normalized, df_day0)
 
 
 df_manifest = unique(df_raw_data[, c('Barcode', 'Template', 'Duration', 'clid')])
@@ -156,44 +155,49 @@ write.table(df_normalized, '../inst/testdata/data8/calculated_normalized_data.ts
 # add a third co-treatment on duplicated plates
 
 df_normalized2 = df_normalized3 = df_normalized
-df_normalized2$DrugName_3 = 'Vehicle'
-df_normalized2$Gnumber_3 = 'Vehicle'
+df_normalized2$DrugName_3 = 'vehicle'
+df_normalized2$Gnumber_3 = 'vehicle'
 df_normalized2$Concentration_3 = 0
 df_normalized2$Template = 'Template_trt.tsv'
 df_normalized3$DrugName_3 = 'Erlotinib'
 df_normalized3$Gnumber_3 = 'G00022086'
 df_normalized3$Concentration_3 = .5
 df_normalized3$Template = 'Template_trt_2.tsv'
-levels(df_normalized3$Barcode) = paste0('Plate', 7:12)
+levels(df_normalized3$Barcode) = paste0('Plate', 9:16)
 
-df_normalized3$ReadoutValue = pmax(df_normalized3$ReadoutValue * .92 - 5, 4)
-df_normalized3$ReadoutValue[df_normalized3$CellLineName == 'HCC2218'] =
-        df_normalized3$ReadoutValue[df_normalized3$CellLineName == 'HCC2218'] * 1.02 + 2
+df_normalized3$CorrectedReadout = pmax(df_normalized3$CorrectedReadout * .92 - 5, 4)
+df_normalized3$CorrectedReadout[df_normalized3$CellLineName == 'HCC2218'] =
+        df_normalized3$CorrectedReadout[df_normalized3$CellLineName == 'HCC2218'] * 1.02 + 2
 set.seed(2)
-df_normalized3$ReadoutValue = df_normalized3$ReadoutValue + runif(dim(df_normalized)[1], -1, 2)
+df_normalized3$CorrectedReadout = df_normalized3$CorrectedReadout + runif(dim(df_normalized)[1], -1, 2)
+df_normalized3$ReadoutValue = df_normalized3$CorrectedReadout + df_normalized3$BackgroundValue
+
+df_normalized3$GRvalue = 2 ** ( log2( df_normalized3$CorrectedReadout / df_normalized3$Day0Readout)/
+            log2( df_normalized3$UntrtReadout / df_normalized3$Day0Readout)) - 1
+df_normalized3$RelativeViability = df_normalized3$CorrectedReadout / df_normalized3$UntrtReadout
 
 df_normalized_3drugs = rbind(df_normalized2, df_normalized3)
 
 
 
 # decompose de table into original files
-df_raw_data_3d = df_normalized_3drugs[order(df_normalized_3drugs$Barcode),]
-df_raw_data_3d$WellRow = sort(rep(LETTERS[3:14],20))
-df_raw_data_3d$WellColumn = 3:22
+df_normalized_3drugs = df_normalized_3drugs[order(df_normalized_3drugs$Barcode),]
+df_normalized_3drugs$WellRow = sort(rep(LETTERS[3:14],20))
+df_normalized_3drugs$WellColumn = 3:22
 
-df_day0 = df_raw_data_3d[c(1:240,(1:240)+3*240) ,]
+df_day0 = df_normalized_3drugs[c(1:240,(1:240)+3*240) ,]
 df_day0$Duration = 0
 df_day0$Concentration = 0
-df_day0$DrugName = 'Vehicle'
-df_day0$Gnumber = 'Vehicle'
+df_day0$DrugName = 'vehicle'
+df_day0$Gnumber = 'vehicle'
 df_day0$Concentration_2 = 0
-df_day0$DrugName_2 = 'Vehicle'
-df_day0$Gnumber_2 = 'Vehicle'
+df_day0$DrugName_2 = 'vehicle'
+df_day0$Gnumber_2 = 'vehicle'
 df_day0$ReadoutValue = df_day0$Day0Readout + df_day0$BackgroundValue
 df_day0$Template = 'Template_untrt.tsv'
-df_day0$Barcode = factor(ifelse(df_day0$Barcode=='Plate1', 'Plate13', 'Plate14'),
-    level = c('Plate13', 'Plate14'))
-df_raw_data_3d = rbind(df_raw_data_3d, df_day0)
+df_day0$Barcode = factor(ifelse(df_day0$Barcode=='Plate1', 'Plate15', 'Plate16'),
+    level = c('Plate15', 'Plate16'))
+df_raw_data_3d = rbind(df_normalized_3drugs, df_day0)
 
 
 df_manifest_3d = unique(df_raw_data_3d[, c('Barcode', 'Template', 'Duration', 'clid')])
@@ -214,24 +218,5 @@ for (trt_f in unique(df_treatment_3d$Template)) {
             sep='\t', quote=F, row.names=F)
 }
 
-write.table(df_normalized, '../inst/testdata/data9/calculated_normalized_data.tsv',
+write.table(df_normalized_3drugs, '../inst/testdata/data9/calculated_normalized_data.tsv',
             sep='\t', quote=F, row.names=F)
-
-# df_raw_data_3d_2 = merge_data(df_manifest_3d, df_treatment_3d, df_data_3d, 'f')
-# head(df_raw_data_3d[order(df_raw_data_3d$ReadoutValue),c('Barcode', 'WellRow', 'WellColumn')], 10)
-# head(df_raw_data_3d_2[order(df_raw_data_3d_2$ReadoutValue),c('Barcode', 'WellRow', 'WellColumn')], 10)
-
-
-
-# Keys = identify_keys(df_normalized_3drugs)
-# df_averaged = average_replicates(df_normalized_3drugs[df_normalized_3drugs$Concentration > 0 |
-#             df_normalized_3drugs$Concentration_2 > 0 | df_normalized_3drugs$Concentration_3 > 0, ],
-#          Keys$Trt)
-# df_metrics = calculate_DRmetrics(df_averaged, Keys$DoseResp)
-#
-# write.table(df_normalized, '../inst/testdata/data9_results/df_normalized.tsv',
-#         sep='\t', quote=F, row.names=F)
-# write.table(df_averaged, '../inst/testdata/data9_results/df_averaged.tsv',
-#         sep='\t', quote=F, row.names=F)
-# write.table(df_metrics, '../inst/testdata/data9_results/df_metrics.tsv',
-#         sep='\t', quote=F, row.names=F)

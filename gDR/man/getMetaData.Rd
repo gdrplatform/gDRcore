@@ -4,7 +4,7 @@
 \alias{getMetaData}
 \title{getMetaData}
 \usage{
-getMetaData(data, cell_id = gDR::get_identifier("cellline"),
+getMetaData(data, cell_id = gDRutils::get_identifier("cellline"),
   discard_keys = NULL)
 }
 \arguments{

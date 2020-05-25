@@ -30,6 +30,3 @@ vector of parameters
 \details{
 returns fit parameters
 }
-\examples{
-sum(1:10)
-}
