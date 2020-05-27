@@ -8,6 +8,10 @@ echo "Working directory contains: `ls | tr '\n' ' '`"
 # exit when any command fails
 set -e
 
+Rscript -e "install.packages("ISLR")"
+
+Rscript -e "require(ISLR); lm(horsepower~acceleration, data=Auto)"
+
 echo ">>>>> RUNNING UNIT TESTS"
 Rscript -e "devtools::test(pkg = '/mnt/vol/gDR', stop_on_failure = TRUE)"
 
