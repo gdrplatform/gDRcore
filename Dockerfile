@@ -62,5 +62,8 @@ RUN R -f /mnt/vol/rplatform/install_dependencies.R
 COPY rplatform/install_from_source.R /mnt/vol/rplatform/install_from_source.R
 RUN R -f /mnt/vol/rplatform/install_from_source.R
 
+#============ Disable login requirement for Rstudio
+ENV DISABLE_AUTH=true
+
 RUN sudo rm -rf /home/rstudio/.ssh
 RUN sudo rm -rf /mnt/vol/* 
