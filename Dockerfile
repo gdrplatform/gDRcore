@@ -32,7 +32,7 @@ RUN sudo apt-get update && sudo apt-get install -y \
 
 #================= copy Rprofile.site - set repos and other options
 COPY rplatform/Rprofile.site /tmp/Rprofile.site-temp
-RUN sudo echo 'Sys.setenv(MRAN_SNAPSHOT_DATE = "'$MRAN_SNAPSHOT_DATE'")' "$(cat /tmp/Rprofile.site-temp)" > $(R RHOME)/etc/Rprofile.site
+RUN echo 'Sys.setenv(MRAN_SNAPSHOT_DATE = "'$MRAN_SNAPSHOT_DATE'")' "$(cat /tmp/Rprofile.site-temp)" | sudo tee -a $(R RHOME)/etc/Rprofile.site
 
 #================= copy ssh keys
 COPY rplatform/ssh_keys/id_rsa /home/rstudio/.ssh/id_rsa
