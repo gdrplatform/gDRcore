@@ -8,10 +8,14 @@ createSE(df_data, data_type = c("untreated", "treated", "all"),
   readout = "ReadoutValue", discard_keys = NULL)
 }
 \arguments{
+\item{df_data}{a dataframe with DR data}
+
 \item{data_type}{string type of data to be returned: with untreated conditions only ('untreated'),
 with treated conditions only ('treated') or all}
 
-\item{dfList}{list with data.frame(s) with dose-reponse data}
+\item{readout}{a character that indiciated readout value in a df ('ReadoutValue' by default)}
+
+\item{discard_keys}{a vector of keys that should be discarded}
 }
 \value{
 SummarizedExperiment object with dose-reponse data

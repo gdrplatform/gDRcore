@@ -10,6 +10,8 @@ assay_to_df(se, assay_name, merge_metrics = FALSE)
 \item{se}{SummarizedExperiment object with dose-response data}
 
 \item{assay_name}{string name of the assay}
+
+\item{merge_metrics}{a logical indicating whether the metrics should be merged}
 }
 \value{
 data.frame with dose-reponse data
