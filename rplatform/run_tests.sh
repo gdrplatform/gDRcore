@@ -8,6 +8,8 @@ echo "Working directory contains: `ls | tr '\n' ' '`"
 # exit when any command fails
 set -e
 
+cat /etc/default/locale
+
 Rscript -e "install.packages('ISLR')"
 
 Rscript -e "require(ISLR);lm(horsepower~acceleration, data=Auto)"
