@@ -20,7 +20,7 @@
 .get_untreated_conditions <-
   function(drug_data) {
     # Assertions:
-    stopifnot(inherits(drug_data, "data.frame"))
+    stopifnot(any(inherits(drug_data, "data.frame"), inherits(drug_data, "DataFrame")))
     
     as.data.frame(drug_data) %>%
       dplyr::filter(grepl(.untreateDrugNameRegex, DrugName)) %>%
@@ -38,7 +38,7 @@
 .get_treated_conditions <-
   function(drug_data) {
     # Assertions:
-    stopifnot(inherits(drug_data, "data.frame"))
+    stopifnot(any(inherits(data, "data.frame"), inherits(data, "DataFrame")))
     
     as.data.frame(drug_data) %>%
       dplyr::filter(!grepl(.untreateDrugNameRegex, DrugName)) %>%
@@ -82,11 +82,12 @@ aapply <-
 getMetaData <- function(data,
                         cell_id = gDRutils::get_identifier("cellline"),
                         discard_keys = NULL) {
-  data <- as(data, "DataFrame")
   # Assertions:
-  stopifnot(inherits(data, "data.frame"))
+  stopifnot(any(inherits(data, "data.frame"), inherits(data, "DataFrame")))
   checkmate::assert_character(cell_id)
   checkmate::assert_character(discard_keys, null.ok = TRUE)
+  
+  data <- as(data, "DataFrame")
   
   # get the metadata variables
   metavars <-
@@ -207,13 +208,12 @@ df_to_assay <-
   function(data,
            data_type = c("all", "treated", "untreated"),
            discard_keys = NULL) {
-    data <- as(data, "DataFrame")
     # Assertions:
-    stopifnot(inherits(data, "data.frame"))
+    stopifnot(any(inherits(data, "data.frame"), checkmate::test_character(data), inherits(data, "DataFrame")))
     checkmate::assert_character(data_type)
     checkmate::assert_character(discard_keys, null.ok = TRUE)
     ####
-
+    data <- as(data, "DataFrame")
     allMetadata <- gDR::getMetaData(data, discard_keys = discard_keys)
 
     seColData <- allMetadata$colData
@@ -299,7 +299,7 @@ createSE <-
            readout = 'ReadoutValue',
            discard_keys = NULL) {
     # Assertions:
-    stopifnot(inherits(df_data, "data.frame"))
+    stopifnot(any(inherits(df_data, "data.frame"), inherits(df_data, "DataFrame")))
     checkmate::assert_character(data_type)
     checkmate::assert_string(readout)
     checkmate::assert_character(discard_keys, null.ok = TRUE)

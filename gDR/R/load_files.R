@@ -153,7 +153,7 @@ load_manifest <- function(manifest_file) {
 #' @export
 load_templates <- function (df_template_files) {
   # Assertions:
-  stopifnot(inherits(df_template_files, "data.frame"))
+  stopifnot(any(inherits(df_template_files, "data.frame"), checkmate::test_character(df_template_files)))
   
   # template_file is a string or a vector of strings
   if (is.data.frame(df_template_files)) {
@@ -196,7 +196,7 @@ load_templates <- function (df_template_files) {
 #' @export
 load_results <-
   function(df_results_files, instrument = "EnVision") {
-    stopifnot(inherits(df_results_files, "data.frame"))
+    stopifnot(any(inherits(df_results_files, "data.frame"), checkmate::test_character(df_results_files)))
     checkmate::assert_string(instrument, pattern = "^EnVision$|^long_tsv$")
     if (is.data.frame(df_results_files)) {
       # for the shiny app
