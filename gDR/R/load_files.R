@@ -761,7 +761,7 @@ load_results_EnVision <-
 #'
 #' Check whether all metadata names are correct
 #'
-#' @param col_df a dataframe with coldata
+#' @param col_df a character with colnames of df
 #' @param df_name a name of dataframe ("" by default)
 #' @param df_type a type of a dataframe (NULL by default)
 #'
@@ -773,7 +773,7 @@ check_metadata_names <-
            df_name = "",
            df_type = NULL) {
     # Assertions:
-    stopifnot(inherits(col_df, "data.frame"))
+    checkmate::assert_character(col_df)
     checkmate::assert_character(df_name)
     checkmate::assert_character(df_type, null.ok = TRUE)
     
