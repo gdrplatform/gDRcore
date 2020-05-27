@@ -10,6 +10,8 @@ set -e
 
 cat /etc/default/locale
 
+Rscript -e "sessionInfo()"
+
 Rscript -e "install.packages('ISLR')"
 
 Rscript -e "require(ISLR);lm(horsepower~acceleration, data=Auto)"
