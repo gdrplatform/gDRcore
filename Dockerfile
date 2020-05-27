@@ -11,7 +11,7 @@
 # It is recommended to not to change 'rstudio' user due to permissions issues
 # within Docker container, because container's RStudio Server is run as 'rstudio'.
 
-FROM rocker/rstudio:3.6.3
+FROM registry.rplatform.org:5000/rocker-rstudio-uat:3.6.1_rp0.0.79
 
 # ------ Be aware that any changes in following may cause issue with RPlatform and CBS ---------------------------
 
@@ -27,17 +27,8 @@ ARG MRAN_SNAPSHOT_DATE="2019-12-12"
 
 # install system dependencies
 RUN sudo apt-get update && sudo apt-get install -y \
-    libmariadbclient-dev \
-    libgit2-dev \
-    libxml2-dev \
-    libssl-dev \
-    libsasl2-dev \
-    libssh2-1-dev \
-    liblzma-dev \
-    libpng-dev \
-    libjpeg-dev \
-    libbz2-dev \
-    libv8-dev 
+    libmariadb-client-lgpl-dev \
+    libmariadbclient-dev 
 
 #================= copy Rprofile.site - set repos and other options
 COPY rplatform/Rprofile.site /tmp/Rprofile.site
