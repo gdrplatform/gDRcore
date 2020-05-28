@@ -139,6 +139,9 @@ test_se_normalized <- function(se, lRef) {
   expect_equal(yaml::as.yaml(metadata(se)$Keys), paste0(lRef$ref_keys, "\n"))
   expect_equal(yaml::as.yaml(metadata(se)$row_maps),
                paste0(lRef$ref_row_maps, "\n"))
+  # Assertions:
+  checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_list(lRef)
 
     x = "Normalized"
     xAs <- gDR::assay_to_df(se, x, merge_metrics = TRUE)
