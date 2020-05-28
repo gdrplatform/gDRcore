@@ -43,7 +43,7 @@ deps <- c(deps,
 ### new version of mclust (eg. 5.4.6) causes errors:
 ####  *** caught illegal operation ***
 #### address 0x7f3bedee8c18, cause 'illegal operand'
-devtools::install_version("mclust", version = "4.0", repos = "https://cloud.r-project.org")                               
+#devtools::install_version("mclust", version = "4.0", repos = "https://cloud.r-project.org")                               
 
 rp::installAndVerify(install = install.packages,
                      package = names(deps),
