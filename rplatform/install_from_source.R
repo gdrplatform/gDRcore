@@ -15,7 +15,7 @@ pkgs <- yaml::read_yaml(file.path(.wd, "rplatform", "git_dependencies.yml"))$pkg
 
 #remove.packages("git2r")
 #devtools::install_version("git2r", version = "0.25.2", repos = "https://cloud.r-project.org")
-#ssh_keys <- git2r::cred_ssh_key(file.path("/home/rstudio/.ssh/id_rsa.pub"), file.path("/home/rstudio/.ssh/id_rsa"))
+ssh_keys <- git2r::cred_ssh_key(file.path("/home/rstudio/.ssh/id_rsa.pub"), file.path("/home/rstudio/.ssh/id_rsa"))
 
 git2r::libgit2_features()
 
