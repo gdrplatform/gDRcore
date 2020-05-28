@@ -19,6 +19,9 @@
 #'
 .get_untreated_conditions <-
   function(drug_data) {
+    # Assertions:
+    stopifnot(any(inherits(drug_data, "data.frame"), inherits(drug_data, "DataFrame")))
+    
     as.data.frame(drug_data) %>%
       dplyr::filter(grepl(.untreateDrugNameRegex, DrugName)) %>%
       dplyr::pull("name_")
@@ -34,6 +37,9 @@
 #'
 .get_treated_conditions <-
   function(drug_data) {
+    # Assertions:
+    stopifnot(any(inherits(drug_data, "data.frame"), inherits(drug_data, "DataFrame")))
+    
     as.data.frame(drug_data) %>%
       dplyr::filter(!grepl(.untreateDrugNameRegex, DrugName)) %>%
       dplyr::pull("name_")
@@ -42,15 +48,21 @@
 
 #' aapply
 #'
-#' works like sapply but on each nested dataframe of the assay of an SE
+#' Works like sapply but on each nested dataframe of the assay of an SE
 #'
-#' @param function: function to apply on the nested dataframes
-#' @param assay_type: integer or name of the assay on which to apply the function
+#' @param SE a SummarizedExperiment object
+#' @param fx any function
+#' @param assay_type a name of an assay 
 #'
 #' @return the same SE object with updated nested dataframe
 #'
 aapply <-
   function(SE, fx, assay_type = 1) {
+    # Assertions:
+    checkmate::assert_class(SE, "SummarizedExperiment")
+    checkmate::assert_function(fx)
+    checkmate::assert_scalar(assay_type)
+    
     SummarizedExperiment::assay(SE, assay_type) = matrix(sapply(SummarizedExperiment::assay(SE, assay_type), fx), nrow = nrow(SE), ncol = ncol(SE))
     return(SE)
   }
@@ -70,8 +82,13 @@ aapply <-
 getMetaData <- function(data,
                         cell_id = gDRutils::get_identifier("cellline"),
                         discard_keys = NULL) {
+  # Assertions:
+  stopifnot(any(inherits(data, "data.frame"), inherits(data, "DataFrame")))
+  checkmate::assert_character(cell_id)
+  checkmate::assert_character(discard_keys, null.ok = TRUE)
+  
   data <- as(data, "DataFrame")
-
+  
   # get the metadata variables
   metavars <-
     setdiff(
@@ -180,9 +197,9 @@ getMetaData <- function(data,
 #' dose-response data for given cell lines under given conditions.
 #'
 #' @param data tibble or data.frame with drug-response data
-#' @param treatment_id string id of the column with the treatment conditions data (in 'data' object)
 #' @param data_type string type of data to be returned: all, for untreated conditions only ('untreated')
 #' or for treated conditions only ('treated')
+#' @param discard_keys a vector of keys that should be discarded
 #'
 #' @return matrix
 #'
@@ -191,10 +208,12 @@ df_to_assay <-
   function(data,
            data_type = c("all", "treated", "untreated"),
            discard_keys = NULL) {
-    data <- as(data, "DataFrame")
-
+    # Assertions:
+    stopifnot(any(inherits(data, "data.frame"), checkmate::test_character(data), inherits(data, "DataFrame")))
+    checkmate::assert_character(data_type)
+    checkmate::assert_character(discard_keys, null.ok = TRUE)
     ####
-
+    data <- as(data, "DataFrame")
     allMetadata <- gDR::getMetaData(data, discard_keys = discard_keys)
 
     seColData <- allMetadata$colData
@@ -265,9 +284,11 @@ df_to_assay <-
 #'
 #' Create SummarizedExperiment object from data.frame(s) with dose-reponse data
 #'
-#' @param dfList list with data.frame(s) with dose-reponse data
+#' @param df_data a dataframe with DR data
 #' @param data_type string type of data to be returned: with untreated conditions only ('untreated'),
 #' with treated conditions only ('treated') or all
+#' @param readout a character that indiciated readout value in a df ('ReadoutValue' by default)
+#' @param discard_keys a vector of keys that should be discarded
 #'
 #' @return SummarizedExperiment object with dose-reponse data
 #'
@@ -275,7 +296,13 @@ df_to_assay <-
 createSE <-
   function(df_data,
            data_type = c("untreated", "treated", "all"),
-           readout = 'ReadoutValue', discard_keys = NULL) {
+           readout = 'ReadoutValue',
+           discard_keys = NULL) {
+    # Assertions:
+    stopifnot(any(inherits(df_data, "data.frame"), inherits(df_data, "DataFrame")))
+    checkmate::assert_character(data_type)
+    checkmate::assert_string(readout)
+    checkmate::assert_character(discard_keys, null.ok = TRUE)
     data_type <- match.arg(data_type)
 
     # stopifnot(all(names(dfList) %in% .assayNames))
@@ -324,9 +351,12 @@ addAssayToMAE <-
            assay_name,
            exp_name = c("treated", "untreated"),
            update_assay = FALSE) {
+    # Assertions:
     stopifnot("MultiAssayExperiment" %in% class(mae))
     stopifnot(assay_name %in% .assayNames)
     stopifnot("matrix" %in% class(assay))
+    checkmate::assert_logical(update_assay)
+    
     exp_name <- match.arg(exp_name)
     #mae must contain SE with at least first assay (i.e. df_raw_data)
     stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(mae[[exp_name]]))
@@ -362,13 +392,17 @@ addAssayToMAE <-
 #'
 #' @param se  SummarizedExperiment object with dose-response data
 #' @param assay_name string name of the assay
+#' @param merge_metrics a logical indicating whether the metrics should be merged
 #'
 #' @return data.frame with dose-reponse data
 #'
 #' @export
 assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   stopifnot(any("SummarizedExperiment" %in% class(se)))
-  #checkmate::assertString(assay_name)
+  # Assertions:
+  checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_string(assay_name)
+  checkmate::assert_logical(merge_metrics)
 
   # define data.frame with data from rowData/colData
   ids <- expand.grid(rownames(SummarizedExperiment::rowData(se)), rownames(SummarizedExperiment::colData(se)))

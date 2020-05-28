@@ -8,6 +8,7 @@
 #' @param results_file  data.frame, with datapaths and names of results file(s)
 #' or character with file path of results file(s)
 #' @param instrument character
+#'
 #' @export
 load_data <-
   function(manifest_file,
@@ -62,6 +63,7 @@ load_data <-
 #' This functions loads and checks the manifest file(s)
 #'
 #' @param manifest_file character, file path(s) to manifest(s)
+#'
 #' @export
 load_manifest <- function(manifest_file) {
   # manifest_file is a string or a vector of strings
@@ -70,6 +72,10 @@ load_manifest <- function(manifest_file) {
                          "xlsx",
                          "xls",
                          "tsv")
+  
+  # Asserts:
+  assertthat::assert_that(is.character(manifest_file), msg = "'manifest_file' must be a character vector")
+  
   # read files
   manifest_data <- lapply(manifest_file, function(x) {
     manifest_ext <- tools::file_ext(x)
@@ -146,7 +152,9 @@ load_manifest <- function(manifest_file) {
 #' or character with file path of templates file(s)
 #' @export
 load_templates <- function (df_template_files) {
-
+  # Assertions:
+  stopifnot(any(inherits(df_template_files, "data.frame"), checkmate::test_character(df_template_files)))
+  
   # template_file is a string or a vector of strings
   if (is.data.frame(df_template_files)) {
     # for the shiny app
@@ -190,7 +198,8 @@ load_templates <- function (df_template_files) {
 #' @export
 load_results <-
   function(df_results_files, instrument = "EnVision") {
-
+    stopifnot(any(inherits(df_results_files, "data.frame"), checkmate::test_character(df_results_files)))
+    checkmate::assert_string(instrument, pattern = "^EnVision$|^long_tsv$")
     if (is.data.frame(df_results_files)) {
       # for the shiny app
       results_file <- df_results_files$datapath
@@ -224,6 +233,11 @@ load_results <-
 load_templates_tsv <-
   function(template_file,
            template_filename = NULL) {
+    # Assertions:
+    checkmate::assert_character(template_file)
+    checkmate::assert_character(template_filename, null.ok = TRUE)
+    
+    
     if (is.null(template_filename))
       template_filename <- basename(template_file)
     
@@ -322,6 +336,10 @@ load_templates_tsv <-
 load_templates_xlsx <-
   function(template_file,
            template_filename = NULL) {
+    # Assertions:
+    checkmate::assert_character(template_file)
+    checkmate::assert_character(template_filename, null.ok = TRUE)
+    
     if (is.null(template_filename))
       template_filename <- basename(template_file)
     # read sheets in files
@@ -536,6 +554,9 @@ load_results_tsv <-
 #' @param results_file character, file path(s) to template(s)
 load_results_EnVision <-
   function(results_file) {
+    # Assertions:
+    checkmate::assert_character(results_file)
+    
     results_filename <- basename(results_file)
     # results_file is a string or a vector of strings
     
@@ -741,7 +762,7 @@ load_results_EnVision <-
 #'
 #' Check whether all metadata names are correct
 #'
-#' @param col_df a dataframe with coldata
+#' @param col_df a character with colnames of df
 #' @param df_name a name of dataframe ("" by default)
 #' @param df_type a type of a dataframe (NULL by default)
 #'
@@ -752,6 +773,11 @@ check_metadata_names <-
   function(col_df,
            df_name = "",
            df_type = NULL) {
+    # Assertions:
+    checkmate::assert_character(col_df)
+    checkmate::assert_character(df_name)
+    checkmate::assert_character(df_type, null.ok = TRUE)
+    
     # first check for required column names
     if (!is.null(df_type)) {
       if (df_type == "manifest") {
@@ -874,14 +900,21 @@ check_metadata_names <-
 #' currently:
 #' - delimiter detection (e.g. csv, tsv)
 #' - number of fields/columns (based on the line with the higher number of fields)
+#'
 #' @param file string
 #' @param nrows integer number of rows used to make predictions
 #' @param seps character vector with delimiters/separators that will be evaluated
+#'
 #' @return list with specs
 .guess_specs_of_delim_file <-
   function(file,
            nrows = 10000,
            seps = c(',', '\t')) {
+    # Assertions:
+    checkmate::assert_string(file)
+    checkmate::assert_number(nrows)
+    checkmate::assert_character(seps)
+    
     delimV <- vapply(seps, function(sep) {
       df <- utils::read.table(file,
                               nrows = nrows,
@@ -909,9 +942,25 @@ check_metadata_names <-
   }
 
 
+#' Read envision files
+#'
+#' This function reads file from the EnVision Workstation
+#'
+#' @param file 
+#' @param nrows 
+#' @param seps 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 read_EnVision = function(file,
                          nrows = 10000,
                          seps = c(',', '\t')) {
+  # Assertions:
+  checkmate::assert_string(file)
+  checkmate::assert_number(nrows)
+  checkmate::assert_character(seps)
   con <- file(file)
   open(con)
   

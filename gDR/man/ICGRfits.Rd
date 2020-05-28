@@ -7,19 +7,13 @@
 ICGRfits(df_, e_0 = 1, GR_0 = 1, force = FALSE)
 }
 \arguments{
+\item{df_}{a data frame used for calculation of fit parameters}
+
 \item{e_0}{= 1 by default}
 
 \item{GR_0}{= 1 by default}
 
 \item{force}{use signifcance or not}
-
-\item{log10concs}{concentrations}
-
-\item{RelativeViability}{values}
-
-\item{GRvalues}{values}
-
-\item{cap}{enforce e_0 and GR_0}
 }
 \value{
 vector of parameters

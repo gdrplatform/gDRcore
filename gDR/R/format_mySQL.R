@@ -1,6 +1,3 @@
-
-
-
 # DB structure is described in https://drive.google.com/open?id=1gX5ja_dSdygr2KYTqYUiENKWxu9HkOEz
 
 #########
@@ -9,7 +6,18 @@
 #######
 
 
+#' Refactor dataframes to be ready to add to the mySQL db
+#'
+#' @param df_averaged a dataframe with averaged values of DR data
+#' @param df_metrics a dataframe with metrics of DR data
+#' @param project_id a character with a project id
+#' @param condition_metadata_table_length an integer with condition table length
+#' @param treatment_metadata_table_length an integer with treatment table length
+#'
+#' @return a list with transformed elements of DR data
 #' @export
+#'
+#' @examples
 format_mySQL <-
   function(df_averaged,
            df_metrics,
@@ -17,6 +25,12 @@ format_mySQL <-
            condition_metadata_table_length,
            treatment_metadata_table_length) {
     # length could be replaced by connection to mySQL database
+    # Assertions:
+    stopifnot(inherits(df_averaged, "data.frame"))
+    stopifnot(inherits(df_metrics, "data.frame"))
+    checkmate::assert_scalar(project_id)
+    checkmate::assert_number(condition_metadata_table_length)
+    checkmate::assert_number(treatment_metadata_table_length)
     
     keys <-
       c(setdiff(identify_keys(df_averaged)$DoseResp, "Concentration"),
@@ -147,7 +161,20 @@ format_mySQL <-
 #   metadata from the clid and Gnumber tables
 #######
 
+#' Extract data from the mySQL db
+#'
+#' @param project_id a character with a project id
+#' @param condition_metadata a dataframe with condition metadata
+#' @param condition_additional_treatment a dataframe with additional treatments
+#' @param condition_codrug a dataframe with condition codrugs
+#' @param treatment_metadata a datafram with treatment metadata
+#' @param response_mean a dataframe with response means
+#' @param response_metrics a dataframe with response metrics
+#'
+#' @return a list with averaged values and metrics of DR data
 #' @export
+#'
+#' @examples
 extract_mySQL <-
   function(project_id,
            condition_metadata,
@@ -156,6 +183,15 @@ extract_mySQL <-
            treatment_metadata,
            response_mean,
            response_metrics) {
+    # Assertions:
+    checkmate::assert_string(project_id)
+    stopifnot(inherits(condition_metadata, "data.frame"))
+    stopifnot(inherits(condition_additional_treatment, "data.frame"))
+    stopifnot(inherits(condition_codrug, "data.frame"))
+    stopifnot(inherits(treatment_metadata, "data.frame"))
+    stopifnot(inherits(response_mean, "data.frame"))
+    stopifnot(inherits(response_metrics, "data.frame"))
+    
     # inputs to be replaced by connection to the mySQL database
     
     # TODO: properly handle the subtables for co-treatments, Gnumber, and clid

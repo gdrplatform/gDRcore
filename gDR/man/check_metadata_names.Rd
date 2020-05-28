@@ -7,7 +7,7 @@
 check_metadata_names(col_df, df_name = "", df_type = NULL)
 }
 \arguments{
-\item{col_df}{a dataframe with coldata}
+\item{col_df}{a character with colnames of df}
 
 \item{df_name}{a name of dataframe ("" by default)}
 

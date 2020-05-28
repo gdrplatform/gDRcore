@@ -13,7 +13,7 @@ df_to_assay(data, data_type = c("all", "treated", "untreated"),
 \item{data_type}{string type of data to be returned: all, for untreated conditions only ('untreated')
 or for treated conditions only ('treated')}
 
-\item{treatment_id}{string id of the column with the treatment conditions data (in 'data' object)}
+\item{discard_keys}{a vector of keys that should be discarded}
 }
 \value{
 matrix
