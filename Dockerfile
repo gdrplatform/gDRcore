@@ -39,8 +39,8 @@ COPY rplatform/ssh_keys/id_rsa /home/rstudio/.ssh/id_rsa
 COPY rplatform/ssh_keys/id_rsa.pub /home/rstudio/.ssh/id_rsa.pub
 
 #================= install rp R package
-COPY rplatform/install_rp_package.R /mnt/vol/rplatform/install_rp_package.R
-RUN R -f /mnt/vol/rplatform/install_rp_package.R
+#COPY rplatform/install_rp_package.R /mnt/vol/rplatform/install_rp_package.R
+#RUN R -f /mnt/vol/rplatform/install_rp_package.R
 
 COPY rplatform/DESCRIPTION_dependencies.yaml /mnt/vol/rplatform/DESCRIPTION_dependencies.yaml
 COPY gDR/DESCRIPTION /mnt/vol/gDR/DESCRIPTION
