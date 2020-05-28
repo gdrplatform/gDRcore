@@ -269,14 +269,3 @@ save_file_type_info <-
     outFile <- file.path(save_dir, fileTypeInfoName)
     write.csv(tbl, outFile, row.names = FALSE)
   }
-
-DICTIONARY <- list(
-  "vehicle"
-)
-
-standardize_record_values <- function(x, dictionary){
-  for (i in dictionary) {
-    x[tolower(x) == i] <- i
-  }
-  x
-}
