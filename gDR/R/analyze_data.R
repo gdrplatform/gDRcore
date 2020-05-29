@@ -140,7 +140,7 @@ normalize_SE <- function(df_raw_data,
     # average technical replicates and assign the right controls to each treated well
     Keys <- identify_keys(df_raw_data)
     if (!is.null(key_values)) {
-      checkmate::assert_true(names(key_values) %in% Keys)
+      checkmate::assert_true(names(key_values) %in% unlist(Keys))
     } 
     Keys$discard_keys <- discard_keys
     if (!is.null(selected_keys)) {
