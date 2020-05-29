@@ -8,8 +8,6 @@ echo "Working directory contains: `ls | tr '\n' ' '`"
 # exit when any command fails
 set -e
 
-cat /etc/default/locale
-
 echo ">>>>> RUNNING UNIT TESTS"
 Rscript -e "devtools::test(pkg = '/mnt/vol/gDR', stop_on_failure = TRUE)"
 
