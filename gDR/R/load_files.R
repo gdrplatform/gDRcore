@@ -181,6 +181,8 @@ load_templates <- function (df_template_files) {
     all_templates <- rbind(all_templates, all_templates_2)
   }
   
+  all_templates$Gnumber <- standardize_record_values(all_templates$Gnumber, dictionary = DICTIONARY)
+  
   return(all_templates)
   
 }
@@ -449,7 +451,6 @@ load_templates_xlsx <-
         })
         df$WellRow <- LETTERS[1:n_row]
         df_melted <- reshape2::melt(df, id.vars = "WellRow")
-        
         # check if metadata field already exist and correct capitalization if needed
         if (!(iS %in% metadata_fields)) {
           if (!is.null(metadata_fields) &&
