@@ -10,12 +10,6 @@ set -e
 
 cat /etc/default/locale
 
-Rscript -e "sessionInfo()"
-
-Rscript -e "install.packages('ISLR')"
-
-Rscript -e "require(ISLR);lm(horsepower~acceleration, data=Auto)"
-
 echo ">>>>> RUNNING UNIT TESTS"
 Rscript -e "devtools::test(pkg = '/mnt/vol/gDR', stop_on_failure = TRUE)"
 
