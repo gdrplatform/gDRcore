@@ -25,7 +25,7 @@ ARG MRAN_SNAPSHOT_DATE="2019-12-12"
 
 # ----------------------------------------------------------------------------------------------------------------
 
-# install system dependencies
+#================= install system dependencies
 RUN sudo apt-get update && sudo apt-get install -y \
     libmariadb-client-lgpl-dev \
     libmariadbclient-dev 
@@ -38,17 +38,14 @@ RUN echo 'Sys.setenv(MRAN_SNAPSHOT_DATE = "'$MRAN_SNAPSHOT_DATE'")' "$(cat /tmp/
 COPY rplatform/ssh_keys/id_rsa /home/rstudio/.ssh/id_rsa
 COPY rplatform/ssh_keys/id_rsa.pub /home/rstudio/.ssh/id_rsa.pub
 
-#================= install rp R package
-#COPY rplatform/install_rp_package.R /mnt/vol/rplatform/install_rp_package.R
-#RUN R -f /mnt/vol/rplatform/install_rp_package.R
-
+#================= install dependencies 
 COPY rplatform/DESCRIPTION_dependencies.yaml /mnt/vol/rplatform/DESCRIPTION_dependencies.yaml
 COPY gDR/DESCRIPTION /mnt/vol/gDR/DESCRIPTION
 COPY rplatform/install_dependencies.R /mnt/vol/rplatform/install_dependencies.R
 COPY rplatform/git_dependencies.yml /mnt/vol/rplatform/git_dependencies.yml
 RUN R -f /mnt/vol/rplatform/install_dependencies.R
 
-## Uncomment following to install package(s) from source dir or Bitbucket
+#================= install from source
 COPY rplatform/install_from_source.R /mnt/vol/rplatform/install_from_source.R
 RUN R -f /mnt/vol/rplatform/install_from_source.R
 
