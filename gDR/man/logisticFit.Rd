@@ -8,6 +8,8 @@ logisticFit(concs, normValues, x_0 = 1, curve_type = c("IC", "GR"),
   force = FALSE, cap = 0.1)
 }
 \arguments{
+\item{concs}{concentrations}
+
 \item{normValues}{values}
 
 \item{x_0}{upper limit; =1 by default )}
@@ -17,8 +19,6 @@ logisticFit(concs, normValues, x_0 = 1, curve_type = c("IC", "GR"),
 \item{force}{use signifcance or not}
 
 \item{cap}{enforce x_0}
-
-\item{log10concs}{log10 of concentrations}
 }
 \value{
 vector of parameters

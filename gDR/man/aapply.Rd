@@ -7,13 +7,15 @@
 aapply(SE, fx, assay_type = 1)
 }
 \arguments{
-\item{function:}{function to apply on the nested dataframes}
+\item{SE}{a SummarizedExperiment object}
 
-\item{assay_type:}{integer or name of the assay on which to apply the function}
+\item{fx}{any function}
+
+\item{assay_type}{a name of an assay}
 }
 \value{
 the same SE object with updated nested dataframe
 }
 \description{
-works like sapply but on each nested dataframe of the assay of an SE
+Works like sapply but on each nested dataframe of the assay of an SE
 }

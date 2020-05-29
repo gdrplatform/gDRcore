@@ -4,19 +4,22 @@
 #'
 #' returns fit parameters
 #'
-#' @param log10concs concentrations
-#' @param RelativeViability values
-#' @param GRvalues values
+#' @param df_ a data frame used for calculation of fit parameters
 #' @param e_0 = 1 by default
 #' @param GR_0 = 1 by default
 #' @param force use signifcance or not
-#' @param cap enforce e_0 and GR_0
 #' @return vector of parameters
 #' @export
 ICGRfits <- function(df_,
                      e_0 = 1,
                      GR_0 = 1,
                      force = FALSE) {
+  # Assertions:
+  stopifnot(inherits(df_, "data.frame"))
+  checkmate::assert_number(e_0)
+  checkmate::assert_number(GR_0)
+  checkmate::assert_logical(force)
+  
   if (sum(!is.na(df_$RelativeViability))<5) {
     df_IC = NA
   } else {
@@ -55,7 +58,7 @@ ICGRfits <- function(df_,
 #'
 #' returns fit parameters
 #'
-#' @param log10concs log10 of concentrations
+#' @param concs concentrations
 #' @param normValues values
 #' @param x_0 upper limit; =1 by default )
 #' @param curve_type response curve: either IC ([0,1]) or GR([-1,1])
@@ -72,7 +75,14 @@ logisticFit <-
            cap = 0.1) {
     # Implementation of the genedata approach for curve fit: https://screener.genedata.com/documentation/display/DOC15/Business+Rules+for+Dose-Response+Curve+Fitting+Model+Selection+and+Fit+Validity
     #
-
+    # Assertions:
+    checkmate::assert_numeric(concs)
+    checkmate::assert_numeric(normValues)
+    checkmate::assert_number(x_0)
+    checkmate::assert_character(curve_type)
+    checkmate::assert_logical(force)
+    checkmate::assert_number(cap)
+    
     # define variables and prepare data
     log10concs <- log10(concs)
     df_ <- data.frame(log10conc = log10concs,
@@ -220,7 +230,15 @@ ICGRlogisticFit <-
            cap = FALSE) {
     # Implementation of the genedata approach for curve fit: https://screener.genedata.com/documentation/display/DOC15/Business+Rules+for+Dose-Response+Curve+Fitting+Model+Selection+and+Fit+Validity
     #
-
+    # Assertions:
+    checkmate::assert_numeric(log10concs)
+    checkmate::assert_numeric(RelativeViability)
+    checkmate::assert_numeric(GRvalues)
+    checkmate::assert_number(e_0)
+    checkmate::assert_number(GR_0)
+    checkmate::assert_logical(force)
+    checkmate::assert_logical(cap)
+    
     # define variables and prepare data
     IC_data_exp <-
       data.frame(log10conc = log10concs, RelativeViability = RelativeViability)
@@ -421,10 +439,33 @@ ICGRlogisticFit <-
   }
 
 
-range_mv <- function(c50, x_inf, hillCoefficient, x_0 = 1, linear_conc_range_uM = c(5e-3, 5)) {
+#' range_mv
+#'
+#' @param c50 c50 values 
+#' @param x_inf x_inv values
+#' @param hillCoefficient hill ceofficient
+#' @param x_0 = 1 by default
+#' @param linear_conc_range_uM = c(5e-3, 5) by default
+#'
+#' @return
+#' @export
+#'
+#' @examples
+range_mv <- function(c50,
+                     x_inf,
+                     hillCoefficient,
+                     x_0 = 1,
+                     linear_conc_range_uM = c(5e-3, 5)) {
    # c50 in uM
    # linear_conc_range_uM in uM (from 5nM to 5uM by default)
-
+  
+  # Assertions:
+  checkmate::assert_numeric(c50)
+  checkmate::assert_numeric(x_inf)
+  checkmate::assert_numeric(hillCoefficient)
+  checkmate::assert_numeric(x_0)
+  checkmate::assert_numeric(linear_conc_range_uM)
+  
   conc_values = 10 ** seq(log10(linear_conc_range_uM[1]), log10(linear_conc_range_uM[2]), .01)
 
   viab = sapply(conc_values, function(x) logistic_4parameters(x, x_inf, x_0, c50, hillCoefficient))
@@ -436,8 +477,21 @@ range_mv <- function(c50, x_inf, hillCoefficient, x_0 = 1, linear_conc_range_uM 
 }
 
 
-# logistic function (not used in the file but useful for plotting externally)
+#' logistic function (not used in the file but useful for plotting externally)
+#' @param c c value
+#' @param Vinf Vinf value
+#' @param V0 V0 value
+#' @param EC50 EC50 value
+#' @param h h value
+#'
 #' @export
 logistic_4parameters <- function(c, Vinf, V0, EC50, h) {
+  # Assertions:
+  checkmate::assert_numeric(c)
+  checkmate::assert_numeric(Vinf)
+  checkmate::assert_numeric(V0)
+  checkmate::assert_numeric(EC50)
+  checkmate::assert_numeric(h)
+
   Vinf + (V0 - Vinf) / (1 + (c / EC50) ^ h)
 }
