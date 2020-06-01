@@ -409,11 +409,9 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   colnames(ids) <- c("rId", "cId")
   ids[] <- lapply(ids, as.character)
   rData <- data.frame(SummarizedExperiment::rowData(se), stringsAsFactors = FALSE)
-  rData$rId <- rownames(rData)
   rData <- tibble::as_tibble(rData)
   cData <- data.frame(SummarizedExperiment::colData(se), stringsAsFactors = FALSE)
   cData$cId <- rownames(cData)
-  cData <- tibble::as_tibble(cData)
   annotTbl <-
     dplyr::left_join(ids, rData, by = "rId")
   annotTbl <-
@@ -421,6 +419,7 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
 
   #merge assay data with data from colData/rowData
   SE_assay = SummarizedExperiment::assay(se, assay_name)
+  SE_assay = tibble::as_tibble(SE_assay)
   asL <- lapply(1:nrow(SummarizedExperiment::colData(se)), function(x) {
     myL <- SE_assay[, x]
 
