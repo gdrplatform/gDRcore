@@ -409,7 +409,7 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   colnames(ids) <- c("rId", "cId")
   ids[] <- lapply(ids, as.character)
   rData <- data.frame(SummarizedExperiment::rowData(se), stringsAsFactors = FALSE)
-  rData <- tibble::as_tibble(rData)
+  rData$rId <- rownames(rData)
   cData <- data.frame(SummarizedExperiment::colData(se), stringsAsFactors = FALSE)
   cData$cId <- rownames(cData)
   annotTbl <-
