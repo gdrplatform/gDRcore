@@ -403,7 +403,8 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_string(assay_name)
   checkmate::assert_logical(merge_metrics)
-
+  position <- match(assay_name, SummarizedExperiment::assayNames(se))
+  
   # define data.frame with data from rowData/colData
   ids <- expand.grid(rownames(SummarizedExperiment::rowData(se)), rownames(SummarizedExperiment::colData(se)))
   colnames(ids) <- c("rId", "cId")
@@ -418,8 +419,7 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
     dplyr::left_join(annotTbl, cData, by = "cId")
 
   #merge assay data with data from colData/rowData
-  SE_assay = SummarizedExperiment::assay(se, assay_name)
-  SE_assay = tibble::as_tibble(SE_assay)
+  SE_assay = SummarizedExperiment::assay(se, position)
   asL <- lapply(1:nrow(SummarizedExperiment::colData(se)), function(x) {
     myL <- SE_assay[, x]
 
