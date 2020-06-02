@@ -134,6 +134,9 @@ test_lData <- function(lData, lRef) {
 
 test_se_normalized <- function(se, lRef) {
   
+  print(standardize_df(metadata(se)$df_raw_data))
+  print(standardize_df(data.frame(lRef$df_raw_data)))
+  
   expect_equal(standardize_df(metadata(se)$df_raw_data),
                standardize_df(data.frame(lRef$df_raw_data)))
   expect_equal(yaml::as.yaml(metadata(se)$Keys), paste0(lRef$ref_keys, "\n"))
