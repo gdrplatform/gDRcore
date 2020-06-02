@@ -25,8 +25,6 @@ ARG MRAN_SNAPSHOT_DATE="2019-12-12"
 
 # ----------------------------------------------------------------------------------------------------------------
 
-USER root
-
 # install system dependencies
 RUN sudo apt-get update && sudo apt-get install -y \
     libmariadbclient-dev \
@@ -39,8 +37,7 @@ RUN sudo apt-get update && sudo apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libbz2-dev \
-    libv8-dev
-
+    libv8-dev 
 
 #================= copy Rprofile.site - set repos and other options
 COPY rplatform/Rprofile.site /tmp/Rprofile.site
@@ -55,16 +52,18 @@ COPY rplatform/ssh_keys/id_rsa.pub /home/rstudio/.ssh/id_rsa.pub
 COPY rplatform/install_rp_package.R /mnt/vol/rplatform/install_rp_package.R
 RUN R -f /mnt/vol/rplatform/install_rp_package.R
 
-#================= install package dependencies
 COPY rplatform/DESCRIPTION_dependencies.yaml /mnt/vol/rplatform/DESCRIPTION_dependencies.yaml
+COPY gDR/DESCRIPTION /mnt/vol/gDR/DESCRIPTION
 COPY rplatform/install_dependencies.R /mnt/vol/rplatform/install_dependencies.R
 COPY rplatform/git_dependencies.yml /mnt/vol/rplatform/git_dependencies.yml
 RUN R -f /mnt/vol/rplatform/install_dependencies.R
 
-#================= install packages from specific sources
+## Uncomment following to install package(s) from source dir or Bitbucket
 COPY rplatform/install_from_source.R /mnt/vol/rplatform/install_from_source.R
 RUN R -f /mnt/vol/rplatform/install_from_source.R
 
-RUN rm -rf /mnt/vol/*
+#============ Disable login requirement for Rstudio
+ENV DISABLE_AUTH=true
 
-USER rstudio
+RUN sudo rm -rf /home/rstudio/.ssh
+RUN sudo rm -rf /mnt/vol/* 
