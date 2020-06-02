@@ -25,32 +25,46 @@ ARG MRAN_SNAPSHOT_DATE="2019-12-12"
 
 # ----------------------------------------------------------------------------------------------------------------
 
-#================= install system dependencies
+USER root
+
+# install system dependencies
 RUN sudo apt-get update && sudo apt-get install -y \
-    libmariadb-client-lgpl-dev \
-    libmariadbclient-dev 
+    libmariadbclient-dev \
+    libgit2-dev \
+    libxml2-dev \
+    libssl-dev \
+    libsasl2-dev \
+    libssh2-1-dev \
+    liblzma-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libbz2-dev \
+    libv8-dev
+
 
 #================= copy Rprofile.site - set repos and other options
-COPY rplatform/Rprofile.site /tmp/Rprofile.site-temp
-RUN echo 'Sys.setenv(MRAN_SNAPSHOT_DATE = "'$MRAN_SNAPSHOT_DATE'")' "$(cat /tmp/Rprofile.site-temp)" | sudo tee -a $(R RHOME)/etc/Rprofile.site
+COPY rplatform/Rprofile.site /tmp/Rprofile.site
+RUN echo 'Sys.setenv(MRAN_SNAPSHOT_DATE = "'$MRAN_SNAPSHOT_DATE'")' "$(cat /tmp/Rprofile.site)" > /tmp/Rprofile.site
+RUN mv /tmp/Rprofile.site $(R RHOME)/etc/Rprofile.site
 
 #================= copy ssh keys
 COPY rplatform/ssh_keys/id_rsa /home/rstudio/.ssh/id_rsa
 COPY rplatform/ssh_keys/id_rsa.pub /home/rstudio/.ssh/id_rsa.pub
 
-#================= install dependencies 
+#================= install rp R package
+COPY rplatform/install_rp_package.R /mnt/vol/rplatform/install_rp_package.R
+RUN R -f /mnt/vol/rplatform/install_rp_package.R
+
+#================= install package dependencies
 COPY rplatform/DESCRIPTION_dependencies.yaml /mnt/vol/rplatform/DESCRIPTION_dependencies.yaml
-COPY gDR/DESCRIPTION /mnt/vol/gDR/DESCRIPTION
 COPY rplatform/install_dependencies.R /mnt/vol/rplatform/install_dependencies.R
 COPY rplatform/git_dependencies.yml /mnt/vol/rplatform/git_dependencies.yml
 RUN R -f /mnt/vol/rplatform/install_dependencies.R
 
-#================= install from source
+#================= install packages from specific sources
 COPY rplatform/install_from_source.R /mnt/vol/rplatform/install_from_source.R
 RUN R -f /mnt/vol/rplatform/install_from_source.R
 
-#============ Disable login requirement for Rstudio
-ENV DISABLE_AUTH=true
+RUN rm -rf /mnt/vol/*
 
-RUN sudo rm -rf /home/rstudio/.ssh
-RUN sudo rm -rf /mnt/vol/* 
+USER rstudio
