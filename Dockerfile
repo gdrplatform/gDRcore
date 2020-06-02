@@ -11,7 +11,7 @@
 # It is recommended to not to change 'rstudio' user due to permissions issues
 # within Docker container, because container's RStudio Server is run as 'rstudio'.
 
-FROM registry.rplatform.org:5000/rocker-rstudio-uat:3.6.1_rp0.0.79
+FROM rocker/rstudio:3.6.3
 
 # ------ Be aware that any changes in following may cause issue with RPlatform and CBS ---------------------------
 
