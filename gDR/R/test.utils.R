@@ -114,9 +114,15 @@ test_lData <- function(lData, lRef) {
   checkmate::assert_list(lData)
   checkmate::assert_list(lRef)
   
+  class(lData$manifest) <- class(lRef$lData_manifest)
+  
+  x <- standardize_df(lData$data)
+  y <- standardize_df(data.frame(lRef$lData_data))
+  class(y) <- class(x)
+  
   testthat::expect_equal(names(lData), c("manifest", "treatments", "data"))
   expect_equal(lData$manifest, lRef$lData_manifest)
-  expect_equal(standardize_df(lData$data), standardize_df(data.frame(lRef$lData_data)))
+  expect_equal(x, y)
   expect_equal(standardize_df(lData$treatments),
                standardize_df(data.frame(lRef$lData_treatments)))
 }
@@ -173,8 +179,11 @@ test_se <- function(se, lRef) {
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_list(lRef)
   
-  expect_equal(standardize_df(metadata(se)$df_raw_data),
-               standardize_df(data.frame(lRef$df_raw_data)))
+  x <- standardize_df(metadata(se)$df_raw_data)
+  y <- standardize_df(tibble::tibble(lRef$df_raw_data))
+  class(y) <- class(x)
+  
+  expect_equal(x, y)
   expect_equal(yaml::as.yaml(metadata(se)$Keys), paste0(lRef$ref_keys, "\n"))
   expect_equal(yaml::as.yaml(metadata(se)$row_maps),
                paste0(lRef$ref_row_maps, "\n"))
