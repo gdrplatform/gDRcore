@@ -16,4 +16,9 @@ test2 <- test2 %>%
   dplyr::select(-CellLineName, -E2)
 expect_equal(test1, test2)
 
+experiment_id <- 414
+BASE_URL <- "http://reswebappdev301.gene.com:28294"
+metadataTable <- gDRwrapper::define_condition_tables(se = se,
+                        experiment_id = 414, base_url = BASE_URL)
+checkmate::assert_list(metadataTable)
 })
