@@ -11,7 +11,7 @@
 # It is recommended to not to change 'rstudio' user due to permissions issues
 # within Docker container, because container's RStudio Server is run as 'rstudio'.
 
-FROM registry.rplatform.org:5000/rocker-rstudio-uat:3.6.1_rp0.0.79
+FROM rocker/rstudio:3.6.3
 
 # ------ Be aware that any changes in following may cause issue with RPlatform and CBS ---------------------------
 
@@ -25,27 +25,40 @@ ARG MRAN_SNAPSHOT_DATE="2019-12-12"
 
 # ----------------------------------------------------------------------------------------------------------------
 
-#================= install system dependencies
+# install system dependencies
 RUN sudo apt-get update && sudo apt-get install -y \
-    libmariadb-client-lgpl-dev \
-    libmariadbclient-dev 
+    libmariadbclient-dev \
+    libgit2-dev \
+    libxml2-dev \
+    libssl-dev \
+    libsasl2-dev \
+    libssh2-1-dev \
+    liblzma-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libbz2-dev \
+    libv8-dev 
 
 #================= copy Rprofile.site - set repos and other options
-COPY rplatform/Rprofile.site /tmp/Rprofile.site-temp
-RUN echo 'Sys.setenv(MRAN_SNAPSHOT_DATE = "'$MRAN_SNAPSHOT_DATE'")' "$(cat /tmp/Rprofile.site-temp)" | sudo tee -a $(R RHOME)/etc/Rprofile.site
+COPY rplatform/Rprofile.site /tmp/Rprofile.site
+RUN echo 'Sys.setenv(MRAN_SNAPSHOT_DATE = "'$MRAN_SNAPSHOT_DATE'")' "$(cat /tmp/Rprofile.site)" > /tmp/Rprofile.site
+RUN mv /tmp/Rprofile.site $(R RHOME)/etc/Rprofile.site
 
 #================= copy ssh keys
 COPY rplatform/ssh_keys/id_rsa /home/rstudio/.ssh/id_rsa
 COPY rplatform/ssh_keys/id_rsa.pub /home/rstudio/.ssh/id_rsa.pub
 
-#================= install dependencies 
+#================= install rp R package
+COPY rplatform/install_rp_package.R /mnt/vol/rplatform/install_rp_package.R
+RUN R -f /mnt/vol/rplatform/install_rp_package.R
+
 COPY rplatform/DESCRIPTION_dependencies.yaml /mnt/vol/rplatform/DESCRIPTION_dependencies.yaml
 COPY gDR/DESCRIPTION /mnt/vol/gDR/DESCRIPTION
 COPY rplatform/install_dependencies.R /mnt/vol/rplatform/install_dependencies.R
 COPY rplatform/git_dependencies.yml /mnt/vol/rplatform/git_dependencies.yml
 RUN R -f /mnt/vol/rplatform/install_dependencies.R
 
-#================= install from source
+## Uncomment following to install package(s) from source dir or Bitbucket
 COPY rplatform/install_from_source.R /mnt/vol/rplatform/install_from_source.R
 RUN R -f /mnt/vol/rplatform/install_from_source.R
 
