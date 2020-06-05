@@ -22,8 +22,7 @@ Imports:
     drc,
     gCellGenomics,
     S4Vectors,
-    gDRutils,
-    gDRwrapper
+    gDRutils
 Suggests:
     futile.logger,
     gCSIutils,
