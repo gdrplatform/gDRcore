@@ -54,7 +54,7 @@ read_ref_data <- function(inDir, prefix = "ref") {
 #'
 write_ref_data_df <- function(lData, outDir, prefix = "ref") {
   # Assertions:
-  checkmate::assert_list(outDir)
+  checkmate::assert_list(lData)
   checkmate::assert_string(outDir)
   checkmate::assert_string(prefix)
   
