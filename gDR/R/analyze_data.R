@@ -230,7 +230,7 @@ normalize_SE <- function(df_raw_data,
 
     # temporary optimization (use 'normSE_n' and 'normSE_c' to avoid using 'assay<-` in for loops)
     # TODO: refactor this part of code once we switch to DataFrameMatrix class
-    ctrl_original = SummarizedExperiment::assay(ctrlSE)
+    ctrl_original = SummarizedExperiment::assay( aapply(ctrlSE, function(x) x[!x$masked,]) )
     # need to keep original data for the case in which reference is such that Gnumber == Gnumber_2
     normSE_n <- normSE_original <- SummarizedExperiment::assay(normSE, "Normalized")
     normSE_c <- SummarizedExperiment::assay(normSE, "Controls")
@@ -244,6 +244,16 @@ normalize_SE <- function(df_raw_data,
             # get all the control endpoint data
             df_end <- do.call(rbind,
                     lapply(row_maps_end[[i]], function(x) ctrl_original[[x, col_maps[j]]]))
+            if (nrow(df_end) == 0) {
+              futile.logger::flog.warn(
+                  "Missing control data.
+                  Treatment Id: %s
+                  Cell_line Id: %s",
+                  i,
+                  j
+                )
+              next
+            }
             df_end <- df_end[, c("CorrectedReadout",
                     intersect(Keys$untrt_Endpoint, colnames(df_end))), drop = F]
             colnames(df_end)[1] <- "UntrtReadout"
@@ -545,10 +555,13 @@ average_SE <- function(normSE, TrtKeys = NULL) {
     avgSE <- aapply(avgSE, function(x) {
         if (nrow(x) > 1) {
             subKeys <- intersect(TrtKeys, colnames(x))
-            df_av <- aggregate(x[, c("GRvalue", "RelativeViability","CorrectedReadout")],
-                            by = as.list(x[, subKeys, drop = FALSE]), FUN = function(y) mean(y, na.rm = TRUE))
-            df_std <- aggregate(x[, c("GRvalue", "RelativeViability")],
-                                by = as.list(x[, subKeys, drop = FALSE]), FUN = function(x) sd(x, na.rm = TRUE))
+            df_av <- aggregate(x[ !x$masked ,
+                                  c("GRvalue", "RelativeViability","CorrectedReadout")],
+                            by = as.list(x[ !x$masked , subKeys, drop = FALSE]),
+                            FUN = function(y) mean(y, na.rm = TRUE))
+            df_std <- aggregate(x[!x$masked, c("GRvalue", "RelativeViability")],
+                                by = as.list(x[ !x$masked, subKeys, drop = FALSE]),
+                                FUN = function(x) sd(x, na.rm = TRUE))
             colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")] =
                 paste0("std_",
                     colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")])
