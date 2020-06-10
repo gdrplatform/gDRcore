@@ -147,6 +147,11 @@ normalize_SE <- function(df_raw_data,
       Keys$DoseResp <- setdiff(Keys$DoseResp, discard_keys)
     }
 
+    # adding 'masked = F' if missing from df_raw_data
+    if ( !(get_identifier('masked_tag') %in% colnames(df_raw_data))) {
+      df_raw_data[,get_identifier('masked_tag')] = FALSE
+    }
+
     # remove background value to readout (at least 1e-10 to avoid artefactual normalized values)
     df_raw_data$CorrectedReadout = pmax(df_raw_data$ReadoutValue -
                     df_raw_data$BackgroundValue, 1e-10)
