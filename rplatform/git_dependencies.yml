@@ -7,5 +7,5 @@ pkgs:
   gDRutils:
     ver: ">=0.0.2"
     url: https://github.roche.com/gdrplatform/gDRutils.git
-    ref: master
+    ref: GDS_import
     subdir: gDRutils
