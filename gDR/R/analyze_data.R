@@ -148,8 +148,8 @@ normalize_SE <- function(df_raw_data,
     }
 
     # adding 'masked = F' if missing from df_raw_data
-    if ( !(get_identifier('masked_tag') %in% colnames(df_raw_data))) {
-      df_raw_data[,get_identifier('masked_tag')] = FALSE
+    if ( !(gDRutils::get_identifier('masked_tag') %in% colnames(df_raw_data))) {
+      df_raw_data[,gDRutils::get_identifier('masked_tag')] = FALSE
     }
 
     # remove background value to readout (at least 1e-10 to avoid artefactual normalized values)
@@ -1052,18 +1052,18 @@ add_codrug_group = function(SE) {
   if (!('Gnumber_2' %in% colnames(r_data))) return(SE)
 
   # find the pairs of drugs with relevant metadata
-  drug_ids = paste0(get_identifier()$drug, c('', '_2'))
+  drug_ids = paste0(gDRutils::get_identifier()$drug, c('', '_2'))
   other_metadata = setdiff(colnames(r_data), c('Concentration_2', drug_ids,
-                    paste0(get_identifier()$drugname, c('', paste0('_',1:10)))))
+                    paste0(gDRutils::get_identifier()$drugname, c('', paste0('_',1:10)))))
   drug_pairs = unique(r_data[, c(drug_ids, other_metadata)])
-  drug_pairs = drug_pairs[ !(drug_pairs[,drug_ids[2]] %in% get_identifier('untreated_tag')),]
+  drug_pairs = drug_pairs[ !(drug_pairs[,drug_ids[2]] %in% gDRutils::get_identifier('untreated_tag')),]
 
   pair_list = vector('list', nrow(drug_pairs))
   # loop through the pairs to assess the number of individual concentration pairs
   for (idp in 1:nrow(drug_pairs)) {
     row_idx = r_data[,drug_ids[1]] %in% unlist(drug_pairs[idp, drug_ids]) &
             r_data[,drug_ids[2]] %in% c(unlist(drug_pairs[idp, drug_ids]),
-                get_identifier('untreated_tag')) &
+                gDRutils::get_identifier('untreated_tag')) &
             apply(as.matrix(
                 IRanges::LogicalList(c(
                   lapply(other_metadata, function(y) # matching the metadata
