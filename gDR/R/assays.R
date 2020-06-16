@@ -401,7 +401,7 @@ assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
   stopifnot(any("SummarizedExperiment" %in% class(se)))
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
-  #checkmate::assert_string(assay_name)
+  checkmate::assert_string(assay_name)
   checkmate::assert_logical(merge_metrics)
   #position <- match(assay_name, SummarizedExperiment::assayNames(se))
   
