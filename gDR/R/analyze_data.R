@@ -560,6 +560,13 @@ average_SE <- function(normSE, TrtKeys = NULL) {
     avgSE <- aapply(avgSE, function(x) {
         if (nrow(x) > 1) {
             subKeys <- intersect(TrtKeys, colnames(x))
+            if (all(x$masked)) {
+              df_ = as.data.frame(matrix(0,0,length(subKeys)+5))
+              colnames(df_) = c(subKeys,
+                    c("GRvalue", "RelativeViability","CorrectedReadout"),
+                    paste0("std_", c("GRvalue", "RelativeViability")))
+              return(df_)
+            }
             df_av <- aggregate(x[ !x$masked ,
                                   c("GRvalue", "RelativeViability","CorrectedReadout")],
                             by = as.list(x[ !x$masked , subKeys, drop = FALSE]),
@@ -625,7 +632,7 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
     for (i in rownames(metricsSE)) {
         for (j in colnames(metricsSE)) {
             df_ <- a_SE[[i, j]]
-            if (nrow(df_) > 0) { # studyConcThresh is embeded in RVGRfits
+            if (!is.null(df_) && nrow(df_) > 0) { # studyConcThresh is embeded in RVGRfits
                 mSE_m[[i, j]] <- DataFrame(gDRutils::RVGRfits(df_,
                     e_0 = aCtrl_SE[[i, j]]$RefRelativeViability,
                     GR_0 = aCtrl_SE[[i, j]]$RefGRvalue,
