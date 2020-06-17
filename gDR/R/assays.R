@@ -386,3 +386,83 @@ addAssayToMAE <-
     SummarizedExperiment::assay(mae[[exp_name]], assay_name) <- assay
   }
 
+#' assay_to_df
+#'
+#' Convert SE assay to data.frame
+#'
+#' @param se  SummarizedExperiment object with dose-response data
+#' @param assay_name string name of the assay
+#' @param merge_metrics a logical indicating whether the metrics should be merged
+#'
+#' @return data.frame with dose-reponse data
+#'
+#' @export
+assay_to_df <- function(se, assay_name, merge_metrics = FALSE) {
+  stopifnot(any("SummarizedExperiment" %in% class(se)))
+  # Assertions:
+  checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_string(assay_name)
+  checkmate::assert_logical(merge_metrics)
+
+  # define data.frame with data from rowData/colData
+  ids <- expand.grid(rownames(SummarizedExperiment::rowData(se)), rownames(SummarizedExperiment::colData(se)))
+  colnames(ids) <- c("rId", "cId")
+  ids[] <- lapply(ids, as.character)
+  rData <- data.frame(SummarizedExperiment::rowData(se), stringsAsFactors = FALSE)
+  rData$rId <- rownames(rData)
+  cData <- data.frame(SummarizedExperiment::colData(se), stringsAsFactors = FALSE)
+  cData$cId <- rownames(cData)
+  annotTbl <-
+    dplyr::left_join(ids, rData, by = "rId")
+  annotTbl <-
+    dplyr::left_join(annotTbl, cData, by = "cId")
+
+  #merge assay data with data from colData/rowData
+  SE_assay = SummarizedExperiment::assay(se, assay_name)
+  asL <- lapply(1:nrow(SummarizedExperiment::colData(se)), function(x) {
+    myL <- SE_assay[, x]
+    # if only one row (nrow==1), the name of the row is not kept which results in a bug
+    names(myL) = rownames(SE_assay) # this line is not affecting results if now>1
+
+    # in some datasets there might be no data for given drug/cell_line combination
+    # under such circumstances DataFrame will be empty
+    # and should be filtered out
+    # example: testdata 7 - SummarizedExperiment::assay(seL[[7]],"Normalized")[5:8,1]
+    myL <- myL[vapply(myL, nrow, integer(1)) > 0]
+
+    myV <- vapply(myL, nrow, integer(1))
+    rCol <- rep(names(myV), as.numeric(myV))
+    # there might be DataFrames with different number of columns
+    # let's fill with NAs where necessary
+    if (length(unique(sapply(myL, ncol))) > 1) {
+      df <- do.call(plyr::rbind.fill, lapply(myL, data.frame))
+    } else {
+      df <- data.frame(do.call(rbind, myL))
+    }
+
+    df$rId <- rCol
+    df$cId <- rownames(SummarizedExperiment::colData(se))[x]
+    full.df <- dplyr::left_join(df, annotTbl, by = c("rId", "cId"))
+  })
+  asDf <- data.frame(do.call(rbind, asL))
+  if (assay_name == "Metrics") {
+    asDf$dr_metric <- c("IC", "GR")
+    if (merge_metrics) {
+
+      colnames_IC <- gDRutils::get_header("RV_metrics")
+      colnames_GR <- gDRutils::get_header("GR_metrics")
+
+      Df_IC <- subset(asDf, dr_metric == "IC", select = c("rId", "cId", names(colnames_IC)))
+      Df_GR <- subset(asDf, dr_metric == "GR") %>% dplyr::select(-dr_metric)
+
+      data.table::setnames(Df_IC,
+                           old = names(colnames_IC),
+                           new = unname(colnames_IC))
+      data.table::setnames(Df_GR,
+                           old = names(colnames_GR),
+                           new = unname(colnames_GR))
+      asDf <- dplyr::full_join(Df_IC, Df_GR, by = c("rId", "cId"))
+    }
+  }
+  asDf
+}
