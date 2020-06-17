@@ -847,6 +847,7 @@ add_CellLine_annotation <- function(df_metadata) {
     DB_cell_annotate <- c("celllinename", "primarytissue", "doublingtime")
     # corresponds to columns gDRutils::get_header("add_clid"): name, tissue, doubling time
     CLs_info <- tryCatch( {
+	#TODO: HTSEQ-645 switch to gDRwrapper::get_drugs() and gDRwrapper::validate_drugs()
         CLs_info <- gneDB::annotateCLIDs(unique(df_metadata[,gDRutils::get_identifier("cellline")]))
         CLs_info <- CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
         CLs_info
@@ -893,6 +894,7 @@ add_Drug_annotation <- function(df_metadata) {
 
         DB_drug_identifier <- "drug"
         Drug_info <- tryCatch( {
+                # TODO: refactor this part of code once we switch to DataFrameMatrix class
                 gDrugs <- gCellGenomics::getDrugs()[, c(DB_drug_identifier, "gcsi_drug_name")]
                 gDrugs[, 1] <- substr(gDrugs[, 1], 1, 9) # remove batch number from DB_drug_identifier
                 gDrugs
