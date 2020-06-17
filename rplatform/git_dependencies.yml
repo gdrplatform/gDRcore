@@ -9,3 +9,8 @@ pkgs:
     url: https://github.roche.com/gdrplatform/gDRutils.git
     ref: GDS_import
     subdir: gDRutils
+  GeneDataScreenR:
+    ver: ">=0.0.26"
+    url: https://github.roche.com/hafnerm6/GeneDataScreenR.git
+    ref: gDR
+    subdir: ~
