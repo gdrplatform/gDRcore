@@ -844,11 +844,25 @@ add_CellLine_annotation <- function(df_metadata) {
     stopifnot(inherits(df_metadata, "data.frame"))
   
     DB_cellid_header <- "clid"
-    DB_cell_annotate <- c("celllinename", "primarytissue", "doublingtime")
+    DB_cell_annotate <- c("cellline_name", "primary_tissue", "doubling_time")
     # corresponds to columns gDRutils::get_header("add_clid"): name, tissue, doubling time
     CLs_info <- tryCatch( {
 	#TODO: HTSEQ-645 switch to gDRwrapper::get_drugs() and gDRwrapper::validate_drugs()
-        CLs_info <- gneDB::annotateCLIDs(unique(df_metadata[,gDRutils::get_identifier("cellline")]))
+        validateCLs <- gDRwrapper::validate_cell_lines(unique(df_metadata[,gDRutils::get_identifier("cellline")]))
+        if(!validateCLs){
+          cellLineTbl <- gneDB::annotateCLIDs(unique(df_metadata[,gDRutils::get_identifier("cellline")])) %>%
+            dplyr::select(canonicalname, celllinename, clid, doublingtime, primarytissue, tissuediagnosis) %>%
+            magrittr::set_colnames(c("canonical_name",
+                                     "cellline_name",
+                                     "clid",
+                                     "doubling_time",
+                                     "primary_tissue",
+                                     "subtype")) %>%
+            tibble::as_tibble()
+          addCellLines <- gDRwrapper::add_cell_lines(cellLineTbl)
+        }
+        CLs_info <- gDRwrapper::get_cell_lines()
+        CLs_info <- CLs_info[CLs_info$clid %in% unique(df_metadata[,gDRutils::get_identifier("cellline")]),]
         CLs_info <- CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
         CLs_info
     }, error = function(e) {
@@ -860,7 +874,7 @@ add_CellLine_annotation <- function(df_metadata) {
 
     colnames(CLs_info) <- c(gDRutils::get_identifier("cellline"), gDRutils::get_header("add_clid"))
     CLIDs <- unique(df_metadata[,gDRutils::get_identifier("cellline")])
-    bad_CL <- !(CLIDs %in% CLs_info[,gDRutils::get_identifier("cellline")])
+    bad_CL <- !(CLIDs %in% (CLs_info %>% dplyr::pull(gDRutils::get_identifier("cellline"))))
     if (any(bad_CL)) {
         stop(sprintf("Cell line ID %s not found in cell line database",
                      paste(CLIDs[bad_CL], collapse = " ; ")))
@@ -868,7 +882,7 @@ add_CellLine_annotation <- function(df_metadata) {
 
     futile.logger::flog.info("Merge with Cell line info")
     nrows_df <- nrow(df_metadata)
-    df_metadata <- merge(df_metadata, CLs_info, by.x = gDRutils::get_identifier("cellline"),
+    df_metadata <- base::merge(df_metadata, CLs_info, by.x = gDRutils::get_identifier("cellline"),
                 by.y = DB_cellid_header, all.x = TRUE)
     stopifnot(nrows_df == nrow(df_metadata))
 
@@ -892,12 +906,31 @@ add_Drug_annotation <- function(df_metadata) {
   
         nrows_df <- nrow(df_metadata)
 
-        DB_drug_identifier <- "drug"
+        DB_drug_identifier <- "gnumber"
         Drug_info <- tryCatch( {
-                # TODO: refactor this part of code once we switch to DataFrameMatrix class
-                gDrugs <- gCellGenomics::getDrugs()[, c(DB_drug_identifier, "gcsi_drug_name")]
-                gDrugs[, 1] <- substr(gDrugs[, 1], 1, 9) # remove batch number from DB_drug_identifier
-                gDrugs
+          drugsTreated <- unique(df_metadata[, gDRutils::get_identifier("drug")])
+          drugsTreated <- drugsTreated[!drugsTreated%in% gDRutils::get_identifier("untreated_tag")]
+          validateDrugs <- gDRwrapper::validate_drugs(drugsTreated)
+          if(!validateDrugs){
+            drugsTbl <- gCellGenomics::getDrugs() %>%
+              dplyr::select(gcsi_drug_name, gcsi_drug_moa, drug) %>%
+              magrittr::set_colnames(c("drug_name", "gcsi_moa", "gnumber"))
+            drugsTbl <- drugsTbl[substr(drugsTbl$gnumber, 1, 9) %in% drugsTreated,]
+            missingDrugs <- drugsTreated[!drugsTreated %in% substr(drugsTbl$gnumber, 1, 9)]
+            if(length(missingDrugs)>0){
+              missingTbl <- tibble::tibble(drug_name = missingDrugs,
+                                           gcsi_moa = NA,
+                                           gnumber = missingDrugs)
+              addMissingDrugs <- gDRwrapper::add_drugs(missingTbl)
+            }
+            drugsTbl$gnumber <- substr(drugsTbl$gnumber, 1, 9)
+            addDrugs <- gDRwrapper::add_drugs(drugsTbl)
+          }
+          
+          # TODO: refactor this part of code once we switch to DataFrameMatrix class
+          gDrugs <- gDRwrapper::get_drugs()[, c(DB_drug_identifier, "drug_name")]
+          gDrugs[, 1] <- sapply(gDrugs[,1], substr, 1, 9) # remove batch number from DB_drug_identifier
+          gDrugs
         }, error = function(e) {
           futile.logger::flog.error("Failed to load drug info from DB: %s", e)
             data.frame()
@@ -934,7 +967,7 @@ add_Drug_annotation <- function(df_metadata) {
         }
         colnames(Drug_info)[2] <- gDRutils::get_identifier("drugname")
         futile.logger::flog.info("Merge with Drug_info for Drug 1")
-        df_metadata <- merge(df_metadata, Drug_info, by.x = gDRutils::get_identifier("drug"), by.y = "drug", all.x = TRUE)
+        df_metadata <- base::merge(df_metadata, Drug_info, by.x = gDRutils::get_identifier("drug"), by.y = "drug", all.x = TRUE)
         # add info for columns Gnumber_*
         for (i in grep(paste0(gDRutils::get_identifier("drug"),"_\\d"), colnames(df_metadata))) {
             df_metadata[ is.na(df_metadata[,i]), i] = gDRutils::get_identifier("untreated_tag")[1] # set missing values to Untreated
