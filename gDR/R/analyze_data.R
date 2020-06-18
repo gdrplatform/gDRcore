@@ -859,6 +859,17 @@ add_CellLine_annotation <- function(df_metadata) {
                                      "primary_tissue",
                                      "subtype")) %>%
             tibble::as_tibble()
+          missingCelllines <- unique(df_metadata[,gDRutils::get_identifier("cellline")])[!unique(df_metadata[,gDRutils::get_identifier("cellline")]) %in% cellLineTbl$clid]
+          if(length(missingCelllines)>0){
+            missingTbl <- tibble::tibble(canonical_name = missingCelllines,
+                                         cellline_name = missingCelllines,
+                                         clid = missingCelllines,
+                                         doubling_time = NA,
+                                         primary_tissue = NA,
+                                         subtype = NA)
+            addMissingCellLines <- gDRwrapper::add_cell_lines(missingTbl)
+          }
+          
           addCellLines <- gDRwrapper::add_cell_lines(cellLineTbl)
         }
         CLs_info <- gDRwrapper::get_cell_lines()
