@@ -834,30 +834,42 @@ Order_result_df <- function (df_) {
 #' add cellline annotation to a dataframe with metadata
 #'
 #' @param df_metadata a dataframe with metadata
-#'
+#' @param fill_DB_wiith_unknown a logical indicating whether DB should be filled with unknown cell lines
+#' 
 #' @return a dataframe with metadata with annotated cell lines
 #' @export
 
-add_CellLine_annotation <- function(df_metadata) {
+add_CellLine_annotation <- function(df_metadata,
+                                    fill_DB_wiith_unknown = FALSE) {
   
     # Assertions:
     stopifnot(inherits(df_metadata, "data.frame"))
-  
+    checkmate::assert_logical(fill_DB_wiith_unknown)
+    
     DB_cellid_header <- "clid"
     DB_cell_annotate <- c("cellline_name", "primary_tissue", "doubling_time")
     # corresponds to columns gDRutils::get_header("add_clid"): name, tissue, doubling time
+    
+    # the logic of adding celline annotation for df_metadata is based on the function get_cell_lines from the gDRwrapper
+    # we added additional parameter 'fill_DB_wiith_unknown' that allows to fill the DB with clid info for these cell lines
+    # that are not present in the DB.
+    # Other fields are set as "UNKNOWN". If the fill_DB_wiith_unknown is set as FALSE we add unkonown cell lines
+    # only to the tibble.
+    # This approach will be corrected once we will implement final solution for adding cell lines.
+    validateCLs <- gDRwrapper::validate_cell_lines(unique(df_metadata[,gDRutils::get_identifier("cellline")]))
+    if(!validateCLs){
+      missingTblCellLines <- tibble::tibble(canonical_name = "UNKNOWN",
+                                            cellline_name = "UNKNOWN",
+                                            clid = unique(df_metadata[,gDRutils::get_identifier("cellline")]),
+                                            doubling_time = "UNKNOWN",
+                                            primary_tissue = "UNKNOWN",
+                                            subtype = "UNKNOWN")
+      
+      if(fill_DB_wiith_unknown){
+        addMissingCellLines <- gDRwrapper::add_drugs(missingTblCellLines)
+      }
+    }
     CLs_info <- tryCatch( {
-	#TODO: HTSEQ-645 switch to gDRwrapper::get_drugs() and gDRwrapper::validate_drugs()
-        validateCLs <- gDRwrapper::validate_cell_lines(unique(df_metadata[,gDRutils::get_identifier("cellline")]))
-        if(!validateCLs){
-          missingTbl <- tibble::tibble(canonical_name = unique(df_metadata[,gDRutils::get_identifier("cellline")]),
-                                       cellline_name = unique(df_metadata[,gDRutils::get_identifier("cellline")]),
-                                       clid = unique(df_metadata[,gDRutils::get_identifier("cellline")]),
-                                       doubling_time = NA,
-                                       primary_tissue = NA,
-                                       subtype = NA)
-          addMissingCellLines <- gDRwrapper::add_cell_lines(missingTbl)
-          }
         CLs_info <- gDRwrapper::get_cell_lines()
         CLs_info <- CLs_info[CLs_info$clid %in% unique(df_metadata[,gDRutils::get_identifier("cellline")]),]
         CLs_info <- CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
@@ -873,8 +885,7 @@ add_CellLine_annotation <- function(df_metadata) {
     CLIDs <- unique(df_metadata[,gDRutils::get_identifier("cellline")])
     bad_CL <- !(CLIDs %in% (CLs_info %>% dplyr::pull(gDRutils::get_identifier("cellline"))))
     if (any(bad_CL)) {
-        stop(sprintf("Cell line ID %s not found in cell line database",
-                     paste(CLIDs[bad_CL], collapse = " ; ")))
+      CLs_info <- rbind(CLs_info, data.table::setnames(missingTblCellLines[bad_CL, c(3, 2, 5, 4)], names(CLs_info)))
         }
 
     futile.logger::flog.info("Merge with Cell line info")
@@ -892,32 +903,42 @@ add_CellLine_annotation <- function(df_metadata) {
 #' add drug annotation to a dataframe with metadata
 #'
 #' @param df_metadata a dataframe with metadata
+#' @param fill_DB_wiith_unknown a logical indicating whether DB should be filled with unknown drugs
+#' 
 #'
 #' @return a dataframe with metadata with annotated drugs
 #' @export
 
-add_Drug_annotation <- function(df_metadata) {
+add_Drug_annotation <- function(df_metadata,
+                                fill_DB_wiith_unknown = FALSE) {
   
         # Assertions:
         stopifnot(inherits(df_metadata, "data.frame"))
+        checkmate::assert_logical(fill_DB_wiith_unknown)
   
         nrows_df <- nrow(df_metadata)
 
         DB_drug_identifier <- "gnumber"
-        Drug_info <- tryCatch( {
-          drugsTreated <- unique(df_metadata[, gDRutils::get_identifier("drug")])
-          drugsTreated <- drugsTreated[!drugsTreated%in% gDRutils::get_identifier("untreated_tag")]
-          validateDrugs <- gDRwrapper::validate_drugs(drugsTreated)
-          if(!validateDrugs){
-              missingTbl <- tibble::tibble(drug_name = drugsTreated,
-                                           gcsi_moa = NA,
-                                           gnumber = drugsTreated)
-              addMissingDrugs <- gDRwrapper::add_drugs(missingTbl)
-            }
-            drugsTbl$gnumber <- substr(drugsTbl$gnumber, 1, 9)
-            addDrugs <- gDRwrapper::add_drugs(drugsTbl)
+        # the logic of adding drug annotation for df_metadata is based on the function get_drugs from the gDRwrapper
+        # we added additional parameter 'fill_DB_wiith_unknown' that allows to fill the DB with drug_name and gnumber, for these drugs,
+        # that are not present in the DB
+        # Other fields are set as "UNKNOWN". If the fill_DB_wiith_unknown is set as FALSE we add unkonown cell lines
+        # only to the tibble.
+        # This approach will be corrected once we will implement final solution for adding cell lines.
+
+        drugsTreated <- unique(df_metadata[, gDRutils::get_identifier("drug")])
+        drugsTreated <- drugsTreated[!drugsTreated%in% gDRutils::get_identifier("untreated_tag")]
+        validateDrugs <- gDRwrapper::validate_drugs(drugsTreated)
+        if(!validateDrugs){
+          missingTblDrugs <- tibble::tibble(drug_name = drugsTreated,
+                                            gcsi_moa = "UNKNOWN",
+                                            gnumber = drugsTreated)
+          if(fill_DB_wiith_unknown){
+            addMissingDrugs <- gDRwrapper::add_drugs(missingTblDrugs)
           }
           
+        }
+        Drug_info <- tryCatch({
           # TODO: refactor this part of code once we switch to DataFrameMatrix class
           gDrugs <- gDRwrapper::get_drugs()[, c(DB_drug_identifier, "drug_name")]
           gDrugs[, 1] <- sapply(gDrugs[,1], substr, 1, 9) # remove batch number from DB_drug_identifier
@@ -942,6 +963,9 @@ add_Drug_annotation <- function(df_metadata) {
           Drug_info)
         Drug_info <- unique(Drug_info)
         DrIDs <- unique(unlist(df_metadata[,agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))]))
+        if(any(!drugsTreated %in% Drug_info$drug)){
+          Drug_info <- rbind(Drug_info, data.table::setnames(missingTblDrugs[!drugsTreated %in% Drug_info$drug, c(3,1)], names(Drug_info)))
+        }
         bad_DrID <- !(DrIDs %in% Drug_info$drug) & !is.na(DrIDs)
         if (any(bad_DrID)) {
             # G number, but not registered
