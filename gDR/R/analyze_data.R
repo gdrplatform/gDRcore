@@ -850,28 +850,14 @@ add_CellLine_annotation <- function(df_metadata) {
 	#TODO: HTSEQ-645 switch to gDRwrapper::get_drugs() and gDRwrapper::validate_drugs()
         validateCLs <- gDRwrapper::validate_cell_lines(unique(df_metadata[,gDRutils::get_identifier("cellline")]))
         if(!validateCLs){
-          cellLineTbl <- gneDB::annotateCLIDs(unique(df_metadata[,gDRutils::get_identifier("cellline")])) %>%
-            dplyr::select(canonicalname, celllinename, clid, doublingtime, primarytissue, tissuediagnosis) %>%
-            magrittr::set_colnames(c("canonical_name",
-                                     "cellline_name",
-                                     "clid",
-                                     "doubling_time",
-                                     "primary_tissue",
-                                     "subtype")) %>%
-            tibble::as_tibble()
-          missingCelllines <- unique(df_metadata[,gDRutils::get_identifier("cellline")])[!unique(df_metadata[,gDRutils::get_identifier("cellline")]) %in% cellLineTbl$clid]
-          if(length(missingCelllines)>0){
-            missingTbl <- tibble::tibble(canonical_name = missingCelllines,
-                                         cellline_name = missingCelllines,
-                                         clid = missingCelllines,
-                                         doubling_time = NA,
-                                         primary_tissue = NA,
-                                         subtype = NA)
-            addMissingCellLines <- gDRwrapper::add_cell_lines(missingTbl)
+          missingTbl <- tibble::tibble(canonical_name = unique(df_metadata[,gDRutils::get_identifier("cellline")]),
+                                       cellline_name = unique(df_metadata[,gDRutils::get_identifier("cellline")]),
+                                       clid = unique(df_metadata[,gDRutils::get_identifier("cellline")]),
+                                       doubling_time = NA,
+                                       primary_tissue = NA,
+                                       subtype = NA)
+          addMissingCellLines <- gDRwrapper::add_cell_lines(missingTbl)
           }
-          
-          addCellLines <- gDRwrapper::add_cell_lines(cellLineTbl)
-        }
         CLs_info <- gDRwrapper::get_cell_lines()
         CLs_info <- CLs_info[CLs_info$clid %in% unique(df_metadata[,gDRutils::get_identifier("cellline")]),]
         CLs_info <- CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
@@ -923,15 +909,9 @@ add_Drug_annotation <- function(df_metadata) {
           drugsTreated <- drugsTreated[!drugsTreated%in% gDRutils::get_identifier("untreated_tag")]
           validateDrugs <- gDRwrapper::validate_drugs(drugsTreated)
           if(!validateDrugs){
-            drugsTbl <- gCellGenomics::getDrugs() %>%
-              dplyr::select(gcsi_drug_name, gcsi_drug_moa, drug) %>%
-              magrittr::set_colnames(c("drug_name", "gcsi_moa", "gnumber"))
-            drugsTbl <- drugsTbl[substr(drugsTbl$gnumber, 1, 9) %in% drugsTreated,]
-            missingDrugs <- drugsTreated[!drugsTreated %in% substr(drugsTbl$gnumber, 1, 9)]
-            if(length(missingDrugs)>0){
-              missingTbl <- tibble::tibble(drug_name = missingDrugs,
+              missingTbl <- tibble::tibble(drug_name = drugsTreated,
                                            gcsi_moa = NA,
-                                           gnumber = missingDrugs)
+                                           gnumber = drugsTreated)
               addMissingDrugs <- gDRwrapper::add_drugs(missingTbl)
             }
             drugsTbl$gnumber <- substr(drugsTbl$gnumber, 1, 9)
