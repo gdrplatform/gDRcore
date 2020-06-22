@@ -4,8 +4,13 @@
 \alias{addAssayToMAE}
 \title{addAssayToMAE}
 \usage{
-addAssayToMAE(mae, assay, assay_name, exp_name = c("treated",
-  "untreated"), update_assay = FALSE)
+addAssayToMAE(
+  mae,
+  assay,
+  assay_name,
+  exp_name = c("treated", "untreated"),
+  update_assay = FALSE
+)
 }
 \arguments{
 \item{mae}{MultiAssayExperiment object with dose-reponse}

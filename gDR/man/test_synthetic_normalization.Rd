@@ -11,6 +11,9 @@ test_synthetic_normalization(se, refNormalizedTsv)
 
 \item{refNormalizedTsv}{a tsv file with the reference normalized synthetic data}
 }
+\value{
+
+}
 \description{
 Compare calculated normalization with the reference in synthetic data
 }

@@ -4,8 +4,12 @@
 \alias{load_data}
 \title{Load data}
 \usage{
-load_data(manifest_file, df_template_files, results_file,
-  instrument = "EnVision")
+load_data(
+  manifest_file,
+  df_template_files,
+  results_file,
+  instrument = "EnVision"
+)
 }
 \arguments{
 \item{manifest_file}{character, file path(s) to manifest(s)}

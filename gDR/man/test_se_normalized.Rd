@@ -11,6 +11,9 @@ test_se_normalized(se, lRef)
 
 \item{lRef}{a list of reference datasets}
 }
+\value{
+
+}
 \description{
 Compare calculated normalization with the reference
 }

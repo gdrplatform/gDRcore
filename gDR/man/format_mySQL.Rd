@@ -4,8 +4,13 @@
 \alias{format_mySQL}
 \title{Refactor dataframes to be ready to add to the mySQL db}
 \usage{
-format_mySQL(df_averaged, df_metrics, project_id,
-  condition_metadata_table_length, treatment_metadata_table_length)
+format_mySQL(
+  df_averaged,
+  df_metrics,
+  project_id,
+  condition_metadata_table_length,
+  treatment_metadata_table_length
+)
 }
 \arguments{
 \item{df_averaged}{a dataframe with averaged values of DR data}

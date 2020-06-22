@@ -13,6 +13,9 @@ read_EnVision(file, nrows = 10000, seps = c(",", "\\t"))
 
 \item{seps}{}
 }
+\value{
+
+}
 \description{
 This function reads file from the EnVision Workstation
 }

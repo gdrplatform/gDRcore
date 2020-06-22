@@ -9,6 +9,9 @@ is.readable.v(paths)
 \arguments{
 \item{paths}{a character with path(s)}
 }
+\value{
+
+}
 \description{
 Check if all paths in vector are readable
 }

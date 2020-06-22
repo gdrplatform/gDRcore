@@ -5,8 +5,15 @@
 \title{Deprecated function(s) in \pkg{gDR}
 Overall_function}
 \usage{
-Overall_function(manifest_file, template_file, results_file, output_files,
-  selected_keys = NULL, key_values = NULL, instrument = "EnVision")
+Overall_function(
+  manifest_file,
+  template_file,
+  results_file,
+  output_files,
+  selected_keys = NULL,
+  key_values = NULL,
+  instrument = "EnVision"
+)
 }
 \arguments{
 \item{manifest_file}{a file path for the manifest file}
