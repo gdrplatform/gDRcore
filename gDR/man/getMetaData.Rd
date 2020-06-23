@@ -4,8 +4,11 @@
 \alias{getMetaData}
 \title{getMetaData}
 \usage{
-getMetaData(data, cell_id = gDRutils::get_identifier("cellline"),
-  discard_keys = NULL)
+getMetaData(
+  data,
+  cell_id = gDRutils::get_identifier("cellline"),
+  discard_keys = NULL
+)
 }
 \arguments{
 \item{data}{tibble or data.frame with drug-response data}

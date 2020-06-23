@@ -4,10 +4,12 @@
 \alias{add_CellLine_annotation}
 \title{add_CellLine_annotation}
 \usage{
-add_CellLine_annotation(df_metadata)
+add_CellLine_annotation(df_metadata, fill_DB_wiith_unknown = FALSE)
 }
 \arguments{
 \item{df_metadata}{a dataframe with metadata}
+
+\item{fill_DB_wiith_unknown}{a logical indicating whether DB should be filled with unknown cell lines}
 }
 \value{
 a dataframe with metadata with annotated cell lines

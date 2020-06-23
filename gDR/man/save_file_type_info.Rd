@@ -4,9 +4,13 @@
 \alias{save_file_type_info}
 \title{save_file_type_info}
 \usage{
-save_file_type_info(v, save_dir, normKeysFileName = "normKeys.json",
+save_file_type_info(
+  v,
+  save_dir,
+  normKeysFileName = "normKeys.json",
   dfRawDataFileName = "dfRawData.tsv",
-  fileTypeInfoName = "fileTypeInfo.csv")
+  fileTypeInfoName = "fileTypeInfo.csv"
+)
 }
 \arguments{
 \item{v}{a list with filenames}
@@ -18,6 +22,9 @@ save_file_type_info(v, save_dir, normKeysFileName = "normKeys.json",
 \item{dfRawDataFileName}{a filename with rawdata ('dfRawData.tsv' by default)}
 
 \item{fileTypeInfoName}{a filename with file type information ('fileTypeInfo.csv' by default)}
+}
+\value{
+
 }
 \description{
 Save information about file types

@@ -11,6 +11,9 @@ test_lData(lData, lRef)
 
 \item{lRef}{a list with reference data}
 }
+\value{
+
+}
 \description{
 Test raw data against reference data
 }

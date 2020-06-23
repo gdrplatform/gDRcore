@@ -4,8 +4,7 @@
 \alias{calculate_DRmetrics}
 \title{calculate_DRmetrics}
 \usage{
-calculate_DRmetrics(df_averaged, DoseRespKeys = NULL,
-  studyConcThresh = 4)
+calculate_DRmetrics(df_averaged, DoseRespKeys = NULL, studyConcThresh = 4)
 }
 \arguments{
 \item{df_averaged}{a SummarizedExperiment with averaged and normalized assays}

@@ -4,8 +4,14 @@
 \alias{logisticFit}
 \title{Actual fitting function}
 \usage{
-logisticFit(concs, normValues, x_0 = 1, curve_type = c("IC", "GR"),
-  force = FALSE, cap = 0.1)
+logisticFit(
+  concs,
+  normValues,
+  x_0 = 1,
+  curve_type = c("IC", "GR"),
+  force = FALSE,
+  cap = 0.1
+)
 }
 \arguments{
 \item{concs}{concentrations}

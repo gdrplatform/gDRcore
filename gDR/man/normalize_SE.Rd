@@ -4,9 +4,14 @@
 \alias{normalize_SE}
 \title{normalize_SE}
 \usage{
-normalize_SE(df_raw_data, selected_keys = NULL, key_values = NULL,
-  discard_keys = NULL, control_mean_fct = function(x) mean(x, trim =
-  0.25), nDigits_rounding = 4)
+normalize_SE(
+  df_raw_data,
+  selected_keys = NULL,
+  key_values = NULL,
+  discard_keys = NULL,
+  control_mean_fct = function(x) mean(x, trim = 0.25),
+  nDigits_rounding = 4
+)
 }
 \arguments{
 \item{df_raw_data}{a dataframe with raw data}
