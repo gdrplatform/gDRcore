@@ -5,9 +5,9 @@ pkgs:
     ref: 5f194ad0c8d094fde225270a6cdf07ed9ddad04c
     subdir: datasetdb
   gDRutils:
-    ver: ">=0.0.2"
+    ver: ">=0.0.5"
     url: https://github.roche.com/gdrplatform/gDRutils.git
-    ref: GDS_import
+    ref: master
     subdir: gDRutils
   GeneDataScreenR:
     ver: ">=0.0.26"
