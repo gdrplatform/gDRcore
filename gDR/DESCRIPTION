@@ -16,6 +16,7 @@ Imports:
     plyr,
     readr,
     dplyr,
+    magrittr,
     stringr,
     gneDB,
     readxl,
