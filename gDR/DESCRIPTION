@@ -18,10 +18,8 @@ Imports:
     dplyr,
     magrittr,
     stringr,
-    gneDB,
     readxl,
     drc,
-    gCellGenomics,
     S4Vectors,
     gDRutils
 Suggests:
