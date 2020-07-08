@@ -1,0 +1,8 @@
+<h3 align = "left"><strong>Changelog</strong></h3>
+
+All notable changes to this project will be documented in this file.
+
+#### [0.1.15] - 2020-07-08
+
+##### Updated
+- dependencies
