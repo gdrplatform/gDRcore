@@ -19,4 +19,3 @@ pkgs:
     url: https://github.roche.com/gdrplatform/gDRwrapper.git
     ref: master
     subdir: gDRwrapper
-    
