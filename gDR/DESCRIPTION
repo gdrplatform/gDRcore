@@ -30,7 +30,7 @@ Suggests:
     yaml
 VignetteBuilder: knitr
 ByteCompile: TRUE
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 SwitchrLibrary: gDR
 DeploySubPath: gDR
 Encoding: UTF-8
