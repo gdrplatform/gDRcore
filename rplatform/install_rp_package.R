@@ -7,6 +7,7 @@ options(Ncpus = parallel::detectCores())
 ## install pkgs required for 'rp' package 
 ### new version of git2r causes errors with installing by ssh
 MRAN_SNAPSHOT_DATE <- Sys.getenv("MRAN_SNAPSHOT_DATE")
+install.packages("git2r", repos = paste0("https://mran.microsoft.com/snapshot/", MRAN_SNAPSHOT_DATE))
 install.packages(c("desc", "devtools", "stringr", "withr", "DelayedMatrixStats"))
 devtools::install_version("git2r", version = "0.25.2", repos = "https://cloud.r-project.org")
 
