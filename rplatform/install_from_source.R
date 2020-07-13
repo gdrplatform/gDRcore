@@ -7,6 +7,8 @@
 #   package = "/mnt/vol/package_source_dir"
 # )
 
+install.packages("git2r", repos = paste0("https://mran.microsoft.com/snapshot/", Sys.getenv("MRAN_SNAPSHOT_DATE")))
+
 ## Uncomment following code to install package(s) directly from Bitbucket repository
 ## SSH keys should be copied to container before installation
 .wd <- "/mnt/vol"

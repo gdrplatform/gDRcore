@@ -21,6 +21,7 @@ options(Ncpus = parallel::detectCores())
 .wd <- "/mnt/vol"
 
 # don't install these packages - they will be installed separately
+install.packages(c("yaml", "desc", "git2r", "devtools"))
 git_pkgs <- yaml::read_yaml(file.path(.wd, "rplatform", "git_dependencies.yml"))
 dont.install <- c(
   names(git_pkgs$pkgs),
@@ -46,5 +47,3 @@ deps <- c(deps,
 rp::installAndVerify(install = install.packages,
                      package = names(deps),
                      requirement = deps)
-
-
