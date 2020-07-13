@@ -17,19 +17,28 @@ pkgs <- yaml::read_yaml(file.path(.wd, "rplatform", "git_dependencies.yml"))$pkg
 
 ssh_keys <- git2r::cred_ssh_key(file.path("/home/rstudio/.ssh/id_rsa.pub"), file.path("/home/rstudio/.ssh/id_rsa"))
 
-for (nm in names(pkgs)){
-  git2r::libgit2_features()
-  rp::installAndVerify(
-    install = devtools::install_git,
-    url = pkgs[[nm]]$url,
-    ref = pkgs[[nm]]$ref,
-    credentials = ssh_keys,
-    package = nm,
-    # version requirement is taken from DESCRIPTION if not specified manually in yaml
-    requirement = if (!is.null(pkgs[[nm]][["ver"]])) pkgs[[nm]][["ver"]] else .deps[[nm]], 
-    subdir = pkgs[[nm]]$subdir,
-    upgrade = "never"
-  )
-}
-  
+git2r::libgit2_features()
 
+for (nm in names(pkgs)){
+  
+  #TODO: fix/remove this temporary fix
+  if (!nm %in% c("gDRutils", "gDRwrapper")){
+    rp::installAndVerify(
+      install = devtools::install_git,
+      url = pkgs[[nm]]$url,
+      ref = pkgs[[nm]]$ref,
+      credentials = ssh_keys,
+      package = nm,
+      # version requirement is taken from DESCRIPTION if not specified manually in yaml
+      requirement = if (!is.null(pkgs[[nm]][["ver"]])) pkgs[[nm]][["ver"]] else .deps[[nm]],
+      subdir = pkgs[[nm]]$subdir,
+      upgrade = "never"
+    )
+  } else {
+    #TODO: fix/remove it
+    repo_path <- file.path(tempdir(), nm)
+    git2r::clone(pkgs[[nm]]$url, local_path = repo_path)
+    git2r::checkout(object = repo_path, branch = pkgs[[nm]]$ref)
+    devtools::install(file.path(repo_path, nm), upgrade = "never")
+  }  
+}
