@@ -1,7 +1,7 @@
 Package: gDR
 Type: Package
 Title: Utility functions and interface to calculate drug dose-response data and calculate GR values
-Version: 0.1.15
+Version: 0.1.16
 Date: 2020-07-08
 Author: Marc Hafner
 Maintainer: Marc Hafner <hafner.marc@gene.com>
@@ -15,13 +15,15 @@ Imports:
     XML,
     plyr,
     readr,
-    dplyr,
+    dplyr (== 0.8.5),
+    kcloak (>= 0.0.3),
     magrittr,
     stringr,
     readxl,
     drc,
     S4Vectors,
-    gDRutils
+    gDRutils,
+    gDRwrapper
 Suggests:
     futile.logger,
     gCSIutils,
@@ -30,7 +32,7 @@ Suggests:
     yaml
 VignetteBuilder: knitr
 ByteCompile: TRUE
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 SwitchrLibrary: gDR
 DeploySubPath: gDR
 Encoding: UTF-8
