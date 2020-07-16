@@ -7,12 +7,10 @@ All notable changes to this project will be documented in this file.
 ##### Added
 - function for updating metadata in SE
 
-
 #### [0.1.16] - 2020-07-14
 
 ##### Added
-- dependencies: kcloak, gDRwrapper                                                                              
-
+- dependencies: kcloak, gDRwrapper
 
 #### [0.1.15] - 2020-07-08
 

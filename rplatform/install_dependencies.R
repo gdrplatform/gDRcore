@@ -21,10 +21,14 @@ options(Ncpus = parallel::detectCores())
 .wd <- "/mnt/vol"
 
 # don't install these packages - they will be installed separately
+install.packages(c("yaml", "desc", "git2r", "devtools"))
 git_pkgs <- yaml::read_yaml(file.path(.wd, "rplatform", "git_dependencies.yml"))
 dont.install <- c(
-  names(git_pkgs$pkgs)
-) 
+  names(git_pkgs$pkgs),
+  "dplyr"
+)
+### dplyr in version 1.0.0 cause different behavior of nested list, so for now we use version 0.8.5
+devtools::install_url("https://cran.r-project.org/src/contrib/Archive/dplyr/dplyr_0.8.5.tar.gz")
 
 # Extract dependencies from DESCRIPTION file
 deps <- yaml::read_yaml(file.path(.wd, "rplatform", "DESCRIPTION_dependencies.yaml"))
@@ -43,5 +47,3 @@ deps <- c(deps,
 rp::installAndVerify(install = install.packages,
                      package = names(deps),
                      requirement = deps)
-
-

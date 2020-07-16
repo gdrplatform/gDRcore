@@ -15,13 +15,15 @@ Imports:
     XML,
     plyr,
     readr,
-    dplyr,
+    dplyr (== 0.8.5),
+    kcloak (>= 0.0.3),
     magrittr,
     stringr,
     readxl,
     drc,
     S4Vectors,
-    gDRutils
+    gDRutils,
+    gDRwrapper
 Suggests:
     futile.logger,
     gCSIutils,

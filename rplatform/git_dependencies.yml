@@ -5,7 +5,17 @@ pkgs:
     ref: 5f194ad0c8d094fde225270a6cdf07ed9ddad04c
     subdir: datasetdb
   gDRutils:
-    ver: ">=0.0.5"
+    ver: ">=0.0.6"
     url: https://github.roche.com/gdrplatform/gDRutils.git
     ref: master
     subdir: gDRutils
+  kcloak:
+    ver: '>=0.0.3'
+    url: ssh://git@stash.intranet.roche.com:7999/faciledata/kcloak.git
+    ref: master
+    subdir: ~
+  gDRwrapper:
+    ver: '>=0.1.17'
+    url: https://github.roche.com/gdrplatform/gDRwrapper.git
+    ref: master
+    subdir: gDRwrapper
