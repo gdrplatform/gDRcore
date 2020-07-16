@@ -8,7 +8,7 @@
 #' @export
 #'
 
-update_metadata = function(SE,
+update_metadata = function(metadata,
                            expert_unixid = Sys.getenv("USER"),
                            description = NA,
                            assay_id = NA,
@@ -19,14 +19,14 @@ update_metadata = function(SE,
                            qcs_id = NA,
                            labhead_unixid = NA) {
   # Assertions:
-  checkmate::assert_class(SE, "SummarizedExperiment")
-  if(length(S4Vectors::metadata(SE)$experiment_metadata)>0) {
-    description <- as.character(metadata(SE)$experiment_metadata$description)
-    experiment_name <- as.character(metadata(SE)$experiment_metadata$name)
-    expert_unixid <- as.character(metadata(SE)$experiment_metadata$experimentalist)
-    qcs_id <- as.character(strsplit(as.character(metadata(SE)$experiment_metadata$name), " ")[[1]][1])
+  checkmate::assert_list(metadata)
+  if(length(metadata$experiment_metadata)>0) {
+    description <- as.character(metadata$experiment_metadata$description)
+    experiment_name <- as.character(metadata$experiment_metadata$name)
+    expert_unixid <- as.character(metadata$experiment_metadata$experimentalist)
+    qcs_id <- as.character(strsplit(as.character(metadata$experiment_metadata$name), " ")[[1]][1])
   }
-  metadata(SE)$experiment_metadata <- data.frame(
+  metadata$experiment_metadata <- data.frame(
     expert_unixid = expert_unixid,
     description = description,
     assay_id = assay_id,
@@ -37,6 +37,6 @@ update_metadata = function(SE,
     qcs_id = qcs_id,
     labhead_unixid = labhead_unixid
   )
-  return(SE)
+  return(metadata)
 }
 
