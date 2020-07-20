@@ -24,8 +24,8 @@ update_experiment_metadata = function(
                                                     "source_id", "state_id",
                                                     "experiment_name", "qcs_id",
                                                     "labhead_unixid")))
-  for (element in names(lista2)){
-    assign(element, lista2[[element]])
+  for (element in names(metadataList)){
+    assign(element, metadataList[[element]])
   }
   
   metadata$experiment_metadata <- data.frame(
