@@ -17,7 +17,9 @@ update_experiment_metadata = function(
     description <- as.character(metadata$experiment_metadata$description)
     experiment_name <- as.character(metadata$experiment_metadata$name)
     expert_unixid <- as.character(metadata$experiment_metadata$experimentalist)
-    qcs_id <- as.character(strsplit(as.character(metadata$experiment_metadata$name), " ")[[1]][1])
+    qcs_id <- tryCatch(as.character(strsplit(as.character(metadata$experiment_metadata$name), " ")[[1]][1]),
+                       error=function(cond) {
+                         NULL })
   }
   checkmate::assert_true(all(names(metadataList) %in% c("expert_unixid", "description",
                                                     "assay_id", "date_processed",
