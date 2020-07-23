@@ -37,7 +37,8 @@ update_experiment_metadata = function(
     state_id = ifelse(exists("state_id"), state_id, NA),
     experiment_name = ifelse(exists("experiment_name"), experiment_name, NA),
     qcs_id = ifelse(exists("qcs_id"), qcs_id, NA),
-    labhead_unixid = ifelse(exists("labhead_unixid"), labhead_unixid, NA)
+    labhead_unixid = ifelse(exists("labhead_unixid"), labhead_unixid, NA),
+    stringsAsFactors = FALSE
   )
   return(metadata)
 }
