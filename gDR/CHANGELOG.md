@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.18] - 2020-07-29
+
+##### Updated
+- fixed issue in update_experiment_metadata.R
+##### Added
+- unit test for update_experiment_metadata.R
+
 #### [0.1.17] - 2020-07-14
 
 ##### Added
