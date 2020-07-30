@@ -21,7 +21,7 @@ update_experiment_metadata = function(
                        error=function(cond) {
                          NULL })
   }
-  checkmate::assert_true(all(names(metadataList) %in% c("expert_unixid", "description",
+  checkmate::assert_true(all(names(metadataList) %in% c("expert_unixid", "unix_id", "description",
                                                     "assay_id", "date_processed",
                                                     "source_id", "state_id",
                                                     "experiment_name", "qcs_id",
@@ -32,6 +32,7 @@ update_experiment_metadata = function(
   
   metadata$experiment_metadata <- data.frame(
     expert_unixid = ifelse(exists("expert_unixid"), expert_unixid, Sys.getenv("USER")),
+    unix_id = ifelse(exists("unix_id"), unix_id, Sys.getenv("USER")),
     description = ifelse(exists("description"), description, NA),
     assay_id = ifelse(exists("assay_id"), assay_id, NA),
     date_processed = ifelse(exists("date_processed"), date_processed, NA),
