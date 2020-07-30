@@ -13,7 +13,7 @@ update_experiment_metadata = function(
                            metadataList) {
   # Assertions:
   checkmate::assert_list(metadata)
-  if(length(metadata$experiment_metadata)>0) {
+  if(length(metadata$experiment_metadata)>0 && exists('metadata$experiment_metadata$name')) {
     description <- as.character(metadata$experiment_metadata$description)
     experiment_name <- as.character(metadata$experiment_metadata$name)
     expert_unixid <- as.character(metadata$experiment_metadata$experimentalist)
