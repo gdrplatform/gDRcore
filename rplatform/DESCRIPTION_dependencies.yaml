@@ -1,7 +1,6 @@
 openxlsx: '*'
 reshape2: '*'
 DataSetDB: '*'
-gDRutils: '*'
 GeneDataScreenR: '*'
 httr: '*'
 XML: '*'
