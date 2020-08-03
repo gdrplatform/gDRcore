@@ -82,7 +82,7 @@ write_ref_data_se <- function(se, outDir, prefix = "ref") {
 #assays
   myL <- lapply(SummarizedExperiment::assayNames(se), function(x) {
     outFile <- file.path(outDir, paste0(prefix, "_assay_", x, ".tsv"))
-    readr::write_delim(gDR::assay_to_df(se, x, merge_metrics = TRUE), outFile, delim = "\t")
+    readr::write_delim(gDRutils::assay_to_df(se, x, merge_metrics = TRUE), outFile, delim = "\t")
   })
 
   #df_raw_data from metadata
@@ -150,7 +150,7 @@ test_se_normalized <- function(se, lRef) {
   checkmate::assert_list(lRef)
 
     x = "Normalized"
-    xAs <- gDR::assay_to_df(se, x, merge_metrics = TRUE)
+    xAs <- gDRutils::assay_to_df(se, x, merge_metrics = TRUE)
     xAs$DrugName <- as.character(xAs$DrugName)
     xDf <- lRef[[paste0("assay_", x)]]
     if(x %in% c("Controls", "Avg_Controls")){
@@ -188,7 +188,7 @@ test_se <- function(se, lRef) {
   #assays check
   myL <- lapply(SummarizedExperiment::assayNames(se), function(x) {
     print(x)
-    xAs <- gDR::assay_to_df(se, x, merge_metrics = TRUE)
+    xAs <- gDRutils::assay_to_df(se, x, merge_metrics = TRUE)
     xAs$DrugName <- as.character(xAs$DrugName)
     xDf <- lRef[[paste0("assay_", x)]]
     if(x %in% c("Controls", "Avg_Controls")){
@@ -215,7 +215,7 @@ test_synthetic_normalization <- function(se, refNormalizedTsv) {
   checkmate::assert_class(se, "SummarizedExperiment")
   stopifnot(inherits(refNormalizedTsv, "data.frame"))
   
-  xAs <- gDR::assay_to_df(se, "Normalized")
+  xAs <- gDRutils::assay_to_df(se, "Normalized")
   xRef <- refNormalizedTsv[refNormalizedTsv$Concentration>0 , ]
   expect_true(nrow(xAs) == nrow(xRef))
 

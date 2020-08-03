@@ -4,8 +4,12 @@
 \alias{createSE}
 \title{createSE}
 \usage{
-createSE(df_data, data_type = c("untreated", "treated", "all"),
-  readout = "ReadoutValue", discard_keys = NULL)
+createSE(
+  df_data,
+  data_type = c("untreated", "treated", "all"),
+  readout = "ReadoutValue",
+  discard_keys = NULL
+)
 }
 \arguments{
 \item{df_data}{a dataframe with DR data}

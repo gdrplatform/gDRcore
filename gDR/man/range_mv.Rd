@@ -4,8 +4,13 @@
 \alias{range_mv}
 \title{range_mv}
 \usage{
-range_mv(c50, x_inf, hillCoefficient, x_0 = 1,
-  linear_conc_range_uM = c(0.005, 5))
+range_mv(
+  c50,
+  x_inf,
+  hillCoefficient,
+  x_0 = 1,
+  linear_conc_range_uM = c(0.005, 5)
+)
 }
 \arguments{
 \item{c50}{c50 values}
@@ -17,6 +22,9 @@ range_mv(c50, x_inf, hillCoefficient, x_0 = 1,
 \item{x_0}{= 1 by default}
 
 \item{linear_conc_range_uM}{= c(5e-3, 5) by default}
+}
+\value{
+
 }
 \description{
 range_mv

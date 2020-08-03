@@ -4,8 +4,15 @@
 \alias{ICGRlogisticFit}
 \title{Actual fitting function}
 \usage{
-ICGRlogisticFit(log10concs, RelativeViability, GRvalues, e_0 = 1,
-  GR_0 = 1, force = FALSE, cap = FALSE)
+ICGRlogisticFit(
+  log10concs,
+  RelativeViability,
+  GRvalues,
+  e_0 = 1,
+  GR_0 = 1,
+  force = FALSE,
+  cap = FALSE
+)
 }
 \arguments{
 \item{log10concs}{concentrations}

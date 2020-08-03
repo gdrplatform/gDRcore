@@ -4,9 +4,15 @@
 \alias{extract_mySQL}
 \title{Extract data from the mySQL db}
 \usage{
-extract_mySQL(project_id, condition_metadata,
-  condition_additional_treatment, condition_codrug, treatment_metadata,
-  response_mean, response_metrics)
+extract_mySQL(
+  project_id,
+  condition_metadata,
+  condition_additional_treatment,
+  condition_codrug,
+  treatment_metadata,
+  response_mean,
+  response_metrics
+)
 }
 \arguments{
 \item{project_id}{a character with a project id}

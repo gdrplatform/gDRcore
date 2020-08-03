@@ -11,6 +11,9 @@ test_se(se, lRef)
 
 \item{lRef}{a list of reference datasets}
 }
+\value{
+
+}
 \description{
 Compare all the assays in the SummarizedExperiment object with the reference
 }
