@@ -6,8 +6,8 @@ pkgs:
     subdir: gDRutils
   GeneDataScreenR:
     ver: ">=0.0.27"
-    url: https://github.roche.com/hafnerm6/GeneDataScreenR.git
-    ref: gDR
+    url: https://github.roche.com/bczech/GeneDataScreenR.git
+    ref: HTSEQ-823
     subdir: ~
   kcloak:
     ver: '>=0.0.3'
