@@ -1132,7 +1132,7 @@ add_codrug_group = function(SE) {
                   ))), 2, all)
 
     # reverse engineer the type of combination experiment
-    flat_data = gDR::assay_to_df(SE[row_idx, ], 'Averaged')
+    flat_data = gDRutils::assay_to_df(SE[row_idx, ], 'Averaged')
     flat_data = flat_data[flat_data$Concentration_2 > 0,]
     conc_1 = table(flat_data$Concentration)
     conc_2 = table(flat_data$Concentration_2)
