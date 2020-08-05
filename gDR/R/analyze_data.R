@@ -962,6 +962,7 @@ add_Drug_annotation <- function(df_metadata,
         # This approach will be corrected once we will implement final solution for adding cell lines.
 
         drugsTreated <- unique(df_metadata[, gDRutils::get_identifier("drug")])
+        
         drugsTreated <- drugsTreated[!drugsTreated%in% gDRutils::get_identifier("untreated_tag")]
         validateDrugs <- gDRwrapper::validate_drugs(drugsTreated)
         if(!validateDrugs){
@@ -976,7 +977,7 @@ add_Drug_annotation <- function(df_metadata,
         Drug_info <- tryCatch({
           # TODO: refactor this part of code once we switch to DataFrameMatrix class
           gDrugs <- gDRwrapper::get_drugs()[, c(DB_drug_identifier, "drug_name")]
-          gDrugs[, 1] <- sapply(gDrugs[,1], substr, 1, 9) # remove batch number from DB_drug_identifier
+          gDrugs[, 1] <- gsub("\\..*", "", gDrugs$gnumber) # remove batch number from DB_drug_identifier
           gDrugs
         }, error = function(e) {
           futile.logger::flog.error("Failed to load drug info from DB: %s", e)
@@ -987,6 +988,7 @@ add_Drug_annotation <- function(df_metadata,
             df_metadata[, gDRutils::get_identifier("drugname")] = df_metadata[, gDRutils::get_identifier("drug")]
             return(df_metadata)
         }
+        
         # -----------------------
 
         colnames(Drug_info) <- c("drug", "DrugName")
@@ -996,7 +998,7 @@ add_Drug_annotation <- function(df_metadata,
             DrugName = gDRutils::get_identifier("untreated_tag")
           ),
           Drug_info)
-        Drug_info <- unique(Drug_info)
+        Drug_info <- dplyr::distinct(Drug_info, drug, .keep_all = TRUE)
         DrIDs <- unique(unlist(df_metadata[,agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))]))
         if(any(!drugsTreated %in% Drug_info$drug)){
           Drug_info <- rbind(Drug_info, data.table::setnames(missingTblDrugs[!drugsTreated %in% Drug_info$drug, c(3,1)], names(Drug_info)))
