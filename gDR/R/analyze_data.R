@@ -488,7 +488,7 @@ normalize_SE <- function(df_raw_data,
                         "--> GR values are NA"))
                  } else {
                    # division time is correct for calculation
-                  refDivisionTime = SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]]
+                  refDivisionTime = as.numeric(SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]])
 
                   futile.logger::flog.warn(paste(
                     "Missing day 0 information --> calculate GR value based on reference doubling time for", SummarizedExperiment::colData(normSE)[j,gDRutils::get_header('add_clid')[1]]))
