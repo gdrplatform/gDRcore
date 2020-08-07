@@ -967,7 +967,7 @@ add_Drug_annotation <- function(df_metadata,
         validateDrugs <- gDRwrapper::validate_drugs(drugsTreated)
         if(!validateDrugs){
           missingTblDrugs <- tibble::tibble(drug_name = drugsTreated,
-                                            gcsi_moa = "UNKNOWN",
+                                            drug_moa = "UNKNOWN",
                                             gnumber = drugsTreated)
           if(fill_DB_wiith_unknown){
             addMissingDrugs <- gDRwrapper::add_drugs(missingTblDrugs)
