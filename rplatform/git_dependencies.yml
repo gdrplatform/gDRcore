@@ -1,14 +1,14 @@
 pkgs:
-  DataSetDB:
-    ver: '>=0.11.2'
-    url: ssh://git@stash.intranet.roche.com:7999/bncb_r_packages/datasetdb.git
-    ref: 5f194ad0c8d094fde225270a6cdf07ed9ddad04c
-    subdir: datasetdb
   gDRutils:
     ver: ">=0.0.6"
     url: https://github.roche.com/gdrplatform/gDRutils.git
     ref: master
     subdir: gDRutils
+  GeneDataScreenR:
+    ver: ">=0.0.29"
+    url: https://github.roche.com/bczech/GeneDataScreenR.git
+    ref: HTSEQ-823
+    subdir: ~
   kcloak:
     ver: '>=0.0.3'
     url: ssh://git@stash.intranet.roche.com:7999/faciledata/kcloak.git

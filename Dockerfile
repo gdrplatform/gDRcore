@@ -38,6 +38,10 @@ RUN echo 'Sys.setenv(MRAN_SNAPSHOT_DATE = "'$MRAN_SNAPSHOT_DATE'")' "$(cat /tmp/
 COPY rplatform/ssh_keys/id_rsa /home/rstudio/.ssh/id_rsa
 COPY rplatform/ssh_keys/id_rsa.pub /home/rstudio/.ssh/id_rsa.pub
 
+#================= Add Roche certs
+RUN sudo wget -O /usr/local/share/ca-certificates/Roche_G3_Root_CA.crt  http://certinfo.roche.com/rootcerts/Roche%20G3%20Root%20CA.crt 
+RUN sudo update-ca-certificates
+
 #================= install dependencies 
 COPY rplatform/DESCRIPTION_dependencies.yaml /mnt/vol/rplatform/DESCRIPTION_dependencies.yaml
 COPY gDR/DESCRIPTION /mnt/vol/gDR/DESCRIPTION

@@ -21,7 +21,7 @@
   function(drug_data) {
     # Assertions:
     stopifnot(any(inherits(drug_data, "data.frame"), inherits(drug_data, "DataFrame")))
-    
+
     as.data.frame(drug_data) %>%
       dplyr::filter(grepl(.untreateDrugNameRegex, DrugName)) %>%
       dplyr::pull("name_")
@@ -39,7 +39,7 @@
   function(drug_data) {
     # Assertions:
     stopifnot(any(inherits(drug_data, "data.frame"), inherits(drug_data, "DataFrame")))
-    
+
     as.data.frame(drug_data) %>%
       dplyr::filter(!grepl(.untreateDrugNameRegex, DrugName)) %>%
       dplyr::pull("name_")
@@ -52,7 +52,7 @@
 #'
 #' @param SE a SummarizedExperiment object
 #' @param fx any function
-#' @param assay_type a name of an assay 
+#' @param assay_type a name of an assay
 #'
 #' @return the same SE object with updated nested dataframe
 #'
@@ -62,7 +62,7 @@ aapply <-
     checkmate::assert_class(SE, "SummarizedExperiment")
     checkmate::assert_function(fx)
     checkmate::assert_scalar(assay_type)
-    
+
     SummarizedExperiment::assay(SE, assay_type) = matrix(sapply(SummarizedExperiment::assay(SE, assay_type), fx), nrow = nrow(SE), ncol = ncol(SE))
     return(SE)
   }
@@ -86,9 +86,9 @@ getMetaData <- function(data,
   stopifnot(any(inherits(data, "data.frame"), inherits(data, "DataFrame")))
   checkmate::assert_character(cell_id)
   checkmate::assert_character(discard_keys, null.ok = TRUE)
-  
+
   data <- as(data, "DataFrame")
-  
+
   # get the metadata variables
   metavars <-
     setdiff(
@@ -356,7 +356,7 @@ addAssayToMAE <-
     stopifnot(assay_name %in% .assayNames)
     stopifnot("matrix" %in% class(assay))
     checkmate::assert_logical(update_assay)
-    
+
     exp_name <- match.arg(exp_name)
     #mae must contain SE with at least first assay (i.e. df_raw_data)
     stopifnot(.assayNames[1] %in% SummarizedExperiment::assayNames(mae[[exp_name]]))

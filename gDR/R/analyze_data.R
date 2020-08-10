@@ -14,7 +14,7 @@ merge_data <- function(manifest, treatments, data) {
   stopifnot(inherits(manifest, "data.frame"))
   stopifnot(inherits(treatments, "data.frame"))
   stopifnot(inherits(data, "data.frame"))
-  
+
   futile.logger::flog.info("Merging data")
 
   # first unify capitalization in the headers of treatments with manifest
@@ -109,7 +109,7 @@ merge_data <- function(manifest, treatments, data) {
 }
 
 #' normalize_SE
-#' 
+#'
 #' Normalize raw DR data
 #'
 #' @param df_raw_data a dataframe with raw data
@@ -124,7 +124,7 @@ merge_data <- function(manifest, treatments, data) {
 #'
 normalize_SE <- function(df_raw_data,
                   selected_keys = NULL,
-                  key_values = NULL, 
+                  key_values = NULL,
                   discard_keys = NULL,
                   control_mean_fct = function(x) mean(x, trim = .25), # used for averaging controls
                   nDigits_rounding = 4 # rounding of normalized response values
@@ -136,7 +136,7 @@ normalize_SE <- function(df_raw_data,
     checkmate::assert_vector(discard_keys, null.ok = TRUE)
     checkmate::assert_function(control_mean_fct, null.ok = TRUE)
     checkmate::assert_number(nDigits_rounding)
-  
+
     # average technical replicates and assign the right controls to each treated well
     Keys <- identify_keys(df_raw_data)
     if (!is.null(key_values)) {
@@ -148,6 +148,11 @@ normalize_SE <- function(df_raw_data,
     }
     if (!is.null(discard_keys)) {
       Keys$DoseResp <- setdiff(Keys$DoseResp, discard_keys)
+    }
+
+    # adding 'masked = F' if missing from df_raw_data
+    if ( !(gDRutils::get_identifier('masked_tag') %in% colnames(df_raw_data))) {
+      df_raw_data[,gDRutils::get_identifier('masked_tag')] = FALSE
     }
 
     # remove background value to readout (at least 1e-10 to avoid artefactual normalized values)
@@ -233,7 +238,7 @@ normalize_SE <- function(df_raw_data,
 
     # temporary optimization (use 'normSE_n' and 'normSE_c' to avoid using 'assay<-` in for loops)
     # TODO: refactor this part of code once we switch to DataFrameMatrix class
-    ctrl_original = SummarizedExperiment::assay(ctrlSE)
+    ctrl_original = SummarizedExperiment::assay( aapply(ctrlSE, function(x) x[!x$masked,]) )
     # need to keep original data for the case in which reference is such that Gnumber == Gnumber_2
     normSE_n <- normSE_original <- SummarizedExperiment::assay(normSE, "Normalized")
     normSE_c <- SummarizedExperiment::assay(normSE, "Controls")
@@ -247,6 +252,16 @@ normalize_SE <- function(df_raw_data,
             # get all the control endpoint data
             df_end <- do.call(rbind,
                     lapply(row_maps_end[[i]], function(x) ctrl_original[[x, col_maps[j]]]))
+            if (nrow(df_end) == 0) {
+              futile.logger::flog.warn(
+                  "Missing control data.
+                  Treatment Id: %s
+                  Cell_line Id: %s",
+                  i,
+                  j
+                )
+              next
+            }
             df_end <- df_end[, c("CorrectedReadout",
                     intersect(Keys$untrt_Endpoint, colnames(df_end))), drop = F]
             colnames(df_end)[1] <- "UntrtReadout"
@@ -473,7 +488,7 @@ normalize_SE <- function(df_raw_data,
                         "--> GR values are NA"))
                  } else {
                    # division time is correct for calculation
-                  refDivisionTime = SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]]
+                  refDivisionTime = as.numeric(SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]])
 
                   futile.logger::flog.warn(paste(
                     "Missing day 0 information --> calculate GR value based on reference doubling time for", SummarizedExperiment::colData(normSE)[j,gDRutils::get_header('add_clid')[1]]))
@@ -516,7 +531,7 @@ normalize_SE <- function(df_raw_data,
 }
 
 #' average_SE
-#' 
+#'
 #' Avereage normalized SummarizedExperiment of DR data
 #'
 #' @param normSE a SummarizedExperiment with normalized DR data
@@ -527,12 +542,12 @@ normalize_SE <- function(df_raw_data,
 #'
 
 average_SE <- function(normSE, TrtKeys = NULL) {
-  
+
   # Assertions:
   checkmate::assert_class(normSE, "SummarizedExperiment")
   checkmate::assert_vector(TrtKeys, null.ok = TRUE)
-  
-  
+
+
     avgSE <- normSE
     if (is.null(TrtKeys)) {
         if ("Keys" %in% names(metadata(normSE))) {
@@ -548,10 +563,20 @@ average_SE <- function(normSE, TrtKeys = NULL) {
     avgSE <- aapply(avgSE, function(x) {
         if (nrow(x) > 1) {
             subKeys <- intersect(TrtKeys, colnames(x))
-            df_av <- aggregate(x[, c("GRvalue", "RelativeViability","CorrectedReadout")],
-                            by = as.list(x[, subKeys, drop = FALSE]), FUN = function(y) mean(y, na.rm = TRUE))
-            df_std <- aggregate(x[, c("GRvalue", "RelativeViability")],
-                                by = as.list(x[, subKeys, drop = FALSE]), FUN = function(x) sd(x, na.rm = TRUE))
+            if (all(x$masked)) {
+              df_ = as.data.frame(matrix(0,0,length(subKeys)+5))
+              colnames(df_) = c(subKeys,
+                    c("GRvalue", "RelativeViability","CorrectedReadout"),
+                    paste0("std_", c("GRvalue", "RelativeViability")))
+              return(df_)
+            }
+            df_av <- aggregate(x[ !x$masked ,
+                                  c("GRvalue", "RelativeViability","CorrectedReadout")],
+                            by = as.list(x[ !x$masked , subKeys, drop = FALSE]),
+                            FUN = function(y) mean(y, na.rm = TRUE))
+            df_std <- aggregate(x[!x$masked, c("GRvalue", "RelativeViability")],
+                                by = as.list(x[ !x$masked, subKeys, drop = FALSE]),
+                                FUN = function(x) sd(x, na.rm = TRUE))
             colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")] =
                 paste0("std_",
                     colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")])
@@ -574,7 +599,7 @@ average_SE <- function(normSE, TrtKeys = NULL) {
 }
 
 #' metrics_SE
-#' 
+#'
 #' Calculate metrics for DR data
 #'
 #' @param avgSE a SummarizedExperiment with averaged and normalized assays
@@ -585,11 +610,11 @@ average_SE <- function(normSE, TrtKeys = NULL) {
 #'
 
 metrics_SE = function(avgSE, studyConcThresh = 4) {
-  
+
     # Assertions:
     checkmate::assert_class(avgSE, "SummarizedExperiment")
     checkmate::assert_number(studyConcThresh)
-  
+
     stopifnot(is.numeric(studyConcThresh))
     # this is not used as we enforce the same conditions as the input SE; not collapsing allowed
     # if (is.null(DoseRespKeys)) {
@@ -610,7 +635,7 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
     for (i in rownames(metricsSE)) {
         for (j in colnames(metricsSE)) {
             df_ <- a_SE[[i, j]]
-            if (nrow(df_) > 0) { # studyConcThresh is embeded in RVGRfits
+            if (!is.null(df_) && nrow(df_) > 0) { # studyConcThresh is embeded in RVGRfits
                 mSE_m[[i, j]] <- DataFrame(gDRutils::RVGRfits(df_,
                     e_0 = aCtrl_SE[[i, j]]$RefRelativeViability,
                     GR_0 = aCtrl_SE[[i, j]]$RefGRvalue,
@@ -632,16 +657,16 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
 #'
 #' @param df_se_mae a dataframe or SummarizedExperiment or MultiassayExperiment with keys
 #'
-#' @return a list of keys 
-#' @export 
+#' @return a list of keys
+#' @export
 #'
 
 identify_keys <- function(df_se_mae) {
-  
+
   # Assertions:
   stopifnot(inherits(df_se_mae, c("data.frame", "MultiAssayExperiment", "SummarizedExperiment")))
-  
-  
+
+
     if (any(class(df_se_mae) %in% c("MultiAssayExperiment", "SummarizedExperiment"))) {
         if ("MultiAssayExperiment" %in% class(df_se_mae)) {
             # if MAE, convert to SE based on the treated SE (could be optimized)
@@ -703,7 +728,7 @@ identify_keys <- function(df_se_mae) {
 #' cleanup_metadata
 #'
 #' Cleanup a dataframe with metadata
-#' 
+#'
 #' @param df_metadata a dataframe with metadata
 #'
 #' @return a dataframe with cleaned metadata
@@ -711,10 +736,10 @@ identify_keys <- function(df_se_mae) {
 #' @export
 
 cleanup_metadata <- function(df_metadata) {
-  
+
   # Assertions:
   stopifnot(inherits(df_metadata, "data.frame"))
-  
+
   # clean up numberic fields
   df_metadata[, gDRutils::get_identifier("duration")] <-
     round(as.numeric(df_metadata[, gDRutils::get_identifier("duration")]), 6)
@@ -787,7 +812,7 @@ cleanup_metadata <- function(df_metadata) {
 
 
 #' Order_result_df
-#' 
+#'
 #' Order a dataframe with results
 #'
 #' @param df_ a dataframe with results
@@ -796,10 +821,10 @@ cleanup_metadata <- function(df_metadata) {
 #' @export
 
 Order_result_df <- function (df_) {
-  
+
   # Assertions:
   stopifnot(inherits(df_, "data.frame"))
-  
+
   cols <- c(gDRutils::get_header("ordered_1"),
             setdiff(colnames(df_),
                     c(
@@ -888,7 +913,13 @@ add_CellLine_annotation <- function(df_metadata,
     CLIDs <- unique(df_metadata[,gDRutils::get_identifier("cellline")])
     bad_CL <- !(CLIDs %in% (CLs_info %>% dplyr::pull(gDRutils::get_identifier("cellline"))))
     if (any(bad_CL)) {
-      CLs_info <- rbind(CLs_info, data.table::setnames(missingTblCellLines[bad_CL, c(3, 2, 5, 4)], names(CLs_info)))
+        futile.logger::flog.warn("Cell line ID %s not found in cell line database",
+                     paste(CLIDs[bad_CL], collapse = " ; "))
+        temp_CLIDs = data.frame(CLIDs[bad_CL], CLIDs[bad_CL])
+        temp_CLIDs[, 1+(2:length(gDRutils::get_header("add_clid")))] = NA
+        colnames(temp_CLIDs) = c(gDRutils::get_identifier("cellline"),
+                      gDRutils::get_header("add_clid"))
+        CLs_info = rbind(CLs_info, temp_CLIDs)
         }
 
     futile.logger::flog.info("Merge with Cell line info")
@@ -912,6 +943,7 @@ add_CellLine_annotation <- function(df_metadata,
 #' @return a dataframe with metadata with annotated drugs
 #' @export
 
+
 add_Drug_annotation <- function(df_metadata,
                                 fill_DB_wiith_unknown = FALSE) {
   
@@ -930,6 +962,7 @@ add_Drug_annotation <- function(df_metadata,
         # This approach will be corrected once we will implement final solution for adding cell lines.
 
         drugsTreated <- unique(df_metadata[, gDRutils::get_identifier("drug")])
+        
         drugsTreated <- drugsTreated[!drugsTreated%in% gDRutils::get_identifier("untreated_tag")]
         validateDrugs <- gDRwrapper::validate_drugs(drugsTreated)
         if(!validateDrugs){
@@ -944,7 +977,7 @@ add_Drug_annotation <- function(df_metadata,
         Drug_info <- tryCatch({
           # TODO: refactor this part of code once we switch to DataFrameMatrix class
           gDrugs <- gDRwrapper::get_drugs()[, c(DB_drug_identifier, "drug_name")]
-          gDrugs[, 1] <- sapply(gDrugs[,1], substr, 1, 9) # remove batch number from DB_drug_identifier
+          gDrugs[, 1] <- gsub("\\..*", "", gDrugs$gnumber) # remove batch number from DB_drug_identifier
           gDrugs
         }, error = function(e) {
           futile.logger::flog.error("Failed to load drug info from DB: %s", e)
@@ -955,6 +988,7 @@ add_Drug_annotation <- function(df_metadata,
             df_metadata[, gDRutils::get_identifier("drugname")] = df_metadata[, gDRutils::get_identifier("drug")]
             return(df_metadata)
         }
+        
         # -----------------------
 
         colnames(Drug_info) <- c("drug", "DrugName")
@@ -964,7 +998,7 @@ add_Drug_annotation <- function(df_metadata,
             DrugName = gDRutils::get_identifier("untreated_tag")
           ),
           Drug_info)
-        Drug_info <- unique(Drug_info)
+        Drug_info <- dplyr::distinct(Drug_info, drug, .keep_all = TRUE)
         DrIDs <- unique(unlist(df_metadata[,agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))]))
         if(any(!drugsTreated %in% Drug_info$drug)){
           Drug_info <- rbind(Drug_info, data.table::setnames(missingTblDrugs[!drugsTreated %in% Drug_info$drug, c(3,1)], names(Drug_info)))
@@ -980,7 +1014,8 @@ add_Drug_annotation <- function(df_metadata,
                 rbind(Drug_info, data.frame(drug = DrIDs[ok_DrID & bad_DrID],
                                             DrugName = DrIDs[ok_DrID & bad_DrID]))
             } else {
-              stop(sprintf("Drug %s not found in gCSI database", paste(DrIDs[!ok_DrID], collapse = ' ; ')))
+              futile.logger::flog.error("Drug %s not in the correct format for database",
+                  paste(DrIDs[!ok_DrID], collapse = ' ; '))
             }
         }
         colnames(Drug_info)[2] <- gDRutils::get_identifier("drugname")
@@ -1005,7 +1040,7 @@ add_Drug_annotation <- function(df_metadata,
 
 
 #' mapSE
-#' 
+#'
 #' Perfmorm mapping for normalization
 #'
 #' @param normSE a SummarizedExperiment with normalization assaay
@@ -1024,16 +1059,16 @@ mapSE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
     checkmate::assert_array(row_endpoint_value_filter)
     checkmate::assert_list(Keys)
     checkmate::assert_logical(T0)
-    
+
     mappingFactor <- ifelse(T0, "Day0", "untrt_Endpoint")
-    
+
     keyValuesList <- list(key_values = row_endpoint_value_filter)
     if(T0){
       keyValuesList <- list(T0 = SummarizedExperiment::rowData(ctrlSE)[, gDRutils::get_identifier("duration")] == 0)
     }
 
     matchFactor <- ifelse(T0, "T0", gDRutils::get_identifier("duration"))
-    
+
     lapply(rownames(normSE), function(x) {
     # define matix with matching metadata
       ctrl_metadata_idx = intersect(Keys[[mappingFactor]],
@@ -1049,12 +1084,13 @@ mapSE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
                                                                                 colnames(SummarizedExperiment::rowData(ctrlSE))), drop = FALSE]), 1,
                             function(x)
                               all(x == 0))
-               
+
           ))))
       match_idx <- which(apply(as.matrix(match_mx), 2, all)) # test matching conditions
       if (length(match_idx) == 0) {
         # if not exact match, try to find best match (as many metadata fields as possible)
-        futile.logger::flog.warn("Missing treated contols for: %s", x)
+        futile.logger::flog.warn("Missing untreated controls %s for: %s",
+            ifelse(T0, '(T=0)', '(endpoint)'), x)
         idx <-
           apply(as.matrix(match_mx), 2, function(y)
             sum(y, na.rm = TRUE)) *
@@ -1071,3 +1107,72 @@ mapSE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
     })
 }
 
+
+
+add_codrug_group = function(SE) {
+
+  r_data = SummarizedExperiment::rowData(SE)
+  if (!('Gnumber_2' %in% colnames(r_data))) return(SE)
+
+  # find the pairs of drugs with relevant metadata
+  drug_ids = paste0(gDRutils::get_identifier()$drug, c('', '_2'))
+  other_metadata = setdiff(colnames(r_data), c('Concentration_2', drug_ids,
+                    paste0(gDRutils::get_identifier()$drugname, c('', paste0('_',1:10)))))
+  drug_pairs = unique(r_data[, c(drug_ids, other_metadata)])
+  drug_pairs = drug_pairs[ !(drug_pairs[,drug_ids[2]] %in% gDRutils::get_identifier('untreated_tag')),]
+
+  pair_list = vector('list', nrow(drug_pairs))
+  # loop through the pairs to assess the number of individual concentration pairs
+  for (idp in 1:nrow(drug_pairs)) {
+    row_idx = r_data[,drug_ids[1]] %in% unlist(drug_pairs[idp, drug_ids]) &
+            r_data[,drug_ids[2]] %in% c(unlist(drug_pairs[idp, drug_ids]),
+                gDRutils::get_identifier('untreated_tag')) &
+            apply(as.matrix(
+                IRanges::LogicalList(c(
+                  lapply(other_metadata, function(y) # matching the metadata
+                    r_data[,y] == drug_pairs[idp,y])
+                  ))), 2, all)
+
+    # reverse engineer the type of combination experiment
+    flat_data = gDRutils::assay_to_df(SE[row_idx, ], 'Averaged')
+    flat_data = flat_data[flat_data$Concentration_2 > 0,]
+    conc_1 = table(flat_data$Concentration)
+    conc_2 = table(flat_data$Concentration_2)
+    n_conc_pairs = nrow(unique(flat_data[,c('Concentration', 'Concentration_2')]))
+    conc_ratio = table(round(log10(flat_data$Concentration / flat_data$Concentration_2),2))
+    conc_ratio = conc_ratio[!names(conc_ratio) %in% c('Inf', '-Inf')]
+
+    condition = paste(paste(other_metadata, unlist(drug_pairs[idp,other_metadata]), sep = '='),
+                  collapse=' ')
+    if (length(conc_ratio) <= 2) {
+      type = 'co-dilution'
+      print(sprintf('Found %s combination with %s and %s: ratio of %.2f, %i concentrations (%s)',
+          type, drug_pairs[idp,1], drug_pairs[idp,2], 10**as.numeric(names(conc_ratio)),
+            length(conc_2), condition))
+    } else if (n_conc_pairs == length(conc_1)*length(conc_2) & length(conc_2) >= 4) {
+      type = 'matrix'
+      print(sprintf('Found %s combination with %s and %s: %i x %i concentrations (%s)',
+          type, drug_pairs[idp,1], drug_pairs[idp,2], length(conc_1), length(conc_2), condition))
+    } else if (length(conc_2)<4) {
+      type = 'fixed'
+      print(sprintf('Found %s combination of %s with %s at %.3g uM (%s)',
+          type, drug_pairs[idp,1], drug_pairs[idp,2], as.numeric(names(conc_2)), condition))
+    } else {
+      type = 'other'
+      print(sprintf('Found %s combination with %s and %s: %i concentration pairs (%s)',
+        type, drug_pairs[idp,1], drug_pairs[idp,2], n_conc_pairs, condition))
+    }
+
+    pair_list[[idp]] = list(Gnumbers = unlist(drug_pairs[idp,]),
+                          rows = rownames(r_data)[row_idx],
+                          type = type)
+  }
+
+  metadata(SE)$drug_combinations = pair_list
+  return(SE)
+}
+
+      # for (iCL in 1:ncol(SE)) {
+      #     flat_data = assay_to_df(SE[row_idx, iCL], 'Averaged')
+      #     tail(unique(flat_data[, c('Gnumber', 'Concentration', 'Gnumber_2', 'Concentration_2')]),30)
+      # }

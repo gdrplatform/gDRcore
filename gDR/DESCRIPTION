@@ -1,7 +1,7 @@
 Package: gDR
 Type: Package
 Title: Utility functions and interface to calculate drug dose-response data and calculate GR values
-Version: 0.1.18
+Version: 0.1.19
 Date: 2020-07-08
 Author: Marc Hafner
 Maintainer: Marc Hafner <hafner.marc@gene.com>
@@ -23,6 +23,7 @@ Imports:
     drc,
     S4Vectors,
     gDRutils,
+    GeneDataScreenR,
     gDRwrapper
 Suggests:
     futile.logger,
