@@ -1000,7 +1000,7 @@ add_Drug_annotation <- function(df_metadata,
           Drug_info)
         Drug_info <- dplyr::distinct(Drug_info, drug, .keep_all = TRUE)
         DrIDs <- unique(unlist(df_metadata[,agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))]))
-        if(any(!drugsTreated %in% Drug_info$drug)){
+        if(any(!drugsTreated %in% Drug_info$DrugName)){
           Drug_info <- rbind(Drug_info, data.table::setnames(missingTblDrugs[!drugsTreated %in% Drug_info$drug, c(3,1)], names(Drug_info)))
         }
         bad_DrID <- !(DrIDs %in% Drug_info$drug) & !is.na(DrIDs)
