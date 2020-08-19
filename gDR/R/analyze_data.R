@@ -477,7 +477,7 @@ normalize_SE <- function(df_raw_data,
                     futile.logger::flog.warn(paste(
                       "No day 0 information and no reference doubling time for cell line", SummarizedExperiment::colData(normSE)[j,gDRutils::get_header('add_clid')[1]],
                       "--> GR values are NA"))
-                } else if (SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]] >
+                } else if (as.numeric(SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]]) >
                     1.5 * SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")]) {
                       # check if experiment is long enough relative to division time
                       futile.logger::flog.warn(paste( "Reference doubling time for cell line",
