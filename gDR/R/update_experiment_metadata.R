@@ -10,10 +10,10 @@
 
 update_experiment_metadata = function(
                            metadata,
-                           metadataList) {
+                           metadataList = NULL) {
   # Assertions:
   checkmate::assert_list(metadata)
-  if(length(metadata$experiment_metadata)>0 && exists('metadata$experiment_metadata$name')) {
+  if(length(metadata$experiment_metadata)>0 && length(metadata$experiment_metadata$name)>0) {
     description <- as.character(metadata$experiment_metadata$description)
     experiment_name <- as.character(metadata$experiment_metadata$name)
     expert_unixid <- as.character(metadata$experiment_metadata$experimentalist)
@@ -26,8 +26,10 @@ update_experiment_metadata = function(
                                                     "source_id", "state_id",
                                                     "experiment_name", "qcs_id",
                                                     "labhead_unixid")))
+  if(!is.null(metadataList)) {
   for (element in names(metadataList)){
     assign(element, metadataList[[element]])
+  }
   }
   
   metadata$experiment_metadata <- data.frame(
