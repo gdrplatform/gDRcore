@@ -4,7 +4,7 @@
 \alias{update_experiment_metadata}
 \title{update_metadata}
 \usage{
-update_experiment_metadata(metadata, metadataList)
+update_experiment_metadata(metadata, metadataList = NULL)
 }
 \arguments{
 \item{SE}{a SummarizedExperiment}
