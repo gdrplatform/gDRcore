@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.20] - 2020-08-26
+
+##### Added
+- RDS files for the other GDS data (GDS5, GDS6, GDS7)
+
 #### [0.1.19] - 2020-08-03
 
 ##### Updated
