@@ -875,7 +875,7 @@ add_CellLine_annotation <- function(df_metadata,
     checkmate::assert_logical(fill_DB_wiith_unknown)
     
     DB_cellid_header <- "cell_line_identifier"
-    DB_cell_annotate <- c("cellline_name", "primary_tissue", "doubling_time")
+    DB_cell_annotate <- c("cell_line_name", "primary_tissue", "doubling_time")
     # corresponds to columns gDRutils::get_header("add_clid"): name, tissue, doubling time
     
     # the logic of adding celline annotation for df_metadata is based on the function get_cell_lines from the gDRwrapper
@@ -924,8 +924,7 @@ add_CellLine_annotation <- function(df_metadata,
 
     futile.logger::flog.info("Merge with Cell line info")
     nrows_df <- nrow(df_metadata)
-    df_metadata <- base::merge(df_metadata, CLs_info, by.x = gDRutils::get_identifier("cellline"),
-                by.y = DB_cellid_header, all.x = TRUE)
+    df_metadata <- base::merge(df_metadata, CLs_info, by = gDRutils::get_identifier("cellline"), all.x = TRUE)
     stopifnot(nrows_df == nrow(df_metadata))
 
     return(df_metadata)
@@ -977,7 +976,7 @@ add_Drug_annotation <- function(df_metadata,
         Drug_info <- tryCatch({
           # TODO: refactor this part of code once we switch to DataFrameMatrix class
           gDrugs <- gDRwrapper::get_drugs()[, c(DB_drug_identifier, "drug_name")]
-          gDrugs[, 1] <- gsub("\\..*", "", gDrugs$gnumber) # remove batch number from DB_drug_identifier
+          #gDrugs[, 1] <- gsub("\\..*", "", gDrugs$gnumber) # remove batch number from DB_drug_identifier
           gDrugs
         }, error = function(e) {
           futile.logger::flog.error("Failed to load drug info from DB: %s", e)
