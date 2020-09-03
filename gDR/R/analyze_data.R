@@ -874,7 +874,7 @@ add_CellLine_annotation <- function(df_metadata,
     stopifnot(inherits(df_metadata, "data.frame"))
     checkmate::assert_logical(fill_DB_wiith_unknown)
     
-    DB_cellid_header <- "clid"
+    DB_cellid_header <- "cell_line_identifier"
     DB_cell_annotate <- c("cellline_name", "primary_tissue", "doubling_time")
     # corresponds to columns gDRutils::get_header("add_clid"): name, tissue, doubling time
     
@@ -888,7 +888,7 @@ add_CellLine_annotation <- function(df_metadata,
     if(!validateCLs){
       missingTblCellLines <- tibble::tibble(canonical_name = "UNKNOWN",
                                             cellline_name = "UNKNOWN",
-                                            clid = unique(df_metadata[,gDRutils::get_identifier("cellline")]),
+                                            cell_line_identifier = unique(df_metadata[,gDRutils::get_identifier("cellline")]),
                                             doubling_time = "UNKNOWN",
                                             primary_tissue = "UNKNOWN",
                                             subtype = "UNKNOWN")
@@ -899,7 +899,7 @@ add_CellLine_annotation <- function(df_metadata,
     }
     CLs_info <- tryCatch( {
         CLs_info <- gDRwrapper::get_cell_lines()
-        CLs_info <- CLs_info[CLs_info$clid %in% unique(df_metadata[,gDRutils::get_identifier("cellline")]),]
+        CLs_info <- CLs_info[CLs_info$cell_line_identifier %in% unique(df_metadata[,gDRutils::get_identifier("cellline")]),]
         CLs_info <- CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
         CLs_info
     }, error = function(e) {
