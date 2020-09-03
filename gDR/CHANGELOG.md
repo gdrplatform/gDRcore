@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.21] - 2020-09-03
+
+##### Update
+- logic as per new db model
+
 #### [0.1.20] - 2020-08-26
 
 ##### Added
