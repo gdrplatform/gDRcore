@@ -477,7 +477,7 @@ normalize_SE <- function(df_raw_data,
                     futile.logger::flog.warn(paste(
                       "No day 0 information and no reference doubling time for cell line", SummarizedExperiment::colData(normSE)[j,gDRutils::get_header('add_clid')[1]],
                       "--> GR values are NA"))
-                } else if (SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]] >
+                } else if (as.numeric(SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]]) >
                     1.5 * SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")]) {
                       # check if experiment is long enough relative to division time
                       futile.logger::flog.warn(paste( "Reference doubling time for cell line",
@@ -1000,7 +1000,7 @@ add_Drug_annotation <- function(df_metadata,
           Drug_info)
         Drug_info <- dplyr::distinct(Drug_info, drug, .keep_all = TRUE)
         DrIDs <- unique(unlist(df_metadata[,agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))]))
-        if(any(!drugsTreated %in% Drug_info$drug)){
+        if(any(!drugsTreated %in% Drug_info$DrugName)){
           Drug_info <- rbind(Drug_info, data.table::setnames(missingTblDrugs[!drugsTreated %in% Drug_info$drug, c(3,1)], names(Drug_info)))
         }
         bad_DrID <- !(DrIDs %in% Drug_info$drug) & !is.na(DrIDs)
