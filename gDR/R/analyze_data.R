@@ -477,7 +477,7 @@ normalize_SE <- function(df_raw_data,
                     futile.logger::flog.warn(paste(
                       "No day 0 information and no reference doubling time for cell line", SummarizedExperiment::colData(normSE)[j,gDRutils::get_header('add_clid')[1]],
                       "--> GR values are NA"))
-                } else if (as.numeric(SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]]) >
+                } else if (SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]] >
                     1.5 * SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")]) {
                       # check if experiment is long enough relative to division time
                       futile.logger::flog.warn(paste( "Reference doubling time for cell line",
@@ -874,8 +874,8 @@ add_CellLine_annotation <- function(df_metadata,
     stopifnot(inherits(df_metadata, "data.frame"))
     checkmate::assert_logical(fill_DB_wiith_unknown)
     
-    DB_cellid_header <- "clid"
-    DB_cell_annotate <- c("cellline_name", "primary_tissue", "doubling_time")
+    DB_cellid_header <- "cell_line_identifier"
+    DB_cell_annotate <- c("cell_line_name", "primary_tissue", "doubling_time")
     # corresponds to columns gDRutils::get_header("add_clid"): name, tissue, doubling time
     
     # the logic of adding celline annotation for df_metadata is based on the function get_cell_lines from the gDRwrapper
@@ -886,9 +886,9 @@ add_CellLine_annotation <- function(df_metadata,
     # This approach will be corrected once we will implement final solution for adding cell lines.
     validateCLs <- gDRwrapper::validate_cell_lines(unique(df_metadata[,gDRutils::get_identifier("cellline")]))
     if(!validateCLs){
-      missingTblCellLines <- tibble::tibble(canonical_name = "UNKNOWN",
-                                            cellline_name = "UNKNOWN",
-                                            clid = unique(df_metadata[,gDRutils::get_identifier("cellline")]),
+      missingTblCellLines <- tibble::tibble(parental_identifier = "UNKNOWN",
+                                            cell_line_name = "UNKNOWN",
+                                            cell_line_identifier = unique(df_metadata[,gDRutils::get_identifier("cellline")]),
                                             doubling_time = "UNKNOWN",
                                             primary_tissue = "UNKNOWN",
                                             subtype = "UNKNOWN")
@@ -899,7 +899,7 @@ add_CellLine_annotation <- function(df_metadata,
     }
     CLs_info <- tryCatch( {
         CLs_info <- gDRwrapper::get_cell_lines()
-        CLs_info <- CLs_info[CLs_info$clid %in% unique(df_metadata[,gDRutils::get_identifier("cellline")]),]
+        CLs_info <- CLs_info[CLs_info$cell_line_identifier %in% unique(df_metadata[,gDRutils::get_identifier("cellline")]),]
         CLs_info <- CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
         CLs_info
     }, error = function(e) {
@@ -924,8 +924,7 @@ add_CellLine_annotation <- function(df_metadata,
 
     futile.logger::flog.info("Merge with Cell line info")
     nrows_df <- nrow(df_metadata)
-    df_metadata <- base::merge(df_metadata, CLs_info, by.x = gDRutils::get_identifier("cellline"),
-                by.y = DB_cellid_header, all.x = TRUE)
+    df_metadata <- base::merge(df_metadata, CLs_info, by = gDRutils::get_identifier("cellline"), all.x = TRUE)
     stopifnot(nrows_df == nrow(df_metadata))
 
     return(df_metadata)
@@ -967,7 +966,7 @@ add_Drug_annotation <- function(df_metadata,
         validateDrugs <- gDRwrapper::validate_drugs(drugsTreated)
         if(!validateDrugs){
           missingTblDrugs <- tibble::tibble(drug_name = drugsTreated,
-                                            gcsi_moa = "UNKNOWN",
+                                            drug_moa = "UNKNOWN",
                                             gnumber = drugsTreated)
           if(fill_DB_wiith_unknown){
             addMissingDrugs <- gDRwrapper::add_drugs(missingTblDrugs)
@@ -977,7 +976,7 @@ add_Drug_annotation <- function(df_metadata,
         Drug_info <- tryCatch({
           # TODO: refactor this part of code once we switch to DataFrameMatrix class
           gDrugs <- gDRwrapper::get_drugs()[, c(DB_drug_identifier, "drug_name")]
-          gDrugs[, 1] <- gsub("\\..*", "", gDrugs$gnumber) # remove batch number from DB_drug_identifier
+          #gDrugs[, 1] <- gsub("\\..*", "", gDrugs$gnumber) # remove batch number from DB_drug_identifier
           gDrugs
         }, error = function(e) {
           futile.logger::flog.error("Failed to load drug info from DB: %s", e)
@@ -1000,7 +999,7 @@ add_Drug_annotation <- function(df_metadata,
           Drug_info)
         Drug_info <- dplyr::distinct(Drug_info, drug, .keep_all = TRUE)
         DrIDs <- unique(unlist(df_metadata[,agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))]))
-        if(any(!drugsTreated %in% Drug_info$DrugName)){
+        if(any(!drugsTreated %in% Drug_info$drug)){
           Drug_info <- rbind(Drug_info, data.table::setnames(missingTblDrugs[!drugsTreated %in% Drug_info$drug, c(3,1)], names(Drug_info)))
         }
         bad_DrID <- !(DrIDs %in% Drug_info$drug) & !is.na(DrIDs)
