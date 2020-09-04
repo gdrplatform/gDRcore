@@ -5,9 +5,9 @@ pkgs:
     ref: HTSEQ-787
     subdir: gDRutils
   GeneDataScreenR:
-    ver: ">=0.0.29"
+    ver: ">=0.99.8"
     url: https://github.roche.com/bczech/GeneDataScreenR.git
-    ref: HTSEQ-823
+    ref: HTSEQ-748
     subdir: ~
   kcloak:
     ver: '>=0.0.3'
