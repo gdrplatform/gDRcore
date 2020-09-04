@@ -45,7 +45,7 @@ update_experiment_metadata = function(
   if (!exists('state_id')) {
     state_id <-
       tryCatch({
-        gDRwrapper::get_state_types() %>% dplyr::filter(state_name == "Active") %>% dplyr::pull(state_id)
+        gDRwrapper::get_state_types() %>% dplyr::filter(state_name == "active") %>% dplyr::pull(state_id)
       },
       error=function(cond) {
         return(1)
