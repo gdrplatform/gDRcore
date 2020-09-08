@@ -5,7 +5,7 @@ pkgs:
     ref: HTSEQ-787
     subdir: gDRutils
   GeneDataScreenR:
-    ver: ">=0.99.8"
+    ver: ">=0.99.12"
     url: https://github.roche.com/bczech/GeneDataScreenR.git
     ref: HTSEQ-748
     subdir: ~
