@@ -246,9 +246,7 @@ normalize_SE <- function(df_raw_data,
 
     for (i in rownames(normSE_n)) {
         for (j in colnames(normSE_n)) {
-
             if (nrow(normSE_original[[i, j]]) == 0) next # skip if no data
-
             # get all the control endpoint data
             df_end <- do.call(rbind,
                     lapply(row_maps_end[[i]], function(x) ctrl_original[[x, col_maps[j]]]))
@@ -635,7 +633,7 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
     for (i in rownames(metricsSE)) {
         for (j in colnames(metricsSE)) {
             df_ <- a_SE[[i, j]]
-            if (!is.null(df_) && nrow(df_) > 0) { # studyConcThresh is embeded in RVGRfits
+            if (!is.null(df_) && length(df_) > 0 && nrow(df_) > 0) { # studyConcThresh is embeded in RVGRfits
                 mSE_m[[i, j]] <- DataFrame(gDRutils::RVGRfits(df_,
                     e_0 = aCtrl_SE[[i, j]]$RefRelativeViability,
                     GR_0 = aCtrl_SE[[i, j]]$RefGRvalue,
