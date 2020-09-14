@@ -1,8 +1,8 @@
 pkgs:
   gDRutils:
-    ver: ">=0.0.6"
+    ver: ">=0.0.9"
     url: https://github.roche.com/gdrplatform/gDRutils.git
-    ref: HTSEQ-787
+    ref: master
     subdir: gDRutils
   GeneDataScreenR:
     ver: ">=0.99.12"
