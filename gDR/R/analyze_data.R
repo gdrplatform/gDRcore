@@ -1106,6 +1106,14 @@ mapSE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
 
 
 
+#' Add codrug group
+#'
+#' @param SE 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 add_codrug_group = function(SE) {
 
   r_data = SummarizedExperiment::rowData(SE)
