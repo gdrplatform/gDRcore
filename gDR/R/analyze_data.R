@@ -340,7 +340,7 @@ normalize_SE <- function(df_raw_data,
                                           min(ref_drc$Concentration)/1e3),
                               upperl =  c(12, max(ref_drc$CorrectedReadout)*1.1,
                                           max(ref_drc$CorrectedReadout)*1.2,
-                                          min(ref_drc$Concentration)*1e3)
+                                          min(ref_drc$Concentration)*1e3),
                             )
                             df_ref = data.frame(Concentration = ref_conc,
                                   CorrectedReadout = predict(drc_fit,
@@ -740,7 +740,7 @@ cleanup_metadata <- function(df_metadata) {
 
   # clean up numberic fields
   df_metadata[, gDRutils::get_identifier("duration")] <-
-    round(as.numeric(df_metadata[, gDRutils::get_identifier("duration")]), 6)
+    round(as.numeric(df_metadata[, gDRutils::get_identifier("duration")]), 10)
   # identify potential numeric fields and replace NA by 0 - convert strings in factors
   for (c in setdiff(1:dim(df_metadata)[2], c(
     agrep(gDRutils::get_identifier("drug"), colnames(df_metadata)),
@@ -799,10 +799,10 @@ cleanup_metadata <- function(df_metadata) {
                                    paste(DrugID_0, collapse = " ; "))
 
         }
-        df_metadata[,i] <- round(as.numeric(df_metadata[, i]), 6) # avoid mismatch due to string truncation
+        df_metadata[,i] <- round(as.numeric(df_metadata[, i]), 10) # avoid mismatch due to string truncation
     }
     df_metadata[, i] <-
-      round(as.numeric(df_metadata[, i]), 6) # avoid mismatch due to string truncation
+      round(as.numeric(df_metadata[, i]), 10) # avoid mismatch due to string truncation
 
   return(df_metadata)
 }
