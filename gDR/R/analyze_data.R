@@ -340,7 +340,7 @@ normalize_SE <- function(df_raw_data,
                                           min(ref_drc$Concentration)/1e3),
                               upperl =  c(12, max(ref_drc$CorrectedReadout)*1.1,
                                           max(ref_drc$CorrectedReadout)*1.2,
-                                          min(ref_drc$Concentration)*1e3),
+                                          min(ref_drc$Concentration)*1e3)
                             )
                             df_ref = data.frame(Concentration = ref_conc,
                                   CorrectedReadout = predict(drc_fit,
