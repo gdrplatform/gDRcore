@@ -233,12 +233,12 @@ normalize_SE <- function(df_raw_data,
     }
 
     # creates the DataFrameMatrix for controls
-    SummarizedExperiment::assay(normSE, "Controls") <- matrix(lapply(1:prod(dim(normSE)), function(x) S4Vectors::DataFrame()),
+    SummarizedExperiment::assay(normSE, "Controls", withDimnames=FALSE) <- matrix(lapply(1:prod(dim(normSE)), function(x) S4Vectors::DataFrame()),
             nrow = nrow(normSE), ncol = ncol(normSE))
 
     # temporary optimization (use 'normSE_n' and 'normSE_c' to avoid using 'assay<-` in for loops)
     # TODO: refactor this part of code once we switch to DataFrameMatrix class
-    ctrl_original = SummarizedExperiment::assay( aapply(ctrlSE, function(x) x[!x$masked,]) )
+    ctrl_original = SummarizedExperiment::assay( gDR::aapply(ctrlSE, function(x) x[!x$masked,]) )
     # need to keep original data for the case in which reference is such that Gnumber == Gnumber_2
     normSE_n <- normSE_original <- SummarizedExperiment::assay(normSE, "Normalized")
     normSE_c <- SummarizedExperiment::assay(normSE, "Controls")
@@ -328,9 +328,11 @@ normalize_SE <- function(df_raw_data,
                           } else {
                             # the reference with proper concentration will be inferred --> need fits
                             ref_drc = normSE_original[[x, col_maps[j]]]
-                            drc_fit = drc::drm(
+                            tryCatch( 
+                              # trycatch to write
+                              drc_fit = drc::drm(
                               CorrectedReadout ~ Concentration,
-                              data = ref_drc,
+                              data = ref_drc[!ref_drc$masked,],
                               fct = drc::LL.4(), # para = c(Hill, x_inf, x0, c50)
                               start = c(2, min(ref_drc$CorrectedReadout),
                                           max(ref_drc$CorrectedReadout),
@@ -340,7 +342,9 @@ normalize_SE <- function(df_raw_data,
                                           min(ref_drc$Concentration)/1e3),
                               upperl =  c(12, max(ref_drc$CorrectedReadout)*1.1,
                                           max(ref_drc$CorrectedReadout)*1.2,
-                                          min(ref_drc$Concentration)*1e3)
+                                          max(ref_drc$Concentration)*1e3)
+                            )
+
                             )
                             df_ref = data.frame(Concentration = ref_conc,
                                   CorrectedReadout = predict(drc_fit,
@@ -1119,12 +1123,13 @@ mapSE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
 add_codrug_group = function(SE) {
 
   r_data = SummarizedExperiment::rowData(SE)
-  if (!('Gnumber_2' %in% colnames(r_data))) return(SE)
+  if (!(paste0(gDRutils::get_identifier()$drugname, '_2') %in% colnames(r_data))) return(SE)
 
   # find the pairs of drugs with relevant metadata
-  drug_ids = paste0(gDRutils::get_identifier()$drug, c('', '_2'))
-  other_metadata = setdiff(colnames(r_data), c('Concentration_2', drug_ids,
-                    paste0(gDRutils::get_identifier()$drugname, c('', paste0('_',1:10)))))
+  drug_ids = paste0(gDRutils::get_identifier()$drugname, c('', '_2'))
+  other_metadata = c(paste0(gDRutils::get_identifier()$drug, c('', '_2')),
+            setdiff(colnames(r_data), c('Concentration_2', drug_ids,
+                paste0(gDRutils::get_identifier()$drug, c('', '_2')))))
   drug_pairs = unique(r_data[, c(drug_ids, other_metadata)])
   drug_pairs = drug_pairs[ !(drug_pairs[,drug_ids[2]] %in% gDRutils::get_identifier('untreated_tag')),]
 
@@ -1136,7 +1141,9 @@ add_codrug_group = function(SE) {
                 gDRutils::get_identifier('untreated_tag')) &
             apply(as.matrix(
                 IRanges::LogicalList(c(
-                  lapply(other_metadata, function(y) # matching the metadata
+                  lapply(setdiff(other_metadata,
+                      paste0(gDRutils::get_identifier()$drug, c('', '_2'))),
+                    function(y) # matching the metadata
                     r_data[,y] == drug_pairs[idp,y])
                   ))), 2, all)
 
@@ -1170,7 +1177,7 @@ add_codrug_group = function(SE) {
         type, drug_pairs[idp,1], drug_pairs[idp,2], n_conc_pairs, condition))
     }
 
-    pair_list[[idp]] = list(Gnumbers = unlist(drug_pairs[idp,]),
+    pair_list[[idp]] = list(condition = unlist(drug_pairs[idp,]),
                           rows = rownames(r_data)[row_idx],
                           type = type)
   }
