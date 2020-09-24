@@ -3,6 +3,7 @@
 export(ICGRfits)
 export(ICGRlogisticFit)
 export(Order_result_df)
+export(aapply)
 export(addAssayToMAE)
 export(add_CellLine_annotation)
 export(add_Drug_annotation)

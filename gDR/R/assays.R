@@ -55,7 +55,7 @@
 #' @param assay_type a name of an assay
 #'
 #' @return the same SE object with updated nested dataframe
-#'
+#' @export
 aapply <-
   function(SE, fx, assay_type = 1) {
     # Assertions:

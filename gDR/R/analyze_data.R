@@ -328,7 +328,7 @@ normalize_SE <- function(df_raw_data,
                           } else {
                             # the reference with proper concentration will be inferred --> need fits
                             ref_drc = normSE_original[[x, col_maps[j]]]
-                            tryCatch( 
+                            tryCatch({
                               # trycatch to write
                               drc_fit = drc::drm(
                               CorrectedReadout ~ Concentration,
@@ -345,7 +345,7 @@ normalize_SE <- function(df_raw_data,
                                           max(ref_drc$Concentration)*1e3)
                             )
 
-                            )
+                            })
                             df_ref = data.frame(Concentration = ref_conc,
                                   CorrectedReadout = predict(drc_fit,
                                           data.frame(Concentration = ref_conc)))
