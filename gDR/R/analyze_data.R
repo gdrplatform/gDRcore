@@ -740,7 +740,7 @@ cleanup_metadata <- function(df_metadata) {
 
   # clean up numberic fields
   df_metadata[, gDRutils::get_identifier("duration")] <-
-    round(as.numeric(df_metadata[, gDRutils::get_identifier("duration")]), 10)
+    round(as.numeric(df_metadata[, gDRutils::get_identifier("duration")]), 6)
   # identify potential numeric fields and replace NA by 0 - convert strings in factors
   for (c in setdiff(1:dim(df_metadata)[2], c(
     agrep(gDRutils::get_identifier("drug"), colnames(df_metadata)),
@@ -799,11 +799,9 @@ cleanup_metadata <- function(df_metadata) {
                                    paste(DrugID_0, collapse = " ; "))
 
         }
-        df_metadata[,i] <- round(as.numeric(df_metadata[, i]), 10) # avoid mismatch due to string truncation
+        df_metadata[,i] <- 10 ** round(log10(as.numeric(df_metadata[, i])), 6)
+        # df_metadata[,i] <- round(as.numeric(df_metadata[, i]), 10) # avoid mismatch due to string truncation
     }
-    df_metadata[, i] <-
-      round(as.numeric(df_metadata[, i]), 10) # avoid mismatch due to string truncation
-
   return(df_metadata)
 }
 
@@ -1026,7 +1024,9 @@ add_Drug_annotation <- function(df_metadata,
             Drug_info_ <- Drug_info
             colnames(Drug_info_)[2] <- paste0(colnames(Drug_info_)[2], substr(colnames(df_metadata)[i], 8, 12))
             futile.logger::flog.info("Merge with Drug_info for %s", i)
-            df_metadata <- merge(df_metadata, Drug_info_, by.x = i, by.y = "drug", all.x = TRUE)
+            df_metadata[[paste0(colnames(df_metadata)[i], "_temp")]] <- gsub("\\..*", "", df_metadata[[i]])
+            df_metadata <- merge(df_metadata, Drug_info_, by.x = gsub("\\..*", "", paste0(colnames(df_metadata)[i], "_temp")), by.y = "drug", all.x = TRUE) %>%
+              dplyr::select(-paste0(colnames(df_metadata)[i], "_temp"))
         }
         df_metadata[, colnames(df_metadata)[grepl(gDRutils::get_identifier("drugname"), colnames(df_metadata))]] =
           droplevels(df_metadata[, colnames(df_metadata)[grepl(gDRutils::get_identifier("drugname"), colnames(df_metadata))]])
