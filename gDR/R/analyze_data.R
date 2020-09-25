@@ -328,30 +328,34 @@ normalize_SE <- function(df_raw_data,
                           } else {
                             # the reference with proper concentration will be inferred --> need fits
                             ref_drc = normSE_original[[x, col_maps[j]]]
-                            tryCatch({
-                              # trycatch to write
-                              drc_fit = drc::drm(
-                              CorrectedReadout ~ Concentration,
-                              data = ref_drc[!ref_drc$masked,],
-                              fct = drc::LL.4(), # para = c(Hill, x_inf, x0, c50)
-                              start = c(2, min(ref_drc$CorrectedReadout),
-                                          max(ref_drc$CorrectedReadout),
-                                          median(ref_drc$Concentration)),
-                              lowerl = c(1e-5, min(ref_drc$CorrectedReadout)*.8, # wide range
-                                          min(ref_drc$CorrectedReadout)*.9,
-                                          min(ref_drc$Concentration)/1e3),
-                              upperl =  c(12, max(ref_drc$CorrectedReadout)*1.1,
-                                          max(ref_drc$CorrectedReadout)*1.2,
-                                          max(ref_drc$Concentration)*1e3)
-                            )
-
-                            })
-                            df_ref = data.frame(Concentration = ref_conc,
+                            if (length(unique(ref_drc$Concentration[!ref_drc$masked]))>3) {
+                              # tryCatch( 
+                                # trycatch to write
+                                drc_fit = drc::drm(
+                                CorrectedReadout ~ Concentration,
+                                data = ref_drc[!ref_drc$masked,],
+                                fct = drc::LL.4(), # para = c(Hill, x_inf, x0, c50)
+                                start = c(2, min(ref_drc$CorrectedReadout),
+                                            max(ref_drc$CorrectedReadout),
+                                            median(ref_drc$Concentration)),
+                                lowerl = c(1e-5, min(ref_drc$CorrectedReadout)*.8, # wide range
+                                            min(ref_drc$CorrectedReadout)*.9,
+                                            min(ref_drc$Concentration)/1e3),
+                                upperl =  c(12, max(ref_drc$CorrectedReadout)*1.1,
+                                            max(ref_drc$CorrectedReadout)*1.2,
+                                            max(ref_drc$Concentration)*1e3)
+                              )
+                              df_ref = data.frame(Concentration = ref_conc,
                                   CorrectedReadout = predict(drc_fit,
                                           data.frame(Concentration = ref_conc)))
+                        # )
+                          } else {
+                            df_ref = data.frame(Concentration = ref_conc,
+                                CorrectedReadout = NA)
+                          }
                           }
                           }))
-                #TODO: this piece of code is the same as above; it can be simplified after df_ref is created.
+                
                 df_ref <- df_ref[, c("CorrectedReadout",
                         intersect(Keys$ref_Endpoint, colnames(df_ref))), drop = F]
                 colnames(df_ref)[1] <- "RefReadout"
