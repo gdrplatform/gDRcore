@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.23] - 2020-09-29
+
+##### Improved
+- updated README.md
+
+
 #### [0.1.22] - 2020-09-22
 
 ##### Fixed
