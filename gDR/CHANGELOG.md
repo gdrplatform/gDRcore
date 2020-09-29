@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.22] - 2020-09-22
+
+##### Fixed
+- bug in update_experiment_metadata
+
 #### [0.1.21] - 2020-09-03
 
 ##### Update
@@ -43,4 +48,3 @@ All notable changes to this project will be documented in this file.
 
 ##### Updated
 - dependencies
->>>>>>> master
