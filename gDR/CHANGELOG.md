@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [0.1.22] - 2020-10-01
+#### [0.1.24] - 2020-10-01
 
 ##### Update
 - bugs in function for metrics calculation as per QCS dataset
@@ -10,6 +10,17 @@ All notable changes to this project will be documented in this file.
 #### Added
 - QCS data 
 - scripts for processing and pushing QCS data on Rosalind
+
+#### [0.1.23] - 2020-09-29
+
+##### Improved
+- updated README.md
+
+
+#### [0.1.22] - 2020-09-22
+
+##### Fixed
+- bug in update_experiment_metadata
 
 #### [0.1.21] - 2020-09-03
 
@@ -52,4 +63,3 @@ All notable changes to this project will be documented in this file.
 
 ##### Updated
 - dependencies
->>>>>>> master

@@ -59,12 +59,11 @@ update_experiment_metadata = function(
     assay_id = ifelse(exists("assay_id"), assay_id, NA),
     date_experiment = ifelse(exists("date_experiment"), date_experiment, as.character(Sys.Date())),
     source_id = ifelse(exists("source_id"), source_id, NA),
-    state_id = ifelse(exists("state_id"), state_id, 1),
+    state_id = ifelse(exists("state_id"), state_id, NA),
     experiment_name = ifelse(exists("experiment_name"), experiment_name, NA),
     experiment_project = ifelse(exists("experiment_project"), experiment_project, NA),
     qcs_id = ifelse(exists("qcs_id"), qcs_id, NA),
     labhead_unixid = ifelse(exists("labhead_unixid"), labhead_unixid, NA),
-    stringsAsFactors = FALSE
   )
   return(metadata)
 }
