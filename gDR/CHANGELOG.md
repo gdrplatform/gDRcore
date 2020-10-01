@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.22] - 2020-10-01
+
+##### Update
+- bugs in function for metrics calculation as per QCS dataset
+
+#### Added
+- QCS data 
+- scripts for processing and pushing QCS data on Rosalind
+
 #### [0.1.21] - 2020-09-03
 
 ##### Update
