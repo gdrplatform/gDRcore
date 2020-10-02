@@ -238,7 +238,7 @@ normalize_SE <- function(df_raw_data,
 
     # temporary optimization (use 'normSE_n' and 'normSE_c' to avoid using 'assay<-` in for loops)
     # TODO: refactor this part of code once we switch to DataFrameMatrix class
-    ctrl_original = SummarizedExperiment::assay( gDR::aapply(ctrlSE, function(x) x[!x$masked,]) )
+    ctrl_original = SummarizedExperiment::assay(gDR::aapply(ctrlSE, function(x) x[!x$masked,]))
     # need to keep original data for the case in which reference is such that Gnumber == Gnumber_2
     normSE_n <- normSE_original <- SummarizedExperiment::assay(normSE, "Normalized")
     normSE_c <- SummarizedExperiment::assay(normSE, "Controls")
@@ -641,7 +641,7 @@ metrics_SE = function(avgSE, studyConcThresh = 4) {
     for (i in rownames(metricsSE)) {
         for (j in colnames(metricsSE)) {
             df_ <- a_SE[[i, j]]
-            if (!is.null(df_) && length(df_) > 0 && nrow(df_) > 0) { # studyConcThresh is embeded in RVGRfits
+            if (!is.null(df_) && all(dim(df_) > 0)) { # studyConcThresh is embeded in RVGRfits
                 mSE_m[[i, j]] <- DataFrame(gDRutils::RVGRfits(df_,
                     e_0 = aCtrl_SE[[i, j]]$RefRelativeViability,
                     GR_0 = aCtrl_SE[[i, j]]$RefGRvalue,
@@ -1123,7 +1123,6 @@ mapSE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
 #' @return
 #' @export
 #'
-#' @examples
 add_codrug_group = function(SE) {
 
   r_data = SummarizedExperiment::rowData(SE)
