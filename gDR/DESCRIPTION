@@ -1,8 +1,8 @@
 Package: gDR
 Type: Package
 Title: Utility functions and interface to calculate drug dose-response data and calculate GR values
-Version: 0.1.23
-Date: 2020-09-29
+Version: 0.1.24
+Date: 2020-10-15
 Author: Marc Hafner
 Maintainer: Marc Hafner <hafner.marc@gene.com>
 Description: Pipeline to process drug dose-response data and calculate GR values
