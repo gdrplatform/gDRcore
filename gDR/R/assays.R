@@ -55,7 +55,7 @@
 #' @param assay_type a name of an assay
 #'
 #' @return the same SE object with updated nested dataframe
-#'
+#' @export
 aapply <-
   function(SE, fx, assay_type = 1) {
     # Assertions:
@@ -63,7 +63,7 @@ aapply <-
     checkmate::assert_function(fx)
     checkmate::assert_scalar(assay_type)
 
-    SummarizedExperiment::assay(SE, assay_type) = matrix(sapply(SummarizedExperiment::assay(SE, assay_type), fx), nrow = nrow(SE), ncol = ncol(SE))
+    SummarizedExperiment::assay(SE, assay_type, withDimnames=FALSE) = matrix(sapply(SummarizedExperiment::assay(SE, assay_type), fx), nrow = nrow(SE), ncol = ncol(SE))
     return(SE)
   }
 
