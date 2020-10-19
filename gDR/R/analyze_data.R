@@ -214,7 +214,9 @@ normalize_SE <- function(df_raw_data,
                     (SummarizedExperiment::rowData(normSE)[rnames, y, drop=F]))
               )), # matching the drugs with mapping from Gnumber to Gnumber_2
               list( Gnumber = SummarizedExperiment::rowData(normSE)$Gnumber ==
-                SummarizedExperiment::rowData(normSE)[rnames,'Gnumber_2']))),
+                SummarizedExperiment::rowData(normSE)[rnames,'Gnumber_2']),
+              list( Gnumber_2 = SummarizedExperiment::rowData(normSE)$Gnumber_2 %in% 
+                gDRutils::get_identifier('untreated_tag') ))),
               2, all)
         if (any(ref_match)) row_maps_cotrt[rnames] = rownames(normSE)[which(ref_match)]
       }
