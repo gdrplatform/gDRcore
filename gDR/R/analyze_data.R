@@ -136,6 +136,7 @@ normalize_SE <- function(df_raw_data,
     checkmate::assert_vector(discard_keys, null.ok = TRUE)
     checkmate::assert_function(control_mean_fct, null.ok = TRUE)
     checkmate::assert_number(nDigits_rounding)
+    checkmate::assertFALSE('RelativeViability' %in% colnames(df_raw_data))
 
     # average technical replicates and assign the right controls to each treated well
     Keys <- identify_keys(df_raw_data)
