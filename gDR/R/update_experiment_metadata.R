@@ -24,7 +24,7 @@ update_experiment_metadata = function(
   checkmate::assert_true(all(names(metadataList) %in% c("expert_unixid", "unix_id", "description",
                                                     "assay_id", "date_experiment",
                                                     "source_id", "state_id",
-                                                    "experiment_name", "qcs_id",
+                                                    "experiment_name", "experiment_project", "qcs_id",
                                                     "labhead_unixid")))
   if(!is.null(metadataList)) {
   for (element in names(metadataList)){
