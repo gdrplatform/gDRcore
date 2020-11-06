@@ -92,7 +92,8 @@ load_manifest <- function(manifest_file) {
                                    "text/tab-separated-values",
                                    "tsv")) {
       df <- tryCatch({
-        readr::read_tsv(x, col_names = TRUE, skip_empty_rows = TRUE)
+        read.table(x, sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
+          na.omit()
       }, error = function(e) {
         stop(sprintf(
           "Error reading the Manifest file. Please see the logs:\n%s",
@@ -243,7 +244,8 @@ load_templates_tsv <-
     
     # read columns in files
     templates <- lapply(template_file, function(x)
-      readr::read_tsv(x, col_names = TRUE, skip_empty_rows = TRUE))
+      read.table(x, sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
+        na.omit())
     names(templates) <- template_filename
     # check WellRow/WellColumn is present in each df
     dump <- sapply(1:length(template_file),
@@ -498,9 +500,8 @@ load_results_tsv <-
       futile.logger::flog.info("Reading file", results_file[iF])
       tryCatch({
         df <-
-          readr::read_tsv(results_file[iF],
-                          col_names = TRUE,
-                          skip_empty_rows = TRUE)
+        read.table(results_file[iF], sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
+          na.omit()
       }, error = function(e) {
         stop(sprintf("Error reading %s", results_file[[iF]]))
       })
@@ -509,9 +510,8 @@ load_results_tsv <-
         tryCatch({
           # likely a csv file
           df <-
-            readr::read_csv(results_file[iF],
-                            col_names = TRUE,
-                            skip_empty_rows = TRUE)
+            read.csv(results_file[iF], header = TRUE, na.strings=c("", "NA")) %>%
+            na.omit()
         }, error = function(e) {
           stop(sprintf("Error reading %s", results_file[[iF]]))
         })
