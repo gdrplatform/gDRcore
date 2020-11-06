@@ -30,7 +30,10 @@ dont.install <- c(
 )
 ### dplyr in version 1.0.0 cause different behavior of nested list, so for now we use version 0.8.5
 devtools::install_url("https://cran.r-project.org/src/contrib/Archive/dplyr/dplyr_0.8.5.tar.gz")
-
+devtools::install_github("ropensci/vcr")
+devtools::install_github("WinVector/wrapr")
+devtools::install_github("WinVector/seplyr")
+devtools::install_github("eddelbuettel/rcppsimdjson")
 # Extract dependencies from DESCRIPTION file
 deps <- yaml::read_yaml(file.path(.wd, "rplatform", "DESCRIPTION_dependencies.yaml"))
 deps <- deps[!names(deps) %in% dont.install]

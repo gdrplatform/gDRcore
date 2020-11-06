@@ -345,12 +345,12 @@ normalize_SE <- function(df_raw_data,
                                             max(ref_drc$CorrectedReadout)*1.2,
                                             max(ref_drc$Concentration)*1e3)
                               )
-                              df_ref = data.frame(Concentration = ref_conc,
+                              df_ref = data.table::data.table(Concentration = ref_conc,
                                   CorrectedReadout = predict(drc_fit,
-                                          data.frame(Concentration = ref_conc)))
+                                          data.table::data.table(Concentration = ref_conc)))
                         # )
                           } else {
-                            df_ref = data.frame(Concentration = ref_conc,
+                            df_ref = data.table::data.table(Concentration = ref_conc,
                                 CorrectedReadout = NA)
                           }
                           }
@@ -448,14 +448,14 @@ normalize_SE <- function(df_raw_data,
                   i, paste(trt_bcodes, collapse = ", "),
                   paste(ctrl_bcodes, collapse = ", ")
                 )
-              dplyr::bind_rows(df_ctrl, cbind(data.frame(Barcode = setdiff(trt_bcodes, ctrl_bcodes)),
+              dplyr::bind_rows(df_ctrl, cbind(data.table::data.table(Barcode = setdiff(trt_bcodes, ctrl_bcodes)),
                         t(colMeans(df_ctrl[, setdiff(colnames(df_ctrl), "Barcode")]))))
             }
 
             # works with by = character(0) but changes the order of rows
             df_merged <- merge(
-              data.frame(normSE_original[[i, j]]),
-                    data.frame(df_ctrl),
+              data.table::data.table(normSE_original[[i, j]]),
+                    data.table::data.table(df_ctrl),
                     by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)),
                     all.x = T)
 
@@ -570,7 +570,7 @@ average_SE <- function(normSE, TrtKeys = NULL) {
         if (nrow(x) > 1) {
             subKeys <- intersect(TrtKeys, colnames(x))
             if (all(x$masked)) {
-              df_ = as.data.frame(matrix(0,0,length(subKeys)+5))
+              df_ = data.table::as.data.table(matrix(0,0,length(subKeys)+5))
               colnames(df_) = c(subKeys,
                     c("GRvalue", "RelativeViability","CorrectedReadout"),
                     paste0("std_", c("GRvalue", "RelativeViability")))
@@ -886,11 +886,11 @@ add_CellLine_annotation <- function(df_metadata,
     # we added additional parameter 'fill_DB_wiith_unknown' that allows to fill the DB with clid info for these cell lines
     # that are not present in the DB.
     # Other fields are set as "UNKNOWN". If the fill_DB_wiith_unknown is set as FALSE we add unkonown cell lines
-    # only to the tibble.
+    # only to the data.table
     # This approach will be corrected once we will implement final solution for adding cell lines.
     validateCLs <- gDRwrapper::validate_cell_lines(unique(df_metadata[,gDRutils::get_identifier("cellline")]))
     if(!validateCLs){
-      missingTblCellLines <- tibble::tibble(parental_identifier = "UNKNOWN",
+      missingTblCellLines <- data.table::data.table(parental_identifier = "UNKNOWN",
                                             cell_line_name = "UNKNOWN",
                                             cell_line_identifier = unique(df_metadata[,gDRutils::get_identifier("cellline")]),
                                             doubling_time = "UNKNOWN",
@@ -908,7 +908,7 @@ add_CellLine_annotation <- function(df_metadata,
         CLs_info
     }, error = function(e) {
       futile.logger::flog.error("Failed to load cell line info from DB: %s", e)
-        data.frame()
+        data.table::data.table()
     })
 
     if (nrow(CLs_info) == 0) return(df_metadata)
@@ -919,7 +919,7 @@ add_CellLine_annotation <- function(df_metadata,
     if (any(bad_CL)) {
         futile.logger::flog.warn("Cell line ID %s not found in cell line database",
                      paste(CLIDs[bad_CL], collapse = " ; "))
-        temp_CLIDs = data.frame(CLIDs[bad_CL], CLIDs[bad_CL])
+        temp_CLIDs = data.table::data.table(CLIDs[bad_CL], CLIDs[bad_CL])
         temp_CLIDs[, 1+(2:length(gDRutils::get_header("add_clid")))] = NA
         colnames(temp_CLIDs) = c(gDRutils::get_identifier("cellline"),
                       gDRutils::get_header("add_clid"))
@@ -961,7 +961,7 @@ add_Drug_annotation <- function(df_metadata,
         # we added additional parameter 'fill_DB_wiith_unknown' that allows to fill the DB with drug_name and gnumber, for these drugs,
         # that are not present in the DB
         # Other fields are set as "UNKNOWN". If the fill_DB_wiith_unknown is set as FALSE we add unkonown cell lines
-        # only to the tibble.
+        # only to the data.table
         # This approach will be corrected once we will implement final solution for adding cell lines.
 
         drugsTreated <- unique(df_metadata[, gDRutils::get_identifier("drug")])
@@ -969,7 +969,7 @@ add_Drug_annotation <- function(df_metadata,
         drugsTreated <- drugsTreated[!drugsTreated%in% gDRutils::get_identifier("untreated_tag")]
         validateDrugs <- gDRwrapper::validate_drugs(drugsTreated)
         if(!validateDrugs){
-          missingTblDrugs <- tibble::tibble(drug_name = drugsTreated,
+          missingTblDrugs <- data.table::data.table(drug_name = drugsTreated,
                                             drug_moa = "UNKNOWN",
                                             gnumber = drugsTreated)
           if(fill_DB_wiith_unknown){
@@ -984,7 +984,7 @@ add_Drug_annotation <- function(df_metadata,
           gDrugs
         }, error = function(e) {
           futile.logger::flog.error("Failed to load drug info from DB: %s", e)
-            data.frame()
+            data.table::data.table()
         })
 
         if (nrow(Drug_info) == 0) {
@@ -996,7 +996,7 @@ add_Drug_annotation <- function(df_metadata,
 
         colnames(Drug_info) <- c("drug", "DrugName")
         Drug_info <-
-          rbind(data.frame(
+          rbind(data.table::data.table(
             drug = gDRutils::get_identifier("untreated_tag"),
             DrugName = gDRutils::get_identifier("untreated_tag")
           ),
@@ -1014,7 +1014,7 @@ add_Drug_annotation <- function(df_metadata,
               futile.logger::flog.warn("cleanup_metadata: Drug %s  not found in gCSI database; use G# as DrugName",
                                        paste(DrIDs[ok_DrID & bad_DrID], collapse = " ; "))
               Drug_info <-
-                rbind(Drug_info, data.frame(drug = DrIDs[ok_DrID & bad_DrID],
+                rbind(Drug_info, data.table::data.table(drug = DrIDs[ok_DrID & bad_DrID],
                                             DrugName = DrIDs[ok_DrID & bad_DrID]))
             } else {
               futile.logger::flog.error("Drug %s not in the correct format for database",
