@@ -26,10 +26,13 @@ install.packages(c("yaml", "desc", "git2r", "devtools"))
 git_pkgs <- yaml::read_yaml(file.path(.wd, "rplatform", "git_dependencies.yml"))
 dont.install <- c(
   names(git_pkgs$pkgs),
-  "dplyr"
+  "dplyr",
+  "vcr"
 )
 ### dplyr in version 1.0.0 cause different behavior of nested list, so for now we use version 0.8.5
 devtools::install_url("https://cran.r-project.org/src/contrib/Archive/dplyr/dplyr_0.8.5.tar.gz")
+devtools::install_github("ropensci/fauxpas")
+devtools::install_github("ropensci/webmockr")
 devtools::install_github("ropensci/vcr")
 devtools::install_github("WinVector/wrapr")
 devtools::install_github("WinVector/seplyr")
