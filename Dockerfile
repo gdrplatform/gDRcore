@@ -21,18 +21,36 @@ LABEL GENERATE_SINGULARITY_IMAGE=false
 LABEL production=false
 LABEL VERSION=0.0.0.9100
 LABEL CACHE_IMAGE="registry.rplatform.org:5000/githubroche/gdrplatform/gdr_core"
-ARG MRAN_SNAPSHOT_DATE="2019-12-12"
+ARG MRAN_SNAPSHOT_DATE="2020-06-01"
 
 # ----------------------------------------------------------------------------------------------------------------
 
 #================= install system dependencies
 RUN sudo apt-get update && sudo apt-get install -y \
-    libmariadb-client-lgpl-dev \
-    libmariadbclient-dev 
+    libssl-dev \
+    libsasl2-dev \
+    libxml2-dev \
+    libicu-dev \
+    bzip2 \
+    liblzma-dev \
+    libbz2-dev \
+    subversion \
+    curl \
+    libmariadbclient-dev \
+    libv8-dev \
+    procps \
+    systemd \
+    libmagick++-dev \
+    libssh2-1-dev \
+    ssh \
+    openssl \
+    supervisor \
+    passwd \
+    vim
 
 #================= copy Rprofile.site - set repos and other options
-COPY rplatform/Rprofile.site /tmp/Rprofile.site-temp
-RUN echo 'Sys.setenv(MRAN_SNAPSHOT_DATE = "'$MRAN_SNAPSHOT_DATE'")' "$(cat /tmp/Rprofile.site-temp)" | sudo tee -a $(R RHOME)/etc/Rprofile.site
+# COPY rplatform/Rprofile.site /tmp/Rprofile.site-temp
+# RUN echo 'Sys.setenv(MRAN_SNAPSHOT_DATE = "'$MRAN_SNAPSHOT_DATE'")' "$(cat /tmp/Rprofile.site-temp)" | sudo tee -a $(R RHOME)/etc/Rprofile.site
 
 #================= copy ssh keys
 COPY rplatform/ssh_keys/id_rsa /home/rstudio/.ssh/id_rsa
