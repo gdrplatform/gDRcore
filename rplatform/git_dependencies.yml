@@ -2,7 +2,7 @@ pkgs:
   gDRutils:
     ver: ">=0.0.11"
     url: https://github.roche.com/gdrplatform/gDRutils.git
-    ref: master
+    ref: initial_screen_2.2
     subdir: gDRutils
   GeneDataScreenR:
     ver: ">=0.99.12"
