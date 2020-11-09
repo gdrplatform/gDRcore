@@ -1,6 +1,6 @@
 pkgs:
   gDRutils:
-    ver: ">=0.0.9"
+    ver: ">=0.0.11"
     url: https://github.roche.com/gdrplatform/gDRutils.git
     ref: master
     subdir: gDRutils
