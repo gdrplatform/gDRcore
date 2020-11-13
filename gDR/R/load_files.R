@@ -92,7 +92,7 @@ load_manifest <- function(manifest_file) {
                                    "text/tab-separated-values",
                                    "tsv")) {
       df <- tryCatch({
-        read.table(x, sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
+        utils::read.table(x, sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
           na.omit()
       }, error = function(e) {
         stop(sprintf(
@@ -244,7 +244,7 @@ load_templates_tsv <-
     
     # read columns in files
     templates <- lapply(template_file, function(x)
-      read.table(x, sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
+      utils::read.table(x, sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
         na.omit())
     names(templates) <- template_filename
     # check WellRow/WellColumn is present in each df
@@ -500,7 +500,7 @@ load_results_tsv <-
       futile.logger::flog.info("Reading file", results_file[iF])
       tryCatch({
         df <-
-        read.table(results_file[iF], sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
+        utils::read.table(results_file[iF], sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
           na.omit()
       }, error = function(e) {
         stop(sprintf("Error reading %s", results_file[[iF]]))
