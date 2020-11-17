@@ -550,7 +550,7 @@ normalize_SE <- function(df_raw_data,
 #' @export
 #'
 
-average_SE <- function(normSE, TrtKeys = NULL) {
+average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 
   # Assertions:
   checkmate::assert_class(normSE, "SummarizedExperiment")
@@ -570,15 +570,11 @@ average_SE <- function(normSE, TrtKeys = NULL) {
 
     SummarizedExperiment::assay(avgSE, "Averaged") <- SummarizedExperiment::assay(avgSE, "Normalized")
     avgSE <- aapply(avgSE, function(x) {
-        if (nrow(x) > 1) {
-            subKeys <- intersect(TrtKeys, colnames(x))
-            if (all(x$masked)) {
-              df_ = as.data.frame(matrix(0,0,length(subKeys)+5))
-              colnames(df_) = c(subKeys,
-                    c("GRvalue", "RelativeViability","CorrectedReadout"),
-                    paste0("std_", c("GRvalue", "RelativeViability")))
-              return(df_)
-            }
+        # bypass 'masked' filter
+        x$masked = x$masked & !include_masked
+
+        subKeys <- intersect(TrtKeys, colnames(x))
+        if (sum(!x$masked) >= 1) {
             df_av <- aggregate(x[ !x$masked ,
                                   c("GRvalue", "RelativeViability","CorrectedReadout")],
                             by = as.list(x[ !x$masked , subKeys, drop = FALSE]),
@@ -590,7 +586,13 @@ average_SE <- function(normSE, TrtKeys = NULL) {
                 paste0("std_",
                     colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")])
             return( merge(df_av, df_std, by = subKeys) )
-        } else return(x)
+        } else { # case: (nrow(x) == 0 || all(x$masked))
+            df_ = as.data.frame(matrix(0,0,length(subKeys)+5))
+            colnames(df_) = c(subKeys,
+                  c("GRvalue", "RelativeViability","CorrectedReadout"),
+                  paste0("std_", c("GRvalue", "RelativeViability")))
+            return(df_)
+        } 
     }, "Averaged")
 
     SummarizedExperiment::assay(avgSE, "Avg_Controls") <- SummarizedExperiment::assay(avgSE, "Controls")
