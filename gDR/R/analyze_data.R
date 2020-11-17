@@ -136,6 +136,7 @@ normalize_SE <- function(df_raw_data,
     checkmate::assert_vector(discard_keys, null.ok = TRUE)
     checkmate::assert_function(control_mean_fct, null.ok = TRUE)
     checkmate::assert_number(nDigits_rounding)
+    checkmate::assertFALSE('RelativeViability' %in% colnames(df_raw_data))
 
     # average technical replicates and assign the right controls to each treated well
     Keys <- identify_keys(df_raw_data)
@@ -214,7 +215,9 @@ normalize_SE <- function(df_raw_data,
                     (SummarizedExperiment::rowData(normSE)[rnames, y, drop=F]))
               )), # matching the drugs with mapping from Gnumber to Gnumber_2
               list( Gnumber = SummarizedExperiment::rowData(normSE)$Gnumber ==
-                SummarizedExperiment::rowData(normSE)[rnames,'Gnumber_2']))),
+                SummarizedExperiment::rowData(normSE)[rnames,'Gnumber_2']),
+              list( Gnumber_2 = SummarizedExperiment::rowData(normSE)$Gnumber_2 %in% 
+                gDRutils::get_identifier('untreated_tag') ))),
               2, all)
         if (any(ref_match)) row_maps_cotrt[rnames] = rownames(normSE)[which(ref_match)]
       }
@@ -547,7 +550,7 @@ normalize_SE <- function(df_raw_data,
 #' @export
 #'
 
-average_SE <- function(normSE, TrtKeys = NULL) {
+average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 
   # Assertions:
   checkmate::assert_class(normSE, "SummarizedExperiment")
@@ -567,15 +570,11 @@ average_SE <- function(normSE, TrtKeys = NULL) {
 
     SummarizedExperiment::assay(avgSE, "Averaged") <- SummarizedExperiment::assay(avgSE, "Normalized")
     avgSE <- aapply(avgSE, function(x) {
-        if (nrow(x) > 1) {
-            subKeys <- intersect(TrtKeys, colnames(x))
-            if (all(x$masked)) {
-              df_ = as.data.frame(matrix(0,0,length(subKeys)+5))
-              colnames(df_) = c(subKeys,
-                    c("GRvalue", "RelativeViability","CorrectedReadout"),
-                    paste0("std_", c("GRvalue", "RelativeViability")))
-              return(df_)
-            }
+        # bypass 'masked' filter
+        x$masked = x$masked & !include_masked
+
+        subKeys <- intersect(TrtKeys, colnames(x))
+        if (sum(!x$masked) >= 1) {
             df_av <- aggregate(x[ !x$masked ,
                                   c("GRvalue", "RelativeViability","CorrectedReadout")],
                             by = as.list(x[ !x$masked , subKeys, drop = FALSE]),
@@ -587,7 +586,13 @@ average_SE <- function(normSE, TrtKeys = NULL) {
                 paste0("std_",
                     colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")])
             return( merge(df_av, df_std, by = subKeys) )
-        } else return(x)
+        } else { # case: (nrow(x) == 0 || all(x$masked))
+            df_ = as.data.frame(matrix(0,0,length(subKeys)+5))
+            colnames(df_) = c(subKeys,
+                  c("GRvalue", "RelativeViability","CorrectedReadout"),
+                  paste0("std_", c("GRvalue", "RelativeViability")))
+            return(df_)
+        } 
     }, "Averaged")
 
     SummarizedExperiment::assay(avgSE, "Avg_Controls") <- SummarizedExperiment::assay(avgSE, "Controls")
