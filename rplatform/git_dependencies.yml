@@ -1,6 +1,6 @@
 pkgs:
   gDRutils:
-    ver: '>=0.0.12'
+    ver: '>=0.0.13'
     url: https://github.roche.com/gdrplatform/gDRutils.git
     ref: master
     subdir: gDRutils
@@ -15,8 +15,7 @@ pkgs:
     ref: master
     subdir: ~
   gDRwrapper:
-    ver: '>=0.1.40'
     ver: '>=0.1.42'
     url: https://github.roche.com/gdrplatform/gDRwrapper.git
-    ref: HTSEQ-881
+    ref: master
     subdir: gDRwrapper
