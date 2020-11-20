@@ -2,7 +2,7 @@
 
 #### AUXILIARY FUNCTIONS ####
 .drugNameRegex <- "^DrugName$|^DrugName_[[:digit:]]+$"
-.untreateDrugNameRegex <- "^untreated$|^vehicle$"
+.untreateDrugNameRegex <- "^untreated$|^vehicle$|^Vehicle$|^Untreated$"
 .assayNames <-
   c("df_raw_data",
     "df_normalized",
