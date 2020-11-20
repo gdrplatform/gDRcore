@@ -93,7 +93,7 @@ load_manifest <- function(manifest_file) {
                                    "tsv")) {
       df <- tryCatch({
         utils::read.table(x, sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
-          na.omit()
+          stats::na.omit()
       }, error = function(e) {
         stop(sprintf(
           "Error reading the Manifest file. Please see the logs:\n%s",
@@ -245,7 +245,7 @@ load_templates_tsv <-
     # read columns in files
     templates <- lapply(template_file, function(x)
       utils::read.table(x, sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
-        na.omit())
+        stats::na.omit())
     names(templates) <- template_filename
     # check WellRow/WellColumn is present in each df
     dump <- sapply(1:length(template_file),
@@ -501,7 +501,7 @@ load_results_tsv <-
       tryCatch({
         df <-
         utils::read.table(results_file[iF], sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
-          na.omit()
+          stats::na.omit()
       }, error = function(e) {
         stop(sprintf("Error reading %s", results_file[[iF]]))
       })
@@ -510,8 +510,8 @@ load_results_tsv <-
         tryCatch({
           # likely a csv file
           df <-
-            read.csv(results_file[iF], header = TRUE, na.strings=c("", "NA")) %>%
-            na.omit()
+            utils::read.csv(results_file[iF], header = TRUE, na.strings=c("", "NA")) %>%
+            stats::na.omit()
         }, error = function(e) {
           stop(sprintf("Error reading %s", results_file[[iF]]))
         })
