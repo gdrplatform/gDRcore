@@ -672,7 +672,8 @@ load_results_EnVision <-
             
             # check the structure of file is ok
             check_values <-
-              as.matrix(df[iB + readout_offset + c(0, 1, n_row, n_row + 1), n_col])
+              as.matrix(df[iB + readout_offset + c(0, 1, n_row, n_row + iB + readout_offset), n_col])
+            
             Barcode <- as.character(df[iB + 1, 3])
             if (any(c(is.na(check_values[2:3]),!is.na(check_values[c(1, 4)])))) {
               stop(

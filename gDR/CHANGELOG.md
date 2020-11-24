@@ -1,6 +1,12 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+#### [0.1.26] - 2020-11-24
+
+##### Fixed
+- bug with reading raw data
+
+
 #### [0.1.25] - 2020-11-08
 
 ##### Improved
