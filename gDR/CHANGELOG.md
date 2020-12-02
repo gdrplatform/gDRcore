@@ -1,6 +1,10 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+#### [0.1.27] - 2020-12-02
+#### Improved
+- refactor analyze_data.R with taking account codilution combo
+
 #### [0.1.26] - 2020-11-24
 
 ##### Fixed
