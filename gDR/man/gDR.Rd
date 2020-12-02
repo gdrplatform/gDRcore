@@ -4,6 +4,3 @@
 \name{gDR}
 \alias{gDR}
 \title{'gDR - a package with core functionality'}
-\description{
-'gDR - a package with core functionality'
-}

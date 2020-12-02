@@ -32,7 +32,7 @@ read_ref_data <- function(inDir, prefix = "ref") {
 
 
   files <- list.files(inDir, paste0(prefix, "_.+\\.tsv$"), full.names = TRUE)
-  lFiles <- lapply(files, function(x) { readr::read_delim(x, delim = "\t")})
+  lFiles <- lapply(files, function(x) { read.table(x, sep = "\t", header = TRUE)})
   names(lFiles) <- gsub("\\.tsv", "", gsub(paste0("^", prefix, "_"), "", basename(files)))
   refKeys <- yaml::read_yaml(file.path(inDir, paste0(prefix, "_keys.yaml")))
   refRowMaps <- yaml::read_yaml(file.path(inDir, paste0(prefix, "_row_maps.yaml")))
@@ -60,7 +60,7 @@ write_ref_data_df <- function(lData, outDir, prefix = "ref") {
   
   myL <- lapply(1:length(lData), function(x) {
     outFile <- file.path(outDir, paste0(prefix, "_lData_", names(lData)[x], ".tsv"))
-    readr::write_delim(lData[[x]], outFile, delim = "\t")
+    write.table(lData[[x]], outFile, sep = "\t", quote = FALSE, row.names = FALSE)
   })
 
 }
@@ -82,12 +82,13 @@ write_ref_data_se <- function(se, outDir, prefix = "ref") {
 #assays
   myL <- lapply(SummarizedExperiment::assayNames(se), function(x) {
     outFile <- file.path(outDir, paste0(prefix, "_assay_", x, ".tsv"))
-    readr::write_delim(gDRutils::assay_to_df(se, x, merge_metrics = TRUE), outFile, delim = "\t")
+    write.table(gDRutils::assay_to_df(se, x, merge_metrics = TRUE), outFile, sep = "\t", quote = FALSE, row.names = FALSE)
   })
 
   #df_raw_data from metadata
   outFile <- file.path(outDir, paste0(prefix, "_df_raw_data.tsv"))
-  readr::write_delim(metadata(se)$df_raw_data, outFile, delim = "\t")
+  write.table(metadata(se)$df_raw_data, outFile, sep = "\t", quote = FALSE, row.names = FALSE)
+  
 
   keys_yaml <- yaml::as.yaml(metadata(se)$Keys)
   yaml::write_yaml(keys_yaml, file.path(outDir, paste0(prefix,"_keys.yaml")))

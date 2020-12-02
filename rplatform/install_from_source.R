@@ -11,11 +11,11 @@ install.packages("git2r", repos = paste0("https://mran.microsoft.com/snapshot/",
 
 ## Uncomment following code to install package(s) directly from Bitbucket repository
 ## SSH keys should be copied to container before installation
+ssh_keys <- git2r::cred_ssh_key(file.path("/home/rstudio/.ssh/id_rsa.pub"), file.path("/home/rstudio/.ssh/id_rsa"))
 .wd <- "/mnt/vol"
 .deps <- rp:::collectDependencies(desc.files = file.path(.wd, "gDR/DESCRIPTION"))
 pkgs <- yaml::read_yaml(file.path(.wd, "rplatform", "git_dependencies.yml"))$pkgs
 
-ssh_keys <- git2r::cred_ssh_key(file.path("/home/rstudio/.ssh/id_rsa.pub"), file.path("/home/rstudio/.ssh/id_rsa"))
 
 git2r::libgit2_features()
 
