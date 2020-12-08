@@ -793,8 +793,7 @@ check_metadata_names <-
       if (any(!headersOK)) {
         stop(
           sprintf(
-            "File %s does not contains all expected headers for a %s. %s is/are required. Please correct your template.",
-            df_name,
+            "Template does not contains all expected headers for a %s. %s is/are required. Please correct your template.",
             df_type,
             toString(expected_headers[!(expected_headers %in% col_df)])
           )
