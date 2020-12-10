@@ -1042,7 +1042,7 @@ add_Drug_annotation <- function(df_metadata,
               dplyr::select(-paste0(colnames(df_metadata)[i], "_temp"))
         }
         df_metadata[, colnames(df_metadata)[grepl(gDRutils::get_identifier("drugname"), colnames(df_metadata))]] =
-          droplevels(df_metadata[, colnames(df_metadata)[grepl(gDRutils::get_identifier("drugname"), colnames(df_metadata))]])
+          droplevels(df_metadata[, colnames(df_metadata)][grepl(gDRutils::get_identifier("drugname"), colnames(df_metadata))])
 
     stopifnot(nrows_df == nrow(df_metadata))
 
