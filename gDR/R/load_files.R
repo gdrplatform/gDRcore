@@ -43,10 +43,10 @@ load_data <-
              %in% basename(template_filename))) {
       stop(sprintf(
         "Some template files are missing: %s",
-        paste(setdiff(
+        toString(setdiff(
           unique(manifest$Template[manifest$Barcode %in% data$Barcode]),
           basename(template_filename)
-        ), collapse = " ; ")
+        ))
       ))
     }
     return(list(
@@ -793,10 +793,9 @@ check_metadata_names <-
       if (any(!headersOK)) {
         stop(
           sprintf(
-            "%s does not contains all expected headers for a %s; %s required",
-            df_name,
+            "Template does not contains all expected headers for a %s. %s is/are required. Please correct your template.",
             df_type,
-            paste(expected_headers[!(expected_headers %in% col_df)], collpase = " ; ")
+            toString(expected_headers[!(expected_headers %in% col_df)])
           )
         )
       }
@@ -809,7 +808,8 @@ check_metadata_names <-
         if (length(n_drug) != length(n_conc)) {
           stop(
             sprintf(
-              "Treatment template %s does not contains the same number of Gnumber_* and Concentration_* sheets",
+              "Template file(s) %s do/does not contain the same number of Gnumber_* and Concentration_* sheets. Gnumber_* and Concentration_* sheets are required.
+              Please correct your template.",
               df_name
             )
           )
@@ -822,10 +822,9 @@ check_metadata_names <-
           )
           if (!(all(toupper(trt_sheets) %in% toupper(col_df)))) {
             stop(sprintf(
-              "Treatment template %s does not contain: %s",
+              "Template file %s does not contain %s sheets. Please correct your template.",
               df_name,
-              paste(trt_sheets[!(toupper(trt_sheets) %in% toupper(col_df))],
-                    collapse = " ; ")
+              toString(trt_sheets[!(toupper(trt_sheets) %in% toupper(col_df))])
             ))
           }
         }
@@ -851,7 +850,7 @@ check_metadata_names <-
       futile.logger::flog.warn(
         "Metadata field names for %s cannot contain spaces --> corrected to: %s",
         df_name,
-        paste(corrected_names[names_spaces], collapse = " ; ")
+        toString(corrected_names[names_spaces])
       )
     }
     
@@ -864,7 +863,7 @@ check_metadata_names <-
         sprintf(
           "Metadata field names for %s cannot contain special characters or start with a number: ",
           df_name,
-          paste(corrected_names[bad_names], collapse = " ; ")
+          toString(corrected_names[bad_names])
         )
       )
     }
@@ -889,7 +888,7 @@ check_metadata_names <-
     if (any(corrected_names %in% check_headers)) {
       stop(sprintf(
         "Metadata field name: %s in %s is not valid (reserved for output)",
-        paste(intersect(check_headers, corrected_names), collapse = " ; "),
+        toString(intersect(check_headers, corrected_names)),
         df_name
       ))
     }

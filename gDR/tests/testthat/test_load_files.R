@@ -92,7 +92,7 @@ testthat::test_that("load_data throwing expected errors", {
               df_template_files = template_file,
               results_file = results_file,
               instrument = "EnVision"),
-    "Some template files are missing: untreated.xlsx ; trtmt1.xlsx"
+    "Some template files are missing: untreated.xlsx, trtmt1.xlsx"
   )
   
 })
