@@ -1,8 +1,8 @@
 pkgs:
   gDRutils:
-    ver: '>=0.0.13'
+    ver: '>=0.0.14'
     url: https://github.roche.com/gdrplatform/gDRutils.git
-    ref: master
+    ref: GDR-326
     subdir: gDRutils
   GeneDataScreenR:
     ver: ">=0.99.16"
