@@ -451,7 +451,7 @@ normalize_SE <- function(df_raw_data,
                   i, paste(trt_bcodes, collapse = ", "),
                   paste(ctrl_bcodes, collapse = ", ")
                 )
-              dplyr::bind_rows(df_ctrl, cbind(data.frame(Barcode = setdiff(trt_bcodes, ctrl_bcodes)),
+              rbind(df_ctrl, cbind(data.frame(Barcode = setdiff(trt_bcodes, ctrl_bcodes)),
                         t(colMeans(df_ctrl[, setdiff(colnames(df_ctrl), "Barcode")]))))
             }
 
@@ -920,7 +920,7 @@ add_CellLine_annotation <- function(df_metadata,
 
     colnames(CLs_info) <- c(gDRutils::get_identifier("cellline"), gDRutils::get_header("add_clid"))
     CLIDs <- unique(df_metadata[,gDRutils::get_identifier("cellline")])
-    bad_CL <- !(CLIDs %in% (CLs_info %>% dplyr::pull(gDRutils::get_identifier("cellline"))))
+    bad_CL <- !(CLIDs %in% (CLs_info[, gDRutils::get_identifier("cellline")]))
     if (any(bad_CL)) {
         futile.logger::flog.warn("Cell line ID %s not found in cell line database",
                      paste(CLIDs[bad_CL], collapse = " ; "))
@@ -1006,7 +1006,7 @@ add_Drug_annotation <- function(df_metadata,
             DrugName = gDRutils::get_identifier("untreated_tag")
           ),
           Drug_info)
-        Drug_info <- dplyr::distinct(Drug_info, drug, .keep_all = TRUE)
+        Drug_info <- Drug_info[!duplicated(Drug_info[, drug]),]
         DrIDs <- unique(unlist(df_metadata[,agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))]))
         if(any(!gsub("\\..*", "", drugsTreated) %in% Drug_info$drug)){
           Drug_info <- rbind(Drug_info, data.table::setnames(missingTblDrugs[!drugsTreated %in% Drug_info$drug, c(3,1)], names(Drug_info)))
@@ -1030,7 +1030,7 @@ add_Drug_annotation <- function(df_metadata,
         futile.logger::flog.info("Merge with Drug_info for Drug 1")
         df_metadata[[paste0(gDRutils::get_identifier("drug"), "_temp")]] <- gsub("\\..*", "", df_metadata[[gDRutils::get_identifier("drug")]])
         df_metadata <- base::merge(df_metadata, Drug_info, by.x = gsub("\\..*", "", paste0(gDRutils::get_identifier("drug"), "_temp")), by.y = "drug", all.x = TRUE) %>%
-          dplyr::select(-paste0(gDRutils::get_identifier("drug"), "_temp"))
+          subset(select = -paste0(gDRutils::get_identifier("drug"), "_temp"))
         # add info for columns Gnumber_*
         for (i in grep(paste0(gDRutils::get_identifier("drug"),"_\\d"), colnames(df_metadata))) {
             df_metadata[ is.na(df_metadata[,i]), i] = gDRutils::get_identifier("untreated_tag")[1] # set missing values to Untreated
@@ -1039,7 +1039,7 @@ add_Drug_annotation <- function(df_metadata,
             futile.logger::flog.info("Merge with Drug_info for %s", i)
             df_metadata[[paste0(colnames(df_metadata)[i], "_temp")]] <- gsub("\\..*", "", df_metadata[[i]])
             df_metadata <- merge(df_metadata, Drug_info_, by.x = gsub("\\..*", "", paste0(colnames(df_metadata)[i], "_temp")), by.y = "drug", all.x = TRUE) %>%
-              dplyr::select(-paste0(colnames(df_metadata)[i], "_temp"))
+              subset(select = -paste0(colnames(df_metadata)[i], "_temp"))
         }
         df_metadata[, colnames(df_metadata)[grepl(gDRutils::get_identifier("drugname"), colnames(df_metadata))]] =
           droplevels(df_metadata[, colnames(df_metadata)][grepl(gDRutils::get_identifier("drugname"), colnames(df_metadata))])

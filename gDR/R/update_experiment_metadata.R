@@ -34,18 +34,18 @@ update_experiment_metadata = function(
   
   if (!exists('source_id')) {
     source_id <-
-      gDRwrapper::get_source_keys() %>% dplyr::filter(source_type == "UNKNOWN") %>% dplyr::pull(source_id)
+      gDRwrapper::get_source_keys()[which(source_type == "UNKNOWN"), ][["source_id"]]
   }
   
   if (!exists('assay_id')) {
     assay_id <-
-      gDRwrapper::get_assay_types() %>% dplyr::filter(assay_type == "UNKNOWN") %>% dplyr::pull(assay_id)
+      gDRwrapper::get_assay_types()[which(assay_type == "UNKNOWN"), ][["assay_id"]]
   }
   
   if (!exists('state_id')) {
     state_id <-
       tryCatch({
-        gDRwrapper::get_state_types() %>% dplyr::filter(state_name == "active") %>% dplyr::pull(state_id)
+        gDRwrapper::get_state_types()[which(state_name == "active"), ][["state_id"]]
       },
       error=function(cond) {
         return(1)

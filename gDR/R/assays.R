@@ -23,8 +23,7 @@
     stopifnot(any(inherits(drug_data, "data.frame"), inherits(drug_data, "DataFrame")))
 
     as.data.frame(drug_data) %>%
-      dplyr::filter(grepl(.untreateDrugNameRegex, DrugName)) %>%
-      dplyr::pull("name_")
+      subset(grepl(.untreateDrugNameRegex, DrugName))[["name_"]]
   }
 
 #' .get_treated_conditions
@@ -41,8 +40,7 @@
     stopifnot(any(inherits(drug_data, "data.frame"), inherits(drug_data, "DataFrame")))
 
     as.data.frame(drug_data) %>%
-      dplyr::filter(!grepl(.untreateDrugNameRegex, DrugName)) %>%
-      dplyr::pull("name_")
+      subset(!grepl(.untreateDrugNameRegex, DrugName))[["name_"]]
   }
 
 

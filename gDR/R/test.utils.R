@@ -12,7 +12,7 @@ library(magrittr)
 standardize_df <- function(df) {
   # Assertions:
   stopifnot(inherits(df, "data.frame"))
-  df %>% dplyr::mutate_all(as.character)
+  data.frame(lapply(df, as.character))
 }
 
 #' read_ref_data
