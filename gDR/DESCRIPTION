@@ -1,30 +1,31 @@
 Package: gDR
 Type: Package
 Title: Utility functions and interface to calculate drug dose-response data and calculate GR values
-Version: 0.1.28
-Date: 2020-12-07
+Version: 0.1.29
+Date: 2020-12-15
 Author: Marc Hafner
 Maintainer: Marc Hafner <hafner.marc@gene.com>
 Description: Pipeline to process drug dose-response data and calculate GR values
 License: file GNE_LICENSE
 LazyLoad: yes
 Imports:
-    openxlsx,
-    reshape2,
-    httr,
-    XML,
-    plyr,
-    readr,
+    BumpyMatrix,
     dplyr (== 0.8.5),
-    kcloak (>= 0.0.3),
-    magrittr,
-    stringr,
-    readxl,
     drc,
-    S4Vectors,
     gDRutils,
     GeneDataScreenR,
-    gDRwrapper
+    gDRwrapper,
+    httr,
+    kcloak (>= 0.0.3),
+    magrittr,
+    openxlsx,
+    plyr,
+    readr,
+    readxl,
+    reshape2,
+    S4Vectors,
+    stringr,
+    XML
 Suggests:
     futile.logger,
     gCSIutils,

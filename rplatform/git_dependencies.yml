@@ -1,21 +1,26 @@
 pkgs:
-  gDRutils:
-    ver: '>=0.0.13'
-    url: https://github.roche.com/gdrplatform/gDRutils.git
+  BumpyMatrix:
+    ver: ">=0.99.0"
+    url: https://github.roche.com/gdrplatform/BumpyMatrix.git
     ref: master
-    subdir: gDRutils
+    subdir: ~
   GeneDataScreenR:
     ver: ">=0.99.16"
     url: https://github.roche.com/bczech/GeneDataScreenR.git
     ref: HTSEQ-748
-    subdir: ~
-  kcloak:
-    ver: '>=0.0.3'
-    url: ssh://git@stash.intranet.roche.com:7999/faciledata/kcloak.git
-    ref: master
     subdir: ~
   gDRwrapper:
     ver: '>=0.1.42'
     url: https://github.roche.com/gdrplatform/gDRwrapper.git
     ref: master
     subdir: gDRwrapper
+  gDRutils:
+    ver: '>=0.0.13'
+    url: https://github.roche.com/gdrplatform/gDRutils.git
+    ref: master
+    subdir: gDRutils
+  kcloak:
+    ver: '>=0.0.3'
+    url: ssh://git@stash.intranet.roche.com:7999/faciledata/kcloak.git
+    ref: master
+    subdir: ~
