@@ -15,7 +15,7 @@ pkgs:
     ref: master
     subdir: ~
   gDRwrapper:
-    ver: '>=0.1.42'
+    ver: '>=0.1.47'
     url: https://github.roche.com/gdrplatform/gDRwrapper.git
-    ref: master
+    ref: GDR-326_2
     subdir: gDRwrapper
