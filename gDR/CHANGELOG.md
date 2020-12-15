@@ -1,6 +1,11 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+#### [0.1.29] - 2020-12-15
+#### Improved
+- remove dplyr
+- use the latest version of gDRutils
+
 #### [0.1.28] - 2020-12-07
 #### Improved
 - error messages
