@@ -4,7 +4,7 @@
 \alias{average_SE}
 \title{average_SE}
 \usage{
-average_SE(normSE, TrtKeys = NULL)
+average_SE(normSE, TrtKeys = NULL, include_masked = F)
 }
 \arguments{
 \item{normSE}{a SummarizedExperiment with normalized DR data}
