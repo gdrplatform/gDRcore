@@ -237,7 +237,7 @@ df_to_assay <-
     complete$factor_id <- 1:nrow(complete)
     data_assigned <-
       merge(data, complete, by = c(cond_entries, cl_entries))
-
+    
     by_factor <- lapply(1:nrow(complete), function(x)
       data_assigned[data_assigned$factor_id == x, dataCols])
     names(by_factor) <- 1:nrow(complete)
@@ -289,6 +289,7 @@ df_to_assay <-
 #' with treated conditions only ('treated') or all
 #' @param readout a character that indiciated readout value in a df ('ReadoutValue' by default)
 #' @param discard_keys a vector of keys that should be discarded
+#' @param assay_type string assay type for the returned SummarizedExperiment
 #'
 #' @return SummarizedExperiment object with dose-reponse data
 #'
@@ -297,20 +298,29 @@ createSE <-
   function(df_data,
            data_type = c("untreated", "treated", "all"),
            readout = 'ReadoutValue',
-           discard_keys = NULL) {
+           discard_keys = NULL,
+           assay_type = c("matrix", "BumpyMatrix")) {
     # Assertions:
     stopifnot(any(inherits(df_data, "data.frame"), inherits(df_data, "DataFrame")))
     checkmate::assert_character(data_type)
     checkmate::assert_string(readout)
     checkmate::assert_character(discard_keys, null.ok = TRUE)
     data_type <- match.arg(data_type)
+    assay_type <- match.arg(assay_type)
 
     # stopifnot(all(names(dfList) %in% .assayNames))
     # #dfList must contain first assay (i.e. df_raw_data)
     # stopifnot(.assayNames[1] %in% names(dfList))
 
-    mats <- df_to_assay(df_data, data_type = data_type, discard_keys = discard_keys)
-
+    
+    mats <- if (assay_type == "matrix") {
+      df_to_assay(df_data, data_type = data_type, discard_keys = discard_keys)
+    } else if (assay_type == "BumpyMatrix") {
+      df_to_bm_assay(df_data, data_type = data_type, discard_keys = discard_keys)
+    } else {
+      stop(sprintf("bad assay type: '%s'", assay_type))
+    }
+    
     allMetadata <- getMetaData(df_data, discard_keys = discard_keys)
 
     seColData <- allMetadata$colData
@@ -324,7 +334,7 @@ createSE <-
                            setdiff(colnames(seRowData), c('row_id', 'name_'))]
     matsL <- list(mats)
     names(matsL) <- readout
-
+    
     se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
                                                      colData = seColData,
                                                      rowData = seRowData)
