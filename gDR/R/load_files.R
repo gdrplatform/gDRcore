@@ -130,7 +130,7 @@ load_manifest <- function(manifest_file) {
                      df_type = "manifest"
                    ))
   
-  cat_manifest_data <- data.table::rbindlist(manifest_data)
+  cat_manifest_data <- as.data.frame(data.table::rbindlist(manifest_data))
   colnames(cat_manifest_data) <-
     check_metadata_names(colnames(cat_manifest_data), "manifest")
   
@@ -477,7 +477,7 @@ load_templates_xlsx <-
       colnames(df_template) <-
         check_metadata_names(colnames(df_template),
                              df_name = template_filename[iF])
-      all_templates <- rbind(all_templates, df_template)
+      all_templates <- as.data.frame(data.table::rbindlist(list(all_templates, df_template), fill = TRUE))
       
     }
     futile.logger::flog.info("Templates loaded successfully!")

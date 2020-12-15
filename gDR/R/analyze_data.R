@@ -451,8 +451,8 @@ normalize_SE <- function(df_raw_data,
                   i, paste(trt_bcodes, collapse = ", "),
                   paste(ctrl_bcodes, collapse = ", ")
                 )
-              rbind(df_ctrl, cbind(data.frame(Barcode = setdiff(trt_bcodes, ctrl_bcodes)),
-                        t(colMeans(df_ctrl[, setdiff(colnames(df_ctrl), "Barcode")]))))
+              as.data.frame(data.table::rbindlist(list(df_ctrl, cbind(data.frame(Barcode = setdiff(trt_bcodes, ctrl_bcodes)),
+                        t(colMeans(df_ctrl[, setdiff(colnames(df_ctrl), "Barcode")])))), fill = TRUE))
             }
 
             # works with by = character(0) but changes the order of rows

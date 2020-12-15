@@ -178,7 +178,7 @@ test_se <- function(se, lRef) {
   checkmate::assert_list(lRef)
   
   x <- standardize_df(metadata(se)$df_raw_data)
-  y <- standardize_df(tibble::tibble(lRef$df_raw_data))
+  y <- standardize_df(data.table::data.table(lRef$df_raw_data))
   class(y) <- class(x)
   
   expect_equal(x, y)
@@ -196,7 +196,8 @@ test_se <- function(se, lRef) {
     xDf$DivisionTime <- as.numeric(xDf$DivisionTime)
     }
     expect_true(nrow(xAs) == nrow(xDf))
-    expect_equal(xAs, data.frame(xDf), tolerance = 1e-5)
+    expect_equivalent(sort(xAs[, order(names(xAs))]), 
+                      sort(data.table::as.data.table(xDf)[, order(names(xDf))]), tolerance = 1e-5)
   })
 }
 
