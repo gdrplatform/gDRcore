@@ -233,7 +233,7 @@ df_to_assay <-
       )
     complete <- merge(merge(complete, seRowData, by = "row_id"),
                       seColData, by = "col_id")
-    complete = complete[ order(complete$col_id, complete$row_id), ]
+    complete <- complete[ order(complete$col_id, complete$row_id), ]
     complete$factor_id <- 1:nrow(complete)
     data_assigned <-
       merge(data, complete, by = c(cond_entries, cl_entries))

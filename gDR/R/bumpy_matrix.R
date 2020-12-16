@@ -21,6 +21,7 @@ df_to_bm_assay <-
     # Assertions:
     stopifnot(any(inherits(data, "data.frame"), checkmate::test_character(data), inherits(data, "DataFrame")))
     checkmate::assert_character(data_type)
+    data_type <- match.arg(data_type)
     checkmate::assert_character(discard_keys, null.ok = TRUE)
     ####
     data <- as(data, "DataFrame")
@@ -43,7 +44,7 @@ df_to_bm_assay <-
       )
     complete <- merge(merge(complete, seRowData, by = "row_id"),
                       seColData, by = "col_id")
-    complete = complete[ order(complete$col_id, complete$row_id), ]
+    complete <- complete[ order(complete$col_id, complete$row_id), ]
     complete$factor_id <- 1:nrow(complete)
     data_assigned <-
       merge(data, complete, by = c(cond_entries, cl_entries))
