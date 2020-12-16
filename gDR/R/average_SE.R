@@ -108,7 +108,6 @@ merge_data <- function(manifest, treatments, data) {
   return(df_raw_data)
 }
 
->>>>>>> db72695... separate out functions into smaller files
 #' average_SE
 #'
 #' Avereage normalized SummarizedExperiment of DR data
@@ -508,12 +507,3 @@ add_codrug_group = function(SE) {
   metadata(SE)$drug_combinations = pair_list
   return(SE)
 }
-<<<<<<< HEAD
-
-      # for (iCL in 1:ncol(SE)) {
-      #     flat_data = assay_to_df(SE[row_idx, iCL], 'Averaged')
-      #     tail(unique(flat_data[, c('Gnumber', 'Concentration', 'Gnumber_2', 'Concentration_2')]),30)
-      # }
->>>>>>> db72695... separate out functions into smaller files
-=======
->>>>>>> fdd9d7c0b011473dfae79e0cf97d555aec58c902
