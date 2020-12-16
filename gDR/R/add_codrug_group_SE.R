@@ -5,7 +5,7 @@
 #' @return
 #' @export
 #'
-add_codrug_group_SE = function(SE) {
+add_codrug_group_SE <- function(SE) {
 
   r_data = SummarizedExperiment::rowData(SE)
   if (!(paste0(gDRutils::get_identifier()$drugname, '_2') %in% colnames(r_data))) return(SE)
