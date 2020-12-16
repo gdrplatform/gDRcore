@@ -1,4 +1,4 @@
-#' mapSE
+#' map_SE
 #'
 #' Perfmorm mapping for normalization
 #'
@@ -11,7 +11,7 @@
 #' @return a list of mapping
 #' @export
 
-mapSE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
+map_SE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
     # Assertions:
     checkmate::assert_class(normSE, "SummarizedExperiment")
     checkmate::assert_class(ctrlSE, "SummarizedExperiment")

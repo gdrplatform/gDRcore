@@ -71,7 +71,7 @@ normalize_SE <- function(df_raw_data,
     # perform the mapping for normalization
     # first the rows
     # matching the reference end point without any treatment
-    row_maps_end <- mapSE(normSE, ctrlSE, row_endpoint_value_filter, Keys)
+    row_maps_end <- map_SE(normSE, ctrlSE, row_endpoint_value_filter, Keys)
     names(row_maps_end) <- rownames(normSE)
 
     # matching the reference end point with the same co-treatment (all the same but conc=0/Gnumber="vehicle")
@@ -114,7 +114,7 @@ normalize_SE <- function(df_raw_data,
     }
 
     # matching the reference at time 0 (if available)
-    row_maps_T0 <- mapSE(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = TRUE)
+    row_maps_T0 <- map_SE(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = TRUE)
     names(row_maps_T0) <- rownames(normSE)
 
     # mapping for columns; 1 to 1 unless overridden by key_values
