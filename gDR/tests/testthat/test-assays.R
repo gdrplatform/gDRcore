@@ -20,3 +20,44 @@ testthat::test_that("'createSE' works as expected", {
   # same dimensions of the assays in both SEs
   expect_identical(dim(se_matrix), dim(se_bumpy_matrix))
 })
+
+testthat::test_that("createSE throwing expected errors", {
+  # Test assertion:
+  expect_error(
+    createSE(df_data = list(a = 1)),
+    "any(inherits(df_data, \"data.frame\"), inherits(df_data, \"DataFrame\")) is not TRUE",
+    fixed = TRUE
+  )
+  expect_error(
+    createSE(df_data = data.frame(a = 1), data_type = 1),
+    "Assertion on 'data_type' failed: Must be of type 'character', not 'double'.",
+    fixed = TRUE
+  )
+  expect_error(
+    createSE(
+      df_data = data.frame(a = 1),
+      data_type = "all",
+      readout = c("a", "b")
+    ),
+    "Assertion on 'readout' failed: Must have length 1.",
+    fixed = TRUE
+  )
+  expect_error(
+    createSE(
+      df_data = data.frame(a = 1),
+      data_type = "all",
+      discard_keys = 1
+    ),
+    "Assertion on 'discard_keys' failed: Must be of type 'character' (or 'NULL'), not 'double'.",
+    fixed = TRUE
+  )
+  expect_error(
+    createSE(
+      df_data = data.frame(a = 1),
+      data_type = "all",
+      assay_type = "newMatrixObject"
+    ),
+    "'arg' should be one of \"matrix\", \"BumpyMatrix\"",
+    fixed = TRUE
+  )
+})
