@@ -114,11 +114,7 @@ normalize_SE <- function(df_raw_data,
     }
 
     # matching the reference at time 0 (if available)
-<<<<<<< HEAD
     row_maps_T0 <- map_SE(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = TRUE)
-=======
-    row_maps_T0 <- mapSE(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = TRUE)
->>>>>>> db72695... separate out functions into smaller files
     names(row_maps_T0) <- rownames(normSE)
 
     # mapping for columns; 1 to 1 unless overridden by key_values
