@@ -451,7 +451,7 @@ normalize_SE <- function(df_raw_data,
                   i, paste(trt_bcodes, collapse = ", "),
                   paste(ctrl_bcodes, collapse = ", ")
                 )
-              as.data.frame(data.table::rbindlist(list(df_ctrl, cbind(data.frame(Barcode = setdiff(trt_bcodes, ctrl_bcodes)),
+              data.table::setDF(data.table::rbindlist(list(df_ctrl, cbind(data.frame(Barcode = setdiff(trt_bcodes, ctrl_bcodes)),
                         t(colMeans(df_ctrl[, setdiff(colnames(df_ctrl), "Barcode")])))), fill = TRUE))
             }
 
@@ -920,7 +920,7 @@ add_CellLine_annotation <- function(df_metadata,
 
     colnames(CLs_info) <- c(gDRutils::get_identifier("cellline"), gDRutils::get_header("add_clid"))
     CLIDs <- unique(df_metadata[,gDRutils::get_identifier("cellline")])
-    bad_CL <- !(CLIDs %in% (CLs_info[, gDRutils::get_identifier("cellline")]))
+    bad_CL <- CLs_info[eval(!CLIDs, .SD), on = gDRutils::get_identifier("cellline")]
     if (any(bad_CL)) {
         futile.logger::flog.warn("Cell line ID %s not found in cell line database",
                      paste(CLIDs[bad_CL], collapse = " ; "))
