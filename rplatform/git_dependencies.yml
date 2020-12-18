@@ -2,12 +2,12 @@ pkgs:
   gDRutils:
     ver: '>=0.0.14'
     url: https://github.roche.com/gdrplatform/gDRutils.git
-    ref: GDR-326
+    ref: master
     subdir: gDRutils
   GeneDataScreenR:
     ver: ">=0.99.16"
     url: https://github.roche.com/bczech/GeneDataScreenR.git
-    ref: HTSEQ-748
+    ref: gDR
     subdir: ~
   kcloak:
     ver: '>=0.0.3'
@@ -17,5 +17,5 @@ pkgs:
   gDRwrapper:
     ver: '>=0.1.47'
     url: https://github.roche.com/gdrplatform/gDRwrapper.git
-    ref: GDR-326_2
+    ref: master
     subdir: gDRwrapper
