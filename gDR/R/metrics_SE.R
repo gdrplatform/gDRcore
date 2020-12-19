@@ -1,4 +1,4 @@
-metrics_SE = function(avgSE, studyConcThresh = 4) {
+metrics_SE <- function(avgSE, studyConcThresh = 4) {
 
     # Assertions:
     checkmate::assert_class(avgSE, "SummarizedExperiment")

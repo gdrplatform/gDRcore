@@ -56,7 +56,7 @@ normalize_SE <- function(df_raw_data,
 
     # enforced key values for end points (override selected_keys) --> for rows of the SE
     Keys$untrt_Endpoint <- setdiff(Keys$untrt_Endpoint, names(key_values))
-    row_endpoint_value_filter <- array(TRUE, nrow(ctrlSE))
+    row_endpoint_value_filter <- rep(TRUE, nrow(ctrlSE))
     if (!is.null(key_values) & length(key_values) > 0) {
         for (i in which(names(key_values) %in% names(SummarizedExperiment::rowData(ctrlSE)))) {
             if (is.numeric(key_values[i])) {
@@ -154,7 +154,7 @@ normalize_SE <- function(df_raw_data,
               next
             }
             df_end <- df_end[, c("CorrectedReadout",
-                    intersect(Keys$untrt_Endpoint, colnames(df_end))), drop = F]
+                    intersect(Keys$untrt_Endpoint, colnames(df_end))), drop = FALSE]
             colnames(df_end)[1] <- "UntrtReadout"
             if (ncol(df_end)>1) {
               df_end <- aggregate(df_end[, 1, drop = FALSE],

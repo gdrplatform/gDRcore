@@ -1,28 +1,28 @@
 #' add_CellLine_annotation
 #'
-#' add cellline annotation to a dataframe with metadata
+#' add cellline annotation to a data.frame with metadata
 #'
-#' @param df_metadata a dataframe with metadata
-#' @param fill_DB_wiith_unknown a logical indicating whether DB should be filled with unknown cell lines
+#' @param df_metadata a data.frame with metadata
+#' @param fill_DB_with_unknown a logical indicating whether DB should be filled with unknown cell lines
 #' 
-#' @return a dataframe with metadata with annotated cell lines
+#' @return a data.frame with metadata with annotated cell lines
 #' @export
 
 add_CellLine_annotation <- function(df_metadata,
-                                    fill_DB_wiith_unknown = FALSE) {
+                                    fill_DB_with_unknown = FALSE) {
   
     # Assertions:
     stopifnot(inherits(df_metadata, "data.frame"))
-    checkmate::assert_logical(fill_DB_wiith_unknown)
+    checkmate::assert_logical(fill_DB_with_unknown)
     
     DB_cellid_header <- "cell_line_identifier"
     DB_cell_annotate <- c("cell_line_name", "primary_tissue", "doubling_time")
     # corresponds to columns gDRutils::get_header("add_clid"): name, tissue, doubling time
     
     # the logic of adding celline annotation for df_metadata is based on the function get_cell_lines from the gDRwrapper
-    # we added additional parameter 'fill_DB_wiith_unknown' that allows to fill the DB with clid info for these cell lines
+    # we added additional parameter 'fill_DB_with_unknown' that allows to fill the DB with clid info for these cell lines
     # that are not present in the DB.
-    # Other fields are set as "UNKNOWN". If the fill_DB_wiith_unknown is set as FALSE we add unkonown cell lines
+    # Other fields are set as "UNKNOWN". If the fill_DB_with_unknown is set as FALSE we add unknown cell lines
     # only to the tibble.
     # This approach will be corrected once we will implement final solution for adding cell lines.
     validateCLs <- gDRwrapper::validate_cell_lines(unique(df_metadata[,gDRutils::get_identifier("cellline")]))
@@ -34,7 +34,7 @@ add_CellLine_annotation <- function(df_metadata,
                                             primary_tissue = "UNKNOWN",
                                             subtype = "UNKNOWN")
       
-      if(fill_DB_wiith_unknown){
+      if(fill_DB_with_unknown){
         addMissingCellLines <- gDRwrapper::add_drugs(missingTblCellLines)
       }
     }
@@ -60,7 +60,7 @@ add_CellLine_annotation <- function(df_metadata,
         temp_CLIDs[, 1+(2:length(gDRutils::get_header("add_clid")))] = NA
         colnames(temp_CLIDs) = c(gDRutils::get_identifier("cellline"),
                       gDRutils::get_header("add_clid"))
-        CLs_info = rbind(CLs_info, temp_CLIDs)
+        CLs_info <- rbind(CLs_info, temp_CLIDs)
         }
 
     futile.logger::flog.info("Merge with Cell line info")
@@ -74,30 +74,30 @@ add_CellLine_annotation <- function(df_metadata,
 
 #' add_Drug_annotation
 #'
-#' add drug annotation to a dataframe with metadata
+#' add drug annotation to a data.frame with metadata
 #'
-#' @param df_metadata a dataframe with metadata
-#' @param fill_DB_wiith_unknown a logical indicating whether DB should be filled with unknown drugs
+#' @param df_metadata a data.frame with metadata
+#' @param fill_DB_with_unknown a logical indicating whether DB should be filled with unknown drugs
 #' 
 #'
-#' @return a dataframe with metadata with annotated drugs
+#' @return a data.frame with metadata with annotated drugs
 #' @export
 
 
 add_Drug_annotation <- function(df_metadata,
-                                fill_DB_wiith_unknown = FALSE) {
+                                fill_DB_with_unknown = FALSE) {
   
         # Assertions:
         stopifnot(inherits(df_metadata, "data.frame"))
-        checkmate::assert_logical(fill_DB_wiith_unknown)
+        checkmate::assert_logical(fill_DB_with_unknown)
   
         nrows_df <- nrow(df_metadata)
 
         DB_drug_identifier <- "gnumber"
         # the logic of adding drug annotation for df_metadata is based on the function get_drugs from the gDRwrapper
-        # we added additional parameter 'fill_DB_wiith_unknown' that allows to fill the DB with drug_name and gnumber, for these drugs,
+        # we added additional parameter 'fill_DB_with_unknown' that allows to fill the DB with drug_name and gnumber, for these drugs,
         # that are not present in the DB
-        # Other fields are set as "UNKNOWN". If the fill_DB_wiith_unknown is set as FALSE we add unkonown cell lines
+        # Other fields are set as "UNKNOWN". If the fill_DB_with_unknown is set as FALSE we add unkonown cell lines
         # only to the tibble.
         # This approach will be corrected once we will implement final solution for adding cell lines.
 
@@ -109,7 +109,7 @@ add_Drug_annotation <- function(df_metadata,
           missingTblDrugs <- tibble::tibble(drug_name = drugsTreated,
                                             drug_moa = "UNKNOWN",
                                             gnumber = drugsTreated)
-          if(fill_DB_wiith_unknown){
+          if(fill_DB_with_unknown){
             addMissingDrugs <- gDRwrapper::add_drugs(missingTblDrugs)
           }
           

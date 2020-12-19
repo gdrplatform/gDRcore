@@ -298,7 +298,7 @@ Order_result_df <- function (df_) {
         paste0(c(
           paste0(gDRutils::get_identifier("drugname"), "_"), "Concentration_"
         ),
-        sort(c(2:10, 2:10))),
+        sort(rep(2:10, 2))),
         setdiff(colnames(df_), c(
           gDRutils::get_header("ordered_1"), gDRutils::get_header("ordered_2")
         ))
