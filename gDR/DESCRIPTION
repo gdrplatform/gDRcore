@@ -23,11 +23,11 @@ Imports:
     drc,
     S4Vectors,
     gDRutils (>= 0.0.14),
-    GeneDataScreenR,
     gDRwrapper (>= 0.1.47)
 Suggests:
     futile.logger,
     gCSIutils,
+    GeneDataScreenR (>= 0.99.16),
     knitr,
     readr,
     yaml
