@@ -22,9 +22,9 @@ Imports:
     readxl,
     drc,
     S4Vectors,
-    gDRutils,
+    gDRutils (>= 0.0.14),
     GeneDataScreenR,
-    gDRwrapper
+    gDRwrapper (>= 0.1.47)
 Suggests:
     futile.logger,
     gCSIutils,
