@@ -9,16 +9,16 @@ pkgs:
     url: https://github.roche.com/bczech/GeneDataScreenR.git
     ref: gDR
     subdir: ~
-  gDRwrapper:
-    ver: '>=0.1.47'
-    url: https://github.roche.com/gdrplatform/gDRwrapper.git
-    ref: master
-    subdir: gDRwrapper
   gDRutils:
     ver: '>=0.0.14'
     url: https://github.roche.com/gdrplatform/gDRutils.git
     ref: master
     subdir: gDRutils
+  gDRwrapper:
+    ver: '>=0.1.47'
+    url: https://github.roche.com/gdrplatform/gDRwrapper.git
+    ref: master
+    subdir: gDRwrapper
   kcloak:
     ver: '>=0.0.3'
     url: ssh://git@stash.intranet.roche.com:7999/faciledata/kcloak.git
