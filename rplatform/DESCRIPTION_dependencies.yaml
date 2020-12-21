@@ -1,10 +1,10 @@
 openxlsx: '*'
 reshape2: '*'
 httr: '*'
+data.table: '*'
 XML: '*'
 plyr: '*'
 readr: '*'
-dplyr: == 0.8.5
 stringr: '*'
 readxl: '*'
 drc: '*'

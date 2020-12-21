@@ -12,7 +12,7 @@ library(magrittr)
 standardize_df <- function(df) {
   # Assertions:
   stopifnot(inherits(df, "data.frame"))
-  df %>% dplyr::mutate_all(as.character)
+  data.frame(lapply(df, as.character))
 }
 
 #' read_ref_data
@@ -82,7 +82,7 @@ write_ref_data_se <- function(se, outDir, prefix = "ref") {
 #assays
   myL <- lapply(SummarizedExperiment::assayNames(se), function(x) {
     outFile <- file.path(outDir, paste0(prefix, "_assay_", x, ".tsv"))
-    write.table(gDRutils::assay_to_df(se, x, merge_metrics = TRUE), outFile, sep = "\t", quote = FALSE, row.names = FALSE)
+    write.table(gDRutils::assay_to_dt(se, x, merge_metrics = TRUE), outFile, sep = "\t", quote = FALSE, row.names = FALSE)
   })
 
   #df_raw_data from metadata
@@ -151,7 +151,7 @@ test_se_normalized <- function(se, lRef) {
   checkmate::assert_list(lRef)
 
     x = "Normalized"
-    xAs <- gDRutils::assay_to_df(se, x, merge_metrics = TRUE)
+    xAs <- gDRutils::assay_to_dt(se, x, merge_metrics = TRUE)
     xAs$DrugName <- as.character(xAs$DrugName)
     xDf <- lRef[[paste0("assay_", x)]]
     if(x %in% c("Controls", "Avg_Controls")){
@@ -178,7 +178,7 @@ test_se <- function(se, lRef) {
   checkmate::assert_list(lRef)
   
   x <- standardize_df(metadata(se)$df_raw_data)
-  y <- standardize_df(tibble::tibble(lRef$df_raw_data))
+  y <- standardize_df(data.table::data.table(lRef$df_raw_data))
   class(y) <- class(x)
   
   expect_equal(x, y)
@@ -189,14 +189,15 @@ test_se <- function(se, lRef) {
   #assays check
   myL <- lapply(SummarizedExperiment::assayNames(se), function(x) {
     print(x)
-    xAs <- gDRutils::assay_to_df(se, x, merge_metrics = TRUE)
+    xAs <- gDRutils::assay_to_dt(se, x, merge_metrics = TRUE)
     xAs$DrugName <- as.character(xAs$DrugName)
     xDf <- lRef[[paste0("assay_", x)]]
     if(x %in% c("Controls", "Avg_Controls")){
     xDf$DivisionTime <- as.numeric(xDf$DivisionTime)
     }
     expect_true(nrow(xAs) == nrow(xDf))
-    expect_equal(xAs, data.frame(xDf), tolerance = 1e-5)
+    expect_equivalent(sort(xAs[, order(names(xAs))]), 
+                      sort(data.table::as.data.table(xDf)[, order(names(xDf))]), tolerance = 1e-5)
   })
 }
 
@@ -216,7 +217,7 @@ test_synthetic_normalization <- function(se, refNormalizedTsv) {
   checkmate::assert_class(se, "SummarizedExperiment")
   stopifnot(inherits(refNormalizedTsv, "data.frame"))
   
-  xAs <- gDRutils::assay_to_df(se, "Normalized")
+  xAs <- gDRutils::assay_to_dt(se, "Normalized")
   xRef <- refNormalizedTsv[refNormalizedTsv$Concentration>0 , ]
   expect_true(nrow(xAs) == nrow(xRef))
 
