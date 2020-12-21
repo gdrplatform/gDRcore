@@ -9,23 +9,13 @@ Description: Pipeline to process drug dose-response data and calculate GR values
 License: file GNE_LICENSE
 LazyLoad: yes
 Imports:
-<<<<<<< HEAD
     BumpyMatrix,
-    dplyr (== 0.8.5),
+    data.table,
     drc,
     gDRutils,
     GeneDataScreenR,
     gDRwrapper,
     httr,
-=======
-    openxlsx,
-    reshape2,
-    httr,
-    data.table,
-    XML,
-    plyr,
-    readr,
->>>>>>> master
     kcloak (>= 0.0.3),
     magrittr,
     openxlsx,
