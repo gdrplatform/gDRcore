@@ -16,7 +16,7 @@ Imports:
     XML,
     plyr,
     readr,
-    kcloak (>= 0.0.3),
+    kcloak (>= 0.0.8),
     magrittr,
     stringr,
     readxl,

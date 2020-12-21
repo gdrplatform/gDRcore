@@ -10,8 +10,8 @@ pkgs:
     ref: gDR
     subdir: ~
   kcloak:
-    ver: '>=0.0.3'
-    url: ssh://git@stash.intranet.roche.com:7999/faciledata/kcloak.git
+    ver: '>=0.0.8'
+    url: ssh://git@bitbucket.roche.com:7999/genomics/kcloak.git
     ref: master
     subdir: ~
   gDRwrapper:
