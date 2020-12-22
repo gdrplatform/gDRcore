@@ -1,6 +1,10 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+#### [0.1.30] - 2020-12-21
+#### Improved
+- minor clean-up
+
 #### [0.1.29] - 2020-12-15
 #### Improved
 - remove dplyr
