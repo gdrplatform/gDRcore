@@ -12,15 +12,13 @@ pkgs:
   gDRutils:
     ver: '>=0.0.14'
     url: https://github.roche.com/gdrplatform/gDRutils.git
-    ref: master
-    subdir: gDRutils
   gDRwrapper:
     ver: '>=0.1.47'
     url: https://github.roche.com/gdrplatform/gDRwrapper.git
     ref: master
     subdir: gDRwrapper
   kcloak:
-    ver: '>=0.0.3'
-    url: ssh://git@stash.intranet.roche.com:7999/faciledata/kcloak.git
+    ver: '>=0.0.8'
+    url: ssh://git@bitbucket.roche.com:7999/genomics/kcloak.git
     ref: master
-    subdir: ~
+    subdir: gDRutils
