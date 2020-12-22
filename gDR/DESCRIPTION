@@ -13,7 +13,7 @@ Imports:
     data.table,
     drc,
     gDRutils (>= 0.0.14),
-    gDRwrapper (>= 0.1.47)
+    gDRwrapper (>= 0.1.47),
     httr,
     kcloak (>= 0.0.8),
     magrittr,
