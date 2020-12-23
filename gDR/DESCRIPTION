@@ -28,6 +28,7 @@ Imports:
 Suggests:
     futile.logger,
     gCSIutils,
+    gDRinternal (>= 0.0.6),
     GeneDataScreenR (>= 0.99.16),
     knitr,
     yaml

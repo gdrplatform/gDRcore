@@ -6,9 +6,14 @@ pkgs:
     subdir: ~
   GeneDataScreenR:
     ver: ">=0.99.16"
-    url: https://github.roche.com/bczech/GeneDataScreenR.git
-    ref: gDR
+    url: https://github.roche.com/FunctionalGenomics/GeneDataScreenR.git
+    ref: master
     subdir: ~
+  gDRinternal:
+    ver: '>=0.0.6'
+    url: https://github.roche.com/gdrplatform/gDRinternal.git
+    ref: GDR-602
+    subdir: gDRinternal
   gDRutils:
     ver: '>=0.0.14'
     url: https://github.roche.com/gdrplatform/gDRutils.git
