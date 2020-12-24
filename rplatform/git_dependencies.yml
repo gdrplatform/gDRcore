@@ -27,5 +27,5 @@ pkgs:
   gDRinternal:
     ver: '>=0.0.6'
     url: https://github.roche.com/gdrplatform/gDRinternal.git
-    ref: GDR-602
+    ref: master
     subdir: gDRinternal
