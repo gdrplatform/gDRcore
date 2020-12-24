@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.32] - 2020-12-24
+#### Update
+- switch from GeneDataScreenR to gDRinternal from QCS to gDR functions
+
 #### [0.1.31] - 2020-12-22
 #### Added
 - make createSE returning assays as 'BumpyMatrix' objects (previously 'matrix' objects only)
