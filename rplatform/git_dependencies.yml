@@ -1,21 +1,31 @@
 pkgs:
+  BumpyMatrix:
+    ver: ">=0.99.0"
+    url: https://github.roche.com/gdrplatform/BumpyMatrix.git
+    ref: master
+    subdir: ~
+  GeneDataScreenR:
+    ver: ">=0.99.16"
+    url: https://github.roche.com/FunctionalGenomics/GeneDataScreenR.git
+    ref: master
+    subdir: ~
   gDRutils:
-    ver: '>=0.0.13'
+    ver: '>=0.0.14'
     url: https://github.roche.com/gdrplatform/gDRutils.git
     ref: master
     subdir: gDRutils
-  GeneDataScreenR:
-    ver: ">=0.99.16"
-    url: https://github.roche.com/bczech/GeneDataScreenR.git
-    ref: HTSEQ-748
-    subdir: ~
-  kcloak:
-    ver: '>=0.0.3'
-    url: ssh://git@stash.intranet.roche.com:7999/faciledata/kcloak.git
-    ref: master
-    subdir: ~
   gDRwrapper:
-    ver: '>=0.1.42'
+    ver: '>=0.1.47'
     url: https://github.roche.com/gdrplatform/gDRwrapper.git
     ref: master
     subdir: gDRwrapper
+  kcloak:
+    ver: '>=0.0.8'
+    url: https://bitbucket.roche.com/stash/scm/genomics/kcloak.git
+    ref: master
+    subdir: ~
+  gDRinternal:
+    ver: '>=0.0.6'
+    url: https://github.roche.com/gdrplatform/gDRinternal.git
+    ref: master
+    subdir: gDRinternal

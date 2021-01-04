@@ -8,7 +8,8 @@ createSE(
   df_data,
   data_type = c("untreated", "treated", "all"),
   readout = "ReadoutValue",
-  discard_keys = NULL
+  discard_keys = NULL,
+  assay_type = c("matrix", "BumpyMatrix")
 )
 }
 \arguments{
@@ -20,6 +21,8 @@ with treated conditions only ('treated') or all}
 \item{readout}{a character that indiciated readout value in a df ('ReadoutValue' by default)}
 
 \item{discard_keys}{a vector of keys that should be discarded}
+
+\item{assay_type}{string assay type for the returned SummarizedExperiment}
 }
 \value{
 SummarizedExperiment object with dose-reponse data

@@ -130,7 +130,7 @@ load_manifest <- function(manifest_file) {
                      df_type = "manifest"
                    ))
   
-  cat_manifest_data <- dplyr::bind_rows(manifest_data)
+  cat_manifest_data <- as.data.frame(data.table::rbindlist(manifest_data))
   colnames(cat_manifest_data) <-
     check_metadata_names(colnames(cat_manifest_data), "manifest")
   
@@ -322,7 +322,7 @@ load_templates_tsv <-
       colnames(df_template) <-
         check_metadata_names(colnames(df_template),
                              df_name = template_filename[iF])
-      all_templates <- dplyr::bind_rows(all_templates, df_template)
+      all_templates <- rbind(all_templates, df_template)
       
     }
     futile.logger::flog.info("Templates loaded successfully!")
@@ -477,7 +477,7 @@ load_templates_xlsx <-
       colnames(df_template) <-
         check_metadata_names(colnames(df_template),
                              df_name = template_filename[iF])
-      all_templates <- dplyr::bind_rows(all_templates, df_template)
+      all_templates <- as.data.frame(data.table::rbindlist(list(all_templates, df_template), fill = TRUE))
       
     }
     futile.logger::flog.info("Templates loaded successfully!")
@@ -920,7 +920,8 @@ check_metadata_names <-
                               nrows = nrows,
                               fill = TRUE,
                               sep = sep)
-      df %<>% dplyr::select_if(~sum(!is.na(.)) > 0)
+      keepCols <- vapply(df, function(x) !sum(is.na(x)) > 0, logical(1))
+      df <- df[, keepCols]
       dim(df)[2]
     }, numeric(length = 1))
     pCols <- unname(sort(delimV)[-1])
