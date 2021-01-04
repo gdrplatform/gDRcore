@@ -1,6 +1,21 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+
+#### [0.1.32] - 2020-12-24
+#### Update
+- switch from GeneDataScreenR to gDRinternal from QCS to gDR functions
+
+#### [0.1.31] - 2020-12-22
+#### Added
+- make createSE returning assays as 'BumpyMatrix' objects (previously 'matrix' objects only)
+- add df_to_bm_assay function  (returning BumpyMatrix object from raw experiment data) 
+- add initial tests for createSE function
+
+#### [0.1.30] - 2020-12-21
+#### Improved
+- minor clean-up
+
 #### [0.1.29] - 2020-12-15
 #### Improved
 - remove dplyr
