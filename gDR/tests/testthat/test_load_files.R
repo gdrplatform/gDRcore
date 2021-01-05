@@ -95,7 +95,7 @@ testthat::test_that("load_data throwing expected errors", {
               df_template_files = template_file,
               results_file = results_file,
               instrument = "EnVision"),
-    "Some template files are missing: untreated.xlsx, trtmt1.xlsx"
+    "Template does not contains all expected headers for a template. Gnumber is/are required. Please correct your template."
   )
   
 })
