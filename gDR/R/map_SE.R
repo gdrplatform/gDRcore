@@ -10,12 +10,12 @@
 #'
 #' @return a list of mapping
 #' @export
-
+#'
 map_SE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE){
     # Assertions:
     checkmate::assert_class(normSE, "SummarizedExperiment")
     checkmate::assert_class(ctrlSE, "SummarizedExperiment")
-    checkmate::assert_array(row_endpoint_value_filter)
+    checkmate::assert_logical(row_endpoint_value_filter)
     checkmate::assert_list(Keys)
     checkmate::assert_logical(T0)
 

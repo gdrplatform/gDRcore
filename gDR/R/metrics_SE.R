@@ -1,3 +1,13 @@
+#' metrics_SE
+#'
+#' Calculate metrics for DR data
+#'
+#' @param avgSE a SummarizedExperiment with averaged and normalized assays
+#' @param studyConcThresh a numeric with study concentration threshold (4 by default)
+#'
+#' @return a SummarizedExperiment with additional assay with metrics
+#' @export
+#'
 metrics_SE <- function(avgSE, studyConcThresh = 4) {
 
     # Assertions:
