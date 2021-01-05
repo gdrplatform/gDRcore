@@ -25,7 +25,7 @@ Imports:
     reshape2,
     S4Vectors,
     stringr,
-    xlsx,
+    writexl,
     XML
 Suggests:
     futile.logger,
