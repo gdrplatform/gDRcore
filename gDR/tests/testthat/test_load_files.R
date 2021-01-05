@@ -6,11 +6,14 @@ library("gDR")
 testDataDir <- system.file(package = "gDR", "testdata", "data6")
 
 manifest_file <-
-  list.files(testDataDir, pattern = "Manifest_*", full.names = TRUE)
+  list.files(testDataDir, pattern = "Manifest_*", full.names = TRUE) %>%
+  grep("anonym", ., invert = TRUE, value = TRUE)
 template_file = file.path(testDataDir, c('trtmt1.xlsx',
-                                         'untreated.xlsx'))
+                                         'untreated.xlsx')) %>%
+  grep("anonym", ., invert = TRUE, value = TRUE)
 results_file <-
-  list.files(testDataDir, pattern = "12\\w*", full.names = TRUE)
+  list.files(testDataDir, pattern = "12\\w*", full.names = TRUE) %>%
+  grep("anonym", ., invert = TRUE, value = TRUE)
 
 lRef <- read_ref_data(testDataDir)
 
