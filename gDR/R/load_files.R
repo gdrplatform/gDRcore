@@ -27,11 +27,11 @@ load_data <-
     if (is.data.frame(df_template_files)) {
       # for the shiny app
       template_file <- df_template_files$datapath
-      is.readable.v(template_file)
+      is_readable_v(template_file)
       template_filename <- df_template_files$name
     } else {
       template_filename <- df_template_files
-      is.readable.v(template_filename)
+      is_readable_v(template_filename)
     }
     
     manifest <- load_manifest(manifest_file)
@@ -55,7 +55,6 @@ load_data <-
       data = data
     ))
   }
-
 
 
 #' Load manifest
@@ -188,6 +187,7 @@ load_templates <- function (df_template_files) {
   
 }
 
+
 #' Load results
 #'
 #' This functions loads and checks the results file(s)
@@ -196,7 +196,7 @@ load_templates <- function (df_template_files) {
 #' or character with file path of results file(s)
 #' @param intrument character
 #' @export
-#' @export
+#'
 load_results <-
   function(df_results_files, instrument = "EnVision") {
     stopifnot(any(inherits(df_results_files, "data.frame"), checkmate::test_character(df_results_files)))
@@ -220,7 +220,6 @@ load_results <-
     }
     return(all_results)
   }
-
 
 
 # individual functions
@@ -329,12 +328,14 @@ load_templates_tsv <-
     return(all_templates)
   }
 
+
 #' Load templates from xlsx
 #'
 #' This functions loads and checks the template file(s)
 #'
 #' @param template_file character, file path(s) to template(s)
 #' @param template_filename character, file name(s)
+#'
 load_templates_xlsx <-
   function(template_file,
            template_filename = NULL) {
@@ -484,11 +485,13 @@ load_templates_xlsx <-
     return(all_templates)
   }
 
+
 #' Load results from tsv
 #'
 #' This functions loads and checks the results file(s)
 #'
 #' @param results_file character, file path(s) to template(s)
+#'
 load_results_tsv <-
   function(results_file) {
     # results_file is a string or a vector of strings
@@ -793,7 +796,7 @@ check_metadata_names <-
       if (any(!headersOK)) {
         stop(
           sprintf(
-            "Template does not contains all expected headers for a %s. %s is/are required. Please correct your template.",
+            "Template does not contains all expected headers for a '%s'. '%s' is/are required. Please correct your template.",
             df_type,
             toString(expected_headers[!(expected_headers %in% col_df)])
           )

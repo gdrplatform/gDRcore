@@ -6,9 +6,9 @@
 #' @param TrtKeys a vector of keys used for averaging (NULL by default)
 #'
 #' @return a SummarizedExperiment with additional assay with averaged DR data
+#'
 #' @export
 #'
-
 average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 
   # Assertions:
@@ -30,7 +30,7 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
     SummarizedExperiment::assay(avgSE, "Averaged") <- SummarizedExperiment::assay(avgSE, "Normalized")
     avgSE <- aapply(avgSE, function(x) {
         # bypass 'masked' filter
-        x$masked = x$masked & !include_masked
+        x$masked <- x$masked & !include_masked
 
         subKeys <- intersect(TrtKeys, colnames(x))
         if (sum(!x$masked) >= 1) {
