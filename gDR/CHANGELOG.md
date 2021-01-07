@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.33] - 2021-01-05
+#### Update
+- anonymize test data
+
 #### [0.1.32] - 2020-12-24
 #### Update
 - switch from GeneDataScreenR to gDRinternal from QCS to gDR functions
