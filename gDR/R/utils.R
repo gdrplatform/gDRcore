@@ -8,7 +8,7 @@
 #'
 #' @return a dataframe with merged data
 #' @export
-
+#'
 merge_data <- function(manifest, treatments, data) {
   # Assertions:
   stopifnot(inherits(manifest, "data.frame"))
@@ -27,9 +27,10 @@ merge_data <- function(manifest, treatments, data) {
       colnames(manifest)[toupper(m_col) == toupper(colnames(manifest))]
     futile.logger::flog.trace("Header %s in templates corrected to match case with manifest", m_col)
   }
+
   # merge manifest and treatment files first
   df_metadata <- merge(manifest, treatments, by = "Template")
-  futile.logger::flog.info("Merging the metadata (manifest and treatment files")
+  futile.logger::flog.info("Merging the metadata (manifest and treatment files)")
 
   # sort out duplicate metadata columns
   duplicated_col <-
@@ -39,9 +40,11 @@ merge_data <- function(manifest, treatments, data) {
       df_metadata[, paste0(m_col, ".y")] # parse template values
     missing_idx <-
       is.na(df_metadata[, m_col]) | df_metadata[, m_col] %in% c("", "-")
+
     # add manifest values when missing in template
     df_metadata[missing_idx, m_col] <-
       df_metadata[missing_idx, paste0(m_col, ".x")]
+
     # check for conflicts
     double_idx <- !(is.na(df_metadata[, paste0(m_col, ".x")]) |
                       df_metadata[, paste0(m_col, ".x")] %in% c("", "-")) &
@@ -67,7 +70,6 @@ merge_data <- function(manifest, treatments, data) {
     ))
   }
 
-
   # remove wells not labeled
   df_metadata_trimmed <-
     df_metadata[!is.na(df_metadata[, gDRutils::get_identifier("drug")]),]
@@ -81,7 +83,7 @@ merge_data <- function(manifest, treatments, data) {
   stopifnot(dim(cleanedup_metadata)[1] == dim(df_metadata_trimmed)[1]) # should not happen
 
   df_merged <- merge(cleanedup_metadata, data, by = c("Barcode",
-                                                      gDRutils::get_identifier("WellPosition")))
+                                                      gDRutils::get_identifier("well_position")))
   if (dim(df_merged)[1] != dim(data)[1]) {
     # need to identify issue and output relevant warning
     futile.logger::flog.warn("merge_data: Not all results have been matched with treatments;
@@ -108,79 +110,6 @@ merge_data <- function(manifest, treatments, data) {
   return(df_raw_data)
 }
 
-#' identify_keys
-#'
-#' Identify keys in the DR data represented by dataframe or SummarizedExperiment or MultiAssayExperiment objects
-#'
-#' @param df_se_mae a dataframe or SummarizedExperiment or MultiassayExperiment with keys
-#'
-#' @return a list of keys
-#' @export
-#'
-
-identify_keys <- function(df_se_mae) {
-
-  # Assertions:
-  stopifnot(inherits(df_se_mae, c("data.frame", "MultiAssayExperiment", "SummarizedExperiment")))
-
-
-    if (any(class(df_se_mae) %in% c("MultiAssayExperiment", "SummarizedExperiment"))) {
-        if ("MultiAssayExperiment" %in% class(df_se_mae)) {
-            # if MAE, convert to SE based on the treated SE (could be optimized)
-            df_se_mae <- df_se_mae[["treated"]]
-            se_untrt <-  df_se_mae[["untreated"]]
-        } else se_untrt <- NULL
-        all_keys <- unique(c(
-            colnames(SummarizedExperiment::rowData(df_se_mae)),
-            colnames(SummarizedExperiment::colData(df_se_mae)),
-            unlist(lapply(SummarizedExperiment::assay(df_se_mae), colnames))))
-    } else { # case of a data frame
-        all_keys <- colnames(df_se_mae)
-    }
-
-    keys <- list(Trt = setdiff(all_keys, "Barcode"),
-            DoseResp = setdiff(all_keys,  "Barcode"),
-            ref_Endpoint = setdiff(all_keys, c("Concentration",
-                                            gDRutils::get_identifier("drug"),
-                                            gDRutils::get_identifier("drugname"))),
-            untrt_Endpoint = all_keys[ c(-agrep("Concentration", all_keys),
-                                            -agrep(gDRutils::get_identifier("drug"), all_keys),
-                                            -agrep(gDRutils::get_identifier("drugname"), all_keys))])
-    keys[["Day0"]] <- setdiff(keys[["untrt_Endpoint"]], gDRutils::get_identifier("duration"))
-    keys <- lapply(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),
-        gDRutils::get_header("normalized_results"), "Template", gDRutils::get_identifier("WellPosition"), gDRutils::get_header("averaged_results"),
-            gDRutils::get_header("metrics_results"), "ReferenceDivisionTime"
-    )))
-    keys <- lapply(keys, sort)
-
-    # check if all values of a key is NA
-    for (k in keys[["untrt_Endpoint"]]) {
-
-        if ("SummarizedExperiment" %in% class(df_se_mae)) {
-            # check the metadata fields for NA
-            if (k %in% colnames(SummarizedExperiment::rowData(df_se_mae))) df_ <- SummarizedExperiment::rowData(df_se_mae)
-            else if (k %in% colnames(SummarizedExperiment::colData(df_se_mae))) df_ <- SummarizedExperiment::colData(df_se_mae)
-            else next # not a metadata
-
-            if (all(is.na(df_[,k]))) keys <- lapply(keys, function(x) setdiff(x, k))
-
-            if (!is.null(se_untrt) && k %in% colnames(SummarizedExperiment::rowData(se_untrt))) {
-                df_ <- SummarizedExperiment::rowData(se_untrt)
-                if (all(is.na(df_[df_[,gDRutils::get_identifier("duration")] == 0, k]))) {
-                    keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
-                }
-            }
-        } else { # case of a data frame
-            if (all(is.na(df_se_mae[, k]))) {
-                keys <- lapply(keys, function(x) setdiff(x, k))
-            }
-            if (all(is.na(df_se_mae[df_se_mae[,gDRutils::get_identifier("duration")] == 0, k]))) {
-                keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
-            }
-        }
-    }
-  return(keys)
-}
 
 #' cleanup_metadata
 #'
@@ -191,7 +120,7 @@ identify_keys <- function(df_se_mae) {
 #' @return a dataframe with cleaned metadata
 #'
 #' @export
-
+#'
 cleanup_metadata <- function(df_metadata) {
 
   # Assertions:
@@ -208,7 +137,7 @@ cleanup_metadata <- function(df_metadata) {
       c(
         gDRutils::get_identifier("cellline"),
         gDRutils::get_header("manifest"),
-        gDRutils::get_identifier("WellPosition")
+        gDRutils::get_identifier("well_position")
       ),
       collapse = "|"
     ), colnames(df_metadata))
@@ -265,7 +194,6 @@ cleanup_metadata <- function(df_metadata) {
 }
 
 
-
 #' Order_result_df
 #'
 #' Order a dataframe with results
@@ -311,8 +239,9 @@ Order_result_df <- function (df_) {
   return(df_)
 }
 
+
 standardize_record_values <- function(x, dictionary = DICTIONARY){
-  for (i in 1:length(dictionary)) {
+  for (i in seq_len(length(dictionary))) {
     x[x == names(dictionary[i])] <- dictionary[[i]]
   }
   x

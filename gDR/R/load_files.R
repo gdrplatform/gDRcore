@@ -250,17 +250,17 @@ load_templates_tsv <-
     dump <- sapply(1:length(template_file),
                    function(i)
                      if (!(all(
-                       gDRutils::get_identifier("WellPosition") %in% colnames(templates[[i]])
+                       gDRutils::get_identifier("well_position") %in% colnames(templates[[i]])
                      ))) {
                        futile.logger::flog.info("%s missing, %s as header",
                                                 template_filename[[i]],
-                                                gDRutils::get_identifier("WellPosition"))
+                                                gDRutils::get_identifier("well_position"))
                      })
     # check drug_identifier is present in each df
     dump <- sapply(1:length(template_file),
                    function(i)
                      check_metadata_names(
-                       setdiff(colnames(templates[[i]]), gDRutils::get_identifier("WellPosition")),
+                       setdiff(colnames(templates[[i]]), gDRutils::get_identifier("well_position")),
                        df_name = template_filename[[i]],
                        df_type = "template"
                      ))
@@ -521,14 +521,14 @@ load_results_tsv <-
       }
       
       for (coln in c("Barcode",
-                     gDRutils::get_identifier("WellPosition"),
+                     gDRutils::get_identifier("well_position"),
                      "ReadoutValue")) {
         if (!(coln %in% colnames(df))) {
           futile.logger::flog.error("%s needs to be a column of %s", coln, results_filename[iF])
         }
       }
-      if (dim(unique(df[, c("Barcode", gDRutils::get_identifier("WellPosition"))]))[1] !=
-          dim(df[, c("Barcode", gDRutils::get_identifier("WellPosition"))])[1]) {
+      if (dim(unique(df[, c("Barcode", gDRutils::get_identifier("well_position"))]))[1] !=
+          dim(df[, c("Barcode", gDRutils::get_identifier("well_position"))])[1]) {
         futile.logger::flog.error("Multiple rows with the same Barcode and Well in %s",
                                   results_filename[iF])
       }
@@ -541,8 +541,8 @@ load_results_tsv <-
       futile.logger::flog.info("File done")
     }
     
-    if (dim(unique(df[, c("Barcode", gDRutils::get_identifier("WellPosition"))]))[1] !=
-        dim(df[, c("Barcode", gDRutils::get_identifier("WellPosition"))])[1]) {
+    if (dim(unique(df[, c("Barcode", gDRutils::get_identifier("well_position"))]))[1] !=
+        dim(df[, c("Barcode", gDRutils::get_identifier("well_position"))])[1]) {
       futile.logger::flog.error("Multiple rows with the same Barcode and Well across all files")
     }
     
@@ -834,7 +834,7 @@ check_metadata_names <-
       }
     }
     check_headers <-
-      setdiff(gDRutils::get_header("reserved"), gDRutils::get_identifier("WellPosition"))
+      setdiff(gDRutils::get_header("reserved"), gDRutils::get_identifier("well_position"))
     
     
     corrected_names <- col_df
