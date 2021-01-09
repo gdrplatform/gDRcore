@@ -219,7 +219,7 @@ Order_result_df <- function (df_) {
   row_order_col <-
     intersect(
       c(
-        gDRutils::get_header("add_clid")[1],
+        gDRutils::get_identifier("cellline_name"),
         gDRutils::get_identifier("duration"),
         gDRutils::get_identifier("drugname"),
         "Concentration",

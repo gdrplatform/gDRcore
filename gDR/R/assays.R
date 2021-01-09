@@ -1,13 +1,19 @@
 #' @import S4Vectors
 
 #### AUXILIARY FUNCTIONS ####
-.drugNameRegex <- "^DrugName$|^DrugName_[[:digit:]]+$"
-.untreateDrugNameRegex <- "^untreated$|^vehicle$|^Vehicle$|^Untreated$"
+.drugNameRegex <- sprintf("^%s$|^%s_[[:digit:]]+$", 
+                          gDRutils::get_identifier("drugname"), 
+                          gDRutils::get_identifier("drugname"))
+
+.untreated_tag_patterns <- vapply(gDRutils::get_identifier("untreated_tag"), function(x) {sprintf("^%s$", x)}, character(1))
+.untreatedDrugNameRegex <- paste(.untreated_tag_patterns, collapse="|")
+
 .assayNames <-
   c("df_raw_data",
     "df_normalized",
     "df_averaged",
     "df_metrics")
+
 
 #' .get_untreated_conditions
 #'
@@ -21,8 +27,8 @@
   function(drug_data) {
     # Assertions:
     stopifnot(any(inherits(drug_data, "data.frame"), inherits(drug_data, "DataFrame")))
-    unlist(subset(as.data.frame(drug_data),
-           grepl(.untreateDrugNameRegex, DrugName), select = "name_"))
+    drugnames <- tolower(as.data.frame(drug_data)[, gDRutils::get_identifier("drugname")])
+    drug_data[grepl(.untreatedDrugNameRegex, drugnames), "name_"]
   }
 
 #' .get_treated_conditions
@@ -37,8 +43,8 @@
   function(drug_data) {
     # Assertions:
     stopifnot(any(inherits(drug_data, "data.frame"), inherits(drug_data, "DataFrame")))
-    unlist(subset(as.data.frame(drug_data),
-           !grepl(.untreateDrugNameRegex, DrugName), select = "name_"))
+    drugnames <- tolower(as.data.frame(drug_data)[, gDRutils::get_identifier("drugname")])
+    drug_data[!grepl(.untreatedDrugNameRegex, drugnames), "name_"]
   }
 
 
