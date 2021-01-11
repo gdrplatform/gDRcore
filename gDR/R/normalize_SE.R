@@ -35,38 +35,40 @@ normalize_SE <- function(df_raw_data,
     } 
     Keys$discard_keys <- discard_keys
     if (!is.null(selected_keys)) {
-        Keys[names(selected_keys)] <- selected_keys[names(selected_keys)]
+      Keys[names(selected_keys)] <- selected_keys[names(selected_keys)]
     }
     if (!is.null(discard_keys)) {
       Keys$DoseResp <- setdiff(Keys$DoseResp, discard_keys)
     }
 
     # adding 'masked = F' if missing from df_raw_data
-    if ( !(gDRutils::get_identifier('masked_tag') %in% colnames(df_raw_data))) {
-      df_raw_data[,gDRutils::get_identifier('masked_tag')] = FALSE
+    if (!(gDRutils::get_identifier('masked_tag') %in% colnames(df_raw_data))) {
+      df_raw_data[,gDRutils::get_identifier('masked_tag')] <- FALSE
     }
 
     # remove background value to readout (at least 1e-10 to avoid artefactual normalized values)
-    df_raw_data$CorrectedReadout = pmax(df_raw_data$ReadoutValue -
+    df_raw_data$CorrectedReadout <- pmax(df_raw_data$ReadoutValue -
                     df_raw_data$BackgroundValue, 1e-10)
     # creates the DataFrameMatrix and fill with the treated/untreated data
-    normSE <- gDR::createSE(df_raw_data, data_type = "treated", discard_keys = discard_keys)
-    SummarizedExperiment::assayNames(normSE) = "Normalized"
-    ctrlSE <- gDR::createSE(df_raw_data, data_type = "untreated", discard_keys = discard_keys)
+    normSE <- gDR::create_SE(df_raw_data, data_type = "treated", discard_keys = discard_keys)
+    SummarizedExperiment::assayNames(normSE) <- "Normalized"
+    ctrlSE <- gDR::create_SE(df_raw_data, data_type = "untreated", discard_keys = discard_keys)
 
     # enforced key values for end points (override selected_keys) --> for rows of the SE
     Keys$untrt_Endpoint <- setdiff(Keys$untrt_Endpoint, names(key_values))
     row_endpoint_value_filter <- rep(TRUE, nrow(ctrlSE))
     if (!is.null(key_values) & length(key_values) > 0) {
-        for (i in which(names(key_values) %in% names(SummarizedExperiment::rowData(ctrlSE)))) {
-            if (is.numeric(key_values[i])) {
-                row_endpoint_value_filter <- row_endpoint_value_filter &
-                    (SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ] == key_values[i] &
-                            !is.na(SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ]))
-            } else {
-                row_endpoint_value_filter <- row_endpoint_value_filter &
-                    (SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ] %in% key_values[i])
-            }}}
+      for (i in which(names(key_values) %in% names(SummarizedExperiment::rowData(ctrlSE)))) {
+	if (is.numeric(key_values[i])) {
+	  row_endpoint_value_filter <- row_endpoint_value_filter &
+	      (SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ] == key_values[i] &
+		      !is.na(SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ]))
+	} else {
+	  row_endpoint_value_filter <- row_endpoint_value_filter &
+	      (SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ] %in% key_values[i])
+	}
+      }
+    }
 
     # perform the mapping for normalization
     # first the rows
@@ -76,11 +78,11 @@ normalize_SE <- function(df_raw_data,
 
     # matching the reference end point with the same co-treatment (all the same but conc=0/Gnumber="vehicle")
     row_maps_cotrt <- lapply(rownames(normSE), function(x) {
-      ref_metadata_idx = intersect(Keys$ref_Endpoint,
+      ref_metadata_idx <- intersect(Keys$ref_Endpoint,
                             names(SummarizedExperiment::rowData(ctrlSE)))
       names(ref_metadata_idx) = ref_metadata_idx
 
-      rownames(ctrlSE)[which(apply(as.matrix(  IRanges::LogicalList(
+      rownames(ctrlSE)[which(apply(as.matrix(IRanges::LogicalList(
             lapply(ref_metadata_idx, function(y) # matching the metadata
               SummarizedExperiment::rowData(ctrlSE)[,y] ==
                   (SummarizedExperiment::rowData(normSE)[x, y])
@@ -92,24 +94,26 @@ normalize_SE <- function(df_raw_data,
     # reassess the cases without a match to find equivalent drug and concentration (only 2 drugs)
     # test if one can use one of the treatment as a reference
     if ('Gnumber_2' %in% colnames(SummarizedExperiment::rowData(normSE))) {
-      for (rnames in names(row_maps_cotrt)[sapply(row_maps_cotrt, length)==0]) {
+      for (rnames in names(row_maps_cotrt)[sapply(row_maps_cotrt, length) == 0L]) {
         # loop through the rows without co-treatment matched
-        ref_metadata_idx = setdiff(intersect(Keys$ref_Endpoint,
-                              names(SummarizedExperiment::rowData(ctrlSE))),
-                            c('Gnumber_2', "DrugName_2", 'Concentration_2'))
-        names(ref_metadata_idx) = ref_metadata_idx
+        ref_metadata_idx <- setdiff(intersect(Keys$ref_Endpoint,
+                                              names(SummarizedExperiment::rowData(ctrlSE))),
+                                    c('Gnumber_2', "DrugName_2", 'Concentration_2'))
+        names(ref_metadata_idx) <- ref_metadata_idx
 
-        ref_match = apply(as.matrix(  c(IRanges::LogicalList(
+        ref_match <- apply(as.matrix(c(IRanges::LogicalList(
           lapply(ref_metadata_idx, function(y) # matching the metadata
-                unlist(SummarizedExperiment::rowData(normSE)[,y, drop=F] ==
-                    (SummarizedExperiment::rowData(normSE)[rnames, y, drop=F]))
+                unlist(SummarizedExperiment::rowData(normSE)[, y, drop = FALSE] ==
+                    (SummarizedExperiment::rowData(normSE)[rnames, y, drop = FALSE]))
               )), # matching the drugs with mapping from Gnumber to Gnumber_2
               list( Gnumber = SummarizedExperiment::rowData(normSE)$Gnumber ==
                 SummarizedExperiment::rowData(normSE)[rnames,'Gnumber_2']),
               list( Gnumber_2 = SummarizedExperiment::rowData(normSE)$Gnumber_2 %in% 
                 gDRutils::get_identifier('untreated_tag') ))),
               2, all)
-        if (any(ref_match)) row_maps_cotrt[rnames] = rownames(normSE)[which(ref_match)]
+        if (any(ref_match)) {
+          row_maps_cotrt[rnames] <- rownames(normSE)[ref_match]
+        }
       }
     }
 
@@ -120,22 +124,21 @@ normalize_SE <- function(df_raw_data,
     # mapping for columns; 1 to 1 unless overridden by key_values
     col_maps <- array(colnames(ctrlSE), dimnames = list(colnames(normSE)))
     if (any(names(key_values) %in% names(SummarizedExperiment::colData(normSE)))) {
-        col_maps[] <- colnames(ctrlSE)[
-                which(key_values[names(key_values) %in% names(SummarizedExperiment::colData(normSE))] ==
-                    SummarizedExperiment::colData(ctrlSE)[, names(SummarizedExperiment::colData(ctrlSE)) %in% names(key_values)])]
+      col_maps[] <- colnames(ctrlSE)[
+	which(key_values[names(key_values) %in% names(SummarizedExperiment::colData(normSE))] ==
+	    SummarizedExperiment::colData(ctrlSE)[, names(SummarizedExperiment::colData(ctrlSE)) %in% names(key_values)])]
     }
 
     # creates the DataFrameMatrix for controls
-    SummarizedExperiment::assay(normSE, "Controls", withDimnames=FALSE) <- matrix(lapply(1:prod(dim(normSE)), function(x) S4Vectors::DataFrame()),
-            nrow = nrow(normSE), ncol = ncol(normSE))
+    SummarizedExperiment::assay(normSE, "Controls", withDimnames=FALSE) <- 
+      matrix(lapply(seq_len(prod(dim(normSE))), function(x) S4Vectors::DataFrame()), nrow = nrow(normSE), ncol = ncol(normSE))
 
     # temporary optimization (use 'normSE_n' and 'normSE_c' to avoid using 'assay<-` in for loops)
     # TODO: refactor this part of code once we switch to DataFrameMatrix class
-    ctrl_original = SummarizedExperiment::assay(gDR::aapply(ctrlSE, function(x) x[!x$masked,]))
+    ctrl_original <- SummarizedExperiment::assay(gDR::aapply(ctrlSE, function(x) x[!x$masked,]))
     # need to keep original data for the case in which reference is such that Gnumber == Gnumber_2
     normSE_n <- normSE_original <- SummarizedExperiment::assay(normSE, "Normalized")
     normSE_c <- SummarizedExperiment::assay(normSE, "Controls")
-
 
     for (i in rownames(normSE_n)) {
         for (j in colnames(normSE_n)) {
@@ -161,7 +164,7 @@ normalize_SE <- function(df_raw_data,
                 by = as.list(df_end[, -1, drop = FALSE]),
                 function(x) control_mean_fct(x))
             } else {
-              df_end = DataFrame(UntrtReadout = control_mean_fct(df_end$UntrtReadout))
+              df_end <- DataFrame(UntrtReadout = control_mean_fct(df_end$UntrtReadout))
             }
             # reference co-treatment is not always present
             if (i %in% names(row_maps_cotrt) && length(row_maps_cotrt[[i]])>0) {
@@ -177,7 +180,7 @@ normalize_SE <- function(df_raw_data,
                     by = as.list(df_ref[, -1, drop = FALSE]),
                     function(x) control_mean_fct(x))
                 } else {
-                  df_ref = DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
+                  df_ref <- DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
                 }
 
                 # check if all control have matching co-treated wells are on the same plate
@@ -211,7 +214,7 @@ normalize_SE <- function(df_raw_data,
                 }
               } else if (all(row_maps_cotrt[[i]] %in% rownames(normSE))) {
                 # case of the reference being with Gnumber == Gnumber_2
-                ref_conc = SummarizedExperiment::rowData(normSE)[i,'Concentration_2']
+                ref_conc <- SummarizedExperiment::rowData(normSE)[i, 'Concentration_2']
                 df_ref <- do.call(rbind,
                         lapply(row_maps_cotrt[[i]], function(x) {
                           if (any(normSE_original[[x, col_maps[j]]]$Concentration == ref_conc)) {
@@ -220,8 +223,8 @@ normalize_SE <- function(df_raw_data,
                               normSE_original[[x, col_maps[j]]]$Concentration == ref_conc,]
                           } else {
                             # the reference with proper concentration will be inferred --> need fits
-                            ref_drc = normSE_original[[x, col_maps[j]]]
-                            if (length(unique(ref_drc$Concentration[!ref_drc$masked]))>3) {
+                            ref_drc <- normSE_original[[x, col_maps[j]]]
+                            if (length(unique(ref_drc$Concentration[!ref_drc$masked])) > 3) {
                               # tryCatch( 
                                 # trycatch to write
                                 drc_fit = drc::drm(
@@ -238,26 +241,27 @@ normalize_SE <- function(df_raw_data,
                                             max(ref_drc$CorrectedReadout)*1.2,
                                             max(ref_drc$Concentration)*1e3)
                               )
-                              df_ref = data.frame(Concentration = ref_conc,
+                              df_ref <- data.frame(Concentration = ref_conc,
                                   CorrectedReadout = predict(drc_fit,
                                           data.frame(Concentration = ref_conc)))
                         # )
                           } else {
-                            df_ref = data.frame(Concentration = ref_conc,
+                            df_ref <- data.frame(Concentration = ref_conc,
                                 CorrectedReadout = NA)
                           }
-                          }
-                          }))
+                        }
+                      }))
                 
-                df_ref <- df_ref[, c("CorrectedReadout",
-                        intersect(Keys$ref_Endpoint, colnames(df_ref))), drop = F]
+                df_ref <- df_ref[, c("CorrectedReadout", 
+                                     intersect(Keys$ref_Endpoint, colnames(df_ref))), 
+                                 drop = FALSE]
                 colnames(df_ref)[1] <- "RefReadout"
-                if (ncol(df_ref)>1) {
+                if (ncol(df_ref) > 1) {
                   df_ref <- aggregate(df_ref[, 1, drop = FALSE],
                     by = as.list(df_ref[, -1, drop = FALSE]),
                     function(x) control_mean_fct(x))
                 } else {
-                  df_ref = DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
+                  df_ref <- DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
                 }
 
                 # check if all control have matching co-treated wells are on the same plate
@@ -312,14 +316,14 @@ normalize_SE <- function(df_raw_data,
                 colnames(df_ctrl)[1] <- "Day0Readout"
               }
             } else {
-              df_ctrl = df_end
-              df_ctrl$Day0Readout = NA
+              df_ctrl <- df_end
+              df_ctrl$Day0Readout <- NA
             }
 
             # calculating the normalized response value for the control
             df_ctrl$RefRelativeViability <- round(df_ctrl$RefReadout/df_ctrl$UntrtReadout,
                 nDigits_rounding)
-            df_ctrl$RefGRvalue <- round(2 ** (
+            df_ctrl$RefGRvalue <- round(2 ^ (
                     log2(df_ctrl$RefReadout / df_ctrl$Day0Readout) /
                     log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout) ), nDigits_rounding) - 1
             df_ctrl$DivisionTime <- round(
@@ -362,35 +366,36 @@ normalize_SE <- function(df_raw_data,
             # calculate the normalized values
             df_merged$RelativeViability <- round(df_merged$CorrectedReadout / df_merged$UntrtReadout, nDigits_rounding)
 
-            df_merged$GRvalue = round(2 ** (
+            df_merged$GRvalue <- round(2 ^ (
               log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
                 log2(df_merged$UntrtReadout / df_merged$Day0Readout)
             ), nDigits_rounding) - 1
 
             # use the reference doubling Time (ReferenceDivisionTime) for GRvalue if day 0 missing
-            if ( any(is.na(df_merged$Day0Readout)) ) {
-
-                if ( !(gDRutils::get_header('add_clid')[3] %in% colnames(SummarizedExperiment::colData(normSE))) ||
-                  is.na(SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]]) ) {
+            if (any(is.na(df_merged$Day0Readout)) ) {
+                ref_div_time_col <- gDRutils::get_identifier("cellline_ref_div_time")
+                cl_name_col <- gDRutils::get_identifier("cellline_name")
+                if (!(ref_div_time_col %in% colnames(SummarizedExperiment::colData(normSE))) ||
+                  is.na(SummarizedExperiment::colData(normSE)[j, ref_div_time_col]) ) {
                     # missing division time
                     futile.logger::flog.warn(paste(
-                      "No day 0 information and no reference doubling time for cell line", SummarizedExperiment::colData(normSE)[j,gDRutils::get_header('add_clid')[1]],
+                      "No day 0 information and no reference doubling time for cell line", SummarizedExperiment::colData(normSE)[j, cl_name_col],
                       "--> GR values are NA"))
-                } else if (SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]] >
+                } else if (SummarizedExperiment::colData(normSE)[j, ref_div_time_col] >
                     1.5 * SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")]) {
                       # check if experiment is long enough relative to division time
                       futile.logger::flog.warn(paste( "Reference doubling time for cell line",
-                      SummarizedExperiment::colData(normSE)[j,gDRutils::get_header('add_clid')[1]], "is",
-                      SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]],
+                      SummarizedExperiment::colData(normSE)[j,cl_name_col], "is",
+                      SummarizedExperiment::colData(normSE)[j, ref_div_time_col],
                         "which is too long for GR calculation compared to assay duration (",
                       SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")],
                         "--> GR values are NA"))
                  } else {
                    # division time is correct for calculation
-                  refDivisionTime = as.numeric(SummarizedExperiment::colData(normSE)[j, gDRutils::get_header('add_clid')[3]])
+                  refDivisionTime <- as.numeric(SummarizedExperiment::colData(normSE)[j, ref_div_time_col])
 
                   futile.logger::flog.warn(paste(
-                    "Missing day 0 information --> calculate GR value based on reference doubling time for", SummarizedExperiment::colData(normSE)[j,gDRutils::get_header('add_clid')[1]]))
+                    "Missing day 0 information --> calculate GR value based on reference doubling time for", SummarizedExperiment::colData(normSE)[j, cl_name_col]))
 
                   df_merged$GRvalue <-
                   round(2 ^ (1 + (
@@ -409,10 +414,10 @@ normalize_SE <- function(df_raw_data,
             }
 
             # more robust assignment in case the order of df_merged has changed
-            normSE_n[[i, j]] = merge(normSE_n[[i, j]],
+            normSE_n[[i, j]] <- merge(normSE_n[[i, j]],
                 df_merged[, c(colnames(normSE_n[[i, j]]), 'GRvalue', 'RelativeViability')],
                 by = colnames(normSE_n[[i, j]]))
-            normSE_c[[i,j]] <- DataFrame(df_ctrl)
+            normSE_c[[i, j]] <- DataFrame(df_ctrl)
         }
     }
     metadata(normSE) <- c(metadata(normSE),
