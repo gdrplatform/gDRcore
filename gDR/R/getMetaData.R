@@ -64,7 +64,7 @@ getMetaData <- function(data,
 				   gDRutils::get_identifier("duration")
                                   ),
 				  metavars),
-                       nocell_metavars[vapply(nocell_metavars, function(x) length(unique(conditions[[x]]))) > 1, logical(1)])
+                       nocell_metavars[vapply(nocell_metavars, function(x) {length(unique(conditions[[x]])) > 1}, logical(1))])
 
   # find the cell lines and related data (for the columns in the SE)
   cl_entries <- cell_id
