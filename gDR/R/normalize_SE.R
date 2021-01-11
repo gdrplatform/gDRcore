@@ -43,7 +43,7 @@ normalize_SE <- function(df_raw_data,
 
     # adding 'masked = F' if missing from df_raw_data
     if (!(gDRutils::get_identifier('masked_tag') %in% colnames(df_raw_data))) {
-      df_raw_data[,gDRutils::get_identifier('masked_tag')] <- FALSE
+      df_raw_data[, gDRutils::get_identifier('masked_tag')] <- FALSE
     }
 
     # remove background value to readout (at least 1e-10 to avoid artefactual normalized values)

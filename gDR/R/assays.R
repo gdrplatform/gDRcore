@@ -5,7 +5,7 @@
                           gDRutils::get_identifier("drugname"), 
                           gDRutils::get_identifier("drugname"))
 
-.untreated_tag_patterns <- vapply(gDRutils::get_identifier("untreated_tag"), function(x) {sprintf("^%s$", x)}, character(1))
+.untreated_tag_patterns <- vapply(gDRutils::get_identifier("untreated_tag"), sprintf, fmt = "^%s$", character(1))
 .untreatedDrugNameRegex <- paste(.untreated_tag_patterns, collapse="|")
 
 .assayNames <-
@@ -19,7 +19,7 @@
 #'
 #' Get untreated conditions
 #'
-#' @param drug_data tibble or data.frame with treatment information
+#' @param drug_data data.frame or DataFrame with treatment information
 #'
 #' @return character vector with untreated conditions
 #'
@@ -35,7 +35,7 @@
 #'
 #' Get treated conditions
 #'
-#' @param drug_data tibble or data.frame with treatment information
+#' @param drug_data data.frame or DataFrame with treatment information
 #'
 #' @return character vector with treated conditions
 #'

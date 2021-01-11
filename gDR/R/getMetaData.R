@@ -17,7 +17,7 @@ getMetaData <- function(data,
   checkmate::assert_character(cell_id)
   checkmate::assert_character(discard_keys, null.ok = TRUE)
 
-  data <- as(data, "DataFrame")
+  data <- methods::as(data, "DataFrame")
 
   # get the metadata variables
   metavars <-
@@ -35,11 +35,14 @@ getMetaData <- function(data,
         "Concentration"
       )
     ) # remove as it will be the third dimension
+
   # find all unique conditions
   conditions <- unique(data[, metavars])
+
   # get the metadata not directly related to cells
   nocell_metavars <- setdiff(metavars,
                              c(gDRutils::get_identifier("cellline"), gDRutils::get_header("add_clid")))
+
   constant_metavars <-
     setdiff(
       nocell_metavars[sapply(nocell_metavars,
@@ -53,18 +56,15 @@ getMetaData <- function(data,
         gDRutils::get_identifier("duration")
       )
     )
-  unique_metavars <- c(intersect(
-    c(
-      gDRutils::get_identifier("cellline"),
-      gDRutils::get_header("add_clid"),
-      gDRutils::get_identifier("drug"),
-      gDRutils::get_identifier("drugname"),
-      gDRutils::get_identifier("duration")
-    ),
-    metavars
-  ),
-  nocell_metavars[sapply(nocell_metavars, function(x)
-    nrow(unique(conditions[, x, drop = FALSE]))) > 1])
+
+  unique_metavars <- c(intersect(c(gDRutils::get_identifier("cellline"),
+				   gDRutils::get_header("add_clid"),
+				   gDRutils::get_identifier("drug"),
+				   gDRutils::get_identifier("drugname"),
+				   gDRutils::get_identifier("duration")
+                                  ),
+				  metavars),
+                       nocell_metavars[vapply(nocell_metavars, function(x) length(unique(conditions[[x]]))) > 1, logical(1)])
 
   # find the cell lines and related data (for the columns in the SE)
   cl_entries <- cell_id
@@ -108,7 +108,7 @@ getMetaData <- function(data,
   dataCols <- setdiff(colnames(data), setdiff(metavars, discard_keys))
 
   # constant metadata (useful for annotation of the experiment)
-  csteData = unique(conditions[,constant_metavars,drop=F])
+  csteData <- unique(conditions[, constant_metavars, drop = FALSE])
 
   return(list(
     colData = colData,
