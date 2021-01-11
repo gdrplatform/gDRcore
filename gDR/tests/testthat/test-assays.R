@@ -1,6 +1,6 @@
 library(testthat); library(gDR)
 
-context("")
+context("Test that the treated and untreated functions can be appropriately fetched")
 
 test_that(".get_untreated_conditions works", {
   old_drug_name <- gDRutils::get_identifier("drugname")
