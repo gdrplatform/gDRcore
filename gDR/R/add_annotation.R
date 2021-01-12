@@ -25,7 +25,7 @@ add_CellLine_annotation <- function(df_metadata,
     # Other fields are set as "UNKNOWN". If the fill_DB_with_unknown is set as FALSE we add unknown cell lines
     # only to the tibble.
     # This approach will be corrected once we will implement final solution for adding cell lines.
-    validateCLs <- gDRwrapper::validate_cell_lines(unique(df_metadata[,gDRutils::get_identifier("cellline")]))
+    validateCLs <- gDRwrapper::validate_cell_lines(unique(df_metadata[[gDRutils::get_identifier("cellline")]]))
     if(!validateCLs){
       missingTblCellLines <- tibble::tibble(parental_identifier = "UNKNOWN",
                                             cell_line_name = "UNKNOWN",
@@ -40,8 +40,8 @@ add_CellLine_annotation <- function(df_metadata,
     }
     CLs_info <- tryCatch( {
         CLs_info <- gDRwrapper::get_cell_lines()
-        CLs_info <- CLs_info[CLs_info$cell_line_identifier %in% unique(df_metadata[,gDRutils::get_identifier("cellline")]),]
-        CLs_info <- CLs_info[,c(DB_cellid_header,DB_cell_annotate)]
+        CLs_info <- CLs_info[CLs_info$cell_line_identifier %in% unique(df_metadata[[gDRutils::get_identifier("cellline")]]), ]
+        CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate), with = FALSE]
         CLs_info
     }, error = function(e) {
       futile.logger::flog.error("Failed to load cell line info from DB: %s", e)
@@ -51,8 +51,8 @@ add_CellLine_annotation <- function(df_metadata,
     if (nrow(CLs_info) == 0) return(df_metadata)
 
     colnames(CLs_info) <- c(gDRutils::get_identifier("cellline"), gDRutils::get_header("add_clid"))
-    CLIDs <- unique(df_metadata[,gDRutils::get_identifier("cellline")])
-    bad_CL <- CLs_info[eval(!CLIDs, .SD), on = gDRutils::get_identifier("cellline")]
+    CLIDs <- unique(df_metadata[[gDRutils::get_identifier("cellline")]])
+    bad_CL <- CLs_info[gDRutils::get_identifier("cellline") %in% CLIDs][[gDRutils::get_identifier("cellline")]]
     if (any(bad_CL)) {
         futile.logger::flog.warn("Cell line ID %s not found in cell line database",
                      paste(CLIDs[bad_CL], collapse = " ; "))
@@ -67,7 +67,6 @@ add_CellLine_annotation <- function(df_metadata,
     nrows_df <- nrow(df_metadata)
     df_metadata <- base::merge(df_metadata, CLs_info, by = gDRutils::get_identifier("cellline"), all.x = TRUE)
     stopifnot(nrows_df == nrow(df_metadata))
-
     return(df_metadata)
 
 }
@@ -101,7 +100,7 @@ add_Drug_annotation <- function(df_metadata,
         # only to the tibble.
         # This approach will be corrected once we will implement final solution for adding cell lines.
 
-        drugsTreated <- unique(df_metadata[, gDRutils::get_identifier("drug")])
+        drugsTreated <- unique(df_metadata[[gDRutils::get_identifier("drug")]])
         
         drugsTreated <- drugsTreated[!drugsTreated%in% gDRutils::get_identifier("untreated_tag")]
         validateDrugs <- gDRwrapper::validate_drugs(drugsTreated)
@@ -138,9 +137,9 @@ add_Drug_annotation <- function(df_metadata,
             DrugName = gDRutils::get_identifier("untreated_tag")
           ),
           Drug_info)
-        Drug_info <- Drug_info[!duplicated(Drug_info[, drug]),]
-        DrIDs <- unique(unlist(df_metadata[,agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))]))
-        if(any(!gsub("\\..*", "", drugsTreated) %in% Drug_info$drug)){
+        Drug_info <- Drug_info[!duplicated(Drug_info[["drug"]]),]
+        DrIDs <- unique(unlist(df_metadata[[agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))]]))
+        if(any(!gsub("\\..*", "", drugsTreated) %in% Drug_info$drug) & exists("missingTblDrugs")){
           Drug_info <- rbind(Drug_info, data.table::setnames(missingTblDrugs[!drugsTreated %in% Drug_info$drug, c(3,1)], names(Drug_info)))
         }
         bad_DrID <- !(gsub("\\..*", "", DrIDs) %in% Drug_info$drug) & !is.na(DrIDs)
@@ -161,21 +160,16 @@ add_Drug_annotation <- function(df_metadata,
         colnames(Drug_info)[2] <- gDRutils::get_identifier("drugname")
         futile.logger::flog.info("Merge with Drug_info for Drug 1")
         df_metadata[[paste0(gDRutils::get_identifier("drug"), "_temp")]] <- gsub("\\..*", "", df_metadata[[gDRutils::get_identifier("drug")]])
-        df_metadata <- base::merge(df_metadata, Drug_info, by.x = gsub("\\..*", "", paste0(gDRutils::get_identifier("drug"), "_temp")), by.y = "drug", all.x = TRUE) %>%
-          subset(select = -paste0(gDRutils::get_identifier("drug"), "_temp"))
+        df_metadata <- base::merge(df_metadata, Drug_info, by.x = gsub("\\..*", "", paste0(gDRutils::get_identifier("drug"), "_temp")), by.y = "drug", all.x = TRUE)[, !paste0(gDRutils::get_identifier("drug"), "_temp")]
         # add info for columns Gnumber_*
         for (i in grep(paste0(gDRutils::get_identifier("drug"),"_\\d"), colnames(df_metadata))) {
-            df_metadata[ is.na(df_metadata[,i]), i] = gDRutils::get_identifier("untreated_tag")[1] # set missing values to Untreated
+            df_metadata[is.na(df_metadata[[i]]), i] = gDRutils::get_identifier("untreated_tag")[1] # set missing values to Untreated
             Drug_info_ <- Drug_info
             colnames(Drug_info_)[2] <- paste0(colnames(Drug_info_)[2], substr(colnames(df_metadata)[i], 8, 12))
             futile.logger::flog.info("Merge with Drug_info for %s", i)
-            df_metadata[[paste0(colnames(df_metadata)[i], "_temp")]] <- gsub("\\..*", "", df_metadata[[i]])
-            df_metadata <- merge(df_metadata, Drug_info_, by.x = gsub("\\..*", "", paste0(colnames(df_metadata)[i], "_temp")), by.y = "drug", all.x = TRUE) %>%
-              subset(select = -paste0(colnames(df_metadata)[i], "_temp"))
+            df_metadata[[paste0(colnames(df_metadata)[[i]], "_temp")]] <- gsub("\\..*", "", df_metadata[[i]])
+            df_metadata <- base::merge(df_metadata, Drug_info_, by.x = gsub("\\..*", "", paste0(colnames(df_metadata)[[i]], "_temp")), by.y = "drug", all.x = TRUE)
         }
-        df_metadata[, colnames(df_metadata)[grepl(gDRutils::get_identifier("drugname"), colnames(df_metadata))]] =
-          droplevels(df_metadata[, colnames(df_metadata)][grepl(gDRutils::get_identifier("drugname"), colnames(df_metadata))])
-
     stopifnot(nrows_df == nrow(df_metadata))
 
     return(df_metadata)
