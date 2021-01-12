@@ -29,15 +29,16 @@ Imports:
     readxl,
     reshape2,
     S4Vectors,
+    SummarizedExperiment,
     stringr,
     writexl,
     XML
 Suggests:
     futile.logger,
-    gCSIutils,
     GeneDataScreenR (>= 0.99.16),
     gDRinternal (>= 0.0.6),
     knitr,
+    testthat,
     yaml
 VignetteBuilder: knitr
 ByteCompile: TRUE
