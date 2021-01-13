@@ -39,7 +39,8 @@ Suggests:
     gDRinternal (>= 0.0.6),
     knitr,
     testthat,
-    yaml
+    yaml,
+    dplyr
 VignetteBuilder: knitr
 ByteCompile: TRUE
 RoxygenNote: 7.1.1
