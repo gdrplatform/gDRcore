@@ -8,9 +8,9 @@ echo "Working directory contains: `ls | tr '\n' ' '`"
 # exit when any command fails
 set -e
 
-echo ">>>>> RUNNING UNIT TESTS"
+echo ">>>>> RUNNING CHECK"
 Rscript -e "devtools::test(pkg = '/mnt/vol/gDR', stop_on_failure = TRUE)"
 
 
 echo ">>>>> RUNNING DEVTOOLS::CHECK()"
-sudo R CMD check --no-build-vignettes --no-manual --no-tests /mnt/vol/gDR
+Rscript -e "devtools::check(pkg = '/mnt/vol/gDR', vignettes = FALSE, manual = FALSE, build_args = '--no-tests')"
