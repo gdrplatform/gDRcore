@@ -102,7 +102,7 @@ add_Drug_annotation <- function(df_metadata,
 
         drugsTreated <- unique(df_metadata[[gDRutils::get_identifier("drug")]])
         
-        drugsTreated <- drugsTreated[!drugsTreated%in% gDRutils::get_identifier("untreated_tag")]
+        drugsTreated <- drugsTreated[!drugsTreated %in% gDRutils::get_identifier("untreated_tag")]
         validateDrugs <- gDRwrapper::validate_drugs(drugsTreated)
         if(!validateDrugs){
           missingTblDrugs <- tibble::tibble(drug_name = drugsTreated,
