@@ -239,7 +239,7 @@ cleanup_metadata <- function(df_metadata) {
 
     for (i in agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))) { # correct case issues
         for (w in gDRutils::get_identifier("untreated_tag")) {
-            df_metadata[grep(w, df_metadata[[i]], ignore.case = T),i] <- w
+            df_metadata[grep(w, df_metadata[[i]], ignore.case = TRUE),i] <- w
         }
     }
     # -----------------------
