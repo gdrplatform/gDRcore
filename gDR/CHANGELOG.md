@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.34] - 2021-01-12
+#### Update
+- update scripts related to annotation of drugs and cell lines
+
 #### [0.1.33] - 2021-01-05
 #### Update
 - anonymize test data
