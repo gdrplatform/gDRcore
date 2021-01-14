@@ -1,8 +1,8 @@
 Package: gDR
 Type: Package
 Title: Utility functions and interface to calculate drug dose-response data and calculate GR values
-Version: 0.1.34
-Date: 2021-01-10
+Version: 0.1.35
+Date: 2021-01-14
 Authors@R: c(person("Bartosz", "Czech", role=c("cre"), email="bartosz.czech@contractors.roche.com"),
              person("Arkadiusz", "Gladki", role=c("aut")),
              person("Marc", "Hafner", role=c("aut")),

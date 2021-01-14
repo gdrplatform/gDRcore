@@ -125,10 +125,13 @@ cleanup_metadata <- function(df_metadata) {
 
   # Assertions:
   stopifnot(inherits(df_metadata, "data.frame"))
+  
+  data.table::setDT(df_metadata)
 
   # clean up numberic fields
-  df_metadata[, gDRutils::get_identifier("duration")] <-
-    round(as.numeric(df_metadata[, gDRutils::get_identifier("duration")]), 6)
+  df_metadata[[gDRutils::get_identifier("duration")]] <-
+    round(as.numeric(df_metadata[[gDRutils::get_identifier("duration")]], 6))
+  
   # identify potential numeric fields and replace NA by 0 - convert strings in factors
   for (c in setdiff(1:dim(df_metadata)[2], c(
     agrep(gDRutils::get_identifier("drug"), colnames(df_metadata)),
@@ -137,22 +140,23 @@ cleanup_metadata <- function(df_metadata) {
       c(
         gDRutils::get_identifier("cellline"),
         gDRutils::get_header("manifest"),
-        gDRutils::get_identifier("well_position")
+        gDRutils::get_identifier("WellPosition"),
+        "compoundId"
       ),
       collapse = "|"
     ), colnames(df_metadata))
   ))) {
-    vals <- unique(df_metadata[, c])
+    vals <- unique(df_metadata[[c]])
 
     if (is.character(vals)) {
       num_vals <- as.numeric(vals)
       if (sum(is.na(num_vals)) > 2 || all(is.na(num_vals))) {
-        df_metadata[, c] <- factor(df_metadata[, c])
+        df_metadata[[c]] <- factor(df_metadata[[c]])
         futile.logger::flog.warn("Metadata field %s converted to factors",
                 colnames(df_metadata)[c])
       } else {
-        is.na(df_metadata[, c]) <- 0
-        df_metadata[, c] <- as.numeric(df_metadata[, c])
+        is.na(df_metadata[[c]]) <- 0
+        df_metadata[[c]] <- as.numeric(df_metadata[[c]])
         futile.logger::flog.warn("Metadata field %s converted to numeric values",
                 colnames(df_metadata)[c])
       }
@@ -160,18 +164,18 @@ cleanup_metadata <- function(df_metadata) {
   }
     # TODO: specific to GNE database --> need to be replaced by a function
     df_metadata <- add_CellLine_annotation(df_metadata)
-
     # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
 
     for (i in agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))) { # correct case issues
         for (w in gDRutils::get_identifier("untreated_tag")) {
-            df_metadata[grep(w, df_metadata[,i], ignore.case = T),i] <- w
+            df_metadata[grep(w, df_metadata[[i]], ignore.case = TRUE),i] <- w
         }
     }
     # -----------------------
 
     df_metadata <- add_Drug_annotation(df_metadata)
-
+  
+    data.table::setDF(df_metadata)
     # clean up concentration fields
     for (i in agrep("Concentration", colnames(df_metadata))) {
         trt_n <- ifelse(regexpr("_\\d", colnames(df_metadata)[i]) > 0,
