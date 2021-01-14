@@ -13,4 +13,4 @@ Rscript -e "devtools::test(pkg = '/mnt/vol/gDR', stop_on_failure = TRUE)"
 
 
 echo ">>>>> RUNNING DEVTOOLS::CHECK()"
-Rscript -e "devtools::check(pkg = '/mnt/vol/gDR', document = FALSE, error_on = 'warning', args = c('--no-tests', '--no-build-vignettes', '--no-manual'))"
+Rscript -e "devtools::check(pkg = '/mnt/vol/gDR', document = FALSE, args = c('--no-tests', '--no-build-vignettes', '--no-manual'))"
