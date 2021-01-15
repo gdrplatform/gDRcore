@@ -166,9 +166,10 @@ add_Drug_annotation <- function(df_metadata,
             df_metadata[is.na(df_metadata[[i]]), i] = gDRutils::get_identifier("untreated_tag")[1] # set missing values to Untreated
             Drug_info_ <- Drug_info
             colnames(Drug_info_)[2] <- paste0(colnames(Drug_info_)[2], substr(colnames(df_metadata)[i], 8, 12))
-            futile.logger::flog.info("Merge with Drug_info for %s", i)
+            futile.logger::flog.info("Merge with Drug_info for %s", colnames(df_metadata)[[i]])
             df_metadata[[paste0(colnames(df_metadata)[[i]], "_temp")]] <- gsub("\\..*", "", df_metadata[[i]])
             df_metadata <- base::merge(df_metadata, Drug_info_, by.x = gsub("\\..*", "", paste0(colnames(df_metadata)[[i]], "_temp")), by.y = "drug", all.x = TRUE)
+            df_metadata <- df_metadata[, .SD, .SDcols = !endsWith(names(df_metadata), "temp")]
         }
     stopifnot(nrows_df == nrow(df_metadata))
 
