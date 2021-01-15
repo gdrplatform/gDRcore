@@ -7,7 +7,7 @@
 .get_treated_conditions(drug_data)
 }
 \arguments{
-\item{drug_data}{tibble or data.frame with treatment information}
+\item{drug_data}{data.frame or DataFrame with treatment information}
 }
 \value{
 character vector with treated conditions

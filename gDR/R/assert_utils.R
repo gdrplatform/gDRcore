@@ -1,4 +1,4 @@
-#` is.readable.v
+#' is_readable_v
 #' Check if all paths in vector are readable
 #'
 #' @param paths a character with path(s)
@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-is.readable.v <- function(paths){
+is_readable_v <- function(paths){
   checkmate::assert_character(paths)
   missing_path_string <- paste(paths[as.logical(-file.access(paths, 4))], collapse = ', ', sep = '   ')
   message <- paste0("Following path(s) with no read permission found: '", missing_path_string,"'")

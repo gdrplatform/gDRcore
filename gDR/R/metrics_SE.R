@@ -6,6 +6,7 @@
 #' @param studyConcThresh a numeric with study concentration threshold (4 by default)
 #'
 #' @return a SummarizedExperiment with additional assay with metrics
+#'
 #' @export
 #'
 metrics_SE <- function(avgSE, studyConcThresh = 4) {
@@ -29,8 +30,8 @@ metrics_SE <- function(avgSE, studyConcThresh = 4) {
     # temporary optimization (use 'normSE_n' and 'normSE_c' to avoid using 'assay<-` in a foor loops)
     # TODO: refactor this part of code once we switch to DataFrameMatrix class
     mSE_m <- SummarizedExperiment::assay(metricsSE, "Metrics")
-    a_SE = SummarizedExperiment::assay(metricsSE, "Averaged")
-    aCtrl_SE = SummarizedExperiment::assay(metricsSE, "Avg_Controls")
+    a_SE <- SummarizedExperiment::assay(metricsSE, "Averaged")
+    aCtrl_SE <- SummarizedExperiment::assay(metricsSE, "Avg_Controls")
     for (i in rownames(metricsSE)) {
         for (j in colnames(metricsSE)) {
             df_ <- a_SE[[i, j]]

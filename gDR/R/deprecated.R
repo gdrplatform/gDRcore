@@ -97,7 +97,7 @@ normalize_data <-
     
     # remove unused columns but keep barcodes to normalize by plate
     df_normalized <- df_raw_data[, setdiff(colnames(df_raw_data),
-                                           c("Template", gDRutils::get_identifier("WellPosition")))]
+                                           c("Template", gDRutils::get_identifier("well_position")))]
     
     # Identify keys for assigning the controls
     Keys <- identify_keys(df_normalized)

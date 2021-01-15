@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.35] - 2021-01-14
+#### Update
+- update positional header calls to explicit identifier calls
+- minor changes to comply with gDRstyle
+- minor changes to use identifiers over hard coded DrugName requirements
+
 #### [0.1.34] - 2021-01-12
 #### Update
 - update scripts related to annotation of drugs and cell lines
