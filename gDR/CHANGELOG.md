@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.36] - 2021-01-18
+#### Update
+- updated rowData and colData in SE with additional columns
+
 #### [0.1.35] - 2021-01-14
 #### Update
 - update positional header calls to explicit identifier calls
