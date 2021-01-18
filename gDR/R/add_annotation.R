@@ -16,7 +16,7 @@ add_CellLine_annotation <- function(df_metadata,
     checkmate::assert_logical(fill_DB_with_unknown)
     
     DB_cellid_header <- "cell_line_identifier"
-    DB_cell_annotate <- c("cell_line_name", "primary_tissue", "doubling_time")
+    DB_cell_annotate <- c("cell_line_name", "primary_tissue", "doubling_time", "parental_identifier", "subtype")
     # corresponds to columns gDRutils::get_header("add_clid"): name, tissue, doubling time
     
     # the logic of adding celline annotation for df_metadata is based on the function get_cell_lines from the gDRwrapper
@@ -115,7 +115,7 @@ add_Drug_annotation <- function(df_metadata,
         }
         Drug_info <- tryCatch({
           # TODO: refactor this part of code once we switch to DataFrameMatrix class
-          gDrugs <- gDRwrapper::get_drugs()[, c(..DB_drug_identifier, "drug_name")]
+          gDrugs <- gDRwrapper::get_drugs()[, c(..DB_drug_identifier, "drug_name", "drug_moa")]
           #gDrugs[, 1] <- gsub("\\..*", "", gDrugs$gnumber) # remove batch number from DB_drug_identifier
           gDrugs
         }, error = function(e) {
