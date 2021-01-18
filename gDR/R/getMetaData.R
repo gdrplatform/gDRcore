@@ -91,7 +91,7 @@ getMetaData <- function(data,
   colData <- unique(conditions[, cl_entries, drop = FALSE])
   colData$col_id <- 1:nrow(colData)
   colData$name_ <-
-    apply(colData, 1, function(x)
+    apply(colData[, grep('parental_identifier|subtype', colnames(colData), invert = TRUE)], 1, function(x)
       paste(x, collapse = "_"))
 
   # get all other metadata for the rows
@@ -101,7 +101,7 @@ getMetaData <- function(data,
   rowData <- unique(conditions[, cond_entries, drop = FALSE])
   rowData$row_id <- 1:nrow(rowData)
   rowData$name_ <-
-    apply(rowData, 1, function(x)
+    apply(rowData[, grep('drug_moa', colnames(rowData), invert = TRUE)], 1, function(x)
       paste(x, collapse = "_"))
 
   # get the remaining columns as data
