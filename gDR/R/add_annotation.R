@@ -92,7 +92,7 @@ add_Drug_annotation <- function(df_metadata,
   
         nrows_df <- nrow(df_metadata)
 
-        DB_drug_identifier <- "gnumber"
+        DB_drug_identifier <- c("gnumber", "drug_name", "drug_moa")
         # the logic of adding drug annotation for df_metadata is based on the function get_drugs from the gDRwrapper
         # we added additional parameter 'fill_DB_with_unknown' that allows to fill the DB with drug_name and gnumber, for these drugs,
         # that are not present in the DB
@@ -115,7 +115,7 @@ add_Drug_annotation <- function(df_metadata,
         }
         Drug_info <- tryCatch({
           # TODO: refactor this part of code once we switch to DataFrameMatrix class
-          gDrugs <- gDRwrapper::get_drugs()[, c(..DB_drug_identifier, "drug_name", "drug_moa")]
+          gDrugs <- gDRwrapper::get_drugs()[, c(..DB_drug_identifier)]
           #gDrugs[, 1] <- gsub("\\..*", "", gDrugs$gnumber) # remove batch number from DB_drug_identifier
           gDrugs
         }, error = function(e) {
@@ -134,7 +134,7 @@ add_Drug_annotation <- function(df_metadata,
         Drug_info <-
           rbind(data.frame(
             drug = gDRutils::get_identifier("untreated_tag"),
-            DrugName = gDRutils::get_identifier("untreated_tag"),
+            drug_name = gDRutils::get_identifier("untreated_tag"),
             drug_moa = gDRutils::get_identifier("untreated_tag")
           ),
           Drug_info)
