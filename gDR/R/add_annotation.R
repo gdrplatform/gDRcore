@@ -16,7 +16,7 @@ add_CellLine_annotation <- function(df_metadata,
     checkmate::assert_logical(fill_DB_with_unknown)
     
     DB_cellid_header <- "cell_line_identifier"
-    DB_cell_annotate <- c("cell_line_name", "primary_tissue", "doubling_time")
+    DB_cell_annotate <- c("cell_line_name", "primary_tissue", "doubling_time", "parental_identifier", "subtype")
     # corresponds to columns gDRutils::get_header("add_clid"): name, tissue, doubling time
     
     # the logic of adding celline annotation for df_metadata is based on the function get_cell_lines from the gDRwrapper
@@ -50,7 +50,7 @@ add_CellLine_annotation <- function(df_metadata,
 
     if (nrow(CLs_info) == 0) return(df_metadata)
 
-    colnames(CLs_info) <- c(gDRutils::get_identifier("cellline"), gDRutils::get_header("add_clid"))
+    colnames(CLs_info)[1:4] <- c(gDRutils::get_identifier("cellline"), gDRutils::get_header("add_clid"))
     CLIDs <- unique(df_metadata[[gDRutils::get_identifier("cellline")]])
     bad_CL <- CLs_info[gDRutils::get_identifier("cellline") %in% CLIDs][[gDRutils::get_identifier("cellline")]]
     if (any(bad_CL)) {
@@ -92,7 +92,7 @@ add_Drug_annotation <- function(df_metadata,
   
         nrows_df <- nrow(df_metadata)
 
-        DB_drug_identifier <- "gnumber"
+        DB_drug_identifier <- c("gnumber", "drug_name", "drug_moa")
         # the logic of adding drug annotation for df_metadata is based on the function get_drugs from the gDRwrapper
         # we added additional parameter 'fill_DB_with_unknown' that allows to fill the DB with drug_name and gnumber, for these drugs,
         # that are not present in the DB
@@ -115,7 +115,7 @@ add_Drug_annotation <- function(df_metadata,
         }
         Drug_info <- tryCatch({
           # TODO: refactor this part of code once we switch to DataFrameMatrix class
-          gDrugs <- gDRwrapper::get_drugs()[, c(..DB_drug_identifier, "drug_name")]
+          gDrugs <- gDRwrapper::get_drugs()[, c(..DB_drug_identifier)]
           #gDrugs[, 1] <- gsub("\\..*", "", gDrugs$gnumber) # remove batch number from DB_drug_identifier
           gDrugs
         }, error = function(e) {
@@ -130,11 +130,12 @@ add_Drug_annotation <- function(df_metadata,
         
         # -----------------------
 
-        colnames(Drug_info) <- c("drug", "DrugName")
+        colnames(Drug_info)[1:2] <- c("drug", "DrugName")
         Drug_info <-
           rbind(data.frame(
             drug = gDRutils::get_identifier("untreated_tag"),
-            DrugName = gDRutils::get_identifier("untreated_tag")
+            drug_name = gDRutils::get_identifier("untreated_tag"),
+            drug_moa = gDRutils::get_identifier("untreated_tag")
           ),
           Drug_info)
         Drug_info <- Drug_info[!duplicated(Drug_info[["drug"]]),]
@@ -160,7 +161,8 @@ add_Drug_annotation <- function(df_metadata,
         colnames(Drug_info)[2] <- gDRutils::get_identifier("drugname")
         futile.logger::flog.info("Merge with Drug_info for Drug 1")
         df_metadata[[paste0(gDRutils::get_identifier("drug"), "_temp")]] <- gsub("\\..*", "", df_metadata[[gDRutils::get_identifier("drug")]])
-        df_metadata <- base::merge(df_metadata, Drug_info, by.x = gsub("\\..*", "", paste0(gDRutils::get_identifier("drug"), "_temp")), by.y = "drug", all.x = TRUE)[, !paste0(gDRutils::get_identifier("drug"), "_temp")]
+        df_metadata <- base::merge(df_metadata, Drug_info, by.x = gsub("\\..*", "", paste0(gDRutils::get_identifier("drug"), "_temp")), by.y = "drug", all.x = TRUE)
+        df_metadata <- df_metadata[, .SD, .SDcols = !endsWith(names(df_metadata), "temp")]
         # add info for columns Gnumber_*
         for (i in grep(paste0(gDRutils::get_identifier("drug"),"_\\d"), colnames(df_metadata))) {
             df_metadata[is.na(df_metadata[[i]]), i] = gDRutils::get_identifier("untreated_tag")[1] # set missing values to Untreated
@@ -169,6 +171,7 @@ add_Drug_annotation <- function(df_metadata,
             futile.logger::flog.info("Merge with Drug_info for %s", i)
             df_metadata[[paste0(colnames(df_metadata)[[i]], "_temp")]] <- gsub("\\..*", "", df_metadata[[i]])
             df_metadata <- base::merge(df_metadata, Drug_info_, by.x = gsub("\\..*", "", paste0(colnames(df_metadata)[[i]], "_temp")), by.y = "drug", all.x = TRUE)
+            df_metadata <- df_metadata[, .SD, .SDcols = !endsWith(names(df_metadata), "temp")]
         }
     stopifnot(nrows_df == nrow(df_metadata))
 
