@@ -12,7 +12,7 @@ pkgs:
   gDRutils:
     ver: '>=0.0.14'
     url: https://github.roche.com/gdrplatform/gDRutils.git
-    ref: GDR-618
+    ref: master
     subdir: gDRutils
   gDRwrapper:
     ver: '>=0.1.47'
