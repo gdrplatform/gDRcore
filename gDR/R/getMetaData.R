@@ -91,7 +91,7 @@ getMetaData <- function(data,
   colData <- unique(conditions[, cl_entries, drop = FALSE])
   colData$col_id <- 1:nrow(colData)
   colData$name_ <-
-    apply(colData[, grep(paste(get_identifier('cellline_subtype'), get_identifier('cellline_parental_identifier'), sep = '|'),
+    apply(colData[, grep(paste(gDRutils::get_identifier('cellline_subtype'), gDRutils::get_identifier('cellline_parental_identifier'), sep = '|'),
                          colnames(colData), invert = TRUE)], 1, function(x)
       paste(x, collapse = "_"))
 
@@ -102,7 +102,7 @@ getMetaData <- function(data,
   rowData <- unique(conditions[, cond_entries, drop = FALSE])
   rowData$row_id <- 1:nrow(rowData)
   rowData$name_ <-
-    apply(rowData[, grep(get_identifier('drug_moa'), colnames(rowData), invert = TRUE)], 1, function(x)
+    apply(rowData[, grep(gDRutils::get_identifier('drug_moa'), colnames(rowData), invert = TRUE)], 1, function(x)
       paste(x, collapse = "_"))
 
   # get the remaining columns as data
