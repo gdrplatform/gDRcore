@@ -43,7 +43,7 @@ create_SE <-
     mats <- if (assay_type == "matrix") {
       gDRutils::df_to_assay(df_data, data_type = data_type, discard_keys = discard_keys)
     } else if (assay_type == "BumpyMatrix") {
-      df_to_bm_assay(df_data, data_type = data_type, discard_keys = discard_keys)
+      gDRutils::df_to_bm_assay(df_data, data_type = data_type, discard_keys = discard_keys)
     } else {
       stop(sprintf("bad assay type: '%s'", assay_type))
     }
