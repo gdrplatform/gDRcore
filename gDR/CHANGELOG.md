@@ -1,6 +1,9 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+#### [0.1.37] - 2021-01-20
+#### Update
+- move df_to_assay and df_to_bm_assay to gDRutils
 
 #### [0.1.36] - 2021-01-18
 #### Update
