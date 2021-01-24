@@ -36,7 +36,7 @@ metrics_SE <- function(avgSE, studyConcThresh = 4) {
         for (j in colnames(metricsSE)) {
             df_ <- a_SE[[i, j]]
             if (!is.null(df_) && all(dim(df_) > 0)) { # studyConcThresh is embeded in RVGRfits
-                mSE_m[[i, j]] <- DataFrame(gDRutils::RVGRfits(df_,
+                mSE_m[[i, j]] <- DataFrame(gDRutils::fit_curves(df_,
                     e_0 = aCtrl_SE[[i, j]]$RefRelativeViability,
                     GR_0 = aCtrl_SE[[i, j]]$RefGRvalue,
                     n_point_cutoff = studyConcThresh))
