@@ -12,7 +12,7 @@ pkgs:
   gDRutils:
     ver: '>=0.0.18'
     url: https://github.roche.com/gdrplatform/gDRutils.git
-    ref: rvgr_refactor
+    ref: master
     subdir: gDRutils
   gDRwrapper:
     ver: '>=0.1.47'
