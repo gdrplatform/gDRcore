@@ -17,7 +17,7 @@ Imports:
     data.table,
     digest,
     drc,
-    gDRutils (>= 0.0.20),
+    gDRutils (>= 0.0.21),
     gDRwrapper (>= 0.1.47),
     httr,
     kcloak (>= 0.0.8),
