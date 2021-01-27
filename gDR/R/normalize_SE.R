@@ -41,6 +41,7 @@ normalize_SE <- function(df_raw_data,
       Keys$DoseResp <- setdiff(Keys$DoseResp, discard_keys)
     }
 
+<<<<<<< HEAD
     # adding 'masked = F' if missing from df_raw_data
     if (!(gDRutils::get_identifier('masked_tag') %in% colnames(df_raw_data))) {
       df_raw_data[, gDRutils::get_identifier('masked_tag')] <- FALSE
@@ -51,6 +52,20 @@ normalize_SE <- function(df_raw_data,
                     df_raw_data$BackgroundValue, 1e-10)
     # creates the DataFrameMatrix and fill with the treated/untreated data
     normSE <- gDR::create_SE(df_raw_data, data_type = "treated", discard_keys = discard_keys)
+=======
+    # add columns which will be populated with the data in 'Normalized' assay
+    # (BumpyMatrix must be initialized with final set of columns in DataFrame) 
+    df_raw_data$GRvalue <- NA
+    df_raw_data$RelativeViability <- NA
+    # creates BumpyMatrix and fill with the treated/untreated data
+    normSE <-
+      gDR::create_SE(
+        df_raw_data,
+        data_type = "treated",
+        discard_keys = discard_keys,
+        assay_type = "BumpyMatrix"
+      )
+>>>>>>> 72b16ec... add GR calculation helpers
     SummarizedExperiment::assayNames(normSE) <- "Normalized"
     ctrlSE <- gDR::create_SE(df_raw_data, data_type = "untreated", discard_keys = discard_keys)
 
@@ -141,283 +156,265 @@ normalize_SE <- function(df_raw_data,
     normSE_c <- SummarizedExperiment::assay(normSE, "Controls")
 
     for (i in rownames(normSE_n)) {
-        for (j in colnames(normSE_n)) {
-            if (nrow(normSE_original[[i, j]]) == 0) next # skip if no data
-            # get all the control endpoint data
-            df_end <- do.call(rbind,
-                    lapply(row_maps_end[[i]], function(x) ctrl_original[[x, col_maps[j]]]))
-            if (nrow(df_end) == 0) {
-              futile.logger::flog.warn(
-                  "Missing control data.
-                  Treatment Id: %s
-                  Cell_line Id: %s",
-                  i,
-                  j
-                )
-              next
-            }
-            df_end <- df_end[, c("CorrectedReadout",
-                    intersect(Keys$untrt_Endpoint, colnames(df_end))), drop = FALSE]
-            colnames(df_end)[1] <- "UntrtReadout"
-            if (ncol(df_end)>1) {
-              df_end <- aggregate(df_end[, 1, drop = FALSE],
-                by = as.list(df_end[, -1, drop = FALSE]),
-                function(x) control_mean_fct(x))
-            } else {
-              df_end <- DataFrame(UntrtReadout = control_mean_fct(df_end$UntrtReadout))
-            }
-            # reference co-treatment is not always present
-            if (i %in% names(row_maps_cotrt) && length(row_maps_cotrt[[i]])>0) {
-              if (all(row_maps_cotrt[[i]] %in% rownames(ctrlSE))) {
-                # get all the co-treatment reference endpoint data
-                df_ref <- do.call(rbind,
-                        lapply(row_maps_cotrt[[i]], function(x) ctrl_original[[x, col_maps[j]]]))
-                df_ref <- df_ref[, c("CorrectedReadout",
-                        intersect(Keys$ref_Endpoint, colnames(df_ref))), drop = F]
-                colnames(df_ref)[1] <- "RefReadout"
-                if (ncol(df_ref)>1) {
-                  df_ref <- aggregate(df_ref[, 1, drop = FALSE],
-                    by = as.list(df_ref[, -1, drop = FALSE]),
-                    function(x) control_mean_fct(x))
-                } else {
-                  df_ref <- DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
-                }
+      for (j in colnames(normSE_n)) {
+	  if (nrow(normSE_original[i, j]) == 0) {
+            next # skip if no data
+          }
+	  # get all the control endpoint data
+	  df_end <- do.call(rbind,
+		  lapply(row_maps_end[[i]], function(x) ctrl_original[x, col_maps[j]][[1]]))
+	  if (nrow(df_end) == 0) {
+	    futile.logger::flog.warn(
+		"Missing control data.
+		Treatment Id: %s
+		Cell_line Id: %s",
+		i,
+		j
+	      )
+	    next
+	  }
+	  df_end <- df_end[, c("CorrectedReadout",
+		  intersect(Keys$untrt_Endpoint, colnames(df_end))), drop = FALSE]
+	  colnames(df_end)[1] <- "UntrtReadout"
+	  if (ncol(df_end) > 1L) {
+	    df_end <- aggregate(df_end[, 1, drop = FALSE],
+	      by = as.list(df_end[, -1, drop = FALSE]),
+	      function(x) control_mean_fct(x))
+	  } else {
+	    df_end <- DataFrame(UntrtReadout = control_mean_fct(df_end$UntrtReadout))
+	  }
+	  # reference co-treatment is not always present
+	  if (i %in% names(row_maps_cotrt) && length(row_maps_cotrt[[i]])>0) {
+	    if (all(row_maps_cotrt[[i]] %in% rownames(ctrlSE))) {
+	      # get all the co-treatment reference endpoint data
+	      df_ref <- do.call(rbind,
+		      lapply(row_maps_cotrt[[i]], function(x) ctrl_original[x, col_maps[j]][[1]]))
+	      df_ref <- df_ref[, c("CorrectedReadout",
+		      intersect(Keys$ref_Endpoint, colnames(df_ref))), drop = F]
+	      colnames(df_ref)[1] <- "RefReadout"
+	      if (ncol(df_ref) > 1L) {
+		df_ref <- aggregate(df_ref[, 1, drop = FALSE],
+		  by = as.list(df_ref[, -1, drop = FALSE]),
+		  function(x) control_mean_fct(x))
+	      } else {
+		df_ref <- DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
+	      }
 
-                # check if all control have matching co-treated wells are on the same plate
-                if (all(df_end$Barcode %in% df_ref$Barcode) && all(df_ref$Barcode %in% df_end$Barcode)) {
-                  df_end <- merge(df_end, df_ref, # merge based on Barcode
-                    by = intersect(colnames(df_end), c('Barcode', Keys$discard_keys)))
-                } else {
-                  futile.logger::flog.warn(
-                      "Control data for the drug are propagated to other plates with co-drug controls.
-                      Treatment Id: %s
-                      Cell_line Id: %s",
-                      i,
-                      j
-                    )
-                  # merge (knowing that there will be NA)
-                  df_end <- merge(df_end, df_ref, by = "Barcode", all = TRUE)
-                  # propagate average values to the other plates
-                  mean_UntrtReadout <- mean(df_end$UntrtReadout, na.rm = TRUE)
-                  mean_RefReadout <- mean(df_end$RefReadout, na.rm = TRUE)
-                  df_end$UntrtReadout[is.na(df_end$UntrtReadout)] <- mean_UntrtReadout
-                  df_end$RefReadout[is.na(df_end$RefReadout)] <- mean_RefReadout
-                }
+	      # check if all control have matching co-treated wells are on the same plate
+	      if (all(df_end$Barcode %in% df_ref$Barcode) && all(df_ref$Barcode %in% df_end$Barcode)) {
+		df_end <- merge(df_end, df_ref, # merge based on Barcode
+		  by = intersect(colnames(df_end), c('Barcode', Keys$discard_keys)))
+	      } else {
+		futile.logger::flog.warn(
+		    "Control data for the drug are propagated to other plates with co-drug controls.
+		    Treatment Id: %s
+		    Cell_line Id: %s",
+		    i,
+		    j
+		  )
+		# merge (knowing that there will be NA)
+		df_end <- merge(df_end, df_ref, by = "Barcode", all = TRUE)
+		# propagate average values to the other plates
+		mean_UntrtReadout <- mean(df_end$UntrtReadout, na.rm = TRUE)
+		mean_RefReadout <- mean(df_end$RefReadout, na.rm = TRUE)
+		df_end$UntrtReadout[is.na(df_end$UntrtReadout)] <- mean_UntrtReadout
+		df_end$RefReadout[is.na(df_end$RefReadout)] <- mean_RefReadout
+	      }
 
-                #gladkia: assert for control data
-                if (nrow(df_end) == 0) {
-                  stop(sprintf("Control dataframe failed.
-                      Treatment Id: '%s'
-                      Cell_line Id: %s",
-                               i,
-                               j))
-                }
-              } else if (all(row_maps_cotrt[[i]] %in% rownames(normSE))) {
-                # case of the reference being with Gnumber == Gnumber_2
-                ref_conc <- SummarizedExperiment::rowData(normSE)[i, 'Concentration_2']
-                df_ref <- do.call(rbind,
-                        lapply(row_maps_cotrt[[i]], function(x) {
-                          if (any(normSE_original[[x, col_maps[j]]]$Concentration == ref_conc)) {
-                            # the reference value with same concentration is found
-                            normSE_original[[x, col_maps[j]]][
-                              normSE_original[[x, col_maps[j]]]$Concentration == ref_conc,]
-                          } else {
-                            # the reference with proper concentration will be inferred --> need fits
-                            ref_drc <- normSE_original[[x, col_maps[j]]]
-                            if (length(unique(ref_drc$Concentration[!ref_drc$masked])) > 3) {
-                              # tryCatch( 
-                                # trycatch to write
-                                drc_fit = drc::drm(
-                                CorrectedReadout ~ Concentration,
-                                data = ref_drc[!ref_drc$masked,],
-                                fct = drc::LL.4(), # para = c(Hill, x_inf, x0, c50)
-                                start = c(2, min(ref_drc$CorrectedReadout),
-                                            max(ref_drc$CorrectedReadout),
-                                            median(ref_drc$Concentration)),
-                                lowerl = c(1e-5, min(ref_drc$CorrectedReadout)*.8, # wide range
-                                            min(ref_drc$CorrectedReadout)*.9,
-                                            min(ref_drc$Concentration)/1e3),
-                                upperl =  c(12, max(ref_drc$CorrectedReadout)*1.1,
-                                            max(ref_drc$CorrectedReadout)*1.2,
-                                            max(ref_drc$Concentration)*1e3)
-                              )
-                              df_ref <- data.frame(Concentration = ref_conc,
-                                  CorrectedReadout = predict(drc_fit,
-                                          data.frame(Concentration = ref_conc)))
-                        # )
-                          } else {
-                            df_ref <- data.frame(Concentration = ref_conc,
-                                CorrectedReadout = NA)
-                          }
-                        }
-                      }))
-                
-                df_ref <- df_ref[, c("CorrectedReadout", 
-                                     intersect(Keys$ref_Endpoint, colnames(df_ref))), 
-                                 drop = FALSE]
-                colnames(df_ref)[1] <- "RefReadout"
-                if (ncol(df_ref) > 1) {
-                  df_ref <- aggregate(df_ref[, 1, drop = FALSE],
-                    by = as.list(df_ref[, -1, drop = FALSE]),
-                    function(x) control_mean_fct(x))
-                } else {
-                  df_ref <- DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
-                }
+	      #gladkia: assert for control data
+	      if (nrow(df_end) == 0) {
+		stop(sprintf("Control dataframe failed.
+		    Treatment Id: '%s'
+		    Cell_line Id: %s",
+			     i,
+			     j))
+	      }
+	    } else if (all(row_maps_cotrt[[i]] %in% rownames(normSE))) {
+	      # case of the reference being with Gnumber == Gnumber_2
+	      ref_conc <- SummarizedExperiment::rowData(normSE)[i, 'Concentration_2']
+	      df_ref <- do.call(rbind,
+		      lapply(row_maps_cotrt[[i]], function(x) {
+			if (any(normSE_original[x, col_maps[j]][[1]]$Concentration == ref_conc)) {
+			  # the reference value with same concentration is found
+			  normSE_original[x, col_maps[j]][
+			    normSE_original[x, col_maps[j]][[1]]$Concentration == ref_conc,]
+			} else {
+			  # the reference with proper concentration will be inferred --> need fits
+			  ref_drc <- normSE_original[x, col_maps[j]]
+			  if (length(unique(ref_drc$Concentration[!ref_drc$masked])) > 3) {
+			    drc_fit = drc::drm(
+			      CorrectedReadout ~ Concentration,
+			      data = ref_drc[!ref_drc$masked,],
+			      fct = drc::LL.4(), # para = c(Hill, x_inf, x0, c50)
+			      start = c(2, min(ref_drc$CorrectedReadout),
+					  max(ref_drc$CorrectedReadout),
+					  median(ref_drc$Concentration)),
+			      lowerl = c(1e-5, min(ref_drc$CorrectedReadout)*.8, # wide range
+					  min(ref_drc$CorrectedReadout)*.9,
+					  min(ref_drc$Concentration)/1e3),
+			      upperl =  c(12, max(ref_drc$CorrectedReadout)*1.1,
+					  max(ref_drc$CorrectedReadout)*1.2,
+					  max(ref_drc$Concentration)*1e3)
+			    )
 
-                # check if all control have matching co-treated wells are on the same plate
-                if (all(df_end$Barcode %in% df_ref$Barcode) && all(df_ref$Barcode %in% df_end$Barcode)) {
-                  df_end <- merge(df_end, df_ref,
-                    by = intersect(colnames(df_end), c('Barcode', Keys$discard_keys)))
-                } else {
-                  futile.logger::flog.warn(
-                      "Control data for the drug are propagated to other plates with co-drug controls.
-                      Treatment Id: %s
-                      Cell_line Id: %s",
-                      i,
-                      j
-                    )
-                  # propagate average values to the other plates
-                  df_end <- merge(df_end, df_ref, by = "Barcode", all = TRUE)
-                  mean_UntrtReadout <- mean(df_end$UntrtReadout, na.rm = TRUE)
-                  mean_RefReadout <- mean(df_end$RefReadout, na.rm = TRUE)
-                  df_end$UntrtReadout[is.na(df_end$UntrtReadout)] <- mean_UntrtReadout
-                  df_end$RefReadout[is.na(df_end$RefReadout)] <- mean_RefReadout
-                }
-              } else {
-                stop(sprintf("Reference failed.
-                    Treatment Id: '%s'
-                    Cell_line Id: %s",
-                             i,
-                             j))
-              }
-            } else if (i %in% names(row_maps_cotrt) && length(row_maps_cotrt[[i]])==0) {
-              futile.logger::flog.warn("No reference condition found for
-                  Treatment Id: '%s'
-                  Cell_line Id: %s",
-                           i,
-                           j)
-              df_end$RefReadout <- NA
-            } else {
-              df_end$RefReadout <- df_end$UntrtReadout
-            }
+			    df_ref <- data.frame(Concentration = ref_conc,
+				CorrectedReadout = predict(drc_fit,
+					data.frame(Concentration = ref_conc)))
+			} else {
+			  df_ref <- data.frame(Concentration = ref_conc,
+			      CorrectedReadout = NA)
+			}
+		      }
+		    }))
+	      
+	      df_ref <- df_ref[, c("CorrectedReadout", 
+				   intersect(Keys$ref_Endpoint, colnames(df_ref))), 
+			       drop = FALSE]
+	      colnames(df_ref)[1] <- "RefReadout"
+	      if (ncol(df_ref) > 1) {
+		df_ref <- aggregate(df_ref[, 1, drop = FALSE],
+		  by = as.list(df_ref[, -1, drop = FALSE]),
+		  function(x) control_mean_fct(x))
+	      } else {
+		df_ref <- DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
+	      }
 
-            if (length(row_maps_T0[[i]]) > 0) {
-              df_0 <- do.call(rbind,
-                      lapply(row_maps_T0[[i]], function(x) ctrl_original[[x, col_maps[j]]]))
-              df_0 <- df_0[, c("CorrectedReadout", intersect(Keys$Day0, colnames(df_0)))]
-              colnames(df_0)[1] <- "Day0Readout"
-              df_0 <- aggregate(df_0[, 1, drop = FALSE], by = as.list(df_0[, -1, drop = FALSE]),
-                  function(x) control_mean_fct(x))
+	      # check if all control have matching co-treated wells are on the same plate
+	      if (all(df_end$Barcode %in% df_ref$Barcode) && all(df_ref$Barcode %in% df_end$Barcode)) {
+		df_end <- merge(df_end, df_ref,
+		  by = intersect(colnames(df_end), c('Barcode', Keys$discard_keys)))
+	      } else {
+		futile.logger::flog.warn(
+		    "Control data for the drug are propagated to other plates with co-drug controls.
+		    Treatment Id: %s
+		    Cell_line Id: %s",
+		    i,
+		    j
+		  )
+		# propagate average values to the other plates
+		df_end <- merge(df_end, df_ref, by = "Barcode", all = TRUE)
+		mean_UntrtReadout <- mean(df_end$UntrtReadout, na.rm = TRUE)
+		mean_RefReadout <- mean(df_end$RefReadout, na.rm = TRUE)
+		df_end$UntrtReadout[is.na(df_end$UntrtReadout)] <- mean_UntrtReadout
+		df_end$RefReadout[is.na(df_end$RefReadout)] <- mean_RefReadout
+	      }
+	    } else {
+	      stop(sprintf("Reference failed.
+		  Treatment Id: '%s'
+		  Cell_line Id: %s",
+			   i,
+			   j))
+	    }
+	  } else if (i %in% names(row_maps_cotrt) && length(row_maps_cotrt[[i]])==0) {
+	    futile.logger::flog.warn("No reference condition found for
+		Treatment Id: '%s'
+		Cell_line Id: %s",
+			 i,
+			 j)
+	    df_end$RefReadout <- NA
+	  } else {
+	    df_end$RefReadout <- df_end$UntrtReadout
+	  }
 
-              if (!is.null(Keys$discard_keys) && all(Keys$discard_keys %in% colnames(df_0))) {
-                df_ctrl <- merge(df_0[, setdiff(colnames(df_0), "Barcode")], df_end, all.y = TRUE, by = Keys$discard_keys)
-              } else {
-                df_ctrl <- merge(df_0[, setdiff(colnames(df_0), "Barcode")], df_end, all.y = TRUE)
-                colnames(df_ctrl)[1] <- "Day0Readout"
-              }
-            } else {
-              df_ctrl <- df_end
-              df_ctrl$Day0Readout <- NA
-            }
+	  if (length(row_maps_T0[[i]]) > 0) {
+	    df_0 <- do.call(rbind,
+		    lapply(row_maps_T0[[i]], function(x) ctrl_original[x, col_maps[j]][[1]]))
+	    df_0 <- df_0[, c("CorrectedReadout", intersect(Keys$Day0, colnames(df_0)))]
+	    colnames(df_0)[1] <- "Day0Readout"
+	    df_0 <- aggregate(df_0[, 1, drop = FALSE], by = as.list(df_0[, -1, drop = FALSE]),
+		function(x) control_mean_fct(x))
 
-            # calculating the normalized response value for the control
-            df_ctrl$RefRelativeViability <- round(df_ctrl$RefReadout/df_ctrl$UntrtReadout,
-                nDigits_rounding)
-            df_ctrl$RefGRvalue <- round(2 ^ (
-                    log2(df_ctrl$RefReadout / df_ctrl$Day0Readout) /
-                    log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout) ), nDigits_rounding) - 1
-            df_ctrl$DivisionTime <- round(
-                    SummarizedExperiment::rowData(normSE)[i,gDRutils::get_identifier("duration")] /
-                        log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout), nDigits_rounding)
+	    if (!is.null(Keys$discard_keys) && all(Keys$discard_keys %in% colnames(df_0))) {
+	      df_ctrl <- merge(df_0[, setdiff(colnames(df_0), "Barcode")], df_end, all.y = TRUE, by = Keys$discard_keys)
+	    } else {
+	      df_ctrl <- merge(df_0[, setdiff(colnames(df_0), "Barcode")], df_end, all.y = TRUE)
+	      colnames(df_ctrl)[1] <- "Day0Readout"
+	    }
+	  } else {
+	    df_ctrl <- df_end
+	    df_ctrl$Day0Readout <- NA
+	  }
+
+	  # calculating the normalized response value for the control
+	  df_ctrl$RefRelativeViability <- round(df_ctrl$RefReadout/df_ctrl$UntrtReadout,
+	      nDigits_rounding)
+          df_ctrl$RefGRvalue <- calculate_time_dep_GR_value(df_ctrl$RefReadout, df_ctrl$Day0Readout, df_ctrl$UntrtReadout, nDigits_rounding)
+	  df_ctrl$DivisionTime <- round(
+		  SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")] /
+		      log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout), nDigits_rounding)
 
 
-            #gladkia: assert for merged study/control data
-            ctrl_bcodes <- sort(unique(df_ctrl$Barcode))
-            trt_bcodes <-
-              sort(unique(normSE_original[[i, j]]$Barcode))
-            # check if all treated values have matching controls on the same plate
-            if (!all(trt_bcodes %in% ctrl_bcodes)) {
-              # if not, propagate to all plates
-              futile.logger::flog.warn(
-                  "Control data are averaged and propagated to treatment plates.
-                      Treatment Id: %s (plates %s)
-                      Control plates: %s",
-                  i, paste(trt_bcodes, collapse = ", "),
-                  paste(ctrl_bcodes, collapse = ", ")
-                )
-              data.table::setDF(data.table::rbindlist(list(df_ctrl, cbind(data.frame(Barcode = setdiff(trt_bcodes, ctrl_bcodes)),
-                                                                          t(colMeans(df_ctrl[, setdiff(colnames(df_ctrl), "Barcode")])))), fill = TRUE))
-            }
+	  #gladkia: assert for merged study/control data
+	  ctrl_bcodes <- sort(unique(df_ctrl$Barcode))
+	  trt_bcodes <-
+	    sort(unique(normSE_original[i, j][[1]]$Barcode))
+	  # check if all treated values have matching controls on the same plate
+	  if (!all(trt_bcodes %in% ctrl_bcodes)) {
+	    # if not, propagate to all plates
+	    futile.logger::flog.warn(
+		"Control data are averaged and propagated to treatment plates.
+		    Treatment Id: %s (plates %s)
+		    Control plates: %s",
+		i, paste(trt_bcodes, collapse = ", "),
+		paste(ctrl_bcodes, collapse = ", ")
+	      )
+	    data.table::setDF(data.table::rbindlist(list(df_ctrl, cbind(data.frame(Barcode = setdiff(trt_bcodes, ctrl_bcodes)),
+									t(colMeans(df_ctrl[, setdiff(colnames(df_ctrl), "Barcode")])))), fill = TRUE))
+	  }
 
-            # works with by = character(0) but changes the order of rows
-            df_merged <- merge(
-              data.frame(normSE_original[[i, j]]),
-                    data.frame(df_ctrl),
-                    by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)),
-                    all.x = T)
+	  # works with by = character(0) but changes the order of rows
+	  df_merged <- merge(
+	    data.frame(normSE_original[i, j][[1]]),
+		  data.frame(df_ctrl),
+		  by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)),
+		  all.x = TRUE)
 
-            # merge the data with the controls assuring that the order of the records is preseved
-            # removing this line because failed when   by = character(0)
-            # df_merged <- dplyr::left_join(
-            #         data.frame(normSE_original[[i, j]]),
-            #         data.frame(df_ctrl),
-            #         by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)))
+	  # calculate the normalized values
+	  df_merged$RelativeViability <- round(df_merged$CorrectedReadout / df_merged$UntrtReadout, nDigits_rounding)
 
-            # calculate the normalized values
-            df_merged$RelativeViability <- round(df_merged$CorrectedReadout / df_merged$UntrtReadout, nDigits_rounding)
+          df_merged$GRvalue <- calculate_time_dep_GR_value(df_merged$CorrectedReadout, df_merged$Day0Readout, df_merged$UntrtReadout, nDigits_rounding)
+	  # use the reference doubling Time (ReferenceDivisionTime) for GRvalue if day 0 missing
+	  if (any(is.na(df_merged$Day0Readout)) ) {
+	      ref_div_time_col <- gDRutils::get_identifier("cellline_ref_div_time")
+	      cl_name_col <- gDRutils::get_identifier("cellline_name")
+	      if (!(ref_div_time_col %in% colnames(SummarizedExperiment::colData(normSE))) ||
+		is.na(SummarizedExperiment::colData(normSE)[j, ref_div_time_col]) ) {
+		  # missing division time
+		  futile.logger::flog.warn(paste(
+		    "No day 0 information and no reference doubling time for cell line", SummarizedExperiment::colData(normSE)[j, cl_name_col],
+		    "--> GR values are NA"))
+	      } else if (SummarizedExperiment::colData(normSE)[j, ref_div_time_col] >
+		  1.5 * SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")]) {
+		    # check if experiment is long enough relative to division time
+		    futile.logger::flog.warn(paste( "Reference doubling time for cell line",
+		    SummarizedExperiment::colData(normSE)[j,cl_name_col], "is",
+		    SummarizedExperiment::colData(normSE)[j, ref_div_time_col],
+		      "which is too long for GR calculation compared to assay duration (",
+		    SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")],
+		      "--> GR values are NA"))
+	       } else {
+		 # division time is correct for calculation
+		refDivisionTime <- as.numeric(SummarizedExperiment::colData(normSE)[j, ref_div_time_col])
 
-            df_merged$GRvalue <- round(2 ^ (
-              log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
-                log2(df_merged$UntrtReadout / df_merged$Day0Readout)
-            ), nDigits_rounding) - 1
+		futile.logger::flog.warn(paste(
+		  "Missing day 0 information --> calculate GR value based on reference doubling time for", SummarizedExperiment::colData(normSE)[j, cl_name_col]))
 
-            # use the reference doubling Time (ReferenceDivisionTime) for GRvalue if day 0 missing
-            if (any(is.na(df_merged$Day0Readout)) ) {
-                ref_div_time_col <- gDRutils::get_identifier("cellline_ref_div_time")
-                cl_name_col <- gDRutils::get_identifier("cellline_name")
-                if (!(ref_div_time_col %in% colnames(SummarizedExperiment::colData(normSE))) ||
-                  is.na(SummarizedExperiment::colData(normSE)[j, ref_div_time_col]) ) {
-                    # missing division time
-                    futile.logger::flog.warn(paste(
-                      "No day 0 information and no reference doubling time for cell line", SummarizedExperiment::colData(normSE)[j, cl_name_col],
-                      "--> GR values are NA"))
-                } else if (SummarizedExperiment::colData(normSE)[j, ref_div_time_col] >
-                    1.5 * SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")]) {
-                      # check if experiment is long enough relative to division time
-                      futile.logger::flog.warn(paste( "Reference doubling time for cell line",
-                      SummarizedExperiment::colData(normSE)[j,cl_name_col], "is",
-                      SummarizedExperiment::colData(normSE)[j, ref_div_time_col],
-                        "which is too long for GR calculation compared to assay duration (",
-                      SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")],
-                        "--> GR values are NA"))
-                 } else {
-                   # division time is correct for calculation
-                  refDivisionTime <- as.numeric(SummarizedExperiment::colData(normSE)[j, ref_div_time_col])
+		duration <- SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")]
+		df_merged$GRvalue <- calculate_endpt_GR_value(df_merged[, "RelativeViability"], duration, refDivisionTime, ndigit_rounding = nDigits_rounding)
+		df_ctrl$RefGRvalue <- calculate_endpt_GR_value(df_ctrl[, "RefRelativeViability"], duration, refDivisionTime, ndigit_rounding = nDigits_rounding) 
+	      }
+	  }
 
-                  futile.logger::flog.warn(paste(
-                    "Missing day 0 information --> calculate GR value based on reference doubling time for", SummarizedExperiment::colData(normSE)[j, cl_name_col]))
-
-                  df_merged$GRvalue <-
-                  round(2 ^ (1 + (
-                    log2(pmin(1.25, # capping to avoid artefacts
-                              df_merged[, "RelativeViability"])) /
-                      (SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")] / refDivisionTime)
-                  )), nDigits_rounding) - 1
-
-                  df_ctrl$RefGRvalue <-
-                  round(2 ^ (1 + (
-                    log2(pmin(1.25, # capping to avoid artefacts
-                              df_ctrl[, "RefRelativeViability"])) /
-                      (SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")] / refDivisionTime)
-                  )), nDigits_rounding) - 1
-                }
-            }
-
-            # more robust assignment in case the order of df_merged has changed
-            normSE_n[[i, j]] <- merge(normSE_n[[i, j]],
-                df_merged[, c(colnames(normSE_n[[i, j]]), 'GRvalue', 'RelativeViability')],
-                by = colnames(normSE_n[[i, j]]))
-            normSE_c[[i, j]] <- DataFrame(df_ctrl)
+	  # BumpyMatrix object has unmutable set of columns in DataFrame for each [i,j]
+	  # thus normSE_n assay was initialized with NAs for "GRvalue" and "RelativeViability"
+	  # in merge below we want to update these columns with real data from df_merged
+	  merging_cols <-
+	    setdiff(colnames(normSE_n[i, j][[1]]), c("GRvalue", "RelativeViability"))
+	  normSE_n[i, j][[1]] <-
+	    merge(normSE_n[i, j][[1]][, merging_cols],
+		  df_merged[c(merging_cols, "GRvalue", "RelativeViability")],
+		  by = merging_cols)
+	  normSE_c[i, j][[1]] <- DataFrame(df_ctrl)
         }
     }
     metadata(normSE) <- c(metadata(normSE),
@@ -432,4 +429,18 @@ normalize_SE <- function(df_raw_data,
     SummarizedExperiment::assay(normSE, 'Controls') <- normSE_c
 
     return(normSE)
+}
+
+
+#' @export
+#'
+calculate_time_dep_GR_value <- function(ref_readout, day0_readout, untrt_readout, ndigit_rounding) {
+  round(2 ^ (log2(ref_readout / day0_readout) / log2(untrt_readout / day0_readout)), ndigits_rounding) - 1
+}
+
+
+#' @export
+#'
+calculate_endpt_GR_value <- function(rel_viability, duration, ref_div_time, cap = 1.25, ndigit_rounding, time_dep = FALSE) {
+  round(2 ^ (1 + (log2(pmin(cap, rel_viability)) / (duration / ref_div_time))), ndigit_rounding) - 1
 }
