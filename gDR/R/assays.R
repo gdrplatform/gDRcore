@@ -23,6 +23,8 @@
 #'
 #' @return character vector with untreated conditions
 #'
+#' @export
+#'
 .get_untreated_conditions <-
   function(drug_data) {
     # Assertions:
@@ -38,6 +40,8 @@
 #' @param drug_data data.frame or DataFrame with treatment information
 #'
 #' @return character vector with treated conditions
+#'
+#' @export
 #'
 .get_treated_conditions <-
   function(drug_data) {
