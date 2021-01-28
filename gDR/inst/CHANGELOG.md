@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 #### Update
 - utilize refactored and renamed fitting function RVGRfit to fit_curves
 
+#### [0.1.39] - 2021-01-27
+#### Update
+- clean up getMetaData 
+
 #### [0.1.38] - 2021-01-27
 #### Update
 - export some functions for use in gDRutils
