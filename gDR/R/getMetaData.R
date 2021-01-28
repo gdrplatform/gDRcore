@@ -12,9 +12,9 @@
 #' Named list containing the following elements:
 #' itemize{
 #'  \item{rowData}{treatment metadata}
-#'  \item{colData}{conditions}
-#'  \item{dataCols}{}
-#'  \item{csteData}{}
+#'  \item{colData}{condition metadata}
+#'  \item{dataCols}{all data.frame columns corresponding to non-metadata fields}
+#'  \item{csteData}{metadata that is constant for all entries of the data.frame}
 #' }
 #'
 #' @export

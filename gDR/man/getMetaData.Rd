@@ -4,20 +4,26 @@
 \alias{getMetaData}
 \title{getMetaData}
 \usage{
-getMetaData(
-  data,
-  cell_id = gDRutils::get_identifier("cellline"),
-  discard_keys = NULL
-)
+getMetaData(data, discard_keys = NULL)
 }
 \arguments{
-\item{data}{tibble or data.frame with drug-response data}
+\item{data}{data.frame with drug-response data}
 
-\item{cell_id}{string name of the column with cell line names}
+\item{discard_keys}{character vector of keys to discard from the data columns}
 }
 \value{
-list with two DataFrames ('colData' and 'rowData') and character vector ('dataCols')
+named list containing different elements of a \linkS4class{SummarizedExperiment};
+see details.
 }
 \description{
 Get metadata of given project
+}
+\details{
+Named list containing the following elements:
+itemize{
+ \item{rowData}{treatment metadata}
+ \item{colData}{condition metadata}
+ \item{dataCols}{all data.frame columns corresponding to non-metadata fields}
+ \item{csteData}{metadata that is constant for all entries of the data.frame}
+}
 }
