@@ -1,6 +1,10 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+#### [0.1.39] - 2021-01-29
+#### Update
+- utilize refactored and renamed fitting function RVGRfit to fit_curves
+
 #### [0.1.38] - 2021-01-27
 #### Update
 - export some functions for use in gDRutils
