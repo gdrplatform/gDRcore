@@ -14,10 +14,10 @@
 #' @details
 #' Named list containing the following elements:
 #' itemize{
-#'  \item{rowData}{treatment metadata}
-#'  \item{colData}{condition metadata}
-#'  \item{dataCols}{all data.frame column names corresponding to fields represented within a BumpyMatrix cell}
-#'  \item{csteData}{metadata that is constant for all entries of the data.frame}
+#'  \item{treatment_md}{treatment metadata}
+#'  \item{condition_md}{condition metadata}
+#'  \item{data_fields}{all data.frame column names corresponding to fields represented within a BumpyMatrix cell}
+#'  \item{experiment_md}{metadata that is constant for all entries of the data.frame}
 #' }
 #'
 #' The \code{discard_keys} provides the user the opportunity to specify that they would not 
