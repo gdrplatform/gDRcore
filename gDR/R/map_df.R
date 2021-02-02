@@ -33,8 +33,6 @@ map_df <- function(trt_rdata, ref_rdata, row_endpoint_value_filter, Keys, ref_ty
   } else if (ref_type == "untrt_Endpoint"){
     matching_list <- list(key_values = row_endpoint_value_filter, conc = is_ref_conc)
     matchFactor <- duration_col 
-  } else if (ref_type == "ref_Endpoint") {
-    ctrl <- "ref_Endpoint"
   }
 
   trt_rnames <- rownames(trt_rdata)
