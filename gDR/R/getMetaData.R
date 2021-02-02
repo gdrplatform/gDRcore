@@ -98,25 +98,18 @@ getMetaData <- function(data, discard_keys = NULL) {
   ## Condition metadata.
   condition_md <- unique(md[, cl_entries, drop = FALSE])
   condition_md$col_id <- seq_len(nrow(condition_md))
-  condition_md$name_ <- apply(condition_md, 1, function(x) {paste(x, collapse = "_")})
+  rownames(condition_md) <- apply(condition_md, 1, function(x) {paste(x, collapse = "_")})
 
   ## Treatment metadata.
   trt_cols <- setdiff(meta_cols, c(cl_entries, constant_cols))
   treatment_md <- unique(md[, trt_cols, drop = FALSE])
   treatment_md$row_id <- seq_len(nrow(treatment_md))
-  treatment_md$name_ <- apply(treatment_md, 1, function(x) {paste(x, collapse = "_")})
+  rownames(treatment_md) <- apply(treatment_md, 1, function(x) {paste(x, collapse = "_")})
 
-  # TODO: Rename these so they are not the same as function names.
-  #return(list(
-  #  condition_md = condition_md,
-  #  treatment_md = treatment_md,
-  #  data_fields = data_cols,
-  #  experiment_md = exp_md
-  #))
   return(list(
-    colData = condition_md,
-    rowData = treatment_md,
-    dataCols = data_cols,
-    csteData = exp_md
+    condition_md = condition_md,
+    treatment_md = treatment_md,
+    data_fields = data_cols,
+    experiment_md = exp_md
   ))
 }
