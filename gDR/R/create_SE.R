@@ -82,7 +82,7 @@ create_SE <-
 #'
 #' @seealso normalize_SE
 #' @details 
-#' This is most commonly used to perform downstream normalization.
+#' This is most commonly used in preparation for downstream normalization.
 #'
 #' @export
 #'
