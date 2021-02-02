@@ -99,12 +99,14 @@ getMetaData <- function(data, discard_keys = NULL) {
   condition_md <- unique(md[, cl_entries, drop = FALSE])
   condition_md$col_id <- seq_len(nrow(condition_md))
   rownames(condition_md) <- apply(condition_md, 1, function(x) {paste(x, collapse = "_")})
+  condition_md <- condition_md[! names(condition_md) %in% c('col_id')]
 
   ## Treatment metadata.
   trt_cols <- setdiff(meta_cols, c(cl_entries, constant_cols))
   treatment_md <- unique(md[, trt_cols, drop = FALSE])
   treatment_md$row_id <- seq_len(nrow(treatment_md))
   rownames(treatment_md) <- apply(treatment_md, 1, function(x) {paste(x, collapse = "_")})
+  treatment_md <- treatment_md[! names(treatment_md) %in% c('row_id')]
 
   return(list(
     condition_md = condition_md,
