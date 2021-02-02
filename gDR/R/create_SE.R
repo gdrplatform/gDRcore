@@ -91,34 +91,23 @@ create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(readout)
   checkmate::assert_character(discard_keys, null.ok = TRUE)
-  checkmate::assert_vector(selected_keys, null.ok = TRUE)
-  checkmate::assert_list(key_values, null.ok = TRUE)
-  checkmate::assert_function(control_mean_fct, null.ok = TRUE)
 
   Keys <- identify_keys(df_)
-  if (!is.null(key_values)) {
-    checkmate::assert_true(all(names(key_values) %in% unlist(Keys)))
-  } 
-
   Keys$discard_keys <- discard_keys
-  if (!is.null(selected_keys)) {
-    Keys[names(selected_keys)] <- selected_keys[names(selected_keys)]
-  }
 
   if (!is.null(discard_keys)) {
     Keys$DoseResp <- setdiff(Keys$DoseResp, discard_keys)
   }
 
-  # adding 'masked = F' if missing from df_
   if (!(gDRutils::get_identifier('masked_tag') %in% colnames(df_))) {
     df_[, gDRutils::get_identifier('masked_tag')] <- FALSE
   }
 
   # enforced key values for end points (override selected_keys) --> for rows of the SE
-  Keys$untrt_Endpoint <- setdiff(Keys$untrt_Endpoint, names(key_values))
+  # Keys$untrt_Endpoint <- setdiff(Keys$untrt_Endpoint, names(key_values))
   row_endpoint_value_filter <- rep(TRUE, nrow(ctrlSE))
 
-  # remove background value to readout (at least 1e-10 to avoid artefactual normalized values)
+  # Remove background value from readout (at least 1e-10 to avoid artefactual normalized values).
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
   df_$GRvalue <- NA
   df_$RelativeViability <- NA
@@ -144,18 +133,11 @@ create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
   ## FILL ME
   ###############
 
-  matsL <- list(mats)
-  names(matsL) <- readout
+  #matsL <- list(mats)
+  #names(matsL) <- readout
 
-  # Set the experiment metadata.
-  experiment_md <- c(exp_md,
-    list(df_ = df_,
-      Keys = Keys,
-      row_maps = list(end = row_maps_end,
-	cotrt = row_maps_cotrt,
-	T0 = row_maps_T0)
-      )
-  )
+  # Capture important values in experiment metadata.
+  experiment_md <- c(exp_md, list(df_ = df_, Keys = Keys, row_maps = list(end = row_maps_end)))
   
   se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
     colData = coldata,
