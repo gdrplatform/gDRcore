@@ -20,10 +20,12 @@ normalize_SE <- function(se, nDigits_rounding = 4) {
   refs <- SummarizedExperiment::assays(se)[["Controls"]]
   trt <- SummarizedExperiment::assays(se)[["treated"]]
 
+  # TODO: Create empty BM? 
+  # bm <- create_empty_bm()
   for (i in rownames(se)) {
     for (j in colnames(se)) {
-      ref_df <- refs[i, j]
-      trt_df <- trt[i, j]
+      ref_df <- refs[i, j][[1]]
+      trt_df <- trt[i, j][[1]]
 
       if (nrow(trt_df) == 0L) {
 	next # skip if no data
@@ -36,13 +38,13 @@ normalize_SE <- function(se, nDigits_rounding = 4) {
 
       # BumpyMatrix object has unmutable set of columns in DataFrame for each [i,j]
       # thus se assay was initialized with NAs for "GRvalue" and "RelativeViability"
-      # in merge below we want to update these columns with real data from df_merged
-      # TODO: Change this to put this into an entirely new assay. 
       normalized <- normalize_trt_to_ref(trt_df, ref_df, ndigits_rounding = nDigits_rounding) # TODO: Potentially add the duration_col as an arg.
-      se[i, j][["Normalized"]] <- normalized
+      # TODO: Put the normalized data.frame into the bumpy matrix. 
+      #bm[i, j] <- normalized
     }
   }
 
+  # TODO: Put the bumpy matrix assay back into the SE as a new "Normalized" assay.
   return(se)
 }
 
