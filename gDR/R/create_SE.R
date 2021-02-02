@@ -36,7 +36,7 @@ create_SE <-
     assay_type <- match.arg(assay_type)
 
     # stopifnot(all(names(dfList) %in% .assayNames))
-    # #dfList must contain first assay (i.e. df_raw_data)
+    # #dfList must contain first assay (i.e. df_data)
     # stopifnot(.assayNames[1] %in% names(dfList))
 
     
@@ -67,3 +67,99 @@ create_SE <-
                                                      rowData = seRowData)
 
   }
+
+
+#' Create a SummarizedExperiment object
+#'
+#' Create a SummarizedExperiment object from a data.frame where all treatments are on rows,
+#' conditions are on columns, treated readouts live in an assay called \code{"treated"},
+#' and reference readouts live in an assay called \code{"Controls"}.
+#'
+#' @param df_ data.frame of raw drug response data containing both treated and untreated values.
+#' @param readout string of the name containing the cell viability readout values.
+#' @param discard_keys character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
+#' Defaults to \code{NULL}. 
+#'
+#' @seealso normalize_SE
+#' @details 
+#' This is most commonly used to perform downstream normalization.
+#'
+#' @export
+#'
+create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
+  # Assertions:
+  stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
+  checkmate::assert_string(readout)
+  checkmate::assert_character(discard_keys, null.ok = TRUE)
+  checkmate::assert_vector(selected_keys, null.ok = TRUE)
+  checkmate::assert_list(key_values, null.ok = TRUE)
+  checkmate::assert_function(control_mean_fct, null.ok = TRUE)
+
+  Keys <- identify_keys(df_)
+  if (!is.null(key_values)) {
+    checkmate::assert_true(all(names(key_values) %in% unlist(Keys)))
+  } 
+
+  Keys$discard_keys <- discard_keys
+  if (!is.null(selected_keys)) {
+    Keys[names(selected_keys)] <- selected_keys[names(selected_keys)]
+  }
+
+  if (!is.null(discard_keys)) {
+    Keys$DoseResp <- setdiff(Keys$DoseResp, discard_keys)
+  }
+
+  # adding 'masked = F' if missing from df_
+  if (!(gDRutils::get_identifier('masked_tag') %in% colnames(df_))) {
+    df_[, gDRutils::get_identifier('masked_tag')] <- FALSE
+  }
+
+  # enforced key values for end points (override selected_keys) --> for rows of the SE
+  Keys$untrt_Endpoint <- setdiff(Keys$untrt_Endpoint, names(key_values))
+  row_endpoint_value_filter <- rep(TRUE, nrow(ctrlSE))
+
+  # remove background value to readout (at least 1e-10 to avoid artefactual normalized values)
+  df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
+  df_$GRvalue <- NA
+  df_$RelativeViability <- NA
+
+  ## Identify treatments, conditions, and experiment metadata.
+  md <- getMetaData(df_, discard_keys = discard_keys)
+  coldata <- md$condition_md
+  rowdata <- md$treatment_md
+  exp_md <- md$experiment_md
+
+  ## Identify treated and untreated conditions.
+  rowdata <- .assign_treated_and_untreated_conditions(rowdata)
+  split_list <- split(rowdata, f = rowdata$treated_untreated)  
+  if (length(split_list) != 2L) {
+    stop("unexpected field") # TODO: Improve me. 
+  }
+
+  ## Map the treatments to their references.
+  row_maps_end <- map_df(split_list$treated, split_list$untreated, row_endpoint_value_filter, Keys, ref_type = "untrt_Endpoint")
+
+  ## TODO: Create the BumpyMatrix with the proper normalized and control values.
+  ###############
+  ## FILL ME
+  ###############
+
+  matsL <- list(mats)
+  names(matsL) <- readout
+
+  # Set the experiment metadata.
+  experiment_md <- c(exp_md,
+    list(df_ = df_,
+      Keys = Keys,
+      row_maps = list(end = row_maps_end,
+	cotrt = row_maps_cotrt,
+	T0 = row_maps_T0)
+      )
+  )
+  
+  se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
+    colData = coldata,
+    rowData = rowdata, 
+    metadata = experiment_md)
+  se
+}
