@@ -1,8 +1,8 @@
 pkgs:
   BumpyMatrix:
-    ver: ">=0.99.0"
+    ver: ">=0.99.6"
     url: https://github.roche.com/gdrplatform/BumpyMatrix.git
-    ref: master
+    ref: DEVEL_3_12
     subdir: ~
   GeneDataScreenR:
     ver: ">=0.99.16"

@@ -1,6 +1,12 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+
+#### [0.1.40] - 2021-02-02
+#### Update
+- fix unit tests
+- include discard keys info in getMetaData for rowData
+
 #### [0.1.39] - 2021-01-29
 #### Update
 - utilize refactored and renamed fitting function RVGRfit to fit_curves
