@@ -26,7 +26,8 @@ create_SE <-
            data_type = c("untreated", "treated", "all"),
            readout = 'ReadoutValue',
            discard_keys = NULL,
-           assay_type = c("matrix", "BumpyMatrix")) {
+           assay_type = c("matrix", "BumpyMatrix"), 
+           aggregate_ref_FXN = function(x) {mean(x, trim = 0.25)}) {
     # Assertions:
     stopifnot(any(inherits(df_data, "data.frame"), inherits(df_data, "DataFrame")))
     checkmate::assert_character(data_type)
@@ -79,6 +80,8 @@ create_SE <-
 #' @param readout string of the name containing the cell viability readout values.
 #' @param discard_keys character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
 #' Defaults to \code{NULL}. 
+#' @param aggregate_ref_FXN function used for averaging references.
+#' Defaults to trimmed arithmetic mean with trim = 0.25.
 #'
 #' @seealso normalize_SE
 #' @details 
@@ -103,14 +106,8 @@ create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
     df_[, gDRutils::get_identifier('masked_tag')] <- FALSE
   }
 
-  # enforced key values for end points (override selected_keys) --> for rows of the SE
-  # Keys$untrt_Endpoint <- setdiff(Keys$untrt_Endpoint, names(key_values))
-  row_endpoint_value_filter <- rep(TRUE, nrow(ctrlSE))
-
   # Remove background value from readout (at least 1e-10 to avoid artefactual normalized values).
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
-  df_$GRvalue <- NA
-  df_$RelativeViability <- NA
 
   ## Identify treatments, conditions, and experiment metadata.
   md <- getMetaData(df_, discard_keys = discard_keys)
@@ -118,26 +115,61 @@ create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
   rowdata <- md$treatment_md
   exp_md <- md$experiment_md
 
+  mapping_entries <- .create_mapping_factors(rowdata, coldata)
+  mapping_entries$groupings <- rownames(mapping_entries) 
+
   ## Identify treated and untreated conditions.
-  rowdata <- .assign_treated_and_untreated_conditions(rowdata)
-  split_list <- split(rowdata, f = rowdata$treated_untreated)  
+  assigned_mapping_entries <- .assign_treated_and_untreated_conditions(mapping_entries)
+  split_list <- split(assigned_mapping_entries, f = assigned_mapping_entries$treated_untreated)  
   if (length(split_list) != 2L) {
-    stop("unexpected field") # TODO: Improve me. 
+    stop(sprintf("unexpected conditions found: '%s'", 
+      paste(setdiff(levels(assigned_mapping_entries$treated_untreated), c("treated", "untreated")), collapse = ",")))
   }
 
-  ## Map the treatments to their references.
-  row_maps_end <- map_df(split_list$treated, split_list$untreated, row_endpoint_value_filter, Keys, ref_type = "untrt_Endpoint")
+  # enforced key values for end points (override selected_keys) --> for rows of the SE
+  # Keys$untrt_Endpoint <- setdiff(Keys$untrt_Endpoint, names(key_values))
+  row_endpoint_value_filter <- rep(TRUE, nrow(split_list[["untreated"]]))
 
-  ## TODO: Create the BumpyMatrix with the proper normalized and control values.
+  ## Map the treatments to their references.
+  untrt_endpoint_map <- map_df(split_list$treated, split_list$untreated, row_endpoint_value_filter, Keys, ref_type = "untrt_Endpoint")
+
+  # Identify groupings on the original df. 
+  df_ <- merge(df_, assigned_mapping_entries, by = c(colnames(rowdata), colnames(coldata)), all.x = TRUE)
+  # Split this again to get the references. 
+  split_list <- split(df_, f = df_$treated_untreated)
+  split_list[["untreated"]]
+
+  # Aggregate where there are multiple references for a single treatment. 
+  refs <- unique(untrt_endpoint_map)
+  n_refs <- length(refs) # Identify how many unique control groups there are.
+
+  ref_cache <- vector("list", n_refs)
+  names(ref_cache) <- vapply(refs, function(x) paste(x, collapse = "_"), character(0))
+
+  for (i in seq_along(untrt_endpoint_map)) {
+    trt_refs <- untrt_endpoint_map[[i]]
+    if (length(trt_refs > 1L) {
+      agg_readout <- aggregate_ref_FXN(untrt[untrt$groupings %in% trt_refs, readout])
+      # TODO: Figure out what values should actually go in here. Looks like we'll need "UntrtReadout". 
+      # Will this be just a single value? If so, we don't need a BumpyMatrix, and can just create a matrix and put it in the matrix list.
+      ref_cache[[i]] <- aggregate_ref_FXN(untrt[untrt$groupings %in% trt_refs, readout])
+    }
+  }
+
+  ## Join the metadata mappings back with the original data.
+  mapping_entries <- merge(mapping_entries, untrt_endpoint_map) # Check that the other references are filled with NAs. 
+
+  ## TODO: Create the BumpyMatrix with the proper normalized values.
   ###############
   ## FILL ME
   ###############
 
+  matsL <- NULL
   #matsL <- list(mats)
   #names(matsL) <- readout
 
   # Capture important values in experiment metadata.
-  experiment_md <- c(exp_md, list(df_ = df_, Keys = Keys, row_maps = list(end = row_maps_end)))
+  experiment_md <- c(exp_md, list(df_ = df_, Keys = Keys))
   
   se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
     colData = coldata,

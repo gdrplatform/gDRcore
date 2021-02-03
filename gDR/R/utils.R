@@ -250,3 +250,18 @@ standardize_record_values <- function(x, dictionary = DICTIONARY){
   }
   x
 }
+
+
+#' @noRd
+#' @keywords internal
+#'
+.create_mapping_factors <- function(rowdata, coldata) {
+  mapping_cols <- c(colnames(rowdata), colnames(coldata))
+  mapping_entries <- expand.grid(row_id = rownames(rowdata), col_id = rownames(coldata), stringsAsFactors = FALSE)
+
+  mapping_entries <- base::merge(mapping_entries, rowdata, by.x = "row_id", by.y = 0, all.x = TRUE)
+  mapping_entries <- base::merge(mapping_entries, coldata, by.x = "col_id", by.y = 0, all.x = TRUE)
+
+  rownames(mapping_entries) <- seq_len(nrow(mapping_entries))
+  mapping_entries[!colnames(mapping_entries) %in% c("row_id", "col_id")]
+} 
