@@ -9,7 +9,8 @@ create_SE(
   data_type = c("untreated", "treated", "all"),
   readout = "ReadoutValue",
   discard_keys = NULL,
-  assay_type = c("matrix", "BumpyMatrix")
+  assay_type = c("matrix", "BumpyMatrix"),
+  aggregate_ref_FXN = function(x) {     mean(x, trim = 0.25) }
 )
 }
 \arguments{

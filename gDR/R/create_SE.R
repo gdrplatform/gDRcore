@@ -148,7 +148,7 @@ create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
 
   for (i in seq_along(untrt_endpoint_map)) {
     trt_refs <- untrt_endpoint_map[[i]]
-    if (length(trt_refs > 1L) {
+    if (length(trt_refs > 1L)) {
       agg_readout <- aggregate_ref_FXN(untrt[untrt$groupings %in% trt_refs, readout])
       # TODO: Figure out what values should actually go in here. Looks like we'll need "UntrtReadout". 
       # Will this be just a single value? If so, we don't need a BumpyMatrix, and can just create a matrix and put it in the matrix list.

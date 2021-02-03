@@ -9,21 +9,28 @@ getMetaData(data, discard_keys = NULL)
 \arguments{
 \item{data}{data.frame with drug-response data}
 
-\item{discard_keys}{character vector of keys to discard from the data columns}
+\item{discard_keys}{character vector of keys to discard from the row or column data, 
+and to leave in the matrix data. See details.}
 }
 \value{
 named list containing different elements of a \linkS4class{SummarizedExperiment};
 see details.
 }
 \description{
-Get metadata of given project
+Divide the columns of an input data.frame into treatment metadata, condition metadata, 
+experiment metadata, and core data for further analysis. This will most commonly be used
+to identify the different components of a \linkS4class{SummarizedExperiment} object.
 }
 \details{
 Named list containing the following elements:
 itemize{
- \item{rowData}{treatment metadata}
- \item{colData}{condition metadata}
- \item{dataCols}{all data.frame columns corresponding to non-metadata fields}
- \item{csteData}{metadata that is constant for all entries of the data.frame}
+ \item{treatment_md}{treatment metadata}
+ \item{condition_md}{condition metadata}
+ \item{data_fields}{all data.frame column names corresponding to fields represented within a BumpyMatrix cell}
+ \item{experiment_md}{metadata that is constant for all entries of the data.frame}
 }
+
+The \code{discard_keys} provides the user the opportunity to specify that they would not 
+like to use that metadata field as a differentiator of the treatments, and instead, incorporate it
+into the \code{DataFrame} in the BumpyMatrix.
 }

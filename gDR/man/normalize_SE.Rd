@@ -4,31 +4,18 @@
 \alias{normalize_SE}
 \title{normalize_SE}
 \usage{
-normalize_SE(
-  df_raw_data,
-  selected_keys = NULL,
-  key_values = NULL,
-  discard_keys = NULL,
-  control_mean_fct = function(x) mean(x, trim = 0.25),
-  nDigits_rounding = 4
-)
+normalize_SE(se, nDigits_rounding = 4)
 }
 \arguments{
-\item{df_raw_data}{a dataframe with raw data}
+\item{se}{\code{BumpyMatrix} object with assays \code{"treated"} and \code{Controls}.}
 
-\item{selected_keys}{a vector of keys that should be included in the normalization (NULL by default)}
-
-\item{key_values}{a list of values for keys that should be included in the normalization (NULL by default)}
-
-\item{discard_keys}{a vector of keys that should be discarded (NULL by default)}
-
-\item{control_mean_fct}{the function used for averaging controls (trimmed arithmetic mean with trim = .25 by default)}
-
-\item{nDigits_rounding}{an integer with number of digits of rounding (4 by default)}
+\item{nDigits_rounding}{integer specifying number of digits of rounding during calculations.
+Defaults to \code{4}.}
 }
 \value{
-a SummarizedExperiment object with normalized assays
+\code{BumpyMatrix} object with a new assay named \code{"Normalized"} containing \code{DataFrame}s 
+holding \code{RelativeViability} and \code{GRvalue} values.
 }
 \description{
-Normalize raw DR data
+Normalize drug response data from treated and untreated pairings.
 }

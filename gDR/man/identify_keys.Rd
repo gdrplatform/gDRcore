@@ -4,14 +4,14 @@
 \alias{identify_keys}
 \title{identify_keys}
 \usage{
-identify_keys(df_se_mae)
+identify_keys(obj)
 }
 \arguments{
-\item{df_se_mae}{a dataframe or SummarizedExperiment or MultiassayExperiment with keys}
+\item{obj}{a dataframe or SummarizedExperiment with keys}
 }
 \value{
 a list of keys
 }
 \description{
-Identify keys in the DR data represented by dataframe or SummarizedExperiment or MultiAssayExperiment objects
+Identify keys in the DR data represented by dataframe or SummarizedExperiment objects
 }
