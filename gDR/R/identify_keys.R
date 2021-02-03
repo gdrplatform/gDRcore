@@ -9,7 +9,7 @@
 #'
 identify_keys <- function(obj) {
   # Assertions:
-  stopifnot(inherits(obj, c("data.frame", "SummarizedExperiment")))
+  stopifnot(inherits(obj, c("data.frame", "DataFrame", "SummarizedExperiment")))
 
   if (inherits(obj, "SummarizedExperiment")) {
     rdata <- SummarizedExperiment::rowData(obj)

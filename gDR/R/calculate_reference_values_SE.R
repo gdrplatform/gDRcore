@@ -31,6 +31,7 @@ add_day0_readout <- function() {
     df_0 <- do.call(rbind, lapply(row_maps_T0[[i]], function(x) ctrl_original[x, col_maps[j]][[1]]))
     df_0 <- df_0[, c("CorrectedReadout", intersect(Keys$Day0, colnames(df_0)))]
     colnames(df_0)[1] <- "Day0Readout"
+    # Aggregate by all non-readout data (the metadata).
     df_0 <- aggregate(df_0[, 1, drop = FALSE], by = as.list(df_0[, -1, drop = FALSE]),
 	function(x) control_mean_fct(x))
 
@@ -120,6 +121,7 @@ calculate_reference_values_SE_part2 <- function() {
       df_ref <- df_ref[, c("CorrectedReadout", intersect(Keys$ref_Endpoint, colnames(df_ref))), drop = FALSE]
       colnames(df_ref)[1] <- "RefReadout"
       if (ncol(df_ref) > 1L) {
+        # Aggregate by all non-readout data (the metadata).
 	df_ref <- aggregate(df_ref[, 1, drop = FALSE], by = as.list(df_ref[, -1, drop = FALSE]), function(x) control_mean_fct(x))
       } else {
 	df_ref <- DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))

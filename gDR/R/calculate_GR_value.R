@@ -2,10 +2,10 @@
 #'
 #' Calculate a GR value for a given set of dose response values.
 #'
-#' @param df_ data.frame of dose response values containing \code{"CorrectedReadout"}
-#' @param cellline_md 
-#' @param day0_readout
-#' @param ndigit_rounding
+#' @param df_ data.frame of dose response values containing \code{"CorrectedReadout"}.
+#' @param cellline_md named list of metadata for the cell line of interest.
+#' @param day0_readout numeric vector 
+#' @param ndigit_rounding integer
 #'
 #' @return 
 #'
@@ -45,6 +45,6 @@ calculate_time_dep_GR_value <- function(ref_readout, day0_readout, untrt_readout
 
 #' @export
 #'
-calculate_endpt_GR_value <- function(rel_viability, duration, ref_div_time, cap = 1.25, ndigit_rounding, time_dep = FALSE) {
+calculate_endpt_GR_value <- function(rel_viability, duration, ref_div_time, cap = 1.25, ndigit_rounding) {
   round(2 ^ (1 + (log2(pmin(cap, rel_viability)) / (duration/ref_div_time))), ndigit_rounding) - 1
 }
