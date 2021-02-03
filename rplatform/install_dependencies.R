@@ -32,6 +32,7 @@ devtools::install_github("ropensci/fauxpas")
 devtools::install_github("ropensci/webmockr")
 devtools::install_github("ropensci/vcr")
 devtools::install_github("WinVector/wrapr")
+devtools::install_github("WinVector/seplyr")
 devtools::install_github("eddelbuettel/rcppsimdjson")
 # Extract dependencies from DESCRIPTION file
 deps <- yaml::read_yaml(file.path(.wd, "rplatform", "DESCRIPTION_dependencies.yaml"))
