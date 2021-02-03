@@ -135,26 +135,29 @@ create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
 
   # Identify groupings on the original df. 
   df_ <- merge(df_, assigned_mapping_entries, by = c(colnames(rowdata), colnames(coldata)), all.x = TRUE)
-  # Split this again to get the references. 
-  split_list <- split(df_, f = df_$treated_untreated)
-  split_list[["untreated"]]
 
-  # Aggregate where there are multiple references for a single treatment. 
-  refs <- unique(untrt_endpoint_map)
-  n_refs <- length(refs) # Identify how many unique control groups there are.
-
-  ref_cache <- vector("list", n_refs)
-  names(ref_cache) <- vapply(refs, function(x) paste(x, collapse = "_"), character(0))
-
-  for (i in seq_along(untrt_endpoint_map)) {
-    trt_refs <- untrt_endpoint_map[[i]]
-    if (length(trt_refs > 1L)) {
-      agg_readout <- aggregate_ref_FXN(untrt[untrt$groupings %in% trt_refs, readout])
-      # TODO: Figure out what values should actually go in here. Looks like we'll need "UntrtReadout". 
-      # Will this be just a single value? If so, we don't need a BumpyMatrix, and can just create a matrix and put it in the matrix list.
-      ref_cache[[i]] <- aggregate_ref_FXN(untrt[untrt$groupings %in% trt_refs, readout])
-    }
-  }
+#  # Split this again to get the references. 
+#  split_list <- split(df_, f = df_$treated_untreated)
+#  untrt <- split_list[["untreated"]]
+#
+#  # Aggregate where there are multiple references for a single treatment. 
+#  refs <- unique(untrt_endpoint_map)
+#  n_refs <- length(refs) # Identify how many unique control groups there are.
+#
+#  ref_cache <- vector("list", n_refs)
+#  names(ref_cache) <- vapply(refs, function(x) paste(x, collapse = "_"), character(0))
+#
+#  for (i in seq_along(untrt_endpoint_map)) {
+#    trt_refs <- untrt_endpoint_map[[i]]
+#    if (length(trt_refs > 1L)) {
+#      # Note that the metadata no longer needs to be carried, as the only relevant information at this point is the mapping
+#      # which will be captured through the matrix indices.  
+#      agg_readout <- aggregate_ref_FXN(untrt[untrt$groupings %in% trt_refs, readout])
+#      # TODO: Figure out what values should actually go in here. Looks like we'll need "UntrtReadout". 
+#      # Will this be just a single value? If so, we don't need a BumpyMatrix, and can just create a matrix and put it in the matrix list.
+#      ref_cache[[i]] <- agg_readout
+#    }
+#  }
 
   ## Join the metadata mappings back with the original data.
   mapping_entries <- merge(mapping_entries, untrt_endpoint_map) # Check that the other references are filled with NAs. 

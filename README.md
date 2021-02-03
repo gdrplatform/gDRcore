@@ -1,7 +1,10 @@
+# gDRcore
 Link to the confluence page: https://rochewiki.roche.com/confluence/display/gDR/gDR+suite%3A+a+package+for+drug+response+analysis 
 
-# Architecture
 
+## Architecture
+
+```
    DataFrame(s)           merge template, readouts, treatments, conditions
 	|		    	   |
 	|			   |
@@ -39,3 +42,4 @@ Link to the confluence page: https://rochewiki.roche.com/confluence/display/gDR/
 	|  - "AveragedUntreatedReferences"		   |
 	|  - "NormalizedTreated"   |
 	|  - "Metrics"		   |
+```
