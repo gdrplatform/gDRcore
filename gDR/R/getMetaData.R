@@ -10,7 +10,7 @@
 #' 
 #' @details
 #' Named list containing the following elements:
-#' itemize{
+#' \itemize{
 #'  \item{rowData}{treatment metadata}
 #'  \item{colData}{condition metadata}
 #'  \item{dataCols}{all data.frame columns corresponding to non-metadata fields}
