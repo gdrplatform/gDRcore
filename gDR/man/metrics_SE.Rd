@@ -4,16 +4,8 @@
 \alias{metrics_SE}
 \title{metrics_SE}
 \usage{
-metrics_SE(avgSE, studyConcThresh = 4)
-}
-\arguments{
-\item{avgSE}{a SummarizedExperiment with averaged and normalized assays}
-
-\item{studyConcThresh}{a numeric with study concentration threshold (4 by default)}
-}
-\value{
-a SummarizedExperiment with additional assay with metrics
+metrics_SE(...)
 }
 \description{
-Calculate metrics for DR data
+metrics_SE
 }

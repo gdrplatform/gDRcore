@@ -23,7 +23,7 @@ to identify the different components of a \linkS4class{SummarizedExperiment} obj
 }
 \details{
 Named list containing the following elements:
-itemize{
+\itemize{
  \item{treatment_md}{treatment metadata}
  \item{condition_md}{condition metadata}
  \item{data_fields}{all data.frame column names corresponding to fields represented within a BumpyMatrix cell}

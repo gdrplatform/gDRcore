@@ -4,16 +4,26 @@
 \alias{average_SE}
 \title{average_SE}
 \usage{
-average_SE(normSE, TrtKeys = NULL, include_masked = F)
+average_SE(
+  se,
+  TrtKeys = NULL,
+  include_masked = FALSE,
+  aggregate_FXN = function(x) {     mean(x, na.rm = TRUE, trim = 0.25) },
+  treated_assay = "RawTreated",
+  reference_assay = "UntreatedReferences"
+)
 }
 \arguments{
-\item{normSE}{a SummarizedExperiment with normalized DR data}
+\item{se}{a \linkS4class{SummarizedExperiment} with drug response data.}
 
 \item{TrtKeys}{a vector of keys used for averaging (NULL by default)}
+
+\item{aggregate_FXN}{function used for averaging data that should be considered replicates.
+Defaults to trimmed arithmetic mean with trim = 0.25.}
 }
 \value{
 a SummarizedExperiment with additional assay with averaged DR data
 }
 \description{
-Avereage normalized SummarizedExperiment of DR data
+Average the assays of a SummarizedExperiment of drug response data
 }

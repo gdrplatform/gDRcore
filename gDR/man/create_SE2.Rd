@@ -13,9 +13,6 @@ create_SE2(df_, readout = "ReadoutValue", discard_keys = NULL)
 
 \item{discard_keys}{character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
 Defaults to \code{NULL}.}
-
-\item{aggregate_ref_FXN}{function used for averaging references.
-Defaults to trimmed arithmetic mean with trim = 0.25.}
 }
 \description{
 Create a SummarizedExperiment object from a data.frame where all treatments are on rows,
