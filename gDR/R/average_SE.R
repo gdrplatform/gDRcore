@@ -4,14 +4,15 @@
 #'
 #' @param se a \linkS4class{SummarizedExperiment} with drug response data.
 #' @param TrtKeys a vector of keys used for averaging (NULL by default)
-#' @param aggregate_ref_FXN function used for averaging references.
+#' @param aggregate_FXN function used for averaging data that should be considered replicates.
 #' Defaults to trimmed arithmetic mean with trim = 0.25.
 #'
 #' @return a SummarizedExperiment with additional assay with averaged DR data
 #'
 #' @export
 #'
-average_SE <- function(se, TrtKeys = NULL, include_masked = FALSE, aggregate_ref_FXN, assay_names = c("", "")) {
+average_SE <- function(se, TrtKeys = NULL, include_masked = FALSE, 
+  aggregate_FXN = function(x) {mean(x, na.rm = TRUE, trim = 0.25)}, treated_assay = "RawTreated", reference_assay = "UntreatedReferences") {
 #
 #  # Aggregate where there are multiple references for a single treatment. 
 #  refs <- unique(untrt_endpoint_map)
@@ -25,7 +26,7 @@ average_SE <- function(se, TrtKeys = NULL, include_masked = FALSE, aggregate_ref
 #    if (length(trt_refs > 1L)) {
 #      # Note that the metadata no longer needs to be carried, as the only relevant information at this point is the mapping
 #      # which will be captured through the matrix indices.  
-#      agg_readout <- aggregate_ref_FXN(untrt[untrt$groupings %in% trt_refs, readout])
+#      agg_readout <- aggregate_FXN(untrt[untrt$groupings %in% trt_refs, readout])
 #      ref_cache[[i]] <- agg_readout
 #    }
 #  }
@@ -47,9 +48,9 @@ average_SE <- function(se, TrtKeys = NULL, include_masked = FALSE, aggregate_ref
   trt_fields <- c("GRvalue", "RelativeViability")
   ref_fields <- c("Day0Readout", "UntrtReadout", "RefGRvalue", "RefRelativeViability", "RefReadout", "DivisionTime")
 
-  trt <- SummarizedExperiment::assay(se, "")
+  trt <- SummarizedExperiment::assay(se, treated_assay)
   avg_trt <- trt
-  ref <- SummarizedExperiment::assay(se, "")
+  ref <- SummarizedExperiment::assay(se, reference_assay)
   avg_ref <- ref
 
   for (i in rownames(se)) {
@@ -63,9 +64,9 @@ average_SE <- function(se, TrtKeys = NULL, include_masked = FALSE, aggregate_ref
       subKeys <- intersect(TrtKeys, colnames(trt_df))
       if (sum(!masked) >= 1) {
 	df_av <- aggregate(trt_df[!masked, trt_fields],
-	  by = as.list(trt_df[!masked, subKeys, drop = FALSE]), aggregate_ref_FXN)
+	  by = as.list(trt_df[!masked, subKeys, drop = FALSE]), aggregate_FXN)
 	df_std <- aggregate(trt_df[!masked, trt_fields],
-	  by = as.list(trt_df[!masked, subKeys, drop = FALSE]), aggregate_ref_FXN)
+	  by = as.list(trt_df[!masked, subKeys, drop = FALSE]), aggregate_FXN)
 	colnames(df_std) <- paste0("std_", colnames(df_std))
 	avg_trt_df <- merge(df_av, df_std, by = subKeys)
       } else { # case: (nrow(trt_df) == 0 || all(masked))
@@ -75,7 +76,7 @@ average_SE <- function(se, TrtKeys = NULL, include_masked = FALSE, aggregate_ref
  
       if (nrow(ref_df) > 1) {
 	subKeys <- intersect(TrtKeys, colnames(ref_df))
-	avg_ref_df <- DataFrame(lapply(ref_df[, ref_fields], aggregate_ref_FXN))
+	avg_ref_df <- DataFrame(lapply(ref_df[, ref_fields], aggregate_FXN))
       } else {
         avg_ref_df <- ref_df
       }
@@ -85,5 +86,6 @@ average_SE <- function(se, TrtKeys = NULL, include_masked = FALSE, aggregate_ref
     }
   }
   # TODO: Add the two BumpyMatrices back into the SE.
+  # paste0("Averaged", )
   return(se)
 }

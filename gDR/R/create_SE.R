@@ -26,8 +26,7 @@ create_SE <-
            data_type = c("untreated", "treated", "all"),
            readout = 'ReadoutValue',
            discard_keys = NULL,
-           assay_type = c("matrix", "BumpyMatrix"), 
-           aggregate_ref_FXN = function(x) {mean(x, trim = 0.25)}) {
+           assay_type = c("matrix", "BumpyMatrix")) {
     # Assertions:
     stopifnot(any(inherits(df_data, "data.frame"), inherits(df_data, "DataFrame")))
     checkmate::assert_character(data_type)

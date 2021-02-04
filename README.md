@@ -13,18 +13,26 @@ Link to the confluence page: https://rochewiki.roche.com/confluence/display/gDR/
 	V			   	   V
  SummarizedExperiment	              create_SE()
 	| assays()		   	   |
-	|  - "RawTreated"	   	   | Creates a SummarizedExperiment object with 2 asssays: 
-	|  - "UntreatedReferences" 	   |  1) a raw, treated, BumpyMatrix named "Treated"
+	|  - **"RawTreated"**	   	   | Creates a SummarizedExperiment object with 2 asssays: 
+	|  - **"UntreatedReferences"** 	   |  1) a raw, treated, BumpyMatrix named "Treated"
 	|			   	   |  2) a raw, untreated, BumpyMatrix named "UntreatedReferences"
 	|			   	   |     - maps treated to untreated references
 	|			   	   |     - averages an untreated references
 	V			   	   V     
+ SummarizedExperiment                  add_fit_SE_references() [NOT IMPLEMENTED YET]
+	| assays()	    		   | - perform mapping of the cotreatments 
+	| - "RawTreated"	           | - perform mapping of the T=0 
+	| - "UntreatedReferences"   	   |
+	| - **"FittingReferences"**        |
+	|	[NOT IMPLEMENTED YET]  	   |
+	V			   	   V
+
  SummarizedExperiment	     	     average_SE()
 	| assays()	 	   	   |
 	|  - "RawTreated"	   	   | Average the replicates for the treated readout values.
 	|  - "UntreatedReferences" 	   |  
-	|  - "AveragedTreated"     	   | 
-	|  - "AveragedUntreatedReferences" |
+	|  - **"AveragedTreated"**     	   | 
+	|  - **"AveragedUntreatedReferences"** |
 	|			   	   |
 	V			  	   V
  SummarizedExperiment	     		normalize_SE()
@@ -33,7 +41,7 @@ Link to the confluence page: https://rochewiki.roche.com/confluence/display/gDR/
 	|  - "UntreatedReferences" 	   | reference readout to compute a RelativeViability and GRvalue. 
 	|  - "AveragedTreated"     	   | 
 	|  - "AveragedUntreatedReferences" |
-	|  - "NormalizedTreated"   	   |
+	|  - **"NormalizedTreated"**   	   |
 	V			   	   V
  SummarizedExperiment			fit_SE()
 	| assays()	 	   	   |
@@ -42,5 +50,5 @@ Link to the confluence page: https://rochewiki.roche.com/confluence/display/gDR/
 	|  - "AveragedTreated"     	   | - utilize the RefRelativeViability and RefGRValue
 	|  - "AveragedUntreatedReferences" |
 	|  - "NormalizedTreated"   	   |
-	|  - "Metrics"		   	   |
+	|  - **"Metrics"**		   |
 ```

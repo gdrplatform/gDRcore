@@ -18,7 +18,7 @@ metrics_SE <- function(...) {
 #'
 #' @export
 #'
-fit_SE <- function(se, averaged_ctrl_assay = "AvgControls", averaged_assay = "Averaged", 
+fit_SE <- function(se, fitting_ref_assay = "FittingReferences", averaged_treated_assay = "AveragedTreated", 
   metrics_assay = "Metrics", studyConcThresh = 4) {
 
   # Assertions:
@@ -36,15 +36,15 @@ fit_SE <- function(se, averaged_ctrl_assay = "AvgControls", averaged_assay = "Av
 
   # TODO: create bumpy matrix? 
   # metrics <- create_empty_bm()
-  avg_trt <- SummarizedExperiment::assay(se, "Averaged")
-  avg_ctrl <- SummarizedExperiment::assay(se, "Avg_Controls")
+  avg_trt <- SummarizedExperiment::assay(se, averaged_treated_assay)
+  fit_ref <- SummarizedExperiment::assay(se, fitting_ref_assay)
   for (i in rownames(se)) {
       for (j in colnames(se)) {
 	  df_ <- avg_trt[[i, j]]
 	  if (!is.null(df_) && all(dim(df_) > 0)) { # studyConcThresh is embeded in RVGRfits
 	      metrics[[i, j]] <- DataFrame(gDRutils::fit_curves(df_,
-		  e_0 = avg_ctrl[[i, j]]$RefRelativeViability,
-		  GR_0 = avg_ctrl[[i, j]]$RefGRvalue,
+		  e_0 = fit_ref[[i, j]]$RefRelativeViability,
+		  GR_0 = fit_ref[[i, j]]$RefGRvalue,
 		  n_point_cutoff = studyConcThresh))
 	  } else {
 	      out <- DataFrame(matrix(NA, 0, length(gDRutils::get_header("response_metrics")) + 2))
@@ -53,6 +53,7 @@ fit_SE <- function(se, averaged_ctrl_assay = "AvgControls", averaged_assay = "Av
 	  }
       }
   }
-  SummarizedExperiment::assay(se, "Metrics") <- metrics
+
+  SummarizedExperiment::assay(se, metrics_assay) <- metrics
   return(se)
 }
