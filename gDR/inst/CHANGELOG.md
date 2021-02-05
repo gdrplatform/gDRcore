@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.41] - 2021-02-04
+#### Update
+- Add script for benchmarking [normalize/average/metrics]-SE functions
+
 #### [0.1.40] - 2021-02-02
 #### Update
 - fix unit tests
