@@ -1,7 +1,7 @@
 #' @export
 #'
 calculate_reference_values_SE <- function(se) {
-  refs <- SummarizedExperiment::assays(se)[["Control"]] 
+  fitting_refs <- SummarizedExperiment::assays(se)[["Control"]] 
   for (i in rownames(se)) {
     for (j in colnames(se)) {
       ref_df <- refs[i, j]
@@ -10,7 +10,7 @@ calculate_reference_values_SE <- function(se) {
       ref_df$RefRelativeViability <- round(ref_df$RefReadout/ref_df$UntrtReadout, nDigits_rounding)
       ref_df$RefGRvalue <- calculate_GR_value(ref_df$RefReadout, ref_df$UntrtReadout, day0readout = ref_df$Day0Readout, nDigits_rounding)
       ref_df$DivisionTime <- round(rdata[i, duration_col] / log2(ref_df$UntrtReadout/ref_df$Day0Readout), nDigits_rounding)
-      refs[i, j] <- ref_df
+      fitting_refs[i, j] <- ref_df
     }
   }
   assays(se)[["Control"]] <- refs
@@ -58,12 +58,12 @@ extrapolate_references <- function(ref_df, ref_conc) {
       fct = drc::LL.4(), # para = c(Hill, x_inf, x0, c50)
       start = c(2, min(ref_df$CorrectedReadout), max(ref_df$CorrectedReadout),
 		  median(ref_df$Concentration)),
-      lowerl = c(1e-5, min(ref_df$CorrectedReadout)*0.8, # wide range
-		  min(ref_df$CorrectedReadout)*0.9,
+      lowerl = c(1e-5, min(ref_df$CorrectedReadout) * 0.8, # wide range
+		  min(ref_df$CorrectedReadout) * 0.9,
 		  min(ref_df$Concentration)/1e3),
-      upperl =  c(12, max(ref_df$CorrectedReadout)*1.1,
-		  max(ref_df$CorrectedReadout)*1.2,
-		  max(ref_df$Concentration)*1e3)
+      upperl =  c(12, max(ref_df$CorrectedReadout) * 1.1,
+		  max(ref_df$CorrectedReadout) * 1.2,
+		  max(ref_df$Concentration) * 1e3)
     )
     corrected_readout <- predict(drc_fit, data.frame(Concentration = ref_conc))
   } else {
