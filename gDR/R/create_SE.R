@@ -86,7 +86,7 @@ create_SE <-
 #'
 #' @export
 #'
-create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
+create_SE2 <- function(df_, readout = "ReadoutValue", control_mean_fxn = function(x) {mean(x, trim = 0.25)}, discard_keys = NULL) {
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(readout)
@@ -125,6 +125,9 @@ create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
   treated <- split_list[["treated"]]
   untreated <- split_list[["untreated"]]
 
+  # Merge raw data back with groupings.
+  dfs <- merge(df_, assigned_mapping_entries, by = c(colnames(rowdata), colnames(coldata)))
+
   ## Map references.
   # Map untreated references. 
   row_endpoint_value_filter <- rep(TRUE, nrow(untreated))
@@ -137,45 +140,60 @@ create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
 
   # Map cotreatment references.
   Keys$ref_Endpoint <- setdiff(Keys$ref_Endpoint, names(key_values))
-  cotrt_endpoint_map <- map_df(treated, treated, row_endpoint_value_filter, Keys, ref_type = "ref_Endpoint")
+  #cotrt_endpoint_map <- map_df(treated, treated, row_endpoint_value_filter, Keys, ref_type = "ref_Endpoint")
+  cotrt_endpoint_map <- untrt_endpoint_map # TODO: DELETE ME LATER ONCE COTREATMENT MAPPING WORKS.
 
-  ## Check for failed cotreatment mappings. 
+  ## TODO: Check for failed cotreatment mappings. 
 
   ## Combine all references with respective treatments.
-  
   out <- vector("list", nrow(treated))
   for (trt in rownames(treated)) {
-    trt_df <- treated[rownames()]  
+    trt_df <- dfs[dfs$groupings == trt, , drop = FALSE]  
 
     untrt_ref <- untrt_endpoint_map[[trt]]  
-    untrt_df <- untreated[rownames(untreated) %in% untrt_ref, ]
-    untrt_df <- create_control_df(untrt_df, control_mean_fxn, out_col_name = "UntrtReadout")
+    untrt_df <- dfs[dfs$groupings %in% untrt_ref, , drop = FALSE]
+    untrt_df <- create_control_df(untrt_df, key = "untrt_Endpoint", control_mean_fxn, out_col_name = "UntrtReadout")
 
     day0_ref <- day0_endpoint_map[[trt]]
-    day0_df <- split_list$untreated[rownames(split_list$untreated) %in% day0_ref]
-    day0_df <- create_control_df(untrt_df, control_mean_fxn, out_col_name = "day0Readout")
+    day0_df <- dfs[dfs$groupings %in% day0_ref, , drop = FALSE]
+    day0_df <- create_control_df(day0_df, key = "Day0", control_mean_fxn, out_col_name = "Day0Readout")
 
     cotrt_ref <- cotrt_endpoint_map[[trt]]  
-    cotrt_df <- split_list$treated[rownames(split_list$treated) %in% cotrt_ref]
-    cotrt_df <- create_control_df(untrt_df, control_mean_fxn, out_col_name = "RefReadout")
+    if (is.null(cotrt_ref)) {
+      ## TODO: The co-treatment reference could be done more efficiently if I thought harder.
+      ## I don't think we need to include this at all if we know they're the same, just duplicate the column.
+      # Set the cotrt reference to the untreated reference.
+      cotrt_df <- untrt_df 
+      colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df))] <- "RefReadout"
+    } else {
+      cotrt_df <- dfs[dfs$groupings %in% cotrt_ref, , drop = FALSE]
+      cotrt_df <- create_control_df(cotrt_df, key = "ref_Endpoint", control_mean_fxn, out_col_name = "RefReadout")
+    }
  
-    # Merge all data.frames together.
-    ref_df <- merge(untrt)
-    out[[i]] <- ref_df
+    ## Merge all data.frames together.
+    ref_df <- merge(day0_df[, setdiff(colnames(day0_df), "Barcode")], untrt_df, all.y = TRUE)
 
+    # Try to merge by plate, but otherwise just use mean.. 
+    ref_df <- merge(ref_df, cotrt_df, by = "Barcode")
+
+    # TODO: Should this also use the control_mean_fxn? I guess we need the na.rm...
+    mean_UntrtReadout <- mean(ref_df$UntrtReadout, na.rm = TRUE)
+    mean_RefReadout <- mean(ref_df$RefReadout, na.rm = TRUE)
+
+    ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] <- mean_UntrtReadout
+    ref_df$RefReadout[is.na(ref_df$RefReadout)] <- mean_RefReadout
+
+    out[[i]] <- ref_df
   }
   out_df <- do.call(rbind, out)
   
-  ## Create BumpyMatrix.
-  df_to_assay(out_df)
-
-  ## create the BumpyMatrix with the proper raw data values.
-  # the matrices are named: "RawTreated" and "UntreatedReferences"
+  ## Create the BumpyMatrix with the proper raw data values.
+  # the matrices are named: "RawTreated" and "Controls"
   matsL <-
     df_to_assays(
-      data = df_,
+      data = out_df,
       meta_data = md,
-      endpoint_map = untrt_endpoint_map,
+      #endpoint_map = untrt_endpoint_map, # I don't think we need this anymore -- I'm so sorry.
       discard_keys = discard_keys
     )
   
@@ -195,9 +213,3 @@ create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
     metadata = experiment_md)
   se
 }
-  # Identify groupings on the original df. 
-  df_ <- merge(df_, assigned_mapping_entries, by = c(colnames(rowdata), colnames(coldata)), all.x = TRUE)
-
-  ## Join the metadata mappings back with the original data.
-  mapping_entries <- merge(mapping_entries, untrt_endpoint_map) # Check that the other references are filled with NAs. 
-
