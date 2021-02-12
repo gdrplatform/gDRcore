@@ -136,22 +136,29 @@ create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
   ## Join the metadata mappings back with the original data.
   mapping_entries <- merge(mapping_entries, untrt_endpoint_map) # Check that the other references are filled with NAs. 
 
-  ## TODO: Create the BumpyMatrix with the proper normalized values.
-  # The matrices should be named: "RawTreated" and "UntreatedReferences"
-  ###############
-  ## FILL ME
-  ###############
-
-  matsL <- NULL
-  #matsL <- list(mats)
-  #names(matsL) <- readout
-
+  ## create the BumpyMatrix with the proper raw data values.
+  # the matrices are named: "RawTreated" and "UntreatedReferences"
+  matsL <-
+    df_to_assays(
+      data = df_,
+      meta_data = md,
+      endpoint_map = untrt_endpoint_map,
+      discard_keys = discard_keys
+    )
+  
   # Capture important values in experiment metadata.
-  experiment_md <- c(exp_md, list(df_ = df_, Keys = Keys))
+  experiment_md <- list(exp_md = exp_md, df_ = df_, Keys = Keys)
+
+  # filter out to 'treated' conditions only 
+  filtered_rowdata <-
+    rowdata[rownames(rowdata) %in% rownames(matsL[[1]]), ] 
+  
+  # expect at least single treatment condition
+  stopifnot(nrow(filtered_rowdata) > 0)
   
   se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
     colData = coldata,
-    rowData = rowdata, 
+    rowData = filtered_rowdata,
     metadata = experiment_md)
   se
 }
