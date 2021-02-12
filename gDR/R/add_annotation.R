@@ -130,7 +130,7 @@ add_Drug_annotation <- function(df_metadata,
         
         # -----------------------
 
-        colnames(Drug_info)[1:2] <- c("drug", "DrugName")
+        colnames(Drug_info)[1:2] <- c("drug", "drug_name")
         Drug_info <-
           rbind(data.frame(
             drug = gDRutils::get_identifier("untreated_tag"),
