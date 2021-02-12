@@ -146,46 +146,51 @@ create_SE2 <- function(df_, readout = "ReadoutValue", control_mean_fxn = functio
   ## TODO: Check for failed cotreatment mappings. 
 
   ## Combine all references with respective treatments.
-  out <- vector("list", nrow(treated))
-  for (trt in rownames(treated)) {
+  trt_out <- ref_out <- vector("list", nrow(treated))
+  for (i in seq_len(nrow(treated))) {
+    trt <- rownames(treated)[i]
     trt_df <- dfs[dfs$groupings == trt, , drop = FALSE]  
 
-    untrt_ref <- untrt_endpoint_map[[trt]]  
-    untrt_df <- dfs[dfs$groupings %in% untrt_ref, , drop = FALSE]
-    untrt_df <- create_control_df(untrt_df, key = "untrt_Endpoint", control_mean_fxn, out_col_name = "UntrtReadout")
+    ref_df <- trt_df <- DataFrame()
+    if (nrow(trt_df) > 0L) {
+      untrt_ref <- untrt_endpoint_map[[trt]]  
+      untrt_df <- dfs[dfs$groupings %in% untrt_ref, , drop = FALSE]
+      untrt_df <- create_control_df(untrt_df, key = "untrt_Endpoint", control_mean_fxn, out_col_name = "UntrtReadout")
 
-    day0_ref <- day0_endpoint_map[[trt]]
-    day0_df <- dfs[dfs$groupings %in% day0_ref, , drop = FALSE]
-    day0_df <- create_control_df(day0_df, key = "Day0", control_mean_fxn, out_col_name = "Day0Readout")
+      day0_ref <- day0_endpoint_map[[trt]]
+      day0_df <- dfs[dfs$groupings %in% day0_ref, , drop = FALSE]
+      day0_df <- create_control_df(day0_df, key = "Day0", control_mean_fxn, out_col_name = "Day0Readout")
 
-    cotrt_ref <- cotrt_endpoint_map[[trt]]  
-    if (is.null(cotrt_ref)) {
-      ## TODO: The co-treatment reference could be done more efficiently if I thought harder.
-      ## I don't think we need to include this at all if we know they're the same, just duplicate the column.
-      # Set the cotrt reference to the untreated reference.
-      cotrt_df <- untrt_df 
-      colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df))] <- "RefReadout"
-    } else {
-      cotrt_df <- dfs[dfs$groupings %in% cotrt_ref, , drop = FALSE]
-      cotrt_df <- create_control_df(cotrt_df, key = "ref_Endpoint", control_mean_fxn, out_col_name = "RefReadout")
+      cotrt_ref <- cotrt_endpoint_map[[trt]]  
+      if (is.null(cotrt_ref)) {
+	## TODO: The co-treatment reference could be done more efficiently if I thought harder.
+	## I don't think we need to include this at all if we know they're the same, just duplicate the column.
+	# Set the cotrt reference to the untreated reference.
+	cotrt_df <- untrt_df 
+	colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df))] <- "RefReadout"
+      } else {
+	cotrt_df <- dfs[dfs$groupings %in% cotrt_ref, , drop = FALSE]
+	cotrt_df <- create_control_df(cotrt_df, key = "ref_Endpoint", control_mean_fxn, out_col_name = "RefReadout")
+      }
+   
+      ## Merge all data.frames together.
+      ref_df <- merge(day0_df[, setdiff(colnames(day0_df), "Barcode")], untrt_df)
+
+      # Try to merge by plate, but otherwise just use mean.. 
+      ref_df <- merge(ref_df, cotrt_df, by = "Barcode")
+
+      # TODO: Should this also use the control_mean_fxn? I guess we need the na.rm...
+      mean_UntrtReadout <- mean(ref_df$UntrtReadout, na.rm = TRUE)
+      mean_RefReadout <- mean(ref_df$RefReadout, na.rm = TRUE)
+
+      ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] <- mean_UntrtReadout
+      ref_df$RefReadout[is.na(ref_df$RefReadout)] <- mean_RefReadout
     }
- 
-    ## Merge all data.frames together.
-    ref_df <- merge(day0_df[, setdiff(colnames(day0_df), "Barcode")], untrt_df, all.y = TRUE)
-
-    # Try to merge by plate, but otherwise just use mean.. 
-    ref_df <- merge(ref_df, cotrt_df, by = "Barcode")
-
-    # TODO: Should this also use the control_mean_fxn? I guess we need the na.rm...
-    mean_UntrtReadout <- mean(ref_df$UntrtReadout, na.rm = TRUE)
-    mean_RefReadout <- mean(ref_df$RefReadout, na.rm = TRUE)
-
-    ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] <- mean_UntrtReadout
-    ref_df$RefReadout[is.na(ref_df$RefReadout)] <- mean_RefReadout
-
-    out[[i]] <- ref_df
+    ref_out[[i]] <- ref_df
+    trt_out[[i]] <- trt_df
   }
-  out_df <- do.call(rbind, out)
+
+  names(ref_out) <- names(trt_out) <- rownames(treated)
   
   ## Create the BumpyMatrix with the proper raw data values.
   # the matrices are named: "RawTreated" and "Controls"
