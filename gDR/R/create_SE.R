@@ -151,7 +151,7 @@ create_SE2 <- function(df_, readout = "ReadoutValue", control_mean_fxn = functio
     trt <- rownames(treated)[i]
     trt_df <- dfs[dfs$groupings == trt, , drop = FALSE]  
 
-    ref_df <- trt_df <- DataFrame()
+    ref_df <- DataFrame()
     if (nrow(trt_df) > 0L) {
       untrt_ref <- untrt_endpoint_map[[trt]]  
       untrt_df <- dfs[dfs$groupings %in% untrt_ref, , drop = FALSE]
