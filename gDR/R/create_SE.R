@@ -99,7 +99,7 @@ create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
     Keys$DoseResp <- setdiff(Keys$DoseResp, discard_keys)
   }
 
-  if (!(gDRutils::get_identifier('masked_tag') %in% colnames(df_))) {
+  if (!(gDRutils::get_identifier("masked_tag") %in% colnames(df_))) {
     df_[, gDRutils::get_identifier('masked_tag')] <- FALSE
   }
 
@@ -122,25 +122,52 @@ create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
     stop(sprintf("unexpected conditions found: '%s'", 
       paste(setdiff(levels(assigned_mapping_entries$treated_untreated), c("treated", "untreated")), collapse = ",")))
   }
+  treated <- split_list[["treated"]]
+  untreated <- split_list[["untreated"]]
 
-  # enforced key values for end points (override selected_keys) --> for rows of the SE
-  # Keys$untrt_Endpoint <- setdiff(Keys$untrt_Endpoint, names(key_values))
-  row_endpoint_value_filter <- rep(TRUE, nrow(split_list[["untreated"]]))
+  ## Map references.
+  # Map untreated references. 
+  row_endpoint_value_filter <- rep(TRUE, nrow(untreated))
+  Keys$untrt_Endpoint <- setdiff(Keys$untrt_Endpoint, names(key_values))
+  untrt_endpoint_map <- map_df(treated, untreated, row_endpoint_value_filter, Keys, ref_type = "untrt_Endpoint")
 
-  ## Map the treatments to their references.
-  untrt_endpoint_map <- map_df(split_list$treated, split_list$untreated, row_endpoint_value_filter, Keys, ref_type = "untrt_Endpoint")
+  # Map day0 references.
+  Keys$Day0 <- setdiff(Keys$Day0, names(key_values))
+  day0_endpoint_map <- map_df(treated, untreated, row_endpoint_value_filter, Keys, ref_type = "Day0")
 
-  # Identify groupings on the original df. 
-  df_ <- merge(df_, assigned_mapping_entries, by = c(colnames(rowdata), colnames(coldata)), all.x = TRUE)
+  # Map cotreatment references.
+  Keys$ref_Endpoint <- setdiff(Keys$ref_Endpoint, names(key_values))
+  cotrt_endpoint_map <- map_df(treated, treated, row_endpoint_value_filter, Keys, ref_type = "ref_Endpoint")
 
-  ## Join the metadata mappings back with the original data.
-  mapping_entries <- merge(mapping_entries, untrt_endpoint_map) # Check that the other references are filled with NAs. 
+  ## Check for failed cotreatment mappings. 
 
-  ## TODO: Create the BumpyMatrix with the proper normalized values.
-  # The matrices should be named: "RawTreated" and "UntreatedReferences"
-  ###############
-  ## FILL ME
-  ###############
+  ## Combine all references with respective treatments.
+  
+  out <- vector("list", nrow(treated))
+  for (trt in rownames(treated)) {
+    trt_df <- treated[rownames()]  
+
+    untrt_ref <- untrt_endpoint_map[[trt]]  
+    untrt_df <- untreated[rownames(untreated) %in% untrt_ref, ]
+    untrt_df <- create_control_df(untrt_df, control_mean_fxn, out_col_name = "UntrtReadout")
+
+    day0_ref <- day0_endpoint_map[[trt]]
+    day0_df <- split_list$untreated[rownames(split_list$untreated) %in% day0_ref]
+    day0_df <- create_control_df(untrt_df, control_mean_fxn, out_col_name = "day0Readout")
+
+    cotrt_ref <- cotrt_endpoint_map[[trt]]  
+    cotrt_df <- split_list$treated[rownames(split_list$treated) %in% cotrt_ref]
+    cotrt_df <- create_control_df(untrt_df, control_mean_fxn, out_col_name = "RefReadout")
+ 
+    # Merge all data.frames together.
+    ref_df <- merge(untrt)
+    out[[i]] <- ref_df
+
+  }
+  out_df <- do.call(rbind, out)
+  
+  ## Create BumpyMatrix.
+  df_to_assay(out_df)
 
   matsL <- NULL
   #matsL <- list(mats)
@@ -155,3 +182,9 @@ create_SE2 <- function(df_, readout = "ReadoutValue", discard_keys = NULL) {
     metadata = experiment_md)
   se
 }
+  # Identify groupings on the original df. 
+  df_ <- merge(df_, assigned_mapping_entries, by = c(colnames(rowdata), colnames(coldata)), all.x = TRUE)
+
+  ## Join the metadata mappings back with the original data.
+  mapping_entries <- merge(mapping_entries, untrt_endpoint_map) # Check that the other references are filled with NAs. 
+

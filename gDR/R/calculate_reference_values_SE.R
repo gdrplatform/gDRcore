@@ -22,29 +22,34 @@ calculate_reference_values_SE <- function(se) {
 # Helper functions
 ####################
 
+#' Create a control dataframe for a treatment-cell line combination.
+#'
+#' @param df_
+#' @param key
+#' @param control_mean_fxn
+#' @param out_col_name string of the output readout that will replace \code{CorrectedReadout}.
+#'
+#'
 #' @export
 #'
-add_day0_readout <- function() {
-  # PSEUDOCODE: Match the reference at time 0 (if available).
-  row_maps_T0 <- map_df(split_list$treated, split_list$untreated, row_endpoint_value_filter, Keys, ref_type = "Day0")
-  if (length(row_maps_T0[[i]]) > 0) {
-    df_0 <- do.call(rbind, lapply(row_maps_T0[[i]], function(x) ctrl_original[x, col_maps[j]][[1]]))
-    df_0 <- df_0[, c("CorrectedReadout", intersect(Keys$Day0, colnames(df_0)))]
-    colnames(df_0)[1] <- "Day0Readout"
-    # Aggregate by all non-readout data (the metadata).
-    df_0 <- aggregate(df_0[, 1, drop = FALSE], by = as.list(df_0[, -1, drop = FALSE]),
-	function(x) control_mean_fct(x))
+create_control_df <- function(df_, key, control_mean_fxn, out_col_name = "UntrtReadout") {
+  if (length(df_) != 0L) {
+    # Rename CorrectedReadout.
+    df_ <- df_[, c("CorrectedReadout", intersect(Keys[[key]], colnames(df_)))]
+    colnames(df_)[grepl("CorrectedReadout", colnames(df_))] <- out_col_name
 
-    if (!is.null(Keys$discard_keys) && all(Keys$discard_keys %in% colnames(df_0))) {
-      df_ctrl <- merge(df_0[, setdiff(colnames(df_0), "Barcode")], df_end, all.y = TRUE, by = Keys$discard_keys)
-    } else {
-      df_ctrl <- merge(df_0[, setdiff(colnames(df_0), "Barcode")], df_end, all.y = TRUE)
-      colnames(df_ctrl)[1] <- "Day0Readout"
-    }
-  } else {
-    df_ctrl <- df_end
-    df_ctrl$Day0Readout <- NA
+    # Aggregate by all non-readout data (the metadata).
+    df_ <- aggregate(df_[, out_col_name, drop = FALSE], 
+                     by = as.list(df_[, colnames(df_) != out_col_name, drop = FALSE]),
+	             function(x) control_mean_fxn(x))
   }
+  df_
+
+    # TODO: Do we need to handle discard_keys?
+    #if (!is.null(Keys$discard_keys) && all(Keys$discard_keys %in% colnames(df_))) {
+    #  df_ctrl <- merge(df_[, setdiff(colnames(df_), "Barcode")], df_end, all.y = TRUE, by = Keys$discard_keys)
+    #} else {
+    #}
 }
 
 
@@ -110,7 +115,7 @@ identify_treatment_references <- function(row_maps_cotrt, trt_rdata, ref_rdata) 
 
 calculate_reference_values_SE_part2 <- function() {
   # Match the reference endpoint with the same co-treatment.
-  row_maps_cotrt <- map_df(split_list$treated, split_list$untreated, ref_type = "ref_Endpoint")
+  row_maps_cotrt <- map_df(split_list$treated, split_list$treated, ref_type = "ref_Endpoint")
   row_maps_cotrt <- identify_treatment_references(row_maps_cotrt, split_list$treated, split_list$untreated)
 
   # reference co-treatment is not always present
@@ -119,25 +124,19 @@ calculate_reference_values_SE_part2 <- function() {
       # get all the co-treatment reference endpoint data
       df_ref <- do.call(rbind, lapply(row_maps_cotrt[[i]], function(x) ctrl_original[x, col_maps[j]][[1]]))
       df_ref <- df_ref[, c("CorrectedReadout", intersect(Keys$ref_Endpoint, colnames(df_ref))), drop = FALSE]
-      colnames(df_ref)[1] <- "RefReadout"
-      if (ncol(df_ref) > 1L) {
-        # Aggregate by all non-readout data (the metadata).
-	df_ref <- aggregate(df_ref[, 1, drop = FALSE], by = as.list(df_ref[, -1, drop = FALSE]), function(x) control_mean_fct(x))
-      } else {
-	df_ref <- DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
-      }
+      colnames(df_ref)[grepl("CorrectedReadout", colnames(df_ref))] <- "RefReadout"
+      # Aggregate by all non-readout data (the metadata).
+      df_ref <- aggregate(df_ref[, "RefReadout", drop = FALSE], 
+        by = as.list(df_ref[, which(grepl("RefReadout", colnames(df_ref))), drop = FALSE]), 
+        function(x) control_mean_fct(x))
 
       # check if all control have matching co-treated wells are on the same plate
-      if (all(df_end$Barcode %in% df_ref$Barcode) && all(df_ref$Barcode %in% df_end$Barcode)) {
-	df_end <- merge(df_end, df_ref, by = intersect(colnames(df_end), c('Barcode', Keys$discard_keys)))
-      } else {
+      df_end <- merge(df_end, df_ref, by = intersect(colnames(df_end), c('Barcode', Keys$discard_keys)), all = TRUE)
+      if (any(is.na(df_ref$Barcode))) {
 	futile.logger::flog.warn("Control data for the drug are propagated to other plates with co-drug controls. Treatment Id: '%s' Cell_line Id: '%s'", i, j)
-	# merge (knowing that there will be NA)
-	df_end <- merge(df_end, df_ref, by = "Barcode", all = TRUE)
-	# propagate average values to the other plates
 
-        # Fill in NA values with mean values.
-	df_end$UntrtReadout[is.na(df_end$UntrtReadout)] <- mean(df_end$UntrtReadout, na.rm = TRUE)
+	# propagate average values to the other plates
+	df_end$UntrtReadout[is.na(df_end$UntrtReadout)] <- mean(df_end$UntrtReadout, na.rm = TRUE) # TODO: Do we want the control_mean_fxn here? 
 	df_end$RefReadout[is.na(df_end$RefReadout)] <- mean(df_end$RefReadout, na.rm = TRUE)
       }
 
@@ -163,14 +162,10 @@ calculate_reference_values_SE_part2 <- function() {
       )
       
       df_ref <- df_ref[, c("CorrectedReadout", intersect(Keys$ref_Endpoint, colnames(df_ref))), drop = FALSE]
-      colnames(df_ref)[1] <- "RefReadout"
-      if (ncol(df_ref) > 1) {
-	df_ref <- aggregate(df_ref[, 1, drop = FALSE],
-	  by = as.list(df_ref[, -1, drop = FALSE]),
-	  function(x) control_mean_fct(x))
-      } else {
-	df_ref <- DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
-      }
+      colnames(df_ref)[grepl("CorrectedReadout", colnames(df_ref))] <- "RefReadout"
+      df_ref <- aggregate(df_ref[, "RefReadout", drop = FALSE], 
+	by = as.list(df_ref[, which(grepl("RefReadout", colnames(df_ref))), drop = FALSE]), 
+	function(x) control_mean_fct(x))
 
       # check if all control have matching co-treated wells are on the same plate
       if (all(df_end$Barcode %in% df_ref$Barcode) && all(df_ref$Barcode %in% df_end$Barcode)) {
@@ -197,7 +192,6 @@ calculate_reference_values_SE_part2 <- function() {
   colnames(df_end)[1] <- "UntrtReadout"
   if (ncol(df_end) > 1L) {
     # I think one example of this would be the 'Replicate' field, but I'm not sure what the other cases would be.
-    # TODO: Need to make this more robust than simply taking the -1 of it...
     df_end <- aggregate(df_end[, 1, drop = FALSE],
       by = as.list(df_end[, -1, drop = FALSE]),
       function(x) control_mean_fct(x))
