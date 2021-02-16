@@ -31,9 +31,11 @@ map_df <- function(trt_md, ref_md, row_endpoint_value_filter, Keys, ref_type = c
   if (ref_type == "Day0") {
     matching_list <- list(T0 = ref_md[, duration_col] == 0, conc = is_ref_conc) # Identifying which of the durations have a value of 0.
     matchFactor <- "T0"
-  } else if (ref_type == "untrt_Endpoint"){
+  } else if (ref_type == "untrt_Endpoint") {
     matching_list <- list(key_values = row_endpoint_value_filter, conc = is_ref_conc)
     matchFactor <- duration_col 
+  } else if (ref_type == "ref_Endpoint") {
+    matching_list <- NULL
   }
 
   trt_rnames <- rownames(trt_md)

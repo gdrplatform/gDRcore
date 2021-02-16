@@ -4,12 +4,21 @@
 \alias{create_SE2}
 \title{Create a SummarizedExperiment object}
 \usage{
-create_SE2(df_, readout = "ReadoutValue", discard_keys = NULL)
+create_SE2(
+  df_,
+  readout = "ReadoutValue",
+  control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
+  key_values = NULL,
+  discard_keys = NULL
+)
 }
 \arguments{
 \item{df_}{data.frame of raw drug response data containing both treated and untreated values.}
 
 \item{readout}{string of the name containing the cell viability readout values.}
+
+\item{control_mean_fxn}{function indicating how to average controls.
+Defaults to \code{mean(x, trim = 0.25)}.}
 
 \item{discard_keys}{character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
 Defaults to \code{NULL}.}

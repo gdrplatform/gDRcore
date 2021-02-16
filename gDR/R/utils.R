@@ -263,5 +263,5 @@ standardize_record_values <- function(x, dictionary = DICTIONARY){
   mapping_entries <- base::merge(mapping_entries, coldata, by.x = "col_id", by.y = 0, all.x = TRUE)
 
   rownames(mapping_entries) <- seq_len(nrow(mapping_entries))
-  mapping_entries[!colnames(mapping_entries) %in% c("row_id", "col_id")]
+  mapping_entries
 } 

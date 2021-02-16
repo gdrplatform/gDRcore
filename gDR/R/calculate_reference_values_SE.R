@@ -32,7 +32,7 @@ calculate_reference_values_SE <- function(se) {
 #'
 #' @export
 #'
-create_control_df <- function(df_, key, control_mean_fxn, out_col_name = "UntrtReadout") {
+create_control_df <- function(df_, Keys, key, control_mean_fxn, out_col_name) {
   if (length(df_) != 0L) {
     # Rename CorrectedReadout.
     df_ <- df_[, c("CorrectedReadout", intersect(Keys[[key]], colnames(df_)))]
@@ -44,12 +44,6 @@ create_control_df <- function(df_, key, control_mean_fxn, out_col_name = "UntrtR
 	             function(x) control_mean_fxn(x))
   }
   df_
-
-    # TODO: Do we need to handle discard_keys?
-    #if (!is.null(Keys$discard_keys) && all(Keys$discard_keys %in% colnames(df_))) {
-    #  df_ctrl <- merge(df_[, setdiff(colnames(df_), "Barcode")], df_end, all.y = TRUE, by = Keys$discard_keys)
-    #} else {
-    #}
 }
 
 
