@@ -268,18 +268,17 @@ create_SE2 <- function(df_,
   }
 
   names(ref_out) <- names(trt_out) <- rownames(treated)
-  
-  trt_out <- do.call(rbind, trt_out)
-  trt_out <- trt_out[order(trt_out[, c("row_id", "col_id")]), ]
 
+  trt_out <- do.call(rbind, trt_out)
   ref_out <- do.call(rbind, ref_out)
-  ref_out <- ref_out[order(ref_out[, c("row_id", "col_id")]), ]
   
   keep <- colnames(trt_out)[!colnames(trt_out) %in% c("row_id", "col_id")]
-  treated_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out[, keep], row = trt_out$row_id, col = trt_out$col_id)
+  #treated_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out[, keep], row = trt_out$row_id, col = trt_out$col_id, sparse = TRUE)
+  treated_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out, row = trt_out$row_id, col = trt_out$col_id)
 
   keep <- colnames(ref_out)[!colnames(ref_out) %in% c("row_id", "col_id")]
-  reference_mat <- BumpyMatrix::splitAsBumpyMatrix(ref_out[, keep], row = ref_out$row_id, col = ref_out$col_id)
+  #reference_mat <- BumpyMatrix::splitAsBumpyMatrix(ref_out[, keep], row = ref_out$row_id, col = ref_out$col_id, sparse = TRUE)
+  reference_mat <- BumpyMatrix::splitAsBumpyMatrix(ref_out, row = ref_out$row_id, col = ref_out$col_id)
 
   matsL <- list(RawTreated = treated_mat, Controls = reference_mat)
 
@@ -292,10 +291,10 @@ create_SE2 <- function(df_,
   
   # expect at least single treatment condition
   stopifnot(nrow(filtered_rowdata) > 0)
-  
+ 
   se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
-    colData = coldata,
-    rowData = filtered_rowdata,
+    colData = coldata[match(colnames(treated_mat), rownames(coldata)), ],
+    rowData = filtered_rowdata[match(rownames(treated_mat), rownames(filtered_rowdata)), ],
     metadata = experiment_md)
   se
 }
