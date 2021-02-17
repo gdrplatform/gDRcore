@@ -36,6 +36,7 @@ map_df <- function(trt_md, ref_md, row_endpoint_value_filter, Keys, ref_type = c
     matchFactor <- duration_col 
   } else if (ref_type == "ref_Endpoint") {
     matching_list <- NULL
+    matchFactor <- NULL
   }
 
   trt_rnames <- rownames(trt_md)
@@ -55,7 +56,7 @@ map_df <- function(trt_md, ref_md, row_endpoint_value_filter, Keys, ref_type = c
     match_idx <- which(apply(match_mx, 2, all)) # test matching conditions
     if (length(match_idx) == 0) {
       # No exact match, try to find best match (as many metadata fields as possible).
-      futile.logger::flog.warn("Missing untreated controls '%s' for: ('%s')", ref_type, treatment)
+      futile.logger::flog.warn("Missing reference controls '%s' for: ('%s')", ref_type, treatment)
       idx <- apply(match_mx, 2, function(y) sum(y, na.rm = TRUE)) 
       # TODO: Sort this out so that it also takes the average in case multiple are found.
       idx <- idx * match_mx[matchFactor, ]

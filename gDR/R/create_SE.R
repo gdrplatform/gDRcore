@@ -155,13 +155,19 @@ create_SE2 <- function(df_,
 
     # Then look amongst the treated to fill any missing cotrt references.
     missing_cotrt <- vapply(cotrt_endpoint_map, function(x) {length(x) == 0L}, TRUE)
-    missing_mappings <- names(cotrt_endpoint_map)[missing_cotrt]
-    missing_trt_mappings <- treated[treated$groupings %in% names(missing_mappings)]
+    if (any(missing_cotrt)) {
+      missing_mappings <- names(cotrt_endpoint_map)[missing_cotrt]
+      missing_trt_mappings <- treated[treated$groupings %in% names(missing_mappings)]
 
-    missing_cotrt_endpoint_map <- map_df(missing_trt_mappings, treated, row_endpoint_value_filter, Keys, ref_type = "ref_Endpoint")
+      missing_cotrt_endpoint_map <- map_df(missing_trt_mappings, treated, row_endpoint_value_filter, Keys, ref_type = "ref_Endpoint")
 
-    # Fill found mappings.
-    lapply(names(missing_cotrt_endpoint_map), function(x) {cotrt_endpoint_map[x] <- missing_cotrt_endpoint_map[[x]]})
+      # Fill found mappings.
+      for (grp in names(missing_cotrt_endpoint_map)) {
+        if (length(missing_cotrt_endpoint_map[[grp]]) != 0L) {
+          cotrt_endpoint_map[grp] <- missing_cotrt_endpoint_map[[grp]]
+        }
+      }
+    }
   }
 
   ## TODO: Check for failed cotreatment mappings. 
@@ -222,15 +228,18 @@ create_SE2 <- function(df_,
       if (nrow(cotrt_df) > 0L) {
         #ref_conc <- SummarizedExperiment::rowData(normSE)[i, 'Concentration_2']
         #if () # See whether the reference is in treated or untreated.
-        # TODO: Stick the following lines in some sort of merge_and_propagate function.
-        merge_cols <- intersect(colnames(cotrt_df), c("Barcode", discard_keys))
-        ref_df <- merge(untrt_df, cotrt_df[, c("RefReadout", merge_cols)], by = merge_cols)
 
-	# TODO: Should this also use the control_mean_fxn? I guess we need the na.rm...
-	ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] <- mean(ref_df$UntrtReadout, na.rm = TRUE)
-	ref_df$RefReadout[is.na(ref_df$RefReadout)] <- mean(ref_df$RefReadout, na.rm = TRUE)
+	merge_cols <- intersect(colnames(cotrt_df), c("Barcode", discard_keys))
+	ref_df <- merge(untrt_df, cotrt_df[, c("RefReadout", merge_cols)], by = merge_cols, all = TRUE)
+        if (!all(sort(unique(cotrt_df$Barcode)) == sort(unique(untrt_df$Barcode)))) {
+          # Merging by barcodes will result in NAs. 
+	  ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] <- mean(ref_df$UntrtReadout, na.rm = TRUE)
+	  ref_df$RefReadout[is.na(ref_df$RefReadout)] <- mean(ref_df$RefReadout, na.rm = TRUE)
+	  # TODO: Should this also use the control_mean_fxn? 
+	}
+	  
       } else {
-        ref_df$RefReadout <- ref_df$UntrtReadout
+	ref_df$RefReadout <- ref_df$UntrtReadout
       }
 
       if (nrow(day0_df) > 0L) {

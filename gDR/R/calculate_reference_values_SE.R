@@ -33,7 +33,7 @@ calculate_reference_values_SE <- function(se) {
 #' @export
 #'
 create_control_df <- function(df_, Keys, key, control_mean_fxn, out_col_name) {
-  if (length(df_) != 0L) {
+  if (nrow(df_) != 0L) {
     # Rename CorrectedReadout.
     df_ <- df_[, c("CorrectedReadout", intersect(Keys[[key]], colnames(df_)))]
     colnames(df_)[grepl("CorrectedReadout", colnames(df_))] <- out_col_name
