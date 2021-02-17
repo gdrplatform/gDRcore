@@ -14,18 +14,11 @@ Link to the confluence page: https://rochewiki.roche.com/confluence/display/gDR/
  SummarizedExperiment	              create_SE()
 	| assays()		   	   |
 	|  - **"RawTreated"**	   	   | Creates a SummarizedExperiment object with 2 asssays: 
-	|  - **"UntreatedReferences"** 	   |  1) a raw, treated, BumpyMatrix named "Treated"
-	|			   	   |  2) a raw, untreated, BumpyMatrix named "UntreatedReferences"
+	|  - **"Controls"** 	           |  1) a raw, treated, BumpyMatrix named "Treated"
+	|			   	   |  2) a raw, untreated, BumpyMatrix named "Controls"
 	|			   	   |     - maps treated to untreated references
 	|			   	   |     - averages an untreated references
 	V			   	   V     
- SummarizedExperiment                  add_fit_SE_references() [NOT IMPLEMENTED YET]
-	| assays()	    		   | - perform mapping of the cotreatments 
-	| - "RawTreated"	           | - perform mapping of the T=0 
-	| - "UntreatedReferences"   	   |
-	| - **"FittingReferences"**        |
-	|	[NOT IMPLEMENTED YET]  	   |
-	V			   	   V
 
  SummarizedExperiment	     	     average_SE()
 	| assays()	 	   	   |
