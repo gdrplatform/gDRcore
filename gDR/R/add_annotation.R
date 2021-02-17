@@ -139,9 +139,9 @@ add_Drug_annotation <- function(df_metadata,
           ),
           Drug_info)
         Drug_info <- Drug_info[!duplicated(Drug_info[["drug"]]),]
-        DrIDs <- unique(unlist(df_metadata[[agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))]]))
+        DrIDs <- unique(unlist(df_metadata[,grep(gDRutils::get_identifier("drug"), colnames(df_metadata)), with = FALSE]))
         if(any(!gsub("\\..*", "", drugsTreated) %in% Drug_info$drug) & exists("missingTblDrugs")){
-          Drug_info <- rbind(Drug_info, data.table::setnames(missingTblDrugs[!drugsTreated %in% Drug_info$drug, c(3,1)], names(Drug_info)))
+          Drug_info <- rbind(Drug_info, data.table::setnames(missingTblDrugs[!drugsTreated %in% Drug_info$drug, ], names(Drug_info)))
         }
         bad_DrID <- !(gsub("\\..*", "", DrIDs) %in% Drug_info$drug) & !is.na(DrIDs)
         if (any(bad_DrID)) {
