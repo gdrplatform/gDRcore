@@ -283,7 +283,7 @@ create_SE2 <- function(df_,
   matsL <- list(RawTreated = treated_mat, Controls = reference_mat)
 
   # Capture important values in experiment metadata.
-  experiment_md <- list(exp_md = exp_md, df_ = df_, Keys = Keys)
+  experiment_md <- list(experiment_metadata = exp_md, df_ = df_, Keys = Keys)
 
   # filter out to 'treated' conditions only 
   filtered_rowdata <-
