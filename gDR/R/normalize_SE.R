@@ -2,12 +2,12 @@
 #'
 #' Normalize drug response data from treated and untreated pairings.
 #'
-#' @param se \code{BumpyMatrix} object with assays \code{"treated"} and \code{Controls}.
+#' @param se \code{BumpyMatrix} object with assays \code{"RawTreated"} and \code{"Controls"}.
 #' @param nDigits_rounding integer specifying number of digits of rounding during calculations.
 #' Defaults to \code{4}.
 #'
 #' @return \code{BumpyMatrix} object with a new assay named \code{"Normalized"} containing \code{DataFrame}s 
-#' holding \code{RelativeViability} and \code{GRvalue} values.
+#' holding \code{RelativeViability}, \code{GRvalue}, \code{RefRelativeViability}, code{RefGRvalue}, and \code{DivisionTime} values.
 #'
 #' @export
 #'
@@ -20,9 +20,8 @@ normalize_SE <- function(se, nDigits_rounding = 4) {
   refs <- SummarizedExperiment::assays(se)[["Controls"]]
   trt <- SummarizedExperiment::assays(se)[["RawTreated"]]
 
-  # TODO: Create empty BM? 
-  # bm <- create_empty_bm()
   # TODO: Remove looping and just use the BumpyMatrix to do all of the arithmetic.  
+  # This is simple for the relative viability, but we will need to think harder about the GR value calculations.
   for (i in rownames(se)) {
     for (j in colnames(se)) {
       ref_df <- refs[i, j][[1]]
@@ -42,18 +41,18 @@ normalize_SE <- function(se, nDigits_rounding = 4) {
       # Normalized treated.
       normalized$RelativeViability <- round(trt_df$CorrectedReadout/ref_df$UntrtReadout, ndigits_rounding)
       normalized$GRvalue <- calculate_GR_value(trt_df, ndigits_rounding)
-      #normalized$CorrectedReadout <- trt_df$CorrectedReadout # TODO: Within average_SE(), 
 
       # Normalized references.
-      controls$RefRelativeViability <- round(controls$RefReadout/controls$UntrtReadout, nDigits_rounding)
-      controls$RefGRvalue <- calculate_GR_value(controls)
-      controls$DivisionTime <- round(rdata[i, duration_col] / log2(controls$UntrtReadout/controls$Day0Readout), nDigits_rounding)
+      normalized$RefRelativeViability <- round(ref_df$RefReadout/normalized$UntrtReadout, nDigits_rounding)
+      normalized$RefGRvalue <- calculate_GR_value(ref_df, ndigits_rounding)
+      normalized$DivisionTime <- round(rdata[i, duration_col] / log2(ref_df$UntrtReadout/ref_df$Day0Readout), nDigits_rounding)
 
       # TODO: Put the normalized data.frame into the bumpy matrix. 
-      #bm[i, j] <- normalized
+      norm[i, j] <- normalized
     }
   }
 
   # TODO: Put the bumpy matrix assay back into the SE as a new "Normalized" assay.
+  assays(se)[["Normalized"]] <- norm
   return(se)
 }
