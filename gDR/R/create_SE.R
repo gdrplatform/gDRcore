@@ -38,7 +38,6 @@ create_SE <-
     # stopifnot(all(names(dfList) %in% .assayNames))
     # #dfList must contain first assay (i.e. df_data)
     # stopifnot(.assayNames[1] %in% names(dfList))
-
     
     mats <- if (assay_type == "matrix") {
       gDRutils::df_to_assay(df_data, data_type = data_type, discard_keys = discard_keys)
@@ -115,7 +114,7 @@ create_SE2 <- function(df_,
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
 
   ## Identify treatments, conditions, and experiment metadata.
-  md <- getMetaData(df_, discard_keys = discard_keys)
+  md <- getMetaData2(df_, discard_keys = discard_keys)
   coldata <- md$condition_md
   rowdata <- md$treatment_md
   exp_md <- md$experiment_md
