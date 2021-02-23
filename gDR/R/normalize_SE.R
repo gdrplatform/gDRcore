@@ -40,8 +40,8 @@ normalize_SE <- function(se, nDigits_rounding = 4) {
       controls <- normalized <- S4Vectors::DataFrame()
 
       # Normalized treated.
-      normalized$RelativeViability <- round(trt_df$CorrectedReadout/ref_df$UntrtReadout, ndigits_rounding)
-      normalized$GRvalue <- calculate_GR_value(trt_df, ndigits_rounding)
+      normalized$RelativeViability <- round(trt_df$CorrectedReadout/ref_df$UntrtReadout, nDigits_rounding)
+      normalized$GRvalue <- calculate_GR_value(trt_df, nDigits_rounding)
       #normalized$CorrectedReadout <- trt_df$CorrectedReadout # TODO: Within average_SE(), 
 
       # Normalized references.
