@@ -486,11 +486,25 @@ normalize_SE2 <- function(se, nDigits_rounding = 4) {
       colnames(normalized) <- norm_cols
       # Normalized treated.
       normalized$RelativeViability <- round(trt_df$CorrectedReadout/ref_df$UntrtReadout, nDigits_rounding)
-      normalized$GRvalue <- calculate_GR_value(trt_df, nDigits_rounding, duration, ref_div_time, cl_name)
+      normalized$GRvalue <- calculate_GR_value(rel_viability = normalized$RelativeViability, 
+        corrected_readout = trt_df$CorrectedReadout, 
+        day0_readout = ref_df$Day0Readout, 
+        untrt_readout = ref_df$UntrtReadout, 
+        ndigit_rounding = nDigits_rounding, 
+        duration = duration, 
+        ref_div_time = ref_div_time, 
+        cl_name = cl_name)
 
       # Normalized references.
-      normalized$RefRelativeViability <- round(ref_df$RefReadout/normalized$UntrtReadout, nDigits_rounding)
-      normalized$RefGRvalue <- calculate_GR_value(ref_df, nDigits_rounding, duration, ref_div_time, cl_name)
+      normalized$RefRelativeViability <- round(ref_df$RefReadout/ref_df$UntrtReadout, nDigits_rounding)
+      normalized$GRvalue <- calculate_GR_value(rel_viability = normalized$RefRelativeViability, 
+        corrected_readout = trt_df$CorrectedReadout, 
+        day0_readout = ref_df$Day0Readout, 
+        untrt_readout = ref_df$UntrtReadout, 
+        ndigit_rounding = nDigits_rounding, 
+        duration = duration, 
+        ref_div_time = ref_div_time, 
+        cl_name = cl_name)
       normalized$DivisionTime <- round(duration / log2(ref_df$UntrtReadout/ref_df$Day0Readout), nDigits_rounding)
 
       normalized$row_id <- rep(rownames(se)[j], nrow(trt_df))
