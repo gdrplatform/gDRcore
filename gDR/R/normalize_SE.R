@@ -7,7 +7,7 @@
 #' @param key_values a list of values for keys that should be included in the normalization (NULL by default)
 #' @param discard_keys a vector of keys that should be discarded (NULL by default)
 #' @param control_mean_fct the function used for averaging controls (trimmed arithmetic mean with trim = .25 by default)
-#' @param nDigits_rounding an integer with number of digits of rounding (4 by default)
+#' @param ndigit_rounding an integer with number of digits of rounding (4 by default)
 #'
 #' @return a SummarizedExperiment object with normalized assays
 #' @export
@@ -17,7 +17,7 @@ normalize_SE <- function(df_raw_data,
                   key_values = NULL,
                   discard_keys = NULL,
                   control_mean_fct = function(x) mean(x, trim = .25), # used for averaging controls
-                  nDigits_rounding = 4 # rounding of normalized response values
+                  ndigit_rounding = 4 # rounding of normalized response values
                 ) {
     # Assertions
     stopifnot(inherits(df_raw_data, "data.frame"))
@@ -25,7 +25,7 @@ normalize_SE <- function(df_raw_data,
     checkmate::assert_list(key_values, null.ok = TRUE)
     checkmate::assert_vector(discard_keys, null.ok = TRUE)
     checkmate::assert_function(control_mean_fct, null.ok = TRUE)
-    checkmate::assert_number(nDigits_rounding)
+    checkmate::assert_number(ndigit_rounding)
     checkmate::assertFALSE('RelativeViability' %in% colnames(df_raw_data))
 
     # average technical replicates and assign the right controls to each treated well
@@ -142,7 +142,7 @@ normalize_SE <- function(df_raw_data,
 
     for (i in rownames(normSE_n)) {
         for (j in colnames(normSE_n)) {
-            if (nrow(normSE_original[[j, i]]) == 0) next # skip if no data
+            if (nrow(normSE_original[[i, j]]) == 0) next # skip if no data
             # get all the control endpoint data
             df_end <- do.call(rbind,
                     lapply(row_maps_end[[i]], function(x) ctrl_original[[x, col_maps[j]]]))
@@ -322,19 +322,19 @@ normalize_SE <- function(df_raw_data,
 
             # calculating the normalized response value for the control
             df_ctrl$RefRelativeViability <- round(df_ctrl$RefReadout/df_ctrl$UntrtReadout,
-                nDigits_rounding)
+                ndigit_rounding)
             df_ctrl$RefGRvalue <- round(2 ^ (
                     log2(df_ctrl$RefReadout / df_ctrl$Day0Readout) /
-                    log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout) ), nDigits_rounding) - 1
+                    log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout) ), ndigit_rounding) - 1
             df_ctrl$DivisionTime <- round(
                     SummarizedExperiment::rowData(normSE)[i,gDRutils::get_identifier("duration")] /
-                        log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout), nDigits_rounding)
+                        log2(df_ctrl$UntrtReadout / df_ctrl$Day0Readout), ndigit_rounding)
 
 
             #gladkia: assert for merged study/control data
             ctrl_bcodes <- sort(unique(df_ctrl$Barcode))
             trt_bcodes <-
-              sort(unique(normSE_original[[j, i]]$Barcode))
+              sort(unique(normSE_original[[i, j]]$Barcode))
             # check if all treated values have matching controls on the same plate
             if (!all(trt_bcodes %in% ctrl_bcodes)) {
               # if not, propagate to all plates
@@ -351,7 +351,7 @@ normalize_SE <- function(df_raw_data,
 
             # works with by = character(0) but changes the order of rows
             df_merged <- merge(
-              data.frame(normSE_original[[j, i]]),
+              data.frame(normSE_original[[i, j]]),
                     data.frame(df_ctrl),
                     by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)),
                     all.x = T)
@@ -359,17 +359,17 @@ normalize_SE <- function(df_raw_data,
             # merge the data with the controls assuring that the order of the records is preseved
             # removing this line because failed when   by = character(0)
             # df_merged <- dplyr::left_join(
-            #         data.frame(normSE_original[[j, i]]),
+            #         data.frame(normSE_original[[i, j]]),
             #         data.frame(df_ctrl),
             #         by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)))
 
             # calculate the normalized values
-            df_merged$RelativeViability <- round(df_merged$CorrectedReadout / df_merged$UntrtReadout, nDigits_rounding)
+            df_merged$RelativeViability <- round(df_merged$CorrectedReadout / df_merged$UntrtReadout, ndigit_rounding)
 
             df_merged$GRvalue <- round(2 ^ (
               log2(df_merged$CorrectedReadout / df_merged$Day0Readout) /
                 log2(df_merged$UntrtReadout / df_merged$Day0Readout)
-            ), nDigits_rounding) - 1
+            ), ndigit_rounding) - 1
 
             # use the reference doubling Time (ReferenceDivisionTime) for GRvalue if day 0 missing
             if (any(is.na(df_merged$Day0Readout)) ) {
@@ -402,22 +402,22 @@ normalize_SE <- function(df_raw_data,
                     log2(pmin(1.25, # capping to avoid artefacts
                               df_merged[, "RelativeViability"])) /
                       (SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")] / refDivisionTime)
-                  )), nDigits_rounding) - 1
+                  )), ndigit_rounding) - 1
 
                   df_ctrl$RefGRvalue <-
                   round(2 ^ (1 + (
                     log2(pmin(1.25, # capping to avoid artefacts
                               df_ctrl[, "RefRelativeViability"])) /
                       (SummarizedExperiment::rowData(normSE)[i, gDRutils::get_identifier("duration")] / refDivisionTime)
-                  )), nDigits_rounding) - 1
+                  )), ndigit_rounding) - 1
                 }
             }
 
             # more robust assignment in case the order of df_merged has changed
-            normSE_n[[j, i]] <- merge(normSE_n[[j, i]],
-                df_merged[, c(colnames(normSE_n[[j, i]]), 'GRvalue', 'RelativeViability')],
-                by = colnames(normSE_n[[j, i]]))
-            normSE_c[[j, i]] <- DataFrame(df_ctrl)
+            normSE_n[[i, j]] <- merge(normSE_n[[i, j]],
+                df_merged[, c(colnames(normSE_n[[i, j]]), 'GRvalue', 'RelativeViability')],
+                by = colnames(normSE_n[[i, j]]))
+            normSE_c[[i, j]] <- DataFrame(df_ctrl)
         }
     }
     metadata(normSE) <- c(metadata(normSE),
@@ -440,7 +440,7 @@ normalize_SE <- function(df_raw_data,
 #' Normalize drug response data from treated and untreated pairings.
 #'
 #' @param se \code{BumpyMatrix} object with assays \code{"RawTreated"} and \code{"Controls"}.
-#' @param nDigits_rounding integer specifying number of digits of rounding during calculations.
+#' @param ndigit_rounding integer specifying number of digits of rounding during calculations.
 #' Defaults to \code{4}.
 #'
 #' @return \code{BumpyMatrix} object with a new assay named \code{"Normalized"} containing \code{DataFrame}s 
@@ -448,98 +448,106 @@ normalize_SE <- function(df_raw_data,
 #'
 #' @export
 #'
-normalize_SE2 <- function(se, nDigits_rounding = 4) {
+normalize_SE2 <- function(se, trt_keys = NULL, ndigit_rounding = 4) {
   # Assertions
-  checkmate::assert_number(nDigits_rounding)
+  checkmate::assert_number(ndigit_rounding)
 
   refs <- SummarizedExperiment::assays(se)[["Controls"]]
   trt <- SummarizedExperiment::assays(se)[["RawTreated"]]
 
+  if (is.null(trt_keys)) {
+    if (!is.null(Keys <- get_SE_keys(se))) {
+      trt_keys <- Keys$Trt
+    } else {
+      trt_keys <- identify_keys(se)$Trt
+    }
+    Keys$Trt <- setdiff(trt_keys, Keys$discard_keys) # TODO: Do we still need this or is this already handled by create_SE2? 
+    set_SE_keys(se, Keys)
+  }
+
+  p_trt_keys <- intersect(trt_keys, colnames(trt[1, 1][[1]])) # TODO: Ensure that even empty DFrame will have column names.
+
   norm_cols <- c("RelativeViability", "GRvalue", "RefRelativeViability", "RefGRvalue", "DivisionTime")
-  # TODO: Remove looping and just use the BumpyMatrix to do all of the arithmetic.  
   out <- vector("list", nrow(se) * ncol(se))
-  # This is simple for the relative viability, but we will need to think harder about the GR value calculations.
+
   # Column major order, so go down first.
-  cdata <- colData(se)
-  rdata <- rowData(se)
-  for (i in seq_along(colnames(se))) {
-    cl_md <- cdata[i, ]
+  cdata <- SummarizedExperiment::colData(se)
+  rdata <- SummarizedExperiment::rowData(se)
+  for (j in seq_along(colnames(se))) {
+    cl_md <- cdata[j, ]
     cl_name <- cl_md[[gDRutils::get_identifier("cellline_name")]]
     ref_div_time <- cl_md[[gDRutils::get_identifier("cellline_ref_div_time")]]
 
-    for (j in seq_along(rownames(se))) {
-      duration <- rdata[j, gDRutils::get_identifier("duration")]
+    for (i in seq_along(rownames(se))) {
+      duration <- rdata[i, gDRutils::get_identifier("duration")]
 
-      ref_df <- refs[j, i][[1]]
-      trt_df <- trt[j, i][[1]]
+      ref_df <- refs[i, j][[1]]
+      trt_df <- trt[i, j][[1]]
 
       if (nrow(trt_df) == 0L) {
 	next # skip if no data
+        # TODO: Does this still need to initialize an empty DFrame with appropriate colnames?
       }
 
       if (length(ref_df) == 0L) {
-	futile.logger::flog.warn("Missing control data. Treatment Id: '%s' Cell_line Id: '%s'", rownames(se)[j], colnames(se)[i])
+	futile.logger::flog.warn(
+          sprintf("Missing control data. Treatment Id: '%s' Cell_line Id: '%s'", 
+            rownames(se)[i], colnames(se)[j])
+        )
 	next
+        # TODO: Does this still need to initialize an empty DFrame with appropriate colnames?
       }
+      
+      discard_keys <- metadata(se)$Keys$discard_keys # TODO: Replace me with a getter function.
+
+      ## Merge to ensure that the differing vector lengths 
+      ## and relevant Barcode-based controls are mapping appropriately. 
+      all_readouts_df <- merge(trt_df, 
+        ref_df, 
+	by = intersect(colnames(ref_df), c('Barcode', discard_keys)), # TODO: Should this be trt_df or ref_df?
+	all.x = TRUE)
 
       normalized <- DataFrame(matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols)))
-      colnames(normalized) <- norm_cols
+      colnames(normalized) <- c(norm_cols)
+
       # Normalized treated.
-      normalized$RelativeViability <- round(trt_df$CorrectedReadout/ref_df$UntrtReadout, nDigits_rounding)
+      normalized$RelativeViability <- round(all_readouts_df$CorrectedReadout/all_readouts_df$UntrtReadout, ndigit_rounding)
       normalized$GRvalue <- calculate_GR_value(rel_viability = normalized$RelativeViability, 
-        corrected_readout = trt_df$CorrectedReadout, 
-        day0_readout = ref_df$Day0Readout, 
-        untrt_readout = ref_df$UntrtReadout, 
-        ndigit_rounding = nDigits_rounding, 
+        corrected_readout = all_readouts_df$CorrectedReadout, 
+        day0_readout = all_readouts_df$Day0Readout, 
+        untrt_readout = all_readouts_df$UntrtReadout, 
+        ndigit_rounding = ndigit_rounding, 
         duration = duration, 
         ref_div_time = ref_div_time, 
         cl_name = cl_name)
 
       # Normalized references.
-      normalized$RefRelativeViability <- round(ref_df$RefReadout/ref_df$UntrtReadout, nDigits_rounding)
-      normalized$GRvalue <- calculate_GR_value(rel_viability = normalized$RefRelativeViability, 
-        corrected_readout = trt_df$CorrectedReadout, 
-        day0_readout = ref_df$Day0Readout, 
-        untrt_readout = ref_df$UntrtReadout, 
-        ndigit_rounding = nDigits_rounding, 
+      normalized$RefRelativeViability <- round(ref_df$RefReadout/ref_df$UntrtReadout, ndigit_rounding)
+      normalized$RefGRvalue <- calculate_GR_value(rel_viability = normalized$RefRelativeViability, 
+        corrected_readout = all_readouts_df$CorrectedReadout, 
+        day0_readout = all_readouts_df$Day0Readout, 
+        untrt_readout = all_readouts_df$UntrtReadout, 
+        ndigit_rounding = ndigit_rounding, 
         duration = duration, 
         ref_div_time = ref_div_time, 
         cl_name = cl_name)
-      normalized$DivisionTime <- round(duration / log2(ref_df$UntrtReadout/ref_df$Day0Readout), nDigits_rounding)
+      normalized$DivisionTime <- round(duration / log2(ref_df$UntrtReadout/ref_df$Day0Readout), ndigit_rounding)
 
-      normalized$row_id <- rep(rownames(se)[j], nrow(trt_df))
-      normalized$col_id <- rep(colnames(se)[i], nrow(trt_df))
+      # Carry over present treated keys.
+      normalized <- cbind(all_readouts_df[p_trt_keys], normalized)
 
-      out[[nrow(se) * (i - 1) + j]] <- normalized
+      normalized$row_id <- rep(rownames(se)[i], nrow(trt_df))
+      normalized$col_id <- rep(colnames(se)[j], nrow(trt_df))
+
+      out[[nrow(se) * (j - 1) + i]] <- normalized
     }
   }
 
   out <- DataFrame(do.call("rbind", out))
-  norm <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(normalized) %in% c("row_id", "col_id")], row = out$row_id, col = out$col_id)
-  # TODO: Put the bumpy matrix assay back into the SE as a new "Normalized" assay.
-  assays(se)[["Normalized"]] <- norm
+  norm <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(normalized) %in% c("row_id", "col_id")], 
+    row = out$row_id, 
+    col = out$col_id)
+
+  SummarizedExperiment::assays(se)[["Normalized"]] <- norm
   return(se)
-}
-
-
-#' Create empty BumpyMatrix object 
-#'
-#' Create empty BumpyMatrix object with
-#' - NAs for all columns in [1,1] 
-#' - empty DataFrame for other subsets
-# 
-#'
-#' @param data_cols character vector with names of the columns in DataFrame
-#' rows name of the rows in BumpyMatrix object
-#' rows name of the cols in BumpyMatrix object
-#' @return BumpyMatrix object
-#'
-#' @export
-create_empty_bm <- function(data_cols, rows, cols) {
-  df_base <-
-    S4Vectors::DataFrame(as.list(structure(rep(
-      NA, length(data_cols)
-    ), .Names = c(data_cols))))
-  
-  BumpyMatrix::splitAsBumpyMatrix(df_base, row = rows, column = cols)
 }
