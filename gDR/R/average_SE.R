@@ -1,9 +1,80 @@
 #' average_SE
 #'
+#' Avereage normalized SummarizedExperiment of DR data
+#'
+#' @param normSE a SummarizedExperiment with normalized DR data
+#' @param TrtKeys a vector of keys used for averaging (NULL by default)
+#'
+#' @return a SummarizedExperiment with additional assay with averaged DR data
+#'
+#' @export
+#'
+average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
+
+  # Assertions:
+  checkmate::assert_class(normSE, "SummarizedExperiment")
+  checkmate::assert_vector(TrtKeys, null.ok = TRUE)
+
+
+    avgSE <- normSE
+    if (is.null(TrtKeys)) {
+        if ("Keys" %in% names(metadata(normSE))) {
+          TrtKeys <- metadata(normSE)$Keys$Trt
+          TrtKeys <- setdiff(TrtKeys, metadata(normSE)$Keys$discard_keys)
+        } else {
+          TrtKeys <- identify_keys(normSE)$Trt
+        }
+    }
+    metadata(normSE)$Keys$Trt <- TrtKeys
+
+    SummarizedExperiment::assay(avgSE, "Averaged") <- SummarizedExperiment::assay(avgSE, "Normalized")
+    avgSE <- aapply(avgSE, function(x) {
+        # bypass 'masked' filter
+        x$masked <- x$masked & !include_masked
+
+        subKeys <- intersect(TrtKeys, colnames(x))
+        if (sum(!x$masked) >= 1) {
+            df_av <- aggregate(x[ !x$masked ,
+                                  c("GRvalue", "RelativeViability","CorrectedReadout")],
+                            by = as.list(x[ !x$masked , subKeys, drop = FALSE]),
+                            FUN = function(y) mean(y, na.rm = TRUE))
+            df_std <- aggregate(x[!x$masked, c("GRvalue", "RelativeViability")],
+                                by = as.list(x[ !x$masked, subKeys, drop = FALSE]),
+                                FUN = function(x) sd(x, na.rm = TRUE))
+            colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")] =
+                paste0("std_",
+                    colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")])
+            return( merge(df_av, df_std, by = subKeys) )
+        } else { # case: (nrow(x) == 0 || all(x$masked))
+            df_ = as.data.frame(matrix(0,0,length(subKeys)+5))
+            colnames(df_) = c(subKeys,
+                  c("GRvalue", "RelativeViability","CorrectedReadout"),
+                  paste0("std_", c("GRvalue", "RelativeViability")))
+            return(df_)
+        } 
+    }, "Averaged")
+
+    SummarizedExperiment::assay(avgSE, "Avg_Controls") <- SummarizedExperiment::assay(avgSE, "Controls")
+    avgSE <- aapply(avgSE, function(x) {
+        if (nrow(x) > 1) {
+            subKeys <- intersect(TrtKeys, colnames(x))
+            df_av <- DataFrame(lapply(x[, c("Day0Readout", "UntrtReadout",
+                    "RefGRvalue", "RefRelativeViability",
+                    "RefReadout", "DivisionTime")], FUN = function(y) mean(y, na.rm = TRUE)))
+            return( df_av )
+        } else return(x)
+    }, "Avg_Controls")
+
+    return(avgSE)
+}
+
+
+#' average_SE2
+#'
 #' Average the assays of a SummarizedExperiment of drug response data
 #'
 #' @param se a \linkS4class{SummarizedExperiment} with drug response data.
-#' @param TrtKeys a vector of keys used for averaging (NULL by default)
+#' @param trt_keys a vector of keys used for averaging (NULL by default)
 #' @param aggregate_FXN function used for averaging data that should be considered replicates.
 #' Defaults to trimmed arithmetic mean with trim = 0.25.
 #'
@@ -11,81 +82,48 @@
 #'
 #' @export
 #'
-average_SE <- function(se, TrtKeys = NULL, include_masked = FALSE, 
-  aggregate_FXN = function(x) {mean(x, na.rm = TRUE, trim = 0.25)}, treated_assay = "RawTreated", reference_assay = "UntreatedReferences") {
-#
-#  # Aggregate where there are multiple references for a single treatment. 
-#  refs <- unique(untrt_endpoint_map)
-#  n_refs <- length(refs) # Identify how many unique control groups there are.
-#
-#  ref_cache <- vector("list", n_refs)
-#  names(ref_cache) <- vapply(refs, function(x) paste(x, collapse = "_"), character(0))
-#
-#  for (i in seq_along(untrt_endpoint_map)) {
-#    trt_refs <- untrt_endpoint_map[[i]]
-#    if (length(trt_refs > 1L)) {
-#      # Note that the metadata no longer needs to be carried, as the only relevant information at this point is the mapping
-#      # which will be captured through the matrix indices.  
-#      agg_readout <- aggregate_FXN(untrt[untrt$groupings %in% trt_refs, readout])
-#      ref_cache[[i]] <- agg_readout
-#    }
-#  }
+average_SE2 <- function(se, 
+                       include_masked = FALSE, 
+                       aggregate_FXN = function(x) {mean(x, na.rm = TRUE, trim = 0.25)}, 
+                       normalized_assay = "Normalized") {
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
-  checkmate::assert_vector(TrtKeys, null.ok = TRUE)
 
-  if (is.null(TrtKeys)) {
-    if ("Keys" %in% names(metadata(se))) {
-      TrtKeys <- metadata(se)$Keys$Trt
-      TrtKeys <- setdiff(TrtKeys, metadata(se)$Keys$discard_keys)
-    } else {
-      TrtKeys <- identify_keys(se)$Trt
-    }
-  }
-  metadata(se)$Keys$Trt <- TrtKeys
+  normalized <- SummarizedExperiment::assay(se, normalized_assay)
+  first <- normalized[1, 2][[1]]
+  sub_keys <- intersect(get_SE_keys(se)$Trt, colnames(first)) # TODO: Check colnames exist for empty df. 
+  agg_keys <- setdiff(colnames(first), sub_keys)
 
-  trt_fields <- c("GRvalue", "RelativeViability")
-  ref_fields <- c("Day0Readout", "UntrtReadout", "RefGRvalue", "RefRelativeViability", "RefReadout", "DivisionTime")
-
-  trt <- SummarizedExperiment::assay(se, treated_assay)
-  avg_trt <- trt
-  ref <- SummarizedExperiment::assay(se, reference_assay)
-  avg_ref <- ref
-
-  for (i in rownames(se)) {
-    for (j in colnames(se)) {
-      trt_df <- trt[i, j]
-      ref_df <- ref[i, j]
+  out <- vector("list", nrow(se) * ncol(se))
+  for (i in seq_len(nrow(se))) {
+    for (j in seq_len(ncol(se))) {
+      norm_df <- normalized[i, j][[1]]
 
       # bypass 'masked' filter
-      masked <- trt_df$masked & !include_masked
+      masked <- norm_df$masked & !include_masked
 
-      subKeys <- intersect(TrtKeys, colnames(trt_df))
-      if (sum(!masked) >= 1) {
-	df_av <- aggregate(trt_df[!masked, trt_fields],
-	  by = as.list(trt_df[!masked, subKeys, drop = FALSE]), aggregate_FXN)
-	df_std <- aggregate(trt_df[!masked, trt_fields],
-	  by = as.list(trt_df[!masked, subKeys, drop = FALSE]), aggregate_FXN)
-	colnames(df_std) <- paste0("std_", colnames(df_std))
-	avg_trt_df <- merge(df_av, df_std, by = subKeys)
-      } else { # case: (nrow(trt_df) == 0 || all(masked))
-	avg_trt_df <- as.data.frame(matrix(0, 0, length(subKeys) + 5)) # TODO: remove this hardcoded number.
-	colnames(avg_trt_df) <- c(subKeys, trt_fields, paste0("std_", trt_fields))
-      } 
- 
-      if (nrow(ref_df) > 1) {
-	subKeys <- intersect(TrtKeys, colnames(ref_df))
-	avg_ref_df <- DataFrame(lapply(ref_df[, ref_fields], aggregate_FXN))
+      if (nrow(norm_df[!masked, ]) > 1L) {
+	avg_df <- aggregate(norm_df[!masked, agg_keys],
+	  by = as.list(norm_df[!masked, sub_keys, drop = FALSE]), 
+	  aggregate_FXN)
       } else {
-        avg_ref_df <- ref_df
+        avg_df <- norm_df
       }
-      
-      avg_trt[i, j] <- avg_trt_df
-      avg_ref[i, j] <- avg_ref_df
+
+      if (nrow(avg_df) != 0L) {
+	avg_df$row_id <- rep(rownames(se)[i], nrow(avg_df))
+	avg_df$col_id <- rep(colnames(se)[j], nrow(avg_df))
+      }
+      out[[nrow(se) * (i - 1) + j]] <- avg_df
     }
   }
-  # TODO: Add the two BumpyMatrices back into the SE.
-  # paste0("Averaged", )
+
+  out <- DataFrame(do.call("rbind", out))
+  averaged <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c("masked", "row_id", "col_id")], 
+    row = out$row_id, 
+    col = out$col_id)
+
+  SummarizedExperiment::assays(se)[["Averaged"]] <- averaged
   return(se)
 }

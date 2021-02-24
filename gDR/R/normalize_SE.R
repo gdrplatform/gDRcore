@@ -465,7 +465,9 @@ normalize_SE2 <- function(se, trt_keys = NULL, ndigit_rounding = 4) {
     set_SE_keys(se, Keys)
   }
 
-  p_trt_keys <- intersect(trt_keys, colnames(trt[1, 1][[1]])) # TODO: Ensure that even empty DFrame will have column names.
+  # Add the masked in for averaging later.
+  p_trt_keys <- intersect(c(trt_keys, gDRutils::get_identifier("masked_tag")), colnames(trt[1, 1][[1]])) # TODO: Ensure that even empty DFrame will have column names.
+ 
 
   norm_cols <- c("RelativeViability", "GRvalue", "RefRelativeViability", "RefGRvalue", "DivisionTime")
   out <- vector("list", nrow(se) * ncol(se))
