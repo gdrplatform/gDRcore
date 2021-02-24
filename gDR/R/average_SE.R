@@ -91,7 +91,7 @@ average_SE2 <- function(se,
   checkmate::assert_class(se, "SummarizedExperiment")
 
   normalized <- SummarizedExperiment::assay(se, normalized_assay)
-  first <- normalized[1, 2][[1]]
+  first <- normalized[1, 2][[1]] # TODO: Fix me. 
   sub_keys <- intersect(get_SE_keys(se)$Trt, colnames(first)) # TODO: Check colnames exist for empty df. 
   agg_keys <- setdiff(colnames(first), sub_keys)
 
@@ -104,18 +104,31 @@ average_SE2 <- function(se,
       masked <- norm_df$masked & !include_masked
 
       if (nrow(norm_df[!masked, ]) > 1L) {
-	avg_df <- aggregate(norm_df[!masked, agg_keys],
+        std_cols <- c("GRvalue", "RelativeViability")
+	avg_df <- aggregate(norm_df[!masked, std_cols],
 	  by = as.list(norm_df[!masked, sub_keys, drop = FALSE]), 
 	  aggregate_FXN)
+
+	std_df <- aggregate(norm_df[!masked, std_cols],
+	  by = as.list(norm_df[!masked, sub_keys, drop = FALSE]), 
+	  function(x) {sd(x, na.rm = TRUE)})
+        colnames(std_df)[colnames(std_df) %in% std_cols] <-
+          paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
+
+        ref_cols <- c("RefGRvalue", "RefRelativeViability")
+	ref_df <- lapply(norm_df[!masked, ref_cols], aggregate_FXN)
+
+        agg_df <- merge(avg_df, std_df, by = sub_keys) 
+        agg_df <- cbind(agg_df, ref_df)
       } else {
-        avg_df <- norm_df
+        agg_df <- norm_df
       }
 
-      if (nrow(avg_df) != 0L) {
-	avg_df$row_id <- rep(rownames(se)[i], nrow(avg_df))
-	avg_df$col_id <- rep(colnames(se)[j], nrow(avg_df))
+      if (nrow(agg_df) != 0L) {
+	agg_df$row_id <- rep(rownames(se)[i], nrow(agg_df))
+	agg_df$col_id <- rep(colnames(se)[j], nrow(agg_df))
       }
-      out[[nrow(se) * (i - 1) + j]] <- avg_df
+      out[[nrow(se) * (i - 1) + j]] <- agg_df
     }
   }
 
