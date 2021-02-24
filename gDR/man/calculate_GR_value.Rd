@@ -4,19 +4,30 @@
 \alias{calculate_GR_value}
 \title{Calculate a GR value.}
 \usage{
-calculate_GR_value(df_, cellline_md, day0_readout, ndigit_rounding)
+calculate_GR_value(
+  rel_viability,
+  corrected_readout,
+  day0_readout,
+  untrt_readout,
+  ndigit_rounding,
+  duration,
+  ref_div_time,
+  cl_name = "cell line"
+)
 }
 \arguments{
-\item{df_}{data.frame of dose response values containing \code{"CorrectedReadout"}.}
+\item{rel_viability}{numeric vector representing the Relative Viability.}
 
-\item{cellline_md}{named list of metadata for the cell line of interest.}
+\item{ndigit_rounding}{integer specifying the number of digits to use for calculation rounding.}
 
-\item{day0_readout}{numeric vector}
+\item{duration}{numeric value specifying the length of time the cells were treated.}
 
-\item{ndigit_rounding}{integer}
+\item{ref_div_time}{numeric value specifying the reference division time for the cell line of interest.}
+
+\item{cl_name}{character string specifying the name for the cell line of interest.}
 }
 \value{
-
+numeric GR value.
 }
 \description{
 Calculate a GR value for a given set of dose response values.

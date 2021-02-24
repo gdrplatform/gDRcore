@@ -4,21 +4,15 @@
 \alias{fit_SE}
 \title{fit_SE}
 \usage{
-fit_SE(
-  se,
-  fitting_ref_assay = "FittingReferences",
-  averaged_treated_assay = "AveragedTreated",
-  metrics_assay = "Metrics",
-  studyConcThresh = 4
-)
+fit_SE(avgSE, studyConcThresh = 4)
 }
 \arguments{
-\item{se}{a SummarizedExperiment with averaged and normalized assays}
+\item{avgSE}{a SummarizedExperiment with averaged and normalized assays}
 
 \item{studyConcThresh}{a numeric with study concentration threshold (4 by default)}
 }
 \value{
-a \code{SummarizedExperiment} with additional assay with metrics
+a SummarizedExperiment with additional assay with metrics
 }
 \description{
 Calculate metrics for DR data
