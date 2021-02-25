@@ -455,6 +455,7 @@ normalize_SE2 <- function(se, trt_keys = NULL, ndigit_rounding = 4) {
   refs <- SummarizedExperiment::assays(se)[["Controls"]]
   trt <- SummarizedExperiment::assays(se)[["RawTreated"]]
 
+  # TODO: Push the below work into get_SE_keys itself. 
   if (is.null(trt_keys)) {
     if (!is.null(Keys <- get_SE_keys(se))) {
       trt_keys <- Keys$Trt

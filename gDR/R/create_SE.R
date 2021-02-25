@@ -173,6 +173,8 @@ create_SE2 <- function(df_,
 
   ## Combine all references with respective treatments.
   # Merge raw data back with groupings.
+  # Remove experiment metadata columns.
+  df_ <- df_[!colnames(df_) %in% colnames(exp_md)]
   dfs <- merge(df_, assigned_mapping_entries, by = c(colnames(rowdata), colnames(coldata)))
 
   # Remove all rowdata and coldata. 
