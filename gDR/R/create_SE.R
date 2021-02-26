@@ -124,7 +124,7 @@ create_SE2 <- function(df_,
 
   ## Identify treated and untreated conditions.
   assigned_mapping_entries <- .assign_treated_and_untreated_conditions(mapping_entries)
-  split_list <- split(assigned_mapping_entries, f = assigned_mapping_entries$treated_untreated)  
+  split_list <- split(mapping_entries, f = assigned_mapping_entries$treated_untreated)  
   if (length(split_list) != 2L) {
     stop(sprintf("unexpected conditions found: '%s'", 
       paste(setdiff(levels(assigned_mapping_entries$treated_untreated), c("treated", "untreated")), collapse = ",")))
@@ -175,20 +175,21 @@ create_SE2 <- function(df_,
   # Merge raw data back with groupings.
   # Remove experiment metadata columns.
   df_ <- df_[!colnames(df_) %in% colnames(exp_md)]
-  dfs <- merge(df_, assigned_mapping_entries, by = c(colnames(rowdata), colnames(coldata)))
+  dfs <- merge(df_, mapping_entries, by = c(colnames(rowdata), colnames(coldata)))
 
   # Remove all rowdata and coldata. 
-  dfs <- dfs[!colnames(dfs) %in% c(colnames(rowdata), colnames(coldata), "treated_untreated")]
-  df_cols <- colnames(dfs) != "groupings"
+  groupings <- dfs$groupings
+  dfs <- dfs[!colnames(dfs) %in% c(colnames(rowdata), colnames(coldata), "groupings")]
+
   trt_out <- ref_out <- vector("list", nrow(treated))
   for (i in seq_len(nrow(treated))) {
     trt <- rownames(treated)[i]
-    trt_df <- dfs[dfs$groupings == trt, df_cols, drop = FALSE]  
+    trt_df <- dfs[groupings == trt, , drop = FALSE]  
 
     ref_df <- NULL
     if (nrow(trt_df) > 0L) {
       untrt_ref <- untrt_endpoint_map[[trt]]  
-      untrt_df <- dfs[dfs$groupings %in% untrt_ref, df_cols, drop = FALSE]
+      untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
       untrt_df <- create_control_df(
         untrt_df, 
         Keys = Keys, 
@@ -198,7 +199,7 @@ create_SE2 <- function(df_,
       )
 
       day0_ref <- day0_endpoint_map[[trt]]
-      day0_df <- dfs[dfs$groupings %in% day0_ref, df_cols, drop = FALSE]
+      day0_df <- dfs[groupings %in% day0_ref, , drop = FALSE]
       day0_df <- create_control_df(
         day0_df, 
         Keys = Keys, 
@@ -209,11 +210,12 @@ create_SE2 <- function(df_,
 
       cotrt_ref <- cotrt_endpoint_map[[trt]]  
       if (length(cotrt_ref) == 0L) {
+        # TODO: Can this be incorporated into create_control_df?
 	# Set the cotrt reference to the untreated reference.
 	cotrt_df <- untrt_df 
 	colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df))] <- "RefReadout"
       } else {
-	cotrt_df <- dfs[dfs$groupings %in% cotrt_ref, , drop = FALSE]
+	cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
 	cotrt_df <- create_control_df(
 	  cotrt_df, 
 	  Keys = Keys, 
@@ -224,7 +226,7 @@ create_SE2 <- function(df_,
       }
    
       ## Merge all data.frames together.
-      # Try to merge by plate, but otherwise just use mean.. 
+      # Try to merge by plate, but otherwise just use mean. 
       ref_df <- untrt_df
       if (nrow(cotrt_df) > 0L) {
         #ref_conc <- SummarizedExperiment::rowData(normSE)[i, 'Concentration_2']
@@ -273,29 +275,27 @@ create_SE2 <- function(df_,
   trt_out <- do.call(rbind, trt_out)
   ref_out <- do.call(rbind, ref_out)
   
-  keep <- colnames(trt_out)[!colnames(trt_out) %in% c("row_id", "col_id")]
-  #treated_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out[, keep], row = trt_out$row_id, col = trt_out$col_id, sparse = TRUE)
-  treated_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out, row = trt_out$row_id, col = trt_out$col_id)
+  trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
+  ref_keep <- !colnames(ref_out) %in% c("row_id", "col_id")
 
-  keep <- colnames(ref_out)[!colnames(ref_out) %in% c("row_id", "col_id")]
-  #reference_mat <- BumpyMatrix::splitAsBumpyMatrix(ref_out[, keep], row = ref_out$row_id, col = ref_out$col_id, sparse = TRUE)
-  reference_mat <- BumpyMatrix::splitAsBumpyMatrix(ref_out, row = ref_out$row_id, col = ref_out$col_id)
+  treated_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out[, trt_keep], row = trt_out$row_id, col = trt_out$col_id)
+  reference_mat <- BumpyMatrix::splitAsBumpyMatrix(ref_out[, ref_keep], row = ref_out$row_id, col = ref_out$col_id)
 
   matsL <- list(RawTreated = treated_mat, Controls = reference_mat)
 
   # Capture important values in experiment metadata.
   experiment_md <- list(experiment_metadata = exp_md, df_ = df_, Keys = Keys)
 
-  # filter out to 'treated' conditions only 
-  filtered_rowdata <-
-    rowdata[rownames(rowdata) %in% rownames(matsL[[1]]), ] 
+  # Filter out to 'treated' conditions only.
+  treated_rowdata <- rowdata[rownames(treated_mat), ] 
   
-  # expect at least single treatment condition
-  stopifnot(nrow(filtered_rowdata) > 0)
+  # Assertions.
+  stopifnot(nrow(treated_rowdata) > 0)
+  stopifnot(nrow(treated_rowdata) == length(unique(trt_out$row_id)))
  
   se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
     colData = coldata[match(colnames(treated_mat), rownames(coldata)), ],
-    rowData = filtered_rowdata[match(rownames(treated_mat), rownames(filtered_rowdata)), ],
+    rowData = treated_rowdata,
     metadata = experiment_md)
   se
 }
