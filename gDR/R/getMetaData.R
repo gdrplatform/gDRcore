@@ -87,6 +87,7 @@ getMetaData <- function(data, discard_keys = NULL) {
   ## colData
   colData <- unique(conditions[, cl_entries, drop = FALSE])
   colData$col_id <- seq_len(nrow(colData))
+  colData <- colData[sort(colnames(colData))] # TODO: can delete me later. Sorting for simple comparison. 
   colData$name_ <-
     apply(colData, 1, function(x)
       paste(x, collapse = "_"))
@@ -95,6 +96,8 @@ getMetaData <- function(data, discard_keys = NULL) {
   cond_entries <- setdiff(unique_metavars, c(cl_entries, discard_keys))
   rowData <- unique(conditions[, cond_entries, drop = FALSE])
   rowData$row_id <- seq_len(nrow(rowData))
+  rowData <- rowData[sort(colnames(rowData))] # TODO: can delete me later. Sorting for simple comparison. 
+
   rowData$name_ <-
     apply(rowData, 1, function(x)
       paste(x, collapse = "_"))
@@ -214,6 +217,7 @@ getMetaData2 <- function(data, discard_keys = NULL) {
   ## Condition metadata.
   condition_md <- unique(md[, cl_entries, drop = FALSE])
   condition_md$col_id <- seq_len(nrow(condition_md))
+  condition_md <- condition_md[sort(colnames(condition_md))] # TODO: can delete me later. Sorting for simple comparison. 
   rownames(condition_md) <- apply(condition_md, 1, function(x) {paste(x, collapse = "_")})
   condition_md <- condition_md[! names(condition_md) %in% c('col_id')]
 
@@ -224,6 +228,7 @@ getMetaData2 <- function(data, discard_keys = NULL) {
   trt_cols <- c(drug_trt_cols, setdiff(trt_cols, drug_trt_cols))
   treatment_md <- unique(md[, trt_cols, drop = FALSE])
   treatment_md$row_id <- seq_len(nrow(treatment_md))
+  treatment_md <- treatment_md[sort(colnames(treatment_md))] # TODO: can delete me later. Sorting for simple comparison. 
   rownames(treatment_md) <- apply(treatment_md, 1, function(x) {paste(x, collapse = "_")})
   treatment_md <- treatment_md[! names(treatment_md) %in% c('row_id')]
 
