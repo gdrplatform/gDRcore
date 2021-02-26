@@ -140,7 +140,7 @@ test_lData <- function(lData, lRef) {
 #'
 
 test_se_normalized <- function(se, lRef) {
-  
+ 
   expect_equal(standardize_df(metadata(se)$df_raw_data),
                standardize_df(data.frame(lRef$df_raw_data)))
   expect_equal(yaml::as.yaml(metadata(se)$Keys), paste0(lRef$ref_keys, "\n"))
@@ -173,6 +173,7 @@ test_se_normalized <- function(se, lRef) {
 #'
 
 test_se <- function(se, lRef) {
+  browser() 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_list(lRef)
@@ -182,9 +183,9 @@ test_se <- function(se, lRef) {
   class(y) <- class(x)
   
   expect_equal(x, y)
-  expect_equal(yaml::as.yaml(metadata(se)$Keys), paste0(lRef$ref_keys, "\n"))
-  expect_equal(yaml::as.yaml(metadata(se)$row_maps),
-               paste0(lRef$ref_row_maps, "\n"))
+  expect_equal(metadata(se)$Keys, yaml::yaml.load(paste0(lRef$ref_keys, "\n")))
+  expect_equal(metadata(se)$row_maps,
+               yaml::yaml.load(paste0(lRef$ref_row_maps, "\n")))
 
   #assays check
   myL <- lapply(SummarizedExperiment::assayNames(se), function(x) {
@@ -283,3 +284,68 @@ save_file_type_info <-
     outFile <- file.path(save_dir, fileTypeInfoName)
     write.csv(tbl, outFile, row.names = FALSE)
   }
+
+test_se2 <- function(se, lRef) {
+  # Assertions:
+  checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_list(lRef)
+  
+  x <- standardize_df(metadata(se)[["df_"]])
+  y <- standardize_df(data.table::data.table(lRef$df_raw_data))
+  class(y) <- class(x)
+  expect_equal(colnames(y),colnames(x))
+  # TODO: 'Medium' column not present
+  # now moved to metadata(se)$experiment_metadata, right?
+  expect_equal(x, y)
+  expect_equal(x, y[colnames(y) != "Medium"])
+  
+  # TODO: additional cols:
+  ## ref_Endpoint (Concentration_2, DrugName_2, Gnumber_2)
+  ## untrt_Endpoint (E2)
+  expect_equal(metadata(se)$Keys, yaml::yaml.load(paste0(lRef$ref_keys, "\n")))
+  
+  # TODO: no 'row_maps' metadata
+  # any alternative test (or should this chunk be removed?)
+  expect_equal(metadata(se)$row_maps,
+               yaml::yaml.load(paste0(lRef$ref_row_maps, "\n")))
+
+  #assays check
+  # 1. Assay names
+  ## old assay names
+  # grep("assay_", names(lRef), value = TRUE)
+  # [1] "assay_Averaged"     "assay_Avg_Controls" "assay_Controls"     "assay_Metrics"      "assay_Normalized"  
+  ## new assay names 
+  # assayNames(se)
+  # [1] "RawTreated" "Controls"   "Normalized" "Averaged"   "Metrics"   
+  
+  # 2. different naming convention for rId/cId
+  # ````
+  # mets_ref <- lRef$assay_Metrics
+  # mets <- gDRutils::assay_to_dt(se = se,assay_name = "Metrics")
+  # unique(mets_ref$rId)[2]
+  # "G02001876_G02001876.1-4_168_vehicle_0_0.0001_vehicle_9"
+  # unique(mets$rId)[2]
+  # "0_G02001876.1-4_vehicle_168_0.0001_G02001876_vehicle_9"
+  # ```
+  # we can convert new rId/cId to old naming scheme with sth like
+  # paste(unlist(strsplit(unique(mets$rId)[2], "_"))[c(6, 2, 4, 7, 1, 5, 3, 8)], collapse = "_")
+  # but probably it would be safer to stick to the old naming convention
+  # (or at least we should check how/if it would affect gDRviz)
+ 
+  # 3. same data in the assays
+  # we should probably check that same data is returned for four assays:
+  # Controls, Normalized, Averaged, Metrics
+  #myL <- lapply(SummarizedExperiment::assayNames(se), function(x) {
+  myL <- lapply(c("Controls", "Normalized", "Averaged", "Metrics"), function(x) {
+    print(x)
+    xAs <- gDRutils::assay_to_dt(se, x, merge_metrics = TRUE)
+    xAs$DrugName <- as.character(xAs$DrugName)
+    xDf <- lRef[[paste0("assay_", x)]]
+    if(x %in% c("Controls", "Avg_Controls")){
+    xDf$DivisionTime <- as.numeric(xDf$DivisionTime)
+    }
+    expect_true(nrow(xAs) == nrow(xDf))
+    expect_equivalent(sort(xAs[, order(names(xAs))]), 
+                      sort(data.table::as.data.table(xDf)[, order(names(xDf))]), tolerance = 1e-5)
+  })
+}
