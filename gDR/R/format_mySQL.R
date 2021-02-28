@@ -24,6 +24,8 @@ format_mySQL <-
            project_id,
            condition_metadata_table_length,
            treatment_metadata_table_length) {
+    .Deprecated(msg = "replaced by gDRwrapper package")
+
     # length could be replaced by connection to mySQL database
     # Assertions:
     stopifnot(inherits(df_averaged, "data.frame"))
@@ -183,6 +185,8 @@ extract_mySQL <-
            treatment_metadata,
            response_mean,
            response_metrics) {
+    .Deprecated(msg = "replaced by gDRwrapper package")
+
     # Assertions:
     checkmate::assert_string(project_id)
     stopifnot(inherits(condition_metadata, "data.frame"))
