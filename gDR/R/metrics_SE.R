@@ -83,13 +83,14 @@ fit_SE2 <- function(se,
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_number(studyConcThresh)
 
+  metric_cols <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
   out <- vector("list", nrow(se) * ncol(se))
   avg_trt <- SummarizedExperiment::assay(se, averaged_assay)
   for (i in seq_len(nrow(se))) {
     for (j in seq_len(ncol(se))) {
       avg_df <- avg_trt[i, j][[1]]
-      fit_df <- DataFrame(matrix(NA, 0, length(gDRutils::get_header("response_metrics")) + 2))
-      colnames(fit_df) <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
+      fit_df <- DataFrame(matrix(NA, 0, length(metric_cols)))
+      colnames(fit_df) <- metric_cols
 
       if (!is.null(avg_df) && all(dim(avg_df) > 0)) {
 	fit_df <- DataFrame(gDRutils::fit_curves(avg_df,
