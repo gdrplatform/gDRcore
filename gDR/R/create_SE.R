@@ -92,19 +92,15 @@ create_SE2 <- function(df_,
                        readout = "ReadoutValue", 
                        control_mean_fxn = function(x) {mean(x, trim = 0.25)}, 
                        key_values = NULL,
-                       discard_keys = NULL) {
+                       discard_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))) {
 
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(readout)
   checkmate::assert_character(discard_keys, null.ok = TRUE)
 
-  Keys <- identify_keys(df_)
-  Keys$discard_keys <- discard_keys
 
-  if (!is.null(discard_keys)) {
-    Keys$DoseResp <- setdiff(Keys$DoseResp, discard_keys)
-  }
+  Keys <- identify_keys2(df_, discard_keys)
 
   if (!(gDRutils::get_identifier("masked_tag") %in% colnames(df_))) {
     df_[, gDRutils::get_identifier('masked_tag')] <- FALSE

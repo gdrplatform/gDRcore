@@ -448,27 +448,18 @@ normalize_SE <- function(df_raw_data,
 #'
 #' @export
 #'
-normalize_SE2 <- function(se, trt_keys = NULL, ndigit_rounding = 4) {
+normalize_SE2 <- function(se, 
+                          control_assay = "Controls", 
+                          raw_treated_assay = "RawTreated", 
+                          ndigit_rounding = 4) {
+
   # Assertions
   checkmate::assert_number(ndigit_rounding)
 
-  refs <- SummarizedExperiment::assays(se)[["Controls"]]
-  trt <- SummarizedExperiment::assays(se)[["RawTreated"]]
+  refs <- SummarizedExperiment::assays(se)[[control_assay]]
+  trt <- SummarizedExperiment::assays(se)[[raw_treated_assay]]
 
-  # TODO: Push the below work into get_SE_keys itself. 
-  if (is.null(trt_keys)) {
-    if (!is.null(Keys <- get_SE_keys(se))) {
-      trt_keys <- Keys$Trt
-    } else {
-      trt_keys <- identify_keys(se)$Trt
-    }
-    Keys$Trt <- setdiff(trt_keys, Keys$discard_keys) # TODO: Do we still need this or is this already handled by create_SE2? 
-    set_SE_keys(se, Keys)
-  }
-
-  # Add the masked in for averaging later.
-  p_trt_keys <- intersect(c(trt_keys, gDRutils::get_identifier("masked_tag")), colnames(trt[1, 1][[1]])) # TODO: Ensure that even empty DFrame will have column names.
- 
+  trt_keys <- get_SE_keys(se, key_type = "Trt")
 
   norm_cols <- c("RelativeViability", "GRvalue", "RefRelativeViability", "RefGRvalue", "DivisionTime")
   out <- vector("list", nrow(se) * ncol(se))
@@ -487,27 +478,25 @@ normalize_SE2 <- function(se, trt_keys = NULL, ndigit_rounding = 4) {
       ref_df <- refs[i, j][[1]]
       trt_df <- trt[i, j][[1]]
 
-      if (nrow(trt_df) == 0L) {
+      if (length(trt_df) == 0L || nrow(trt_df) == 0L) {
 	next # skip if no data
         # TODO: Does this still need to initialize an empty DFrame with appropriate colnames?
       }
 
-      if (length(ref_df) == 0L) {
+      if (length(ref_df) == 0L || nrow(ref_df) == 0L) {
 	futile.logger::flog.warn(
           sprintf("Missing control data. Treatment Id: '%s' Cell_line Id: '%s'", 
             rownames(se)[i], colnames(se)[j])
         )
 	next
-        # TODO: Does this still need to initialize an empty DFrame with appropriate colnames?
       }
       
-      discard_keys <- metadata(se)$Keys$discard_keys # TODO: Replace me with a getter function.
-
       ## Merge to ensure that the differing vector lengths 
       ## and relevant Barcode-based controls are mapping appropriately. 
+      # TODO: This is not merging by the discard keys!
       all_readouts_df <- merge(trt_df, 
         ref_df, 
-	by = intersect(colnames(ref_df), c('Barcode', discard_keys)), # TODO: Should this be trt_df or ref_df?
+	by = trt_keys,
 	all.x = TRUE)
 
       normalized <- DataFrame(matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols)))
@@ -537,7 +526,7 @@ normalize_SE2 <- function(se, trt_keys = NULL, ndigit_rounding = 4) {
       normalized$DivisionTime <- round(duration / log2(ref_df$UntrtReadout/ref_df$Day0Readout), ndigit_rounding)
 
       # Carry over present treated keys.
-      normalized <- cbind(all_readouts_df[p_trt_keys], normalized)
+      normalized <- cbind(all_readouts_df[trt_keys], normalized)
 
       normalized$row_id <- rep(rownames(se)[i], nrow(trt_df))
       normalized$col_id <- rep(colnames(se)[j], nrow(trt_df))

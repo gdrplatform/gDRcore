@@ -69,6 +69,7 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 }
 
 
+# TODO: Mention something about the std (standard deviation). 
 #' average_SE2
 #'
 #' Average the assays of a SummarizedExperiment of drug response data
@@ -83,23 +84,16 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 #' @export
 #'
 average_SE2 <- function(se, 
-                       include_masked = FALSE, 
-                       aggregate_FXN = function(x) {mean(x, na.rm = TRUE, trim = 0.25)}, 
-                       normalized_assay = "Normalized") {
+                        include_masked = FALSE, 
+                        aggregate_FXN = function(x) {mean(x, na.rm = TRUE, trim = 0.25)}, 
+                        normalized_assay = "Normalized") {
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
 
   normalized <- SummarizedExperiment::assay(se, normalized_assay)
-  first_cell_line <- normalized[, 1]
-  for (l in seq_along(first_cell_line)) {
-    if (nrow(d <- first_cell_line[[l]]) > 0L) {
-      df_n <- colnames(d)   
-      break
-    }
-  }  
 
-  sub_keys <- intersect(get_SE_keys(se)$Trt, df_n)
+  trt_keys <- get_SE_keys(se, "Trt")
 
   out <- vector("list", nrow(se) * ncol(se))
   for (i in seq_len(nrow(se))) {
@@ -112,11 +106,11 @@ average_SE2 <- function(se,
       if (nrow(norm_df[!masked, ]) > 1L) {
 	std_cols <- c("GRvalue", "RelativeViability")
 	avg_df <- aggregate(norm_df[!masked, std_cols],
-	  by = as.list(norm_df[!masked, sub_keys, drop = FALSE]), 
+	  by = as.list(norm_df[!masked, trt_keys, drop = FALSE]), 
 	  aggregate_FXN)
 
 	std_df <- aggregate(norm_df[!masked, std_cols],
-	  by = as.list(norm_df[!masked, sub_keys, drop = FALSE]), 
+	  by = as.list(norm_df[!masked, trt_keys, drop = FALSE]), 
 	  function(x) {sd(x, na.rm = TRUE)})
         colnames(std_df)[colnames(std_df) %in% std_cols] <-
           paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
@@ -124,7 +118,7 @@ average_SE2 <- function(se,
 	ref_cols <- c("RefGRvalue", "RefRelativeViability")
 	ref_df <- lapply(norm_df[!masked, ref_cols], aggregate_FXN)
 
-	agg_df <- merge(avg_df, std_df, by = sub_keys) 
+	agg_df <- merge(avg_df, std_df, by = trt_keys) 
 	agg_df <- cbind(agg_df, ref_df)
       } else {
         agg_df <- norm_df

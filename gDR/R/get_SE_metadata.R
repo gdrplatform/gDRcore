@@ -14,8 +14,8 @@ get_SE_experiment_metadata <- function(se) {
 
 #' @export
 #'
-get_SE_keys <- function(se) {
-  .get_SE_metadata(se, name = "Keys")
+get_SE_keys <- function(se, key_type = NULL) {
+  .get_SE_metadata(se, name = "Keys", subname = key_type)
 }
 
 
