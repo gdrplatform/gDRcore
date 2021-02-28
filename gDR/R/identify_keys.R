@@ -96,7 +96,6 @@ identify_keys2 <- function(obj, discard_keys = c("Barcode", gDRutils::get_identi
   pattern_keys <- grepl(pattern, all_keys)
 
   keys <- list(Trt = setdiff(all_keys, discard_keys),
-    DoseResp = setdiff(all_keys, discard_keys),
     ref_Endpoint = setdiff(all_keys, x),
     untrt_Endpoint = all_keys[!pattern_keys],
     Day0 = setdiff(all_keys[!pattern_keys], gDRutils::get_identifier("duration")),

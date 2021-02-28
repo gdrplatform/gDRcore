@@ -33,7 +33,7 @@ format_mySQL <-
     checkmate::assert_number(treatment_metadata_table_length)
     
     keys <-
-      c(setdiff(identify_keys(df_averaged)$DoseResp, "Concentration"),
+      c(setdiff(identify_keys(df_averaged)$Trt, "Concentration"),
         "DivisionTime")
     
     all_response_metadata <-

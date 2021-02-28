@@ -42,7 +42,6 @@ test_that("identify_keys2 works", {
 
   k1 <- identify_keys2(df_, discard_keys = NULL)
   expect_equal(sort(k1[["Trt"]]), sort(c(cl, misc, d_id1, d_ids, duration)))
-  expect_equal(sort(k1[["DoseResp"]]), sort(c(cl, misc, d_id1, d_ids, duration)))
   expect_equal(k1[["ref_Endpoint"]], sort(c(cl, misc, d_ids, duration)))
   expect_equal(k1[["untrt_Endpoint"]], sort(c(cl, misc, duration)))
   expect_equal(k1[["Day0"]], sort(c(cl, misc)))
@@ -50,9 +49,8 @@ test_that("identify_keys2 works", {
   # Discard_keys argument works.
   discard_key <- "Barcode"
   k2 <- identify_keys2(df_, discard_keys = discard_key)
-  expect_equal(k1[!names(k1) %in% c("Trt", "DoseResp")], k2[!names(k2) %in% c("Trt", "DoseResp")])
+  expect_equal(k1[!names(k1) %in% c("Trt", "discard_keys")], k2[!names(k2) %in% c("Trt", "discard_keys")])
   expect_equal(setdiff(k1$Trt, k2$Trt), discard_key)
-  expect_equal(setdiff(k1$DoseResp, k2$DoseResp), discard_key)
 
   # Remove NA keys.
   df_$E2 <- NA
