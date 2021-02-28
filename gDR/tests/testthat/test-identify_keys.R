@@ -1,0 +1,61 @@
+library(testthat); library(gDR)
+
+test_that("identify_keys2 works", {
+  d_id1 <- c("Gnumber",
+    "DrugName",
+    "Concentration")
+  d_ids <- c("Gnumber_2",
+    "DrugName_2",
+    "Concentration_2",
+    "Gnumber_3",
+    "DrugName_3",
+    "Concentration_3")
+  duration <- "Duration"
+  cl <- c("clid",
+    "CellLineName",
+    "UserCellLineDesignation",
+    "Tissue")
+  misc <- c("Medium",
+    "E2",
+    "Replicate",
+    "Barcode")
+
+  cols <- c(
+    cl,
+    d_id1,
+    d_ids,
+    duration,
+    misc,
+    "masked",
+    "ReadoutValue",
+    "BackgroundValue",
+    "ReferenceDivisionTime",
+    "Template",
+    "WellRow",
+    "WellColumn",
+    "CorrectedReadout"
+  )
+
+  df_ <- data.frame(matrix(0, nrow = 1, ncol = length(cols)))
+  df_$DrugName <- gDRutils::get_identifier("untreated_tag")[1] 
+  colnames(df_) <- cols
+
+  k1 <- identify_keys2(df_, discard_keys = NULL)
+  expect_equal(sort(k1[["Trt"]]), sort(c(cl, misc, d_id1, d_ids, duration)))
+  expect_equal(sort(k1[["DoseResp"]]), sort(c(cl, misc, d_id1, d_ids, duration)))
+  expect_equal(k1[["ref_Endpoint"]], sort(c(cl, misc, d_ids, duration)))
+  expect_equal(k1[["untrt_Endpoint"]], sort(c(cl, misc, duration)))
+  expect_equal(k1[["Day0"]], sort(c(cl, misc)))
+
+  # Discard_keys argument works.
+  discard_key <- "Barcode"
+  k2 <- identify_keys2(df_, discard_keys = discard_key)
+  expect_equal(k1[!names(k1) %in% c("Trt", "DoseResp")], k2[!names(k2) %in% c("Trt", "DoseResp")])
+  expect_equal(setdiff(k1$Trt, k2$Trt), discard_key)
+  expect_equal(setdiff(k1$DoseResp, k2$DoseResp), discard_key)
+
+  # Remove NA keys.
+  df_$E2 <- NA
+  k3 <- identify_keys2(df_, discard_keys = NULL)
+  expect_equal(setdiff(k1[["untrt_Endpoint"]], k3[["untrt_Endpoint"]]), "E2")
+})
