@@ -92,6 +92,7 @@ average_SE2 <- function(se,
   trt_keys <- get_SE_keys(se, "Trt")
 
   out <- vector("list", nrow(se) * ncol(se))
+  count <- 1
   for (i in seq_len(nrow(se))) {
     for (j in seq_len(ncol(se))) {
       norm_df <- normalized[i, j][[1]]
@@ -122,7 +123,8 @@ average_SE2 <- function(se,
 	agg_df$row_id <- rep(rownames(se)[i], nrow(agg_df))
 	agg_df$col_id <- rep(colnames(se)[j], nrow(agg_df))
       }
-      out[[nrow(se) * (i - 1) + j]] <- agg_df
+      out[[count]] <- agg_df
+      count <- count + 1
     }
   }
 
