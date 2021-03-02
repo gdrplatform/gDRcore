@@ -123,7 +123,7 @@ getMetaData <- function(data, discard_keys = NULL) {
 #' experiment metadata, and core data for further analysis. This will most commonly be used
 #' to identify the different components of a \linkS4class{SummarizedExperiment} object.
 #'
-#' @param data data.frame with drug-response data
+#' @param df_ data.frame with drug-response data
 #' @param discard_keys character vector of keys to discard from the row or column data, 
 #' and to leave in the matrix data. See details.
 #'
@@ -143,15 +143,18 @@ getMetaData <- function(data, discard_keys = NULL) {
 #' like to use that metadata field as a differentiator of the treatments, and instead, incorporate it
 #' into the \code{DataFrame} in the BumpyMatrix.
 #'
+#' In the event that if any of the \code{discard_keys} are constant throughout the whole data.frame, 
+#' they will still be included in the DataFrame of the BumpyMatrix and not in the experiment_metadata.
+#'
 #' @export
 #'
-getMetaData2 <- function(data, discard_keys = NULL) {
+getMetaData2 <- function(df_, discard_keys = NULL) {
   # Assertions.
-  stopifnot(any(inherits(data, "data.frame"), inherits(data, "DataFrame")))
+  stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_character(discard_keys, null.ok = TRUE)
 
-  data <- methods::as(data, "DataFrame")
-  all_cols <- colnames(data)
+  df_ <- methods::as(df_, "DataFrame")
+  all_cols <- colnames(df_)
 
   ## Identify all known fields.
   data_fields <- c(gDRutils::get_header("raw_data"),
@@ -159,10 +162,11 @@ getMetaData2 <- function(data, discard_keys = NULL) {
     gDRutils::get_header("averaged_results"),
     gDRutils::get_header("metrics_results"),
     gDRutils::get_identifier("well_position"),
-    "Barcode",
     "Template",
-    "Concentration"
+    "Concentration",
+    discard_keys
   )
+  data_fields <- unique(data_fields)
   data_cols <- data_fields[data_fields %in% all_cols]
 
   cell_id <- gDRutils::get_identifier("cellline")
@@ -177,11 +181,8 @@ getMetaData2 <- function(data, discard_keys = NULL) {
   drug_cols <- drug_fields[drug_fields %in% all_cols]
 
   ## Separate metadata from data fields.
-  # Get data columns.
-  data_cols <- c(data_cols, discard_keys) # Assign discarded keys to data.
-
   meta_cols <- setdiff(all_cols, data_cols) 
-  md <- unique(data[, meta_cols]) 
+  md <- unique(df_[, meta_cols]) 
 
   trt_cols <- setdiff(meta_cols, cell_cols)
   singletons <- vapply(trt_cols,

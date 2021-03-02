@@ -440,11 +440,13 @@ normalize_SE <- function(df_raw_data,
 #' Normalize drug response data from treated and untreated pairings.
 #'
 #' @param se \code{BumpyMatrix} object with assays \code{"RawTreated"} and \code{"Controls"}.
+#' @param control_assay string containing the name of the assay representing the controls in the \code{se}.
+#' @param raw_treated_assay string containing the name of the assay representing the raw treated data in the \code{se}.
 #' @param ndigit_rounding integer specifying number of digits of rounding during calculations.
 #' Defaults to \code{4}.
 #'
 #' @return \code{BumpyMatrix} object with a new assay named \code{"Normalized"} containing \code{DataFrame}s 
-#' holding \code{RelativeViability}, \code{GRvalue}, \code{RefRelativeViability}, code{RefGRvalue}, and \code{DivisionTime} values.
+#' holding \code{RelativeViability} and \code{GRvalue}, as well as new assays named \code{RefRelativeViability}, \code{RefGRvalue}, and \code{DivisionTime} values.
 #'
 #' @export
 #'
@@ -459,11 +461,13 @@ normalize_SE2 <- function(se,
   refs <- SummarizedExperiment::assays(se)[[control_assay]]
   trt <- SummarizedExperiment::assays(se)[[raw_treated_assay]]
 
+  discard_keys <- get_SE_keys(se, key_type = "discard_keys")
   trt_keys <- get_SE_keys(se, key_type = "Trt")
 
-  norm_cols <- c("RelativeViability", "GRvalue", "RefRelativeViability", "RefGRvalue", "DivisionTime")
+  norm_cols <- c("RelativeViability", "GRvalue", "DivisionTime")
   out <- vector("list", nrow(se) * ncol(se))
 
+  ref_rel_viability <- ref_GR_value <- div_time <- matrix(NA, nrow = nrow(se), ncol = ncol(se), dimnames = dimnames(se))
   # Column major order, so go down first.
   cdata <- SummarizedExperiment::colData(se)
   rdata <- SummarizedExperiment::rowData(se)
@@ -491,12 +495,10 @@ normalize_SE2 <- function(se,
 	next
       }
       
-      ## Merge to ensure that the differing vector lengths 
-      ## and relevant Barcode-based controls are mapping appropriately. 
-      # TODO: This is not merging by the discard keys!
+      # Merge to ensure that the proper discard_key values are mapped.
       all_readouts_df <- merge(trt_df, 
         ref_df, 
-	by = trt_keys,
+	by = discard_keys,
 	all.x = TRUE)
 
       normalized <- DataFrame(matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols)))
@@ -513,25 +515,31 @@ normalize_SE2 <- function(se,
         ref_div_time = ref_div_time, 
         cl_name = cl_name)
 
-      # Normalized references.
-      normalized$RefRelativeViability <- round(ref_df$RefReadout/ref_df$UntrtReadout, ndigit_rounding)
-      normalized$RefGRvalue <- calculate_GR_value(rel_viability = normalized$RefRelativeViability, 
-        corrected_readout = all_readouts_df$CorrectedReadout, 
-        day0_readout = all_readouts_df$Day0Readout, 
-        untrt_readout = all_readouts_df$UntrtReadout, 
-        ndigit_rounding = ndigit_rounding, 
-        duration = duration, 
-        ref_div_time = ref_div_time, 
-        cl_name = cl_name)
-      normalized$DivisionTime <- round(duration / log2(ref_df$UntrtReadout/ref_df$Day0Readout), ndigit_rounding)
-
       # Carry over present treated keys.
-      normalized <- cbind(all_readouts_df[trt_keys], normalized)
+      normalized <- cbind(all_readouts_df[intersect(c(trt_keys, gDRutils::get_identifier("masked_tag")), colnames(all_readouts_df))], normalized) 
 
       normalized$row_id <- rep(rownames(se)[i], nrow(trt_df))
       normalized$col_id <- rep(colnames(se)[j], nrow(trt_df))
 
       out[[nrow(se) * (j - 1) + i]] <- normalized
+
+      ###########################
+      ref_df <- all_readouts_df # TODO: keep this here for now in order to make comparisons between old and new method.
+      # !!!!!!!!!!!!HOWEVER, THE ABOVE LINE SHOULD LATER BE DELETED!!!!!!!!
+      ###########################
+
+      ref_rv_value <- mean(round(ref_df$RefReadout/ref_df$UntrtReadout, ndigit_rounding), na.rm = TRUE)
+      ref_rel_viability[i, j] <- ref_rv_value
+      GR_vec <- calculate_GR_value(rel_viability = ref_rv_value, 
+        corrected_readout = ref_df$RefReadout, 
+        day0_readout = ref_df$Day0Readout, 
+        untrt_readout = ref_df$UntrtReadout, 
+        ndigit_rounding = ndigit_rounding, 
+        duration = duration, 
+        ref_div_time = ref_div_time, 
+        cl_name = cl_name)
+      ref_GR_value[i, j] <- mean(GR_vec, na.rm = TRUE)
+      div_time[i, j] <- round(duration / log2(mean(ref_df$UntrtReadout/ref_df$Day0Readout, na.rm = TRUE)), ndigit_rounding)
     }
   }
 
@@ -541,5 +549,10 @@ normalize_SE2 <- function(se,
     col = out$col_id)
 
   SummarizedExperiment::assays(se)[["Normalized"]] <- norm
+
+  SummarizedExperiment::assays(se)[["RefGRvalue"]] <- ref_GR_value
+  SummarizedExperiment::assays(se)[["RefRelativeViability"]] <- ref_rel_viability
+  SummarizedExperiment::assays(se)[["DivisionTime"]] <- div_time
+
   return(se)
 }

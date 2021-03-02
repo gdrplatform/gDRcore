@@ -70,9 +70,8 @@ create_SE <-
 
 #' Create a SummarizedExperiment object
 #'
-#' Create a SummarizedExperiment object from a data.frame where all treatments are on rows,
-#' conditions are on columns, treated readouts live in an assay called \code{"treated"},
-#' and reference readouts live in an assay called \code{"Controls"}.
+#' Create a SummarizedExperiment object from a data.frame where the data.frame contains treatments on rows,
+#' conditions are on columns. 
 #'
 #' @param df_ data.frame of raw drug response data containing both treated and untreated values.
 #' @param readout string of the name containing the cell viability readout values.
@@ -82,7 +81,13 @@ create_SE <-
 #' @param discard_keys character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
 #' Defaults to \code{NULL}. 
 #'
-#' @seealso normalize_SE
+#' @return A \linkS4class{SummarizedExperiment} object containing two asssays.
+#' Treated readouts will live in an assay called \code{"RawTreated"},
+#' and reference readouts live in an assay called \code{"Controls"}.
+#' \code{rownames} and \code{colnames} are made up of available metadata on treatments and conditions 
+#' and is pasted together.
+#'
+#' @seealso normalize_SE2
 #' @details 
 #' This is most commonly used in preparation for downstream normalization.
 #'
@@ -169,13 +174,11 @@ create_SE2 <- function(df_,
 
   ## Combine all references with respective treatments.
   # Merge raw data back with groupings.
-  # Remove experiment metadata columns.
-  df_ <- df_[!colnames(df_) %in% colnames(exp_md)]
   dfs <- merge(df_, mapping_entries, by = c(colnames(rowdata), colnames(coldata)))
 
   # Remove all rowdata and coldata. 
   groupings <- dfs$groupings
-  dfs <- dfs[!colnames(dfs) %in% c(colnames(rowdata), colnames(coldata), "groupings")]
+  dfs <- dfs[c(md$data_fields, "row_id", "col_id")]
 
   trt_out <- ref_out <- vector("list", nrow(treated))
   for (i in seq_len(nrow(treated))) {
@@ -225,10 +228,7 @@ create_SE2 <- function(df_,
       # Try to merge by plate, but otherwise just use mean. 
       ref_df <- untrt_df
       if (nrow(cotrt_df) > 0L) {
-        #ref_conc <- SummarizedExperiment::rowData(normSE)[i, 'Concentration_2']
-        #if () # See whether the reference is in treated or untreated.
-
-	merge_cols <- intersect(colnames(cotrt_df), c("Barcode", discard_keys))
+	merge_cols <- intersect(colnames(cotrt_df), discard_keys)
 	ref_df <- merge(untrt_df, cotrt_df[, c("RefReadout", merge_cols)], by = merge_cols, all = TRUE)
         if (!all(sort(unique(cotrt_df$Barcode)) == sort(unique(untrt_df$Barcode)))) {
           # Merging by barcodes will result in NAs. 
@@ -242,11 +242,10 @@ create_SE2 <- function(df_,
       }
 
       if (nrow(day0_df) > 0L) {
-	ref_df <- merge(day0_df[, setdiff(colnames(day0_df), "Barcode"), drop = FALSE], ref_df)
+	ref_df <- merge(day0_df[, setdiff(colnames(day0_df), discard_keys), drop = FALSE], ref_df)
       } else {
         ref_df$Day0Readout <- NA
-      }
-
+      } 
     } else {
       trt_df <- NULL 
     }

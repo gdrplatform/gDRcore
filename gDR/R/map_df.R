@@ -42,6 +42,7 @@ map_df <- function(trt_md, ref_md, row_endpoint_value_filter, Keys, ref_type = c
   trt_rnames <- rownames(trt_md)
 
   # define matrix with matching metadata
+  # TODO: Is this necessary? I think all the keys should now only include keys that are present.
   present_ref_cols <- intersect(Keys[[ref_type]], names(ref_md))
   names(present_ref_cols) <- present_ref_cols
 

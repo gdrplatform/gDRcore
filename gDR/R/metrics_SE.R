@@ -77,6 +77,8 @@ fit_SE <- function(avgSE, studyConcThresh = 4) {
 fit_SE2 <- function(se, 
                     averaged_assay = "Averaged", 
                     metrics_assay = "Metrics", 
+                    ref_GR_assay = "RefGRvalue",
+                    ref_RV_assay = "RefRelativeViability",
                     studyConcThresh = 4) {
 
   # Assertions:
@@ -86,6 +88,8 @@ fit_SE2 <- function(se,
   metric_cols <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
   out <- vector("list", nrow(se) * ncol(se))
   avg_trt <- SummarizedExperiment::assay(se, averaged_assay)
+  ref_GR <- SummarizedExperiment::assay(se, ref_GR_assay)
+  ref_RV <- SummarizedExperiment::assay(se, ref_RV_assay)
   for (i in seq_len(nrow(se))) {
     for (j in seq_len(ncol(se))) {
       avg_df <- avg_trt[i, j][[1]]
@@ -94,8 +98,8 @@ fit_SE2 <- function(se,
 
       if (!is.null(avg_df) && all(dim(avg_df) > 0)) {
 	fit_df <- DataFrame(gDRutils::fit_curves(avg_df,
-	  e_0 = unique(avg_df$RefRelativeViability),
-	  GR_0 = unique(avg_df$RefGRvalue),
+	  e_0 = ref_RV[i, j],
+	  GR_0 = ref_GR[i, j],
 	  n_point_cutoff = studyConcThresh))
       }
 

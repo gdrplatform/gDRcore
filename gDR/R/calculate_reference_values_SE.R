@@ -1,19 +1,39 @@
 #' @export
 #'
-calculate_reference_values_SE <- function(se) {
-  fitting_refs <- SummarizedExperiment::assays(se)[["Control"]] 
-  for (i in rownames(se)) {
-    for (j in colnames(se)) {
-      ref_df <- refs[i, j]
+calculate_reference_values_SE <- function(se, control_assay_name = "Control", ndigit_rounding = 4) {
+  controls <- SummarizedExperiment::assays(se)[[control_assay_name]] 
+  ref_rel_viability <- ref_GR_value <- div_time <- matrix(NA, nrow = nrow(se), ncol = ncol(se))
+  rdata <- SummarizedExperiment::rowData(se)
+  for (i in seq_along(rownames(se))) {
+    duration <- rdata[i, gDRutils::get_identifier("duration")]
+    for (j in seq_along(colnames(se))) {
+      ref_df <- controls[i, j]
+
+      cl_md <- cdata[j, ]
+      cl_name <- cl_md[[gDRutils::get_identifier("cellline_name")]]
+      ref_div_time <- cl_md[[gDRutils::get_identifier("cellline_ref_div_time")]]
+
       ## Calculate the reference metrics to be used in downstreaming curve fitting to calculate metrics. 
       ## These values will later serve as the asymptotic values for the fit_curves function.
-      ref_df$RefRelativeViability <- round(ref_df$RefReadout/ref_df$UntrtReadout, nDigits_rounding)
-      ref_df$RefGRvalue <- calculate_GR_value(ref_df$RefReadout, ref_df$UntrtReadout, day0readout = ref_df$Day0Readout, nDigits_rounding)
-      ref_df$DivisionTime <- round(rdata[i, duration_col] / log2(ref_df$UntrtReadout/ref_df$Day0Readout), nDigits_rounding)
-      fitting_refs[i, j] <- ref_df
+      ## Note: we take the mean because we need only 1 value for the asymptotic references.
+
+      # Normalized references.
+      ref_rel_viability[i, j] <- mean(round(ref_df$RefReadout/ref_df$UntrtReadout, ndigit_rounding), na.rm = TRUE)
+      GR_vec <- calculate_GR_value(rel_viability = normalized$RefRelativeViability, 
+        corrected_readout = ref_df$RefReadout, 
+        day0_readout = ref_df$Day0Readout, 
+        untrt_readout = ref_df$UntrtReadout, 
+        ndigit_rounding = ndigit_rounding, 
+        duration = duration, 
+        ref_div_time = ref_div_time, 
+        cl_name = cl_name)
+      ref_GR_value[i, j] <- mean(GR_vec, na.rm = TRUE)
+      div_time[i, j] <- round(duration / log2(ref_df$UntrtReadout/ref_df$Day0Readout), ndigit_rounding)
     }
   }
-  assays(se)[["Control"]] <- refs
+  SummarizedExperiment::assays(se)[["RefGRvalue"]] <- ref_GR_value
+  SummarizedExperiment::assays(se)[["RefRelativeViability"]] <- ref_rel_viability
+  SummarizedExperiment::assays(se)[["DivisionTime"]] <- div_time
   se
 }
 

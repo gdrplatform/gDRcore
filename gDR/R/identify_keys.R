@@ -77,10 +77,14 @@ identify_keys <- function(df_se_mae) {
 #' Identify keys in the DR data represented by dataframe or SummarizedExperiment objects
 #'
 #' @param obj a dataframe to identify keys for.
-#' @param discard_keys
+#' @param discard_keys character vector of keys to exclude from the returned list. 
+#' The keys discarded should be identical to the keys in the third
+#' dimension of the SummarizedExperiment.
+#' Defaults to the \code{Barcode} and masked identifier.
 #'
-#' @return a list of key types
+#' @return named list of key types and their corresponding key values. 
 #'
+#' @seealso map_df, create_SE2
 #' @export
 #'
 identify_keys2 <- function(obj, discard_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))) {
@@ -109,10 +113,10 @@ identify_keys2 <- function(obj, discard_keys = c("Barcode", gDRutils::get_identi
     gDRutils::get_header("averaged_results"),
     gDRutils::get_header("metrics_results"), 
     "ReferenceDivisionTime")))
-  keys <- lapply(keys, sort)
 
   t0 <- obj[, gDRutils::get_identifier("duration")] == 0
   # Remove keys where all values are NA.
+  # TODO: Improve this.
   for (k in keys[["untrt_Endpoint"]]) {
     if (all(is.na(obj[, k]))) {
       keys <- lapply(keys, function(x) setdiff(x, k))

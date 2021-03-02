@@ -8,3 +8,12 @@ runDrugResponseProcessingPipeline <- function(df_) {
   se <- fit_SE2(se)
   se
 }
+
+#' @export
+#'
+runDrugResponseProcessingPipeline1 <- function(df_) {
+  se <- normalize_SE(df_)
+  se <- average_SE(se)
+  se <- fit_SE(se)
+  se
+}
