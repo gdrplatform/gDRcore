@@ -18,6 +18,12 @@ calculate_GR_value(
 \arguments{
 \item{rel_viability}{numeric vector representing the Relative Viability.}
 
+\item{corrected_readout}{numeric vector containing the corrected readout.}
+
+\item{day0_readout}{numeric vector containing the day 0 readout.}
+
+\item{untrt_readout}{numeric vector containing the untreated readout.}
+
 \item{ndigit_rounding}{integer specifying the number of digits to use for calculation rounding.}
 
 \item{duration}{numeric value specifying the length of time the cells were treated.}

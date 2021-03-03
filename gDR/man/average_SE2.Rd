@@ -9,7 +9,12 @@ average_SE2(se, include_masked = FALSE, normalized_assay = "Normalized")
 \arguments{
 \item{se}{a \linkS4class{SummarizedExperiment} with drug response data.}
 
-\item{trt_keys}{a vector of keys used for averaging (NULL by default)}
+\item{include_masked}{boolean indicating whether or not to include masked wells
+in the averaging. 
+This is used as an override to whatever wells have been masked in the original data.}
+
+\item{normalized_assay}{string of the assay name containing the normalized data.
+Defaults to \code{Normalized}.}
 }
 \value{
 a SummarizedExperiment with additional assay with averaged DR data

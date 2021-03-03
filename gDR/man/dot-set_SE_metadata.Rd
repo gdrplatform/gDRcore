@@ -2,10 +2,10 @@
 % Please edit documentation in R/get_SE_metadata.R
 \name{.set_SE_metadata}
 \alias{.set_SE_metadata}
-\title{The primary purpose of this function is to allow other functions to create getter functions off of this one.}
+\title{The primary purpose of this function is to allow other functions to create exposed setter functions.}
 \usage{
 .set_SE_metadata(se, name, value)
 }
 \description{
-The primary purpose of this function is to allow other functions to create getter functions off of this one.
+The primary purpose of this function is to allow other functions to create exposed setter functions.
 }
