@@ -4,17 +4,26 @@
 \alias{normalize_SE2}
 \title{normalize_SE2}
 \usage{
-normalize_SE2(se, trt_keys = NULL, ndigit_rounding = 4)
+normalize_SE2(
+  se,
+  control_assay = "Controls",
+  raw_treated_assay = "RawTreated",
+  ndigit_rounding = 4
+)
 }
 \arguments{
 \item{se}{\code{BumpyMatrix} object with assays \code{"RawTreated"} and \code{"Controls"}.}
+
+\item{control_assay}{string containing the name of the assay representing the controls in the \code{se}.}
+
+\item{raw_treated_assay}{string containing the name of the assay representing the raw treated data in the \code{se}.}
 
 \item{ndigit_rounding}{integer specifying number of digits of rounding during calculations.
 Defaults to \code{4}.}
 }
 \value{
 \code{BumpyMatrix} object with a new assay named \code{"Normalized"} containing \code{DataFrame}s 
-holding \code{RelativeViability}, \code{GRvalue}, \code{RefRelativeViability}, code{RefGRvalue}, and \code{DivisionTime} values.
+holding \code{RelativeViability} and \code{GRvalue}, as well as new assays named \code{RefRelativeViability}, \code{RefGRvalue}, and \code{DivisionTime} values.
 }
 \description{
 Normalize drug response data from treated and untreated pairings.

@@ -29,3 +29,6 @@ named list mapping treated metadata to untreated metadata.
 \description{
 Map treated conditions to their respective Day0, untreated, or single-agent references using condition metadata.
 }
+\seealso{
+identify_keys2
+}

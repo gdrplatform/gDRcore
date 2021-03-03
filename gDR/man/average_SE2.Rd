@@ -4,18 +4,10 @@
 \alias{average_SE2}
 \title{average_SE2}
 \usage{
-average_SE2(
-  se,
-  include_masked = FALSE,
-  aggregate_FXN = function(x) {     mean(x, na.rm = TRUE, trim = 0.25) },
-  normalized_assay = "Normalized"
-)
+average_SE2(se, include_masked = FALSE, normalized_assay = "Normalized")
 }
 \arguments{
 \item{se}{a \linkS4class{SummarizedExperiment} with drug response data.}
-
-\item{aggregate_FXN}{function used for averaging data that should be considered replicates.
-Defaults to trimmed arithmetic mean with trim = 0.25.}
 
 \item{trt_keys}{a vector of keys used for averaging (NULL by default)}
 }
@@ -23,5 +15,8 @@ Defaults to trimmed arithmetic mean with trim = 0.25.}
 a SummarizedExperiment with additional assay with averaged DR data
 }
 \description{
-Average the assays of a SummarizedExperiment of drug response data
+Average the normalized data per
+}
+\seealso{
+runDrugResponseProcessingPipeline2
 }

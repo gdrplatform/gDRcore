@@ -7,22 +7,33 @@
 fit_SE2(
   se,
   averaged_assay = "Averaged",
+  ref_GR_assay = "RefGRvalue",
+  ref_RV_assay = "RefRelativeViability",
   metrics_assay = "Metrics",
-  studyConcThresh = 4
+  ndigit_rounding = 4
 )
 }
 \arguments{
-\item{se}{a \linkS4class{SummarizedExperiment} with averaged and normalized assays}
+\item{se}{a \linkS4class{SummarizedExperiment} with averaged and normalized assays.
+Corresponding assay names are specified by \code{averaged_assay}, \code{ref_GR_assay}, and \code{ref_RV_assy}.}
 
 \item{averaged_assay}{string of the name of the averaged assay in the \linkS4class{SummarizedExperiment}.}
 
-\item{metrics_assay}{string of the metrics assay to output.}
+\item{ref_GR_assay}{string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.}
 
-\item{studyConcThresh}{a numeric with study concentration threshold (4 by default)}
+\item{ref_RV_assay}{string of the name of the reference Relative Viability assay in the \linkS4class{SummarizedExperiment}.}
+
+\item{metrics_assay}{string of the name of the metrics assay to output.}
+
+\item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
+Defaults to \code{4}.}
 }
 \value{
-the original \linkS4class{SummarizedExperiment} with an additional assay named \code{metrics_assay}
+the original \linkS4class{SummarizedExperiment} with an additional assay named \code{metrics_assay}.
 }
 \description{
-Calculate metrics for DR data
+Fit curves and obtain fit metrics from normalized, averaged drug response data.
+}
+\seealso{
+runDrugResponseProcessingPipeline2
 }

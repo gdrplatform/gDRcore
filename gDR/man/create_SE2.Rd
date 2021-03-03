@@ -9,7 +9,7 @@ create_SE2(
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
   key_values = NULL,
-  discard_keys = NULL
+  discard_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))
 )
 }
 \arguments{
@@ -23,14 +23,20 @@ Defaults to \code{mean(x, trim = 0.25)}.}
 \item{discard_keys}{character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
 Defaults to \code{NULL}.}
 }
-\description{
-Create a SummarizedExperiment object from a data.frame where all treatments are on rows,
-conditions are on columns, treated readouts live in an assay called \code{"treated"},
+\value{
+A \linkS4class{SummarizedExperiment} object containing two asssays.
+Treated readouts will live in an assay called \code{"RawTreated"},
 and reference readouts live in an assay called \code{"Controls"}.
+\code{rownames} and \code{colnames} are made up of available metadata on treatments and conditions 
+and is pasted together.
+}
+\description{
+Create a SummarizedExperiment object from a data.frame where the data.frame contains treatments on rows,
+conditions are on columns.
 }
 \details{
 This is most commonly used in preparation for downstream normalization.
 }
 \seealso{
-normalize_SE
+normalize_SE2, runDrugResponseProcessingPipeline
 }
