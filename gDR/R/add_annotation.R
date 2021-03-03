@@ -7,7 +7,8 @@
 #' 
 #' @return a data.frame with metadata with annotated cell lines
 #' @export
-
+#'
+# TODO: Move this to gDRwrapper.
 add_CellLine_annotation <- function(df_metadata,
                                     fill_DB_with_unknown = FALSE) {
   
@@ -71,6 +72,7 @@ add_CellLine_annotation <- function(df_metadata,
 
 }
 
+
 #' add_Drug_annotation
 #'
 #' add drug annotation to a data.frame with metadata
@@ -81,8 +83,8 @@ add_CellLine_annotation <- function(df_metadata,
 #'
 #' @return a data.frame with metadata with annotated drugs
 #' @export
-
-
+#'
+# TODO: Move this to gDRwrapper.
 add_Drug_annotation <- function(df_metadata,
                                 fill_DB_with_unknown = FALSE) {
   
@@ -176,5 +178,4 @@ add_Drug_annotation <- function(df_metadata,
     stopifnot(nrows_df == nrow(df_metadata))
 
     return(df_metadata)
-
 }
