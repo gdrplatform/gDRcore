@@ -3,9 +3,9 @@
 #' Calculate a GR value for a given set of dose response values.
 #'
 #' @param rel_viability numeric vector representing the Relative Viability.
-#' @param corrected_readout
-#' @param day0_readout
-#' @param untrt_readout
+#' @param corrected_readout numeric vector containing the corrected readout.
+#' @param day0_readout numeric vector containing the day 0 readout.
+#' @param untrt_readout numeric vector containing the untreated readout.
 #' @param ndigit_rounding integer specifying the number of digits to use for calculation rounding.
 #' @param duration numeric value specifying the length of time the cells were treated.
 #' @param ref_div_time numeric value specifying the reference division time for the cell line of interest.
@@ -54,6 +54,7 @@ calculate_GR_value <- function(rel_viability,
 }
 
 
+# TODO: Add to same documenatation family as above. 
 #' @export
 #'
 calculate_time_dep_GR_value <- function(trt_readout, 
@@ -64,6 +65,7 @@ calculate_time_dep_GR_value <- function(trt_readout,
 }
 
 
+# TODO: Add to same documenatation family as above. 
 #' @export
 #'
 calculate_endpt_GR_value <- function(rel_viability, 

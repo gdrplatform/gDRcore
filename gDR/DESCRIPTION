@@ -1,6 +1,6 @@
 Package: gDR
 Type: Package
-Title: Utility functions and interface to calculate drug dose-response data and calculate GR values
+Title: Processing functions and interface to process and analyze drug dose-response data
 Version: 0.1.42
 Date: 2021-02-17
 Authors@R: c(person("Bartosz", "Czech", role=c("aut", "cre"), email="bartosz.czech@contractors.roche.com"),
@@ -9,7 +9,7 @@ Authors@R: c(person("Bartosz", "Czech", role=c("aut", "cre"), email="bartosz.cze
              person("Natalia", "Potocka", role=c("aut")),
              person("Dariusz", "Scigocki", role=c("aut")),
              person("Allison", "Vuong", role=c("aut")))
-Description: Pipeline to process drug dose-response data and calculate GR values
+Description: This package contains core functions to process and analyze drug response data.
 License: file GNE_LICENSE
 LazyLoad: yes
 Imports:
@@ -17,7 +17,7 @@ Imports:
     data.table,
     digest,
     drc,
-    gDRutils (>= 0.0.21),
+    gDRutils (>= 0.0.24),
     gDRwrapper (>= 0.1.47),
     httr,
     kcloak (>= 0.0.8),

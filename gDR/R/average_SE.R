@@ -75,7 +75,11 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 #' Average the normalized data per
 #'
 #' @param se a \linkS4class{SummarizedExperiment} with drug response data.
-#' @param trt_keys a vector of keys used for averaging (NULL by default)
+#' @param include_masked boolean indicating whether or not to include masked wells
+#' in the averaging. 
+#' This is used as an override to whatever wells have been masked in the original data.
+#' @param normalized_assay string of the assay name containing the normalized data.
+#' Defaults to \code{Normalized}.
 #'
 #' @return a SummarizedExperiment with additional assay with averaged DR data
 #' @seealso runDrugResponseProcessingPipeline2

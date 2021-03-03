@@ -4,7 +4,7 @@
 #'
 #' @param trt_md data.frame of treated metadata. 
 #' @param ref_md data.frame of untreated metadata.
-#' @param row_endpoint_value_filter
+#' @param row_endpoint_value_filter boolean 
 #' @param Keys named list of keys and values.
 #' Likely obtained from \code{identify_keys()}.
 #' @param ref_type string of the reference type to map to.
