@@ -20,6 +20,8 @@
 #' @export
 #'
 getMetaData <- function(data, discard_keys = NULL) {
+  .Deprecated(msg = "see splitSEComponents for similar, but not identical functionality")
+
   # Assertions.
   stopifnot(any(inherits(data, "data.frame"), inherits(data, "DataFrame")))
   checkmate::assert_character(discard_keys, null.ok = TRUE)

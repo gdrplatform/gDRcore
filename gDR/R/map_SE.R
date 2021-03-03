@@ -12,6 +12,8 @@
 #' @export
 #'
 map_SE <- function(normSE, ctrlSE, row_endpoint_value_filter, Keys, T0 = FALSE) {
+  .Deprecated(msg = "see map_df for similar, but not identical functionality")
+
   # Assertions:
   checkmate::assert_class(normSE, "SummarizedExperiment")
   checkmate::assert_class(ctrlSE, "SummarizedExperiment")

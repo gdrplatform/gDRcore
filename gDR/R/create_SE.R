@@ -27,6 +27,8 @@ create_SE <-
            readout = 'ReadoutValue',
            discard_keys = NULL,
            assay_type = c("matrix", "BumpyMatrix")) {
+    .Deprecated(msg = "see create_SE2 for similar, but not identical functionality")
+
     # Assertions:
     stopifnot(any(inherits(df_data, "data.frame"), inherits(df_data, "DataFrame")))
     checkmate::assert_character(data_type)

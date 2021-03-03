@@ -19,6 +19,8 @@ normalize_SE <- function(df_raw_data,
                   control_mean_fct = function(x) mean(x, trim = .25), # used for averaging controls
                   ndigit_rounding = 4 # rounding of normalized response values
                 ) {
+    .Deprecated(msg = "see normalize_SE2 for similar, but not identical functionality")
+
     # Assertions
     stopifnot(inherits(df_raw_data, "data.frame"))
     checkmate::assert_vector(selected_keys, null.ok = TRUE)

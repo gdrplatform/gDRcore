@@ -19,6 +19,7 @@ metrics_SE <- function(...) {
 #' @export
 #'
 fit_SE <- function(avgSE, studyConcThresh = 4) {
+    .Deprecated(msg = "see fit_SE2 for similar, but not identical functionality")
 
     # Assertions:
     checkmate::assert_class(avgSE, "SummarizedExperiment")

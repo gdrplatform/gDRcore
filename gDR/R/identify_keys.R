@@ -8,6 +8,7 @@
 #' @export
 #'
 identify_keys <- function(df_se_mae) {
+  .Deprecated(msg = "see identify_keys2 for similar, but not identical functionality")
 
   # Assertions:
   stopifnot(inherits(df_se_mae, c("data.frame", "MultiAssayExperiment", "SummarizedExperiment")))

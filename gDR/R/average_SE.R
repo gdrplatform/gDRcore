@@ -10,6 +10,7 @@
 #' @export
 #'
 average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
+  .Deprecated(msg = "see average_SE2 for similar, but not identical functionality")
 
   # Assertions:
   checkmate::assert_class(normSE, "SummarizedExperiment")
