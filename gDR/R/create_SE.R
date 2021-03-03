@@ -87,7 +87,7 @@ create_SE <-
 #' \code{rownames} and \code{colnames} are made up of available metadata on treatments and conditions 
 #' and is pasted together.
 #'
-#' @seealso normalize_SE2
+#' @seealso normalize_SE2, runDrugResponseProcessingPipeline
 #' @details 
 #' This is most commonly used in preparation for downstream normalization.
 #'
@@ -115,7 +115,7 @@ create_SE2 <- function(df_,
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
 
   ## Identify treatments, conditions, and experiment metadata.
-  md <- getMetaData2(df_, discard_keys = discard_keys)
+  md <- splitSEComponents(df_, discard_keys = discard_keys)
   coldata <- md$condition_md
   rowdata <- md$treatment_md
   exp_md <- md$experiment_md

@@ -76,11 +76,11 @@ identify_keys <- function(df_se_mae) {
 #'
 #' Identify keys in the DR data represented by dataframe or SummarizedExperiment objects
 #'
-#' @param obj a dataframe to identify keys for.
+#' @param obj a data.frame to identify keys for.
 #' @param discard_keys character vector of keys to exclude from the returned list. 
 #' The keys discarded should be identical to the keys in the third
 #' dimension of the SummarizedExperiment.
-#' Defaults to the \code{Barcode} and masked identifier.
+#' Defaults to the \code{"Barcode"} and the \code{masked} identifier.
 #'
 #' @return named list of key types and their corresponding key values. 
 #'

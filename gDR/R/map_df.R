@@ -12,6 +12,7 @@
 #'
 #' @return named list mapping treated metadata to untreated metadata.
 #'
+#' @seealso identify_keys2
 #' @export
 #'
 map_df <- function(trt_md, ref_md, row_endpoint_value_filter, Keys, ref_type = c("Day0", "untrt_Endpoint", "ref_Endpoint")) {

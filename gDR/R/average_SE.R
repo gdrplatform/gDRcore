@@ -77,6 +77,7 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 #' @param trt_keys a vector of keys used for averaging (NULL by default)
 #'
 #' @return a SummarizedExperiment with additional assay with averaged DR data
+#' @seealso runDrugResponseProcessingPipeline2
 #'
 #' @export
 #'

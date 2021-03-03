@@ -63,27 +63,32 @@ fit_SE <- function(avgSE, studyConcThresh = 4) {
 
 #' fit_SE2
 #'
-#' Calculate metrics for DR data
+#' Fit curves and obtain fit metrics from normalized, averaged drug response data.
 #'
-#' @param se a \linkS4class{SummarizedExperiment} with averaged and normalized assays
+#' @param se a \linkS4class{SummarizedExperiment} with averaged and normalized assays.
+#' Corresponding assay names are specified by \code{averaged_assay}, \code{ref_GR_assay}, and \code{ref_RV_assy}.
 #' @param averaged_assay string of the name of the averaged assay in the \linkS4class{SummarizedExperiment}.
-#' @param metrics_assay string of the metrics assay to output.
-#' @param studyConcThresh a numeric with study concentration threshold (4 by default)
+#' @param ref_GR_assay string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.
+#' @param ref_RV_assay string of the name of the reference Relative Viability assay in the \linkS4class{SummarizedExperiment}.
+#' @param metrics_assay string of the name of the metrics assay to output.
+#' @param ndigit_rounding integer indicating number of digits to round to in calculations.
+#' Defaults to \code{4}. 
 #'
-#' @return the original \linkS4class{SummarizedExperiment} with an additional assay named \code{metrics_assay}
+#' @return the original \linkS4class{SummarizedExperiment} with an additional assay named \code{metrics_assay}.
 #'
+#' @seealso runDrugResponseProcessingPipeline2
 #' @export
 #'
 fit_SE2 <- function(se, 
                     averaged_assay = "Averaged", 
-                    metrics_assay = "Metrics", 
                     ref_GR_assay = "RefGRvalue",
                     ref_RV_assay = "RefRelativeViability",
-                    studyConcThresh = 4) {
+                    metrics_assay = "Metrics", 
+                    ndigit_rounding = 4) {
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
-  checkmate::assert_number(studyConcThresh)
+  checkmate::assert_number(ndigit_rounding)
 
   metric_cols <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
   out <- vector("list", nrow(se) * ncol(se))
@@ -101,7 +106,7 @@ fit_SE2 <- function(se,
 	fit_df <- DataFrame(gDRutils::fit_curves(avg_df,
 	  e_0 = ref_RV[i, j],
 	  GR_0 = ref_GR[i, j],
-	  n_point_cutoff = studyConcThresh))
+	  n_point_cutoff = ndigit_rounding))
       }
 
       if (nrow(fit_df) != 0L) {
