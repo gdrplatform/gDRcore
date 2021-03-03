@@ -1,5 +1,3 @@
-library(magrittr)
-
 #' standardize_df
 #'
 #' Transform all the columns in a dataframe to character type
@@ -30,6 +28,8 @@ read_ref_data <- function(inDir, prefix = "ref") {
   # Assertions:
   checkmate::assert_string(inDir)
   checkmate::assert_string(prefix)
+  
+  files <- list.files(inDir, paste0(prefix, "_.+\\.tsv$"), full.names = TRUE)
   lFiles <- lapply(files, function(x) { read.table(x, sep = "\t", header = TRUE)})
   names(lFiles) <- gsub("\\.tsv", "", gsub(paste0("^", prefix, "_"), "", basename(files)))
   refKeys <- yaml::read_yaml(file.path(inDir, paste0(prefix, "_keys.yaml")))
@@ -140,6 +140,7 @@ test_lData <- function(lData, lRef) {
 #' @return
 #' @export
 #' 
+test_se_normalized <- function(se, lRef) {
   expect_equal(standardize_df(metadata(se)$df_raw_data),
                standardize_df(data.frame(lRef$df_raw_data)))
   expect_equal(yaml::as.yaml(metadata(se)$Keys), paste0(lRef$ref_keys, "\n"))
