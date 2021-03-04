@@ -5,7 +5,7 @@
 #' to identify the different components of a \linkS4class{SummarizedExperiment} object.
 #'
 #' @param df_ data.frame with drug-response data
-#' @param discard_keys character vector of keys to discard from the row or column data, 
+#' @param nested_keys character vector of keys to discard from the row or column data, 
 #' and to leave in the matrix data. See details.
 #'
 #' @return named list containing different elements of a \linkS4class{SummarizedExperiment};
@@ -20,19 +20,19 @@
 #'  \item{experiment_md}{metadata that is constant for all entries of the data.frame}
 #' }
 #'
-#' The \code{discard_keys} provides the user the opportunity to specify that they would not 
+#' The \code{nested_keys} provides the user the opportunity to specify that they would not 
 #' like to use that metadata field as a differentiator of the treatments, and instead, incorporate it
 #' into the \code{DataFrame} in the BumpyMatrix.
 #'
-#' In the event that if any of the \code{discard_keys} are constant throughout the whole data.frame, 
+#' In the event that if any of the \code{nested_keys} are constant throughout the whole data.frame, 
 #' they will still be included in the DataFrame of the BumpyMatrix and not in the experiment_metadata.
 #'
 #' @export
 #'
-split_SE_components <- function(df_, discard_keys = NULL) {
+split_SE_components <- function(df_, nested_keys = NULL) {
   # Assertions.
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
-  checkmate::assert_character(discard_keys, null.ok = TRUE)
+  checkmate::assert_character(nested_keys, null.ok = TRUE)
 
   df_ <- S4Vectors::DataFrame(df_)
   all_cols <- colnames(df_)
@@ -45,7 +45,7 @@ split_SE_components <- function(df_, discard_keys = NULL) {
     gDRutils::get_identifier("well_position"),
     "Template",
     "Concentration",
-    discard_keys
+    nested_keys
   )
   data_fields <- unique(data_fields)
   data_cols <- data_fields[data_fields %in% all_cols]

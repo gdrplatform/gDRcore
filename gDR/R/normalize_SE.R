@@ -463,7 +463,7 @@ normalize_SE2 <- function(se,
   refs <- SummarizedExperiment::assays(se)[[control_assay]]
   trt <- SummarizedExperiment::assays(se)[[raw_treated_assay]]
 
-  discard_keys <- get_SE_keys(se, key_type = "discard_keys")
+  nested_keys <- get_SE_keys(se, key_type = "nested_keys")
   trt_keys <- get_SE_keys(se, key_type = "Trt")
 
   norm_cols <- c("RelativeViability", "GRvalue", "DivisionTime")
@@ -500,10 +500,10 @@ normalize_SE2 <- function(se,
       # Merge to ensure that the proper discard_key values are mapped.
       all_readouts_df <- merge(trt_df, 
         ref_df, 
-	by = discard_keys,
+	by = nested_keys,
 	all.x = TRUE)
 
-      normalized <- (matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols)))
+      normalized <- S4Vectors::DataFrame(matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols)))
       colnames(normalized) <- c(norm_cols)
 
       # Normalized treated.

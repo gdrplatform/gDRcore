@@ -88,7 +88,7 @@ identify_keys <- function(df_se_mae) {
 #' @seealso map_df, create_SE2
 #' @export
 #'
-identify_keys2 <- function(obj, discard_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))) {
+identify_keys2 <- function(obj, nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))) {
   # Assertions:
   stopifnot(inherits(obj, c("data.frame", "DataFrame")))
 
@@ -100,11 +100,11 @@ identify_keys2 <- function(obj, discard_keys = c("Barcode", gDRutils::get_identi
   pattern <- sprintf("%s|%s|%s", x[1], x[2], x[3])
   pattern_keys <- grepl(pattern, all_keys)
 
-  keys <- list(Trt = setdiff(all_keys, discard_keys),
+  keys <- list(Trt = setdiff(all_keys, nested_keys),
     ref_Endpoint = setdiff(all_keys, x),
     untrt_Endpoint = all_keys[!pattern_keys],
     Day0 = setdiff(all_keys[!pattern_keys], gDRutils::get_identifier("duration")),
-    discard_keys = discard_keys
+    nested_keys = nested_keys
   )
 
   keys <- lapply(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),

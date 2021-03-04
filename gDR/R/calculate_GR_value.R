@@ -12,13 +12,17 @@
 #' @param cap numeric value representing the value to cap the highest allowed relative viability at.
 #' @param cl_name character string specifying the name for the cell line of interest.
 #'
-#' @return numeric vector containing GR values.
+#' @return numeric vector containing GR values, one value for each element of the input vectors.
 #' 
 #' @details Note that this function expects that all vectorized numeric vectors should be of the same length. 
+#' \code{calculate_GR_value} will try to greedily calculate a GR value. If no day 0 readouts are available, 
+#' the \code{duration} and \code{ref_div_time} will be used to try to back-calculate a day 0 value.
+#'
 #' In the case of calculating the reference GR value from multiple reference readout values, the vectorized
-#' calculation is performed and then the resulting vector is averaged.
+#' calculation is performed and then the resulting vector should be averaged outside of the function. 
 #' The \code{cl_name} is used purely for warning messages and will default to \code{"cell line"}. 
 #'
+#' @seealso normalize_SE2
 #' @rdname calculate_GR_value
 NULL
 
@@ -50,23 +54,22 @@ calculate_GR_value <- function(rel_viability,
       warning(
         sprintf("no day 0, no reference doubling time, so GR values are NA for '%s'", 
           cl_name))
+      GRvalue <- rep(NA, length(rel_viability))
     } else if (ref_div_time > 1.5 * duration) {
       warning(
         sprintf("reference doubling time for '%s' is '%s', too long for GR calculation with assay duration ('%s'), setting GR values to NA", 
           cl_name, ref_div_time, duration))
-      return(rep(NA, length(rel_viability)))
+      GRvalue <- rep(NA, length(rel_viability))
     } else {
       warning(
         sprintf("no day 0 data, calculating GR value based on reference doubling time for '%s'", 
           cl_name))
+      GRvalue <- calculate_endpt_GR_value(rel_viability = rel_viability, 
+	duration = duration, 
+	ref_div_time = ref_div_time, 
+	cap = cap,
+	ndigit_rounding = ndigit_rounding)
     }
-    
-    GRvalue <- calculate_endpt_GR_value(rel_viability = rel_viability, 
-      duration = duration, 
-      ref_div_time = ref_div_time, 
-      cap = cap,
-      ndigit_rounding = ndigit_rounding)
-
   } else {
     GRvalue <- calculate_time_dep_GR_value(corrected_readout, 
       day0_readout,  
