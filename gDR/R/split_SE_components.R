@@ -1,4 +1,4 @@
-#' splitSEComponents
+#' split_SE_components
 #'
 #' Divide the columns of an input data.frame into treatment metadata, condition metadata, 
 #' experiment metadata, and core data for further analysis. This will most commonly be used
@@ -29,7 +29,7 @@
 #'
 #' @export
 #'
-splitSEComponents <- function(df_, discard_keys = NULL) {
+split_SE_components <- function(df_, discard_keys = NULL) {
   # Assertions.
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_character(discard_keys, null.ok = TRUE)

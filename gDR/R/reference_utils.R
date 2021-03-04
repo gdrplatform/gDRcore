@@ -1,10 +1,13 @@
 #' Create a control dataframe for a treatment-cell line combination.
 #'
-#' @param df_
+#' @param df_ data.frame
 #' @param key
 #' @param control_mean_fxn
 #' @param out_col_name string of the output readout that will replace \code{CorrectedReadout}.
 #'
+#' @return data.frame of values aggregated by 
+#' 
+#' @examples
 #'
 #' @export
 #'

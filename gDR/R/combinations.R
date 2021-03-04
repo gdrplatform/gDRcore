@@ -5,10 +5,11 @@
 #' @return
 #' @export
 #'
-add_codrug_group_SE <- function(SE) {
+# TODO: Utilize the set_SE_metadata functions. 
+add_codrug_group_SE <- function(se) {
 
-  r_data <- SummarizedExperiment::rowData(SE)
-  if (!(paste0(gDRutils::get_identifier()$drugname, '_2') %in% colnames(r_data))) return(SE)
+  r_data <- SummarizedExperiment::rowData(se)
+  if (!(paste0(gDRutils::get_identifier()$drugname, '_2') %in% colnames(r_data))) return(se)
 
   # find the pairs of drugs with relevant metadata
   drug_ids <- paste0(gDRutils::get_identifier()$drugname, c('', '_2'))
@@ -33,12 +34,12 @@ add_codrug_group_SE <- function(SE) {
                   ))), 2, all)
 
     # reverse engineer the type of combination experiment
-    flat_data <- gDRutils::assay_to_dt(SE[row_idx, ], 'Averaged')
+    flat_data <- gDRutils::assay_to_dt(se[row_idx, ], 'Averaged')
     flat_data <- flat_data[flat_data$Concentration_2 > 0,]
     conc_1 <- table(flat_data$Concentration)
     conc_2 <- table(flat_data$Concentration_2)
     n_conc_pairs <- nrow(unique(flat_data[,c('Concentration', 'Concentration_2')]))
-    conc_ratio <- table(round(log10(flat_data$Concentration / flat_data$Concentration_2),2))
+    conc_ratio <- table(round(log10(flat_data$Concentration / flat_data$Concentration_2), 2))
     conc_ratio <- conc_ratio[!names(conc_ratio) %in% c('Inf', '-Inf')]
 
     condition <- paste(paste(other_metadata, unlist(drug_pairs[idp,other_metadata]), sep = '='),
@@ -46,20 +47,20 @@ add_codrug_group_SE <- function(SE) {
     if (length(conc_ratio) <= 2) {
       type <- 'co-dilution'
       print(sprintf('Found %s combination with %s and %s: ratio of %.2f, %i concentrations (%s)',
-          type, drug_pairs[idp,1], drug_pairs[idp,2], 10**as.numeric(names(conc_ratio)),
+          type, drug_pairs[idp,1], drug_pairs[idp, 2], 10**as.numeric(names(conc_ratio)),
             length(conc_2), condition))
     } else if (n_conc_pairs == length(conc_1)*length(conc_2) & length(conc_2) >= 4) {
       type <- 'matrix'
       print(sprintf('Found %s combination with %s and %s: %i x %i concentrations (%s)',
-          type, drug_pairs[idp,1], drug_pairs[idp,2], length(conc_1), length(conc_2), condition))
+          type, drug_pairs[idp,1], drug_pairs[idp, 2], length(conc_1), length(conc_2), condition))
     } else if (length(conc_2)<4) {
       type <- 'fixed'
       print(sprintf('Found %s combination of %s with %s at %.3g uM (%s)',
-          type, drug_pairs[idp,1], drug_pairs[idp,2], as.numeric(names(conc_2)), condition))
+          type, drug_pairs[idp,1], drug_pairs[idp, 2], as.numeric(names(conc_2)), condition))
     } else {
       type <- 'other'
       print(sprintf('Found %s combination with %s and %s: %i concentration pairs (%s)',
-        type, drug_pairs[idp,1], drug_pairs[idp,2], n_conc_pairs, condition))
+        type, drug_pairs[idp,1], drug_pairs[idp, 2], n_conc_pairs, condition))
     }
 
     pair_list[[idp]] <- list(condition = unlist(drug_pairs[idp,]),
@@ -67,6 +68,6 @@ add_codrug_group_SE <- function(SE) {
                           type = type)
   }
 
-  metadata(SE)$drug_combinations <- pair_list
-  return(SE)
+  metadata(se)$drug_combinations <- pair_list
+  return(se)
 }

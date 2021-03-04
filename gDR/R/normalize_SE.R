@@ -530,8 +530,9 @@ normalize_SE2 <- function(se,
       # !!!!!!!!!!!!HOWEVER, THE ABOVE LINE SHOULD LATER BE DELETED!!!!!!!!
       ###########################
 
-      ref_rv_value <- mean(round(ref_df$RefReadout/ref_df$UntrtReadout, ndigit_rounding), na.rm = TRUE)
-      ref_rel_viability[i, j] <- ref_rv_value
+      ## Perform the calculations on all references.
+      ## Then, take the mean to report the final reference normalized value.
+      RV_vec <- ref_df$RefReadout/ref_df$UntrtReadout
       GR_vec <- calculate_GR_value(rel_viability = ref_rv_value, 
         corrected_readout = ref_df$RefReadout, 
         day0_readout = ref_df$Day0Readout, 
@@ -540,7 +541,8 @@ normalize_SE2 <- function(se,
         duration = duration, 
         ref_div_time = ref_div_time, 
         cl_name = cl_name)
-      ref_GR_value[i, j] <- mean(GR_vec, na.rm = TRUE)
+      ref_rel_viability[i, j] <- round(mean(RV_vec, na.rm=TRUE), ndigit_rounding)
+      ref_GR_value[i, j] <- round(mean(GR_vec, na.rm = TRUE), ndigit_rounding)
       div_time[i, j] <- round(duration / log2(mean(ref_df$UntrtReadout/ref_df$Day0Readout, na.rm = TRUE)), ndigit_rounding)
     }
   }

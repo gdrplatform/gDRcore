@@ -79,7 +79,6 @@ create_SE <-
 #' @param readout string of the name containing the cell viability readout values.
 #' @param control_mean_fxn function indicating how to average controls.
 #' Defaults to \code{mean(x, trim = 0.25)}.
-#' @param key_values
 #' @param discard_keys character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
 #' Defaults to \code{NULL}. 
 #'
@@ -98,7 +97,6 @@ create_SE <-
 create_SE2 <- function(df_, 
                        readout = "ReadoutValue", 
                        control_mean_fxn = function(x) {mean(x, trim = 0.25)}, 
-                       key_values = NULL,
                        discard_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))) {
 
   # Assertions:

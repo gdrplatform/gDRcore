@@ -10,7 +10,7 @@
 #'
 #' Assign the treated and untreated conditions to a data.frame
 #'
-#' @param data.frame containing the drug name field.
+#' @param df_ containing the drug name field as specified by \code{gDRutils::get_identifier("drugname")}..
 #'
 #' @return data.frame containing an additional factor column called \code{treated_untreated} specifying
 #' whether the condition is a treated or untreated entry.

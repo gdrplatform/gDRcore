@@ -10,6 +10,7 @@
 #' @param instrument character
 #'
 #' @export
+#'
 load_data <-
   function(manifest_file,
            df_template_files,

@@ -51,7 +51,7 @@ get_SE_keys <- function(se, key_type = NULL) {
 ###############
 
 #' The primary purpose of this function is to allow other functions to create exposed getter functions.
-#'
+#' @noRd
 .get_SE_metadata <- function(se, name, subname = NULL) {
   v <- S4Vectors::metadata(se)[[name]]
   if (!is.null(subname)) {
@@ -65,7 +65,7 @@ get_SE_keys <- function(se, key_type = NULL) {
 
 
 #' The primary purpose of this function is to allow other functions to create exposed setter functions.
-#'
+#' @noRd
 .set_SE_metadata <- function(se, name, value) {
   if (!is.null(.get_SE_metadata(se, name))) {
     warning(sprintf("overwriting existing metadata entry: '%s'", name))

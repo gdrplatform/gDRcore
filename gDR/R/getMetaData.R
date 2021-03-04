@@ -20,7 +20,7 @@
 #' @export
 #'
 getMetaData <- function(data, discard_keys = NULL) {
-  .Deprecated(msg = "see splitSEComponents for similar, but not identical functionality")
+  .Deprecated(msg = "see split_SE_components for similar, but not identical functionality")
 
   # Assertions.
   stopifnot(any(inherits(data, "data.frame"), inherits(data, "DataFrame")))
