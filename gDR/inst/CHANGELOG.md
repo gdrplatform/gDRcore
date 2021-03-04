@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.43] - 2021-02-22
+#### Update
+- add drug_moa_2 to merged df
+
 #### [0.1.42] - 2021-02-17
 #### Update
 - fix a bug with adding annotation to codrugs
