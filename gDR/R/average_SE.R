@@ -96,6 +96,7 @@ average_SE2 <- function(se,
   normalized <- SummarizedExperiment::assay(se, normalized_assay)
 
   trt_keys <- get_SE_keys(se, "Trt")
+  masked_tag_key <- get_SE_keys(se, "masked_tag")
 
   out <- vector("list", nrow(se) * ncol(se))
   count <- 1
@@ -104,7 +105,7 @@ average_SE2 <- function(se,
       norm_df <- normalized[i, j][[1]]
 
       # bypass 'masked' filter
-      masked <- norm_df[[gDRutils::get_identifier("masked_tag")]] & !include_masked
+      masked <- norm_df[[masked_tag_key]] & !include_masked
 
       if (nrow(norm_df[!masked, ]) > 1L) {
         p_trt_keys <- intersect(trt_keys, colnames(norm_df))
@@ -116,7 +117,7 @@ average_SE2 <- function(se,
 
 	std_df <- aggregate(norm_df[!masked, std_cols],
 	  by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
-	  function(x) {sd(x, na.rm = TRUE)})
+	  function(x) sd(x, na.rm = TRUE))
         colnames(std_df)[colnames(std_df) %in% std_cols] <-
           paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
 
@@ -135,7 +136,7 @@ average_SE2 <- function(se,
   }
 
   out <- S4Vectors::DataFrame(do.call("rbind", out))
-  averaged <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c("masked", "row_id", "col_id")], 
+  averaged <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c(masked_tag_key, "row_id", "col_id")], 
     row = out$row_id, 
     col = out$col_id)
 

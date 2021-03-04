@@ -30,6 +30,8 @@ normalize_SE <- function(df_raw_data,
     checkmate::assert_number(ndigit_rounding)
     checkmate::assertFALSE('RelativeViability' %in% colnames(df_raw_data))
 
+    # TODO: Check that the relevant keys are present on the SE. If not present, try best guess. 
+
     # average technical replicates and assign the right controls to each treated well
     Keys <- identify_keys(df_raw_data)
     if (!is.null(key_values)) {
@@ -475,11 +477,11 @@ normalize_SE2 <- function(se,
   rdata <- SummarizedExperiment::rowData(se)
   for (j in seq_along(colnames(se))) {
     cl_md <- cdata[j, ]
-    cl_name <- cl_md[[gDRutils::get_identifier("cellline_name")]]
-    ref_div_time <- cl_md[[gDRutils::get_identifier("cellline_ref_div_time")]]
+    cl_name <- cl_md[[get_SE_keys(se, "cellline_name")]]
+    ref_div_time <- cl_md[[get_SE_keys(se, "cellline_ref_div_time")]]
 
     for (i in seq_along(rownames(se))) {
-      duration <- rdata[i, gDRutils::get_identifier("duration")]
+      duration <- rdata[i, get_SE_keys(se, "duration")]
 
       ref_df <- refs[i, j][[1]]
       trt_df <- trt[i, j][[1]]
@@ -518,7 +520,7 @@ normalize_SE2 <- function(se,
         cl_name = cl_name)
 
       # Carry over present treated keys.
-      normalized <- cbind(all_readouts_df[intersect(c(trt_keys, gDRutils::get_identifier("masked_tag")), colnames(all_readouts_df))], normalized) 
+      normalized <- cbind(all_readouts_df[intersect(c(trt_keys, get_SE_keys(se, "masked_tag")), colnames(all_readouts_df))], normalized) 
 
       normalized$row_id <- rep(rownames(se)[i], nrow(trt_df))
       normalized$col_id <- rep(colnames(se)[j], nrow(trt_df))

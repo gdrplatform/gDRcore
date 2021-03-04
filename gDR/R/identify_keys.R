@@ -75,9 +75,9 @@ identify_keys <- function(df_se_mae) {
 
 #' identify_keys2
 #'
-#' Identify keys in the DR data represented by dataframe or SummarizedExperiment objects
+#' Identify keys in the DR data represented by dataframe or SummarizedExperiment df_ects
 #'
-#' @param obj a data.frame to identify keys for.
+#' @param df_ a data.frame to identify keys for.
 #' @param discard_keys character vector of keys to exclude from the returned list. 
 #' The keys discarded should be identical to the keys in the third
 #' dimension of the SummarizedExperiment.
@@ -88,22 +88,24 @@ identify_keys <- function(df_se_mae) {
 #' @seealso map_df, create_SE2
 #' @export
 #'
-identify_keys2 <- function(obj, nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))) {
+identify_keys2 <- function(df_, nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))) {
   # Assertions:
-  stopifnot(inherits(obj, c("data.frame", "DataFrame")))
+  stopifnot(inherits(df_, c("data.frame", "DataFrame")))
 
-  all_keys <- colnames(obj)
+  all_keys <- colnames(df_)
 
   x <- c("Concentration", 
     gDRutils::get_identifier("drug"), 
     gDRutils::get_identifier("drugname"))
   pattern <- sprintf("%s|%s|%s", x[1], x[2], x[3])
   pattern_keys <- grepl(pattern, all_keys)
+  
+  duration_col <- gDRutils::get_identifier("duration")
 
   keys <- list(Trt = setdiff(all_keys, nested_keys),
     ref_Endpoint = setdiff(all_keys, x),
     untrt_Endpoint = all_keys[!pattern_keys],
-    Day0 = setdiff(all_keys[!pattern_keys], gDRutils::get_identifier("duration")),
+    Day0 = setdiff(all_keys[!pattern_keys], duration_col),
     nested_keys = nested_keys
   )
 
@@ -113,16 +115,21 @@ identify_keys2 <- function(obj, nested_keys = c("Barcode", gDRutils::get_identif
     gDRutils::get_identifier("well_position"), 
     gDRutils::get_header("averaged_results"),
     gDRutils::get_header("metrics_results"), 
-    "ReferenceDivisionTime")))
+    gDRutils::get_identifier("cellline_ref_div_time"))))
 
-  t0 <- obj[, gDRutils::get_identifier("duration")] == 0
+  keys$masked_tag <- gDRutils::get_identifier("masked_tag")
+  keys$cellline_name <- gDRutils::get_identifier("cellline_name")
+  keys$cellline_ref_div_time <- gDRutils::get_identifier("cellline_ref_div_time")
+  keys$duration <- duration_col 
+
+  t0 <- df_[, duration_col] == 0
   # Remove keys where all values are NA.
   # TODO: Improve this.
   for (k in keys[["untrt_Endpoint"]]) {
-    if (all(is.na(obj[, k]))) {
+    if (all(is.na(df_[, k]))) {
       keys <- lapply(keys, function(x) setdiff(x, k))
     }
-    if (all(is.na(obj[t0, k]))) {
+    if (all(is.na(df_[t0, k]))) {
       keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
     }
   }
