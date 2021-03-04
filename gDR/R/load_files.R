@@ -914,6 +914,7 @@ check_metadata_names <-
   function(file,
            nrows = 10000,
            seps = c(',', '\t')) {
+    .Deprecated(msg = "Specs are automatically detected in loading functions.")
     # Assertions:
     checkmate::assert_string(file)
     checkmate::assert_number(nrows)
