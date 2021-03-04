@@ -1,7 +1,9 @@
 #' Create a control dataframe for a treatment-cell line combination.
 #'
+#' Create an aggregated control data.frame. 
+#'
 #' @param df_ data.frame
-#' @param key
+#' @param control_cols character vector of columns to include in the resulting control data.frame.  
 #' @param control_mean_fxn
 #' @param out_col_name string of the output readout that will replace \code{CorrectedReadout}.
 #'
@@ -11,10 +13,10 @@
 #'
 #' @export
 #'
-create_control_df <- function(df_, Keys, key, control_mean_fxn, out_col_name) {
+create_control_df <- function(df_, control_cols, control_mean_fxn, out_col_name) {
   if (nrow(df_) != 0L) {
     # Rename CorrectedReadout.
-    df_ <- df_[, c("CorrectedReadout", intersect(Keys[[key]], colnames(df_)))]
+    df_ <- df_[, c("CorrectedReadout", intersect(control_cols, colnames(df_)))]
     colnames(df_)[grepl("CorrectedReadout", colnames(df_))] <- out_col_name
 
     # Aggregate by all non-readout data (the metadata).

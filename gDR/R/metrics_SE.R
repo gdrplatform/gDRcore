@@ -100,11 +100,11 @@ fit_SE2 <- function(se,
   for (i in seq_len(nrow(se))) {
     for (j in seq_len(ncol(se))) {
       avg_df <- avg_trt[i, j][[1]]
-      fit_df <- DataFrame(matrix(NA, 0, length(metric_cols)))
+      fit_df <- S4Vectors::DataFrame(matrix(NA, 0, length(metric_cols)))
       colnames(fit_df) <- metric_cols
 
       if (!is.null(avg_df) && all(dim(avg_df) > 0)) {
-	fit_df <- DataFrame(gDRutils::fit_curves(avg_df,
+	fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
 	  e_0 = ref_RV[i, j],
 	  GR_0 = ref_GR[i, j],
 	  n_point_cutoff = ndigit_rounding))
@@ -119,7 +119,7 @@ fit_SE2 <- function(se,
     }
   }
 
-  out <- DataFrame(do.call("rbind", out))
+  out <- S4Vectors::DataFrame(do.call("rbind", out))
   metrics <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c("row_id", "col_id")], 
     row = out$row_id, 
     col = out$col_id)

@@ -58,7 +58,7 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
     avgSE <- aapply(avgSE, function(x) {
         if (nrow(x) > 1) {
             subKeys <- intersect(TrtKeys, colnames(x))
-            df_av <- DataFrame(lapply(x[, c("Day0Readout", "UntrtReadout",
+            df_av <- S4Vectors::DataFrame(lapply(x[, c("Day0Readout", "UntrtReadout",
                     "RefGRvalue", "RefRelativeViability",
                     "RefReadout", "DivisionTime")], FUN = function(y) mean(y, na.rm = TRUE)))
             return( df_av )
@@ -134,7 +134,7 @@ average_SE2 <- function(se,
     }
   }
 
-  out <- DataFrame(do.call("rbind", out))
+  out <- S4Vectors::DataFrame(do.call("rbind", out))
   averaged <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c("masked", "row_id", "col_id")], 
     row = out$row_id, 
     col = out$col_id)

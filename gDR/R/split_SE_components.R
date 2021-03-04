@@ -34,7 +34,7 @@ split_SE_components <- function(df_, discard_keys = NULL) {
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_character(discard_keys, null.ok = TRUE)
 
-  df_ <- methods::as(df_, "DataFrame")
+  df_ <- S4Vectors::DataFrame(df_)
   all_cols <- colnames(df_)
 
   ## Identify all known fields.

@@ -166,7 +166,7 @@ normalize_SE <- function(df_raw_data,
                 by = as.list(df_end[, -1, drop = FALSE]),
                 function(x) control_mean_fct(x))
             } else {
-              df_end <- DataFrame(UntrtReadout = control_mean_fct(df_end$UntrtReadout))
+              df_end <- S4Vectors::DataFrame(UntrtReadout = control_mean_fct(df_end$UntrtReadout))
             }
             # reference co-treatment is not always present
             if (i %in% names(row_maps_cotrt) && length(row_maps_cotrt[[i]])>0) {
@@ -182,7 +182,7 @@ normalize_SE <- function(df_raw_data,
                     by = as.list(df_ref[, -1, drop = FALSE]),
                     function(x) control_mean_fct(x))
                 } else {
-                  df_ref <- DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
+                  df_ref <- S4Vectors::DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
                 }
 
                 # check if all control have matching co-treated wells are on the same plate
@@ -503,7 +503,7 @@ normalize_SE2 <- function(se,
 	by = discard_keys,
 	all.x = TRUE)
 
-      normalized <- DataFrame(matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols)))
+      normalized <- (matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols)))
       colnames(normalized) <- c(norm_cols)
 
       # Normalized treated.
@@ -533,7 +533,7 @@ normalize_SE2 <- function(se,
       ## Perform the calculations on all references.
       ## Then, take the mean to report the final reference normalized value.
       RV_vec <- ref_df$RefReadout/ref_df$UntrtReadout
-      GR_vec <- calculate_GR_value(rel_viability = ref_rv_value, 
+      GR_vec <- calculate_GR_value(rel_viability = RV_vec, 
         corrected_readout = ref_df$RefReadout, 
         day0_readout = ref_df$Day0Readout, 
         untrt_readout = ref_df$UntrtReadout, 
@@ -547,7 +547,7 @@ normalize_SE2 <- function(se,
     }
   }
 
-  out <- DataFrame(do.call("rbind", out))
+  out <- (do.call("rbind", out))
   norm <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(normalized) %in% c("row_id", "col_id")], 
     row = out$row_id, 
     col = out$col_id)

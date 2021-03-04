@@ -79,7 +79,9 @@ create_SE <-
 #' @param readout string of the name containing the cell viability readout values.
 #' @param control_mean_fxn function indicating how to average controls.
 #' Defaults to \code{mean(x, trim = 0.25)}.
-#' @param discard_keys character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
+#' @param nested_keys character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
+#' Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.
+#' @param key_values
 #' Defaults to \code{NULL}. 
 #'
 #' @return A \linkS4class{SummarizedExperiment} object containing two asssays.
@@ -97,15 +99,16 @@ create_SE <-
 create_SE2 <- function(df_, 
                        readout = "ReadoutValue", 
                        control_mean_fxn = function(x) {mean(x, trim = 0.25)}, 
-                       discard_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))) {
+                       nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")), 
+                       key_values = NULL) {
 
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(readout)
-  checkmate::assert_character(discard_keys, null.ok = TRUE)
+  checkmate::assert_character(nested_keys, null.ok = TRUE)
 
 
-  Keys <- identify_keys2(df_, discard_keys)
+  Keys <- identify_keys2(df_, nested_keys)
 
   if (!(gDRutils::get_identifier("masked_tag") %in% colnames(df_))) {
     df_[, gDRutils::get_identifier('masked_tag')] <- FALSE
@@ -115,7 +118,7 @@ create_SE2 <- function(df_,
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
 
   ## Identify treatments, conditions, and experiment metadata.
-  md <- splitSEComponents(df_, discard_keys = discard_keys)
+  md <- split_SE_components(df_, nested_keys = nested_keys)
   coldata <- md$condition_md
   rowdata <- md$treatment_md
   exp_md <- md$experiment_md
@@ -191,8 +194,7 @@ create_SE2 <- function(df_,
       untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
       untrt_df <- create_control_df(
         untrt_df, 
-        Keys = Keys, 
-        key = "untrt_Endpoint", 
+        control_cols = Keys[["untrt_Endpoint"]], 
         control_mean_fxn, 
         out_col_name = "UntrtReadout"
       )
@@ -201,8 +203,7 @@ create_SE2 <- function(df_,
       day0_df <- dfs[groupings %in% day0_ref, , drop = FALSE]
       day0_df <- create_control_df(
         day0_df, 
-        Keys = Keys, 
-        key = "Day0", 
+        control_cols = Keys[["Day0"]],
         control_mean_fxn, 
         out_col_name = "Day0Readout"
       )
@@ -217,8 +218,7 @@ create_SE2 <- function(df_,
 	cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
 	cotrt_df <- create_control_df(
 	  cotrt_df, 
-	  Keys = Keys, 
-	  key = "ref_Endpoint", 
+	  control_cols = Keys[["ref_Endpoint"]], 
 	  control_mean_fxn, 
 	  out_col_name = "RefReadout"
 	)
@@ -228,7 +228,7 @@ create_SE2 <- function(df_,
       # Try to merge by plate, but otherwise just use mean. 
       ref_df <- untrt_df
       if (nrow(cotrt_df) > 0L) {
-	merge_cols <- intersect(colnames(cotrt_df), discard_keys)
+	merge_cols <- intersect(colnames(cotrt_df), nested_keys)
 	ref_df <- merge(untrt_df, cotrt_df[, c("RefReadout", merge_cols)], by = merge_cols, all = TRUE)
         if (!all(sort(unique(cotrt_df$Barcode)) == sort(unique(untrt_df$Barcode)))) {
           # Merging by barcodes will result in NAs. 
@@ -242,7 +242,7 @@ create_SE2 <- function(df_,
       }
 
       if (nrow(day0_df) > 0L) {
-	ref_df <- merge(day0_df[, setdiff(colnames(day0_df), discard_keys), drop = FALSE], ref_df)
+	ref_df <- merge(day0_df[, setdiff(colnames(day0_df), nested_keys), drop = FALSE], ref_df)
       } else {
         ref_df$Day0Readout <- NA
       } 
