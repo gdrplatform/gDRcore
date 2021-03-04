@@ -17,6 +17,8 @@ map_df(
 
 \item{ref_md}{data.frame of untreated metadata.}
 
+\item{row_endpoint_value_filter}{boolean}
+
 \item{Keys}{named list of keys and values.
 Likely obtained from \code{identify_keys()}.}
 

@@ -8,7 +8,6 @@ create_SE2(
   df_,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
-  key_values = NULL,
   discard_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))
 )
 }

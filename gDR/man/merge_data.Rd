@@ -14,8 +14,8 @@ merge_data(manifest, treatments, data)
 \item{data}{a data frame with a raw data info}
 }
 \value{
-a dataframe with merged data
+a dataframe with merged data and metadata.
 }
 \description{
-Merge all the input data into a single dataframe
+Merge all the input data into a single data.frame
 }

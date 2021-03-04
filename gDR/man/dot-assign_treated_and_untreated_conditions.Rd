@@ -7,7 +7,7 @@
 .assign_treated_and_untreated_conditions(df_)
 }
 \arguments{
-\item{data.frame}{containing the drug name field.}
+\item{df_}{containing the drug name field as specified by \code{gDRutils::get_identifier("drugname")}..}
 }
 \value{
 data.frame containing an additional factor column called \code{treated_untreated} specifying
