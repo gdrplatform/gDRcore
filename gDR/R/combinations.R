@@ -49,21 +49,27 @@ add_codrug_group_SE <- function(se) {
       print(sprintf('Found %s combination with %s and %s: ratio of %.2f, %i concentrations (%s)',
           type, drug_pairs[idp,1], drug_pairs[idp, 2], 10**as.numeric(names(conc_ratio)),
             length(conc_2), condition))
+      condition = c(as.list(drug_pairs[idp,]), list(conc_ratio = 10**as.numeric(names(conc_ratio))))
     } else if (n_conc_pairs == length(conc_1)*length(conc_2) & length(conc_2) >= 4) {
       type <- 'matrix'
       print(sprintf('Found %s combination with %s and %s: %i x %i concentrations (%s)',
-          type, drug_pairs[idp,1], drug_pairs[idp, 2], length(conc_1), length(conc_2), condition))
+          type, drug_pairs[idp,1], drug_pairs[idp,2], length(conc_1), length(conc_2), condition))
+      condition = c(as.list(drug_pairs[idp,]), list(
+            Concentration = as.numeric(names(conc_1)), Concentration_2 = as.numeric(names(conc_2))))
     } else if (length(conc_2)<4) {
       type <- 'fixed'
       print(sprintf('Found %s combination of %s with %s at %.3g uM (%s)',
-          type, drug_pairs[idp,1], drug_pairs[idp, 2], as.numeric(names(conc_2)), condition))
+          type, drug_pairs[idp,1], drug_pairs[idp,2], as.numeric(names(conc_2)), condition))
+      condition = c(as.list(drug_pairs[idp,]), list( Concentration_2 = as.numeric(names(conc_2))))
     } else {
       type <- 'other'
       print(sprintf('Found %s combination with %s and %s: %i concentration pairs (%s)',
-        type, drug_pairs[idp,1], drug_pairs[idp, 2], n_conc_pairs, condition))
+        type, drug_pairs[idp,1], drug_pairs[idp,2], n_conc_pairs, condition))
+      condition = c(as.list(drug_pairs[idp,]), list(
+            Concentration = as.numeric(names(conc_1)), Concentration_2 = as.numeric(names(conc_2))))
     }
 
-    pair_list[[idp]] <- list(condition = unlist(drug_pairs[idp,]),
+    pair_list[[idp]] <- list(condition = condition,
                           rows = rownames(r_data)[row_idx],
                           type = type)
   }
