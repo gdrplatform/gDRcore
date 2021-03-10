@@ -78,17 +78,23 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 #' @param include_masked boolean indicating whether or not to include masked wells
 #' in the averaging. 
 #' This is used as an override to whatever wells have been masked in the original data.
+#' Defaults to \code{FALSE}.
 #' @param normalized_assay string of the assay name containing the normalized data.
-#' Defaults to \code{Normalized}.
+#' Defaults to \code{"Normalized"}.
+#' @param averaged_assay string of the assay to output averaged values in.
+#' Defaults to \code{"Averaged"}.
 #'
-#' @return a SummarizedExperiment with additional assay with averaged DR data
+#' @return a \linkS4class{SummarizedExperiment} with an additional assay 
+#' specified by \code{averaged_assay} with averaged data by treated keys. 
+#'
 #' @seealso runDrugResponseProcessingPipeline2
 #'
 #' @export
 #'
 average_SE2 <- function(se, 
                         include_masked = FALSE, 
-                        normalized_assay = "Normalized") {
+                        normalized_assay = "Normalized", 
+                        averaged_assay = "Averaged") {
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
@@ -102,29 +108,29 @@ average_SE2 <- function(se,
   count <- 1
   for (i in seq_len(nrow(se))) {
     for (j in seq_len(ncol(se))) {
-      norm_df <- normalized[i, j][[1]]
+       norm_df <- normalized[i, j][[1]]
 
-      # bypass 'masked' filter
-      masked <- norm_df[[masked_tag_key]] & !include_masked
+       # bypass 'masked' filter
+       masked <- norm_df[[masked_tag_key]] & !include_masked
 
-      if (nrow(norm_df[!masked, ]) > 1L) {
-        p_trt_keys <- intersect(trt_keys, colnames(norm_df))
-	std_cols <- c("GRvalue", "RelativeViability")
+       if (nrow(norm_df[!masked, ]) > 1L) {
+         p_trt_keys <- intersect(trt_keys, colnames(norm_df))
+	 std_cols <- c("GRvalue", "RelativeViability")
 
-	avg_df <- aggregate(norm_df[!masked, std_cols],
-	  by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
-	  function(x) mean(x, na.rm = TRUE))
+	 avg_df <- aggregate(norm_df[!masked, std_cols],
+	   by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
+	   function(x) mean(x, na.rm = TRUE))
 
-	std_df <- aggregate(norm_df[!masked, std_cols],
-	  by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
-	  function(x) sd(x, na.rm = TRUE))
-        colnames(std_df)[colnames(std_df) %in% std_cols] <-
-          paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
+	 std_df <- aggregate(norm_df[!masked, std_cols],
+	   by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
+	   function(x) sd(x, na.rm = TRUE))
+         colnames(std_df)[colnames(std_df) %in% std_cols] <-
+           paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
 
-	agg_df <- merge(avg_df, std_df, by = p_trt_keys) 
-      } else {
-        agg_df <- norm_df
-      }
+         agg_df <- merge(avg_df, std_df, by = p_trt_keys) 
+       } else {
+         agg_df <- norm_df
+       }
 
       if (nrow(agg_df) != 0L) {
 	agg_df$row_id <- rep(rownames(se)[i], nrow(agg_df))

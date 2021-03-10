@@ -81,7 +81,7 @@ create_SE <-
 #' Defaults to \code{mean(x, trim = 0.25)}.
 #' @param nested_keys character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
 #' Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.
-#' @param key_values
+#' @param override_controls named list containing defining factors in the treatments.
 #' Defaults to \code{NULL}. 
 #'
 #' @return A \linkS4class{SummarizedExperiment} object containing two asssays.
@@ -94,19 +94,27 @@ create_SE <-
 #' @details 
 #' This is most commonly used in preparation for downstream normalization.
 #'
+#' @examples
+#' df_ <- DataFrame(
+#'   ReadoutValue = ,
+#'   DrugName = ,
+#'   masked)
+#' create_SE2(df_, nested_keys = NULL)
+#' # using the nested_keys
+#' create_SE2(df_, nested_keys = c("Barcode", "masked"))
+#'
 #' @export
 #'
 create_SE2 <- function(df_, 
                        readout = "ReadoutValue", 
                        control_mean_fxn = function(x) {mean(x, trim = 0.25)}, 
                        nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")), 
-                       key_values = NULL) {
+                       override_controls = NULL) {
 
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(readout)
   checkmate::assert_character(nested_keys, null.ok = TRUE)
-
 
   Keys <- identify_keys2(df_, nested_keys)
 
@@ -137,32 +145,30 @@ create_SE2 <- function(df_,
   untreated <- split_list[["untreated"]]
 
   ## Map references.
-  # Map untreated references. 
-  row_endpoint_value_filter <- rep(TRUE, nrow(untreated))
-  Keys$untrt_Endpoint <- setdiff(Keys$untrt_Endpoint, names(key_values))
-  untrt_endpoint_map <- map_df(treated, untreated, row_endpoint_value_filter, Keys, ref_type = "untrt_Endpoint")
+  references <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0", ref_Endpoint = "ref_Endpoint")
+  # TODO: take care of the row_endpoint_value_filter.
 
-  # Map day0 references.
-  Keys$Day0 <- setdiff(Keys$Day0, names(key_values))
-  day0_endpoint_map <- map_df(treated, untreated, row_endpoint_value_filter, Keys, ref_type = "Day0")
+  ref_maps <- lapply(references, function(ref_type) {
+    map_df(treated, untreated, override_controls = override_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
+  })
 
-  # Map cotreatment references.
-  Keys$ref_Endpoint <- setdiff(Keys$ref_Endpoint, names(key_values))
-  # First look amongst the untreated.
-  cotrt_endpoint_map <- map_df(treated, untreated, row_endpoint_value_filter, Keys, ref_type = "ref_Endpoint")
+  for (ref_type in references) {
+    Keys[[ref_type]] <- setdiff(Keys[[ref_type]], names(override_controls))
+  }
 
   if ("Gnumber_2" %in% colnames(treated)) {
     # Remove Gnumber_2, DrugName_2, and Concentration_2.
-    Keys$ref_Endpoint <- setdiff(Keys$ref_Endpoint, 
-      c(names(key_values), c("Gnumber_2", "DrugName_2", "Concentration_2")))
+    ref_type <- "ref_Endpoint"
+    Keys[["ref_type"]] <- setdiff(Keys[[ref_type]], 
+      c(names(override_controls), c("Gnumber_2", "DrugName_2", "Concentration_2")))
 
     # Then look amongst the treated to fill any missing cotrt references.
-    missing_cotrt <- vapply(cotrt_endpoint_map, function(x) {length(x) == 0L}, TRUE)
+    missing_cotrt <- vapply(ref_maps[[ref_type]], function(x) {length(x) == 0L}, TRUE)
     if (any(missing_cotrt)) {
       missing_mappings <- names(cotrt_endpoint_map)[missing_cotrt]
       missing_trt_mappings <- treated[treated$groupings %in% names(missing_mappings)]
 
-      missing_cotrt_endpoint_map <- map_df(missing_trt_mappings, treated, row_endpoint_value_filter, Keys, ref_type = "ref_Endpoint")
+      missing_cotrt_endpoint_map <- map_df(missing_trt_mappings, treated, row_endpoint_value_filter, Keys, ref_type = ref_type)
 
       # Fill found mappings.
       for (grp in names(missing_cotrt_endpoint_map)) {
@@ -190,25 +196,28 @@ create_SE2 <- function(df_,
 
     ref_df <- NULL
     if (nrow(trt_df) > 0L) {
-      untrt_ref <- untrt_endpoint_map[[trt]]  
+      ref_type <- "untrt_Endpoint"
+      untrt_ref <- ref_maps[[ref_type]][[trt]]  
       untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
       untrt_df <- create_control_df(
         untrt_df, 
-        control_cols = Keys[["untrt_Endpoint"]], 
+        control_cols = Keys[[ref_type]], 
         control_mean_fxn, 
         out_col_name = "UntrtReadout"
       )
 
-      day0_ref <- day0_endpoint_map[[trt]]
+      ref_type <- "Day0"
+      day0_ref <- ref_maps[[ref_type]][[trt]]
       day0_df <- dfs[groupings %in% day0_ref, , drop = FALSE]
       day0_df <- create_control_df(
         day0_df, 
-        control_cols = Keys[["Day0"]],
+        control_cols = Keys[[ref_type]],
         control_mean_fxn, 
         out_col_name = "Day0Readout"
       )
 
-      cotrt_ref <- cotrt_endpoint_map[[trt]]  
+      ref_type <- "ref_Endpoint"
+      cotrt_ref <- ref_maps[[ref_type]][[trt]]  
       if (length(cotrt_ref) == 0L) {
         # TODO: Can this be incorporated into create_control_df?
 	# Set the cotrt reference to the untreated reference.
@@ -218,7 +227,7 @@ create_SE2 <- function(df_,
 	cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
 	cotrt_df <- create_control_df(
 	  cotrt_df, 
-	  control_cols = Keys[["ref_Endpoint"]], 
+	  control_cols = Keys[[ref_type]], 
 	  control_mean_fxn, 
 	  out_col_name = "RefReadout"
 	)

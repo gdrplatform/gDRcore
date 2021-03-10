@@ -472,9 +472,11 @@ normalize_SE2 <- function(se,
   out <- vector("list", nrow(se) * ncol(se))
 
   ref_rel_viability <- ref_GR_value <- div_time <- matrix(NA, nrow = nrow(se), ncol = ncol(se), dimnames = dimnames(se))
-  # Column major order, so go down first.
+
   cdata <- SummarizedExperiment::colData(se)
   rdata <- SummarizedExperiment::rowData(se)
+
+  # Column major order, so go down first.
   for (j in seq_along(colnames(se))) {
     cl_md <- cdata[j, ]
     cl_name <- cl_md[[get_SE_keys(se, "cellline_name")]]

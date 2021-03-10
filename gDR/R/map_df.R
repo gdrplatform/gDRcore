@@ -4,23 +4,30 @@
 #'
 #' @param trt_md data.frame of treated metadata. 
 #' @param ref_md data.frame of untreated metadata.
-#' @param row_endpoint_value_filter boolean 
-#' @param Keys named list of keys and values.
+#' @param override_controls named list indicating what treatment metadata fields should be used as a control.
+#' Defaults to \code{NULL}.
+#' @param ref_cols character vector of the names of reference columns to include.
 #' Likely obtained from \code{identify_keys()}.
 #' @param ref_type string of the reference type to map to.
 #' Should be one of \code{c("Day0", "untrt_Endpoint", "ref_Endpoint")}.
 #'
 #' @return named list mapping treated metadata to untreated metadata.
 #'
+#' @details If \code{override_controls} is specified, 
+#' TODO: FILL ME!
+#' 
 #' @seealso identify_keys2
 #' @export
 #'
-map_df <- function(trt_md, ref_md, row_endpoint_value_filter, Keys, ref_type = c("Day0", "untrt_Endpoint", "ref_Endpoint")) {
+map_df <- function(trt_md, 
+                   ref_md, 
+                   override_controls = NULL, 
+                   ref_cols, 
+                   ref_type = c("Day0", "untrt_Endpoint", "ref_Endpoint")) {
+
   # Assertions:
   checkmate::assert_class(trt_md, "data.frame")
   checkmate::assert_class(ref_md, "data.frame")
-  checkmate::assert_logical(row_endpoint_value_filter)
-  checkmate::assert_list(Keys)
   ref_type <- match.arg(ref_type)
 
   duration_col <- gDRutils::get_identifier("duration")
@@ -33,7 +40,10 @@ map_df <- function(trt_md, ref_md, row_endpoint_value_filter, Keys, ref_type = c
     matching_list <- list(T0 = ref_md[, duration_col] == 0, conc = is_ref_conc) # Identifying which of the durations have a value of 0.
     matchFactor <- "T0"
   } else if (ref_type == "untrt_Endpoint") {
-    matching_list <- list(key_values = row_endpoint_value_filter, conc = is_ref_conc)
+    matching_list <- list(conc = is_ref_conc)
+    if (!is.null(override_controls)) {
+      matching_list$override_controls <- override_controls
+    }
     matchFactor <- duration_col 
   } else if (ref_type == "ref_Endpoint") {
     matching_list <- NULL
@@ -43,8 +53,7 @@ map_df <- function(trt_md, ref_md, row_endpoint_value_filter, Keys, ref_type = c
   trt_rnames <- rownames(trt_md)
 
   # define matrix with matching metadata
-  # TODO: Is this necessary? I think all the keys should now only include keys that are present.
-  present_ref_cols <- intersect(Keys[[ref_type]], names(ref_md))
+  present_ref_cols <- intersect(ref_cols, names(ref_md))
   names(present_ref_cols) <- present_ref_cols
 
   out <- list("vector", length(trt_rnames))

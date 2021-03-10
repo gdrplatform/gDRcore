@@ -75,7 +75,7 @@ identify_keys <- function(df_se_mae) {
 
 #' identify_keys2
 #'
-#' Identify keys in the DR data represented by dataframe or SummarizedExperiment df_ects
+#' Group columns from a data.frame that correspond to different 
 #'
 #' @param df_ a data.frame to identify keys for.
 #' @param discard_keys character vector of keys to exclude from the returned list. 
@@ -84,6 +84,10 @@ identify_keys <- function(df_se_mae) {
 #' Defaults to the \code{"Barcode"} and the \code{masked} identifier.
 #'
 #' @return named list of key types and their corresponding key values. 
+#'
+#' @details This is most likely to be used for provenance tracking and will 
+#' be placed on the SummarizedExperiment metadata for downstream analyses
+#' to reference. 
 #'
 #' @seealso map_df, create_SE2
 #' @export
