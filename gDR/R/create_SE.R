@@ -57,9 +57,9 @@ create_SE <-
     rownames(seRowData) <- seRowData$name_
 
     seColData <-
-      seColData[colnames(mats), setdiff(colnames(seColData), c('col_id', 'name_'))]
+      seColData[colnames(mats), setdiff(colnames(seColData), c('col_id', 'name_')), drop = F]
     seRowData <- seRowData[rownames(mats),
-                           setdiff(colnames(seRowData), c('row_id', 'name_'))]
+                           setdiff(colnames(seRowData), c('row_id', 'name_')), drop = F]
     matsL <- list(mats)
     names(matsL) <- readout
     
