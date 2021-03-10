@@ -4,10 +4,12 @@
 \alias{create_control_df}
 \title{Create a control dataframe for a treatment-cell line combination.}
 \usage{
-create_control_df(df_, Keys, key, control_mean_fxn, out_col_name)
+create_control_df(df_, control_cols, control_mean_fxn, out_col_name)
 }
 \arguments{
 \item{df_}{data.frame}
+
+\item{control_cols}{character vector of columns to include in the resulting control data.frame.}
 
 \item{out_col_name}{string of the output readout that will replace \code{CorrectedReadout}.}
 }
@@ -15,7 +17,7 @@ create_control_df(df_, Keys, key, control_mean_fxn, out_col_name)
 data.frame of values aggregated by
 }
 \description{
-Create a control dataframe for a treatment-cell line combination.
+Create an aggregated control data.frame.
 }
 \examples{
 

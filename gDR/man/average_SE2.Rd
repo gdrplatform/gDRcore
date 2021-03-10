@@ -4,20 +4,30 @@
 \alias{average_SE2}
 \title{average_SE2}
 \usage{
-average_SE2(se, include_masked = FALSE, normalized_assay = "Normalized")
+average_SE2(
+  se,
+  include_masked = FALSE,
+  normalized_assay = "Normalized",
+  averaged_assay = "Averaged"
+)
 }
 \arguments{
 \item{se}{a \linkS4class{SummarizedExperiment} with drug response data.}
 
 \item{include_masked}{boolean indicating whether or not to include masked wells
 in the averaging. 
-This is used as an override to whatever wells have been masked in the original data.}
+This is used as an override to whatever wells have been masked in the original data.
+Defaults to \code{FALSE}.}
 
 \item{normalized_assay}{string of the assay name containing the normalized data.
-Defaults to \code{Normalized}.}
+Defaults to \code{"Normalized"}.}
+
+\item{averaged_assay}{string of the assay to output averaged values in.
+Defaults to \code{"Averaged"}.}
 }
 \value{
-a SummarizedExperiment with additional assay with averaged DR data
+a \linkS4class{SummarizedExperiment} with an additional assay 
+specified by \code{averaged_assay} with averaged data by treated keys.
 }
 \description{
 Average the normalized data per

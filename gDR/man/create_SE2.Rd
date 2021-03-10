@@ -8,7 +8,8 @@ create_SE2(
   df_,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
-  discard_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))
+  nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
+  override_controls = NULL
 )
 }
 \arguments{
@@ -19,7 +20,10 @@ create_SE2(
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
 
-\item{discard_keys}{character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
+\item{nested_keys}{character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
+Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.}
+
+\item{override_controls}{named list containing defining factors in the treatments.
 Defaults to \code{NULL}.}
 }
 \value{
@@ -35,6 +39,16 @@ conditions are on columns.
 }
 \details{
 This is most commonly used in preparation for downstream normalization.
+}
+\examples{
+df_ <- DataFrame(
+  ReadoutValue = ,
+  DrugName = ,
+  masked)
+create_SE2(df_, nested_keys = NULL)
+# using the nested_keys
+create_SE2(df_, nested_keys = c("Barcode", "masked"))
+
 }
 \seealso{
 normalize_SE2, runDrugResponseProcessingPipeline

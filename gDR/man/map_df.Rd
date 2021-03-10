@@ -7,8 +7,8 @@
 map_df(
   trt_md,
   ref_md,
-  row_endpoint_value_filter,
-  Keys,
+  override_controls = NULL,
+  ref_cols,
   ref_type = c("Day0", "untrt_Endpoint", "ref_Endpoint")
 )
 }
@@ -17,9 +17,10 @@ map_df(
 
 \item{ref_md}{data.frame of untreated metadata.}
 
-\item{row_endpoint_value_filter}{boolean}
+\item{override_controls}{named list indicating what treatment metadata fields should be used as a control.
+Defaults to \code{NULL}.}
 
-\item{Keys}{named list of keys and values.
+\item{ref_cols}{character vector of the names of reference columns to include.
 Likely obtained from \code{identify_keys()}.}
 
 \item{ref_type}{string of the reference type to map to.
@@ -30,6 +31,10 @@ named list mapping treated metadata to untreated metadata.
 }
 \description{
 Map treated conditions to their respective Day0, untreated, or single-agent references using condition metadata.
+}
+\details{
+If \code{override_controls} is specified, 
+TODO: FILL ME!
 }
 \seealso{
 identify_keys2

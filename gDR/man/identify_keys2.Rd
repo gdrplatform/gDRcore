@@ -5,12 +5,12 @@
 \title{identify_keys2}
 \usage{
 identify_keys2(
-  obj,
-  discard_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))
+  df_,
+  nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))
 )
 }
 \arguments{
-\item{obj}{a data.frame to identify keys for.}
+\item{df_}{a data.frame to identify keys for.}
 
 \item{discard_keys}{character vector of keys to exclude from the returned list. 
 The keys discarded should be identical to the keys in the third
@@ -21,7 +21,12 @@ Defaults to the \code{"Barcode"} and the \code{masked} identifier.}
 named list of key types and their corresponding key values.
 }
 \description{
-Identify keys in the DR data represented by dataframe or SummarizedExperiment objects
+Group columns from a data.frame that correspond to different
+}
+\details{
+This is most likely to be used for provenance tracking and will 
+be placed on the SummarizedExperiment metadata for downstream analyses
+to reference.
 }
 \seealso{
 map_df, create_SE2

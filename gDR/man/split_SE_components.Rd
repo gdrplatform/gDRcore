@@ -4,12 +4,12 @@
 \alias{split_SE_components}
 \title{split_SE_components}
 \usage{
-split_SE_components(df_, discard_keys = NULL)
+split_SE_components(df_, nested_keys = NULL)
 }
 \arguments{
 \item{df_}{data.frame with drug-response data}
 
-\item{discard_keys}{character vector of keys to discard from the row or column data, 
+\item{nested_keys}{character vector of keys to discard from the row or column data, 
 and to leave in the matrix data. See details.}
 }
 \value{
@@ -30,10 +30,10 @@ Named list containing the following elements:
  \item{experiment_md}{metadata that is constant for all entries of the data.frame}
 }
 
-The \code{discard_keys} provides the user the opportunity to specify that they would not 
+The \code{nested_keys} provides the user the opportunity to specify that they would not 
 like to use that metadata field as a differentiator of the treatments, and instead, incorporate it
 into the \code{DataFrame} in the BumpyMatrix.
 
-In the event that if any of the \code{discard_keys} are constant throughout the whole data.frame, 
+In the event that if any of the \code{nested_keys} are constant throughout the whole data.frame, 
 they will still be included in the DataFrame of the BumpyMatrix and not in the experiment_metadata.
 }
