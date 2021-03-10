@@ -150,7 +150,7 @@ normalize_SE <- function(df_raw_data,
             # get all the control endpoint data
             df_end <- do.call(rbind,
                     lapply(row_maps_end[[i]], function(x) ctrl_original[[x, col_maps[j]]]))
-            if (nrow(df_end) == 0) {
+            if (is.null(df_end) || (nrow(df_end) == 0)) {
               futile.logger::flog.warn(
                   "Missing control data.
                   Treatment Id: %s
