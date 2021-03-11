@@ -20,6 +20,10 @@
 .assign_treated_and_untreated_conditions <- function(df_) {
   drugnames <- tolower(as.data.frame(df_)[, gDRutils::get_identifier("drugname")])
   untreated <- grepl(.untreatedDrugNameRegex, drugnames)
+  if (!any(untreated)) {
+    stop(sprintf("no untreated conditions matching pattern: '%s'", .untreatedDrugNameRegex))
+  }
+
   df_$treated_untreated <- "treated"
   df_$treated_untreated[untreated] <- "untreated"
   df_$treated_untreated <- as.factor(df_$treated_untreated)
@@ -39,6 +43,8 @@
 #'
 .get_untreated_conditions <-
   function(drug_data) {
+    .Deprecated(msg = "use 'gDRcore:::.assign_treated_and_untreated_conditions' instead")
+
     # Assertions:
     stopifnot(any(inherits(drug_data, "data.frame"), inherits(drug_data, "DataFrame")))
     drugnames <- tolower(as.data.frame(drug_data)[, gDRutils::get_identifier("drugname")])
@@ -58,6 +64,8 @@
 #'
 .get_treated_conditions <-
   function(drug_data) {
+    .Deprecated(msg = "use 'gDRcore:::.assign_treated_and_untreated_conditions' instead")
+
     # Assertions:
     stopifnot(any(inherits(drug_data, "data.frame"), inherits(drug_data, "DataFrame")))
     drugnames <- tolower(as.data.frame(drug_data)[, gDRutils::get_identifier("drugname")])
