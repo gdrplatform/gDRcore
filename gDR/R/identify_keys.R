@@ -82,6 +82,8 @@ identify_keys <- function(df_se_mae) {
 #' The keys discarded should be identical to the keys in the third
 #' dimension of the SummarizedExperiment.
 #' Defaults to the \code{"Barcode"} and the \code{masked} identifier.
+#' @param override_controls named list containing defining factors in the treatments.
+#' Defaults to \code{NULL}.
 #'
 #' @return named list of key types and their corresponding key values. 
 #'
@@ -92,7 +94,9 @@ identify_keys <- function(df_se_mae) {
 #' @seealso map_df, create_SE2
 #' @export
 #'
-identify_keys2 <- function(df_, nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))) {
+identify_keys2 <- function(df_,  
+                           nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))
+                           override_controls = NULL) {
   # Assertions:
   stopifnot(inherits(df_, c("data.frame", "DataFrame")))
 
@@ -106,9 +110,9 @@ identify_keys2 <- function(df_, nested_keys = c("Barcode", gDRutils::get_identif
   
   duration_col <- gDRutils::get_identifier("duration")
 
-  keys <- list(Trt = setdiff(all_keys, nested_keys),
-    ref_Endpoint = setdiff(all_keys, x),
-    untrt_Endpoint = all_keys[!pattern_keys],
+  keys <- list(Trt = setdiff(all_keys, c(nested_keys, override_controls)),
+    ref_Endpoint = setdiff(all_keys, c(x, override_controls)),
+    untrt_Endpoint = setdiff(all_keys[!pattern_keys], override_controls),
     Day0 = setdiff(all_keys[!pattern_keys], duration_col),
     nested_keys = nested_keys
   )

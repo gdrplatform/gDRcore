@@ -477,6 +477,10 @@ normalize_SE2 <- function(se,
 
   nested_keys <- get_SE_keys(se, key_type = "nested_keys")
   trt_keys <- get_SE_keys(se, key_type = "Trt")
+  cl_name_key <- get_SE_keys(se, "cellline_name")
+  cl_ref_div_time_key <- get_SE_keys(se, "cellline_ref_div_time")
+  duration_key <- get_SE_keys(se, "duration")
+  masked_key <- get_SE_keys(se, "masked_tag")
 
   norm_cols <- c("RelativeViability", "GRvalue", "DivisionTime")
   out <- vector("list", nrow(se) * ncol(se))
@@ -488,12 +492,11 @@ normalize_SE2 <- function(se,
 
   # Column major order, so go down first.
   for (j in seq_along(colnames(se))) {
-    cl_md <- cdata[j, ]
-    cl_name <- cl_md[[get_SE_keys(se, "cellline_name")]]
-    ref_div_time <- cl_md[[get_SE_keys(se, "cellline_ref_div_time")]]
+    cl_name <- cdata[j, cl_name_key]
+    ref_div_time <- cdata[j, cl_ref_div_time_key]
 
     for (i in seq_along(rownames(se))) {
-      duration <- rdata[i, get_SE_keys(se, "duration")]
+      duration <- rdata[i, duration_key]
 
       ref_df <- refs[i, j][[1]]
       trt_df <- trt[i, j][[1]]
@@ -532,7 +535,7 @@ normalize_SE2 <- function(se,
         cl_name = cl_name)
 
       # Carry over present treated keys.
-      normalized <- cbind(all_readouts_df[intersect(c(trt_keys, get_SE_keys(se, "masked_tag")), colnames(all_readouts_df))], normalized) 
+      normalized <- cbind(all_readouts_df[intersect(c(trt_keys, masked_key), colnames(all_readouts_df))], normalized) 
 
       normalized$row_id <- rep(rownames(se)[i], nrow(trt_df))
       normalized$col_id <- rep(colnames(se)[j], nrow(trt_df))
@@ -555,13 +558,14 @@ normalize_SE2 <- function(se,
         duration = duration, 
         ref_div_time = ref_div_time, 
         cl_name = cl_name)
+
       ref_rel_viability[i, j] <- round(mean(RV_vec, na.rm=TRUE), ndigit_rounding)
       ref_GR_value[i, j] <- round(mean(GR_vec, na.rm = TRUE), ndigit_rounding)
       div_time[i, j] <- round(duration / log2(mean(ref_df$UntrtReadout/ref_df$Day0Readout, na.rm = TRUE)), ndigit_rounding)
     }
   }
 
-  out <- (do.call("rbind", out))
+  out <- do.call("rbind", out)
   norm <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(normalized) %in% c("row_id", "col_id")], 
     row = out$row_id, 
     col = out$col_id)

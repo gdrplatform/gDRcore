@@ -117,7 +117,7 @@ create_SE2 <- function(df_,
   checkmate::assert_string(readout)
   checkmate::assert_character(nested_keys, null.ok = TRUE)
 
-  Keys <- identify_keys2(df_, nested_keys)
+  Keys <- identify_keys2(df_, nested_keys, override_controls)
 
   if (!(gDRutils::get_identifier("masked_tag") %in% colnames(df_))) {
     df_[, gDRutils::get_identifier('masked_tag')] <- FALSE
@@ -152,10 +152,6 @@ create_SE2 <- function(df_,
   ref_maps <- lapply(references, function(ref_type) {
     map_df(treated, untreated, override_controls = override_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
   })
-
-  for (ref_type in references) {
-    Keys[[ref_type]] <- setdiff(Keys[[ref_type]], names(override_controls))
-  }
 
   if ("Gnumber_2" %in% colnames(treated)) {
     # Remove Gnumber_2, DrugName_2, and Concentration_2.
@@ -196,7 +192,18 @@ create_SE2 <- function(df_,
     trt_df <- dfs[groupings == trt, , drop = FALSE]  
 
     ref_df <- NULL
+    # refType2Readout <- list("untrt_Endpoint" = "UntrtReadout", "Day0" = "Day0Readout", "ref_Endpoint" = "RefReadout")
     if (nrow(trt_df) > 0L) {
+#      for (ref_type in names(refType2Readout)) {
+#	ref <- ref_maps[[ref_type]][[trt]]  
+#	df <- dfs[groupings %in% ref, , drop = FALSE]
+#	df <- create_control_df(
+#	  df, 
+#	  control_cols = Keys[[ref_type]], 
+#	  control_mean_fxn, 
+#	  out_col_name = refType2Readout[[ref_type]]
+#	)
+#      }
       ref_type <- "untrt_Endpoint"
       untrt_ref <- ref_maps[[ref_type]][[trt]]  
       untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]

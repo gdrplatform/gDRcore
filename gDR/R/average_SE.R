@@ -89,6 +89,9 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 #' mean and standard deviation calculations for each unique treatment in the nested
 #' \code{DataFrame}s. 
 #'
+#' @details Expects that \code{get_SE_keys(se)} will have values for both 
+#' \code{"Trt"} and \code{"masked_tag"}.
+#'
 #' @family runDrugResponseProcessingPipelineFxns
 #'
 #' @export
@@ -101,10 +104,17 @@ average_SE2 <- function(se,
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
 
-  normalized <- SummarizedExperiment::assay(se, normalized_assay)
-
   trt_keys <- get_SE_keys(se, "Trt")
   masked_tag_key <- get_SE_keys(se, "masked_tag")
+
+  if (!(length(trt_keys) > 0L && trt_keys != "")) {
+    stop("unexpected treated keys on 'se' object")
+  }
+  if (!(length(masked_tag_key) > 0L && masked_tag_key != "")) {
+    stop("unexpected masked_tag on 'se' object")
+  }
+
+  normalized <- SummarizedExperiment::assay(se, normalized_assay)
 
   out <- vector("list", nrow(se) * ncol(se))
   count <- 1
@@ -125,7 +135,7 @@ average_SE2 <- function(se,
 
 	 std_df <- stats::aggregate(norm_df[!masked, std_cols],
 	   by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
-	   function(x) sd(x, na.rm = TRUE))
+	   function(x) stats::sd(x, na.rm = TRUE))
          colnames(std_df)[colnames(std_df) %in% std_cols] <-
            paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
 
