@@ -34,13 +34,13 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 
         subKeys <- intersect(TrtKeys, colnames(x))
         if (sum(!x$masked) >= 1) {
-            df_av <- aggregate(x[ !x$masked ,
+            df_av <- stats::aggregate(x[ !x$masked ,
                                   c("GRvalue", "RelativeViability","CorrectedReadout")],
                             by = as.list(x[ !x$masked , subKeys, drop = FALSE]),
                             FUN = function(y) mean(y, na.rm = TRUE))
-            df_std <- aggregate(x[!x$masked, c("GRvalue", "RelativeViability")],
+            df_std <- stats::aggregate(x[!x$masked, c("GRvalue", "RelativeViability")],
                                 by = as.list(x[ !x$masked, subKeys, drop = FALSE]),
-                                FUN = function(x) sd(x, na.rm = TRUE))
+                                FUN = function(x) stats::sd(x, na.rm = TRUE))
             colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")] =
                 paste0("std_",
                     colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")])
@@ -69,12 +69,12 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 }
 
 
-# TODO: Mention something about the std (standard deviation). 
 #' average_SE2
 #'
-#' Average the normalized data per
+#' Average the normalized data within the nested \code{DataFrame}s. 
 #'
-#' @param se a \linkS4class{SummarizedExperiment} with drug response data.
+#' @param se a \linkS4class{SummarizedExperiment} with drug response data that has a 
+#' \code{normalized_assay}.
 #' @param include_masked boolean indicating whether or not to include masked wells
 #' in the averaging. 
 #' This is used as an override to whatever wells have been masked in the original data.
@@ -85,9 +85,11 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 #' Defaults to \code{"Averaged"}.
 #'
 #' @return a \linkS4class{SummarizedExperiment} with an additional assay 
-#' specified by \code{averaged_assay} with averaged data by treated keys. 
+#' specified by \code{averaged_assay} containing normalized data with 
+#' mean and standard deviation calculations for each unique treatment in the nested
+#' \code{DataFrame}s. 
 #'
-#' @seealso runDrugResponseProcessingPipeline2
+#' @family runDrugResponseProcessingPipelineFxns
 #'
 #' @export
 #'
@@ -146,6 +148,6 @@ average_SE2 <- function(se,
     row = out$row_id, 
     col = out$col_id)
 
-  SummarizedExperiment::assays(se)[["Averaged"]] <- averaged
+  SummarizedExperiment::assays(se)[[averaged_assay]] <- averaged
   return(se)
 }

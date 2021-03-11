@@ -66,18 +66,23 @@ fit_SE <- function(avgSE, studyConcThresh = 4) {
 #'
 #' Fit curves and obtain fit metrics from normalized, averaged drug response data.
 #'
-#' @param se a \linkS4class{SummarizedExperiment} with averaged and normalized assays.
+#' @param se a \linkS4class{SummarizedExperiment} with normalized, averaged assays.
 #' Corresponding assay names are specified by \code{averaged_assay}, \code{ref_GR_assay}, and \code{ref_RV_assy}.
 #' @param averaged_assay string of the name of the averaged assay in the \linkS4class{SummarizedExperiment}.
+#' Defaults to \code{"Averaged"}.
 #' @param ref_GR_assay string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.
+#' Defaults to \code{"RefGRvalue"}.
 #' @param ref_RV_assay string of the name of the reference Relative Viability assay in the \linkS4class{SummarizedExperiment}.
-#' @param metrics_assay string of the name of the metrics assay to output.
+#' Defaults to \code{"RefRelativeViability"}.
+#' @param metrics_assay string of the name of the metrics assay to output in the returned \linkS4class{SummarizedExperiment}.
+#' Defaults to \code{"Metrics"}.
 #' @param ndigit_rounding integer indicating number of digits to round to in calculations.
 #' Defaults to \code{4}. 
 #'
-#' @return the original \linkS4class{SummarizedExperiment} with an additional assay named \code{metrics_assay}.
+#' @return the original \linkS4class{SummarizedExperiment} with an additional assay 
+#' containing fitting metrics named \code{metrics_assay}.
 #'
-#' @seealso runDrugResponseProcessingPipeline2
+#' @family runDrugResponseProcessingPipelineFxns
 #' @export
 #'
 fit_SE2 <- function(se, 

@@ -445,18 +445,28 @@ normalize_SE <- function(df_raw_data,
 #'
 #' @param se \code{BumpyMatrix} object with assays \code{"RawTreated"} and \code{"Controls"}.
 #' @param control_assay string containing the name of the assay representing the controls in the \code{se}.
+#' Defaults to \code{"Controls"}.
 #' @param raw_treated_assay string containing the name of the assay representing the raw treated data in the \code{se}.
+#' Defaults to \code{"RawTreated"}.
+#' @param normalized_assay string of the assay name containing the normalized data.
+#' Defaults to \code{"Normalized"}.
+#' @param ref_GR_assay string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.
+#' @param ref_RV_assay string of the name of the reference Relative Viability assay in the \linkS4class{SummarizedExperiment}.
 #' @param ndigit_rounding integer specifying number of digits of rounding during calculations.
 #' Defaults to \code{4}.
 #'
 #' @return \code{BumpyMatrix} object with a new assay named \code{"Normalized"} containing \code{DataFrame}s 
 #' holding \code{RelativeViability} and \code{GRvalue}, as well as new assays named \code{RefRelativeViability}, \code{RefGRvalue}, and \code{DivisionTime} values.
 #'
+#' @family runDrugResponseProcessingPipelineFxns
 #' @export
 #'
 normalize_SE2 <- function(se, 
                           control_assay = "Controls", 
                           raw_treated_assay = "RawTreated", 
+                          normalized_assay = "Normalized", 
+                          ref_GR_assay = "RefGRvalue", 
+                          ref_RV_assay = "RefRelativeViability", 
                           ndigit_rounding = 4) {
 
   # Assertions
@@ -529,10 +539,10 @@ normalize_SE2 <- function(se,
 
       out[[nrow(se) * (j - 1) + i]] <- normalized
 
-      ###########################
-      ref_df <- all_readouts_df # TODO: keep this here for now in order to make comparisons between old and new method.
-      # !!!!!!!!!!!!HOWEVER, THE ABOVE LINE SHOULD LATER BE DELETED!!!!!!!!
-      ###########################
+      ## This assignment can be used to make comparisons between old and refactored methods (GDR-621).
+      ## However, the aggregation in this manner technically biases the references to their 
+      ## corresponding treated entries, so is incorrect.
+      #ref_df <- all_readouts_df 
 
       ## Perform the calculations on all references.
       ## Then, take the mean to report the final reference normalized value.
@@ -556,10 +566,10 @@ normalize_SE2 <- function(se,
     row = out$row_id, 
     col = out$col_id)
 
-  SummarizedExperiment::assays(se)[["Normalized"]] <- norm
+  SummarizedExperiment::assays(se)[[normalized_assay]] <- norm
 
-  SummarizedExperiment::assays(se)[["RefGRvalue"]] <- ref_GR_value
-  SummarizedExperiment::assays(se)[["RefRelativeViability"]] <- ref_rel_viability
+  SummarizedExperiment::assays(se)[[ref_GR_assay]] <- ref_GR_value
+  SummarizedExperiment::assays(se)[[ref_RV_assay]] <- ref_rel_viability
   SummarizedExperiment::assays(se)[["DivisionTime"]] <- div_time
 
   return(se)

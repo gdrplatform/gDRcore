@@ -78,7 +78,7 @@ identify_keys <- function(df_se_mae) {
 #' Group columns from a data.frame that correspond to different 
 #'
 #' @param df_ a data.frame to identify keys for.
-#' @param discard_keys character vector of keys to exclude from the returned list. 
+#' @param nested_keys character vector of keys to exclude from the returned list. 
 #' The keys discarded should be identical to the keys in the third
 #' dimension of the SummarizedExperiment.
 #' Defaults to the \code{"Barcode"} and the \code{masked} identifier.

@@ -72,8 +72,8 @@ create_SE <-
 
 #' Create a SummarizedExperiment object
 #'
-#' Create a SummarizedExperiment object from a data.frame where the data.frame contains treatments on rows,
-#' conditions are on columns. 
+#' Create a SummarizedExperiment object from a data.frame, where the data.frame contains treatments on rows,
+#' and conditions on columns. 
 #'
 #' @param df_ data.frame of raw drug response data containing both treated and untreated values.
 #' @param readout string of the name containing the cell viability readout values.
@@ -103,6 +103,7 @@ create_SE <-
 #' # using the nested_keys
 #' create_SE2(df_, nested_keys = c("Barcode", "masked"))
 #'
+#' @family runDrugResponseProcessingPipelineFxns
 #' @export
 #'
 create_SE2 <- function(df_, 

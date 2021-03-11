@@ -20,7 +20,7 @@ create_control_df <- function(df_, control_cols, control_mean_fxn, out_col_name)
     colnames(df_)[grepl("CorrectedReadout", colnames(df_))] <- out_col_name
 
     # Aggregate by all non-readout data (the metadata).
-    df_ <- aggregate(df_[, out_col_name, drop = FALSE], 
+    df_ <- stats::aggregate(df_[, out_col_name, drop = FALSE], 
                      by = as.list(df_[, colnames(df_) != out_col_name, drop = FALSE]),
 	             function(x) control_mean_fxn(x))
   }

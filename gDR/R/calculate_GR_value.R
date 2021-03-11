@@ -26,7 +26,7 @@
 #' Note that it is expected that the \code{ref_div_time} and \code{duration} are reported in the same units.
 #'
 #' @seealso normalize_SE2
-#' @rdname calculate_GR_value
+#' @name calculate_GR_value
 NULL
 
 
