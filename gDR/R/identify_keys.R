@@ -32,10 +32,12 @@ identify_keys <- function(df_se_mae) {
             DoseResp = setdiff(all_keys,  "Barcode"),
             ref_Endpoint = setdiff(all_keys, c("Concentration",
                                             gDRutils::get_identifier("drug"),
-                                            gDRutils::get_identifier("drugname"))),
+                                            gDRutils::get_identifier("drugname"),
+                                            gDRutils::get_identifier("drug_moa"))),
             untrt_Endpoint = all_keys[ c(-agrep("Concentration", all_keys),
                                             -agrep(gDRutils::get_identifier("drug"), all_keys),
-                                            -agrep(gDRutils::get_identifier("drugname"), all_keys))])
+                                            -agrep(gDRutils::get_identifier("drugname"), all_keys),
+                                            -agrep(gDRutils::get_identifier("drug_moa"), all_keys))])
     keys[["Day0"]] <- setdiff(keys[["untrt_Endpoint"]], gDRutils::get_identifier("duration"))
     keys <- lapply(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),
         gDRutils::get_header("normalized_results"), "Template", gDRutils::get_identifier("WellPosition"), gDRutils::get_header("averaged_results"),
@@ -104,8 +106,9 @@ identify_keys2 <- function(df_,
 
   x <- c("Concentration", 
     gDRutils::get_identifier("drug"), 
-    gDRutils::get_identifier("drugname"))
-  pattern <- sprintf("%s|%s|%s", x[1], x[2], x[3])
+    gDRutils::get_identifier("drugname"),
+    gDRutils::get_identifier("drug_moa"))
+  pattern <- sprintf("%s|%s|%s|%s", x[1], x[2], x[3], x[4])
   pattern_keys <- grepl(pattern, all_keys)
   
   duration_col <- gDRutils::get_identifier("duration")

@@ -19,12 +19,12 @@
 #' @seealso identify_keys2
 #' @export
 #'
+
 map_df <- function(trt_md, 
                    ref_md, 
                    override_controls = NULL, 
                    ref_cols, 
                    ref_type = c("Day0", "untrt_Endpoint", "ref_Endpoint")) {
-
   # Assertions:
   checkmate::assert_class(trt_md, "data.frame")
   checkmate::assert_class(ref_md, "data.frame")
