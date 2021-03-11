@@ -241,8 +241,8 @@ create_SE2 <- function(df_,
             # Merging by barcodes will result in NAs. 
             ### REMOVING THIS PART: I don't want to assign data to a plate that doesn't have them. 
             ###        We will deal with the NA later in normalization
-            ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] <- mean(ref_df$UntrtReadout, na.rm = TRUE)
-            ref_df$RefReadout[is.na(ref_df$RefReadout)] <- mean(ref_df$RefReadout, na.rm = TRUE)
+            # ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] <- mean(ref_df$UntrtReadout, na.rm = TRUE)
+            # ref_df$RefReadout[is.na(ref_df$RefReadout)] <- mean(ref_df$RefReadout, na.rm = TRUE)
             # TODO: Should this also use the control_mean_fxn? 
             
 	    }   

@@ -506,23 +506,32 @@ normalize_SE2 <- function(se,
       trt_df <- trt[i, j][[1]]
 
       if (length(trt_df) == 0L || nrow(trt_df) == 0L) {
-	next # skip if no data
+	    next # skip if no data
         # TODO: Does this still need to initialize an empty DFrame with appropriate colnames?
       }
 
       if (length(ref_df) == 0L || nrow(ref_df) == 0L) {
-	futile.logger::flog.warn(
+	    futile.logger::flog.warn(
           sprintf("Missing control data. Treatment Id: '%s' Cell_line Id: '%s'", 
             rownames(se)[i], colnames(se)[j])
         )
-	next
+	    next
       }
-      
+
+      # pad the ref_df for missing values based on nested_keys
+      ref_df_complete <- unique(trt_df[,nested_keys,drop=F])
+      ref_df_complete <- merge(ref_df_complete, ref_df, by = nested_keys)
+      data_columns <- setdiff(colnames(ref_df), nested_keys)
+      ref_df_mean <- lapply(ref_df[, data_columns, drop=F], function(x) mean(x, na.rm = T))
+      for (col in data_columns) {
+          ref_df_complete[is.na(ref_df_complete[,col]), col] <- ref_df_mean[[col]]
+      }
+
       # Merge to ensure that the proper discard_key values are mapped.
       all_readouts_df <- merge(trt_df, 
-        ref_df, 
-	by = nested_keys,
-	all.x = TRUE)
+        ref_df_complete, 
+        by = nested_keys,
+        all.x = TRUE)
 
       normalized <- S4Vectors::DataFrame(matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols)))
       colnames(normalized) <- c(norm_cols)
@@ -553,11 +562,11 @@ normalize_SE2 <- function(se,
 
       ## Perform the calculations on all references.
       ## Then, take the mean to report the final reference normalized value.
-      RV_vec <- ref_df$RefReadout/ref_df$UntrtReadout
+      RV_vec <- ref_df_complete$RefReadout/ref_df_complete$UntrtReadout
       GR_vec <- calculate_GR_value(rel_viability = RV_vec, 
-        corrected_readout = ref_df$RefReadout, 
-        day0_readout = ref_df$Day0Readout, 
-        untrt_readout = ref_df$UntrtReadout, 
+        corrected_readout = ref_df_complete$RefReadout, 
+        day0_readout = ref_df_complete$Day0Readout, 
+        untrt_readout = ref_df_complete$UntrtReadout, 
         ndigit_rounding = ndigit_rounding, 
         duration = duration, 
         ref_div_time = ref_div_time, 
