@@ -4,7 +4,8 @@
 #'
 #' @param df_ data.frame
 #' @param control_cols character vector of columns to include in the resulting control data.frame.  
-#' @param control_mean_fxn
+#' @param control_mean_fxn function indicating how to average controls.
+#' Defaults to \code{mean(x, trim = 0.25)}.
 #' @param out_col_name string of the output readout that will replace \code{CorrectedReadout}.
 #'
 #' @return data.frame of values aggregated by 
@@ -13,7 +14,10 @@
 #'
 #' @export
 #'
-create_control_df <- function(df_, control_cols, control_mean_fxn, out_col_name) {
+create_control_df <- function(df_, 
+                              control_cols, 
+                              control_mean_fxn = function(x) mean(x, trim = 0.25), 
+                              out_col_name) {
   if (nrow(df_) != 0L) {
     # Rename CorrectedReadout.
     df_ <- df_[, c("CorrectedReadout", intersect(control_cols, colnames(df_)))]

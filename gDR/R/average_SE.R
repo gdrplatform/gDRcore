@@ -119,11 +119,11 @@ average_SE2 <- function(se,
          p_trt_keys <- intersect(trt_keys, colnames(norm_df))
 	 std_cols <- c("GRvalue", "RelativeViability")
 
-	 avg_df <- aggregate(norm_df[!masked, std_cols],
+	 avg_df <- stats::aggregate(norm_df[!masked, std_cols],
 	   by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
 	   function(x) mean(x, na.rm = TRUE))
 
-	 std_df <- aggregate(norm_df[!masked, std_cols],
+	 std_df <- stats::aggregate(norm_df[!masked, std_cols],
 	   by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
 	   function(x) sd(x, na.rm = TRUE))
          colnames(std_df)[colnames(std_df) %in% std_cols] <-
