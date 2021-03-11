@@ -12,7 +12,7 @@ identify_keys2(
 \arguments{
 \item{df_}{a data.frame to identify keys for.}
 
-\item{discard_keys}{character vector of keys to exclude from the returned list. 
+\item{nested_keys}{character vector of keys to exclude from the returned list. 
 The keys discarded should be identical to the keys in the third
 dimension of the SummarizedExperiment.
 Defaults to the \code{"Barcode"} and the \code{masked} identifier.}

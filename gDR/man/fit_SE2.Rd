@@ -14,26 +14,36 @@ fit_SE2(
 )
 }
 \arguments{
-\item{se}{a \linkS4class{SummarizedExperiment} with averaged and normalized assays.
+\item{se}{a \linkS4class{SummarizedExperiment} with normalized, averaged assays.
 Corresponding assay names are specified by \code{averaged_assay}, \code{ref_GR_assay}, and \code{ref_RV_assy}.}
 
-\item{averaged_assay}{string of the name of the averaged assay in the \linkS4class{SummarizedExperiment}.}
+\item{averaged_assay}{string of the name of the averaged assay in the \linkS4class{SummarizedExperiment}.
+Defaults to \code{"Averaged"}.}
 
-\item{ref_GR_assay}{string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.}
+\item{ref_GR_assay}{string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.
+Defaults to \code{"RefGRvalue"}.}
 
-\item{ref_RV_assay}{string of the name of the reference Relative Viability assay in the \linkS4class{SummarizedExperiment}.}
+\item{ref_RV_assay}{string of the name of the reference Relative Viability assay in the \linkS4class{SummarizedExperiment}.
+Defaults to \code{"RefRelativeViability"}.}
 
-\item{metrics_assay}{string of the name of the metrics assay to output.}
+\item{metrics_assay}{string of the name of the metrics assay to output in the returned \linkS4class{SummarizedExperiment}.
+Defaults to \code{"Metrics"}.}
 
 \item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
 Defaults to \code{4}.}
 }
 \value{
-the original \linkS4class{SummarizedExperiment} with an additional assay named \code{metrics_assay}.
+the original \linkS4class{SummarizedExperiment} with an additional assay 
+containing fitting metrics named \code{metrics_assay}.
 }
 \description{
 Fit curves and obtain fit metrics from normalized, averaged drug response data.
 }
 \seealso{
-runDrugResponseProcessingPipeline2
+Other runDrugResponseProcessingPipelineFxns: 
+\code{\link{average_SE2}()},
+\code{\link{create_SE2}()},
+\code{\link{normalize_SE2}()},
+\code{\link{runDrugResponseProcessingPipeline2}()}
 }
+\concept{runDrugResponseProcessingPipelineFxns}

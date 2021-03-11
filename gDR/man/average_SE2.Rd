@@ -12,7 +12,8 @@ average_SE2(
 )
 }
 \arguments{
-\item{se}{a \linkS4class{SummarizedExperiment} with drug response data.}
+\item{se}{a \linkS4class{SummarizedExperiment} with drug response data that has a 
+\code{normalized_assay}.}
 
 \item{include_masked}{boolean indicating whether or not to include masked wells
 in the averaging. 
@@ -27,11 +28,18 @@ Defaults to \code{"Averaged"}.}
 }
 \value{
 a \linkS4class{SummarizedExperiment} with an additional assay 
-specified by \code{averaged_assay} with averaged data by treated keys.
+specified by \code{averaged_assay} containing normalized data with 
+mean and standard deviation calculations for each unique treatment in the nested
+\code{DataFrame}s.
 }
 \description{
-Average the normalized data per
+Average the normalized data within the nested \code{DataFrame}s.
 }
 \seealso{
-runDrugResponseProcessingPipeline2
+Other runDrugResponseProcessingPipelineFxns: 
+\code{\link{create_SE2}()},
+\code{\link{fit_SE2}()},
+\code{\link{normalize_SE2}()},
+\code{\link{runDrugResponseProcessingPipeline2}()}
 }
+\concept{runDrugResponseProcessingPipelineFxns}

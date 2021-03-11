@@ -34,8 +34,8 @@ and reference readouts live in an assay called \code{"Controls"}.
 and is pasted together.
 }
 \description{
-Create a SummarizedExperiment object from a data.frame where the data.frame contains treatments on rows,
-conditions are on columns.
+Create a SummarizedExperiment object from a data.frame, where the data.frame contains treatments on rows,
+and conditions on columns.
 }
 \details{
 This is most commonly used in preparation for downstream normalization.
@@ -52,4 +52,11 @@ create_SE2(df_, nested_keys = c("Barcode", "masked"))
 }
 \seealso{
 normalize_SE2, runDrugResponseProcessingPipeline
+
+Other runDrugResponseProcessingPipelineFxns: 
+\code{\link{average_SE2}()},
+\code{\link{fit_SE2}()},
+\code{\link{normalize_SE2}()},
+\code{\link{runDrugResponseProcessingPipeline2}()}
 }
+\concept{runDrugResponseProcessingPipelineFxns}

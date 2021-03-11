@@ -8,15 +8,27 @@ normalize_SE2(
   se,
   control_assay = "Controls",
   raw_treated_assay = "RawTreated",
+  normalized_assay = "Normalized",
+  ref_GR_assay = "RefGRvalue",
+  ref_RV_assay = "RefRelativeViability",
   ndigit_rounding = 4
 )
 }
 \arguments{
 \item{se}{\code{BumpyMatrix} object with assays \code{"RawTreated"} and \code{"Controls"}.}
 
-\item{control_assay}{string containing the name of the assay representing the controls in the \code{se}.}
+\item{control_assay}{string containing the name of the assay representing the controls in the \code{se}.
+Defaults to \code{"Controls"}.}
 
-\item{raw_treated_assay}{string containing the name of the assay representing the raw treated data in the \code{se}.}
+\item{raw_treated_assay}{string containing the name of the assay representing the raw treated data in the \code{se}.
+Defaults to \code{"RawTreated"}.}
+
+\item{normalized_assay}{string of the assay name containing the normalized data.
+Defaults to \code{"Normalized"}.}
+
+\item{ref_GR_assay}{string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.}
+
+\item{ref_RV_assay}{string of the name of the reference Relative Viability assay in the \linkS4class{SummarizedExperiment}.}
 
 \item{ndigit_rounding}{integer specifying number of digits of rounding during calculations.
 Defaults to \code{4}.}
@@ -28,3 +40,11 @@ holding \code{RelativeViability} and \code{GRvalue}, as well as new assays named
 \description{
 Normalize drug response data from treated and untreated pairings.
 }
+\seealso{
+Other runDrugResponseProcessingPipelineFxns: 
+\code{\link{average_SE2}()},
+\code{\link{create_SE2}()},
+\code{\link{fit_SE2}()},
+\code{\link{runDrugResponseProcessingPipeline2}()}
+}
+\concept{runDrugResponseProcessingPipelineFxns}
