@@ -81,7 +81,7 @@ create_SE <-
 #' Defaults to \code{mean(x, trim = 0.25)}.
 #' @param nested_keys character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
 #' Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.
-#' @param override_controls named list containing defining factors in the treatments.
+#' @param override_untrt_controls named list containing defining factors in the treatments.
 #' Defaults to \code{NULL}. 
 #'
 #' @return A \linkS4class{SummarizedExperiment} object containing two asssays.
@@ -100,14 +100,14 @@ create_SE2 <- function(df_,
                        readout = "ReadoutValue", 
                        control_mean_fxn = function(x) {mean(x, trim = 0.25)}, 
                        nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")), 
-                       override_controls = NULL) {
+                       override_untrt_controls = NULL) {
 
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(readout)
   checkmate::assert_character(nested_keys, null.ok = TRUE)
 
-  Keys <- identify_keys2(df_, nested_keys, override_controls)
+  Keys <- identify_keys2(df_, nested_keys, override_untrt_controls)
 
   if (!(gDRutils::get_identifier("masked_tag") %in% colnames(df_))) {
     df_[, gDRutils::get_identifier('masked_tag')] <- FALSE
@@ -141,14 +141,14 @@ create_SE2 <- function(df_,
 
 
   ref_maps <- lapply(references, function(ref_type) {
-    map_df(treated, untreated, override_controls = override_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
+    map_df(treated, untreated, override_untrt_controls = override_untrt_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
   })
 
   if ("Gnumber_2" %in% colnames(treated)) {
     # Remove Gnumber_2, DrugName_2, and Concentration_2.
     ref_type <- "ref_Endpoint"
     Keys[["ref_type"]] <- setdiff(Keys[[ref_type]], 
-      c(names(override_controls), c("Gnumber_2", "DrugName_2", "Concentration_2")))
+      c(names(override_untrt_controls), c("Gnumber_2", "DrugName_2", "Concentration_2")))
 
     # Then look amongst the treated to fill any missing cotrt references.
     missing_cotrt <- vapply(ref_maps[[ref_type]], function(x) {length(x) == 0L}, TRUE)
@@ -218,38 +218,41 @@ create_SE2 <- function(df_,
       ref_type <- "ref_Endpoint"
       cotrt_ref <- ref_maps[[ref_type]][[trt]]  
       if (length(cotrt_ref) == 0L) {
-	# Set the cotrt reference to the untreated reference.
-	cotrt_df <- untrt_df 
-	colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df)), drop = FALSE] <- "RefReadout"
+        # Set the cotrt reference to the untreated reference.
+        cotrt_df <- untrt_df 
+        colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df)), drop = FALSE] <- "RefReadout"
       } else {
-	cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
-	cotrt_df <- create_control_df(
-	  cotrt_df, 
-	  control_cols = Keys[[ref_type]], 
-	  control_mean_fxn, 
-	  out_col_name = "RefReadout"
-	)
+        cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
+        cotrt_df <- create_control_df(
+        cotrt_df, 
+        control_cols = Keys[[ref_type]], 
+        control_mean_fxn, 
+        out_col_name = "RefReadout"
+	    )
       }
    
       ## Merge all data.frames together.
       # Try to merge by plate, but otherwise just use mean. 
       ref_df <- untrt_df
       if (nrow(cotrt_df) > 0L) {
-	merge_cols <- intersect(colnames(cotrt_df), nested_keys)
-	ref_df <- merge(untrt_df, cotrt_df[, c("RefReadout", merge_cols), drop = FALSE], by = merge_cols, all = TRUE)
+        merge_cols <- intersect(colnames(cotrt_df), nested_keys)
+        ref_df <- merge(untrt_df, cotrt_df[, c("RefReadout", merge_cols), drop = FALSE], by = merge_cols, all = TRUE)
         if (!all(sort(unique(cotrt_df$Barcode)) == sort(unique(untrt_df$Barcode)))) {
-          # Merging by barcodes will result in NAs. 
-	  ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] <- mean(ref_df$UntrtReadout, na.rm = TRUE)
-	  ref_df$RefReadout[is.na(ref_df$RefReadout)] <- mean(ref_df$RefReadout, na.rm = TRUE)
-	  # TODO: Should this also use the control_mean_fxn? 
-	}
+            # Merging by barcodes will result in NAs. 
+            ### REMOVING THIS PART: I don't want to assign data to a plate that doesn't have them. 
+            ###        We will deal with the NA later in normalization
+            ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] <- mean(ref_df$UntrtReadout, na.rm = TRUE)
+            ref_df$RefReadout[is.na(ref_df$RefReadout)] <- mean(ref_df$RefReadout, na.rm = TRUE)
+            # TODO: Should this also use the control_mean_fxn? 
+            
+	    }   
 	  
       } else {
-	ref_df$RefReadout <- ref_df$UntrtReadout
+	    ref_df$RefReadout <- ref_df$UntrtReadout
       }
 
       if (nrow(day0_df) > 0L) {
-	ref_df <- merge(day0_df[, setdiff(colnames(day0_df), nested_keys), drop = FALSE], ref_df)
+	    ref_df <- merge(day0_df[, setdiff(colnames(day0_df), nested_keys), drop = FALSE], ref_df)
       } else {
         ref_df$Day0Readout <- NA
       } 
