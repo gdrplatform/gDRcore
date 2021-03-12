@@ -46,12 +46,12 @@ fit_SE <- function(avgSE, studyConcThresh = 4) {
         for (j in colnames(metricsSE)) {
             df_ <- a_SE[[i, j]]
             if (!is.null(df_) && all(dim(df_) > 0)) { # studyConcThresh is embeded in RVGRfits
-                mSE_m[[i, j]] <- DataFrame(gDRutils::fit_curves(S4Vectors::DataFrame(df_),
+                mSE_m[[i, j]] <- S4Vectors::DataFrame(gDRutils::fit_curves(S4Vectors::DataFrame(df_),
                     e_0 = aCtrl_SE[[i, j]]$RefRelativeViability,
                     GR_0 = aCtrl_SE[[i, j]]$RefGRvalue,
                     n_point_cutoff = studyConcThresh))
             } else {
-                out <- DataFrame(matrix(NA, 0, length(gDRutils::get_header("response_metrics"))+2))
+                out <- S4Vectors::DataFrame(matrix(NA, 0, length(gDRutils::get_header("response_metrics"))+2))
                 colnames(out) <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
                 mSE_m[[i, j]] <- out
             }
