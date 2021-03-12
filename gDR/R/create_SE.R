@@ -90,18 +90,8 @@ create_SE <-
 #' \code{rownames} and \code{colnames} are made up of available metadata on treatments and conditions 
 #' and is pasted together.
 #'
-#' @seealso normalize_SE2, runDrugResponseProcessingPipeline
 #' @details 
 #' This is most commonly used in preparation for downstream normalization.
-#'
-#' @examples
-#' df_ <- DataFrame(
-#'   ReadoutValue = ,
-#'   DrugName = ,
-#'   masked)
-#' create_SE2(df_, nested_keys = NULL)
-#' # using the nested_keys
-#' create_SE2(df_, nested_keys = c("Barcode", "masked"))
 #'
 #' @family runDrugResponseProcessingPipelineFxns
 #' @export
@@ -227,10 +217,9 @@ create_SE2 <- function(df_,
       ref_type <- "ref_Endpoint"
       cotrt_ref <- ref_maps[[ref_type]][[trt]]  
       if (length(cotrt_ref) == 0L) {
-        # TODO: Can this be incorporated into create_control_df?
 	# Set the cotrt reference to the untreated reference.
 	cotrt_df <- untrt_df 
-	colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df))] <- "RefReadout"
+	colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df)), drop = FALSE] <- "RefReadout"
       } else {
 	cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
 	cotrt_df <- create_control_df(
@@ -246,7 +235,7 @@ create_SE2 <- function(df_,
       ref_df <- untrt_df
       if (nrow(cotrt_df) > 0L) {
 	merge_cols <- intersect(colnames(cotrt_df), nested_keys)
-	ref_df <- merge(untrt_df, cotrt_df[, c("RefReadout", merge_cols)], by = merge_cols, all = TRUE)
+	ref_df <- merge(untrt_df, cotrt_df[, c("RefReadout", merge_cols), drop = FALSE], by = merge_cols, all = TRUE)
         if (!all(sort(unique(cotrt_df$Barcode)) == sort(unique(untrt_df$Barcode)))) {
           # Merging by barcodes will result in NAs. 
 	  ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] <- mean(ref_df$UntrtReadout, na.rm = TRUE)
@@ -290,8 +279,8 @@ create_SE2 <- function(df_,
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
   ref_keep <- !colnames(ref_out) %in% c("row_id", "col_id")
 
-  treated_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out[, trt_keep], row = trt_out$row_id, col = trt_out$col_id)
-  reference_mat <- BumpyMatrix::splitAsBumpyMatrix(ref_out[, ref_keep], row = ref_out$row_id, col = ref_out$col_id)
+  treated_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out[, trt_keep, drop = FALSE], row = trt_out$row_id, col = trt_out$col_id)
+  reference_mat <- BumpyMatrix::splitAsBumpyMatrix(ref_out[, ref_keep, drop = FALSE], row = ref_out$row_id, col = ref_out$col_id)
 
   matsL <- list(RawTreated = treated_mat, Controls = reference_mat)
 
@@ -299,7 +288,7 @@ create_SE2 <- function(df_,
   experiment_md <- list(experiment_metadata = exp_md, df_ = df_, Keys = Keys)
 
   # Filter out to 'treated' conditions only.
-  treated_rowdata <- rowdata[rownames(treated_mat), ] 
+  treated_rowdata <- rowdata[rownames(treated_mat), , drop = FALSE] 
   
   # Assertions.
   stopifnot(nrow(treated_rowdata) > 0)

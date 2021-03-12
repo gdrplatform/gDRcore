@@ -75,9 +75,8 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 #'
 #' @param se a \linkS4class{SummarizedExperiment} with drug response data that has a 
 #' \code{normalized_assay}.
-#' @param include_masked boolean indicating whether or not to include masked wells
-#' in the averaging. 
-#' This is used as an override to whatever wells have been masked in the original data.
+#' @param override_masked boolean indicating whether or not to override the masked wells
+#' in the averaging and include all wells. 
 #' Defaults to \code{FALSE}.
 #' @param normalized_assay string of the assay name containing the normalized data.
 #' Defaults to \code{"Normalized"}.
@@ -97,7 +96,7 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 #' @export
 #'
 average_SE2 <- function(se, 
-                        include_masked = FALSE, 
+                        override_masked = FALSE, 
                         normalized_assay = "Normalized", 
                         averaged_assay = "Averaged") {
 
@@ -123,11 +122,15 @@ average_SE2 <- function(se,
        norm_df <- normalized[i, j][[1]]
 
        # bypass 'masked' filter
-       masked <- norm_df[[masked_tag_key]] & !include_masked
+       masked <- norm_df[[masked_tag_key]] & !override_masked
 
        if (nrow(norm_df[!masked, ]) > 1L) {
          p_trt_keys <- intersect(trt_keys, colnames(norm_df))
 	 std_cols <- c("GRvalue", "RelativeViability")
+         if (length(missing <-setdiff(std_cols, colnames(norm_df))) > 0L) {
+           stop(sprintf("missing expected columns in nested normalized dataframe: '%s'", 
+             paste0(missing, collapse = ", ")))
+         }
 
 	 avg_df <- stats::aggregate(norm_df[!masked, std_cols],
 	   by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 

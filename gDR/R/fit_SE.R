@@ -95,6 +95,12 @@ fit_SE2 <- function(se,
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_number(ndigit_rounding)
+  req_assays <- c(averaged_assay, ref_GR_assay, ref_RV_assay)
+  present <- req_assays %in% SummarizedExperiment::assays(se)
+  if (!all(present)) {
+    stop(sprintf("unable to find required assays: '%s'", 
+      paste0(req_assays[!present], collapse = ", ")))
+  }
 
   metric_cols <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
   out <- vector("list", nrow(se) * ncol(se))

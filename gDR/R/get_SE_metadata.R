@@ -6,14 +6,13 @@
 #' @param value named list of metadata for keys. 
 #' Names of list should represent key types and list values should contain key type values.
 #'
-#' @return \code{NULL} invisibly.
+#' @return \linkS4class{se} with added metadata.
 #'
 #' @seealso identify_keys2
 #' @export
 #'
 set_SE_keys <- function(se, value) {
   .set_SE_metadata(se, name = "Keys", value)
-  invisible(NULL)
 }
 
 
@@ -71,4 +70,5 @@ get_SE_keys <- function(se, key_type = NULL) {
     warning(sprintf("overwriting existing metadata entry: '%s'", name))
   }
   S4Vectors::metadata(se)[[name]] <- value
+  se
 }

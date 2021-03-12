@@ -265,7 +265,7 @@ normalize_SE <- function(df_raw_data,
                     by = as.list(df_ref[, -1, drop = FALSE]),
                     function(x) control_mean_fct(x))
                 } else {
-                  df_ref <- DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
+                  df_ref <- S4Vectors::DataFrame(RefReadout = control_mean_fct(df_ref$RefReadout))
                 }
 
                 # check if all control have matching co-treated wells are on the same plate
@@ -421,7 +421,7 @@ normalize_SE <- function(df_raw_data,
             normSE_n[[i, j]] <- merge(normSE_n[[i, j]],
                 df_merged[, c(colnames(normSE_n[[i, j]]), 'GRvalue', 'RelativeViability')],
                 by = colnames(normSE_n[[i, j]]))
-            normSE_c[[i, j]] <- DataFrame(df_ctrl)
+            normSE_c[[i, j]] <- S4Vectors::DataFrame(df_ctrl)
         }
     }
     metadata(normSE) <- c(metadata(normSE),
@@ -471,6 +471,10 @@ normalize_SE2 <- function(se,
 
   # Assertions
   checkmate::assert_number(ndigit_rounding)
+  if (!c(raw_treated_assay, control_assay) %in% SummarizedExperiment::assays(se)) {
+    stop(sprintf("missing expected assays: '%s'", 
+      setdiff(c(raw_treated_assay, control_assay), SummarizedExperiment::assays(se))))
+  }
 
   refs <- SummarizedExperiment::assays(se)[[control_assay]]
   trt <- SummarizedExperiment::assays(se)[[raw_treated_assay]]
