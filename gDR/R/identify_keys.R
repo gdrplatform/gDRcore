@@ -95,7 +95,7 @@ identify_keys <- function(df_se_mae) {
 #' @export
 #'
 identify_keys2 <- function(df_,  
-                           nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))
+                           nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
                            override_controls = NULL) {
   # Assertions:
   stopifnot(inherits(df_, c("data.frame", "DataFrame")))

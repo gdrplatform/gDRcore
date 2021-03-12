@@ -28,7 +28,7 @@ getMetaData <- function(data, discard_keys = NULL) {
 
   cell_id <- gDRutils::get_identifier("cellline")
 
-  data <- DataFrame(data)
+  data <- S4Vectors::DataFrame(data)
   all_data_cols <- colnames(data)
 
   # Separate out metadata versus data variables.
