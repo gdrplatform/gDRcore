@@ -6,7 +6,7 @@
 \usage{
 average_SE2(
   se,
-  include_masked = FALSE,
+  override_masked = FALSE,
   normalized_assay = "Normalized",
   averaged_assay = "Averaged"
 )
@@ -15,9 +15,8 @@ average_SE2(
 \item{se}{a \linkS4class{SummarizedExperiment} with drug response data that has a 
 \code{normalized_assay}.}
 
-\item{include_masked}{boolean indicating whether or not to include masked wells
-in the averaging. 
-This is used as an override to whatever wells have been masked in the original data.
+\item{override_masked}{boolean indicating whether or not to override the masked wells
+in the averaging and include all wells. 
 Defaults to \code{FALSE}.}
 
 \item{normalized_assay}{string of the assay name containing the normalized data.
@@ -34,6 +33,10 @@ mean and standard deviation calculations for each unique treatment in the nested
 }
 \description{
 Average the normalized data within the nested \code{DataFrame}s.
+}
+\details{
+Expects that \code{get_SE_keys(se)} will have values for both 
+\code{"Trt"} and \code{"masked_tag"}.
 }
 \seealso{
 Other runDrugResponseProcessingPipelineFxns: 

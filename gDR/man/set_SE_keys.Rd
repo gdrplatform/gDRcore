@@ -13,7 +13,7 @@ set_SE_keys(se, value)
 Names of list should represent key types and list values should contain key type values.}
 }
 \value{
-\code{NULL} invisibly.
+\linkS4class{se} with added metadata.
 }
 \description{
 Set metadata for keys in SummarizedExperiment object metadata.

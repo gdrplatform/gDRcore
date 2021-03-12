@@ -40,19 +40,7 @@ and conditions on columns.
 \details{
 This is most commonly used in preparation for downstream normalization.
 }
-\examples{
-df_ <- DataFrame(
-  ReadoutValue = ,
-  DrugName = ,
-  masked)
-create_SE2(df_, nested_keys = NULL)
-# using the nested_keys
-create_SE2(df_, nested_keys = c("Barcode", "masked"))
-
-}
 \seealso{
-normalize_SE2, runDrugResponseProcessingPipeline
-
 Other runDrugResponseProcessingPipelineFxns: 
 \code{\link{average_SE2}()},
 \code{\link{fit_SE2}()},

@@ -6,7 +6,8 @@
 \usage{
 identify_keys2(
   df_,
-  nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag"))
+  nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
+  override_controls = NULL
 )
 }
 \arguments{
@@ -16,6 +17,9 @@ identify_keys2(
 The keys discarded should be identical to the keys in the third
 dimension of the SummarizedExperiment.
 Defaults to the \code{"Barcode"} and the \code{masked} identifier.}
+
+\item{override_controls}{named list containing defining factors in the treatments.
+Defaults to \code{NULL}.}
 }
 \value{
 named list of key types and their corresponding key values.

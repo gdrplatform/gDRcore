@@ -10,7 +10,7 @@ runDrugResponseProcessingPipeline2(
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
   nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
   override_controls = NULL,
-  include_masked = FALSE,
+  override_masked = FALSE,
   ndigit_rounding = 4,
   control_assay = "Controls",
   raw_treated_assay = "RawTreated",
@@ -35,9 +35,8 @@ Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.}
 \item{override_controls}{named list containing defining factors in the treatments.
 Defaults to \code{NULL}.}
 
-\item{include_masked}{boolean indicating whether or not to include masked wells
-in the averaging.
-This is used as an override to whatever wells have been masked in the original data.
+\item{override_masked}{boolean indicating whether or not to override the masked wells
+in the averaging and include all wells. 
 Defaults to \code{FALSE}.}
 
 \item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
