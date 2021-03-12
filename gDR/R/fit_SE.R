@@ -28,7 +28,7 @@ fit_SE <- function(avgSE, studyConcThresh = 4) {
     stopifnot(is.numeric(studyConcThresh))
     # this is not used as we enforce the same conditions as the input SE; not collapsing allowed
     # if (is.null(DoseRespKeys)) {
-    #     if ("Keys" %in% names(metadata(avgSE))) DoseResp = metadata(avgSE)$Keys$DoseResp
+    #     if ("Keys" %in% names(S4Vectors::metadata(avgSE))) DoseResp = S4Vectors::metadata(avgSE)$Keys$DoseResp
     #     else DoseRespKeys = identify_keys(avgSE)$DoseResp
     # } else {
     #     metadata(avgSE)$Keys$DoseResp = DoseRespKeys

@@ -8,8 +8,7 @@ test_that("calculate_GR_value throws expected errors", {
                      untrt_readout = readouts,
                      ndigit_rounding = 4,
                      duration = duration, 
-                     ref_div_time = duration/2)
-  )
+                     ref_div_time = duration/2))
 })
 
 

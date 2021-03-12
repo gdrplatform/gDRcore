@@ -37,23 +37,23 @@ test_that("identify_keys2 works", {
   )
 
   df_ <- data.frame(matrix(0, nrow = 1, ncol = length(cols)))
-  df_$DrugName <- gDRutils::get_identifier("untreated_tag")[1] 
   colnames(df_) <- cols
+  df_$DrugName <- gDRutils::get_identifier("untreated_tag")[1] 
 
-  k1 <- identify_keys2(df_, discard_keys = NULL)
+  k1 <- identify_keys2(df_, nested_keys = NULL)
   expect_equal(sort(k1[["Trt"]]), sort(c(cl, misc, d_id1, d_ids, duration)))
-  expect_equal(k1[["ref_Endpoint"]], sort(c(cl, misc, d_ids, duration)))
-  expect_equal(k1[["untrt_Endpoint"]], sort(c(cl, misc, duration)))
-  expect_equal(k1[["Day0"]], sort(c(cl, misc)))
+  expect_equal(sort(k1[["ref_Endpoint"]]), sort(c(cl, misc, d_ids, duration)))
+  expect_equal(sort(k1[["untrt_Endpoint"]]), sort(c(cl, misc, duration)))
+  expect_equal(sort(k1[["Day0"]]), sort(c(cl, misc)))
 
-  # Discard_keys argument works.
-  discard_key <- "Barcode"
-  k2 <- identify_keys2(df_, discard_keys = discard_key)
-  expect_equal(k1[!names(k1) %in% c("Trt", "discard_keys")], k2[!names(k2) %in% c("Trt", "discard_keys")])
-  expect_equal(setdiff(k1$Trt, k2$Trt), discard_key)
+  # nested_keys argument works.
+  nested_key <- "Barcode"
+  k2 <- identify_keys2(df_, nested_keys = nested_key)
+  expect_equal(k1[!names(k1) %in% c("Trt", "nested_keys")], k2[!names(k2) %in% c("Trt", "nested_keys")])
+  expect_equal(setdiff(k1$Trt, k2$Trt), nested_key)
 
   # Remove NA keys.
   df_$E2 <- NA
-  k3 <- identify_keys2(df_, discard_keys = NULL)
+  k3 <- identify_keys2(df_, nested_keys = NULL)
   expect_equal(setdiff(k1[["untrt_Endpoint"]], k3[["untrt_Endpoint"]]), "E2")
 })

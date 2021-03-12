@@ -7,5 +7,5 @@ test_that(".create_mapping_factors works as expected", {
   new_len <- nrow(rowdata) * nrow(coldata)
   expect_equal(nrow(mf), new_len)
   expect_equal(rownames(mf), as.character(seq(new_len)))
-  expect_equal(ncol(mf), ncol(rowdata) + ncol(coldata))
+  expect_equal(ncol(mf), ncol(rowdata) + ncol(coldata) + 2)
 })

@@ -18,14 +18,14 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 
     avgSE <- normSE
     if (is.null(TrtKeys)) {
-        if ("Keys" %in% names(metadata(normSE))) {
-          TrtKeys <- metadata(normSE)$Keys$Trt
-          TrtKeys <- setdiff(TrtKeys, metadata(normSE)$Keys$discard_keys)
+        if ("Keys" %in% names(S4Vectors::metadata(normSE))) {
+          TrtKeys <- S4Vectors::metadata(normSE)$Keys$Trt
+          TrtKeys <- setdiff(TrtKeys, S4Vectors::metadata(normSE)$Keys$discard_keys)
         } else {
           TrtKeys <- identify_keys(normSE)$Trt
         }
     }
-    metadata(normSE)$Keys$Trt <- TrtKeys
+    S4Vectors::metadata(normSE)$Keys$Trt <- TrtKeys
 
     SummarizedExperiment::assay(avgSE, "Averaged") <- SummarizedExperiment::assay(avgSE, "Normalized")
     avgSE <- aapply(avgSE, function(x) {

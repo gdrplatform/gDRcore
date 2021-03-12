@@ -1,3 +1,5 @@
+skip("obsolete; refactored runDrugResponsePipeline2 as per GDR-621")
+
 library(testthat)
 context("Test update_experiment_metadata")
 

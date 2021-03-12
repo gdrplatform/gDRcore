@@ -424,7 +424,7 @@ normalize_SE <- function(df_raw_data,
             normSE_c[[i, j]] <- S4Vectors::DataFrame(df_ctrl)
         }
     }
-    metadata(normSE) <- c(metadata(normSE),
+    S4Vectors::metadata(normSE) <- c(S4Vectors::metadata(normSE),
             list(df_raw_data = df_raw_data,
                 Keys = Keys,
                 row_maps = list(end = row_maps_end,
@@ -471,9 +471,9 @@ normalize_SE2 <- function(se,
 
   # Assertions
   checkmate::assert_number(ndigit_rounding)
-  if (!c(raw_treated_assay, control_assay) %in% SummarizedExperiment::assays(se)) {
+  if (!all(c(raw_treated_assay, control_assay) %in% names(SummarizedExperiment::assays(se)))) {
     stop(sprintf("missing expected assays: '%s'", 
-      setdiff(c(raw_treated_assay, control_assay), SummarizedExperiment::assays(se))))
+      setdiff(c(raw_treated_assay, control_assay), names(SummarizedExperiment::assays(se)))))
   }
 
   refs <- SummarizedExperiment::assays(se)[[control_assay]]
