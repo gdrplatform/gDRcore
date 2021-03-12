@@ -259,8 +259,9 @@ create_SE2 <- function(df_,
         
       } else {
         # Set the cotrt reference to the untreated reference.
-        ##### SHOULD THAT BE NA if not found ??
+        ##### NA if not found 
         cotrt_df <- untrt_df 
+        cotrt_df$UntrtReadout = NA
         colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df))] <- "RefReadout"
         
       }
