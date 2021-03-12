@@ -518,7 +518,7 @@ normalize_SE2 <- function(se,
 	    next
       }
 
-      # pad the ref_df for missing values based on nested_keys
+      # pad the ref_df for missing values based on nested_keys (uses mean across all available values)
       ref_df_complete <- unique(trt_df[,nested_keys,drop=F])
       ref_df_complete <- merge(ref_df_complete, ref_df, by = nested_keys)
       data_columns <- setdiff(colnames(ref_df), nested_keys)

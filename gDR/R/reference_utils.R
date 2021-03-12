@@ -32,9 +32,9 @@ create_control_df <- function(df_,
 }
 
 
-#' Create a control dataframe for a treatment-cell line combination.
+#' Create a control dataframe for a treatment-cell line combination with inferred data.
 #'
-#' Create an aggregated control data.frame based on infering a given concentration. 
+#' Create an aggregated control data.frame based on inferring a given concentration usign a sigmoidal fit. 
 #'
 #' @param df_ data.frame
 #' @param infer_concentration concentration at which the \code{out_col_name} should be evaluated.
@@ -60,12 +60,12 @@ infer_control_df <- function(df_,
 
     # Aggregate by all non-readout data (the metadata).
     df_agg <- unique(df_[, !(colnames(df_) %in% c("CorrectedReadout", "Concentration", "masked")), drop = FALSE])
-    inferred_value = array(NA, nrow(df_agg))
+    inferred_value <- array(NA, nrow(df_agg))
     for (i in seq_len(nrow(df_agg))) {
         idx <- apply(df_[, colnames(df_agg)] == df_agg[array(i, nrow(df_)), ,drop = F], 1, all)
-        inferred_value[i] = extrapolate_references(df_[idx, ], infer_concentration)
+        inferred_value[i] <- extrapolate_references(df_[idx, ], infer_concentration)
     }
-    df_ = cbind(df_agg, data.frame(inferred_value))
+    df_ <- cbind(df_agg, data.frame(inferred_value))
     # Rename inferred_value.
     colnames(df_)[grepl("inferred_value", colnames(df_))] <- out_col_name
   }

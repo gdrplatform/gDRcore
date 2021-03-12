@@ -143,11 +143,13 @@ create_SE2 <- function(df_,
   ref_maps <- lapply(references, function(ref_type) {
     map_df(treated, untreated, override_untrt_controls = override_untrt_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
   })
-  ref_maps[['cotrt_ref_Endpoint']] = NULL
 
+  # creates another list for the co-treatment end points that are missing
+  ref_maps[['cotrt_ref_Endpoint']] <- NULL
+  # focus on cases where the reference may be as primary drug (common in co-treatment experiments)
   if (paste0(gDRutils::get_identifier('drug'), '_2') %in% colnames(treated)) {
     
-    # TODO: deal with override_untrt_controls later
+    # NOTE: may have to deal with override_untrt_controls 
 
     ref_type <- "ref_Endpoint"
     missing_cotrt <- vapply(ref_maps[[ref_type]], function(x) {length(x) == 0L}, TRUE)
@@ -157,7 +159,7 @@ create_SE2 <- function(df_,
         # try to find the co-treated reference among treated data (with Drug/Drug_2 swap)    
         pseudo_untreated <- treated[treated$Concentration_2 == 0,]
         # remove Concentration as is will have to be matched with the Concentration
-        pseudo_untreated$Concentration_2 = NULL 
+        pseudo_untreated$Concentration_2 <- NULL 
         
         # swap columns related to drug and drug_2
         idx_1 <- which(colnames(pseudo_untreated) %in% 
@@ -168,22 +170,13 @@ create_SE2 <- function(df_,
             paste0(c(gDRutils::get_identifier("drug"), 
                 gDRutils::get_identifier("drugname"),
                 gDRutils::get_identifier("drug_moa")), '_2'))
-        colnames(pseudo_untreated)[idx_1] = paste0(colnames(pseudo_untreated)[idx_1], '_2')
-        colnames(pseudo_untreated)[idx_2] = gsub('_2', '', colnames(pseudo_untreated)[idx_2])
-    
-        # missing_mappings <- names(cotrt_endpoint_map)[missing_cotrt]
-        # missing_trt_mappings <- treated[treated$groupings %in% names(missing_mappings)]
+        colnames(pseudo_untreated)[idx_1] <- paste0(colnames(pseudo_untreated)[idx_1], '_2')
+        colnames(pseudo_untreated)[idx_2] <- gsub('_2', '', colnames(pseudo_untreated)[idx_2])
 
         ref_maps[['cotrt_ref_Endpoint']] <- map_df(treated[missing_cotrt,], pseudo_untreated, 
             override_untrt_controls = override_untrt_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
 
-    #   # Fill found mappings.
-    #   for (grp in names(missing_cotrt_endpoint_map)) {
-    #     if (length(missing_cotrt_endpoint_map[[grp]]) != 0L) {
-    #       cotrt_endpoint_map[grp] <- missing_cotrt_endpoint_map[[grp]]
-    #     }
-    #   }
-    }
+    } # we may be able to extend to other cases if applicable
   }
 
   ## TODO: Check for failed cotreatment mappings. 
@@ -202,7 +195,6 @@ create_SE2 <- function(df_,
     trt_df <- dfs[groupings == trt, , drop = FALSE]  
 
     ref_df <- NULL
-    # refType2Readout <- list("untrt_Endpoint" = "UntrtReadout", "Day0" = "Day0Readout", "ref_Endpoint" = "RefReadout")
     if (nrow(trt_df) > 0L) {
 
       ref_type <- "untrt_Endpoint"
@@ -258,10 +250,9 @@ create_SE2 <- function(df_,
 
         
       } else {
-        # Set the cotrt reference to the untreated reference.
-        ##### NA if not found 
+        # Set the cotrt reference to NA if not found 
         cotrt_df <- untrt_df 
-        cotrt_df$UntrtReadout = NA
+        cotrt_df$UntrtReadout <- NA
         colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df))] <- "RefReadout"
         
       }
@@ -274,11 +265,8 @@ create_SE2 <- function(df_,
         ref_df <- merge(untrt_df, cotrt_df[, c("RefReadout", merge_cols), drop = FALSE], by = merge_cols, all = TRUE)
         if (!all(sort(unique(cotrt_df$Barcode)) == sort(unique(untrt_df$Barcode)))) {
             # Merging by barcodes will result in NAs. 
-            ### REMOVING THIS PART: I don't want to assign data to a plate that doesn't have them. 
-            ###        We will deal with the NA later in normalization
-            # ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] <- mean(ref_df$UntrtReadout, na.rm = TRUE)
-            # ref_df$RefReadout[is.na(ref_df$RefReadout)] <- mean(ref_df$RefReadout, na.rm = TRUE)
-            # TODO: Should this also use the control_mean_fxn? 
+            ### It is ok as we won't assign data to a plate that doesn't have them. 
+            ###        We deal with the NA later in the normalization function
             
 	    }   
 	  
