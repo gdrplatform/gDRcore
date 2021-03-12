@@ -144,14 +144,31 @@ create_SE2 <- function(df_,
     map_df(treated, untreated, override_untrt_controls = override_untrt_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
   })
 
-  if ("Gnumber_2" %in% colnames(treated)) {
-    # Remove Gnumber_2, DrugName_2, and Concentration_2.
+  if (paste0(gDRutils::get_identifier('drug'), '_2') %in% colnames(treated)) {
+    # check if the co-treated reference if among treated data (with Drug/Drug_2 swap)
+    
+    pseudo_untreated = treated[treated$Concentration_2 == 0,]
+    pseudo_untreated$Concentration_2 = NULL
     ref_type <- "ref_Endpoint"
-    Keys[["ref_type"]] <- setdiff(Keys[[ref_type]], 
-      c(names(override_untrt_controls), c("Gnumber_2", "DrugName_2", "Concentration_2")))
+    # swap columns related to drug and drug_2
+    idx_1 = which(colnames(pseudo_untreated) %in% 
+        c(gDRutils::get_identifier("drug"), 
+            gDRutils::get_identifier("drugname"),
+            gDRutils::get_identifier("drug_moa")))
+    idx_2 = which(colnames(pseudo_untreated) %in% 
+        paste0(c(gDRutils::get_identifier("drug"), 
+            gDRutils::get_identifier("drugname"),
+            gDRutils::get_identifier("drug_moa")), '_2'))
+    colnames(pseudo_untreated)[idx_1] = paste0(colnames(pseudo_untreated)[idx_1], '_2')
+    colnames(pseudo_untreated)[idx_2] = gsub('_2', '', colnames(pseudo_untreated)[idx_2])
+    
+    # deal with override_untrt_controls later
+
+    missing_cotrt <- vapply(ref_maps[[ref_type]], function(x) {length(x) == 0L}, TRUE)
+    map_df(treated[missing_cotrt,], pseudo_untreated, 
+        override_untrt_controls = override_untrt_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
 
     # Then look amongst the treated to fill any missing cotrt references.
-    missing_cotrt <- vapply(ref_maps[[ref_type]], function(x) {length(x) == 0L}, TRUE)
     if (any(missing_cotrt)) {
       missing_mappings <- names(cotrt_endpoint_map)[missing_cotrt]
       missing_trt_mappings <- treated[treated$groupings %in% names(missing_mappings)]
