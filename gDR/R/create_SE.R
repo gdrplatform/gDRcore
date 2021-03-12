@@ -143,44 +143,46 @@ create_SE2 <- function(df_,
   ref_maps <- lapply(references, function(ref_type) {
     map_df(treated, untreated, override_untrt_controls = override_untrt_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
   })
+  ref_maps[['cotrt_ref_Endpoint']] = NULL
 
   if (paste0(gDRutils::get_identifier('drug'), '_2') %in% colnames(treated)) {
-    # check if the co-treated reference if among treated data (with Drug/Drug_2 swap)
     
-    pseudo_untreated = treated[treated$Concentration_2 == 0,]
-    pseudo_untreated$Concentration_2 = NULL
+    # TODO: deal with override_untrt_controls later
+
     ref_type <- "ref_Endpoint"
-    # swap columns related to drug and drug_2
-    idx_1 = which(colnames(pseudo_untreated) %in% 
-        c(gDRutils::get_identifier("drug"), 
-            gDRutils::get_identifier("drugname"),
-            gDRutils::get_identifier("drug_moa")))
-    idx_2 = which(colnames(pseudo_untreated) %in% 
-        paste0(c(gDRutils::get_identifier("drug"), 
-            gDRutils::get_identifier("drugname"),
-            gDRutils::get_identifier("drug_moa")), '_2'))
-    colnames(pseudo_untreated)[idx_1] = paste0(colnames(pseudo_untreated)[idx_1], '_2')
-    colnames(pseudo_untreated)[idx_2] = gsub('_2', '', colnames(pseudo_untreated)[idx_2])
-    
-    # deal with override_untrt_controls later
-
     missing_cotrt <- vapply(ref_maps[[ref_type]], function(x) {length(x) == 0L}, TRUE)
-    map_df(treated[missing_cotrt,], pseudo_untreated, 
-        override_untrt_controls = override_untrt_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
-
+    
     # Then look amongst the treated to fill any missing cotrt references.
     if (any(missing_cotrt)) {
-      missing_mappings <- names(cotrt_endpoint_map)[missing_cotrt]
-      missing_trt_mappings <- treated[treated$groupings %in% names(missing_mappings)]
+        # try to find the co-treated reference among treated data (with Drug/Drug_2 swap)    
+        pseudo_untreated <- treated[treated$Concentration_2 == 0,]
+        # remove Concentration as is will have to be matched with the Concentration
+        pseudo_untreated$Concentration_2 = NULL 
+        
+        # swap columns related to drug and drug_2
+        idx_1 <- which(colnames(pseudo_untreated) %in% 
+            c(gDRutils::get_identifier("drug"), 
+                gDRutils::get_identifier("drugname"),
+                gDRutils::get_identifier("drug_moa")))
+        idx_2 <- which(colnames(pseudo_untreated) %in% 
+            paste0(c(gDRutils::get_identifier("drug"), 
+                gDRutils::get_identifier("drugname"),
+                gDRutils::get_identifier("drug_moa")), '_2'))
+        colnames(pseudo_untreated)[idx_1] = paste0(colnames(pseudo_untreated)[idx_1], '_2')
+        colnames(pseudo_untreated)[idx_2] = gsub('_2', '', colnames(pseudo_untreated)[idx_2])
+    
+        # missing_mappings <- names(cotrt_endpoint_map)[missing_cotrt]
+        # missing_trt_mappings <- treated[treated$groupings %in% names(missing_mappings)]
 
-      missing_cotrt_endpoint_map <- map_df(missing_trt_mappings, treated, row_endpoint_value_filter, Keys, ref_type = ref_type)
+        ref_maps[['cotrt_ref_Endpoint']] <- map_df(treated[missing_cotrt,], pseudo_untreated, 
+            override_untrt_controls = override_untrt_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
 
-      # Fill found mappings.
-      for (grp in names(missing_cotrt_endpoint_map)) {
-        if (length(missing_cotrt_endpoint_map[[grp]]) != 0L) {
-          cotrt_endpoint_map[grp] <- missing_cotrt_endpoint_map[[grp]]
-        }
-      }
+    #   # Fill found mappings.
+    #   for (grp in names(missing_cotrt_endpoint_map)) {
+    #     if (length(missing_cotrt_endpoint_map[[grp]]) != 0L) {
+    #       cotrt_endpoint_map[grp] <- missing_cotrt_endpoint_map[[grp]]
+    #     }
+    #   }
     }
   }
 
@@ -202,16 +204,7 @@ create_SE2 <- function(df_,
     ref_df <- NULL
     # refType2Readout <- list("untrt_Endpoint" = "UntrtReadout", "Day0" = "Day0Readout", "ref_Endpoint" = "RefReadout")
     if (nrow(trt_df) > 0L) {
-#      for (ref_type in names(refType2Readout)) {
-#	ref <- ref_maps[[ref_type]][[trt]]  
-#	df <- dfs[groupings %in% ref, , drop = FALSE]
-#	df <- create_control_df(
-#	  df, 
-#	  control_cols = Keys[[ref_type]], 
-#	  control_mean_fxn, 
-#	  out_col_name = refType2Readout[[ref_type]]
-#	)
-#      }
+
       ref_type <- "untrt_Endpoint"
       untrt_ref <- ref_maps[[ref_type]][[trt]]  
       untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
@@ -234,11 +227,7 @@ create_SE2 <- function(df_,
 
       ref_type <- "ref_Endpoint"
       cotrt_ref <- ref_maps[[ref_type]][[trt]]  
-      if (length(cotrt_ref) == 0L) {
-        # Set the cotrt reference to the untreated reference.
-        cotrt_df <- untrt_df 
-        colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df)), drop = FALSE] <- "RefReadout"
-      } else {
+      if (length(cotrt_ref) > 0L) {
         cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
         cotrt_df <- create_control_df(
         cotrt_df, 
@@ -246,6 +235,34 @@ create_SE2 <- function(df_,
         control_mean_fxn, 
         out_col_name = "RefReadout"
 	    )
+      } else if (length(ref_maps[[paste0('cotrt_',ref_type)]][[trt]]) > 0L) {
+        cotrt_ref <- ref_maps[[paste0('cotrt_',ref_type)]][[trt]]
+        cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
+
+        if (any(cotrt_df$Concentration == treated$Concentration_2[treated$groupings %in% trt])) {
+            cotrt_df <- create_control_df(
+                cotrt_df[cotrt_df$Concentration == treated$Concentration_2[treated$groupings %in% trt],], 
+                control_cols = Keys[[ref_type]], 
+                control_mean_fxn, 
+                out_col_name = "RefReadout"
+            )
+        } else {            
+            cotrt_df <- infer_control_df(
+                cotrt_df, 
+                treated$Concentration_2[treated$groupings %in% trt],
+                control_cols = Keys[[ref_type]], 
+                control_mean_fxn, 
+                out_col_name = "RefReadout"
+            )
+        }
+
+        
+      } else {
+        # Set the cotrt reference to the untreated reference.
+        ##### SHOULD THAT BE NA if not found ??
+        cotrt_df <- untrt_df 
+        colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df))] <- "RefReadout"
+        
       }
    
       ## Merge all data.frames together.
