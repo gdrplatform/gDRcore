@@ -471,9 +471,9 @@ normalize_SE2 <- function(se,
 
   # Assertions
   checkmate::assert_number(ndigit_rounding)
-  if (!all(c(raw_treated_assay, control_assay) %in% names(SummarizedExperiment::assays(se)))) {
+  if (!all(c(raw_treated_assay, control_assay) %in% SummarizedExperiment::assayNames(se))) {
     stop(sprintf("missing expected assays: '%s'", 
-      setdiff(c(raw_treated_assay, control_assay), names(SummarizedExperiment::assays(se)))))
+      setdiff(c(raw_treated_assay, control_assay), SummarizedExperiment::assayNames(se))))
   }
 
   refs <- SummarizedExperiment::assays(se)[[control_assay]]

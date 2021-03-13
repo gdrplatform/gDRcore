@@ -129,6 +129,7 @@ identify_keys2 <- function(df_,
   keys$cellline_name <- gDRutils::get_identifier("cellline_name")
   keys$cellline_ref_div_time <- gDRutils::get_identifier("cellline_ref_div_time")
   keys$duration <- duration_col 
+  keys$untreated_tag <- gDRutils::get_identifier("untreated_tag")
 
   t0 <- df_[, duration_col] == 0
   # Remove keys where all values are NA.
