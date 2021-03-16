@@ -107,6 +107,10 @@ create_SE2 <- function(df_,
   checkmate::assert_string(readout)
   checkmate::assert_character(nested_keys, null.ok = TRUE)
 
+  if (is(df_, "data.table")) {
+    df_ <- S4Vectors::DataFrame(df_)
+  }
+
   Keys <- identify_keys2(df_, nested_keys, override_controls)
 
   if (!(gDRutils::get_identifier("masked_tag") %in% colnames(df_))) {
