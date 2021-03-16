@@ -486,7 +486,7 @@ normalize_SE2 <- function(se,
   duration_key <- get_SE_keys(se, "duration")
   masked_key <- get_SE_keys(se, "masked_tag")
 
-  norm_cols <- c("RelativeViability", "GRvalue", "DivisionTime")
+  norm_cols <- c("RelativeViability", "GRvalue")
   out <- vector("list", nrow(se) * ncol(se))
 
   ref_rel_viability <- ref_GR_value <- div_time <- matrix(NA, nrow = nrow(se), ncol = ncol(se), dimnames = dimnames(se))
