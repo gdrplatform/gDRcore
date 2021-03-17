@@ -19,12 +19,12 @@
 #' @seealso identify_keys2
 #' @export
 #'
+
 map_df <- function(trt_md, 
                    ref_md, 
-                   override_controls = NULL, 
+                   override_untrt_controls = NULL, 
                    ref_cols, 
                    ref_type = c("Day0", "untrt_Endpoint", "ref_Endpoint")) {
-
   # Assertions:
   checkmate::assert_class(trt_md, "data.frame")
   checkmate::assert_class(ref_md, "data.frame")
@@ -41,9 +41,6 @@ map_df <- function(trt_md,
     matchFactor <- "T0"
   } else if (ref_type == "untrt_Endpoint") {
     matching_list <- list(conc = is_ref_conc)
-    if (!is.null(override_controls)) {
-      matching_list$override_controls <- override_controls
-    }
     matchFactor <- duration_col 
   } else if (ref_type == "ref_Endpoint") {
     matching_list <- NULL
@@ -61,6 +58,11 @@ map_df <- function(trt_md,
     treatment <- trt_rnames[i]
     refs <- lapply(present_ref_cols, function(y) {ref_md[, y] == trt_md[treatment, y]})
 
+    if (!is.null(override_untrt_controls) && ref_type != "ref_Endpoint") {
+        for (overridden in names(override_untrt_controls)) {
+            refs[[overridden]] = ref_md[, overridden] == override_controls[[overridden]]
+    }}
+
     all_checks <- c(refs, matching_list)
     match_mx <- do.call("rbind", all_checks)
     rownames(match_mx) <- names(all_checks)
@@ -73,10 +75,10 @@ map_df <- function(trt_md,
       idx <- idx * match_mx[matchFactor, ]
 
       if (any(idx > 0)) {
-	match_idx <- which.max(idx)
-	futile.logger::flog.warn("Found partial match:", rownames(ref_md)[match_idx])
+        match_idx <- which.max(idx)
+        futile.logger::flog.warn("Found partial match:", rownames(ref_md)[match_idx])
       } else { # failed to find any potential match
-	futile.logger::flog.warn("No partial match found")
+	    futile.logger::flog.warn("No partial match found")
       }
     }
     out[[i]] <- rownames(ref_md)[match_idx] # TODO: Check that this properly handles NAs. 

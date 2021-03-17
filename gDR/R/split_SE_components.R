@@ -54,12 +54,13 @@ split_SE_components <- function(df_, nested_keys = NULL) {
   cell_fields <- c(cell_id, gDRutils::get_header("add_clid"))
   cell_cols <- cell_fields[cell_fields %in% all_cols]
 
-  drug_fields <- c(gDRutils::get_identifier("drug"),
+  x <- c(gDRutils::get_identifier("duration"), 
+    gDRutils::get_identifier("drug"), 
     gDRutils::get_identifier("drugname"),
-    gDRutils::get_identifier("duration"),
-    gDRutils::get_identifier("drug_moa")
-  )
-  drug_cols <- drug_fields[drug_fields %in% all_cols]
+    gDRutils::get_identifier("drug_moa"))
+  drug_field_pattern <- sprintf("%s|%s|%s|%s", x[1], x[2], x[3], x[4])
+  drug_cols <- all_cols[grepl(drug_field_pattern, all_cols)]
+
 
   ## Separate metadata from data fields.
   meta_cols <- setdiff(all_cols, data_cols) 
@@ -77,9 +78,7 @@ split_SE_components <- function(df_, nested_keys = NULL) {
   remaining <- setdiff(meta_cols, constant_cols)
 
   ## Ensure drugs are protected and not accidentally pulled into the cell metadata.
-  pattern <- sprintf("^%s*|^%s*|^%s$|^%s$", 
-    drug_fields[1], drug_fields[2], drug_fields[3], drug_fields[4])
-  remaining <- remaining[!grepl(pattern, remaining)]
+  remaining <- remaining[!grepl(drug_field_pattern, remaining)]
 
   ## Identify cellline properties by checking what columns have only a 1:1 mapping for each cell line.
   cl_entries <- cell_id

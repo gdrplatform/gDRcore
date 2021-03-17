@@ -18,6 +18,12 @@ create_control_df <- function(df_,
                               control_cols, 
                               control_mean_fxn = function(x) mean(x, trim = 0.25), 
                               out_col_name) {
+  
+  checkmate::assert_true(inherits(df_, "data.frame"))
+  checkmate::assert_character(control_cols)
+  checkmate::assert_function(control_mean_fxn)
+  checkmate::assert_string(out_col_name)
+  
   if (nrow(df_) != 0L) {
     # Rename CorrectedReadout.
     df_ <- df_[, c("CorrectedReadout", intersect(control_cols, colnames(df_)))]
@@ -27,6 +33,54 @@ create_control_df <- function(df_,
     df_ <- stats::aggregate(df_[, out_col_name, drop = FALSE], 
                      by = as.list(df_[, colnames(df_) != out_col_name, drop = FALSE]),
 	             function(x) control_mean_fxn(x))
+  }
+  df_
+}
+
+
+#' Create a control dataframe for a treatment-cell line combination with inferred data.
+#'
+#' Create an aggregated control data.frame based on inferring a given concentration usign a sigmoidal fit. 
+#'
+#' @param df_ data.frame
+#' @param infer_concentration concentration at which the \code{out_col_name} should be evaluated.
+#' @param control_cols character vector of columns to include in the resulting control data.frame.  
+#' @param control_mean_fxn function indicating how to average controls.
+#' Defaults to \code{mean(x, trim = 0.25)}.
+#' @param out_col_name string of the output readout that will replace \code{CorrectedReadout}.
+#'
+#' @return data.frame of values aggregated by 
+#' 
+#' @examples
+#'
+#' @export
+#'
+infer_control_df <- function(df_, 
+                              infer_concentration,
+                              control_cols, 
+                              control_mean_fxn = function(x) mean(x, trim = 0.25), 
+                              out_col_name) {
+  
+  checkmate::assert_true(inherits(df_, "data.frame"))
+  checkmate::assert_number(infer_concentration)
+  checkmate::assert_character(control_cols)
+  checkmate::assert_function(control_mean_fxn)
+  checkmate::assert_string(out_col_name)
+  
+  if (nrow(df_) != 0L) {
+    # Select columns.
+    df_ <- df_[, c("CorrectedReadout", "Concentration", "masked", intersect(control_cols, colnames(df_)))]
+
+    # Aggregate by all non-readout data (the metadata).
+    df_agg <- unique(df_[, !(colnames(df_) %in% c("CorrectedReadout", "Concentration", "masked")), drop = FALSE])
+    inferred_value <- array(NA, nrow(df_agg))
+    for (i in seq_len(nrow(df_agg))) {
+        idx <- apply(df_[, colnames(df_agg)] == df_agg[array(i, nrow(df_)), ,drop = FALSE], 1, all)
+        inferred_value[i] <- extrapolate_references(df_[idx, ], infer_concentration)
+    }
+    df_ <- cbind(df_agg, data.frame(inferred_value))
+    # Rename inferred_value.
+    colnames(df_)[grepl("inferred_value", colnames(df_))] <- out_col_name
   }
   df_
 }
