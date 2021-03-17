@@ -102,6 +102,9 @@ average_SE2 <- function(se,
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
+  if (!(normalized_assay %in% SummarizedExperiment::assayNames(se))) {
+    stop(sprintf("missing expected assays: '%s'", normalized_assay))
+  }
 
   trt_keys <- get_SE_keys(se, "Trt")
   masked_tag_key <- get_SE_keys(se, "masked_tag")
@@ -109,6 +112,7 @@ average_SE2 <- function(se,
   if (!(length(trt_keys) > 0L && trt_keys != "")) {
     stop("unexpected treated keys on 'se' object")
   }
+
   if (!(length(masked_tag_key) > 0L && masked_tag_key != "")) {
     stop("unexpected masked_tag on 'se' object")
   }
