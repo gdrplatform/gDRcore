@@ -35,7 +35,7 @@ test_that("normalize_SE2 works as expected", {
   normalized <- SummarizedExperiment::assays(se)[["Normalized"]][1, 1][[1]]
 
   expect_true(is(normalized, "DataFrame"))
-  expect_equal(dim(normalized), c(6, 5))
-  expect_true(all(colnames(normalized) %in% c("Concentration", "masked", "GRvalue", "RelativeViability", "DivisionTime")))
+  expect_equal(dim(normalized), c(6, 4))
+  expect_true(all(colnames(normalized) %in% c("Concentration", "masked", "GRvalue", "RelativeViability")))
   expect_equal(normalized$Concentration, conc)
 })
