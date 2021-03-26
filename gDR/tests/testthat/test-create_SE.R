@@ -1,4 +1,5 @@
-testthat::context("Test assay-related functions")
+library(testthat); library(gDR);
+source("setUp.R")
 
 testthat::test_that("'create_SE' works as expected", {
   testDataDir <- system.file(package = "gDR", "testdata", "data7")

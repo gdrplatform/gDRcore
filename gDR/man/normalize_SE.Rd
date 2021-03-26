@@ -10,7 +10,7 @@ normalize_SE(
   key_values = NULL,
   discard_keys = NULL,
   control_mean_fct = function(x) mean(x, trim = 0.25),
-  nDigits_rounding = 4
+  ndigit_rounding = 4
 )
 }
 \arguments{
@@ -24,7 +24,7 @@ normalize_SE(
 
 \item{control_mean_fct}{the function used for averaging controls (trimmed arithmetic mean with trim = .25 by default)}
 
-\item{nDigits_rounding}{an integer with number of digits of rounding (4 by default)}
+\item{ndigit_rounding}{an integer with number of digits of rounding (4 by default)}
 }
 \value{
 a SummarizedExperiment object with normalized assays

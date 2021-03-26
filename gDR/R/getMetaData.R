@@ -20,13 +20,15 @@
 #' @export
 #'
 getMetaData <- function(data, discard_keys = NULL) {
+  .Deprecated(msg = "see split_SE_components for similar, but not identical functionality")
+
   # Assertions.
   stopifnot(any(inherits(data, "data.frame"), inherits(data, "DataFrame")))
   checkmate::assert_character(discard_keys, null.ok = TRUE)
 
   cell_id <- gDRutils::get_identifier("cellline")
 
-  data <- as(data, "DataFrame")
+  data <- S4Vectors::DataFrame(data)
   all_data_cols <- colnames(data)
 
   # Separate out metadata versus data variables.
@@ -87,6 +89,7 @@ getMetaData <- function(data, discard_keys = NULL) {
   ## colData
   colData <- unique(conditions[, cl_entries, drop = FALSE])
   colData$col_id <- seq_len(nrow(colData))
+  colData <- colData[sort(colnames(colData))] # TODO: can delete me later. Sorting for simple comparison. 
   colData$name_ <-
     apply(colData, 1, function(x)
       paste(x, collapse = "_"))
@@ -95,6 +98,8 @@ getMetaData <- function(data, discard_keys = NULL) {
   cond_entries <- setdiff(unique_metavars, c(cl_entries, discard_keys))
   rowData <- unique(conditions[, cond_entries, drop = FALSE])
   rowData$row_id <- seq_len(nrow(rowData))
+  rowData <- rowData[sort(colnames(rowData))] # TODO: can delete me later. Sorting for simple comparison. 
+
   rowData$name_ <-
     apply(rowData, 1, function(x)
       paste(x, collapse = "_"))
