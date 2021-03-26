@@ -17,11 +17,7 @@ Imports:
     digest,
     drc,
     gDRutils (>= 0.0.27),
-<<<<<<< HEAD
     gDRwrapper (>= 0.1.57),
-=======
-    gDRwrapper (>= 0.1.47),
->>>>>>> master
     httr,
     magrittr,
     openxlsx,
