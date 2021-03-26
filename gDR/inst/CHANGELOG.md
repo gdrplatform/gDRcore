@@ -1,6 +1,9 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+#### [0.1.44] - 2021-03-26
+#### Update
+- refactor processing functions in create_SE2, normalize_SE2, average_SE2, and fit_SE2 and friends
 
 #### [0.1.43] - 2021-02-22
 #### Update
