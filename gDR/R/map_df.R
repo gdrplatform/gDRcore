@@ -60,7 +60,7 @@ map_df <- function(trt_md,
 
     if (!is.null(override_untrt_controls) && ref_type != "ref_Endpoint") {
         for (overridden in names(override_untrt_controls)) {
-            refs[[overridden]] = ref_md[, overridden] == override_controls[[overridden]]
+            refs[[overridden]] = ref_md[, overridden] == override_untrt_controls[[overridden]]
     }}
 
     all_checks <- c(refs, matching_list)
