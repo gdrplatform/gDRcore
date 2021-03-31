@@ -1,6 +1,10 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+#### [0.1.46] - 2021-03-31
+#### Update
+- move SE metadata getters and setters to gDRutils
+
 #### [0.1.45] - 2021-03-31
 #### Update
 - fix a bug in map_df function
