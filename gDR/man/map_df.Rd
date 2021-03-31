@@ -7,7 +7,7 @@
 map_df(
   trt_md,
   ref_md,
-  override_controls = NULL,
+  override_untrt_controls = NULL,
   ref_cols,
   ref_type = c("Day0", "untrt_Endpoint", "ref_Endpoint")
 )
@@ -17,14 +17,14 @@ map_df(
 
 \item{ref_md}{data.frame of untreated metadata.}
 
-\item{override_controls}{named list indicating what treatment metadata fields should be used as a control.
-Defaults to \code{NULL}.}
-
 \item{ref_cols}{character vector of the names of reference columns to include.
 Likely obtained from \code{identify_keys()}.}
 
 \item{ref_type}{string of the reference type to map to.
 Should be one of \code{c("Day0", "untrt_Endpoint", "ref_Endpoint")}.}
+
+\item{override_controls}{named list indicating what treatment metadata fields should be used as a control.
+Defaults to \code{NULL}.}
 }
 \value{
 named list mapping treated metadata to untreated metadata.
