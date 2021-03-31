@@ -1,6 +1,11 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+#### [0.1.45] - 2021-03-31
+#### Update
+- fix a bug in map_df function
+
+
 #### [0.1.44] - 2021-03-26
 #### Update
 - refactor processing functions in create_SE2, normalize_SE2, average_SE2, and fit_SE2 and friends
