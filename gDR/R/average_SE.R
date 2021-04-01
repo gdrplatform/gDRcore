@@ -28,7 +28,11 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
     S4Vectors::metadata(normSE)$Keys$Trt <- TrtKeys
 
     SummarizedExperiment::assay(avgSE, "Averaged") <- SummarizedExperiment::assay(avgSE, "Normalized")
-    avgSE <- aapply(avgSE, function(x) {
+    avgSE_assay <- assay(avgSE, "Averaged")
+    
+    for (i in seq_len(nrow(avgSE))) {
+        for (j in seq_len(ncol(avgSE))) {
+        x = avgSE_assay[[i,j]]
         # bypass 'masked' filter
         x$masked <- x$masked & !include_masked
 
@@ -44,15 +48,16 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
             colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")] =
                 paste0("std_",
                     colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")])
-            return( merge(df_av, df_std, by = subKeys) )
+            df_ = merge(df_av, df_std, by = subKeys) 
         } else { # case: (nrow(x) == 0 || all(x$masked))
             df_ = as.data.frame(matrix(0,0,length(subKeys)+5))
             colnames(df_) = c(subKeys,
                   c("GRvalue", "RelativeViability","CorrectedReadout"),
                   paste0("std_", c("GRvalue", "RelativeViability")))
-            return(df_)
         } 
-    }, "Averaged")
+        avgSE_assay[[i,j]] = df_
+    }}
+    assay(avgSE, "Averaged") <- avgSE_assay
 
     SummarizedExperiment::assay(avgSE, "Avg_Controls") <- SummarizedExperiment::assay(avgSE, "Controls")
     avgSE <- aapply(avgSE, function(x) {
