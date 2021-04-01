@@ -117,7 +117,7 @@ identify_keys2 <- function(df_,
     ref_Endpoint = setdiff(all_keys, c(x, override_controls)),
     untrt_Endpoint = setdiff(all_keys[!pattern_keys], override_controls),
     Day0 = setdiff(all_keys[!pattern_keys], duration_col),
-    nested_keys = nested_keys
+    nested_keys = intersect(nested_keys, colnames(df_))
   )
 
   keys <- lapply(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),

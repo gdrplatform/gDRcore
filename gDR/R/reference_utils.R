@@ -26,13 +26,18 @@ create_control_df <- function(df_,
   
   if (nrow(df_) != 0L) {
     # Rename CorrectedReadout.
-    df_ <- df_[, c("CorrectedReadout", intersect(control_cols, colnames(df_)))]
+    df_ <- df_[, c("CorrectedReadout", intersect(control_cols, colnames(df_))), drop = FALSE]
     colnames(df_)[grepl("CorrectedReadout", colnames(df_))] <- out_col_name
 
     # Aggregate by all non-readout data (the metadata).
-    df_ <- stats::aggregate(df_[, out_col_name, drop = FALSE], 
+    if (ncol(df_) > 1) {
+        df_ <- stats::aggregate(df_[, out_col_name, drop = FALSE], 
                      by = as.list(df_[, colnames(df_) != out_col_name, drop = FALSE]),
 	             function(x) control_mean_fxn(x))
+    } else {
+        df_[1] <- mean(df_[ ,out_col_name])
+        df_ <- df_[1, , drop = FALSE]
+    }
   }
   df_
 }

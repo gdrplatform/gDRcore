@@ -90,7 +90,7 @@ fit_SE2 <- function(se,
                     ref_GR_assay = "RefGRvalue",
                     ref_RV_assay = "RefRelativeViability",
                     metrics_assay = "Metrics", 
-                    ndigit_rounding = 4) {
+                    n_point_cutoff = 4) {
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
@@ -111,19 +111,21 @@ fit_SE2 <- function(se,
   for (i in seq_len(nrow(se))) {
     for (j in seq_len(ncol(se))) {
       avg_df <- avg_trt[i, j][[1]]
-      fit_df <- S4Vectors::DataFrame(matrix(NA, 0, length(metric_cols)))
-      colnames(fit_df) <- metric_cols
-
-      if (!is.null(avg_df) && all(dim(avg_df) > 0)) {
-	fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
-	  e_0 = ref_RV[i, j],
-	  GR_0 = ref_GR[i, j],
-	  n_point_cutoff = ndigit_rounding))
+      
+      if (!is.null(avg_df) && all(dim(avg_df) > 0) && sum(!is.na(avg_df$RelativeViability))>0) {
+	    fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
+	    e_0 = ref_RV[i, j],
+	    GR_0 = ref_GR[i, j],
+	    n_point_cutoff = n_point_cutoff))
+      } else {
+          fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
+          colnames(fit_df) <- metric_cols
+          rownames(fit_df) = c('RV', 'GR')
       }
 
       if (nrow(fit_df) != 0L) {
-	fit_df$row_id <- rep(rownames(se)[i], nrow(fit_df))
-	fit_df$col_id <- rep(colnames(se)[j], nrow(fit_df))
+	    fit_df$row_id <- rep(rownames(se)[i], nrow(fit_df))
+	    fit_df$col_id <- rep(colnames(se)[j], nrow(fit_df))
       }
       out[[count]] <- fit_df
       count <- count + 1
