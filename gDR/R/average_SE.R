@@ -32,7 +32,7 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
     
     for (i in seq_len(nrow(avgSE))) {
         for (j in seq_len(ncol(avgSE))) {
-        x = avgSE_assay[[i,j]]
+        x <- avgSE_assay[[i,j]]
         # bypass 'masked' filter
         x$masked <- x$masked & !include_masked
 
@@ -48,14 +48,14 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
             colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")] =
                 paste0("std_",
                     colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")])
-            df_ = merge(df_av, df_std, by = subKeys) 
+            df_ <- merge(df_av, df_std, by = subKeys) 
         } else { # case: (nrow(x) == 0 || all(x$masked))
-            df_ = as.data.frame(matrix(0,0,length(subKeys)+5))
+            df_ <- as.data.frame(matrix(0,0,length(subKeys)+5))
             colnames(df_) = c(subKeys,
                   c("GRvalue", "RelativeViability","CorrectedReadout"),
                   paste0("std_", c("GRvalue", "RelativeViability")))
         } 
-        avgSE_assay[[i,j]] = df_
+        avgSE_assay[[i,j]] <- df_
     }}
     assay(avgSE, "Averaged") <- avgSE_assay
 
@@ -143,13 +143,13 @@ average_SE2 <- function(se,
             }
 
             avg_df <- stats::aggregate(norm_df[!masked, std_cols],
-            by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
-            function(x) mean(x, na.rm = TRUE))
+                by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
+                function(x) mean(x, na.rm = TRUE))
 
             std_df <- stats::aggregate(norm_df[!masked, std_cols],
-            by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
-            function(x) stats::sd(x, na.rm = TRUE))
-                colnames(std_df)[colnames(std_df) %in% std_cols] <-
+                by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
+                function(x) stats::sd(x, na.rm = TRUE))
+            colnames(std_df)[colnames(std_df) %in% std_cols] <-
                 paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
 
             agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = p_trt_keys))

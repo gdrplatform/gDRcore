@@ -528,7 +528,7 @@ normalize_SE2 <- function(se,
             ref_df_complete[is.na(ref_df_complete[,col]), col] <- ref_df_mean[[col]]
         }
       } else {
-          ref_df_complete = ref_df
+          ref_df_complete <- ref_df
       }
 
       # Merge to ensure that the proper discard_key values are mapped.

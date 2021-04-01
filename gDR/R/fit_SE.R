@@ -114,9 +114,9 @@ fit_SE2 <- function(se,
       
       if (!is.null(avg_df) && all(dim(avg_df) > 0) && sum(!is.na(avg_df$RelativeViability))>0) {
 	    fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
-	    e_0 = ref_RV[i, j],
-	    GR_0 = ref_GR[i, j],
-	    n_point_cutoff = n_point_cutoff))
+	        e_0 = ref_RV[i, j],
+	        GR_0 = ref_GR[i, j],
+	        n_point_cutoff = n_point_cutoff))
       } else {
           fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
           colnames(fit_df) <- metric_cols
