@@ -16,6 +16,8 @@
 #' Defaults to \code{FALSE}.
 #' @param ndigit_rounding integer indicating number of digits to round to in calculations.
 #' Defaults to \code{4}.
+#' @param n_point_cutoff integer of how many points should be considered the minimum required to try to fit a curve.
+#' Defaults to \code{4}.
 #' @param control_assay string containing the name of the assay representing the controls in the \code{se}.
 #' Defaults to \code{"Controls"}.
 #' @param raw_treated_assay string containing the name of the assay representing the raw treated data in the \code{se}.
@@ -42,6 +44,7 @@ runDrugResponseProcessingPipeline2 <- function(df_,
                                                override_controls = NULL,
                                                override_masked = FALSE,
                                                ndigit_rounding = 4,
+                                               n_point_cutoff = n_point_cutoff,
                                                control_assay = "Controls",
                                                raw_treated_assay = "RawTreated",
                                                normalized_assay = "Normalized",
@@ -69,7 +72,7 @@ runDrugResponseProcessingPipeline2 <- function(df_,
                 averaged_assay = averaged_assay, 
                 ref_GR_assay = ref_GR_assay, 
                 metrics_assay = metrics_assay, 
-                ndigit_rounding = ndigit_rounding)
+                n_point_cutoff = n_point_cutoff)
   se
 }
 

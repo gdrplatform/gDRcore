@@ -97,12 +97,15 @@ identify_keys <- function(df_se_mae) {
 #' @export
 #'
 identify_keys2 <- function(df_,  
-                           nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
+                           nested_keys = NULL,
                            override_controls = NULL) {
   # Assertions:
   stopifnot(inherits(df_, c("data.frame", "DataFrame")))
 
   all_keys <- colnames(df_)
+  if (is.null(nested_keys)) {
+    nested_keys <- intersect(c("Barcode", gDRutils::get_identifier("masked_tag")), all_keys)
+  }
 
   x <- c("Concentration", 
     gDRutils::get_identifier("drug"), 
@@ -117,7 +120,7 @@ identify_keys2 <- function(df_,
     ref_Endpoint = setdiff(all_keys, c(x, override_controls)),
     untrt_Endpoint = setdiff(all_keys[!pattern_keys], override_controls),
     Day0 = setdiff(all_keys[!pattern_keys], duration_col),
-    nested_keys = intersect(nested_keys, colnames(df_))
+    nested_keys = nested_keys
   )
 
   keys <- lapply(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),

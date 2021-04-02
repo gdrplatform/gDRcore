@@ -10,7 +10,7 @@ fit_SE2(
   ref_GR_assay = "RefGRvalue",
   ref_RV_assay = "RefRelativeViability",
   metrics_assay = "Metrics",
-  ndigit_rounding = 4
+  n_point_cutoff = 4
 )
 }
 \arguments{
@@ -29,7 +29,7 @@ Defaults to \code{"RefRelativeViability"}.}
 \item{metrics_assay}{string of the name of the metrics assay to output in the returned \linkS4class{SummarizedExperiment}.
 Defaults to \code{"Metrics"}.}
 
-\item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
+\item{n_point_cutoff}{integer of how many points should be considered the minimum required to try to fit a curve.
 Defaults to \code{4}.}
 }
 \value{

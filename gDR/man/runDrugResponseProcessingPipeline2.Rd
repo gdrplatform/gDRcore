@@ -12,6 +12,7 @@ runDrugResponseProcessingPipeline2(
   override_controls = NULL,
   override_masked = FALSE,
   ndigit_rounding = 4,
+  n_point_cutoff = n_point_cutoff,
   control_assay = "Controls",
   raw_treated_assay = "RawTreated",
   normalized_assay = "Normalized",
@@ -40,6 +41,9 @@ in the averaging and include all wells.
 Defaults to \code{FALSE}.}
 
 \item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
+Defaults to \code{4}.}
+
+\item{n_point_cutoff}{integer of how many points should be considered the minimum required to try to fit a curve.
 Defaults to \code{4}.}
 
 \item{control_assay}{string containing the name of the assay representing the controls in the \code{se}.

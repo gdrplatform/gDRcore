@@ -76,8 +76,8 @@ fit_SE <- function(avgSE, studyConcThresh = 4) {
 #' Defaults to \code{"RefRelativeViability"}.
 #' @param metrics_assay string of the name of the metrics assay to output in the returned \linkS4class{SummarizedExperiment}.
 #' Defaults to \code{"Metrics"}.
-#' @param ndigit_rounding integer indicating number of digits to round to in calculations.
-#' Defaults to \code{4}. 
+#' @param n_point_cutoff integer of how many points should be considered the minimum required to try to fit a curve.
+#' Defaults to \code{4}.
 #'
 #' @return the original \linkS4class{SummarizedExperiment} with an additional assay 
 #' containing fitting metrics named \code{metrics_assay}.
