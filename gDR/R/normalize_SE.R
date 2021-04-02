@@ -63,14 +63,14 @@ normalize_SE <- function(df_raw_data,
     row_endpoint_value_filter <- rep(TRUE, nrow(ctrlSE))
     if (!is.null(key_values) & length(key_values) > 0) {
       for (i in which(names(key_values) %in% names(SummarizedExperiment::rowData(ctrlSE)))) {
-	if (is.numeric(key_values[i])) {
-	  row_endpoint_value_filter <- row_endpoint_value_filter &
-	      (SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ] == key_values[i] &
-		      !is.na(SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ]))
-	} else {
-	  row_endpoint_value_filter <- row_endpoint_value_filter &
-	      (SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ] %in% key_values[i])
-	}
+        if (is.numeric(key_values[i])) {
+          row_endpoint_value_filter <- row_endpoint_value_filter &
+              (SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ] == key_values[i] &
+                      !is.na(SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ]))
+        } else {
+          row_endpoint_value_filter <- row_endpoint_value_filter &
+              (SummarizedExperiment::rowData(ctrlSE)[, names(key_values)[i] ] %in% key_values[i])
+        }
       }
     }
 
@@ -129,8 +129,8 @@ normalize_SE <- function(df_raw_data,
     col_maps <- array(colnames(ctrlSE), dimnames = list(colnames(normSE)))
     if (any(names(key_values) %in% names(SummarizedExperiment::colData(normSE)))) {
       col_maps[] <- colnames(ctrlSE)[
-	which(key_values[names(key_values) %in% names(SummarizedExperiment::colData(normSE))] ==
-	    SummarizedExperiment::colData(ctrlSE)[, names(SummarizedExperiment::colData(ctrlSE)) %in% names(key_values)])]
+        which(key_values[names(key_values) %in% names(SummarizedExperiment::colData(normSE))] ==
+            SummarizedExperiment::colData(ctrlSE)[, names(SummarizedExperiment::colData(ctrlSE)) %in% names(key_values)])]
     }
 
     # creates the DataFrameMatrix for controls
@@ -506,16 +506,16 @@ normalize_SE2 <- function(se,
       trt_df <- trt[i, j][[1]]
 
       if (length(trt_df) == 0L || nrow(trt_df) == 0L) {
-	    next # skip if no data
+        next # skip if no data
         # TODO: Does this still need to initialize an empty DFrame with appropriate colnames?
       }
 
       if (length(ref_df) == 0L || nrow(ref_df) == 0L) {
-	    futile.logger::flog.warn(
+        futile.logger::flog.warn(
           sprintf("Missing control data. Treatment Id: '%s' Cell_line Id: '%s'", 
             rownames(se)[i], colnames(se)[j])
         )
-	    next
+        next
       }
 
       # pad the ref_df for missing values based on nested_keys (uses mean across all available values)

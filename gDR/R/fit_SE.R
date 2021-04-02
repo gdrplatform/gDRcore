@@ -113,10 +113,10 @@ fit_SE2 <- function(se,
       avg_df <- avg_trt[i, j][[1]]
       
       if (!is.null(avg_df) && all(dim(avg_df) > 0) && sum(!is.na(avg_df$RelativeViability))>0) {
-	    fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
-	        e_0 = ref_RV[i, j],
-	        GR_0 = ref_GR[i, j],
-	        n_point_cutoff = n_point_cutoff))
+            fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
+                e_0 = ref_RV[i, j],
+                GR_0 = ref_GR[i, j],
+                n_point_cutoff = n_point_cutoff))
       } else {
           fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
           colnames(fit_df) <- metric_cols
@@ -124,8 +124,8 @@ fit_SE2 <- function(se,
       }
 
       if (nrow(fit_df) != 0L) {
-	    fit_df$row_id <- rep(rownames(se)[i], nrow(fit_df))
-	    fit_df$col_id <- rep(colnames(se)[j], nrow(fit_df))
+        fit_df$row_id <- rep(rownames(se)[i], nrow(fit_df))
+        fit_df$col_id <- rep(colnames(se)[j], nrow(fit_df))
       }
       out[[count]] <- fit_df
       count <- count + 1

@@ -135,33 +135,33 @@ average_SE2 <- function(se,
       masked <- norm_df[[masked_tag_key]] & !override_masked
 
       if (sum(!masked) > 0) {
-	p_trt_keys <- intersect(trt_keys, colnames(norm_df))
-	
-	if (length(missing <- setdiff(std_cols, colnames(norm_df))) > 0L) {
-	  stop(sprintf("missing expected columns in nested normalized dataframe: '%s'", 
-	    paste0(missing, collapse = ", ")))
-	}
+        p_trt_keys <- intersect(trt_keys, colnames(norm_df))
+        
+        if (length(missing <- setdiff(std_cols, colnames(norm_df))) > 0L) {
+          stop(sprintf("missing expected columns in nested normalized dataframe: '%s'", 
+            paste0(missing, collapse = ", ")))
+        }
 
-	avg_df <- stats::aggregate(norm_df[!masked, std_cols],
-	  by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
-	  function(x) mean(x, na.rm = TRUE))
+        avg_df <- stats::aggregate(norm_df[!masked, std_cols],
+          by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
+          function(x) mean(x, na.rm = TRUE))
 
-	std_df <- stats::aggregate(norm_df[!masked, std_cols],
-	  by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
-	  function(x) stats::sd(x, na.rm = TRUE))
-	colnames(std_df)[colnames(std_df) %in% std_cols] <-
-	  paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
+        std_df <- stats::aggregate(norm_df[!masked, std_cols],
+          by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
+          function(x) stats::sd(x, na.rm = TRUE))
+        colnames(std_df)[colnames(std_df) %in% std_cols] <-
+          paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
 
-	agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = p_trt_keys))
+        agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = p_trt_keys))
       } else {
-	# only one or no unmasked value --> create degenerated dataframe
-	agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(std_cols)*2 + length(p_trt_keys) + 2))
-	colnames(agg_df) <- c(std_cols, p_trt_keys, paste0("std_", std_cols), 'row_id', 'col_id')
+        # only one or no unmasked value --> create degenerated dataframe
+        agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(std_cols)*2 + length(p_trt_keys) + 2))
+        colnames(agg_df) <- c(std_cols, p_trt_keys, paste0("std_", std_cols), 'row_id', 'col_id')
       }
 
       if (nrow(agg_df) != 0L) {
-	agg_df$row_id <- rep(rownames(se)[i], nrow(agg_df))
-	agg_df$col_id <- rep(colnames(se)[j], nrow(agg_df))
+        agg_df$row_id <- rep(rownames(se)[i], nrow(agg_df))
+        agg_df$col_id <- rep(colnames(se)[j], nrow(agg_df))
       }
       out[[count]] <- agg_df
       count <- count + 1
