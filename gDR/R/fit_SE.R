@@ -90,11 +90,12 @@ fit_SE2 <- function(se,
                     ref_GR_assay = "RefGRvalue",
                     ref_RV_assay = "RefRelativeViability",
                     metrics_assay = "Metrics", 
-                    n_point_cutoff = 4) {
+                    n_point_cutoff = 4,
+                    range_conc = c(5e-3, 5)) {
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
-  checkmate::assert_number(ndigit_rounding)
+  checkmate::assert_number(n_point_cutoff)
   req_assays <- c(averaged_assay, ref_GR_assay, ref_RV_assay)
   present <- req_assays %in% SummarizedExperiment::assayNames(se)
   if (!all(present)) {
@@ -116,7 +117,8 @@ fit_SE2 <- function(se,
             fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
                 e_0 = ref_RV[i, j],
                 GR_0 = ref_GR[i, j],
-                n_point_cutoff = n_point_cutoff))
+                n_point_cutoff = n_point_cutoff,
+                range_conc = range_conc))
       } else {
           fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
           colnames(fit_df) <- metric_cols
