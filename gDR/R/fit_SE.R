@@ -140,5 +140,7 @@ fit_SE2 <- function(se,
     col = out$col_id)
 
   SummarizedExperiment::assay(se, metrics_assay) <- metrics
+  metadata(se) <- c(metadata(se), range_conc = range_conc)
+  
   return(se)
 }
