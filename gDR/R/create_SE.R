@@ -99,7 +99,7 @@ create_SE <-
 create_SE2 <- function(df_, 
                        readout = "ReadoutValue", 
                        control_mean_fxn = function(x) {mean(x, trim = 0.25)}, 
-                       nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")), 
+                       nested_keys = NULL, 
                        override_untrt_controls = NULL) {
 
   # Assertions:
