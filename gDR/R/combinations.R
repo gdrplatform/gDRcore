@@ -9,14 +9,14 @@
 add_codrug_group_SE <- function(se) {
 
   r_data <- SummarizedExperiment::rowData(se)
-  if (!(paste0(gDRutils::get_identifier()$drugname, '_2') %in% colnames(r_data))) return(se)
+  if (!(paste0(gDRutils::get_identifier("drugname"), '_2') %in% colnames(r_data))) return(se)
 
   # find the pairs of drugs with relevant metadata
-  drug_ids <- paste0(gDRutils::get_identifier()$drugname, c('', '_2'))
-  other_metadata <- c(paste0(gDRutils::get_identifier()$drug, c('', '_2')),
+  drug_ids <- paste0(gDRutils::get_identifier("drugname"), c('', '_2'))
+  other_metadata <- c(paste0(gDRutils::get_identifier("drug"), c('', '_2')),
             setdiff(colnames(r_data), c('Concentration_2', drug_ids,
-                paste0(gDRutils::get_identifier()$drug, c('', '_2')),
-                paste0(gDRutils::get_identifier()$drug_moa, c('', '_2')))))
+                paste0(gDRutils::get_identifier("drug"), c('', '_2')),
+                paste0(gDRutils::get_identifier("drug_moa"), c('', '_2')))))
   drug_pairs <- unique(r_data[, c(drug_ids, other_metadata)])
   drug_pairs <- drug_pairs[ !(drug_pairs[,drug_ids[2]] %in% gDRutils::get_identifier('untreated_tag')),]
 
@@ -29,9 +29,9 @@ add_codrug_group_SE <- function(se) {
             apply(as.matrix(
                 IRanges::LogicalList(c(
                   lapply(setdiff(other_metadata,
-                      paste0(gDRutils::get_identifier()$drug, c('', '_2'))),
+                      paste0(gDRutils::get_identifier("drug"), c('', '_2'))),
                     function(y) # matching the metadata
-                    r_data[,y] == drug_pairs[idp,y] )
+                    r_data[,y] == drug_pairs[idp, y] )
                   ))), 2, all)
 
     # reverse engineer the type of combination experiment

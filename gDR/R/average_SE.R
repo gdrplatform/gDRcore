@@ -167,13 +167,12 @@ average_SE2 <- function(se,
       count <- count + 1
     }
   }
-  # account for cases in which all values for a given condition are masked
+  
   out <- S4Vectors::DataFrame(do.call("rbind", out))
   averaged <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c(masked_tag_key, "row_id", "col_id")], 
     row = out$row_id, 
     col = out$col_id)
 
-  # needs to specify rownames/colnames(averaged) in case that the matrix is not complete (e.g all values for a given cell line are masked)
   SummarizedExperiment::assays(se)[[averaged_assay]] <- averaged
   return(se)
 }

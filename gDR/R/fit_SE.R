@@ -91,11 +91,18 @@ fit_SE2 <- function(se,
                     ref_RV_assay = "RefRelativeViability",
                     metrics_assay = "Metrics", 
                     n_point_cutoff = 4,
-                    range_conc = c(5e-3, 5)) {
+                    range_conc = c(5e-3, 5),
+                    force_fit = FALSE,
+                    pcutoff = 0.05,
+                    cap = 0.1) {
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_number(n_point_cutoff)
+  checkmate::assert_numeric(range_conc)
+  checkmate::assert_logical(force_fit)
+  checkmate::assert_number(pcutoff)
+  checkmate::assert_number(cap)
   req_assays <- c(averaged_assay, ref_GR_assay, ref_RV_assay)
   present <- req_assays %in% SummarizedExperiment::assayNames(se)
   if (!all(present)) {
@@ -118,7 +125,10 @@ fit_SE2 <- function(se,
                 e_0 = ref_RV[i, j],
                 GR_0 = ref_GR[i, j],
                 n_point_cutoff = n_point_cutoff,
-                range_conc = range_conc))
+                range_conc = range_conc,
+                force_fit = force_fit,
+                pcutoff = pcutoff,
+                cap = cap))
       } else {
           fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
           colnames(fit_df) <- metric_cols
@@ -140,7 +150,14 @@ fit_SE2 <- function(se,
     col = out$col_id)
 
   SummarizedExperiment::assay(se, metrics_assay) <- metrics
-  metadata(se) <- c(metadata(se), range_conc = range_conc)
+  se = gDRutils::.set_SE_metadata(se, name = 'fit_parameters',
+                          value = list(
+                            n_point_cutoff = n_point_cutoff,
+                            range_conc = range_conc,
+                            force_fit = force_fit,
+                            pcutoff = pcutoff,
+                            cap = cap)
+                          ) 
   
   return(se)
 }
