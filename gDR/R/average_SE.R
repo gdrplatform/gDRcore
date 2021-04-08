@@ -88,7 +88,7 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 #' mean and standard deviation calculations for each unique treatment in the nested
 #' \code{DataFrame}s. 
 #'
-#' @details Expects that \code{get_SE_keys(se)} will have values for both 
+#' @details Expects that \code{gDRutils::get_SE_keys(se)} will have values for both 
 #' \code{"Trt"} and \code{"masked_tag"}.
 #'
 #' @family runDrugResponseProcessingPipelineFxns
@@ -106,8 +106,8 @@ average_SE2 <- function(se,
     stop(sprintf("missing expected assays: '%s'", normalized_assay))
   }
 
-  trt_keys <- get_SE_keys(se, "Trt")
-  masked_tag_key <- get_SE_keys(se, "masked_tag")
+  trt_keys <- gDRutils::get_SE_keys(se, "Trt")
+  masked_tag_key <- gDRutils::get_SE_keys(se, "masked_tag")
 
   if (!(length(trt_keys) > 0L && trt_keys != "")) {
     stop("unexpected treated keys on 'se' object")

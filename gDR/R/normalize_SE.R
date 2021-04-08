@@ -479,12 +479,12 @@ normalize_SE2 <- function(se,
   refs <- SummarizedExperiment::assays(se)[[control_assay]]
   trt <- SummarizedExperiment::assays(se)[[raw_treated_assay]]
 
-  nested_keys <- get_SE_keys(se, key_type = "nested_keys")
-  trt_keys <- get_SE_keys(se, key_type = "Trt")
-  cl_name_key <- get_SE_keys(se, "cellline_name")
-  cl_ref_div_time_key <- get_SE_keys(se, "cellline_ref_div_time")
-  duration_key <- get_SE_keys(se, "duration")
-  masked_key <- get_SE_keys(se, "masked_tag")
+  nested_keys <- gDRutils::get_SE_keys(se, key_type = "nested_keys")
+  trt_keys <- gDRutils::get_SE_keys(se, key_type = "Trt")
+  cl_name_key <- gDRutils::get_SE_keys(se, "cellline_name")
+  cl_ref_div_time_key <- gDRutils::get_SE_keys(se, "cellline_ref_div_time")
+  duration_key <- gDRutils::get_SE_keys(se, "duration")
+  masked_key <- gDRutils::get_SE_keys(se, "masked_tag")
 
   norm_cols <- c("RelativeViability", "GRvalue")
   out <- vector("list", nrow(se) * ncol(se))

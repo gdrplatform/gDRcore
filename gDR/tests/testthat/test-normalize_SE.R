@@ -30,7 +30,7 @@ test_that("normalize_SE2 works as expected", {
                "duration" = "duration", 
                "masked_tag" = "masked")
 
-  se <- set_SE_keys(se, keys) 
+  se <- gDRutils::set_SE_keys(se, keys) 
   se <- normalize_SE2(se)
   normalized <- SummarizedExperiment::assays(se)[["Normalized"]][1, 1][[1]]
 
