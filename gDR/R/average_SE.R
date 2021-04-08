@@ -134,9 +134,9 @@ average_SE2 <- function(se,
       # bypass 'masked' filter
       masked <- norm_df[[masked_tag_key]] & !override_masked
 
-      if (sum(!masked) > 0) {
-        p_trt_keys <- intersect(trt_keys, colnames(norm_df))
-        
+      p_trt_keys <- intersect(trt_keys, colnames(norm_df))
+
+      if (sum(!masked) > 0) {        
         if (length(missing <- setdiff(std_cols, colnames(norm_df))) > 0L) {
           stop(sprintf("missing expected columns in nested normalized dataframe: '%s'", 
             paste0(missing, collapse = ", ")))
