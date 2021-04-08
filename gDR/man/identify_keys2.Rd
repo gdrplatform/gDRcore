@@ -4,11 +4,7 @@
 \alias{identify_keys2}
 \title{identify_keys2}
 \usage{
-identify_keys2(
-  df_,
-  nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
-  override_controls = NULL
-)
+identify_keys2(df_, nested_keys = NULL, override_controls = NULL)
 }
 \arguments{
 \item{df_}{a data.frame to identify keys for.}

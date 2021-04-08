@@ -10,7 +10,11 @@ fit_SE2(
   ref_GR_assay = "RefGRvalue",
   ref_RV_assay = "RefRelativeViability",
   metrics_assay = "Metrics",
-  n_point_cutoff = 4
+  n_point_cutoff = 4,
+  range_conc = c(0.005, 5),
+  force_fit = FALSE,
+  pcutoff = 0.05,
+  cap = 0.1
 )
 }
 \arguments{

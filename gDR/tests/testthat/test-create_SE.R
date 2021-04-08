@@ -1,3 +1,5 @@
+skip("create_SE functions have been deprecated for create_SE2")
+
 library(testthat); library(gDR);
 source("setUp.R")
 

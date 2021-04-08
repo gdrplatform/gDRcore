@@ -27,6 +27,3 @@ data.frame of values aggregated by
 \description{
 Create an aggregated control data.frame.
 }
-\examples{
-
-}

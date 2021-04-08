@@ -10,8 +10,6 @@
 #'
 #' @return data.frame of values aggregated by 
 #' 
-#' @examples
-#'
 #' @export
 #'
 create_control_df <- function(df_, 
@@ -34,11 +32,13 @@ create_control_df <- function(df_,
       df_ <- stats::aggregate(df_[, out_col_name, drop = FALSE], 
               by = as.list(df_[, colnames(df_) != out_col_name, drop = FALSE]),
 	              function(x) control_mean_fxn(x))
+    } else if (ncol(df_) == 1) {
+      # only ReadoutValue column exists (i.e. no 'Barcode')
+      df_ <- data.frame(control_mean_fxn(df_[ , out_col_name]))
+      colnames(df_) <- out_col_name
     } else {
-      # case where there is no other column than the ReadoutValue (ie no Barcode)
-      df_[, out_col_name] <- control_mean_fxn(df_[ ,out_col_name])
-      # set all values to the mean and drop all rows but the first one
-      df_ <- df_[1, , drop = FALSE]
+      stop(sprintf("unexpected columns in data.frame: '%s'", 
+        paste0(colnames(df_), collapse = ", ")))
     }
   }
   df_
