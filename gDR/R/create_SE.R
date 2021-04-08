@@ -99,7 +99,7 @@ create_SE <-
 create_SE2 <- function(df_, 
                        readout = "ReadoutValue", 
                        control_mean_fxn = function(x) {mean(x, trim = 0.25)}, 
-                       nested_keys = NULL, 
+                       nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")), 
                        override_untrt_controls = NULL) {
 
   # Assertions:
@@ -230,7 +230,7 @@ create_SE2 <- function(df_,
           control_cols = Keys[[ref_type]], 
           control_mean_fxn, 
           out_col_name = "RefReadout"
-	      )
+	)
       } else if (length(ref_maps[[paste0('cotrt_',ref_type)]][[trt]]) > 0L) {
         cotrt_ref <- ref_maps[[paste0('cotrt_',ref_type)]][[trt]]
         cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
@@ -273,11 +273,11 @@ create_SE2 <- function(df_,
             ###        We deal with the NA later in the normalization function
         }   
       } else {
-	      ref_df$RefReadout <- ref_df$UntrtReadout
+        ref_df$RefReadout <- ref_df$UntrtReadout
       }
       
       if (nrow(day0_df) > 0L) {
-	      ref_df <- merge(day0_df[, setdiff(colnames(day0_df), Keys$nested_keys), drop = FALSE], ref_df)
+        ref_df <- merge(day0_df[, setdiff(colnames(day0_df), Keys$nested_keys), drop = FALSE], ref_df)
       } else {
         ref_df$Day0Readout <- NA
       } 

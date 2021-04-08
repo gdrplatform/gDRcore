@@ -155,8 +155,9 @@ average_SE2 <- function(se,
         agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = p_trt_keys))
       } else {
         # only one or no unmasked value --> create degenerated dataframe
-        agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(std_cols)*2 + length(p_trt_keys) + 2))
-        colnames(agg_df) <- c(std_cols, p_trt_keys, paste0("std_", std_cols), 'row_id', 'col_id')
+        all_cols <- c(std_cols, p_trt_keys, paste0("std_", std_cols), 'row_id', 'col_id')
+        agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
+        colnames(agg_df) <- all_cols
       }
 
       if (nrow(agg_df) != 0L) {

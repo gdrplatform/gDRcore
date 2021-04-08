@@ -103,8 +103,18 @@ identify_keys2 <- function(df_,
   stopifnot(inherits(df_, c("data.frame", "DataFrame")))
 
   all_keys <- colnames(df_)
-  if (is.null(nested_keys)) {
-    nested_keys <- intersect(c("Barcode", gDRutils::get_identifier("masked_tag")), all_keys)
+  dropped_nested_keys <- setdiff(nested_keys, all_keys)
+  if (length(dropped_nested_keys) != 0L) {
+    warning(sprintf("ignoring nested_keys input: '%s' which are not present in data.frame",
+      paste0(dropped_nested_keys, collapse = ", ")))
+    nested_keys <- intersect(nested_keys, all_keys)
+  }
+
+  dropped_override_controls <- setdiff(override_controls, all_keys)
+  if (length(dropped_override_controls) != 0L) {
+    warning(sprintf("ignoring override_controls input: '%s' which are not present in data.frame",
+      paste0(dropped_override_controls, collapse = ", ")))
+    override_controls <- intersect(override_controls, all_keys)
   }
 
   x <- c("Concentration", 

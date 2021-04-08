@@ -120,19 +120,19 @@ fit_SE2 <- function(se,
     for (j in seq_len(ncol(se))) {
       avg_df <- avg_trt[i, j][[1]]
       
-      if (!is.null(avg_df) && all(dim(avg_df) > 0) && sum(!is.na(avg_df$RelativeViability))>0) {
-            fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
-                e_0 = ref_RV[i, j],
-                GR_0 = ref_GR[i, j],
-                n_point_cutoff = n_point_cutoff,
-                range_conc = range_conc,
-                force_fit = force_fit,
-                pcutoff = pcutoff,
-                cap = cap))
+      if (!is.null(avg_df) && all(dim(avg_df) > 0) && sum(!is.na(avg_df$RelativeViability)) > 0) {
+        fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
+          e_0 = ref_RV[i, j],
+          GR_0 = ref_GR[i, j],
+          n_point_cutoff = n_point_cutoff,
+          range_conc = range_conc,
+          force_fit = force_fit,
+          pcutoff = pcutoff,
+          cap = cap))
       } else {
-          fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
-          colnames(fit_df) <- metric_cols
-          rownames(fit_df) = c('RV', 'GR')
+        fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
+        colnames(fit_df) <- metric_cols
+        rownames(fit_df) <- c('RV', 'GR')
       }
 
       if (nrow(fit_df) != 0L) {
@@ -150,7 +150,7 @@ fit_SE2 <- function(se,
     col = out$col_id)
 
   SummarizedExperiment::assay(se, metrics_assay) <- metrics
-  se = gDRutils::.set_SE_metadata(se, name = 'fit_parameters',
+  se <- gDRutils::.set_SE_metadata(se, name = 'fit_parameters',
                           value = list(
                             n_point_cutoff = n_point_cutoff,
                             range_conc = range_conc,

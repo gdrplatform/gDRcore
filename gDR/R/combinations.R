@@ -31,7 +31,7 @@ add_codrug_group_SE <- function(se) {
                   lapply(setdiff(other_metadata,
                       paste0(gDRutils::get_identifier("drug"), c('', '_2'))),
                     function(y) # matching the metadata
-                    r_data[,y] == drug_pairs[idp, y] )
+                    r_data[, y] == drug_pairs[idp, y])
                   ))), 2, all)
 
     # reverse engineer the type of combination experiment
