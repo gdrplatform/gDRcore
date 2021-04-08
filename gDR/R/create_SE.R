@@ -121,7 +121,7 @@ create_SE2 <- function(df_,
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
 
   ## Identify treatments, conditions, and experiment metadata.
-  md <- split_SE_components(df_, nested_keys = nested_keys)
+  md <- split_SE_components(df_, nested_keys = Keys$nested_keys)
   coldata <- md$condition_md
   rowdata <- md$treatment_md
   exp_md <- md$experiment_md
