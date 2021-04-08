@@ -226,11 +226,11 @@ create_SE2 <- function(df_,
       if (length(cotrt_ref) > 0L) {
         cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
         cotrt_df <- create_control_df(
-        cotrt_df, 
-        control_cols = Keys[[ref_type]], 
-        control_mean_fxn, 
-        out_col_name = "RefReadout"
-	    )
+          cotrt_df, 
+          control_cols = Keys[[ref_type]], 
+          control_mean_fxn, 
+          out_col_name = "RefReadout"
+	      )
       } else if (length(ref_maps[[paste0('cotrt_',ref_type)]][[trt]]) > 0L) {
         cotrt_ref <- ref_maps[[paste0('cotrt_',ref_type)]][[trt]]
         cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
@@ -265,24 +265,23 @@ create_SE2 <- function(df_,
       # Try to merge by plate, but otherwise just use mean. 
       ref_df <- untrt_df
       if (nrow(cotrt_df) > 0L) {
-        merge_cols <- intersect(colnames(cotrt_df), nested_keys)
+        merge_cols <- intersect(colnames(cotrt_df), Keys$nested_keys)
         ref_df <- merge(untrt_df, cotrt_df[, c("RefReadout", merge_cols), drop = FALSE], by = merge_cols, all = TRUE)
         if (!all(sort(unique(cotrt_df$Barcode)) == sort(unique(untrt_df$Barcode)))) {
             # Merging by barcodes will result in NAs. 
             ### It is ok as we won't assign data to a plate that doesn't have them. 
             ###        We deal with the NA later in the normalization function
-            
-	    }   
-	  
+        }   
       } else {
-	    ref_df$RefReadout <- ref_df$UntrtReadout
+	      ref_df$RefReadout <- ref_df$UntrtReadout
       }
-
+      
       if (nrow(day0_df) > 0L) {
-	    ref_df <- merge(day0_df[, setdiff(colnames(day0_df), nested_keys), drop = FALSE], ref_df)
+	      ref_df <- merge(day0_df[, setdiff(colnames(day0_df), Keys$nested_keys), drop = FALSE], ref_df)
       } else {
         ref_df$Day0Readout <- NA
       } 
+      
     } else {
       trt_df <- NULL 
     }
@@ -303,16 +302,14 @@ create_SE2 <- function(df_,
   }
 
   names(ref_out) <- names(trt_out) <- rownames(treated)
-
+  
   trt_out <- do.call(rbind, trt_out)
   ref_out <- do.call(rbind, ref_out)
-  
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
   ref_keep <- !colnames(ref_out) %in% c("row_id", "col_id")
 
   treated_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out[, trt_keep, drop = FALSE], row = trt_out$row_id, col = trt_out$col_id)
   reference_mat <- BumpyMatrix::splitAsBumpyMatrix(ref_out[, ref_keep, drop = FALSE], row = ref_out$row_id, col = ref_out$col_id)
-
   matsL <- list(RawTreated = treated_mat, Controls = reference_mat)
 
   # Capture important values in experiment metadata.
