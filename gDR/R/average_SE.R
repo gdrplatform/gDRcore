@@ -4,6 +4,9 @@
 #'
 #' @param normSE a SummarizedExperiment with normalized DR data
 #' @param TrtKeys a vector of keys used for averaging (NULL by default)
+#' @param include_masked boolean indicating whether or not to include the masked wells
+#' in the averaging. 
+#' Defaults to \code{FALSE}.
 #'
 #' @return a SummarizedExperiment with additional assay with averaged DR data
 #'
@@ -28,7 +31,7 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
     S4Vectors::metadata(normSE)$Keys$Trt <- TrtKeys
 
     SummarizedExperiment::assay(avgSE, "Averaged") <- SummarizedExperiment::assay(avgSE, "Normalized")
-    avgSE_assay <- assay(avgSE, "Averaged")
+    avgSE_assay <- SummarizedExperiment::assay(avgSE, "Averaged")
     
     for (i in seq_len(nrow(avgSE))) {
         for (j in seq_len(ncol(avgSE))) {
@@ -57,7 +60,7 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
         } 
         avgSE_assay[[i,j]] <- df_
     }}
-    assay(avgSE, "Averaged") <- avgSE_assay
+    SummarizedExperiment::assay(avgSE, "Averaged") <- avgSE_assay
 
     SummarizedExperiment::assay(avgSE, "Avg_Controls") <- SummarizedExperiment::assay(avgSE, "Controls")
     avgSE <- aapply(avgSE, function(x) {

@@ -10,6 +10,10 @@ average_SE(normSE, TrtKeys = NULL, include_masked = F)
 \item{normSE}{a SummarizedExperiment with normalized DR data}
 
 \item{TrtKeys}{a vector of keys used for averaging (NULL by default)}
+
+\item{include_masked}{boolean indicating whether or not to include the masked wells
+in the averaging. 
+Defaults to \code{FALSE}.}
 }
 \value{
 a SummarizedExperiment with additional assay with averaged DR data

@@ -9,7 +9,7 @@ runDrugResponseProcessingPipeline2(
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
   nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
-  override_controls = NULL,
+  override_untrt_controls = NULL,
   override_masked = FALSE,
   ndigit_rounding = 4,
   n_point_cutoff = n_point_cutoff,
@@ -33,7 +33,7 @@ Defaults to \code{mean(x, trim = 0.25)}.}
 \item{nested_keys}{character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object.
 Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.}
 
-\item{override_controls}{named list containing defining factors in the treatments.
+\item{override_untrt_controls}{named list containing defining factors in the treatments.
 Defaults to \code{NULL}.}
 
 \item{override_masked}{boolean indicating whether or not to override the masked wells

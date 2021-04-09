@@ -1,6 +1,6 @@
 #' Add codrug group
 #'
-#' @param SE 
+#' @param se 
 #'
 #' @return
 #' @export

@@ -4,7 +4,7 @@
 #'
 #' @param trt_md data.frame of treated metadata. 
 #' @param ref_md data.frame of untreated metadata.
-#' @param override_controls named list indicating what treatment metadata fields should be used as a control.
+#' @param override_untrt_controls named list indicating what treatment metadata fields should be used as a control.
 #' Defaults to \code{NULL}.
 #' @param ref_cols character vector of the names of reference columns to include.
 #' Likely obtained from \code{identify_keys()}.
@@ -13,7 +13,7 @@
 #'
 #' @return named list mapping treated metadata to untreated metadata.
 #'
-#' @details If \code{override_controls} is specified, 
+#' @details If \code{override_untrt_controls} is specified, 
 #' TODO: FILL ME!
 #' 
 #' @seealso identify_keys2

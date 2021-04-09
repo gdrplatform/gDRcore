@@ -9,7 +9,7 @@
 #' Defaults to \code{mean(x, trim = 0.25)}.
 #' @param nested_keys character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object.
 #' Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.
-#' @param override_controls named list containing defining factors in the treatments.
+#' @param override_untrt_controls named list containing defining factors in the treatments.
 #' Defaults to \code{NULL}.
 #' @param override_masked boolean indicating whether or not to override the masked wells
 #' in the averaging and include all wells. 
@@ -41,7 +41,7 @@ runDrugResponseProcessingPipeline2 <- function(df_,
                                                readout = "ReadoutValue",
                                                control_mean_fxn = function(x) {mean(x, trim = 0.25)},
                                                nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
-                                               override_controls = NULL,
+                                               override_untrt_controls = NULL,
                                                override_masked = FALSE,
                                                ndigit_rounding = 4,
                                                n_point_cutoff = n_point_cutoff,
@@ -56,7 +56,7 @@ runDrugResponseProcessingPipeline2 <- function(df_,
                    readout = readout, 
                    control_mean_fxn = control_mean_fxn, 
                    nested_keys = nested_keys, 
-                   override_controls = override_controls)
+                   override_untrt_controls = override_untrt_controls)
   se <- normalize_SE2(se = se, 
                       control_assay = control_assay, 
                       raw_treated_assay = raw_treated_assay, 

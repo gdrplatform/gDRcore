@@ -1,7 +1,7 @@
 skip("create_SE functions have been deprecated for create_SE2")
 
-library(testthat); library(gDR);
-source("setUp.R")
+#library(testthat); library(gDR);
+#source("setup.R")
 
 testthat::test_that("'create_SE' works as expected", {
   testDataDir <- system.file(package = "gDR", "testdata", "data7")
