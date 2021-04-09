@@ -525,10 +525,10 @@ normalize_SE2 <- function(se,
         data_columns <- setdiff(colnames(ref_df), nested_keys)
         ref_df_mean <- lapply(ref_df[, data_columns, drop=FALSE], function(x) mean(x, na.rm = TRUE))
         for (col in data_columns) {
-            ref_df_complete[is.na(ref_df_complete[,col]), col] <- ref_df_mean[[col]]
+          ref_df_complete[is.na(ref_df_complete[,col]), col] <- ref_df_mean[[col]]
         }
       } else {
-          ref_df_complete <- ref_df
+        ref_df_complete <- ref_df
       }
 
       # Merge to ensure that the proper discard_key values are mapped.
