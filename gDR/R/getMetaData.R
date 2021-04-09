@@ -88,7 +88,6 @@ getMetaData <- function(data, discard_keys = NULL) {
 
   ## colData
   colData <- unique(conditions[, cl_entries, drop = FALSE])
-  colData <- colData[sort(colnames(colData))] # TODO: can delete me later. Sorting for simple comparison. 
   colData$col_id <- seq_len(nrow(colData))
 
   colData$name_ <-
@@ -98,7 +97,6 @@ getMetaData <- function(data, discard_keys = NULL) {
   ## rowData
   cond_entries <- setdiff(unique_metavars, c(cl_entries, discard_keys))
   rowData <- unique(conditions[, cond_entries, drop = FALSE])
-  rowData <- rowData[sort(colnames(rowData))] # TODO: can delete me later. Sorting for simple comparison. 
   rowData$row_id <- seq_len(nrow(rowData))
 	  
   rowData$name_ <-
