@@ -84,7 +84,7 @@ identify_keys <- function(df_se_mae) {
 #' The keys discarded should be identical to the keys in the third
 #' dimension of the SummarizedExperiment.
 #' Defaults to the \code{"Barcode"} and the \code{masked} identifier.
-#' @param override_controls named list containing defining factors in the treatments.
+#' @param override_untrt_controls named list containing defining factors in the treatments.
 #' Defaults to \code{NULL}.
 #'
 #' @return named list of key types and their corresponding key values. 
@@ -98,7 +98,7 @@ identify_keys <- function(df_se_mae) {
 #'
 identify_keys2 <- function(df_,  
                            nested_keys = NULL,
-                           override_controls = NULL) {
+                           override_untrt_controls = NULL) {
   # Assertions:
   stopifnot(inherits(df_, c("data.frame", "DataFrame")))
 
@@ -110,11 +110,11 @@ identify_keys2 <- function(df_,
     nested_keys <- intersect(nested_keys, all_keys)
   }
 
-  dropped_override_controls <- setdiff(override_controls, all_keys)
-  if (length(dropped_override_controls) != 0L) {
-    warning(sprintf("ignoring override_controls input: '%s' which are not present in data.frame",
-      paste0(dropped_override_controls, collapse = ", ")))
-    override_controls <- intersect(override_controls, all_keys)
+  dropped_override_untrt_controls <- setdiff(override_untrt_controls, all_keys)
+  if (length(dropped_override_untrt_controls) != 0L) {
+    warning(sprintf("ignoring override_untrt_controls input: '%s' which are not present in data.frame",
+      paste0(dropped_override_untrt_controls, collapse = ", ")))
+    override_untrt_controls <- intersect(override_untrt_controls, all_keys)
   }
 
   x <- c("Concentration", 
@@ -126,9 +126,9 @@ identify_keys2 <- function(df_,
   
   duration_col <- gDRutils::get_identifier("duration")
 
-  keys <- list(Trt = setdiff(all_keys, c(nested_keys, override_controls)),
-    ref_Endpoint = setdiff(all_keys, c(x, override_controls)),
-    untrt_Endpoint = setdiff(all_keys[!pattern_keys], override_controls),
+  keys <- list(Trt = setdiff(all_keys, c(nested_keys, override_untrt_controls)),
+    ref_Endpoint = setdiff(all_keys, c(x, override_untrt_controls)),
+    untrt_Endpoint = setdiff(all_keys[!pattern_keys], override_untrt_controls),
     Day0 = setdiff(all_keys[!pattern_keys], duration_col),
     nested_keys = nested_keys
   )

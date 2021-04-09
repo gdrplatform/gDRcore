@@ -14,7 +14,8 @@ fit_SE2(
   range_conc = c(0.005, 5),
   force_fit = FALSE,
   pcutoff = 0.05,
-  cap = 0.1
+  cap = 0.1,
+  curve_type = c("GR", "RV")
 )
 }
 \arguments{
@@ -35,6 +36,21 @@ Defaults to \code{"Metrics"}.}
 
 \item{n_point_cutoff}{integer of how many points should be considered the minimum required to try to fit a curve.
 Defaults to \code{4}.}
+
+\item{range_conc}{numeric vector of length 2 indicating the lower and upper concentration ranges.
+Defaults to \code{c(5e-3, 5)}. See details.}
+
+\item{force_fit}{boolean indicating whether or not to force a constant fit.
+Defaults to \code{FALSE}.}
+
+\item{pcutoff}{numeric of pvalue significance threshold above or equal to which to use a constant fit.
+Defaults to \code{0.05}.}
+
+\item{cap}{numeric value capping \code{norm_values} to stay below (\code{x_0} + cap).
+Defaults to \code{0.1}.}
+
+\item{curve_type}{character vector of types of curves to fit.
+Defaults to \code{c("GR", "RV")}.}
 }
 \value{
 the original \linkS4class{SummarizedExperiment} with an additional assay 

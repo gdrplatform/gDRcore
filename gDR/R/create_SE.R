@@ -143,7 +143,6 @@ create_SE2 <- function(df_,
   references <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0", ref_Endpoint = "ref_Endpoint")
   # TODO: take care of the row_endpoint_value_filter.
 
-
   ref_maps <- lapply(references, function(ref_type) {
     map_df(treated, untreated, override_untrt_controls = override_untrt_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
   })
@@ -230,7 +229,7 @@ create_SE2 <- function(df_,
           control_cols = Keys[[ref_type]], 
           control_mean_fxn, 
           out_col_name = "RefReadout"
-	)
+        )
       } else if (length(ref_maps[[paste0('cotrt_',ref_type)]][[trt]]) > 0L) {
         cotrt_ref <- ref_maps[[paste0('cotrt_',ref_type)]][[trt]]
         cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]

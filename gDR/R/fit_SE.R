@@ -78,6 +78,16 @@ fit_SE <- function(avgSE, studyConcThresh = 4) {
 #' Defaults to \code{"Metrics"}.
 #' @param n_point_cutoff integer of how many points should be considered the minimum required to try to fit a curve.
 #' Defaults to \code{4}.
+#' @param range_conc numeric vector of length 2 indicating the lower and upper concentration ranges.
+#' Defaults to \code{c(5e-3, 5)}. See details.
+#' @param force_fit boolean indicating whether or not to force a constant fit.
+#' Defaults to \code{FALSE}.
+#' @param pcutoff numeric of pvalue significance threshold above or equal to which to use a constant fit.
+#' Defaults to \code{0.05}.
+#' @param cap numeric value capping \code{norm_values} to stay below (\code{x_0} + cap).
+#' Defaults to \code{0.1}.
+#' @param curve_type character vector of types of curves to fit.
+#' Defaults to \code{c("GR", "RV")}.
 #'
 #' @return the original \linkS4class{SummarizedExperiment} with an additional assay 
 #' containing fitting metrics named \code{metrics_assay}.
@@ -94,7 +104,8 @@ fit_SE2 <- function(se,
                     range_conc = c(5e-3, 5),
                     force_fit = FALSE,
                     pcutoff = 0.05,
-                    cap = 0.1) {
+                    cap = 0.1,
+                    curve_type = c("GR", "RV")) {
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
@@ -115,11 +126,16 @@ fit_SE2 <- function(se,
   avg_trt <- SummarizedExperiment::assay(se, averaged_assay)
   ref_GR <- SummarizedExperiment::assay(se, ref_GR_assay)
   ref_RV <- SummarizedExperiment::assay(se, ref_RV_assay)
+
   count <- 1
   for (i in seq_len(nrow(se))) {
     for (j in seq_len(ncol(se))) {
       avg_df <- avg_trt[i, j][[1]]
       
+      fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
+      colnames(fit_df) <- metric_cols
+      rownames(fit_df) <- c('RV', 'GR')
+
       if (!is.null(avg_df) && all(dim(avg_df) > 0) && sum(!is.na(avg_df$RelativeViability)) > 0) {
         fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
           e_0 = ref_RV[i, j],
@@ -128,11 +144,8 @@ fit_SE2 <- function(se,
           range_conc = range_conc,
           force_fit = force_fit,
           pcutoff = pcutoff,
-          cap = cap))
-      } else {
-        fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
-        colnames(fit_df) <- metric_cols
-        rownames(fit_df) <- c('RV', 'GR')
+          cap = cap,
+          curve_type = c("GR", "RV")))
       }
 
       if (nrow(fit_df) != 0L) {
@@ -150,14 +163,14 @@ fit_SE2 <- function(se,
     col = out$col_id)
 
   SummarizedExperiment::assay(se, metrics_assay) <- metrics
-  se <- gDRutils::.set_SE_metadata(se, name = 'fit_parameters',
-                          value = list(
-                            n_point_cutoff = n_point_cutoff,
-                            range_conc = range_conc,
-                            force_fit = force_fit,
-                            pcutoff = pcutoff,
-                            cap = cap)
-                          ) 
+  se <- gDRutils::set_SE_fit_parameters(se, 
+    value = list(
+      n_point_cutoff = n_point_cutoff,
+      range_conc = range_conc,
+      force_fit = force_fit,
+      pcutoff = pcutoff,
+      cap = cap)
+  ) 
   
   return(se)
 }

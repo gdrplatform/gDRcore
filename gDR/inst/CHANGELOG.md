@@ -1,9 +1,14 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
-#### [0.1.46] - 2021-04-08
+
+#### [0.1.47] - 2021-04-08
 #### Update
 - improve handling of nested_keys and override_controls
+
+#### [0.1.46] - 2021-03-31
+#### Update
+- move SE metadata getters and setters to gDRutils
 
 #### [0.1.45] - 2021-03-31
 #### Update

@@ -14,7 +14,7 @@ test_that("average_SE2 works as expected", {
                "masked_tag" = "masked")
   assays <- list("Normalized" = normalized)
   se <- SummarizedExperiment::SummarizedExperiment(assays = assays)
-  se <- set_SE_keys(se, keys)
+  se <- gDRutils::set_SE_keys(se, keys)
 
   # With masking. 
   se1 <- average_SE2(se, override_masked = FALSE, normalized_assay = "Normalized", averaged_assay = "Averaged")
