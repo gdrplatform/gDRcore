@@ -97,8 +97,8 @@ split_SE_components <- function(df_, nested_keys = NULL) {
 
   ## Condition metadata.
   condition_md <- unique(md[, cl_entries, drop = FALSE])
-  condition_md$col_id <- seq_len(nrow(condition_md))
   condition_md <- condition_md[sort(colnames(condition_md))] # TODO: can delete me later. Sorting for simple comparison. 
+  condition_md$col_id <- seq_len(nrow(condition_md))
   rownames(condition_md) <- apply(condition_md, 1, function(x) {paste(x, collapse = "_")})
   condition_md <- condition_md[! names(condition_md) %in% c('col_id')]
 
@@ -108,8 +108,8 @@ split_SE_components <- function(df_, nested_keys = NULL) {
   drug_trt_cols <- intersect(drug_cols, trt_cols)
   trt_cols <- c(drug_trt_cols, setdiff(trt_cols, drug_trt_cols))
   treatment_md <- unique(md[, trt_cols, drop = FALSE])
-  treatment_md$row_id <- seq_len(nrow(treatment_md))
   treatment_md <- treatment_md[sort(colnames(treatment_md))] # TODO: can delete me later. Sorting for simple comparison. 
+  treatment_md$row_id <- seq_len(nrow(treatment_md))
   rownames(treatment_md) <- apply(treatment_md, 1, function(x) {paste(x, collapse = "_")})
   treatment_md <- treatment_md[! names(treatment_md) %in% c('row_id')]
 
