@@ -1,6 +1,10 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+#### [0.1.47] - 2021-04-09
+#### Update
+- get rid of sorting index columns in getMetaData
+
 #### [0.1.46] - 2021-03-31
 #### Update
 - move SE metadata getters and setters to gDRutils
