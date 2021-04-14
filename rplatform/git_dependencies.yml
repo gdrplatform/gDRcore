@@ -4,11 +4,6 @@ pkgs:
     url: https://github.roche.com/gdrplatform/BumpyMatrix.git
     ref: DEVEL_3_12
     subdir: ~
-  GeneDataScreenR:
-    ver: ">=0.99.16"
-    url: https://github.roche.com/FunctionalGenomics/GeneDataScreenR.git
-    ref: master
-    subdir: ~
   gDRutils:
     ver: '>=0.0.34'
     url: https://github.roche.com/gdrplatform/gDRutils.git

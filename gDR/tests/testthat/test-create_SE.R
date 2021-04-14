@@ -60,7 +60,7 @@ testthat::test_that("create_SE throwing expected errors", {
       data_type = "all",
       assay_type = "newMatrixObject"
     ),
-    "'arg' should be one of \"matrix\", \"BumpyMatrix\"",
+    "'arg' should be one of “matrix”, “BumpyMatrix”",
     fixed = TRUE
   )
 })
