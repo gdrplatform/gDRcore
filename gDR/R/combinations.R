@@ -9,7 +9,9 @@
 add_codrug_group_SE <- function(se) {
 
   r_data <- SummarizedExperiment::rowData(se)
-  if (!(paste0(gDRutils::get_identifier("drugname"), '_2') %in% colnames(r_data))) return(se)
+  if (!(paste0(gDRutils::get_identifier("drugname"), '_2') %in% colnames(r_data)) ||
+     all(r_data[[paste0(gDRutils::get_identifier("drugname"), '_2')]] %in%
+       gDRutils::get_identifier("untreated_tag"))) return(se)
 
   # find the pairs of drugs with relevant metadata
   drug_ids <- paste0(gDRutils::get_identifier("drugname"), c('', '_2'))
