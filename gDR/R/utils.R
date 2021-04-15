@@ -42,7 +42,7 @@ cleanup_metadata <- function(df_metadata) {
       c(
         gDRutils::get_identifier("cellline"),
         gDRutils::get_header("manifest"),
-        gDRutils::get_identifier("WellPosition"),
+        gDRutils::get_identifier("well_position"),
         "compoundId"
       ),
       collapse = "|"
