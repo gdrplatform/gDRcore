@@ -40,7 +40,7 @@ identify_keys <- function(df_se_mae) {
                                             -agrep(gDRutils::get_identifier("drug_moa"), all_keys))])
     keys[["Day0"]] <- setdiff(keys[["untrt_Endpoint"]], gDRutils::get_identifier("duration"))
     keys <- lapply(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),
-        gDRutils::get_header("normalized_results"), "Template", gDRutils::get_identifier("WellPosition"), gDRutils::get_header("averaged_results"),
+        gDRutils::get_header("normalized_results"), "Template", gDRutils::get_identifier("well_position"), gDRutils::get_header("averaged_results"),
             gDRutils::get_header("metrics_results"), "ReferenceDivisionTime"
     )))
     keys <- lapply(keys, sort)
