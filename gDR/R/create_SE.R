@@ -296,8 +296,13 @@ create_SE2 <- function(df_,
       ref_df$col_id <- col_id
     }
 
-    ref_out[[i]] <- ref_df
-    trt_out[[i]] <- trt_df
+    if(is.null(ref_df) && is.null(trt_df)) {
+      ref_out[[i]] <- list(NULL)
+      trt_out[[i]] <- list(NULL)
+    } else {
+      ref_out[[i]] <- ref_df
+      trt_out[[i]] <- trt_df
+    }
   }
 
   names(ref_out) <- names(trt_out) <- rownames(treated)
