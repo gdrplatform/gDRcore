@@ -296,7 +296,7 @@ create_SE2 <- function(df_,
       ref_df$col_id <- col_id
     }
 
-    if(is.null(ref_df) && is.null(trt_df)) {
+    if (is.null(ref_df) && is.null(trt_df)) {
       ref_out[[i]] <- list(NULL)
       trt_out[[i]] <- list(NULL)
     } else {
