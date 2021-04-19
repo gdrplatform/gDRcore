@@ -295,7 +295,7 @@ create_SE2 <- function(df_,
       ref_df$row_id <- row_id
       ref_df$col_id <- col_id
     } else {
-      ref_out[[i]] <- list(NULL)
+      ref_df <- list(NULL)
     }
 
     ref_out[[i]] <- ref_df
