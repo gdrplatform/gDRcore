@@ -197,9 +197,9 @@ create_SE2 <- function(df_,
     trt <- rownames(treated)[i]
     trt_df <- dfs[groupings == trt, , drop = FALSE]  
 
-    ref_df <- NULL
-    if (nrow(trt_df) > 0L) {
-
+    if (nrow(trt_df) == 0L) {
+      next # do nothing, there is no data to handle
+    } else {
       ref_type <- "untrt_Endpoint"
       untrt_ref <- ref_maps[[ref_type]][[trt]]  
       untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
@@ -281,11 +281,6 @@ create_SE2 <- function(df_,
         ref_df$Day0Readout <- NA
       } 
       
-    } else {
-      trt_df <- list(NULL) 
-    }
-
-    if (!is.null(ref_df) && !all(is.null(unlist(trt_df)))) {
       row_id <- unique(trt_df$row_id)
       col_id <- unique(trt_df$col_id)
       if (length(row_id) != 1L || length(col_id) != 1L) {
@@ -294,13 +289,11 @@ create_SE2 <- function(df_,
       }
       ref_df$row_id <- row_id
       ref_df$col_id <- col_id
-    } else {
-      ref_df <- list(NULL)
+    
+      ref_out[[i]] <- ref_df
+      trt_out[[i]] <- trt_df
     }
 
-    ref_out[[i]] <- ref_df
-    trt_out[[i]] <- trt_df
-    
   }
 
   names(ref_out) <- names(trt_out) <- rownames(treated)
