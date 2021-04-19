@@ -282,10 +282,10 @@ create_SE2 <- function(df_,
       } 
       
     } else {
-      trt_df <- NULL 
+      trt_df <- list(NULL) 
     }
 
-    if (!is.null(ref_df)) {
+    if (!is.null(ref_df) && !all(is.null(unlist(trt_df)))) {
       row_id <- unique(trt_df$row_id)
       col_id <- unique(trt_df$col_id)
       if (length(row_id) != 1L || length(col_id) != 1L) {
@@ -294,15 +294,13 @@ create_SE2 <- function(df_,
       }
       ref_df$row_id <- row_id
       ref_df$col_id <- col_id
+    } else {
+      ref_out[[i]] <- list(NULL)
     }
 
-    if (is.null(ref_df) && is.null(trt_df)) {
-      ref_out[[i]] <- list(NULL)
-      trt_out[[i]] <- list(NULL)
-    } else {
-      ref_out[[i]] <- ref_df
-      trt_out[[i]] <- trt_df
-    }
+    ref_out[[i]] <- ref_df
+    trt_out[[i]] <- trt_df
+    
   }
 
   names(ref_out) <- names(trt_out) <- rownames(treated)
