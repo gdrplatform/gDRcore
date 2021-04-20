@@ -171,10 +171,10 @@ fit_SE2 <- function(se,
       pcutoff = pcutoff,
       cap = cap)
   )
-  se <- gDRutils::set_SE_processing_info(se,
-                                         value = list(
-                                           date_processed = Sys.Date(),
-                                           session_info = sessionInfo()))
+  se <- gDRutils::set_SE_processing_metadata(se,
+                                             value = list(
+                                               date_processed = Sys.Date(),
+                                               session_info = sessionInfo()))
   
   return(se)
 }
