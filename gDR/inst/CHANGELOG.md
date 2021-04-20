@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.49] - 2021-04-20
+#### Update
+- add processing info metadata to SE
+
 #### [0.1.48] - 2021-04-14
 #### Update
 - improve handling of nested_keys and override_controls
