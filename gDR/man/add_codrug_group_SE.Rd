@@ -7,7 +7,7 @@
 add_codrug_group_SE(se)
 }
 \arguments{
-\item{SE}{}
+\item{se}{}
 }
 \value{
 

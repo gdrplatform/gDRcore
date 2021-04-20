@@ -35,7 +35,7 @@ mean and standard deviation calculations for each unique treatment in the nested
 Average the normalized data within the nested \code{DataFrame}s.
 }
 \details{
-Expects that \code{get_SE_keys(se)} will have values for both 
+Expects that \code{gDRutils::get_SE_keys(se)} will have values for both 
 \code{"Trt"} and \code{"masked_tag"}.
 }
 \seealso{

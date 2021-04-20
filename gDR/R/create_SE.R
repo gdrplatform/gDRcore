@@ -121,7 +121,7 @@ create_SE2 <- function(df_,
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
 
   ## Identify treatments, conditions, and experiment metadata.
-  md <- split_SE_components(df_, nested_keys = nested_keys)
+  md <- split_SE_components(df_, nested_keys = Keys$nested_keys)
   coldata <- md$condition_md
   rowdata <- md$treatment_md
   exp_md <- md$experiment_md
@@ -142,7 +142,6 @@ create_SE2 <- function(df_,
   ## Map references.
   references <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0", ref_Endpoint = "ref_Endpoint")
   # TODO: take care of the row_endpoint_value_filter.
-
 
   ref_maps <- lapply(references, function(ref_type) {
     map_df(treated, untreated, override_untrt_controls = override_untrt_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
@@ -198,9 +197,9 @@ create_SE2 <- function(df_,
     trt <- rownames(treated)[i]
     trt_df <- dfs[groupings == trt, , drop = FALSE]  
 
-    ref_df <- NULL
-    if (nrow(trt_df) > 0L) {
-
+    if (nrow(trt_df) == 0L) {
+      next # do nothing, there is no data to handle
+    } else {
       ref_type <- "untrt_Endpoint"
       untrt_ref <- ref_maps[[ref_type]][[trt]]  
       untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
@@ -226,11 +225,11 @@ create_SE2 <- function(df_,
       if (length(cotrt_ref) > 0L) {
         cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
         cotrt_df <- create_control_df(
-        cotrt_df, 
-        control_cols = Keys[[ref_type]], 
-        control_mean_fxn, 
-        out_col_name = "RefReadout"
-	    )
+          cotrt_df, 
+          control_cols = Keys[[ref_type]], 
+          control_mean_fxn, 
+          out_col_name = "RefReadout"
+        )
       } else if (length(ref_maps[[paste0('cotrt_',ref_type)]][[trt]]) > 0L) {
         cotrt_ref <- ref_maps[[paste0('cotrt_',ref_type)]][[trt]]
         cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
@@ -265,29 +264,23 @@ create_SE2 <- function(df_,
       # Try to merge by plate, but otherwise just use mean. 
       ref_df <- untrt_df
       if (nrow(cotrt_df) > 0L) {
-        merge_cols <- intersect(colnames(cotrt_df), nested_keys)
+        merge_cols <- intersect(colnames(cotrt_df), Keys$nested_keys)
         ref_df <- merge(untrt_df, cotrt_df[, c("RefReadout", merge_cols), drop = FALSE], by = merge_cols, all = TRUE)
         if (!all(sort(unique(cotrt_df$Barcode)) == sort(unique(untrt_df$Barcode)))) {
             # Merging by barcodes will result in NAs. 
             ### It is ok as we won't assign data to a plate that doesn't have them. 
             ###        We deal with the NA later in the normalization function
-            
-	    }   
-	  
+        }   
       } else {
-	    ref_df$RefReadout <- ref_df$UntrtReadout
+        ref_df$RefReadout <- ref_df$UntrtReadout
       }
-
+      
       if (nrow(day0_df) > 0L) {
-	    ref_df <- merge(day0_df[, setdiff(colnames(day0_df), nested_keys), drop = FALSE], ref_df)
+        ref_df <- merge(day0_df[, setdiff(colnames(day0_df), Keys$nested_keys), drop = FALSE], ref_df)
       } else {
         ref_df$Day0Readout <- NA
       } 
-    } else {
-      trt_df <- NULL 
-    }
-
-    if (!is.null(ref_df)) {
+      
       row_id <- unique(trt_df$row_id)
       col_id <- unique(trt_df$col_id)
       if (length(row_id) != 1L || length(col_id) != 1L) {
@@ -296,23 +289,22 @@ create_SE2 <- function(df_,
       }
       ref_df$row_id <- row_id
       ref_df$col_id <- col_id
+    
+      ref_out[[i]] <- ref_df
+      trt_out[[i]] <- trt_df
     }
 
-    ref_out[[i]] <- ref_df
-    trt_out[[i]] <- trt_df
   }
 
   names(ref_out) <- names(trt_out) <- rownames(treated)
-
+  
   trt_out <- do.call(rbind, trt_out)
   ref_out <- do.call(rbind, ref_out)
-  
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
   ref_keep <- !colnames(ref_out) %in% c("row_id", "col_id")
 
   treated_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out[, trt_keep, drop = FALSE], row = trt_out$row_id, col = trt_out$col_id)
   reference_mat <- BumpyMatrix::splitAsBumpyMatrix(ref_out[, ref_keep, drop = FALSE], row = ref_out$row_id, col = ref_out$col_id)
-
   matsL <- list(RawTreated = treated_mat, Controls = reference_mat)
 
   # Capture important values in experiment metadata.

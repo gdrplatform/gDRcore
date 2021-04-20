@@ -10,7 +10,7 @@ load_results(df_results_files, instrument = "EnVision")
 \item{df_results_files}{data.frame, with datapaths and names of results file(s)
 or character with file path of results file(s)}
 
-\item{intrument}{character}
+\item{instrument}{character}
 }
 \description{
 This functions loads and checks the results file(s)

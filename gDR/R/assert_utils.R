@@ -6,7 +6,6 @@
 #' @return
 #' @export
 #'
-#' @examples
 is_readable_v <- function(paths){
   checkmate::assert_character(paths)
   missing_path_string <- paste(paths[as.logical(-file.access(paths, 4))], collapse = ', ', sep = '   ')

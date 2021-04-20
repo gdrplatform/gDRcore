@@ -9,9 +9,10 @@ runDrugResponseProcessingPipeline2(
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
   nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
-  override_controls = NULL,
+  override_untrt_controls = NULL,
   override_masked = FALSE,
   ndigit_rounding = 4,
+  n_point_cutoff = n_point_cutoff,
   control_assay = "Controls",
   raw_treated_assay = "RawTreated",
   normalized_assay = "Normalized",
@@ -32,7 +33,7 @@ Defaults to \code{mean(x, trim = 0.25)}.}
 \item{nested_keys}{character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object.
 Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.}
 
-\item{override_controls}{named list containing defining factors in the treatments.
+\item{override_untrt_controls}{named list containing defining factors in the treatments.
 Defaults to \code{NULL}.}
 
 \item{override_masked}{boolean indicating whether or not to override the masked wells
@@ -40,6 +41,9 @@ in the averaging and include all wells.
 Defaults to \code{FALSE}.}
 
 \item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
+Defaults to \code{4}.}
+
+\item{n_point_cutoff}{integer of how many points should be considered the minimum required to try to fit a curve.
 Defaults to \code{4}.}
 
 \item{control_assay}{string containing the name of the assay representing the controls in the \code{se}.

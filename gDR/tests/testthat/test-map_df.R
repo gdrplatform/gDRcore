@@ -1,5 +1,5 @@
 #library(gDR); library(testthat)
-#source("setUp.R")
+#source("setup.R")
 
 test_that("map_df works as expected", {
   md_df <- unique(md_df)

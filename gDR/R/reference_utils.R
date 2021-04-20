@@ -10,8 +10,6 @@
 #'
 #' @return data.frame of values aggregated by 
 #' 
-#' @examples
-#'
 #' @export
 #'
 create_control_df <- function(df_, 
@@ -26,13 +24,22 @@ create_control_df <- function(df_,
   
   if (nrow(df_) != 0L) {
     # Rename CorrectedReadout.
-    df_ <- df_[, c("CorrectedReadout", intersect(control_cols, colnames(df_)))]
+    df_ <- df_[, c("CorrectedReadout", intersect(control_cols, colnames(df_))), drop = FALSE]
     colnames(df_)[grepl("CorrectedReadout", colnames(df_))] <- out_col_name
 
     # Aggregate by all non-readout data (the metadata).
-    df_ <- stats::aggregate(df_[, out_col_name, drop = FALSE], 
-                     by = as.list(df_[, colnames(df_) != out_col_name, drop = FALSE]),
-	             function(x) control_mean_fxn(x))
+    if (ncol(df_) > 1) {
+      df_ <- stats::aggregate(df_[, out_col_name, drop = FALSE], 
+              by = as.list(df_[, colnames(df_) != out_col_name, drop = FALSE]),
+	              function(x) control_mean_fxn(x))
+    } else if (ncol(df_) == 1) {
+      # only ReadoutValue column exists (i.e. no 'Barcode')
+      df_ <- data.frame(control_mean_fxn(df_[ , out_col_name]))
+      colnames(df_) <- out_col_name
+    } else {
+      stop(sprintf("unexpected columns in data.frame: '%s'", 
+        paste0(colnames(df_), collapse = ", ")))
+    }
   }
   df_
 }
