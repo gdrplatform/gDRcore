@@ -16,7 +16,7 @@ Imports:
     data.table,
     digest,
     drc,
-    gDRutils (>= 0.0.36),
+    gDRutils (>= 0.0.37),
     gDRwrapper (>= 0.1.64),
     httr,
     magrittr,
