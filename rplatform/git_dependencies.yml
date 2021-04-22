@@ -7,7 +7,7 @@ pkgs:
   gDRutils:
     ver: '>=0.0.37'
     url: https://github.roche.com/gdrplatform/gDRutils.git
-    ref: GDR-211
+    ref: master
     subdir: gDRutils
   gDRwrapper:
     ver: '>=0.1.64'
