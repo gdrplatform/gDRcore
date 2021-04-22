@@ -53,8 +53,8 @@ cleanup_metadata <- function(df_metadata) {
     if (is.character(vals)) {
       num_vals <- as.numeric(vals)
       if (sum(is.na(num_vals)) > 2 || all(is.na(num_vals))) {
-        df_metadata[[c]] <- factor(df_metadata[[c]])
-        futile.logger::flog.warn("Metadata field %s converted to factors",
+        df_metadata[[c]] <- as.character(df_metadata[[c]])
+        futile.logger::flog.warn("Metadata field %s converted to strings",
                 colnames(df_metadata)[c])
       } else {
         is.na(df_metadata[[c]]) <- 0
