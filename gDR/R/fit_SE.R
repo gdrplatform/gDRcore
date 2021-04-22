@@ -127,9 +127,10 @@ fit_SE2 <- function(se,
   ref_GR <- SummarizedExperiment::assay(se, ref_GR_assay)
   ref_RV <- SummarizedExperiment::assay(se, ref_RV_assay)
 
-  count <- 1
+  count <- 0
   for (i in seq_len(nrow(se))) {
     for (j in seq_len(ncol(se))) {
+      count <- count + 1
       avg_df <- avg_trt[i, j][[1]]
       if (nrow(avg_df) == 0L) next
       
@@ -154,7 +155,6 @@ fit_SE2 <- function(se,
         fit_df$col_id <- rep(colnames(se)[j], nrow(fit_df))
       }
       out[[count]] <- fit_df
-      count <- count + 1
     }
   }
 

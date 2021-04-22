@@ -129,9 +129,10 @@ average_SE2 <- function(se,
 
   std_cols <- c("GRvalue", "RelativeViability")
   out <- vector("list", nrow(se) * ncol(se))
-  count <- 1
+  count <- 0
   for (i in seq_len(nrow(se))) {
     for (j in seq_len(ncol(se))) {
+      count <- count + 1
       norm_df <- normalized[i, j][[1]]
       if (nrow(norm_df) == 0L) next
 
@@ -169,7 +170,6 @@ average_SE2 <- function(se,
         agg_df$col_id <- rep(colnames(se)[j], nrow(agg_df))
       }
       out[[count]] <- agg_df
-      count <- count + 1
     }
   }
   
