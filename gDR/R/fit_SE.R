@@ -174,7 +174,7 @@ fit_SE2 <- function(se,
   se <- gDRutils::set_SE_processing_metadata(se,
                                              value = list(
                                                date_processed = Sys.Date(),
-                                               session_info = sessionInfo()))
+                                               session_info = utils::sessionInfo()))
   
   return(se)
 }
