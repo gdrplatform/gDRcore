@@ -131,6 +131,7 @@ fit_SE2 <- function(se,
   for (i in seq_len(nrow(se))) {
     for (j in seq_len(ncol(se))) {
       avg_df <- avg_trt[i, j][[1]]
+      if (nrow(avg_df) == 0L) next
       
       fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
       colnames(fit_df) <- metric_cols

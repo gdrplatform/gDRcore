@@ -37,7 +37,7 @@ add_codrug_group_SE <- function(se) {
                   ))), 2, all)
 
     # reverse engineer the type of combination experiment
-    flat_data <- gDRutils::assay_to_dt(se[row_idx, ], 'Averaged')
+    flat_data <- gDRutils::convert_se_assay_to_dt(se[row_idx, ], 'Averaged')
     flat_data <- flat_data[flat_data$Concentration_2 > 0,]
     conc_1 <- table(flat_data$Concentration)
     conc_2 <- table(flat_data$Concentration_2)
