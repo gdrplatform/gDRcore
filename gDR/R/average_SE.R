@@ -134,7 +134,7 @@ average_SE2 <- function(se,
     for (j in seq_len(ncol(se))) {
       count <- count + 1
       norm_df <- normalized[i, j][[1]]
-      if (nrow(norm_df) == 0L) next
+      if (nrow(norm_df) == 0L) {next}
 
       # bypass 'masked' filter
       masked <- norm_df[[masked_tag_key]] & !override_masked
