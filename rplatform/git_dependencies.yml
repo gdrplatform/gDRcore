@@ -5,7 +5,7 @@ pkgs:
     ref: DEVEL_3_12
     subdir: ~
   gDRutils:
-    ver: '>=0.0.36'
+    ver: '>=0.0.37'
     url: https://github.roche.com/gdrplatform/gDRutils.git
     ref: master
     subdir: gDRutils
