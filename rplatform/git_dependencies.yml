@@ -19,8 +19,3 @@ pkgs:
     url: https://bitbucket.roche.com/stash/scm/genomics/kcloak.git
     ref: master
     subdir: ~
-  gDRinternal:
-    ver: '>=0.0.6'
-    url: https://github.roche.com/gdrplatform/gDRinternal.git
-    ref: master
-    subdir: gDRinternal

@@ -34,8 +34,6 @@ Suggests:
     BumpyMatrix,
     kcloak (>= 0.0.8),
     futile.logger,
-    GeneDataScreenR (>= 0.99.16),
-    gDRinternal (>= 0.0.6),
     knitr,
     testthat,
     yaml
