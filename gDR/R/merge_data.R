@@ -5,11 +5,12 @@
 #' @param manifest a data frame with a manifest info
 #' @param treatments a data frame with a treaatments info
 #' @param data a data frame with a raw data info
+#' @param collapse_Drugs mode drug_2 to Drug when Drug == vehicle (default is TRUE)
 #'
 #' @return a dataframe with merged data and metadata.
 #' @export
 #'
-merge_data <- function(manifest, treatments, data) {
+merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
   # Assertions:
   stopifnot(inherits(manifest, "data.frame"))
   stopifnot(inherits(treatments, "data.frame"))
@@ -73,9 +74,11 @@ merge_data <- function(manifest, treatments, data) {
   # remove wells not labeled
   df_metadata_trimmed <-
     df_metadata[!is.na(df_metadata[, gDRutils::get_identifier("drug")]),]
-  futile.logger::flog.warn("%i wells discarded for lack of annotation, %i data point selected",
-                           dim(df_metadata_trimmed)[1],
-                           sum(is.na(df_metadata[, gDRutils::get_identifier("drug")])))
+  futile.logger::flog.warn("%i well loaded, %i wells discarded for lack of annotation, %i data point selected\n",
+                           dim(data)[1],
+                           sum(is.na(df_metadata[, gDRutils::get_identifier("drug")])),
+                           dim(df_metadata_trimmed)[1]
+                           )
 
   # clean up the metadata
   cleanedup_metadata <-
@@ -98,11 +101,23 @@ merge_data <- function(manifest, treatments, data) {
   # remove wells not labeled
   df_raw_data <-
     df_merged[!is.na(df_merged[, gDRutils::get_identifier("drug")]), ]
-  futile.logger::flog.warn("%i well loaded, %i discarded for lack of annotation, %i data point selected",
-      dim(data)[1],
-      sum(is.na(df_merged[, gDRutils::get_identifier("drug")])),
-      dim(df_raw_data)[1]
-    )
+    
+  if (collapse_Drugs && paste0(gDRutils::get_identifier("drug"), '_2') %in% colnames(df_raw_data)) {
+        # Secondary drug for some combinations can primary drug when viewed as single-agent (conc1 = 0), so swap. 
+        # swap the data related to Drug and Drug_2 such that it can considered as a single-agent condition
+        swap_idx <- df_raw_data$Concentration_2 > 0 &
+                      df_raw_data[,gDRutils::get_identifier("drug")] %in% gDRutils::get_identifier("untreated_tag")
+        temp_df <- df_raw_data[swap_idx, ]
+        header_names = c(gDRutils::get_identifier("drug"), gDRutils::get_identifier("drugname"), 
+                          gDRutils::get_identifier("drug_moa"), 'Concentration')
+        temp_df[, c(header_names, paste0(header_names, '_2'))] <-
+          temp_df[, c(paste0(header_names, '_2'), header_names)]
+
+        futile.logger::flog.warn("merge_data: swapping Drug and Drug_2 for %i rows because Concentration == 0 and Concentration_2 > 0",
+          sum(swap_idx))
+
+        df_raw_data <- rbind(df_raw_data[!swap_idx, ], temp_df)
+  }
 
   # reorder the columns
   df_raw_data <- Order_result_df(df_raw_data)
