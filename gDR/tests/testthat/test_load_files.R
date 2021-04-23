@@ -1,3 +1,4 @@
+skip("Unit tests will be recreated in GDR-853")
 testthat::context("Test load_files.R")
 
 library("gDR")
