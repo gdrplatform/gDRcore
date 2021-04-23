@@ -32,6 +32,7 @@ Imports:
     XML
 Suggests:
     BumpyMatrix,
+    gDRtestData,
     kcloak (>= 0.0.8),
     futile.logger,
     knitr,
