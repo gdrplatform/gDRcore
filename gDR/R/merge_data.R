@@ -72,27 +72,28 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
   }
 
   # remove wells not labeled
+  drug_id <- gDRutils::get_identifier("drug")
   df_metadata_trimmed <-
-    df_metadata[!is.na(df_metadata[, gDRutils::get_identifier("drug")]),]
+    df_metadata[!is.na(df_metadata[, drug_id]),]
   futile.logger::flog.warn("%i well loaded, %i wells discarded for lack of annotation, %i data point selected\n",
-                           dim(data)[1],
-                           sum(is.na(df_metadata[, gDRutils::get_identifier("drug")])),
-                           dim(df_metadata_trimmed)[1]
+                           nrow(data),
+                           sum(is.na(df_metadata[, drug_id])),
+                           nrow(df_metadata_trimmed)
                            )
 
   # clean up the metadata
   cleanedup_metadata <-
     cleanup_metadata(df_metadata_trimmed)
-  stopifnot(dim(cleanedup_metadata)[1] == dim(df_metadata_trimmed)[1]) # should not happen
+  stopifnot(nrow(cleanedup_metadata) == nrow(df_metadata_trimmed)) # should not happen
 
   df_merged <- merge(cleanedup_metadata, data, by = c("Barcode",
                                                       gDRutils::get_identifier("well_position")))
-  if (dim(df_merged)[1] != dim(data)[1]) {
+  if (nrow(df_merged) != nrow(data)) {
     # need to identify issue and output relevant warning
     futile.logger::flog.warn("merge_data: Not all results have been matched with treatments;
                              merged table is smaller than data table")
   }
-  if (dim(df_merged)[1] != dim(df_metadata)[1]) {
+  if (nrow(df_merged) != nrow(df_metadata)) {
     # need to identify issue and print relevant warning
     futile.logger::flog.warn("merge_data: Not all treatments have been matched with results;
                              merged table is smaller than metadata table")
@@ -100,15 +101,15 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
 
   # remove wells not labeled
   df_raw_data <-
-    df_merged[!is.na(df_merged[, gDRutils::get_identifier("drug")]), ]
-    
-  if (collapse_Drugs && paste0(gDRutils::get_identifier("drug"), '_2') %in% colnames(df_raw_data)) {
+    df_merged[!is.na(df_merged[, drug_id]), ]
+
+  if (collapse_Drugs && paste0(drug_id, '_2') %in% colnames(df_raw_data)) {
         # Secondary drug for some combinations can primary drug when viewed as single-agent (conc1 = 0), so swap. 
         # swap the data related to Drug and Drug_2 such that it can considered as a single-agent condition
         swap_idx <- df_raw_data$Concentration_2 > 0 &
-                      df_raw_data[,gDRutils::get_identifier("drug")] %in% gDRutils::get_identifier("untreated_tag")
+                      df_raw_data[,drug_id] %in% gDRutils::get_identifier("untreated_tag")
         temp_df <- df_raw_data[swap_idx, ]
-        header_names = c(gDRutils::get_identifier("drug"), gDRutils::get_identifier("drugname"), 
+        header_names = c(drug_id, gDRutils::get_identifier("drugname"), 
                           gDRutils::get_identifier("drug_moa"), 'Concentration')
         temp_df[, c(header_names, paste0(header_names, '_2'))] <-
           temp_df[, c(paste0(header_names, '_2'), header_names)]
