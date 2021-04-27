@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+
+#### [0.1.50] - 2021-04-23
+#### Update
+- Ensure that dts in `assay(se,"Averaged")` are NULL when there are not treatments
+
 #### [0.1.49] - 2021-04-20
 #### Update
 - add processing info metadata to SE
