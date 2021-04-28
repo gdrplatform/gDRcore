@@ -1,8 +1,8 @@
 Package: gDR
 Type: Package
 Title: Processing functions and interface to process and analyze drug dose-response data
-Version: 0.1.50
-Date: 2021-04-20
+Version: 0.1.51
+Date: 2021-04-27
 Authors@R: c(person("Bartosz", "Czech", role=c("aut", "cre"), email="bartosz.czech@contractors.roche.com"),
              person("Arkadiusz", "Gladki", role=c("aut")),
              person("Marc", "Hafner", role=c("aut")),
@@ -16,7 +16,7 @@ Imports:
     data.table,
     digest,
     drc,
-    gDRutils (>= 0.0.37),
+    gDRutils (>= 0.0.39),
     gDRwrapper (>= 0.1.64),
     httr,
     magrittr,

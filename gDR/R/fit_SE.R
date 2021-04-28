@@ -147,7 +147,7 @@ fit_SE2 <- function(se,
           force_fit = force_fit,
           pcutoff = pcutoff,
           cap = cap,
-          curve_type = curve_type))
+          normalization_type = curve_type))
       }
 
       if (nrow(fit_df) != 0L) {
