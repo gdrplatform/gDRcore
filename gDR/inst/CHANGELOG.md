@@ -1,6 +1,23 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+
+#### [0.1.51] - 2021-04-27
+#### Update
+- fix wrong argument name in `fit_curves`
+
+#### [0.1.50] - 2021-04-23
+#### Update
+- Ensure that dts in `assay(se,"Averaged")` are NULL when there are not treatments
+
+#### [0.1.49] - 2021-04-20
+#### Update
+- add processing info metadata to SE
+
+#### [0.1.48] - 2021-04-14
+#### Update
+- improve handling of nested_keys and override_controls
+
 #### [0.1.47] - 2021-04-09
 #### Update
 - get rid of sorting index columns in getMetaData

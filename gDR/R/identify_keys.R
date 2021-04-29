@@ -40,7 +40,7 @@ identify_keys <- function(df_se_mae) {
                                             -agrep(gDRutils::get_identifier("drug_moa"), all_keys))])
     keys[["Day0"]] <- setdiff(keys[["untrt_Endpoint"]], gDRutils::get_identifier("duration"))
     keys <- lapply(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),
-        gDRutils::get_header("normalized_results"), "Template", gDRutils::get_identifier("WellPosition"), gDRutils::get_header("averaged_results"),
+        gDRutils::get_header("normalized_results"), "Template", gDRutils::get_identifier("well_position"), gDRutils::get_header("averaged_results"),
             gDRutils::get_header("metrics_results"), "ReferenceDivisionTime"
     )))
     keys <- lapply(keys, sort)
@@ -84,7 +84,7 @@ identify_keys <- function(df_se_mae) {
 #' The keys discarded should be identical to the keys in the third
 #' dimension of the SummarizedExperiment.
 #' Defaults to the \code{"Barcode"} and the \code{masked} identifier.
-#' @param override_controls named list containing defining factors in the treatments.
+#' @param override_untrt_controls named list containing defining factors in the treatments.
 #' Defaults to \code{NULL}.
 #'
 #' @return named list of key types and their corresponding key values. 
@@ -97,12 +97,25 @@ identify_keys <- function(df_se_mae) {
 #' @export
 #'
 identify_keys2 <- function(df_,  
-                           nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
-                           override_controls = NULL) {
+                           nested_keys = NULL,
+                           override_untrt_controls = NULL) {
   # Assertions:
   stopifnot(inherits(df_, c("data.frame", "DataFrame")))
 
   all_keys <- colnames(df_)
+  dropped_nested_keys <- setdiff(nested_keys, all_keys)
+  if (length(dropped_nested_keys) != 0L) {
+    warning(sprintf("ignoring nested_keys input: '%s' which are not present in data.frame",
+      paste0(dropped_nested_keys, collapse = ", ")))
+    nested_keys <- intersect(nested_keys, all_keys)
+  }
+
+  dropped_override_untrt_controls <- setdiff(override_untrt_controls, all_keys)
+  if (length(dropped_override_untrt_controls) != 0L) {
+    warning(sprintf("ignoring override_untrt_controls input: '%s' which are not present in data.frame",
+      paste0(dropped_override_untrt_controls, collapse = ", ")))
+    override_untrt_controls <- intersect(override_untrt_controls, all_keys)
+  }
 
   x <- c("Concentration", 
     gDRutils::get_identifier("drug"), 
@@ -113,9 +126,9 @@ identify_keys2 <- function(df_,
   
   duration_col <- gDRutils::get_identifier("duration")
 
-  keys <- list(Trt = setdiff(all_keys, c(nested_keys, override_controls)),
-    ref_Endpoint = setdiff(all_keys, c(x, override_controls)),
-    untrt_Endpoint = setdiff(all_keys[!pattern_keys], override_controls),
+  keys <- list(Trt = setdiff(all_keys, c(nested_keys, override_untrt_controls)),
+    ref_Endpoint = setdiff(all_keys, c(x, override_untrt_controls)),
+    untrt_Endpoint = setdiff(all_keys[!pattern_keys], override_untrt_controls),
     Day0 = setdiff(all_keys[!pattern_keys], duration_col),
     nested_keys = nested_keys
   )

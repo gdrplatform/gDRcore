@@ -195,7 +195,7 @@ load_templates <- function (df_template_files) {
 #'
 #' @param df_results_files  data.frame, with datapaths and names of results file(s)
 #' or character with file path of results file(s)
-#' @param intrument character
+#' @param instrument character
 #' @export
 #'
 load_results <-
@@ -959,7 +959,6 @@ check_metadata_names <-
 #' @return
 #' @export
 #'
-#' @examples
 read_EnVision = function(file,
                          nrows = 10000,
                          seps = c(',', '\t')) {

@@ -1,5 +1,5 @@
 #library(testthat); library(gDR)
-#source("setUp.R")
+#source("setup.R")
 
 test_that("split_SE_components splits the correct columns", {
   # Standard case.

@@ -4,6 +4,9 @@
 #'
 #' @param normSE a SummarizedExperiment with normalized DR data
 #' @param TrtKeys a vector of keys used for averaging (NULL by default)
+#' @param include_masked boolean indicating whether or not to include the masked wells
+#' in the averaging. 
+#' Defaults to \code{FALSE}.
 #'
 #' @return a SummarizedExperiment with additional assay with averaged DR data
 #'
@@ -28,7 +31,11 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
     S4Vectors::metadata(normSE)$Keys$Trt <- TrtKeys
 
     SummarizedExperiment::assay(avgSE, "Averaged") <- SummarizedExperiment::assay(avgSE, "Normalized")
-    avgSE <- aapply(avgSE, function(x) {
+    avgSE_assay <- SummarizedExperiment::assay(avgSE, "Averaged")
+    
+    for (i in seq_len(nrow(avgSE))) {
+        for (j in seq_len(ncol(avgSE))) {
+        x <- avgSE_assay[[i,j]]
         # bypass 'masked' filter
         x$masked <- x$masked & !include_masked
 
@@ -44,15 +51,16 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
             colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")] =
                 paste0("std_",
                     colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")])
-            return( merge(df_av, df_std, by = subKeys) )
+            df_ <- merge(df_av, df_std, by = subKeys) 
         } else { # case: (nrow(x) == 0 || all(x$masked))
-            df_ = as.data.frame(matrix(0,0,length(subKeys)+5))
+            df_ <- as.data.frame(matrix(0,0,length(subKeys)+5))
             colnames(df_) = c(subKeys,
                   c("GRvalue", "RelativeViability","CorrectedReadout"),
                   paste0("std_", c("GRvalue", "RelativeViability")))
-            return(df_)
         } 
-    }, "Averaged")
+        avgSE_assay[[i,j]] <- df_
+    }}
+    SummarizedExperiment::assay(avgSE, "Averaged") <- avgSE_assay
 
     SummarizedExperiment::assay(avgSE, "Avg_Controls") <- SummarizedExperiment::assay(avgSE, "Controls")
     avgSE <- aapply(avgSE, function(x) {
@@ -119,47 +127,52 @@ average_SE2 <- function(se,
 
   normalized <- SummarizedExperiment::assay(se, normalized_assay)
 
+  std_cols <- c("GRvalue", "RelativeViability")
   out <- vector("list", nrow(se) * ncol(se))
-  count <- 1
+  count <- 0
   for (i in seq_len(nrow(se))) {
     for (j in seq_len(ncol(se))) {
-       norm_df <- normalized[i, j][[1]]
+      count <- count + 1
+      norm_df <- normalized[i, j][[1]]
+      if (nrow(norm_df) == 0L) {next}
 
-       # bypass 'masked' filter
-       masked <- norm_df[[masked_tag_key]] & !override_masked
+      # bypass 'masked' filter
+      masked <- norm_df[[masked_tag_key]] & !override_masked
 
-       if (nrow(norm_df[!masked, ]) > 1L) {
-         p_trt_keys <- intersect(trt_keys, colnames(norm_df))
-	 std_cols <- c("GRvalue", "RelativeViability")
-         if (length(missing <-setdiff(std_cols, colnames(norm_df))) > 0L) {
-           stop(sprintf("missing expected columns in nested normalized dataframe: '%s'", 
-             paste0(missing, collapse = ", ")))
-         }
+      p_trt_keys <- intersect(trt_keys, colnames(norm_df))
 
-	 avg_df <- stats::aggregate(norm_df[!masked, std_cols],
-	   by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
-	   function(x) mean(x, na.rm = TRUE))
+      if (sum(!masked) > 0) {        
+        if (length(missing <- setdiff(std_cols, colnames(norm_df))) > 0L) {
+          stop(sprintf("missing expected columns in nested normalized dataframe: '%s'", 
+            paste0(missing, collapse = ", ")))
+        }
 
-	 std_df <- stats::aggregate(norm_df[!masked, std_cols],
-	   by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
-	   function(x) stats::sd(x, na.rm = TRUE))
-         colnames(std_df)[colnames(std_df) %in% std_cols] <-
-           paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
+        avg_df <- stats::aggregate(norm_df[!masked, std_cols],
+          by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
+          function(x) mean(x, na.rm = TRUE))
 
-         agg_df <- merge(avg_df, std_df, by = p_trt_keys) 
-       } else {
-         agg_df <- norm_df
-       }
+        std_df <- stats::aggregate(norm_df[!masked, std_cols],
+          by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
+          function(x) stats::sd(x, na.rm = TRUE))
+        colnames(std_df)[colnames(std_df) %in% std_cols] <-
+          paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
+
+        agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = p_trt_keys))
+      } else {
+        # only one or no unmasked value --> create degenerated dataframe
+        all_cols <- c(std_cols, p_trt_keys, paste0("std_", std_cols), 'row_id', 'col_id')
+        agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
+        colnames(agg_df) <- all_cols
+      }
 
       if (nrow(agg_df) != 0L) {
-	agg_df$row_id <- rep(rownames(se)[i], nrow(agg_df))
-	agg_df$col_id <- rep(colnames(se)[j], nrow(agg_df))
+        agg_df$row_id <- rep(rownames(se)[i], nrow(agg_df))
+        agg_df$col_id <- rep(colnames(se)[j], nrow(agg_df))
       }
       out[[count]] <- agg_df
-      count <- count + 1
     }
   }
-
+  
   out <- S4Vectors::DataFrame(do.call("rbind", out))
   averaged <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c(masked_tag_key, "row_id", "col_id")], 
     row = out$row_id, 
