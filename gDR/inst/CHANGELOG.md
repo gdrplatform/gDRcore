@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.1.52] - 2021-04-29
+#### Update
+- remove all the gDRinternal-related files
+
 #### [0.1.51] - 2021-04-27
 #### Update
 - fix wrong argument name in `fit_curves`
