@@ -15,7 +15,7 @@ pkgs:
     ref: master
     subdir: gDRwrapper
   kcloak:
-    ver: '>=0.0.8'
-    url: https://bitbucket.roche.com/stash/scm/genomics/kcloak.git
+    ver: '>=0.0.9'
+    url: https://github.roche.com/gdrplatform/kcloak.git
     ref: master
     subdir: ~
