@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.0.0] - 2021-06-02
+#### Update
+- release 1.0.0
+
 #### [0.1.52] - 2021-04-29
 #### Update
 - remove all the gDRinternal-related files

@@ -5,12 +5,12 @@ pkgs:
     ref: DEVEL_3_12
     subdir: ~
   gDRutils:
-    ver: '>=0.0.39'
+    ver: '>=1.0.0'
     url: https://github.roche.com/gdrplatform/gDRutils.git
     ref: master
     subdir: gDRutils
   gDRwrapper:
-    ver: '>=0.1.64'
+    ver: '>=1.0.0'
     url: https://github.roche.com/gdrplatform/gDRwrapper.git
     ref: master
     subdir: gDRwrapper
