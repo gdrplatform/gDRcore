@@ -1,4 +1,4 @@
-Package: gDR
+Package: gDRcore
 Type: Package
 Title: Processing functions and interface to process and analyze drug dose-response data
 Version: 1.0.1
