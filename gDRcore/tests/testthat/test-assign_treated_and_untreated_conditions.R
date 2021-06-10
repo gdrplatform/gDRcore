@@ -1,4 +1,4 @@
-#library(testthat); library(gDR);
+#library(testthat); library(gDRcore);
 
 test_that(".get_untreated_conditions works", {
   old_drug_name <- gDRutils::get_identifier("drugname")

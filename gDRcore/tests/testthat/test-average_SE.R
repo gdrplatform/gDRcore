@@ -1,4 +1,4 @@
-library(gDR); library(testthat);
+library(gDRcore); library(testthat);
 
 test_that("average_SE2 works as expected", {
   # Set up. 

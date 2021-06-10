@@ -1,4 +1,4 @@
-library(testthat); library(gDR)
+library(testthat); library(gDRcore)
 
 test_that("identify_keys2 works", {
   d_id1 <- c("Gnumber",

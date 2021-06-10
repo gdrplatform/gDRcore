@@ -1,4 +1,4 @@
-library(testthat); library(gDR);
+library(testthat); library(gDRcore);
 
 test_that("calculate_GR_value throws expected errors", {
   readouts <- c(rep(10000, 5))

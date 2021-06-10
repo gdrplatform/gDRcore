@@ -1,7 +1,7 @@
 skip("Unit tests will be recreated in GDR-853")
 testthat::context("Test load_files.R")
 
-library("gDR")
+library(gDRcore)
 
  # Load toy set and reference files
 testDataDir <- system.file(package = "gDR", "testdata", "data6")
