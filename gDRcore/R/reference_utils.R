@@ -282,6 +282,6 @@ calculate_reference_values_SE_part2 <- function() {
     by = intersect(colnames(df_ctrl), c('Barcode', Keys$discard_keys)),
     all.x = TRUE)
 
-  ctrl_original <- SummarizedExperiment::assay(gDRcore::aapply(ctrlSE, function(x) x[!x$masked,]))
+  ctrl_original <- SummarizedExperiment::assay(aapply(ctrlSE, function(x) x[!x$masked,]))
   # need to keep original data for the case in which reference is such that Gnumber == Gnumber_2
 }

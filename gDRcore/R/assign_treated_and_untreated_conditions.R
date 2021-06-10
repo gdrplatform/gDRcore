@@ -43,7 +43,7 @@
 #'
 .get_untreated_conditions <-
   function(drug_data) {
-    .Deprecated(msg = "use 'gDRcore:::.assign_treated_and_untreated_conditions' instead")
+    .Deprecated(msg = "use '.assign_treated_and_untreated_conditions' instead")
 
     # Assertions:
     stopifnot(any(inherits(drug_data, "data.frame"), inherits(drug_data, "DataFrame")))
@@ -64,7 +64,7 @@
 #'
 .get_treated_conditions <-
   function(drug_data) {
-    .Deprecated(msg = "use 'gDRcore:::.assign_treated_and_untreated_conditions' instead")
+    .Deprecated(msg = "use '.assign_treated_and_untreated_conditions' instead")
 
     # Assertions:
     stopifnot(any(inherits(drug_data, "data.frame"), inherits(drug_data, "DataFrame")))
