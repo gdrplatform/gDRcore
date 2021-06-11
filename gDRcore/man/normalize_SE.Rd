@@ -5,30 +5,46 @@
 \title{normalize_SE}
 \usage{
 normalize_SE(
-  df_raw_data,
-  selected_keys = NULL,
-  key_values = NULL,
-  discard_keys = NULL,
-  control_mean_fct = function(x) mean(x, trim = 0.25),
+  se,
+  control_assay = "Controls",
+  raw_treated_assay = "RawTreated",
+  normalized_assay = "Normalized",
+  ref_GR_assay = "RefGRvalue",
+  ref_RV_assay = "RefRelativeViability",
   ndigit_rounding = 4
 )
 }
 \arguments{
-\item{df_raw_data}{a dataframe with raw data}
+\item{se}{\code{BumpyMatrix} object with assays \code{"RawTreated"} and \code{"Controls"}.}
 
-\item{selected_keys}{a vector of keys that should be included in the normalization (NULL by default)}
+\item{control_assay}{string containing the name of the assay representing the controls in the \code{se}.
+Defaults to \code{"Controls"}.}
 
-\item{key_values}{a list of values for keys that should be included in the normalization (NULL by default)}
+\item{raw_treated_assay}{string containing the name of the assay representing the raw treated data in the \code{se}.
+Defaults to \code{"RawTreated"}.}
 
-\item{discard_keys}{a vector of keys that should be discarded (NULL by default)}
+\item{normalized_assay}{string of the assay name containing the normalized data.
+Defaults to \code{"Normalized"}.}
 
-\item{control_mean_fct}{the function used for averaging controls (trimmed arithmetic mean with trim = .25 by default)}
+\item{ref_GR_assay}{string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.}
 
-\item{ndigit_rounding}{an integer with number of digits of rounding (4 by default)}
+\item{ref_RV_assay}{string of the name of the reference Relative Viability assay in the \linkS4class{SummarizedExperiment}.}
+
+\item{ndigit_rounding}{integer specifying number of digits of rounding during calculations.
+Defaults to \code{4}.}
 }
 \value{
-a SummarizedExperiment object with normalized assays
+\code{BumpyMatrix} object with a new assay named \code{"Normalized"} containing \code{DataFrame}s 
+holding \code{RelativeViability} and \code{GRvalue}, as well as new assays named \code{RefRelativeViability}, \code{RefGRvalue}, and \code{DivisionTime} values.
 }
 \description{
-Normalize raw DR data
+Normalize drug response data from treated and untreated pairings.
 }
+\seealso{
+Other runDrugResponseProcessingPipelineFxns: 
+\code{\link{average_SE}()},
+\code{\link{create_SE}()},
+\code{\link{fit_SE}()},
+\code{\link{runDrugResponseProcessingPipeline}()}
+}
+\concept{runDrugResponseProcessingPipelineFxns}

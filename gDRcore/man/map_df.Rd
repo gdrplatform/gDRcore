@@ -37,5 +37,5 @@ If \code{override_untrt_controls} is specified,
 TODO: FILL ME!
 }
 \seealso{
-identify_keys2
+identify_keys
 }
