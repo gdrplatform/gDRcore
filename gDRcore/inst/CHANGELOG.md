@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.0.3] - 2021-06-11
+#### Update
+- remove deprecated functions and unit tests
+
 #### [1.0.2] - 2021-06-10
 #### Update
 - change package name (gDR => gDRcore)
