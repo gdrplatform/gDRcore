@@ -1,6 +1,6 @@
 #library(testthat); library(gDRcore);
 
-test_that("normalize_SE2 works as expected", {
+test_that("normalize_SE works as expected", {
   # Set up. 
   conc <- rep(seq(0.1, 0.3, 0.1), 2)
   ctrl_df <- S4Vectors::DataFrame(Barcode = c(1, 2),
@@ -31,7 +31,7 @@ test_that("normalize_SE2 works as expected", {
                "masked_tag" = "masked")
 
   se <- gDRutils::set_SE_keys(se, keys) 
-  se <- normalize_SE2(se)
+  se <- normalize_SE(se)
   normalized <- SummarizedExperiment::assays(se)[["Normalized"]][1, 1][[1]]
 
   expect_true(is(normalized, "DataFrame"))
