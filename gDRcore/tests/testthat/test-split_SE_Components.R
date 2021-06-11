@@ -1,4 +1,4 @@
-#library(testthat); library(gDR)
+#library(testthat); library(gDRcore)
 #source("setup.R")
 
 test_that("split_SE_components splits the correct columns", {

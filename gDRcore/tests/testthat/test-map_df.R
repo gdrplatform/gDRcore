@@ -1,4 +1,4 @@
-#library(gDR); library(testthat)
+#library(gDRcore); library(testthat)
 #source("setup.R")
 
 test_that("map_df works as expected", {

@@ -1,4 +1,4 @@
-#library(testthat); library(gDR);
+#library(testthat); library(gDRcore);
 
 test_that("normalize_SE2 works as expected", {
   # Set up. 

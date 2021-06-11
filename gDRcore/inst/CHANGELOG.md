@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.0.2] - 2021-06-10
+#### Update
+- change package name (gDR => gDRcore)
+
 #### [1.0.1] - 2021-06-04
 #### Update
 - export/update docs for 'standardize_record_values'

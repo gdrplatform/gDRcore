@@ -54,9 +54,9 @@ normalize_SE <- function(df_raw_data,
     df_raw_data$CorrectedReadout <- pmax(df_raw_data$ReadoutValue -
                     df_raw_data$BackgroundValue, 1e-10)
     # creates the DataFrameMatrix and fill with the treated/untreated data
-    normSE <- gDR::create_SE(df_raw_data, data_type = "treated", discard_keys = discard_keys)
+    normSE <- create_SE(df_raw_data, data_type = "treated", discard_keys = discard_keys)
     SummarizedExperiment::assayNames(normSE) <- "Normalized"
-    ctrlSE <- gDR::create_SE(df_raw_data, data_type = "untreated", discard_keys = discard_keys)
+    ctrlSE <- create_SE(df_raw_data, data_type = "untreated", discard_keys = discard_keys)
 
     # enforced key values for end points (override selected_keys) --> for rows of the SE
     Keys$untrt_Endpoint <- setdiff(Keys$untrt_Endpoint, names(key_values))
@@ -139,7 +139,7 @@ normalize_SE <- function(df_raw_data,
 
     # temporary optimization (use 'normSE_n' and 'normSE_c' to avoid using 'assay<-` in for loops)
     # TODO: refactor this part of code once we switch to DataFrameMatrix class
-    ctrl_original <- SummarizedExperiment::assay(gDR::aapply(ctrlSE, function(x) x[!x$masked,]))
+    ctrl_original <- SummarizedExperiment::assay(aapply(ctrlSE, function(x) x[!x$masked,]))
     # need to keep original data for the case in which reference is such that Gnumber == Gnumber_2
     normSE_n <- normSE_original <- SummarizedExperiment::assay(normSE, "Normalized")
     normSE_c <- SummarizedExperiment::assay(normSE, "Controls")

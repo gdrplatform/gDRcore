@@ -9,8 +9,8 @@ echo "Working directory contains: `ls | tr '\n' ' '`"
 set -e
 
 echo ">>>>> RUNNING UNIT TESTS"
-Rscript -e "devtools::test(pkg = '/mnt/vol/gDR', stop_on_failure = TRUE)"
+Rscript -e "devtools::test(pkg = '/mnt/vol/gDRcore', stop_on_failure = TRUE)"
 
 
 echo ">>>>> RUNNING DEVTOOLS::CHECK()"
-Rscript -e "devtools::check(pkg = '/mnt/vol/gDR', document = FALSE, error_on = 'error', args = c('--no-tests', '--no-build-vignettes', '--no-manual'))"
+Rscript -e "devtools::check(pkg = '/mnt/vol/gDRcore', document = FALSE, error_on = 'error', args = c('--no-tests', '--no-build-vignettes', '--no-manual'))"
