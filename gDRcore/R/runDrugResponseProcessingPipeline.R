@@ -37,7 +37,7 @@
 #' @family runDrugResponseProcessingPipelineFxns
 #' @export
 #'
-runDrugResponseProcessingPipeline2 <- function(df_, 
+runDrugResponseProcessingPipeline <- function(df_, 
                                                readout = "ReadoutValue",
                                                control_mean_fxn = function(x) {mean(x, trim = 0.25)},
                                                nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
@@ -52,36 +52,26 @@ runDrugResponseProcessingPipeline2 <- function(df_,
                                                ref_RV_assay = "RefRelativeViability",
                                                averaged_assay = "Averaged",
                                                metrics_assay = "Metrics") {
-  se <- create_SE2(df_ = df_, 
+  se <- create_SE(df_ = df_, 
                    readout = readout, 
                    control_mean_fxn = control_mean_fxn, 
                    nested_keys = nested_keys, 
                    override_untrt_controls = override_untrt_controls)
-  se <- normalize_SE2(se = se, 
+  se <- normalize_SE(se = se, 
                       control_assay = control_assay, 
                       raw_treated_assay = raw_treated_assay, 
                       normalized_assay = normalized_assay,
                       ref_GR_assay = ref_GR_assay, 
                       ref_RV_assay = ref_RV_assay, 
                       ndigit_rounding = ndigit_rounding)
-  se <- average_SE2(se = se, 
+  se <- average_SE(se = se, 
                     override_masked = override_masked, 
                     normalized_assay = normalized_assay, 
                     averaged_assay = averaged_assay)
-  se <- fit_SE2(se = se, 
+  se <- fit_SE(se = se, 
                 averaged_assay = averaged_assay, 
                 ref_GR_assay = ref_GR_assay, 
                 metrics_assay = metrics_assay, 
                 n_point_cutoff = n_point_cutoff)
-  se
-}
-
-
-#' @export
-#'
-runDrugResponseProcessingPipeline <- function(df_) {
-  se <- normalize_SE(df_)
-  se <- average_SE(se)
-  se <- fit_SE(se)
   se
 }
