@@ -73,5 +73,6 @@ runDrugResponseProcessingPipeline <- function(df_,
                 ref_GR_assay = ref_GR_assay, 
                 metrics_assay = metrics_assay, 
                 n_point_cutoff = n_point_cutoff)
+  se <- add_codrug_group_SE(se)
   se
 }
