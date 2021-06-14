@@ -4,7 +4,7 @@
 \alias{merge_data}
 \title{merge_data}
 \usage{
-merge_data(manifest, treatments, data)
+merge_data(manifest, treatments, data, collapse_Drugs = TRUE)
 }
 \arguments{
 \item{manifest}{a data frame with a manifest info}
@@ -12,6 +12,8 @@ merge_data(manifest, treatments, data)
 \item{treatments}{a data frame with a treaatments info}
 
 \item{data}{a data frame with a raw data info}
+
+\item{collapse_Drugs}{mode drug_2 to Drug when Drug == vehicle (default is TRUE)}
 }
 \value{
 a dataframe with merged data and metadata.

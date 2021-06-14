@@ -1,75 +1,3 @@
-#' createSE
-#' TODO: delete me for create_SE function. 
-#' @export
-createSE <- function(...) {
-  .Deprecated("create_SE", package="gDR")
-  create_SE(...)
-}
-
-
-#' create_SE
-#'
-#' Create SummarizedExperiment object from data.frame(s) with dose-reponse data
-#'
-#' @param df_data a dataframe with DR data
-#' @param data_type string type of data to be returned: with untreated conditions only ('untreated'),
-#' with treated conditions only ('treated') or all
-#' @param readout a character that indiciated readout value in a df ('ReadoutValue' by default)
-#' @param discard_keys a vector of keys that should be discarded
-#' @param assay_type string assay type for the returned SummarizedExperiment
-#'
-#' @return SummarizedExperiment object with dose-reponse data
-#'
-#' @export
-create_SE <-
-  function(df_data,
-           data_type = c("untreated", "treated", "all"),
-           readout = 'ReadoutValue',
-           discard_keys = NULL,
-           assay_type = c("matrix", "BumpyMatrix")) {
-    .Deprecated(msg = "see create_SE2 for similar, but not identical functionality")
-
-    # Assertions:
-    stopifnot(any(inherits(df_data, "data.frame"), inherits(df_data, "DataFrame")))
-    checkmate::assert_character(data_type)
-    checkmate::assert_string(readout)
-    checkmate::assert_character(discard_keys, null.ok = TRUE)
-    data_type <- match.arg(data_type)
-    assay_type <- match.arg(assay_type)
-
-    # stopifnot(all(names(dfList) %in% .assayNames))
-    # #dfList must contain first assay (i.e. df_data)
-    # stopifnot(.assayNames[1] %in% names(dfList))
-    
-    mats <- if (assay_type == "matrix") {
-      gDRutils::df_to_assay(df_data, data_type = data_type, discard_keys = discard_keys)
-    } else if (assay_type == "BumpyMatrix") {
-      gDRutils::df_to_bm_assay(df_data, data_type = data_type, discard_keys = discard_keys)
-    } else {
-      stop(sprintf("bad assay type: '%s'", assay_type))
-    }
-    
-    allMetadata <- getMetaData(df_data, discard_keys = discard_keys)
-
-    seColData <- allMetadata$colData
-    rownames(seColData) <- seColData$name_
-    seRowData <- allMetadata$rowData
-    rownames(seRowData) <- seRowData$name_
-
-    seColData <-
-      seColData[colnames(mats), setdiff(colnames(seColData), c('col_id', 'name_')), drop = FALSE]
-    seRowData <- seRowData[rownames(mats),
-                           setdiff(colnames(seRowData), c('row_id', 'name_')), drop = FALSE]
-    matsL <- list(mats)
-    names(matsL) <- readout
-    
-    se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
-                                                     colData = seColData,
-                                                     rowData = seRowData)
-
-  }
-
-
 #' Create a SummarizedExperiment object
 #'
 #' Create a SummarizedExperiment object from a data.frame, where the data.frame contains treatments on rows,
@@ -96,7 +24,7 @@ create_SE <-
 #' @family runDrugResponseProcessingPipelineFxns
 #' @export
 #'
-create_SE2 <- function(df_, 
+create_SE <- function(df_, 
                        readout = "ReadoutValue", 
                        control_mean_fxn = function(x) {mean(x, trim = 0.25)}, 
                        nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")), 
@@ -111,7 +39,7 @@ create_SE2 <- function(df_,
     df_ <- S4Vectors::DataFrame(df_)
   }
 
-  Keys <- identify_keys2(df_, nested_keys, override_untrt_controls)
+  Keys <- identify_keys(df_, nested_keys, override_untrt_controls)
 
   if (!(gDRutils::get_identifier("masked_tag") %in% colnames(df_))) {
     df_[, gDRutils::get_identifier('masked_tag')] <- FALSE
@@ -121,7 +49,7 @@ create_SE2 <- function(df_,
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
 
   ## Identify treatments, conditions, and experiment metadata.
-  md <- split_SE_components(df_, nested_keys = Keys$nested_keys)
+  md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
   coldata <- md$condition_md
   rowdata <- md$treatment_md
   exp_md <- md$experiment_md

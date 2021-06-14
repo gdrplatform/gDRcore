@@ -1,84 +1,5 @@
 #' average_SE
 #'
-#' Avereage normalized SummarizedExperiment of DR data
-#'
-#' @param normSE a SummarizedExperiment with normalized DR data
-#' @param TrtKeys a vector of keys used for averaging (NULL by default)
-#' @param include_masked boolean indicating whether or not to include the masked wells
-#' in the averaging. 
-#' Defaults to \code{FALSE}.
-#'
-#' @return a SummarizedExperiment with additional assay with averaged DR data
-#'
-#' @export
-#'
-average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
-  .Deprecated(msg = "see average_SE2 for similar, but not identical functionality")
-
-  # Assertions:
-  checkmate::assert_class(normSE, "SummarizedExperiment")
-  checkmate::assert_vector(TrtKeys, null.ok = TRUE)
-
-    avgSE <- normSE
-    if (is.null(TrtKeys)) {
-        if ("Keys" %in% names(S4Vectors::metadata(normSE))) {
-          TrtKeys <- S4Vectors::metadata(normSE)$Keys$Trt
-          TrtKeys <- setdiff(TrtKeys, S4Vectors::metadata(normSE)$Keys$discard_keys)
-        } else {
-          TrtKeys <- identify_keys(normSE)$Trt
-        }
-    }
-    S4Vectors::metadata(normSE)$Keys$Trt <- TrtKeys
-
-    SummarizedExperiment::assay(avgSE, "Averaged") <- SummarizedExperiment::assay(avgSE, "Normalized")
-    avgSE_assay <- SummarizedExperiment::assay(avgSE, "Averaged")
-    
-    for (i in seq_len(nrow(avgSE))) {
-        for (j in seq_len(ncol(avgSE))) {
-        x <- avgSE_assay[[i,j]]
-        # bypass 'masked' filter
-        x$masked <- x$masked & !include_masked
-
-        subKeys <- intersect(TrtKeys, colnames(x))
-        if (sum(!x$masked) >= 1) {
-            df_av <- stats::aggregate(x[ !x$masked ,
-                                  c("GRvalue", "RelativeViability","CorrectedReadout")],
-                            by = as.list(x[ !x$masked , subKeys, drop = FALSE]),
-                            FUN = function(y) mean(y, na.rm = TRUE))
-            df_std <- stats::aggregate(x[!x$masked, c("GRvalue", "RelativeViability")],
-                                by = as.list(x[ !x$masked, subKeys, drop = FALSE]),
-                                FUN = function(x) stats::sd(x, na.rm = TRUE))
-            colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")] =
-                paste0("std_",
-                    colnames(df_std)[colnames(df_std) %in% c("GRvalue", "RelativeViability")])
-            df_ <- merge(df_av, df_std, by = subKeys) 
-        } else { # case: (nrow(x) == 0 || all(x$masked))
-            df_ <- as.data.frame(matrix(0,0,length(subKeys)+5))
-            colnames(df_) = c(subKeys,
-                  c("GRvalue", "RelativeViability","CorrectedReadout"),
-                  paste0("std_", c("GRvalue", "RelativeViability")))
-        } 
-        avgSE_assay[[i,j]] <- df_
-    }}
-    SummarizedExperiment::assay(avgSE, "Averaged") <- avgSE_assay
-
-    SummarizedExperiment::assay(avgSE, "Avg_Controls") <- SummarizedExperiment::assay(avgSE, "Controls")
-    avgSE <- aapply(avgSE, function(x) {
-        if (nrow(x) > 1) {
-            subKeys <- intersect(TrtKeys, colnames(x))
-            df_av <- S4Vectors::DataFrame(lapply(x[, c("Day0Readout", "UntrtReadout",
-                    "RefGRvalue", "RefRelativeViability",
-                    "RefReadout", "DivisionTime")], FUN = function(y) mean(y, na.rm = TRUE)))
-            return( df_av )
-        } else return(x)
-    }, "Avg_Controls")
-
-    return(avgSE)
-}
-
-
-#' average_SE2
-#'
 #' Average the normalized data within the nested \code{DataFrame}s. 
 #'
 #' @param se a \linkS4class{SummarizedExperiment} with drug response data that has a 
@@ -103,7 +24,7 @@ average_SE <- function(normSE, TrtKeys = NULL, include_masked = F) {
 #'
 #' @export
 #'
-average_SE2 <- function(se, 
+average_SE <- function(se, 
                         override_masked = FALSE, 
                         normalized_assay = "Normalized", 
                         averaged_assay = "Averaged") {

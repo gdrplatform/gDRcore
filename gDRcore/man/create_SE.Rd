@@ -2,31 +2,49 @@
 % Please edit documentation in R/create_SE.R
 \name{create_SE}
 \alias{create_SE}
-\title{create_SE}
+\title{Create a SummarizedExperiment object}
 \usage{
 create_SE(
-  df_data,
-  data_type = c("untreated", "treated", "all"),
+  df_,
   readout = "ReadoutValue",
-  discard_keys = NULL,
-  assay_type = c("matrix", "BumpyMatrix")
+  control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
+  nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
+  override_untrt_controls = NULL
 )
 }
 \arguments{
-\item{df_data}{a dataframe with DR data}
+\item{df_}{data.frame of raw drug response data containing both treated and untreated values.}
 
-\item{data_type}{string type of data to be returned: with untreated conditions only ('untreated'),
-with treated conditions only ('treated') or all}
+\item{readout}{string of the name containing the cell viability readout values.}
 
-\item{readout}{a character that indiciated readout value in a df ('ReadoutValue' by default)}
+\item{control_mean_fxn}{function indicating how to average controls.
+Defaults to \code{mean(x, trim = 0.25)}.}
 
-\item{discard_keys}{a vector of keys that should be discarded}
+\item{nested_keys}{character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
+Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.}
 
-\item{assay_type}{string assay type for the returned SummarizedExperiment}
+\item{override_untrt_controls}{named list containing defining factors in the treatments.
+Defaults to \code{NULL}.}
 }
 \value{
-SummarizedExperiment object with dose-reponse data
+A \linkS4class{SummarizedExperiment} object containing two asssays.
+Treated readouts will live in an assay called \code{"RawTreated"},
+and reference readouts live in an assay called \code{"Controls"}.
+\code{rownames} and \code{colnames} are made up of available metadata on treatments and conditions 
+and is pasted together.
 }
 \description{
-Create SummarizedExperiment object from data.frame(s) with dose-reponse data
+Create a SummarizedExperiment object from a data.frame, where the data.frame contains treatments on rows,
+and conditions on columns.
 }
+\details{
+This is most commonly used in preparation for downstream normalization.
+}
+\seealso{
+Other runDrugResponseProcessingPipelineFxns: 
+\code{\link{average_SE}()},
+\code{\link{fit_SE}()},
+\code{\link{normalize_SE}()},
+\code{\link{runDrugResponseProcessingPipeline}()}
+}
+\concept{runDrugResponseProcessingPipelineFxns}

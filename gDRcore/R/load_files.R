@@ -900,53 +900,6 @@ check_metadata_names <-
     return(corrected_names)
   }
 
-#' return some specs regarding delimited files
-#' currently:
-#' - delimiter detection (e.g. csv, tsv)
-#' - number of fields/columns (based on the line with the higher number of fields)
-#'
-#' @param file string
-#' @param nrows integer number of rows used to make predictions
-#' @param seps character vector with delimiters/separators that will be evaluated
-#'
-#' @return list with specs
-.guess_specs_of_delim_file <-
-  function(file,
-           nrows = 10000,
-           seps = c(',', '\t')) {
-    .Deprecated(msg = "Specs are automatically detected in loading functions.")
-    # Assertions:
-    checkmate::assert_string(file)
-    checkmate::assert_number(nrows)
-    checkmate::assert_character(seps)
-    
-    delimV <- vapply(seps, function(sep) {
-      df <- utils::read.table(file,
-                              nrows = nrows,
-                              fill = TRUE,
-                              sep = sep)
-      keepCols <- vapply(df, function(x) !sum(is.na(x)) > 0, logical(1))
-      df <- df[, keepCols]
-      dim(df)[2]
-    }, numeric(length = 1))
-    pCols <- unname(sort(delimV)[-1])
-    pSep <- names(sort(delimV)[-1])
-    
-    errMsg <-
-      sprintf("Can't gueess separator of the delimited file: ", file)
-    # we expect that for a valid separator there will be maximum number of columns
-    # stop if maximum number of columns was found for more than one separator
-    if (sum(delimV == pCols) > 1) {
-      stop(errMsg)
-    }
-    # we expect that for a valid separat more than single column will be found
-    if (!any(delimV > 1)) {
-      stop(errMsg)
-    }
-    
-    list(sep = pSep, ncols = pCols)
-  }
-
 
 #' Read envision files
 #'

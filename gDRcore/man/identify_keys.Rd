@@ -4,14 +4,30 @@
 \alias{identify_keys}
 \title{identify_keys}
 \usage{
-identify_keys(df_se_mae)
+identify_keys(df_, nested_keys = NULL, override_untrt_controls = NULL)
 }
 \arguments{
-\item{df_se_mae}{a dataframe or SummarizedExperiment or MultiassayExperiment with keys}
+\item{df_}{a data.frame to identify keys for.}
+
+\item{nested_keys}{character vector of keys to exclude from the returned list. 
+The keys discarded should be identical to the keys in the third
+dimension of the SummarizedExperiment.
+Defaults to the \code{"Barcode"} and the \code{masked} identifier.}
+
+\item{override_untrt_controls}{named list containing defining factors in the treatments.
+Defaults to \code{NULL}.}
 }
 \value{
-a list of keys
+named list of key types and their corresponding key values.
 }
 \description{
-Identify keys in the DR data represented by dataframe or SummarizedExperiment or MultiAssayExperiment objects
+Group columns from a data.frame that correspond to different
+}
+\details{
+This is most likely to be used for provenance tracking and will 
+be placed on the SummarizedExperiment metadata for downstream analyses
+to reference.
+}
+\seealso{
+map_df, create_SE
 }

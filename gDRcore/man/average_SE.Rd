@@ -4,20 +4,45 @@
 \alias{average_SE}
 \title{average_SE}
 \usage{
-average_SE(normSE, TrtKeys = NULL, include_masked = F)
+average_SE(
+  se,
+  override_masked = FALSE,
+  normalized_assay = "Normalized",
+  averaged_assay = "Averaged"
+)
 }
 \arguments{
-\item{normSE}{a SummarizedExperiment with normalized DR data}
+\item{se}{a \linkS4class{SummarizedExperiment} with drug response data that has a 
+\code{normalized_assay}.}
 
-\item{TrtKeys}{a vector of keys used for averaging (NULL by default)}
-
-\item{include_masked}{boolean indicating whether or not to include the masked wells
-in the averaging. 
+\item{override_masked}{boolean indicating whether or not to override the masked wells
+in the averaging and include all wells. 
 Defaults to \code{FALSE}.}
+
+\item{normalized_assay}{string of the assay name containing the normalized data.
+Defaults to \code{"Normalized"}.}
+
+\item{averaged_assay}{string of the assay to output averaged values in.
+Defaults to \code{"Averaged"}.}
 }
 \value{
-a SummarizedExperiment with additional assay with averaged DR data
+a \linkS4class{SummarizedExperiment} with an additional assay 
+specified by \code{averaged_assay} containing normalized data with 
+mean and standard deviation calculations for each unique treatment in the nested
+\code{DataFrame}s.
 }
 \description{
-Avereage normalized SummarizedExperiment of DR data
+Average the normalized data within the nested \code{DataFrame}s.
 }
+\details{
+Expects that \code{gDRutils::get_SE_keys(se)} will have values for both 
+\code{"Trt"} and \code{"masked_tag"}.
+}
+\seealso{
+Other runDrugResponseProcessingPipelineFxns: 
+\code{\link{create_SE}()},
+\code{\link{fit_SE}()},
+\code{\link{normalize_SE}()},
+\code{\link{runDrugResponseProcessingPipeline}()}
+}
+\concept{runDrugResponseProcessingPipelineFxns}

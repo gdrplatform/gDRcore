@@ -1,6 +1,6 @@
 library(testthat); library(gDRcore)
 
-test_that("identify_keys2 works", {
+test_that("identify_keys works", {
   d_id1 <- c("Gnumber",
     "DrugName",
     "Concentration")
@@ -40,7 +40,7 @@ test_that("identify_keys2 works", {
   colnames(df_) <- cols
   df_$DrugName <- gDRutils::get_identifier("untreated_tag")[1] 
 
-  k1 <- identify_keys2(df_, nested_keys = NULL)
+  k1 <- identify_keys(df_, nested_keys = NULL)
   expect_equal(sort(k1[["Trt"]]), sort(c(cl, misc, d_id1, d_ids, duration)))
   expect_equal(sort(k1[["ref_Endpoint"]]), sort(c(cl, misc, d_ids, duration)))
   expect_equal(sort(k1[["untrt_Endpoint"]]), sort(c(cl, misc, duration)))
@@ -48,12 +48,12 @@ test_that("identify_keys2 works", {
 
   # nested_keys argument works.
   nested_key <- "Barcode"
-  k2 <- identify_keys2(df_, nested_keys = nested_key)
+  k2 <- identify_keys(df_, nested_keys = nested_key)
   expect_equal(k1[!names(k1) %in% c("Trt", "nested_keys")], k2[!names(k2) %in% c("Trt", "nested_keys")])
   expect_equal(setdiff(k1$Trt, k2$Trt), nested_key)
 
   # Remove NA keys.
   df_$E2 <- NA
-  k3 <- identify_keys2(df_, nested_keys = NULL)
+  k3 <- identify_keys(df_, nested_keys = NULL)
   expect_equal(setdiff(k1[["untrt_Endpoint"]], k3[["untrt_Endpoint"]]), "E2")
 })

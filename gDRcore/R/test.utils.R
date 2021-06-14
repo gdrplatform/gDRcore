@@ -129,78 +129,6 @@ test_lData <- function(lData, lRef) {
                standardize_df(data.frame(lRef$lData_treatments)))
 }
 
-
-#' test_se_normalized
-#'
-#' Compare calculated normalization with the reference
-#'
-#' @param se a SummarizedExperiment object with the Normalized assay
-#' @param lRef a list of reference datasets
-#'
-#' @return
-#' @export
-#' 
-test_se_normalized <- function(se, lRef) {
-  expect_equal(standardize_df(metadata(se)$df_raw_data),
-               standardize_df(data.frame(lRef$df_raw_data)))
-  expect_equal(yaml::as.yaml(metadata(se)$Keys), paste0(lRef$ref_keys, "\n"))
-  expect_equal(yaml::as.yaml(metadata(se)$row_maps),
-               paste0(lRef$ref_row_maps, "\n"))
-  # Assertions:
-  checkmate::assert_class(se, "SummarizedExperiment")
-  checkmate::assert_list(lRef)
-
-    x = "Normalized"
-    xAs <- gDRutils::assay_to_dt(se, x, merge_metrics = TRUE)
-    xAs$DrugName <- as.character(xAs$DrugName)
-    xDf <- lRef[[paste0("assay_", x)]]
-    if(x %in% c("Controls", "Avg_Controls")){
-      xDf$DivisionTime <- as.numeric(xDf$DivisionTime)
-    }
-    expect_true(nrow(xAs) == nrow(xDf))
-    expect_equal(xAs, data.frame(xDf), tolerance = 1e-5)
-}
-
-
-#' test_se
-#'
-#' Compare all the assays in the SummarizedExperiment object with the reference
-#'
-#' @param se a SummarizedExperiment object with the calculated assay
-#' @param lRef a list of reference datasets
-#'
-#' @return
-#' @export
-#'
-test_se <- function(se, lRef) {
-  # Assertions:
-  checkmate::assert_class(se, "SummarizedExperiment")
-  checkmate::assert_list(lRef)
-  
-  x <- standardize_df(metadata(se)$df_raw_data)
-  y <- standardize_df(data.table::data.table(lRef$df_raw_data))
-  class(y) <- class(x)
-  
-  expect_equal(x, y)
-  expect_equal(metadata(se)$Keys, yaml::yaml.load(paste0(lRef$ref_keys, "\n")))
-  expect_equal(metadata(se)$row_maps,
-               yaml::yaml.load(paste0(lRef$ref_row_maps, "\n")))
-
-  #assays check
-  myL <- lapply(SummarizedExperiment::assayNames(se), function(x) {
-    print(x)
-    xAs <- gDRutils::assay_to_dt(se, x, merge_metrics = TRUE)
-    xAs$DrugName <- as.character(xAs$DrugName)
-    xDf <- lRef[[paste0("assay_", x)]]
-    if(x %in% c("Controls", "Avg_Controls")){
-    xDf$DivisionTime <- as.numeric(xDf$DivisionTime)
-    }
-    expect_true(nrow(xAs) == nrow(xDf))
-    expect_equivalent(sort(xAs[, order(names(xAs))]), 
-                      sort(data.table::as.data.table(xDf)[, order(names(xDf))]), tolerance = 1e-5)
-  })
-}
-
 #' test_synthetic_normalization
 #'
 #' Compare calculated normalization with the reference in synthetic data
@@ -286,7 +214,7 @@ save_file_type_info <-
 
 #' @export
 #'
-test_se2 <- function(se, lRef) {
+test_se <- function(se, lRef) {
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_list(lRef)
@@ -357,42 +285,6 @@ test_se2 <- function(se, lRef) {
                       sort(data.table::as.data.table(xDf)[, order(names(xDf))]), tolerance = 1e-5)
   })
 }
-
-
-#' @export
-#'
-test_runDrugResponseProcessingPipeline_equivalence <- function(df_,
-                                                               ctrl_cols = c("Day0Readout", "Barcode", "UntrtReadout", "RefReadout"), 
-                                                               norm_cols = c("masked", "GRvalue", "RelativeViability", "Concentration")) {
-  orig_se <- runDrugResponseProcessingPipeline(df_)
-  orig_ctrl <- SummarizedExperiment::assays(metricsSE)[["Controls"]]
-  orig_norm <- SummarizedExperiment::assays(metricsSE)[["Normalized"]]
-  orig_metrics <- SummarizedExperiment::assays(metricsSE)[["Metrics"]]
-
-  new_se <- runDrugResponseProcessingPipeline2(df_)
-  new_ctrl <- SummarizedExperiment::assays(new_se)[["Controls"]]
-  new_norm <- SummarizedExperiment::assays(new_se)[["Normalized"]]
-  new_metrics <- SummarizedExperiment::assays(new_se)[["Metrics"]]
-
-  tryCatch({
-    for (i in rownames(orig_se)) {
-      for (j in colnames(orig_se)) {
-        if (nrow(orig_ctrl[i, j][[1]]) == 0L) {
-          expect_true(nrow(new_ctrl[i, j][[1]]) == 0L)
-        } else {
-          check_identity_of_dfs(orig_ctrl, new_ctrl, i, j, ctrl_cols)
-          check_identity_of_dfs(orig_norm, new_norm, i, j, norm_cols)
-          check_identity_of_dfs(orig_metrics, new_metrics, i, j)
-        }
-      }
-    }
-  }, error = function(e) {
-      # NOTE: tryCatch is present because r2 value has changed from class logical to numeric for NAs which is correct.
-      # TODO: Could catch just the above case to make more robust. 
-      print(e)
-  })
-}
-
 
 #' @export
 #'

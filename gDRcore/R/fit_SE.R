@@ -1,68 +1,4 @@
-#' metrics_SE
-#' @export
-#'
-metrics_SE <- function(...) {
-  .Deprecated("fit_SE", package="gDR")
-  fit_SE(...)
-}
-
-
 #' fit_SE
-#'
-#' Calculate metrics for DR data
-#'
-#' @param avgSE a SummarizedExperiment with averaged and normalized assays
-#' @param studyConcThresh a numeric with study concentration threshold (4 by default)
-#'
-#' @return a SummarizedExperiment with additional assay with metrics
-#'
-#' @export
-#'
-fit_SE <- function(avgSE, studyConcThresh = 4) {
-    .Deprecated(msg = "see fit_SE2 for similar, but not identical functionality")
-
-    # Assertions:
-    checkmate::assert_class(avgSE, "SummarizedExperiment")
-    checkmate::assert_number(studyConcThresh)
-
-    stopifnot(is.numeric(studyConcThresh))
-    # this is not used as we enforce the same conditions as the input SE; not collapsing allowed
-    # if (is.null(DoseRespKeys)) {
-    #     if ("Keys" %in% names(S4Vectors::metadata(avgSE))) DoseResp = S4Vectors::metadata(avgSE)$Keys$DoseResp
-    #     else DoseRespKeys = identify_keys(avgSE)$DoseResp
-    # } else {
-    #     metadata(avgSE)$Keys$DoseResp = DoseRespKeys
-    # }
-
-    metricsSE <- avgSE
-    SummarizedExperiment::assay(metricsSE, "Metrics") <- SummarizedExperiment::assay(metricsSE, "Averaged")
-
-    # temporary optimization (use 'normSE_n' and 'normSE_c' to avoid using 'assay<-` in a foor loops)
-    # TODO: refactor this part of code once we switch to DataFrameMatrix class
-    mSE_m <- SummarizedExperiment::assay(metricsSE, "Metrics")
-    a_SE <- SummarizedExperiment::assay(metricsSE, "Averaged")
-    aCtrl_SE <- SummarizedExperiment::assay(metricsSE, "Avg_Controls")
-    for (i in rownames(metricsSE)) {
-        for (j in colnames(metricsSE)) {
-            df_ <- a_SE[[i, j]]
-            if (!is.null(df_) && all(dim(df_) > 0)) { # studyConcThresh is embeded in RVGRfits
-                mSE_m[[i, j]] <- S4Vectors::DataFrame(gDRutils::fit_curves(S4Vectors::DataFrame(df_),
-                    e_0 = aCtrl_SE[[i, j]]$RefRelativeViability,
-                    GR_0 = aCtrl_SE[[i, j]]$RefGRvalue,
-                    n_point_cutoff = studyConcThresh))
-            } else {
-                out <- S4Vectors::DataFrame(matrix(NA, 0, length(gDRutils::get_header("response_metrics"))+2))
-                colnames(out) <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
-                mSE_m[[i, j]] <- out
-            }
-        }
-    }
-    SummarizedExperiment::assay(metricsSE, "Metrics") <- mSE_m
-    return(metricsSE)
-}
-
-
-#' fit_SE2
 #'
 #' Fit curves and obtain fit metrics from normalized, averaged drug response data.
 #'
@@ -95,7 +31,7 @@ fit_SE <- function(avgSE, studyConcThresh = 4) {
 #' @family runDrugResponseProcessingPipelineFxns
 #' @export
 #'
-fit_SE2 <- function(se, 
+fit_SE <- function(se, 
                     averaged_assay = "Averaged", 
                     ref_GR_assay = "RefGRvalue",
                     ref_RV_assay = "RefRelativeViability",

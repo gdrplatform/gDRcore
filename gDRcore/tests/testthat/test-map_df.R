@@ -6,7 +6,7 @@ test_that("map_df works as expected", {
   ref <- md_df$Gnumber %in% c("vehicle", "untreated")
   ref_df <- md_df[ref, ]
   trt_df <- md_df[!ref, ]
-  Keys <- identify_keys2(test_df)
+  Keys <- identify_keys(test_df)
 
   ref_type <- "untrt_Endpoint"
   mapping <- map_df(trt_df, 
