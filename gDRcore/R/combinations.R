@@ -78,6 +78,6 @@ add_codrug_group_SE <- function(se) {
                               condition_name))
   }
 
-  metadata(se)$drug_combinations <- pair_list
+  S4Vectors::metadata(se)$drug_combinations <- pair_list
   return(se)
 }
