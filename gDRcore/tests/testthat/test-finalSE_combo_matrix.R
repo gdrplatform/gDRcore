@@ -1,10 +1,9 @@
-context("Test finalSE_combo_matrix")
 original <- readRDS(system.file("testdata", "finalSE_combo_matrix.RDS", package = "gDRtestData"))
 normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
 averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
 metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
 
-source('gDRtestData/gDRtestData/inst/scripts/functions_generate_data.R')
+source(system.file("scripts", "functions_generate_data.R", package = "gDRtestData"))
 df_layout <- merge(CellLines[seq(1,30,4),], Drugs[c(1,2,11,12,16,17),], by = NULL)
 df_layout <- add_data_replicates(df_layout)
 df_layout <- add_concentration(df_layout)

@@ -1,10 +1,9 @@
-context("Test finalSE_many_lines")
 original <- readRDS(system.file("testdata", "finalSE_many_lines.RDS", package = "gDRtestData"))
 normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
 averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
 metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
 
-source('gDRtestData/gDRtestData/inst/scripts/functions_generate_data.R')
+source(system.file("scripts", "functions_generate_data.R", package = "gDRtestData"))
 df_layout <- merge(CellLines, Drugs[1:40,], by = NULL)
 df_layout <- add_data_replicates(df_layout)
 df_layout <- add_concentration(df_layout)

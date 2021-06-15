@@ -1,10 +1,9 @@
-context("Test finalSE_combo_codilution_small")
 original <- readRDS(system.file("testdata", "finalSE_combo_codilution_small.RDS", package = "gDRtestData"))
 normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
 averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
 metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
 
-source('gDRtestData/gDRtestData/inst/scripts/functions_generate_data.R')
+source(system.file("scripts", "functions_generate_data.R", package = "gDRtestData"))
 df_layout <- merge(CellLines[1:2,], Drugs[1:4,], by = NULL)
 df_layout <- add_data_replicates(df_layout)
 df_layout <- add_concentration(df_layout)
