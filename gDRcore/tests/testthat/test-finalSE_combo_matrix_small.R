@@ -18,19 +18,7 @@ df_layout_2 <- merge(df_layout, df_2)
 
 df_merged_data <- generate_response_data(df_layout_2, 0)
 
-se <- gDRcore::create_SE(df_merged_data, override_untrt_controls = NULL)
-normSE <- gDRcore::normalize_SE(se)  
-avgSE <- gDRcore::average_SE(normSE)
-metricsSE <- gDRcore::fit_SE(avgSE)
-finalSE <- gDRcore::add_codrug_group_SE(metricsSE)
+finalSE <- gDRcore::runDrugResponseProcessingPipeline(df_merged_data, override_untrt_controls = NULL)
 
-normalized_new <- gDRutils::convert_se_assay_to_dt(finalSE, "Normalized")
-averaged_new <- gDRutils::convert_se_assay_to_dt(finalSE, "Averaged")
-metrics_new <- gDRutils::convert_se_assay_to_dt(finalSE, "Metrics")
-
-test_that("Original finalSE_combo_matrix_small data and recreated data are identical", {
-  expect_identical(normalized, normalized_new)
-  expect_identical(averaged, averaged_new)
-  expect_identical(metrics, metrics_new)
-})
+test_synthetic_data(original, finalSE)
 
