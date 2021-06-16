@@ -134,9 +134,9 @@ fit_SE2 <- function(se,
       avg_df <- avg_trt[i, j][[1]]
       if (nrow(avg_df) == 0L) {next}
       
-      fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
-      colnames(fit_df) <- metric_cols
-      rownames(fit_df) <- c('RV', 'GR')
+      fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols) + 2))
+      colnames(fit_df) <- c(metric_cols, 'normalization_type', 'fit_source')
+      fit_df$fit_source <- 'gDR'
 
       if (!is.null(avg_df) && all(dim(avg_df) > 0) && sum(!is.na(avg_df$RelativeViability)) > 0) {
         fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
@@ -158,7 +158,7 @@ fit_SE2 <- function(se,
     }
   }
 
-  out <- S4Vectors::DataFrame(do.call("rbind", out))
+  out <- S4Vectors::DataFrame(do.call("rbind", out[ !sapply(out, is.null) ]))
   metrics <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c("row_id", "col_id")], 
     row = out$row_id, 
     col = out$col_id)

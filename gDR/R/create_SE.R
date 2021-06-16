@@ -276,7 +276,8 @@ create_SE2 <- function(df_,
       }
       
       if (nrow(day0_df) > 0L) {
-        ref_df <- merge(day0_df[, setdiff(colnames(day0_df), Keys$nested_keys), drop = FALSE], ref_df)
+        # ref_df <- merge(day0_df[, setdiff(colnames(day0_df), Keys$nested_keys), drop = FALSE], ref_df)
+        ref_df <- merge(day0_df, ref_df)
       } else {
         ref_df$Day0Readout <- NA
       } 

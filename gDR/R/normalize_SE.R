@@ -520,13 +520,20 @@ normalize_SE2 <- function(se,
 
       # pad the ref_df for missing values based on nested_keys (uses mean across all available values)
       if (!is.null(nested_keys) && length(nested_keys) > 0) {
-        ref_df_complete <- unique(trt_df[,nested_keys,drop=FALSE])
-        ref_df_complete <- merge(ref_df_complete, ref_df, by = nested_keys)
         data_columns <- setdiff(colnames(ref_df), nested_keys)
         ref_df_mean <- lapply(ref_df[, data_columns, drop=FALSE], function(x) mean(x, na.rm = TRUE))
-        for (col in data_columns) {
-          ref_df_complete[is.na(ref_df_complete[,col]), col] <- ref_df_mean[[col]]
-        }
+        
+        ref_df_complete <- unique(trt_df[, nested_keys, drop=FALSE])
+        ref_df_complete <- merge(ref_df_complete, ref_df, by = nested_keys)
+        if (nrow(ref_df_complete) == 0) {
+          # no matching barcodes --> pick the average of the other barcodes
+          ref_df_complete <- cbind(unique(trt_df[, nested_keys, drop=FALSE]), 
+                  as.data.frame(ref_df_mean))
+        } else {
+          for (col in data_columns) {
+            ref_df_complete[is.na(ref_df_complete[,col]), col] <- ref_df_mean[[col]]
+          }
+        } 
       } else {
         ref_df_complete <- ref_df
       }
