@@ -62,7 +62,7 @@ RUN sudo update-ca-certificates
 
 #================= install dependencies 
 COPY rplatform/DESCRIPTION_dependencies.yaml /mnt/vol/rplatform/DESCRIPTION_dependencies.yaml
-COPY gDR/DESCRIPTION /mnt/vol/gDR/DESCRIPTION
+COPY gDRcore/DESCRIPTION /mnt/vol/gDRcore/DESCRIPTION
 COPY rplatform/install_dependencies.R /mnt/vol/rplatform/install_dependencies.R
 COPY rplatform/git_dependencies.yml /mnt/vol/rplatform/git_dependencies.yml
 RUN R -f /mnt/vol/rplatform/install_dependencies.R
