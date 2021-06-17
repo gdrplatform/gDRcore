@@ -307,7 +307,7 @@ check_identity_of_dfs <- function(mat1, mat2, i, j, cols = NULL) {
 
 #' @export
 #'
-test_synthetic_data <- function(original, reprocessed) {
+test_synthetic_data <- function(original, reprocessed, dataName) {
   normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
   averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
   metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
@@ -315,7 +315,7 @@ test_synthetic_data <- function(original, reprocessed) {
   averaged_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Averaged")
   metrics_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Metrics")
   
-  test_that("Original finalSE_small data and recreated data are identical", {
+  test_that(sprintf("Original data %s and recreated data are identical", dataName), {
     expect_identical(normalized_new, normalized)
     expect_identical(averaged_new, averaged)
     expect_identical(metrics_new, metrics)
