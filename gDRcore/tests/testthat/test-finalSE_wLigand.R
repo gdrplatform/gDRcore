@@ -1,6 +1,7 @@
-original <- readRDS(system.file("testdata", "finalSE_wLigand.RDS", package = "gDRtestData"))
+data <- "finalSE_wLigand.RDS"
+original <- get_synthetic_data(data)
 
-df_layout <- merge(gDRtestData::create_synthetic_cell_lines()[2:6,], gDRtestData::create_synthetic_drugs()[2:5,], by = NULL)
+df_layout <- merge(cell_lines[2:6,], drugs[2:5,], by = NULL)
 df_layout <- gDRtestData::add_data_replicates(df_layout)
 df_layout <- gDRtestData::add_concentration(df_layout)
 
@@ -20,4 +21,4 @@ df_merged_data <- rbind(df_merged_data, df_merged_data2)
 
 finalSE <- gDRcore::runDrugResponseProcessingPipeline(df_merged_data, override_untrt_controls = c(Ligand = 0.1))
 
-test_synthetic_data(original, finalSE, "finalSE_wLigand.RDS")
+test_synthetic_data(original, finalSE, data)

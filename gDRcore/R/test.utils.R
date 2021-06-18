@@ -321,3 +321,9 @@ test_synthetic_data <- function(original, reprocessed, dataName) {
     expect_identical(metrics_new, metrics)
   })
 }
+
+#' @export
+#'
+get_synthetic_data <- function(rds) {
+  readRDS(system.file("testdata", rds, package = "gDRtestData"))
+}
