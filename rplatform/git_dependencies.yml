@@ -20,7 +20,7 @@ pkgs:
     ref: master
     subdir: ~
   gDRtestData:
-    ver: '>=1.0.0'
+    ver: '>=1.0.2'
     url: https://github.roche.com/gdrplatform/gDRtestData.git
     ref: master
     subdir: gDRtestData

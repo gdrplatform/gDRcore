@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.0.5] - 2021-06-14
+#### Update
+- add unit tests for synthetic data
+
 #### [1.0.4] - 2021-06-14
 #### Update
 - remove deprecated functions and unit tests
