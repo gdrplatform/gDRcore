@@ -3,11 +3,11 @@ original <- get_synthetic_data(data)
 
 df_layout <- merge(cell_lines[7:8,], drugs[c(4:6),], by = NULL)
 df_layout <- gDRtestData::add_data_replicates(df_layout)
-df_layout <- gDRtestData::add_concentration(df_layout, Concentrations = 10**(seq(-3,.5,.5)))
+df_layout <- gDRtestData::add_concentration(df_layout, concentrations = 10**(seq(-3,.5,.5)))
 
 df_2 <- merge(cell_lines[cell_lines$clid %in% df_layout$clid,], drugs[c(21,26),], by = NULL)
 df_2 <- gDRtestData::add_data_replicates(df_2)
-df_2 <- gDRtestData::add_concentration(df_2, Concentrations = 10**(seq(-3,.5,.5)))
+df_2 <- gDRtestData::add_concentration(df_2, concentrations = 10**(seq(-3,.5,.5)))
 colnames(df_2)[colnames(df_2) %in% c(colnames(drugs),'Concentration')] <- 
   paste0(colnames(df_2)[colnames(df_2) %in% c(colnames(drugs),'Concentration')], '_2')
 
