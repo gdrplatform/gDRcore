@@ -22,5 +22,5 @@ pkgs:
   gDRtestData:
     ver: '>=1.0.2'
     url: https://github.roche.com/gdrplatform/gDRtestData.git
-    ref: GDR-984
+    ref: master
     subdir: gDRtestData
