@@ -80,7 +80,7 @@ normalize_SE <- function(se,
       # pad the ref_df for missing values based on nested_keys (uses mean across all available values)
       if (!is.null(nested_keys) && length(nested_keys) > 0) {
         ref_df_complete <- unique(trt_df[,nested_keys,drop=FALSE])
-        ref_df_complete <- merge(ref_df_complete, ref_df, by = nested_keys)
+        ref_df_complete <- merge(ref_df_complete, ref_df, by = nested_keys, all = T)
         data_columns <- setdiff(colnames(ref_df), nested_keys)
         ref_df_mean <- lapply(ref_df[, data_columns, drop=FALSE], function(x) mean(x, na.rm = TRUE))
         for (col in data_columns) {
@@ -137,7 +137,7 @@ normalize_SE <- function(se,
 
       ref_rel_viability[i, j] <- round(mean(RV_vec, na.rm=TRUE), ndigit_rounding)
       ref_GR_value[i, j] <- round(mean(GR_vec, na.rm = TRUE), ndigit_rounding)
-      div_time[i, j] <- round(duration / log2(mean(ref_df$UntrtReadout/ref_df$Day0Readout, na.rm = TRUE)), ndigit_rounding)
+      div_time[i, j] <- round(duration / log2(mean(ref_df_complete$UntrtReadout, na.rm = TRUE)/mean(ref_df$Day0Readout, na.rm = TRUE)), ndigit_rounding)
     }
   }
 
