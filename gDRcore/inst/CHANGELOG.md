@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.0.6] - 2021-06-23
+#### Update
+- add linter
+- remove obsolete functions from test.utils.R
+
 #### [1.0.5] - 2021-06-14
 #### Update
 - add unit tests for synthetic data
