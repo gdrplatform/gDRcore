@@ -60,7 +60,8 @@ calculate_GR_value <- function(rel_viability,
       GRvalue <- rep(NA, length(rel_viability))
     } else if (ref_div_time > 1.5 * duration) {
       warning(
-        sprintf("reference doubling time for '%s' is '%s', too long for GR calculation with assay duration ('%s'), setting GR values to NA", 
+        sprintf("reference doubling time for '%s' is '%s', too long for GR calculation with assay duration ('%s'),
+                setting GR values to NA", 
           cl_name, ref_div_time, duration))
       GRvalue <- rep(NA, length(rel_viability))
     } else {
@@ -68,11 +69,11 @@ calculate_GR_value <- function(rel_viability,
         sprintf("no day 0 data, calculating GR value based on reference doubling time for '%s'", 
           cl_name))
       GRvalue <- calculate_endpt_GR_value(rel_viability = rel_viability, 
-	duration = duration, 
-	ref_div_time = ref_div_time, 
-	cap = cap,
-	ndigit_rounding = ndigit_rounding)
-    }
+                                          duration = duration, 
+                                          ref_div_time = ref_div_time, 
+                                          cap = cap,
+                                          ndigit_rounding = ndigit_rounding)
+      }
   } else {
     GRvalue <- calculate_time_dep_GR_value(corrected_readout, 
       day0_readout,  
@@ -86,11 +87,11 @@ calculate_GR_value <- function(rel_viability,
 #' @rdname calculate_GR_value
 #' @export
 #'
-calculate_time_dep_GR_value <- function(corrected_readout, 
-                                        day0_readout, 
+calculate_time_dep_GR_value <- function(corrected_readout,
+                                        day0_readout,
                                         untrt_readout, 
                                         ndigit_rounding) {
-  round(2 ^ (log2(corrected_readout/day0_readout) / log2(untrt_readout/day0_readout)), ndigit_rounding) - 1
+  round(2 ^ (log2(corrected_readout / day0_readout) / log2(untrt_readout / day0_readout)), ndigit_rounding) - 1
 }
 
 
@@ -102,5 +103,5 @@ calculate_endpt_GR_value <- function(rel_viability,
                                      ref_div_time, 
                                      cap = 1.25,
                                      ndigit_rounding) {
-  round(2 ^ (1 + (log2(pmin(cap, rel_viability)) / (duration/ref_div_time))), ndigit_rounding) - 1
+  round(2 ^ (1 + (log2(pmin(cap, rel_viability)) / (duration / ref_div_time))), ndigit_rounding) - 1
 }

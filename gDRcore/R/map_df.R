@@ -34,10 +34,13 @@ map_df <- function(trt_md,
 
   conc <- cbind(array(0, nrow(ref_md)), # padding to avoid empty df;
     ref_md[, agrep("Concentration", colnames(ref_md)), drop = FALSE])
-  is_ref_conc <- apply(conc, 1, function(z) {all(z == 0)})
+  is_ref_conc <- apply(conc, 1, function(z) {
+    all(z == 0)
+    })
 
   if (ref_type == "Day0") {
-    matching_list <- list(T0 = ref_md[, duration_col] == 0, conc = is_ref_conc) # Identifying which of the durations have a value of 0.
+    # Identifying which of the durations have a value of 0.
+    matching_list <- list(T0 = ref_md[, duration_col] == 0, conc = is_ref_conc)
     matchFactor <- "T0"
   } else if (ref_type == "untrt_Endpoint") {
     matching_list <- list(conc = is_ref_conc)
@@ -56,7 +59,9 @@ map_df <- function(trt_md,
   out <- list("vector", length(trt_rnames))
   for (i in seq_len(length(trt_rnames))) {
     treatment <- trt_rnames[i]
-    refs <- lapply(present_ref_cols, function(y) {ref_md[, y] == trt_md[treatment, y]})
+    refs <- lapply(present_ref_cols, function(y) {
+      ref_md[, y] == trt_md[treatment, y]
+      })
 
     if (!is.null(override_untrt_controls) && ref_type != "ref_Endpoint") {
         for (overridden in names(override_untrt_controls)) {
@@ -73,12 +78,12 @@ map_df <- function(trt_md,
       idx <- apply(match_mx, 2, function(y) sum(y, na.rm = TRUE)) 
       # TODO: Sort this out so that it also takes the average in case multiple are found.
       idx <- idx * match_mx[matchFactor, ]
-
+      
       if (any(idx > 0)) {
         match_idx <- which.max(idx)
         futile.logger::flog.warn("Found partial match:", rownames(ref_md)[match_idx])
       } else { # failed to find any potential match
-	    futile.logger::flog.warn("No partial match found")
+        futile.logger::flog.warn("No partial match found")
       }
     }
     out[[i]] <- rownames(ref_md)[match_idx] # TODO: Check that this properly handles NAs. 
