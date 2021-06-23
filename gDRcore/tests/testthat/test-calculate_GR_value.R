@@ -8,7 +8,7 @@ test_that("calculate_GR_value throws expected errors", {
                      untrt_readout = readouts,
                      ndigit_rounding = 4,
                      duration = duration, 
-                     ref_div_time = duration/2))
+                     ref_div_time = duration / 2))
 })
 
 
@@ -26,7 +26,7 @@ test_that("calculate_GR_value works as expected", {
     untrt_readout = untrt,
     ndigit_rounding = 4,
     duration = duration, 
-    ref_div_time = duration/2)
+    ref_div_time = duration / 2)
   expect_true(is.numeric(gr1))
 
   # day0_readout is NA, reference division time missing.

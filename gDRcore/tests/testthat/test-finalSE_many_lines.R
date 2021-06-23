@@ -1,7 +1,7 @@
 data <- "finalSE_many_lines.RDS"
 original <- get_synthetic_data(data)
 
-df_layout <- merge(cell_lines, drugs[1:40,], by = NULL)
+df_layout <- merge(cell_lines, drugs[1:40, ], by = NULL)
 df_layout <- gDRtestData::add_data_replicates(df_layout)
 df_layout <- gDRtestData::add_concentration(df_layout)
 
