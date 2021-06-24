@@ -1005,7 +1005,7 @@ read_EnVision <- function(file,
     x[x == "" & !is.na(x)] <- NA
     return(x)
   })
-  df_ <- as.data.frame(do.call(rbind, results.list), stringsAsFactors = F)
+  df_ <- as.data.frame(do.call(rbind, results.list), stringsAsFactors = FALSE)
   colnames(df_) <- paste0("x", seq_len(n_col))
   
   rownames(df_) <- NULL
