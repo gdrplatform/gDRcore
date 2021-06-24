@@ -38,8 +38,8 @@ add_CellLine_annotation <- function(df_metadata,
   if (!is.null(fill) && !validatedCLs) {
     missingTblCellLines <- data.table::data.table(parental_identifier = fill,
                                                   cell_line_name = fill,
-                                                  cell_line_identifier = unlist(unique(df_metadata[,
-                                                                                                   cellline, with = FALSE])),
+                                                  cell_line_identifier = unlist(
+                                                    unique(df_metadata[, cellline, with = FALSE])),
                                                   doubling_time = NA,
                                                   primary_tissue = fill,
                                                   subtype = fill)
