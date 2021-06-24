@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.0.7] - 2021-06-23
+#### Update
+- add linter
+- remove obsolete functions from test.utils.R
+
 #### [1.0.6] - 2021-06-22
 #### Update
 - move importing functions to gDRimport package

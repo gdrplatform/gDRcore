@@ -8,9 +8,11 @@
 #' Defaults to \code{"Averaged"}.
 #' @param ref_GR_assay string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.
 #' Defaults to \code{"RefGRvalue"}.
-#' @param ref_RV_assay string of the name of the reference Relative Viability assay in the \linkS4class{SummarizedExperiment}.
+#' @param ref_RV_assay string of the name of the reference Relative Viability assay
+#'  in the \linkS4class{SummarizedExperiment}.
 #' Defaults to \code{"RefRelativeViability"}.
-#' @param metrics_assay string of the name of the metrics assay to output in the returned \linkS4class{SummarizedExperiment}.
+#' @param metrics_assay string of the name of the metrics assay to output
+#' in the returned \linkS4class{SummarizedExperiment}.
 #' Defaults to \code{"Metrics"}.
 #' @param n_point_cutoff integer of how many points should be considered the minimum required to try to fit a curve.
 #' Defaults to \code{4}.
@@ -68,11 +70,13 @@ fit_SE <- function(se,
     for (j in seq_len(ncol(se))) {
       count <- count + 1
       avg_df <- avg_trt[i, j][[1]]
-      if (nrow(avg_df) == 0L) {next}
+      if (nrow(avg_df) == 0L) {
+        next
+        }
       
       fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
       colnames(fit_df) <- metric_cols
-      rownames(fit_df) <- c('RV', 'GR')
+      rownames(fit_df) <- c("RV", "GR")
 
       if (!is.null(avg_df) && all(dim(avg_df) > 0) && sum(!is.na(avg_df$RelativeViability)) > 0) {
         fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,

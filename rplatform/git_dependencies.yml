@@ -24,3 +24,11 @@ pkgs:
     url: https://github.roche.com/gdrplatform/gDRtestData.git
     ref: master
     subdir: gDRtestData
+  lintr:
+    ver: '>=1.0.0'
+    url: https://github.com/jimhester/lintr.git
+  gDRstyle:
+    ver: '>=0.0.3'
+    url: https://github.roche.com/gdrplatform/gDRstyle.git
+    ref: master
+    subdir: ~

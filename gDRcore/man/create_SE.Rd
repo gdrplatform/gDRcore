@@ -20,7 +20,8 @@ create_SE(
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
 
-\item{nested_keys}{character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object. 
+\item{nested_keys}{character vector of column names to include in the data.frames in the assays 
+of the resulting \code{SummarizedExperiment} object. 
 Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.}
 
 \item{override_untrt_controls}{named list containing defining factors in the treatments.

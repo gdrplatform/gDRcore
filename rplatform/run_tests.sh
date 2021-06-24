@@ -8,6 +8,9 @@ echo "Working directory contains: `ls | tr '\n' ' '`"
 # exit when any command fails
 set -e
 
+echo ">>>>>>>> Running linter"
+Rscript -e "gDRstyle::lintPkgInDir('/mnt/vol/gDRcore')"
+
 echo ">>>>> RUNNING UNIT TESTS"
 Rscript -e "devtools::test(pkg = '/mnt/vol/gDRcore', stop_on_failure = TRUE)"
 
