@@ -1,5 +1,3 @@
-library(testthat); library(gDRcore)
-
 test_that("identify_keys works", {
   d_id1 <- c("Gnumber",
     "DrugName",
@@ -38,7 +36,7 @@ test_that("identify_keys works", {
 
   df_ <- data.frame(matrix(0, nrow = 1, ncol = length(cols)))
   colnames(df_) <- cols
-  df_$DrugName <- gDRutils::get_identifier("untreated_tag")[1] 
+  df_$DrugName <- gDRutils::get_identifier("untreated_tag")[1]
 
   k1 <- identify_keys(df_, nested_keys = NULL)
   expect_equal(sort(k1[["Trt"]]), sort(c(cl, misc, d_id1, d_ids, duration)))
