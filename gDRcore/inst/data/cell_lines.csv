@@ -1,0 +1,11 @@
+cell_line_identifier,cell_line_name,primary_tissue,doubling_time,parental_identifier,subtype
+CL00016,cellline_GB,breast,46,cellline_GB,NA
+CL00017,cellline_HB,breast,50,cellline_HB,NA
+CL00011,cellline_BA,breast,26,cellline_BA,NA
+CL00012,cellline_CA,breast,30,cellline_CA,NA
+CL00013,cellline_DA,breast,34,cellline_DA,NA
+CL00014,cellline_EA,breast,38,cellline_EA,NA
+CL00015,cellline_FA,breast,42,cellline_FA,NA
+CL00018,cellline_IB,breast,54,cellline_IB,NA
+CL00019,cellline_JB,breast,58,cellline_JB,NA
+CL00020,cellline_KB,breast,62,cellline_KB,NA
