@@ -10,7 +10,7 @@
 
   rownames(mapping_entries) <- seq_len(nrow(mapping_entries))
   mapping_entries
-} 
+}
 
 
 #' cleanup_metadata
@@ -27,13 +27,13 @@ cleanup_metadata <- function(df_metadata) {
 
   # Assertions:
   stopifnot(inherits(df_metadata, "data.frame"))
-  
+
   data.table::setDT(df_metadata)
 
   # clean up numberic fields
   df_metadata[[gDRutils::get_identifier("duration")]] <-
     round(as.numeric(df_metadata[[gDRutils::get_identifier("duration")]], 6))
-  
+
   # identify potential numeric fields and replace NA by 0 - convert strings in factors
   for (c in setdiff(1:dim(df_metadata)[2], c(
     agrep(gDRutils::get_identifier("drug"), colnames(df_metadata)),
@@ -65,7 +65,7 @@ cleanup_metadata <- function(df_metadata) {
     }
   }
     # TODO: specific to GNE database --> need to be replaced by a function
-    df_metadata <- gDRwrapper::add_CellLine_annotation(df_metadata)
+    df_metadata <- add_CellLine_annotation(df_metadata)
     # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
 
     for (i in agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))) { # correct case issues
@@ -75,8 +75,8 @@ cleanup_metadata <- function(df_metadata) {
     }
     # -----------------------
 
-    df_metadata <- gDRwrapper::add_Drug_annotation(df_metadata)
-  
+    df_metadata <- add_Drug_annotation(df_metadata)
+
     data.table::setDF(df_metadata)
     # clean up concentration fields
     for (i in agrep("Concentration", colnames(df_metadata))) {
