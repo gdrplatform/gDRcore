@@ -10,7 +10,7 @@
 
   rownames(mapping_entries) <- seq_len(nrow(mapping_entries))
   mapping_entries
-} 
+}
 
 
 #' cleanup_metadata
@@ -27,13 +27,13 @@ cleanup_metadata <- function(df_metadata) {
 
   # Assertions:
   stopifnot(inherits(df_metadata, "data.frame"))
-  
+
   data.table::setDT(df_metadata)
 
   # clean up numberic fields
   df_metadata[[gDRutils::get_identifier("duration")]] <-
     round(as.numeric(df_metadata[[gDRutils::get_identifier("duration")]], 6))
-  
+
   # identify potential numeric fields and replace NA by 0 - convert strings in factors
   for (c in setdiff(1:dim(df_metadata)[2], c(
     agrep(gDRutils::get_identifier("drug"), colnames(df_metadata)),
@@ -76,7 +76,7 @@ cleanup_metadata <- function(df_metadata) {
     # -----------------------
 
     df_metadata <- gDRwrapper::add_Drug_annotation(df_metadata)
-  
+
     data.table::setDF(df_metadata)
     # clean up concentration fields
     for (i in agrep("Concentration", colnames(df_metadata))) {
@@ -146,22 +146,4 @@ Order_result_df <- function(df_) {
   df_ <- df_[do.call(order, df_[, row_order_col]), cols]
 
   return(df_)
-}
-
-
-#' standardize_record_values
-#'
-#' map values to a dictionary
-#'
-#' @param x a named array
-#' @param dictionary a named array
-#'
-#' @return a named array with updated names
-#' @export
-#'
-standardize_record_values <- function(x, dictionary = DICTIONARY) {
-  for (i in seq_len(length(dictionary))) {
-    x[x == names(dictionary[i])] <- dictionary[[i]]
-  }
-  x
 }
