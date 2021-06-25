@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.0.8] - 2021-06-25
+#### Update
+- move functions for importing template files to gDRimport package 
+
 #### [1.0.7] - 2021-06-23
 #### Update
 - add linter
