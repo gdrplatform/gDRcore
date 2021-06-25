@@ -17,7 +17,6 @@ Imports:
     digest,
     drc,
     gDRutils (>= 1.0.0),
-    gDRwrapper (>= 1.0.0),
     httr,
     magrittr,
     openxlsx,
