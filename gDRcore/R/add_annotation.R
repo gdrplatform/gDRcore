@@ -176,3 +176,11 @@ add_Drug_annotation <- function(df_metadata,
 
   return(df_metadata)
 }
+
+#' Remove batch from Gnumber
+#'
+#' @return Gnumber without a batch
+#' @export
+remove_drug_batch <- function(drug) {
+  gsub("\\.[0-9]+.*", "", drug)
+}
