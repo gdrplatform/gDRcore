@@ -7,7 +7,7 @@
 #'
 #' @examples
 calculate_combo_codilution <- function(SE){
-
+browser()
   # create new SE for the codilution
   co_dilution_metrics <- metadata(SE)$drug_combinations
 
@@ -16,7 +16,7 @@ calculate_combo_codilution <- function(SE){
       paste0(x$condition[['DrugName']],'_',x$condition[['DrugName_2']]),
       character(1))
   SummarizedExperiment::rowData(codil_SE) <- 
-      DataFrame(t(vapply(co_dilution_metrics, '[[', 'condition')))
+      DataFrame(t(sapply(co_dilution_metrics, '[[', 'condition')))
   metadata(codil_SE) = list()
   SummarizedExperiment::assays(codil_SE) <-
       SummarizedExperiment::assays(codil_SE)[c('Averaged', 'Avg_Controls', 'Metrics')]
