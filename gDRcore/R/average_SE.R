@@ -55,14 +55,16 @@ average_SE <- function(se,
     for (j in seq_len(ncol(se))) {
       count <- count + 1
       norm_df <- normalized[i, j][[1]]
-      if (nrow(norm_df) == 0L) {next}
+      if (nrow(norm_df) == 0L) {
+        next
+        }
 
       # bypass 'masked' filter
       masked <- norm_df[[masked_tag_key]] & !override_masked
 
       p_trt_keys <- intersect(trt_keys, colnames(norm_df))
 
-      if (sum(!masked) > 0) {        
+      if (sum(!masked) > 0) {
         if (length(missing <- setdiff(std_cols, colnames(norm_df))) > 0L) {
           stop(sprintf("missing expected columns in nested normalized dataframe: '%s'", 
             paste0(missing, collapse = ", ")))
@@ -81,7 +83,7 @@ average_SE <- function(se,
         agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = p_trt_keys))
       } else {
         # only one or no unmasked value --> create degenerated dataframe
-        all_cols <- c(std_cols, p_trt_keys, paste0("std_", std_cols), 'row_id', 'col_id')
+        all_cols <- c(std_cols, p_trt_keys, paste0("std_", std_cols), "row_id", "col_id")
         agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
         colnames(agg_df) <- all_cols
       }

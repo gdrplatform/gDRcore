@@ -1,4 +1,5 @@
-library(testthat); library(gDRcore);
+library(testthat)
+library(gDRcore)
 
 test_that("fit_SE errors as expected", {
   se <- SummarizedExperiment::SummarizedExperiment()

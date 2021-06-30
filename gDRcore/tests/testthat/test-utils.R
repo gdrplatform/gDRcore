@@ -1,4 +1,5 @@
-library(testthat); library(gDRcore)
+library(testthat)
+library(gDRcore)
 
 test_that(".create_mapping_factors works as expected", {
   rowdata <- data.frame("Billy" = LETTERS[1:3], "Joel" = paste0("A", LETTERS[1:3]))

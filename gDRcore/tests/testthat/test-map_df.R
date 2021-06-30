@@ -1,5 +1,6 @@
-#library(gDRcore); library(testthat)
-#source("setup.R")
+library(gDRcore)
+library(testthat)
+
 
 test_that("map_df works as expected", {
   md_df <- unique(md_df)
@@ -17,7 +18,8 @@ test_that("map_df works as expected", {
   expect_equal(names(mapping), rownames(trt_df))
   expect_equal(length(mapping), nrow(trt_df))
 
-  out <- lapply(seq(33, 64, 1), function(x) {as.character(c((x - 1) %% 16 + 1, 17 + ((x - 1) %% 16)))})
+  out <- lapply(seq(33, 64, 1), function(x) {
+    as.character(c((x - 1) %% 16 + 1, 17 + ((x - 1) %% 16)))})
   names(out) <- seq(33, 64, 1)
 
   expect_equal(mapping, out)
@@ -26,8 +28,8 @@ test_that("map_df works as expected", {
 
 
 # TODO: 
-#test_that("Best match is detected for missing controls", {})
+# Best match is detected for missing controls
 
 
 # TODO:
-#test_that("NAs are returned for missing controls", {})
+# NAs are returned for missing controls

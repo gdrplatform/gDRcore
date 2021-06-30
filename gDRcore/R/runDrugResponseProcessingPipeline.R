@@ -7,8 +7,8 @@
 #' @param readout string of the name containing the cell viability readout values.
 #' @param control_mean_fxn function indicating how to average controls.
 #' Defaults to \code{mean(x, trim = 0.25)}.
-#' @param nested_keys character vector of column names to include in the data.frames in the assays of the resulting \code{SummarizedExperiment} object.
-#' Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.
+#' @param nested_keys character vector of column names to include in the data.frames in the assays of the resulting 
+#' \code{SummarizedExperiment} object. Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.
 #' @param override_untrt_controls named list containing defining factors in the treatments.
 #' Defaults to \code{NULL}.
 #' @param override_masked boolean indicating whether or not to override the masked wells
@@ -28,9 +28,11 @@
 #' Defaults to \code{"Averaged"}.
 #' @param ref_GR_assay string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.
 #' Defaults to \code{"RefGRvalue"}.
-#' @param ref_RV_assay string of the name of the reference Relative Viability assay in the \linkS4class{SummarizedExperiment}.
+#' @param ref_RV_assay string of the name of the reference Relative Viability assay 
+#' in the \linkS4class{SummarizedExperiment}.
 #' Defaults to \code{"RefRelativeViability"}.
-#' @param metrics_assay string of the name of the metrics assay to output in the returned \linkS4class{SummarizedExperiment}
+#' @param metrics_assay string of the name of the metrics assay to output in the 
+#' returned \linkS4class{SummarizedExperiment}
 #' Defaults to \code{"Metrics"}.
 #'
 #'
@@ -39,7 +41,8 @@
 #'
 runDrugResponseProcessingPipeline <- function(df_, 
                                                readout = "ReadoutValue",
-                                               control_mean_fxn = function(x) {mean(x, trim = 0.25)},
+                                               control_mean_fxn = function(x) {
+                                                 mean(x, trim = 0.25)},
                                                nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
                                                override_untrt_controls = NULL,
                                                override_masked = FALSE,

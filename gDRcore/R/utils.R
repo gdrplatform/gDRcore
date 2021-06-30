@@ -70,7 +70,7 @@ cleanup_metadata <- function(df_metadata) {
 
     for (i in agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))) { # correct case issues
         for (w in gDRutils::get_identifier("untreated_tag")) {
-            df_metadata[grep(w, df_metadata[[i]], ignore.case = TRUE),i] <- w
+            df_metadata[grep(w, df_metadata[[i]], ignore.case = TRUE), i] <- w
         }
     }
     # -----------------------
@@ -82,10 +82,13 @@ cleanup_metadata <- function(df_metadata) {
     for (i in agrep("Concentration", colnames(df_metadata))) {
         trt_n <- ifelse(regexpr("_\\d", colnames(df_metadata)[i]) > 0,
                             substr(colnames(df_metadata)[i], 15, 20), 1)
-        DrugID_col <- ifelse(trt_n == 1, gDRutils::get_identifier("drug"), paste0(gDRutils::get_identifier("drug"), "_", trt_n))
-        df_metadata[df_metadata[,DrugID_col] %in% gDRutils::get_identifier("untreated_tag"), i] <- 0 # set all untreated to 0
+        DrugID_col <- ifelse(trt_n == 1, gDRutils::get_identifier("drug"), paste0(gDRutils::get_identifier("drug"), 
+                                                                                  "_", trt_n))
+        # set all untreated to 0
+        df_metadata[df_metadata[, DrugID_col] %in% gDRutils::get_identifier("untreated_tag"), i] <- 0
 
-        DrugID_0 <- setdiff(unique(df_metadata[ df_metadata[,i] == 0, DrugID_col]), gDRutils::get_identifier("untreated_tag"))
+        DrugID_0 <- setdiff(unique(df_metadata[df_metadata[, i] == 0, DrugID_col]), 
+                            gDRutils::get_identifier("untreated_tag"))
         DrugID_0 <- DrugID_0[!is.na(DrugID_0)]
         if (length(DrugID_0) > 0) {
           futile.logger::flog.warn("Some concentration for %s are 0: %s",
@@ -93,8 +96,7 @@ cleanup_metadata <- function(df_metadata) {
                                    paste(DrugID_0, collapse = " ; "))
 
         }
-        df_metadata[,i] <- 10 ** round(log10(as.numeric(df_metadata[, i])), 6)
-        # df_metadata[,i] <- round(as.numeric(df_metadata[, i]), 10) # avoid mismatch due to string truncation
+        df_metadata[, i] <- 10 ** round(log10(as.numeric(df_metadata[, i])), 6)
     }
   return(df_metadata)
 }
@@ -109,7 +111,7 @@ cleanup_metadata <- function(df_metadata) {
 #' @return a ordered dataframe with results
 #' @export
 #'
-Order_result_df <- function (df_) {
+Order_result_df <- function(df_) {
 
   # Assertions:
   stopifnot(inherits(df_, "data.frame"))
@@ -156,7 +158,7 @@ Order_result_df <- function (df_) {
 #' @return a named array with updated names
 #' @export
 #'
-standardize_record_values <- function(x, dictionary = DICTIONARY){
+standardize_record_values <- function(x, dictionary = DICTIONARY) {
   for (i in seq_len(length(dictionary))) {
     x[x == names(dictionary[i])] <- dictionary[[i]]
   }

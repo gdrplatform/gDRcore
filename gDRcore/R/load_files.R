@@ -92,7 +92,7 @@ load_manifest <- function(manifest_file) {
                                    "text/tab-separated-values",
                                    "tsv")) {
       df <- tryCatch({
-        utils::read.table(x, sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
+        utils::read.table(x, sep = "\t", header = TRUE, na.strings = c("", "NA")) %>%
           stats::na.omit()
       }, error = function(e) {
         stop(sprintf(
@@ -152,7 +152,7 @@ load_manifest <- function(manifest_file) {
 #' @param df_template_files data.frame, with datapaths and names of results file(s)
 #' or character with file path of templates file(s)
 #' @export
-load_templates <- function (df_template_files) {
+load_templates <- function(df_template_files) {
   # Assertions:
   stopifnot(any(inherits(df_template_files, "data.frame"), checkmate::test_character(df_template_files)))
   
@@ -244,7 +244,7 @@ load_templates_tsv <-
     
     # read columns in files
     templates <- lapply(template_file, function(x)
-      utils::read.table(x, sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
+      utils::read.table(x, sep = "\t", header = TRUE, na.strings = c("", "NA")) %>%
         stats::na.omit())
     names(templates) <- template_filename
     # check WellRow/WellColumn is present in each df
@@ -504,7 +504,7 @@ load_results_tsv <-
       futile.logger::flog.info("Reading file", results_file[iF])
       tryCatch({
         df <-
-        utils::read.table(results_file[iF], sep = "\t", header = TRUE, na.strings=c("", "NA")) %>%
+        utils::read.table(results_file[iF], sep = "\t", header = TRUE, na.strings = c("", "NA")) %>%
           stats::na.omit()
       }, error = function(e) {
         stop(sprintf("Error reading %s", results_file[[iF]]))
@@ -514,7 +514,7 @@ load_results_tsv <-
         tryCatch({
           # likely a csv file
           df <-
-            utils::read.csv(results_file[iF], header = TRUE, na.strings=c("", "NA")) %>%
+            utils::read.csv(results_file[iF], header = TRUE, na.strings = c("", "NA")) %>%
             stats::na.omit()
         }, error = function(e) {
           stop(sprintf("Error reading %s", results_file[[iF]]))
@@ -616,7 +616,7 @@ load_results_EnVision <-
               col_names <- paste0("x", 1:dim(df)[2])
           }
           df <-
-            df[,!apply(df[1:24,], 2, function(x)
+            df[, !apply(df[1:24, ], 2, function(x)
               all(is.na(x)))]
           # remove extra columns
           # limit to first 24 rows in case Protocol information is
@@ -626,23 +626,23 @@ load_results_EnVision <-
         # not empty rows
         # before discarding the rows; move ''Background information'' in the next row
         Bckd_info_idx <-
-          which(as.data.frame(df)[, 1] %in% 'Background information')
+          which(as.data.frame(df)[, 1] %in% "Background information")
         if (length(Bckd_info_idx) > 0) {
-          df[Bckd_info_idx + 1, 1] = df[Bckd_info_idx, 1]
-          df[Bckd_info_idx, 1] = ''
+          df[Bckd_info_idx + 1, 1] <- df[Bckd_info_idx, 1]
+          df[Bckd_info_idx, 1] <- ""
         }
         
         if (isEdited) {
           # need to do some heuristic to find where the data is
           full_rows <-
-            !apply(df[,-6:-1], 1, function(x)
+            !apply(df[, -6:-1], 1, function(x)
               all(is.na(x)))
           # don't consider the first columns as these may be metadata
           # if big gap, delete what is at the bottom (Protocol information)
           gaps <-
             min(which(full_rows)[(diff(which(full_rows)) > 20)] + 1, dim(df)[1])
           df <-
-            df[which(full_rows)[which(full_rows) <= gaps],] # remove extra rows
+            df[which(full_rows)[which(full_rows) <= gaps], ] # remove extra rows
           
           # get the plate size
           n_col <-
@@ -664,7 +664,7 @@ load_results_EnVision <-
               ref_bckgrd <-
                 which(as.data.frame(df)[iB + (1:4), 1] %in% "Background information")
               readout_offset <- 1 + ref_bckgrd
-              stopifnot(as.character(df[iB + ref_bckgrd, 4]) %in% 'Signal')
+              stopifnot(as.character(df[iB + ref_bckgrd, 4]) %in% "Signal")
               BackgroundValue <-
                 as.numeric(df[iB + ref_bckgrd + 1, 4])
             } else {
@@ -679,7 +679,7 @@ load_results_EnVision <-
               as.matrix(df[iB + readout_offset + c(0, 1, n_row, n_row + iB + readout_offset), n_col])
             
             Barcode <- as.character(df[iB + 1, 3])
-            if (any(c(is.na(check_values[2:3]),!is.na(check_values[c(1, 4)])))) {
+            if (any(c(is.na(check_values[2:3]), !is.na(check_values[c(1, 4)])))) {
               stop(
                 sprintf(
                   "In result file %s (sheet %s) readout values are misplaced for plate %s",
@@ -718,12 +718,12 @@ load_results_EnVision <-
                                      as.character(df[iB + 1, 3]),
                                      dim(df_results)[1])
             all_results <- rbind(all_results, df_results)
-	  }
+      }
           } else {
             # proper original EnVision file
-            n_row = fInfo$n_row
-            n_col = fInfo$n_col
-            Barcode = df[3, 3]
+            n_row <- fInfo$n_row
+            n_col <- fInfo$n_col
+            Barcode <- df[3, 3]
             readout <-
               as.matrix(df[4 + (1:n_row), 1:n_col])
             
@@ -797,7 +797,8 @@ check_metadata_names <-
       if (any(!headersOK)) {
         stop(
           sprintf(
-            "Template does not contains all expected headers for a '%s'. '%s' is/are required. Please correct your template.",
+            paste0("Template does not contains all expected headers for a '%s'. ",
+            "'%s' is/are required. Please correct your template."),
             df_type,
             toString(expected_headers[!(expected_headers %in% col_df)])
           )
@@ -812,8 +813,9 @@ check_metadata_names <-
         if (length(n_drug) != length(n_conc)) {
           stop(
             sprintf(
-              "Template file(s) %s do/does not contain the same number of Gnumber_* and Concentration_* sheets. Gnumber_* and Concentration_* sheets are required.
-              Please correct your template.",
+              paste0("Template file(s) %s do/does not contain the same number of ",
+                     "Gnumber_* and Concentration_* sheets. Gnumber_* and Concentration_* ",
+                     "sheets are required. Please correct your template."),
               df_name
             )
           )
@@ -912,9 +914,9 @@ check_metadata_names <-
 #' @return
 #' @export
 #'
-read_EnVision = function(file,
+read_EnVision <- function(file,
                          nrows = 10000,
-                         seps = c(',', '\t')) {
+                         seps = c(",", "\t")) {
   # Assertions:
   checkmate::assert_string(file)
   checkmate::assert_number(nrows)
@@ -1000,11 +1002,11 @@ read_EnVision = function(file,
     } else if (length(x) > n_col) {
       x <- x[1:n_col]
     }
-    x[x == '' & !is.na(x)] <- NA
+    x[x == "" & !is.na(x)] <- NA
     return(x)
   })
-  df_ <- as.data.frame(do.call(rbind, results.list), stringsAsFactors = F)
-  colnames(df_) <- paste0('x', 1:n_col)
+  df_ <- as.data.frame(do.call(rbind, results.list), stringsAsFactors = FALSE)
+  colnames(df_) <- paste0("x", 1:n_col)
   
   rownames(df_) <- NULL
   return(list(

@@ -1,4 +1,6 @@
-#library(testthat); library(gDRcore);
+library(testthat) 
+library(gDRcore)
+
 test_that(".assign_treated_and_untreated_conditions works", {
   drugnames <- c(paste0("G", seq_len(5)), rep(gDRutils::get_identifier("untreated_tag"), 2))
   df <- data.frame(DrugName = drugnames) 

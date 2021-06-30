@@ -30,7 +30,8 @@ read_ref_data <- function(inDir, prefix = "ref") {
   checkmate::assert_string(prefix)
   
   files <- list.files(inDir, paste0(prefix, "_.+\\.tsv$"), full.names = TRUE)
-  lFiles <- lapply(files, function(x) { read.table(x, sep = "\t", header = TRUE)})
+  lFiles <- lapply(files, function(x) {
+    read.table(x, sep = "\t", header = TRUE)})
   names(lFiles) <- gsub("\\.tsv", "", gsub(paste0("^", prefix, "_"), "", basename(files)))
   refKeys <- yaml::read_yaml(file.path(inDir, paste0(prefix, "_keys.yaml")))
   refRowMaps <- yaml::read_yaml(file.path(inDir, paste0(prefix, "_row_maps.yaml")))
@@ -82,7 +83,8 @@ write_ref_data_se <- function(se, outDir, prefix = "ref") {
 #assays
   myL <- lapply(SummarizedExperiment::assayNames(se), function(x) {
     outFile <- file.path(outDir, paste0(prefix, "_assay_", x, ".tsv"))
-    write.table(gDRutils::assay_to_dt(se, x, merge_metrics = TRUE), outFile, sep = "\t", quote = FALSE, row.names = FALSE)
+    write.table(gDRutils::assay_to_dt(se, x, merge_metrics = TRUE), outFile, 
+                sep = "\t", quote = FALSE, row.names = FALSE)
   })
 
   #df_raw_data from metadata
@@ -91,10 +93,10 @@ write_ref_data_se <- function(se, outDir, prefix = "ref") {
   
 
   keys_yaml <- yaml::as.yaml(metadata(se)$Keys)
-  yaml::write_yaml(keys_yaml, file.path(outDir, paste0(prefix,"_keys.yaml")))
+  yaml::write_yaml(keys_yaml, file.path(outDir, paste0(prefix, "_keys.yaml")))
 
   row_maps_yaml <- yaml::as.yaml(metadata(se)$row_maps)
-  yaml::write_yaml(row_maps_yaml, file.path(outDir, paste0(prefix,"_row_maps.yaml")))
+  yaml::write_yaml(row_maps_yaml, file.path(outDir, paste0(prefix, "_row_maps.yaml")))
 }
 
 
@@ -145,22 +147,22 @@ test_synthetic_normalization <- function(se, refNormalizedTsv) {
   stopifnot(inherits(refNormalizedTsv, "data.frame"))
   
   xAs <- gDRutils::assay_to_dt(se, "Normalized")
-  xRef <- refNormalizedTsv[refNormalizedTsv$Concentration>0 , ]
+  xRef <- refNormalizedTsv[refNormalizedTsv$Concentration > 0, ]
   expect_true(nrow(xAs) == nrow(xRef))
 
-  xAs[,grepl('Conc', colnames(xAs))] = round(xAs[,grepl('Conc', colnames(xAs))],5)
-  xRef[,grepl('Conc', colnames(xRef))] = round(xRef[,grepl('Conc', colnames(xRef))],5)
+  xAs[, grepl("Conc", colnames(xAs))] <- round(xAs[, grepl("Conc", colnames(xAs))], 5)
+  xRef[, grepl("Conc", colnames(xRef))] <- round(xRef[, grepl("Conc", colnames(xRef))], 5)
 
-  metadata_cols = intersect(colnames(xRef),
-    c('clid', 'Barcode',  'Duration', 'WellRow', 'WellColumn',
-      colnames(xRef)[grepl('Gnum',colnames(xRef))], colnames(xRef)[grepl('Conc', colnames(xRef))]))
-  data_cols = intersect(colnames(xRef), c("GRvalue", "RelativeViability"))
+  metadata_cols <- intersect(colnames(xRef),
+    c("clid", "Barcode", "Duration", "WellRow", "WellColumn",
+      colnames(xRef)[grepl("Gnum", colnames(xRef))], colnames(xRef)[grepl("Conc", colnames(xRef))]))
+  data_cols <- intersect(colnames(xRef), c("GRvalue", "RelativeViability"))
 
-  xMerge = merge(xAs[, c(metadata_cols, data_cols)],
+  xMerge <- merge(xAs[, c(metadata_cols, data_cols)],
         as.data.frame(xRef[, c(metadata_cols, data_cols)]),
-        by = metadata_cols, all = T)
+        by = metadata_cols, all = TRUE)
 
-  expect_equal(xMerge[,paste0(data_cols, '.x')], xMerge[,paste0(data_cols, '.y')], tolerance = 1e-4)
+  expect_equal(xMerge[, paste0(data_cols, ".x")], xMerge[, paste0(data_cols, ".y")], tolerance = 1e-4)
 }
 
 
@@ -222,7 +224,7 @@ test_se <- function(se, lRef) {
   x <- standardize_df(metadata(se)[["df_"]])
   y <- standardize_df(data.table::data.table(lRef$df_raw_data))
   class(y) <- class(x)
-  expect_equal(colnames(y),colnames(x))
+  expect_equal(colnames(y), colnames(x))
   # TODO: 'Medium' column not present
   # now moved to metadata(se)$experiment_metadata, right?
   expect_equal(x, y)
@@ -244,40 +246,12 @@ test_se <- function(se, lRef) {
   b <- lapply(identify_keys2(df_)[cols], sort)
 
   pass <- identical(a, b)
-
-  #assays check
-  # 1. Assay names
-  ## old assay names
-  # grep("assay_", names(lRef), value = TRUE)
-  # [1] "assay_Averaged"     "assay_Avg_Controls" "assay_Controls"     "assay_Metrics"      "assay_Normalized"  
-  ## new assay names 
-  # assayNames(se)
-  # [1] "RawTreated" "Controls"   "Normalized" "Averaged"   "Metrics"   
-  
-  # 2. different naming convention for rId/cId
-  # ````
-  # mets_ref <- lRef$assay_Metrics
-  # mets <- gDRutils::assay_to_dt(se = se,assay_name = "Metrics")
-  # unique(mets_ref$rId)[2]
-  # "G02001876_G02001876.1-4_168_vehicle_0_0.0001_vehicle_9"
-  # unique(mets$rId)[2]
-  # "0_G02001876.1-4_vehicle_168_0.0001_G02001876_vehicle_9"
-  # ```
-  # we can convert new rId/cId to old naming scheme with sth like
-  # paste(unlist(strsplit(unique(mets$rId)[2], "_"))[c(6, 2, 4, 7, 1, 5, 3, 8)], collapse = "_")
-  # but probably it would be safer to stick to the old naming convention
-  # (or at least we should check how/if it would affect gDRviz)
- 
-  # 3. same data in the assays
-  # we should probably check that same data is returned for four assays:
-  # Controls, Normalized, Averaged, Metrics
-  #myL <- lapply(SummarizedExperiment::assayNames(se), function(x) {
   myL <- lapply(c("Controls", "Normalized", "Averaged", "Metrics"), function(x) {
     print(x)
     xAs <- gDRutils::assay_to_dt(se, x, merge_metrics = TRUE)
     xAs$DrugName <- as.character(xAs$DrugName)
     xDf <- lRef[[paste0("assay_", x)]]
-    if(x %in% c("Controls", "Avg_Controls")){
+    if (x %in% c("Controls", "Avg_Controls")) {
     xDf$DivisionTime <- as.numeric(xDf$DivisionTime)
     }
     expect_true(nrow(xAs) == nrow(xDf))
