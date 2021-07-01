@@ -9,11 +9,6 @@ pkgs:
     url: https://github.roche.com/gdrplatform/gDRutils.git
     ref: master
     subdir: gDRutils
-  kcloak:
-    ver: '>=0.0.9'
-    url: https://github.roche.com/gdrplatform/kcloak.git
-    ref: master
-    subdir: ~
   gDRtestData:
     ver: '>=1.0.2'
     url: https://github.roche.com/gdrplatform/gDRtestData.git
