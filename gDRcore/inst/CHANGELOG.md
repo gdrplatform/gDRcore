@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.0.9] - 2021-07-01
+#### Update
+- function for testing synthetic data
+
 #### [1.0.8] - 2021-06-25
 #### Update
 - move functions for importing template files to gDRimport package 
