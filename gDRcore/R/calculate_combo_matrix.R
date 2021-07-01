@@ -9,14 +9,14 @@
 #' @return data
 #' @export
 #'
-calculate_combo_matrix <- function (SE,
+calculate_combo_matrix <- function(SE,
                                     conc_margin = 10 ^ 0.5,
-                                    log2_pos_offset = log10(3)/2,
+                                    log2_pos_offset = log10(3) / 2,
                                     norm_types = c("RelativeViability", "GRvalue")
                                     ) {
   
-  agg_results_norm = list()
-  all_combo_variables_norm = list()
+  agg_results_norm <- list()
+  all_combo_variables_norm <- list()
   # run through both metrics
   for (norm_method in norm_types) {
     
@@ -25,7 +25,7 @@ calculate_combo_matrix <- function (SE,
       bliss_q10 = matrix(NA, length(metadata(SE)$drug_combinations), 
       ncol(SE),
       dimnames = list(sapply(metadata(SE)$drug_combinations,
-                function(x) gsub('Duration', 'T', x$name)),
+                function(x) gsub("Duration", "T", x$name)),
                 paste(colData(SE)$CellLineName, colData(SE)$clid)))
     )
     agg_results$hsa_q10 <- agg_results$CI_100x_50 <- agg_results$CI_100x_80 <- agg_results$bliss_q10
@@ -33,7 +33,7 @@ calculate_combo_matrix <- function (SE,
     # create empty matrix of lists for storing all results necessary for plotting
     all_combo_variables <- matrix(list(), length(metadata(SE)$drug_combinations), ncol(SE),
       dimnames = list(sapply(metadata(SE)$drug_combinations,
-                function(x) gsub('Duration', 'T', x$name)),
+                function(x) gsub("Duration", "T", x$name)),
                 paste(colData(SE)$CellLineName, colData(SE)$clid))
     )
     # run through all drug combinations
@@ -44,7 +44,6 @@ calculate_combo_matrix <- function (SE,
       for (iCL in seq_len(ncol(SE))) {
         # get all data as flat data.frame
         
-        #   flat_data <- gDRutils::assay_to_dt(SE[combo$rows, iCL], "Averaged", include_controls = TRUE)
         flat_data <- gDRutils::convert_se_assay_to_dt(SE[combo$rows, iCL], "Averaged")
 
 
@@ -52,35 +51,36 @@ calculate_combo_matrix <- function (SE,
         if (nrow(flat_data) == 0L ||
           !all(combo$condition[c("DrugName", "DrugName_2")] %in%
             unique(c(flat_data$DrugName, flat_data$DrugName_2))) ||
-            sum(!is.na(flat_data[,..norm_method]))<10) {
-          print(sprintf('Skipping %s for %s x %s', colData(SE)$CellLineName[iCL],
-              combo$condition['DrugName'], combo$condition['DrugName_2']))
+            sum(!is.na(flat_data[, ..norm_method])) < 10) {
+          print(sprintf("Skipping %s for %s x %s", colData(SE)$CellLineName[iCL],
+              combo$condition["DrugName"], combo$condition["DrugName_2"]))
           next
         }
 
         # include_controls and bind
         flat_data_ctrl <- gDRutils::convert_se_ref_assay_to_dt(SE[combo$rows, iCL])
-        flat_data = as.data.frame(rbind(flat_data, flat_data_ctrl))
+        flat_data <- as.data.frame(rbind(flat_data, flat_data_ctrl))
         
         # avoid mismatch because of numerical rounding
-        flat_data$Concentration = 10**(.25*round(4*log10(flat_data$Concentration),1))
-        flat_data$Concentration_2 = 10**(.25*round(4*log10(flat_data$Concentration_2),1))
+        flat_data$Concentration <- 10**(.25 * round(4 * log10(flat_data$Concentration), 1))
+        flat_data$Concentration_2 <- 10**(.25 * round(4 * log10(flat_data$Concentration_2), 1))
 
-        print(sprintf('Calculation for cell line %s treated with %s x %s', colData(SE)$CellLineName[iCL],
-            combo$condition['DrugName'], combo$condition['DrugName_2']))
+        print(sprintf("Calculation for cell line %s treated with %s x %s", colData(SE)$CellLineName[iCL],
+            combo$condition["DrugName"], combo$condition["DrugName_2"]))
 
         # Secondary drug for some combinations becomes primary drug when viewed as single-agent (conc1=0), so swap. 
         # swap the data into the Gnumber and Gnumber_2 such that it can form a matrix
-        swap_idx <- flat_data[,gDRutils::get_identifier("drugname")] == combo$condition[[paste0(gDRutils::get_identifier("drugname"),'_2')]] &
-                      flat_data$Gnumber_2 %in% gDRutils::get_identifier("untreated_tag")
+        swap_idx <- flat_data[, gDRutils::get_identifier("drugname")] == 
+          combo$condition[[paste0(gDRutils::get_identifier("drugname"), "_2")]] & 
+          flat_data$Gnumber_2 %in% gDRutils::get_identifier("untreated_tag")
         temp_df <- flat_data[swap_idx, ]
         temp_df[, c("Gnumber", "DrugName", "drug_moa", "Concentration",
-                      "Gnumber_2", "DrugName_2", "drug_moa_2", "Concentration_2")] <-
-          temp_df[, c("Gnumber_2", "DrugName_2", "drug_moa_2", "Concentration_2",
-                  "Gnumber", "DrugName", "drug_moa", "Concentration")]
+                    "Gnumber_2", "DrugName_2", "drug_moa_2", "Concentration_2")] <- 
+          temp_df[, c("Gnumber_2", "DrugName_2", "drug_moa_2", "Concentration_2", 
+                      "Gnumber", "DrugName", "drug_moa", "Concentration")]
 
         # Append the bottom left entry for full matrix creation. 
-        temp_df2 <- flat_data[flat_data$Concentration == 0 & flat_data$Concentration_2 == 0 ,][1,]
+        temp_df2 <- flat_data[flat_data$Concentration == 0 & flat_data$Concentration_2 == 0, ][1, ]
         temp_df2$GRvalue <- 1
         temp_df2$std_GRvalue <- 0
         temp_df2$RelativeViability <- 1
@@ -104,19 +104,25 @@ calculate_combo_matrix <- function (SE,
 
         
         # Get the single agent fit for drug 1
-        df_ <- flat_data[flat_data$Concentration_2 %in% 0 & flat_data$Concentration > 0,]
+        df_ <- flat_data[flat_data$Concentration_2 %in% 0 & flat_data$Concentration > 0, ]
         fit_drug1 <- gDRutils::fit_curves(
-          df_ = df_[!is.na(df_[,norm_method]),],
+          df_ = df_[!is.na(df_[, norm_method]), ],
           force_fit = TRUE,
           cap = 0.2,
-          normalization_type = ifelse(norm_method == 'RelativeViability', 'RV', 'GR')
+          normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR")
         )
 
         # check if missing concentration for the single agent for drug 1 and infer if needed
         if (!all(conc_combo$Concentration %in% flat_data$Concentration[flat_data$Concentration_2 %in% 0])) {
-          df_inf = data.frame(Concentration = sort(setdiff(conc_combo$Concentration, flat_data$Concentration[flat_data$Concentration_2 %in% 0])),
-              val = 0)
-          df_inf$val <- gDRutils::logistic_4parameters(df_inf[,1], fit_drug1$x_inf, fit_drug1$x_0, fit_drug1$c50, fit_drug1$h)
+          df_inf <- data.frame(
+            Concentration = sort(setdiff(conc_combo$Concentration, 
+                                         flat_data$Concentration[flat_data$Concentration_2 %in% 0])), 
+            val = 0)
+          df_inf$val <- gDRutils::logistic_4parameters(
+            df_inf[, 1], 
+            fit_drug1$x_inf, 
+            fit_drug1$x_0, 
+            fit_drug1$c50, fit_drug1$h)
           colnames(df_inf)[2] <- norm_method
           
           df_out <- as.data.frame(df_[df_$Concentration_2 == 0, ])[seq_len(nrow(df_inf)), ] # get the metadata
@@ -127,30 +133,38 @@ calculate_combo_matrix <- function (SE,
         }
         
         # Get the single agent fit for drug 2
-        df_ <- flat_data[flat_data$Concentration %in% 0 & flat_data$Concentration_2 > 0,]
-        df_$Concentration = df_$Concentration_2 # necessary for the fit
+        df_ <- flat_data[flat_data$Concentration %in% 0 & flat_data$Concentration_2 > 0, ]
+        df_$Concentration <- df_$Concentration_2 # necessary for the fit
         fit_drug2 <- gDRutils::fit_curves(
-          df_ = df_[!is.na(df_[,norm_method]),],
-          normalization_type = ifelse(norm_method == 'RelativeViability', 'RV', 'GR'),
+          df_ = df_[!is.na(df_[, norm_method]), ],
+          normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR"),
           force_fit = TRUE,
           cap = 0.2
         )
 
         # check if missing concentration for the single agent for drug 2 and infer if needed
-        if (!all(conc_combo$Concentration_2 %in% flat_data$Concentration_2[flat_data$Concentration %in% 0])) {  
-          df_inf <- data.frame(Concentration_2 = sort(setdiff(conc_combo$Concentration_2, flat_data$Concentration_2[flat_data$Concentration %in% 0])),
-              val = 0)
-          df_inf$val <- gDRutils::logistic_4parameters(df_inf[, 1], fit_drug2$x_inf, fit_drug2$x_0, fit_drug2$c50, fit_drug2$h)
+        if (!all(conc_combo$Concentration_2 %in% flat_data$Concentration_2[flat_data$Concentration %in% 0])) {
+          df_inf <- data.frame(
+            Concentration_2 = sort(setdiff(conc_combo$Concentration_2, 
+                                           flat_data$Concentration_2[flat_data$Concentration %in% 0])),
+            val = 0)
+          df_inf$val <- gDRutils::logistic_4parameters(
+            df_inf[, 1], 
+            fit_drug2$x_inf, 
+            fit_drug2$x_0, 
+            fit_drug2$c50, 
+            fit_drug2$h)
           colnames(df_inf)[2] <- norm_method
           
           df_out <- as.data.frame(df_[df_$Concentration == 0, ])[seq_len(nrow(df_inf)), ]
-          df_out[,colnames(df_inf)] <- df_inf
+          df_out[, colnames(df_inf)] <- df_inf
           df_out[, grepl("std_", colnames(df_out)) | 
             colnames(df_out) %in% c("CorrectedReadout", setdiff(c("RelativeViability", "GRvalue"), norm_method))] <- 0
           flat_data <- rbind(flat_data, df_out)
         }
 
-        # create the combo matrix for the two drugs with measured data (rows as concentration of drug_1 and columns as drug_2)
+        # create the combo matrix for the two drugs with measured data (rows as concentration of drug_1 
+        # and columns as drug_2)
         mx_response <- reshape2::acast(flat_data, 
           Concentration ~ Concentration_2,
           value.var = norm_method, 
@@ -172,7 +186,7 @@ calculate_combo_matrix <- function (SE,
                       log10conc2 = 0, pos_x = 0, marks_x = 0)
         drug2_axis$log10conc2 <- log10(drug2_axis$conc_2)
         drug2_axis$pos_x <- drug2_axis$log10conc2
-        drug2_axis$pos_x[1] <- 2*drug2_axis$pos_x[2] - drug2_axis$pos_x[3] - log10(1.5)
+        drug2_axis$pos_x[1] <- 2 * drug2_axis$pos_x[2] - drug2_axis$pos_x[3] - log10(1.5)
         drug2_axis$marks_x <- sprintf("%.2g", drug2_axis$conc_2)
 
 
@@ -181,12 +195,12 @@ calculate_combo_matrix <- function (SE,
         idx_na <- which(is.na(mx_response), arr.ind = TRUE)
         if (nrow(idx_na) > 0) {
           for (i in seq_len(nrow(idx_na))) {
-            r_idx <- idx_na[i,"row"] + (-1:1)
-            r_idx <- pmin(pmax(r_idx,1), nrow(mx_response))
-            c_idx <- idx_na[i,"col"] + (-1:1)
-            c_idx <- pmin(pmax(c_idx,1),ncol(mx_response))
+            r_idx <- idx_na[i, "row"] + (-1:1)
+            r_idx <- pmin(pmax(r_idx, 1), nrow(mx_response))
+            c_idx <- idx_na[i, "col"] + (-1:1)
+            c_idx <- pmin(pmax(c_idx, 1), ncol(mx_response))
             close_mx <- mx_response[r_idx, c_idx]
-            mx_full[idx_na[i,"row"], idx_na[i,"col"]] = mean(close_mx, na.rm = TRUE) # use a smoothing strategy
+            mx_full[idx_na[i, "row"], idx_na[i, "col"]] <- mean(close_mx, na.rm = TRUE) # use a smoothing strategy
           }
         }
 
@@ -195,26 +209,26 @@ calculate_combo_matrix <- function (SE,
           if (!by_row) {
             mx <- t(mx)
           }
-          df_ = data.frame(as.numeric(colnames(mx))[-1], mx[idx,-1])
-          colnames(df_) = c('Concentration', norm_method)
+          df_ <- data.frame(as.numeric(colnames(mx))[-1], mx[idx, -1])
+          colnames(df_) <- c("Concentration", norm_method)
 
 
           fit_res <- gDRutils::fit_curves(
             df_,
-            e_0 = mx[idx,1], # use single agent fit
-            GR_0 = mx[idx,1], # use single agent fit
+            e_0 = mx[idx, 1], # use single agent fit
+            GR_0 = mx[idx, 1], # use single agent fit
             normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR"),
             force_fit = TRUE,
             cap = 0.2
           )
 
           # if failed and values are increasing, fit a reverse sigmoidal
-          if (is.na(fit_res$x_0) && median(diff(mx[idx,-1]))>0 && mean(diff(mx[idx,-1]))>0) {
-              df_[,norm_method] = 1-df_[,norm_method]
+          if (is.na(fit_res$x_0) && median(diff(mx[idx, -1])) > 0 && mean(diff(mx[idx, -1])) > 0) {
+              df_[, norm_method] <- 1 - df_[, norm_method]
             fit_res <- gDRutils::fit_curves(
               df_,
-              e_0 = 1-mx[idx,1], # use single agent fit
-              GR_0 = 1-mx[idx,1], # use single agent fit
+              e_0 = 1 - mx[idx, 1], # use single agent fit
+              GR_0 = 1 - mx[idx, 1], # use single agent fit
               normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR"),
               force_fit = TRUE,
               cap = 0.2
@@ -222,7 +236,7 @@ calculate_combo_matrix <- function (SE,
             fit_res[grepl("x_", names(fit_res))] <- 1 - as.matrix(fit_res[grepl("x_", names(fit_res))])
           }
 
-          mx[idx,-1] <- gDRutils::logistic_4parameters(as.numeric(colnames(mx))[-1],
+          mx[idx, -1] <- gDRutils::logistic_4parameters(as.numeric(colnames(mx))[-1],
             fit_res$x_inf, fit_res$x_0, fit_res$c50, fit_res$h)
           if (!by_row) {
             mx <- t(mx)
@@ -235,10 +249,10 @@ calculate_combo_matrix <- function (SE,
         # get the fits for the first row (single agent) and create empty matrices
         mx_fit[1, -1] <- gDRutils::logistic_4parameters(as.numeric(colnames(mx_fit))[-1],
             fit_drug2$x_inf, fit_drug2$x_0, fit_drug2$c50, fit_drug2$h)
-        all_fits = list(by_row = cbind(data.frame(conc_1 = 0), fit_drug2))
+        all_fits <- list(by_row = cbind(data.frame(conc_1 = 0), fit_drug2))
         
         # get the fits for the first column (single agent)
-        mx_fit[-1,1] = gDRutils::logistic_4parameters(as.numeric(rownames(mx_fit))[-1],
+        mx_fit[-1, 1] <- gDRutils::logistic_4parameters(as.numeric(rownames(mx_fit))[-1],
             fit_drug1$x_inf, fit_drug1$x_0, fit_drug1$c50, fit_drug1$h)
         all_fits[["by_col"]] <- cbind(data.frame(conc_2 = 0), fit_drug1)
         # matrices with first row/column populated
@@ -256,7 +270,7 @@ calculate_combo_matrix <- function (SE,
         }
         # replace with fits by columns
         for (i in 2:ncol(mx_response)) {  # fit by columns
-          out <- replace_by_fit(mx_fit[["by_col"]], i, F)
+          out <- replace_by_fit(mx_fit[["by_col"]], i, FALSE)
           mx_fit[["by_col"]] <- out$mx
           # add fitted data 
           all_fits$by_col <- rbind(all_fits$by_col,
@@ -270,18 +284,18 @@ calculate_combo_matrix <- function (SE,
         # if not nrow != ncol; start from the highest concentration
         n_conc_codil <- min(ncol(mx_response), nrow(mx_response)) - 1
         conc_ratio <- 2 ^ unique(round(log2(
-          as.numeric(colnames(mx_response))[ncol(mx_response):(ncol(mx_response)-n_conc_codil+1)]/
-            as.numeric(rownames(mx_response))[nrow(mx_response):(nrow(mx_response)-n_conc_codil+1)]),1))
+          as.numeric(colnames(mx_response))[ncol(mx_response):(ncol(mx_response) - n_conc_codil + 1)] / 
+            as.numeric(rownames(mx_response))[nrow(mx_response):(nrow(mx_response) - n_conc_codil + 1)]), 1))
 
         if (length(conc_ratio) != 1 || n_conc_codil < 4) { # check that ratios are respected
-          mx_fit[["by_codil"]] = NA
+          mx_fit[["by_codil"]] <- NA
         } else {
-          for (i in -(nrow(mx_response)-1):(ncol(mx_response)-1)) {
+          for (i in -(nrow(mx_response) - 1):(ncol(mx_response) - 1)) {
               # get the data for a given diagonal (offset between the concentration and concentration_2)
-              idx = data.frame(col_idx = seq_len(nrow(mx_response)) - i,
+              idx <- data.frame(col_idx = seq_len(nrow(mx_response)) - i,
                             row_idx = seq_len(nrow(mx_response)))
-              idx = idx[idx$col_idx > 1 & idx$col_idx <= ncol(mx_response) &
-                        idx$row_idx > 1 & idx$row_idx <= nrow(mx_response),]
+              idx <- idx[idx$col_idx > 1 & idx$col_idx <= ncol(mx_response) &
+                        idx$row_idx > 1 & idx$row_idx <= nrow(mx_response), ]
 
               if (nrow(idx) < 4) {
                 for (j in seq_len(nrow(idx))) {
@@ -294,10 +308,10 @@ calculate_combo_matrix <- function (SE,
                   resp_value[j] <- mx_fit[["by_codil"]][idx$row_idx[j], idx$col_idx[j]]
                 }
 
-                df_ = data.frame(as.numeric(rownames(mx_fit[["by_codil"]]))[idx$row_idx] +
+                df_ <- data.frame(as.numeric(rownames(mx_fit[["by_codil"]]))[idx$row_idx] +
                     as.numeric(colnames(mx_fit[["by_codil"]]))[idx$col_idx],
                     resp_value)
-                colnames(df_) = c('Concentration', norm_method)
+                colnames(df_) <- c("Concentration", norm_method)
 
                 fit_res <- gDRutils::fit_curves(
                   df_,
@@ -312,11 +326,11 @@ calculate_combo_matrix <- function (SE,
                       as.numeric(colnames(mx_fit[["by_codil"]]))[idx$col_idx],
                   fit_res$x_inf, fit_res$x_0, fit_res$c50, fit_res$h)
                 for (j in seq_len(nrow(idx))) {
-                  mx_fit[["by_codil"]][idx$row_idx[j], idx$col_idx[j]] = fit_resp[j]
+                  mx_fit[["by_codil"]][idx$row_idx[j], idx$col_idx[j]] <- fit_resp[j]
                 }
                 # add fitted data 
-                all_fits$by_codil = rbind(all_fits$by_codil, cbind(data.frame(
-                  conc_ratio = as.numeric(rownames(mx_fit[["by_codil"]])[idx$row_idx[1]])/
+                all_fits$by_codil <- rbind(all_fits$by_codil, cbind(data.frame(
+                  conc_ratio = as.numeric(rownames(mx_fit[["by_codil"]])[idx$row_idx[1]]) / 
                         as.numeric(colnames(mx_fit[["by_codil"]])[idx$col_idx[1]])),
                       fit_res))
             }
@@ -326,21 +340,21 @@ calculate_combo_matrix <- function (SE,
         all_mx <- c(list(mx_response = mx_response, mx_full = mx_full), mx_fit)
         # calculate the mean matrix (measured, imputed, and row/column/diagonal fitted data)
         mx_mean <- matrix(sapply(seq_len(length(mx_response)), function(i) {
-          mean(sapply(seq_len(length(all_mx)), function(j) all_mx[[j]][i]), na.rm=T)}),
+          mean(sapply(seq_len(length(all_mx)), function(j) all_mx[[j]][i]), na.rm = TRUE)}),
           nrow(mx_response), ncol(mx_response),
           dimnames = list(rownames(mx_response), colnames(mx_response)))
         all_mx <- c(all_mx, list(mx_mean = mx_mean))
 
         # calculated excess over single agent (HSA model)
         hsa_mx <- all_mx$mx_mean
-        hsa_mx[-1, -1] <- pmin(t(matrix(t(hsa_mx[1,-1]), ncol(hsa_mx)-1, nrow(hsa_mx)-1)),
-                            matrix(hsa_mx[-1,1], nrow(hsa_mx)-1, ncol(hsa_mx)-1))
+        hsa_mx[-1, -1] <- pmin(t(matrix(t(hsa_mx[1, -1]), ncol(hsa_mx) - 1, nrow(hsa_mx) - 1)),
+                            matrix(hsa_mx[-1, 1], nrow(hsa_mx) - 1, ncol(hsa_mx) - 1))
         hsa_excess <- mx_mean - hsa_mx
 
         # calculated excess over independence (Bliss model)
         bliss_mx <- all_mx$mx_mean
-        bliss_mx[-1, -1] <- t(matrix(t(bliss_mx[1,-1]), ncol(bliss_mx)-1, nrow(bliss_mx)-1)) *
-                            matrix(bliss_mx[-1,1], nrow(bliss_mx)-1, ncol(bliss_mx)-1)
+        bliss_mx[-1, -1] <- t(matrix(t(bliss_mx[1, -1]), ncol(bliss_mx) - 1, nrow(bliss_mx) - 1)) *
+                            matrix(bliss_mx[-1, 1], nrow(bliss_mx) - 1, ncol(bliss_mx) - 1)
         bliss_excess <- mx_mean - bliss_mx
 
         # add combo models and excess for HSA and bliss
@@ -353,26 +367,26 @@ calculate_combo_matrix <- function (SE,
           iso_cutoff <- NULL
         } else {
           if (norm_method == "GRvalue") {
-            iso_cutoff <- seq(max(-0.25, ceiling(20*min(mx_mean + .08, na.rm = TRUE))/20), 0.8,  0.05)
+            iso_cutoff <- seq(max(-0.25, ceiling(20 * min(mx_mean + .08, na.rm = TRUE)) / 20), 0.8,  0.05)
           } else {
-            iso_cutoff <- seq(max(0.2, ceiling(20*min(mx_mean + .08, na.rm = TRUE))/20), 0.8,  0.05)
+            iso_cutoff <- seq(max(0.2, ceiling(20 * min(mx_mean + .08, na.rm = TRUE)) / 20), 0.8,  0.05)
           }
           names(iso_cutoff) <- as.character(iso_cutoff)
         }
 
         # create the variable for the different isobolograms
         all_iso <- vector("list", length(iso_cutoff))
-        ref_x50 <- c(conc_1 = min(all_fits[["by_col"]][1,"xc50"], max(drug1_axis$conc_1) * conc_margin),
-                    conc_2 = min(all_fits[["by_row"]][1,"xc50"], max(drug2_axis$conc_2) * conc_margin))
+        ref_x50 <- c(conc_1 = min(all_fits[["by_col"]][1, "xc50"], max(drug1_axis$conc_1) * conc_margin),
+                    conc_2 = min(all_fits[["by_row"]][1, "xc50"], max(drug2_axis$conc_2) * conc_margin))
         names(all_iso) <- iso_cutoff
         for (isobol_value in iso_cutoff) { # run through the different isobolograms
           # cutoff point by row
           df_fit <- all_fits[["by_row"]]
-          df_fit <- df_fit[nrow(df_fit):1,]
-          df_iso <- cbind(df_fit[,"conc_1", drop = FALSE], data.frame(conc_2 =
+          df_fit <- df_fit[nrow(df_fit):1, ]
+          df_iso <- cbind(df_fit[, "conc_1", drop = FALSE], data.frame(conc_2 =
             ifelse(df_fit$x_0 < isobol_value, 0, ifelse(df_fit$x_inf > isobol_value,
               Inf,
-              df_fit$c50 * ((((df_fit$x_0-df_fit$x_inf) / (isobol_value-df_fit$x_inf)) - 1) ^
+              df_fit$c50 * ((((df_fit$x_0 - df_fit$x_inf) / (isobol_value - df_fit$x_inf)) - 1) ^
                   (1 / pmax(df_fit$h, 0.01))))
                 ),
                 fit_type = "by_row"))
@@ -382,50 +396,48 @@ calculate_combo_matrix <- function (SE,
           df_iso <- rbind(df_iso, cbind(data.frame(conc_1 =
             ifelse(df_fit$x_0 < isobol_value, 0, ifelse(df_fit$x_inf > isobol_value,
               Inf,
-              df_fit$c50 * ((((df_fit$x_0-df_fit$x_inf) / (isobol_value-df_fit$x_inf)) -1) ^
+              df_fit$c50 * ((((df_fit$x_0 - df_fit$x_inf) / (isobol_value - df_fit$x_inf)) - 1) ^
                   (1 / pmax(df_fit$h, 0.01))))
                 ),
             df_fit[, "conc_2", drop = FALSE],
               fit_type = "by_col")))
 
 
-          df_iso$conc_1 <- pmin(df_iso$conc_1, max(drug1_axis$conc_1)*conc_margin)
-          df_iso$conc_2 <- pmin(df_iso$conc_2, max(drug2_axis$conc_2)*conc_margin)
+          df_iso$conc_1 <- pmin(df_iso$conc_1, max(drug1_axis$conc_1) * conc_margin)
+          df_iso$conc_2 <- pmin(df_iso$conc_2, max(drug2_axis$conc_2) * conc_margin)
 
           ref_conc_1 <- pmin(df_iso$conc_1[df_iso$conc_2 == 0 & df_iso$fit_type == "by_col"],
-                          max(drug1_axis$conc_1)*conc_margin)
+                          max(drug1_axis$conc_1) * conc_margin)
           ref_conc_2 <- pmin(df_iso$conc_2[df_iso$conc_1 == 0 & df_iso$fit_type == "by_row"],
-                          max(drug2_axis$conc_2)*conc_margin)
+                          max(drug2_axis$conc_2) * conc_margin)
 
           # cutoff point by diagonal (co-dilution)
           # co-dil is given as concentration of drug 1
           df_fit <- all_fits[["by_codil"]]
-          if (nrow(df_fit) > 1){
-            df_fit = df_fit[nrow(df_fit):1,]
-            df_fit = df_fit[df_fit$fit_type %in% "DRC3pHillFitModelFixS0",]
-            conc_mix = ifelse(df_fit$x_0 < isobol_value, 0, ifelse(df_fit$x_inf > isobol_value,
+          if (nrow(df_fit) > 1) {
+            df_fit <- df_fit[nrow(df_fit):1, ]
+            df_fit <- df_fit[df_fit$fit_type %in% "DRC3pHillFitModelFixS0", ]
+            conc_mix <- ifelse(df_fit$x_0 < isobol_value, 0, ifelse(df_fit$x_inf > isobol_value,
               Inf,
-              df_fit$c50 * ((((df_fit$x_0-df_fit$x_inf) / (isobol_value-df_fit$x_inf)) -1) ^
+              df_fit$c50 * ((((df_fit$x_0 - df_fit$x_inf) / (isobol_value - df_fit$x_inf)) - 1) ^
                   (1 / df_fit$h)))
                 )
-            # ratio = c1/c2 --> c1 = ratio * c2
-            # ct = c1 + c2 = c1 + c1/ratio = c2*ratio + c2
-            df_iso_codil <- data.frame(conc_1 = conc_mix/(1+1/df_fit$conc_ratio),
-                              conc_2 = conc_mix/(1+ df_fit$conc_ratio), fit_type="by_codil")
+            df_iso_codil <- data.frame(conc_1 = conc_mix / (1 + 1 / df_fit$conc_ratio),
+                              conc_2 = conc_mix / (1 + df_fit$conc_ratio), fit_type = "by_codil")
             # avoid extrapolation
-            capped_idx <- df_iso_codil$conc_1 > (max(drug1_axis$conc_1)*conc_margin) |
-                  df_iso_codil$conc_2 > (max(drug2_axis$conc_2)*conc_margin)
-            df_iso_codil$conc_1[capped_idx] <- pmin(max(drug1_axis$conc_1)*conc_margin,
-                        df_fit$conc_ratio*(max(drug2_axis$conc_2)*conc_margin))[capped_idx]
-            df_iso_codil$conc_2[capped_idx] <- pmin(max(drug2_axis$conc_2)*conc_margin,
-                        (max(drug1_axis$conc_1)*conc_margin)/df_fit$conc_ratio)[capped_idx]
+            capped_idx <- df_iso_codil$conc_1 > (max(drug1_axis$conc_1) * conc_margin) |
+                  df_iso_codil$conc_2 > (max(drug2_axis$conc_2) * conc_margin)
+            df_iso_codil$conc_1[capped_idx] <- pmin(max(drug1_axis$conc_1) * conc_margin,
+                        df_fit$conc_ratio * (max(drug2_axis$conc_2) * conc_margin))[capped_idx]
+            df_iso_codil$conc_2[capped_idx] <- pmin(max(drug2_axis$conc_2) * conc_margin,
+                        (max(drug1_axis$conc_1) * conc_margin) / df_fit$conc_ratio)[capped_idx]
 
             df_iso <- rbind(df_iso, df_iso_codil)
           }
           # remove low concentration values
-          df_iso <- df_iso[ !is.na(df_iso$conc_1) & !is.na(df_iso$conc_2), ]
-          df_iso <- df_iso[(df_iso$conc_1 > drug1_axis$conc_1[2]/2 | df_iso$fit_type == "by_row") &
-                            (df_iso$conc_2 > drug2_axis$conc_2[2]/2 | df_iso$fit_type == "by_col"),]
+          df_iso <- df_iso[!is.na(df_iso$conc_1) & !is.na(df_iso$conc_2), ]
+          df_iso <- df_iso[(df_iso$conc_1 > drug1_axis$conc_1[2] / 2 | df_iso$fit_type == "by_row") &
+                             (df_iso$conc_2 > drug2_axis$conc_2[2] / 2 | df_iso$fit_type == "by_col"), ]
 
           if (nrow(df_iso) < 5) {
             next
@@ -439,81 +451,70 @@ calculate_combo_matrix <- function (SE,
           df_iso$pos_y <- pmin(df_iso$pos_y, max(drug1_axis$pos_y) + log10(conc_margin))
 
           # rotate 45 degree to calculate smooth curve:
-          #   x1 <- (pos_x - pos_y)/sqrt(2)
-          #   x2 <- (pos_x + pos_y)/sqrt(2)
           df_iso$x1 <- (df_iso$pos_x - min(drug2_axis$pos_x) -
-                                    (df_iso$pos_y - min(drug1_axis$pos_y)))/sqrt(2) # conc_ratio
+                                    (df_iso$pos_y - min(drug1_axis$pos_y))) / sqrt(2) # conc_ratio
           df_iso$x2 <- (df_iso$pos_x - min(drug2_axis$pos_x) +
-                                    (df_iso$pos_y - min(drug1_axis$pos_y)))/sqrt(2) # new response value
-          x2_extra_offset <- 1/4 # offset helps with smoothing of the edges
+                                    (df_iso$pos_y - min(drug1_axis$pos_y))) / sqrt(2) # new response value
+          x2_extra_offset <- 1 / 4 # offset helps with smoothing of the edges
           df_iso$x2_off <- df_iso$x2 + abs(df_iso$x1) * x2_extra_offset
-          isobol_x1 <- seq(min(df_iso$x1)-log2_pos_offset, max(df_iso$x1)+log2_pos_offset,.1)
+          isobol_x1 <- seq(min(df_iso$x1) - log2_pos_offset, max(df_iso$x1) + log2_pos_offset, .1)
 
           # perform the smoothing
-          df_iso_curve <- data.frame(x1=isobol_x1, x2_off = zoo::rollmean(
-            rowMeans(do.call(cbind,lapply(names(which(table(df_iso$fit_type)>1)), function(x)
-              approx(x = df_iso$x1[df_iso$fit_type == x],
-                y = df_iso$x2_off[df_iso$fit_type == x], xout = isobol_x1)$y
-              )), na.rm = TRUE), 5, fill = NA))
-          df_iso_curve <- df_iso_curve[!is.na(df_iso_curve$x2_off),]
+          df_iso_curve <- data.frame(x1 = isobol_x1, x2_off = zoo::rollmean(
+            rowMeans(do.call(cbind, lapply(names(which(table(df_iso$fit_type) > 1)), function(x)
+              approx(x = df_iso$x1[df_iso$fit_type == x], 
+                     y = df_iso$x2_off[df_iso$fit_type == x], xout = isobol_x1)$y)),
+              na.rm = TRUE), 5, fill = NA))
+          df_iso_curve <- df_iso_curve[!is.na(df_iso_curve$x2_off), ]
           df_iso_curve$x2 <- df_iso_curve$x2_off - abs(df_iso_curve$x1) * x2_extra_offset
 
           # rotate back the position
-          df_iso_curve$pos_x <- (df_iso_curve$x1 + df_iso_curve$x2)/sqrt(2) + min(drug2_axis$pos_x)
-          df_iso_curve$pos_y <- (-df_iso_curve$x1 + df_iso_curve$x2)/sqrt(2) + min(drug1_axis$pos_y)
-
-          # isobol : c1/ref_1 + c2/ref_2 == 1 --> c1 = ref_1 * (1 - c2/ref_2)
-          #  --> pos_x = log10(c2) , pos_y = log10(ref_1 * (1 - c2/ref_2))
-          # isobol rotated -->  x1 = (log10(c2) - min(drug2_axis$pos_x) -
-          #                (log10(ref_1 * (1 - c2/ref_2)) - min(drug1_axis$pos_y)))/sqrt(2) # conc_ratio
-          #       x2 = (log10(c2) - min(drug2_axis$pos_x) +
-          #                (log10(ref_1 * (1 - c2/ref_2)) - min(drug1_axis$pos_y)))/sqrt(2) # response
-          # --> x2(x1) = x2(c2(x1)) with c2(x1) = ref_2/(1 + ref_2 / (ref_1 * 10 ^ (x1 + min_x - min_y)))
+          df_iso_curve$pos_x <- (df_iso_curve$x1 + df_iso_curve$x2) / sqrt(2) + min(drug2_axis$pos_x)
+          df_iso_curve$pos_y <- (-df_iso_curve$x1 + df_iso_curve$x2) / sqrt(2) + min(drug1_axis$pos_y)
 
           # calculate the reference (additive model in the rotated space)
-          c2 <- ref_conc_2/(1 + (ref_conc_2/ref_conc_1) * (10 ^ (
-                      -(sqrt(2)*df_iso_curve$x1 + min(drug2_axis$pos_x) - min(drug1_axis$pos_y)))))
+          c2 <- ref_conc_2 / (1 + (ref_conc_2 / ref_conc_1) * (10 ^ (
+                      -(sqrt(2) * df_iso_curve$x1 + min(drug2_axis$pos_x) - min(drug1_axis$pos_y)))))
           df_iso_curve$x2_ref <- (log10(c2) - min(drug2_axis$pos_x) +
-                    (log10(ref_conc_1 * (1 - c2/ref_conc_2)) - min(drug1_axis$pos_y)))/sqrt(2)
+                    (log10(ref_conc_1 * (1 - c2 / ref_conc_2)) - min(drug1_axis$pos_y))) / sqrt(2)
 
           # cap the concentrations for the reference
-          over_edge <- pmax(0, (-df_iso_curve$x1 + df_iso_curve$x2_ref)/sqrt(2) +
+          over_edge <- pmax(0, (-df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) +
                         min(drug1_axis$pos_y) -  (max(drug1_axis$pos_y) + conc_margin)) +
-                      pmax(0, (df_iso_curve$x1 + df_iso_curve$x2_ref)/sqrt(2) +
+                      pmax(0, (df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) +
                         min(drug2_axis$pos_x) -  (max(drug2_axis$pos_x) + conc_margin))
-          df_iso_curve$x2_ref_cap <- df_iso_curve$x2_ref - over_edge*sqrt(2)
+          df_iso_curve$x2_ref_cap <- df_iso_curve$x2_ref - over_edge * sqrt(2)
 
           # rotate back the reference
-          df_iso_curve$pos_x_ref <- (df_iso_curve$x1+df_iso_curve$x2_ref)/sqrt(2) +
+          df_iso_curve$pos_x_ref <- (df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) +
             min(drug2_axis$pos_x)
-          df_iso_curve$pos_y_ref <- (-df_iso_curve$x1+df_iso_curve$x2_ref)/sqrt(2) +
+          df_iso_curve$pos_y_ref <- (-df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) +
             min(drug1_axis$pos_y)
-          # isobol : c1/ref_1 + c2/ref_2 == 1 --> c1 = ref_1 * (1 - c2/ref_2)
           df_iso_curve <- rbind(NA, df_iso_curve, NA)
           df_iso_curve[1, c("pos_x", "pos_x_ref")] <- min(drug2_axis$pos_x)
           df_iso_curve[1, c("pos_y", "pos_y_ref")] <- log10(ref_conc_1)
           df_iso_curve[1, "x1"] <-
                       (df_iso_curve$pos_x[1] - min(drug2_axis$pos_x) -
-                          (df_iso_curve$pos_y[1] - min(drug1_axis$pos_y)))/sqrt(2)
+                          (df_iso_curve$pos_y[1] - min(drug1_axis$pos_y))) / sqrt(2)
           df_iso_curve[1, c("x2", "x2_ref", "x2_ref_cap")] <-
                       (df_iso_curve$pos_x[1] - min(drug2_axis$pos_x) +
-                          (df_iso_curve$pos_y[1] - min(drug1_axis$pos_y)))/sqrt(2)
+                          (df_iso_curve$pos_y[1] - min(drug1_axis$pos_y))) / sqrt(2)
 
           df_iso_curve[nrow(df_iso_curve), c("pos_x", "pos_x_ref")] <- log10(ref_conc_2)
           df_iso_curve[nrow(df_iso_curve), c("pos_y", "pos_y_ref")] <- min(drug1_axis$pos_y)
           df_iso_curve[nrow(df_iso_curve), c("x2", "x2_ref", "x2_ref_cap")] <-
                       (df_iso_curve$pos_x[nrow(df_iso_curve)] - min(drug2_axis$pos_x) +
                           (df_iso_curve$pos_y[nrow(df_iso_curve)] -
-                          min(drug1_axis$pos_y)))/sqrt(2)
-          df_iso_curve[nrow(df_iso_curve), "x1"] =
+                          min(drug1_axis$pos_y))) / sqrt(2)
+          df_iso_curve[nrow(df_iso_curve), "x1"] <-
                       (df_iso_curve$pos_x[nrow(df_iso_curve)] - min(drug2_axis$pos_x) -
                           (df_iso_curve$pos_y[nrow(df_iso_curve)] -
-                          min(drug1_axis$pos_y)))/sqrt(2)
+                          min(drug1_axis$pos_y))) / sqrt(2)
 
           # calculate CI across range to concentration ratios (in the rotated space)
           df_iso_curve$log10_ratio_conc <- df_iso_curve$x1
           df_iso_curve$log2_CI <- zoo::rollmean(
-              log2(10) * (df_iso_curve$x2 - df_iso_curve$x2_ref)/sqrt(2), 4,
+              log2(10) * (df_iso_curve$x2 - df_iso_curve$x2_ref) / sqrt(2), 4,
               fill = c(0, 0, 0))
 
           # cap position for plotting the isobolograms
@@ -528,17 +529,17 @@ calculate_combo_matrix <- function (SE,
 
           range <- 2 # in log10 domain --> 100-fold range for calculating averaged CI 
           ratio_idx <- which(
-              (df_iso_curve$log10_ratio_conc > (min(df_iso_curve$log10_ratio_conc)+range/2)) &
-              (df_iso_curve$log10_ratio_conc < (max(df_iso_curve$log10_ratio_conc)-range/2)))
+              (df_iso_curve$log10_ratio_conc > (min(df_iso_curve$log10_ratio_conc) + range / 2)) &
+              (df_iso_curve$log10_ratio_conc < (max(df_iso_curve$log10_ratio_conc) - range / 2)))
 
           if (length(ratio_idx) == 0) {
-            ratio_idx <- round(nrow(df_iso_curve)/2)
+            ratio_idx <- round(nrow(df_iso_curve) / 2)
           }
 
           df_100x_AUC <- data.frame(log10_ratio_conc = df_iso_curve$log10_ratio_conc[ratio_idx],
             AUC_CI = sapply(ratio_idx, function(x) mean(df_iso_curve$log2_CI[
-              (df_iso_curve$log10_ratio_conc > (df_iso_curve$log10_ratio_conc[x] - range/2)) &
-              (df_iso_curve$log10_ratio_conc <= (df_iso_curve$log10_ratio_conc[x] + range/2))])
+              (df_iso_curve$log10_ratio_conc > (df_iso_curve$log10_ratio_conc[x] - range / 2)) &
+              (df_iso_curve$log10_ratio_conc <= (df_iso_curve$log10_ratio_conc[x] + range / 2))])
             )
           )
 
@@ -563,20 +564,22 @@ calculate_combo_matrix <- function (SE,
           condition = c(combo$condition, CellLineName = colData(SE)$CellLineName[iCL], CLID = colData(SE)$clid[iCL]))
 
         # store the aggregated metrics for each drug pair/cell line
-        agg_results$CI_100x_50[idc, iCL] = ifelse(length(df_CI_100x) == 0, 1,
+        agg_results$CI_100x_50[idc, iCL] <- ifelse(length(df_CI_100x) == 0, 1,
             ifelse("0.5" %in% df_CI_100x$level, 2 ^ df_CI_100x$log2_CI[df_CI_100x$level == 0.5], 1))
-        agg_results$CI_100x_80[idc, iCL] = ifelse(length(df_CI_100x) == 0, 1,
+        agg_results$CI_100x_80[idc, iCL] <- ifelse(length(df_CI_100x) == 0, 1,
             ifelse("0.2" %in% df_CI_100x$level, 2 ^ df_CI_100x$log2_CI[df_CI_100x$level == 0.2], 1))
-        agg_results$hsa_q10[idc, iCL] = mean(all_mx$hsa_excess[all_mx$hsa_excess <= quantile(all_mx$hsa_excess, .1, na.rm = TRUE)])
-        agg_results$bliss_q10[idc, iCL] = mean(all_mx$bliss_excess[all_mx$bliss_excess <= quantile(all_mx$bliss_excess, .1, na.rm = TRUE)])
+        agg_results$hsa_q10[idc, iCL] <- mean(
+          all_mx$hsa_excess[all_mx$hsa_excess <= quantile(all_mx$hsa_excess, .1, na.rm = TRUE)])
+        agg_results$bliss_q10[idc, iCL] <- mean(
+          all_mx$bliss_excess[all_mx$bliss_excess <= quantile(all_mx$bliss_excess, .1, na.rm = TRUE)])
 
       }
     }
-    agg_results_norm[[norm_method]] = agg_results
-    all_combo_variables_norm[[norm_method]] = all_combo_variables
+    agg_results_norm[[norm_method]] <- agg_results
+    all_combo_variables_norm[[norm_method]] <- all_combo_variables
   }
 
-  return(list(all_combo_variables_norm = all_combo_variables_norm, agg_results_norm = agg_results_norm))
+  return(list(all_combo_variables_norm <- all_combo_variables_norm, agg_results_norm = agg_results_norm))
 
 }
   

@@ -6,25 +6,25 @@
 #' @export
 #'
 #' @examples
-calculate_combo_codilution <- function(SE){
-browser()
+calculate_combo_codilution <- function(SE) {
+
   # create new SE for the codilution
   co_dilution_metrics <- metadata(SE)$drug_combinations
 
-  codil_SE <- SE[1:length(co_dilution_metrics),]
+  codil_SE <- SE[1:length(co_dilution_metrics), ]
   rownames(codil_SE) <- vapply(co_dilution_metrics, function(x)
-      paste0(x$condition[['DrugName']],'_',x$condition[['DrugName_2']]),
+      paste0(x$condition[["DrugName"]], "_", x$condition[["DrugName_2"]]),
       character(1))
   SummarizedExperiment::rowData(codil_SE) <- 
-      DataFrame(t(sapply(co_dilution_metrics, '[[', 'condition')))
-  metadata(codil_SE) = list()
+      DataFrame(t(sapply(co_dilution_metrics, "[[", "condition")))
+  metadata(codil_SE) <- list()
   SummarizedExperiment::assays(codil_SE) <-
-      SummarizedExperiment::assays(codil_SE)[c('Averaged', 'Avg_Controls', 'Metrics')]
+      SummarizedExperiment::assays(codil_SE)[c("Averaged", "Avg_Controls", "Metrics")]
 
   mSE_m <- SummarizedExperiment::assay(codil_SE, "Metrics")
   a_SE <- SummarizedExperiment::assay(codil_SE, "Averaged")
   a_ctrl_SE <- SummarizedExperiment::assay(codil_SE, "Avg_Controls")
-  flat_data <- gDRutils::convert_se_assay_to_dt(SE, 'Averaged')
+  flat_data <- gDRutils::convert_se_assay_to_dt(SE, "Averaged")
   flat_data$rId <- as.factor(flat_data$rId)
   flat_data$cId <- as.factor(flat_data$cId)
 
@@ -32,9 +32,9 @@ browser()
       for (iCL in colnames(SE)) {
 
           combo <- co_dilution_metrics[[ic]]
-          df_ <- flat_data[flat_data$rId %in% combo$rows & flat_data$cId == iCL,]
+          df_ <- flat_data[flat_data$rId %in% combo$rows & flat_data$cId == iCL, ]
           
-          df_ <- df_[df_$Concentration_2 != 0 ,]
+          df_ <- df_[df_$Concentration_2 != 0, ]
           df_$Concentration_1 <- df_$Concentration
           df_$Concentration <- df_$Concentration_1 + df_$Concentration_2
           a_SE[[ic, iCL]] <- df_
