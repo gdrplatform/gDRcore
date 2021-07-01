@@ -36,7 +36,9 @@ Suggests:
     knitr,
     testthat,
     yaml,
-    gDRtestData (>= 1.0.2)
+    gDRtestData (>= 1.0.2),
+    gDRwrapper,
+    gDRinternal
 VignetteBuilder: knitr
 ByteCompile: TRUE
 RoxygenNote: 7.1.1
