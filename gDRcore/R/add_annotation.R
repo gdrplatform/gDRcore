@@ -92,7 +92,7 @@ add_Drug_annotation <- function(df_metadata,
                                 fill = NULL) {
 
   if (requireNamespace("gDRwrapper", quietly = TRUE)) {	
-    gDRwrapper::add_CellLine_annotation(df_metadata, fill)
+    gDRwrapper::add_Drug_annotation(df_metadata, fill)
   } else {
     # Assertions:
     stopifnot(inherits(df_metadata, "data.frame"))
