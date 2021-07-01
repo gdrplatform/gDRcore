@@ -24,16 +24,16 @@ calculate_combo_matrix <- function(SE,
     agg_results <- list(
       bliss_q10 = matrix(NA, length(metadata(SE)$drug_combinations), 
       ncol(SE),
-      dimnames = list(sapply(metadata(SE)$drug_combinations,
-                function(x) gsub("Duration", "T", x$name)),
+      dimnames = list(vapply(metadata(SE)$drug_combinations,
+                function(x) gsub("Duration", "T", x$name), character(1)),
                 paste(colData(SE)$CellLineName, colData(SE)$clid)))
     )
     agg_results$hsa_q10 <- agg_results$CI_100x_50 <- agg_results$CI_100x_80 <- agg_results$bliss_q10
 
     # create empty matrix of lists for storing all results necessary for plotting
     all_combo_variables <- matrix(list(), length(metadata(SE)$drug_combinations), ncol(SE),
-      dimnames = list(sapply(metadata(SE)$drug_combinations,
-                function(x) gsub("Duration", "T", x$name)),
+      dimnames = list(vapply(metadata(SE)$drug_combinations,
+                function(x) gsub("Duration", "T", x$name), FUN.VALUE = character(1)),
                 paste(colData(SE)$CellLineName, colData(SE)$clid))
     )
     # run through all drug combinations
@@ -537,9 +537,10 @@ calculate_combo_matrix <- function(SE,
           }
 
           df_100x_AUC <- data.frame(log10_ratio_conc = df_iso_curve$log10_ratio_conc[ratio_idx],
-            AUC_CI = sapply(ratio_idx, function(x) mean(df_iso_curve$log2_CI[
+            AUC_CI = vapply(ratio_idx, function(x) mean(df_iso_curve$log2_CI[
               (df_iso_curve$log10_ratio_conc > (df_iso_curve$log10_ratio_conc[x] - range / 2)) &
-              (df_iso_curve$log10_ratio_conc <= (df_iso_curve$log10_ratio_conc[x] + range / 2))])
+              (df_iso_curve$log10_ratio_conc <= (df_iso_curve$log10_ratio_conc[x] + range / 2))]),
+              FUN.VALUE = double(1)
             )
           )
 
@@ -553,7 +554,7 @@ calculate_combo_matrix <- function(SE,
             CI_100x = min(df_100x_AUC$AUC_CI)
             )
         }
-        all_iso <- all_iso[!sapply(all_iso, is.null)]
+        all_iso <- all_iso[!vapply(all_iso, is.null, FUN.VALUE = logical(1))]
 
         df_CI_100x <- unlist(lapply(all_iso, "[[", "CI_100x"))
         df_CI_100x <- data.frame(level = as.numeric(names(df_CI_100x)), log2_CI = df_CI_100x)
