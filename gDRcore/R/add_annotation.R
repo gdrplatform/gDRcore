@@ -17,23 +17,26 @@
 add_CellLine_annotation <- function(df_metadata,
                                     fill = NULL) {
 
+  # Assertions:
+  stopifnot(inherits(df_metadata, "data.frame"))
+  checkmate::assert_string(fill, null.ok = TRUE)
+  data.table::setDT(df_metadata)
+  
   if (requireNamespace("gDRwrapper", quietly = TRUE)) {
     gDRwrapper::add_CellLine_annotation(df_metadata, fill)
   } else {
-    # Assertions:
-    stopifnot(inherits(df_metadata, "data.frame"))
-    checkmate::assert_string(fill, null.ok = TRUE)
   
     DB_cellid_header <- "cell_line_identifier"
     DB_cell_annotate <- c("cell_line_name", "primary_tissue", "doubling_time",
                           "parental_identifier", "subtype")
     cellline <- gDRutils::get_identifier("cellline")
+    cellline_name <- gDRutils::get_identifier("cellline_name")
     add_clid <- gDRutils::get_header("add_clid")
   
     # Read local cell_lines annotations
     annotationPackage <- ifelse(requireNamespace("gDRinternal", quietly = TRUE),
                                 "gDRinternal", "gDRtestData")
-    CLs_info <- data.table::fread(system.file("data/cell_lines.csv", package = annotationPackage))
+    CLs_info <- data.table::fread(system.file("data", "cell_lines.csv", package = annotationPackage))
     CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate), with = FALSE]
   
     if (nrow(CLs_info) == 0) return(df_metadata)
@@ -55,17 +58,20 @@ add_CellLine_annotation <- function(df_metadata,
       CLs_info <- rbind(CLs_info, missingTblCellLines)
     }
   
-    colnames(CLs_info)[1:4] <- c(cellline, add_clid)
+    colnames(CLs_info) <- c(cellline, add_clid, tail(DB_cell_annotate, 2))
     CLIDs <- unique(df_metadata[[cellline]])
     bad_CL <- CLs_info[cellline %in% CLIDs][[cellline]]
     if (any(bad_CL)) {
       futile.logger::flog.warn("Cell line ID %s not found in cell line database",
                                paste(CLIDs[bad_CL], collapse = " ; "))
-      temp_CLIDs <- data.frame(CLIDs[bad_CL], CLIDs[bad_CL])
-      temp_CLIDs[, 1 + (2:length(add_clid))] <- NA
+      temp_CLIDs <- as.data.frame(matrix(ncol = length(c(cellline,
+                                                             add_clid)),
+                                  nrow = length(CLIDs[bad_CL])))
       colnames(temp_CLIDs) <- c(cellline,
                                 add_clid)
-      CLs_info <- rbind(CLs_info, temp_CLIDs)
+      
+      temp_CLIDs[, cellline] <- temp_CLIDs[, cellline_name] <- CLIDs[bad_CL]
+      CLs_info <- rbind(CLs_info, temp_CLIDs, fill = TRUE)
     }
   
     futile.logger::flog.info("Merge with Cell line info")
@@ -91,12 +97,13 @@ add_CellLine_annotation <- function(df_metadata,
 add_Drug_annotation <- function(df_metadata,
                                 fill = NULL) {
 
+  # Assertions:
+  stopifnot(inherits(df_metadata, "data.frame"))
+  checkmate::assert_string(fill, null.ok = TRUE)
+  data.table::setDT(df_metadata)
   if (requireNamespace("gDRwrapper", quietly = TRUE)) {
     gDRwrapper::add_Drug_annotation(df_metadata, fill)
   } else {
-    # Assertions:
-    stopifnot(inherits(df_metadata, "data.frame"))
-    checkmate::assert_string(fill, null.ok = TRUE)
   
     nrows_df <- nrow(df_metadata)
   
@@ -104,13 +111,14 @@ add_Drug_annotation <- function(df_metadata,
     drug <- gDRutils::get_identifier("drug")
     untreated_tag <- gDRutils::get_identifier("untreated_tag")
     drugname <- gDRutils::get_identifier("drugname")
+    drug_moa <- gDRutils::get_identifier("drug_moa")
     drugsTreated <- unique(df_metadata[[drug]])
   
     # Read local drugs annotations
     annotationPackage <- ifelse(requireNamespace("gDRinternal", quietly = TRUE),
                                 "gDRinternal", "gDRtestData")
     Drug_info <- data.table::fread(system.file("data/drugs.csv", package = annotationPackage))
-    colnames(Drug_info)[1:2] <- c("drug", "drug_name")
+    colnames(Drug_info) <- c("drug", "drug_name", "drug_moa")
     drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
     validatedDrugs <- drugsTreated %in% Drug_info[["drug"]]
     #### function should be parallelized
@@ -162,7 +170,7 @@ add_Drug_annotation <- function(df_metadata,
                                   paste(DrIDs[!ok_DrID], collapse = " ; "))
       }
     }
-    colnames(Drug_info)[2] <- drugname
+    colnames(Drug_info) <- c("drug", drugname, drug_moa)
     futile.logger::flog.info("Merge with Drug_info for Drug 1")
     df_metadata[[paste0(drug, "_temp")]] <-
       remove_drug_batch(df_metadata[[drug]])
@@ -173,8 +181,10 @@ add_Drug_annotation <- function(df_metadata,
     for (i in grep(paste0(drug, "_\\d"), colnames(df_metadata))) {
       df_metadata[is.na(df_metadata[[i]]), i] <- untreated_tag[1] # set missing values to Untreated
       Drug_info_ <- Drug_info
-      colnames(Drug_info_)[2:length(colnames(Drug_info_))] <- paste0(colnames(Drug_info_)[c(2, 3)],
-                                                                     substr(colnames(df_metadata)[i], 8, 12))
+      colnames(Drug_info_)[colnames(Drug_info_)
+                           %in% c(drugname, drug_moa)] <- paste0(c(drugname, drug_moa),
+                                                                     gsub(".*(_\\d)", "\\1",
+                                                                          colnames(df_metadata)[i]))
       futile.logger::flog.info("Merge with Drug_info for %s", colnames(df_metadata)[[i]])
       df_metadata[[paste0(colnames(df_metadata)[[i]], "_temp")]] <- remove_drug_batch(df_metadata[[i]])
       df_metadata <- base::merge(df_metadata, Drug_info_, by.x =
