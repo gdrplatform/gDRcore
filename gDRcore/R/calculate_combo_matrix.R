@@ -11,6 +11,10 @@ calculate_combo_matrix <- function(se,
                                     log2_pos_offset = log10(3) / 2,
                                     norm_types = c("RelativeViability", "GRvalue")
                                     ) {
+  checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_number(conc_margin)
+  checkmate::assert_number(log2_pos_offset)
+  checkmate::assert_character(norm_types)
   
   agg_results_norm <- list()
   all_combo_variables_norm <- list()

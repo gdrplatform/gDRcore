@@ -6,6 +6,8 @@
 #' @export
 calculate_combo_cotrt <- function(se) {
     
+    checkmate::assert_class(se, "SummarizedExperiment")
+    
     drug_combos <- S4Vectors::metadata(se)$drug_combinations
     df_all_combo <- do.call(rbind, 
                            lapply(drug_combos, function(x) as.data.frame(x$condition)))
@@ -50,7 +52,6 @@ calculate_combo_cotrt <- function(se) {
     
     # run through all drug combinations
     for (idc in seq_along(S4Vectors::metadata(se)$drug_combinations)) {
-        browser()
         combo <- S4Vectors::metadata(se)$drug_combinations[[idc]]
         print(sprintf("%s x %s (%i/%i)", combo$condition$DrugName, combo$condition$DrugName_2,
                       idc, length(S4Vectors::metadata(se)$drug_combinations)))
