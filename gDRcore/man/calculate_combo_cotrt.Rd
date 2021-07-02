@@ -4,10 +4,10 @@
 \alias{calculate_combo_cotrt}
 \title{Calculate combo co-treatment}
 \usage{
-calculate_combo_cotrt(SE)
+calculate_combo_cotrt(se)
 }
 \arguments{
-\item{SE}{}
+\item{se}{a BumpyMatrix SE with drug response data}
 }
 \value{
 

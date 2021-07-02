@@ -4,10 +4,10 @@
 \alias{calculate_combo_codilution}
 \title{Calculate combo co-dilution}
 \usage{
-calculate_combo_codilution(SE)
+calculate_combo_codilution(se)
 }
 \arguments{
-\item{SE}{a BumpyMatrix SE with drug response data}
+\item{se}{a BumpyMatrix SE with drug response data}
 }
 \value{
 

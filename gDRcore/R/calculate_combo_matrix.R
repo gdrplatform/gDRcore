@@ -1,15 +1,12 @@
 #' calculate_combo_matrix
 #'
-#' calculate_combo_matrix
-#'
-#' @param SE a BumpyMatrix SE with drug response data
+#' @param se a BumpyMatrix SE with drug response data
 #' @param conc_margin margin for calculation and plots as fold-change over highest test conc for calculation
 #' @param log2_pos_offset max offset for conc
 #'
 #' @return data
 #' @export
-#'
-calculate_combo_matrix <- function(SE,
+calculate_combo_matrix <- function(se,
                                     conc_margin = 10 ^ 0.5,
                                     log2_pos_offset = log10(3) / 2,
                                     norm_types = c("RelativeViability", "GRvalue")
@@ -22,29 +19,29 @@ calculate_combo_matrix <- function(SE,
     
     # create empty matrices to store the metrics across all drug combo and cell lines in the SE
     agg_results <- list(
-      bliss_q10 = matrix(NA, length(metadata(SE)$drug_combinations), 
-      ncol(SE),
-      dimnames = list(vapply(metadata(SE)$drug_combinations,
+      bliss_q10 = matrix(NA, length(S4Vectors::metadata(se)$drug_combinations), 
+      ncol(se),
+      dimnames = list(vapply(S4Vectors::metadata(se)$drug_combinations,
                 function(x) gsub("Duration", "T", x$name), character(1)),
-                paste(colData(SE)$CellLineName, colData(SE)$clid)))
+                paste(SummarizedExperiment::colData(se)$CellLineName, SummarizedExperiment::colData(se)$clid)))
     )
     agg_results$hsa_q10 <- agg_results$CI_100x_50 <- agg_results$CI_100x_80 <- agg_results$bliss_q10
 
     # create empty matrix of lists for storing all results necessary for plotting
-    all_combo_variables <- matrix(list(), length(metadata(SE)$drug_combinations), ncol(SE),
-      dimnames = list(vapply(metadata(SE)$drug_combinations,
+    all_combo_variables <- matrix(list(), length(S4Vectors::metadata(se)$drug_combinations), ncol(se),
+      dimnames = list(vapply(S4Vectors::metadata(se)$drug_combinations,
                 function(x) gsub("Duration", "T", x$name), FUN.VALUE = character(1)),
-                paste(colData(SE)$CellLineName, colData(SE)$clid))
+                paste(SummarizedExperiment::colData(se)$CellLineName, SummarizedExperiment::colData(se)$clid))
     )
     # run through all drug combinations
-    for (idc in seq_len(length(metadata(SE)$drug_combinations))) {
-      combo <- metadata(SE)$drug_combinations[[idc]]
+    for (idc in seq_len(length(S4Vectors::metadata(se)$drug_combinations))) {
+      combo <- S4Vectors::metadata(se)$drug_combinations[[idc]]
 
       # run through all cell lines
-      for (iCL in seq_len(ncol(SE))) {
+      for (iCL in seq_len(ncol(se))) {
         # get all data as flat data.frame
         
-        flat_data <- gDRutils::convert_se_assay_to_dt(SE[combo$rows, iCL], "Averaged")
+        flat_data <- gDRutils::convert_se_assay_to_dt(se[combo$rows, iCL], "Averaged")
 
 
         # skip if not matrix combo data or too few measured values
@@ -52,20 +49,20 @@ calculate_combo_matrix <- function(SE,
           !all(combo$condition[c("DrugName", "DrugName_2")] %in%
             unique(c(flat_data$DrugName, flat_data$DrugName_2))) ||
             sum(!is.na(flat_data[, ..norm_method])) < 10) {
-          print(sprintf("Skipping %s for %s x %s", colData(SE)$CellLineName[iCL],
+          print(sprintf("Skipping %s for %s x %s", SummarizedExperiment::colData(se)$CellLineName[iCL],
               combo$condition["DrugName"], combo$condition["DrugName_2"]))
           next
         }
 
         # include_controls and bind
-        flat_data_ctrl <- gDRutils::convert_se_ref_assay_to_dt(SE[combo$rows, iCL])
+        flat_data_ctrl <- gDRutils::convert_se_ref_assay_to_dt(se[combo$rows, iCL])
         flat_data <- as.data.frame(rbind(flat_data, flat_data_ctrl))
         
         # avoid mismatch because of numerical rounding
-        flat_data$Concentration <- 10**(.25 * round(4 * log10(flat_data$Concentration), 1))
-        flat_data$Concentration_2 <- 10**(.25 * round(4 * log10(flat_data$Concentration_2), 1))
+        flat_data$Concentration <- 10 ^ (.25 * round(4 * log10(flat_data$Concentration), 1))
+        flat_data$Concentration_2 <- 10 ^ (.25 * round(4 * log10(flat_data$Concentration_2), 1))
 
-        print(sprintf("Calculation for cell line %s treated with %s x %s", colData(SE)$CellLineName[iCL],
+        print(sprintf("Calculation for cell line %s treated with %s x %s", SummarizedExperiment::colData(se)$CellLineName[iCL],
             combo$condition["DrugName"], combo$condition["DrugName_2"]))
 
         # Secondary drug for some combinations becomes primary drug when viewed as single-agent (conc1=0), so swap. 
@@ -223,7 +220,7 @@ calculate_combo_matrix <- function(SE,
           )
 
           # if failed and values are increasing, fit a reverse sigmoidal
-          if (is.na(fit_res$x_0) && median(diff(mx[idx, -1])) > 0 && mean(diff(mx[idx, -1])) > 0) {
+          if (is.na(fit_res$x_0) && stats::median(diff(mx[idx, -1])) > 0 && mean(diff(mx[idx, -1])) > 0) {
               df_[, norm_method] <- 1 - df_[, norm_method]
             fit_res <- gDRutils::fit_curves(
               df_,
@@ -462,7 +459,7 @@ calculate_combo_matrix <- function(SE,
           # perform the smoothing
           df_iso_curve <- data.frame(x1 = isobol_x1, x2_off = zoo::rollmean(
             rowMeans(do.call(cbind, lapply(names(which(table(df_iso$fit_type) > 1)), function(x)
-              approx(x = df_iso$x1[df_iso$fit_type == x], 
+              stats::approx(x = df_iso$x1[df_iso$fit_type == x], 
                      y = df_iso$x2_off[df_iso$fit_type == x], xout = isobol_x1)$y)),
               na.rm = TRUE), 5, fill = NA))
           df_iso_curve <- df_iso_curve[!is.na(df_iso_curve$x2_off), ]
@@ -562,7 +559,8 @@ calculate_combo_matrix <- function(SE,
         # individual results
         all_combo_variables[[idc, iCL]] <- list(all_mx = all_mx, all_iso = all_iso, df_CI_100x = df_CI_100x,
           drug1_axis = drug1_axis, drug2_axis = drug2_axis, norm_method = norm_method, ref_x50 = ref_x50,
-          condition = c(combo$condition, CellLineName = colData(SE)$CellLineName[iCL], CLID = colData(SE)$clid[iCL]))
+          condition = c(combo$condition, CellLineName = SummarizedExperiment::colData(se)$CellLineName[iCL], 
+                        CLID = SummarizedExperiment::colData(se)$clid[iCL]))
 
         # store the aggregated metrics for each drug pair/cell line
         agg_results$CI_100x_50[idc, iCL] <- ifelse(length(df_CI_100x) == 0, 1,

@@ -5,14 +5,14 @@
 \title{calculate_combo_matrix}
 \usage{
 calculate_combo_matrix(
-  SE,
+  se,
   conc_margin = 10^0.5,
   log2_pos_offset = log10(3)/2,
   norm_types = c("RelativeViability", "GRvalue")
 )
 }
 \arguments{
-\item{SE}{a BumpyMatrix SE with drug response data}
+\item{se}{a BumpyMatrix SE with drug response data}
 
 \item{conc_margin}{margin for calculation and plots as fold-change over highest test conc for calculation}
 
