@@ -8,7 +8,7 @@ test_synthetic_data <- function(original, reprocessed, dataName) {
   averaged_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Averaged")
   metrics_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Metrics")
   
-  tolerance <- 10e-8
+  tolerance <- 10e-7
   test_that(sprintf("Original data %s and recreated data are identical", dataName), {
     expect_equal(normalized_new, normalized, tolerance = tolerance)
     expect_equal(averaged_new, averaged, tolerance = tolerance)
