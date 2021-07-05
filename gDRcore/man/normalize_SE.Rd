@@ -28,16 +28,16 @@ Defaults to \code{"Normalized"}.}
 
 \item{ref_GR_assay}{string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.}
 
-\item{ref_RV_assay}{string of the name of the reference
-Relative Viability assay in the \linkS4class{SummarizedExperiment}.}
+\item{ref_RV_assay}{string of the name of the reference Relative Viability assay in the 
+\linkS4class{SummarizedExperiment}.}
 
 \item{ndigit_rounding}{integer specifying number of digits of rounding during calculations.
 Defaults to \code{4}.}
 }
 \value{
-\code{BumpyMatrix} object with a new assay named \code{"Normalized"}containing \code{DataFrame}s 
-holding \code{RelativeViability} and \code{GRvalue}, as well as new assays named \code{RefRelativeViability},
-\code{RefGRvalue}, and \code{DivisionTime} values.
+\code{BumpyMatrix} object with a new assay named \code{"Normalized"} containing \code{DataFrame}s 
+holding \code{RelativeViability} and \code{GRvalue}, as well as new assays named 
+\code{RefRelativeViability}, \code{RefGRvalue}, and \code{DivisionTime} values.
 }
 \description{
 Normalize drug response data from treated and untreated pairings.

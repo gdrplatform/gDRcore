@@ -28,12 +28,12 @@ Defaults to \code{"Averaged"}.}
 \item{ref_GR_assay}{string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.
 Defaults to \code{"RefGRvalue"}.}
 
-\item{ref_RV_assay}{string of the name of the reference Relative Viability assay
- in the \linkS4class{SummarizedExperiment}.
+\item{ref_RV_assay}{string of the name of the reference Relative Viability assay 
+in the \linkS4class{SummarizedExperiment}.
 Defaults to \code{"RefRelativeViability"}.}
 
-\item{metrics_assay}{string of the name of the metrics assay to output
-in the returned \linkS4class{SummarizedExperiment}.
+\item{metrics_assay}{string of the name of the metrics assay to output in the 
+returned \linkS4class{SummarizedExperiment}.
 Defaults to \code{"Metrics"}.}
 
 \item{n_point_cutoff}{integer of how many points should be considered the minimum required to try to fit a curve.

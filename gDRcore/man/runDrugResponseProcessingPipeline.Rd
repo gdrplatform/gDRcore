@@ -30,9 +30,8 @@ runDrugResponseProcessingPipeline(
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
 
-\item{nested_keys}{character vector of column names to include in the data.frames
-in the assays of the resulting \code{SummarizedExperiment} object.
-Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.}
+\item{nested_keys}{character vector of column names to include in the data.frames in the assays of the resulting 
+\code{SummarizedExperiment} object. Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.}
 
 \item{override_untrt_controls}{named list containing defining factors in the treatments.
 Defaults to \code{NULL}.}
@@ -59,15 +58,15 @@ Defaults to \code{"Normalized"}.}
 \item{ref_GR_assay}{string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.
 Defaults to \code{"RefGRvalue"}.}
 
-\item{ref_RV_assay}{string of the name of the reference Relative Viability assay
+\item{ref_RV_assay}{string of the name of the reference Relative Viability assay 
 in the \linkS4class{SummarizedExperiment}.
 Defaults to \code{"RefRelativeViability"}.}
 
 \item{averaged_assay}{string of the name of the averaged assay in the \linkS4class{SummarizedExperiment}.
 Defaults to \code{"Averaged"}.}
 
-\item{metrics_assay}{string of the name of the metrics assay to output
-in the returned \linkS4class{SummarizedExperiment}
+\item{metrics_assay}{string of the name of the metrics assay to output in the 
+returned \linkS4class{SummarizedExperiment}
 Defaults to \code{"Metrics"}.}
 }
 \description{
