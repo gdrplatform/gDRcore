@@ -18,7 +18,6 @@ calculate_combo_codilution <- function(se) {
   SummarizedExperiment::rowData(codil_SE) <- 
       S4Vectors::DataFrame(t(sapply(co_dilution_metrics, "[[", "condition")))
   S4Vectors::metadata(codil_SE) <- list()
-  browser()
   SummarizedExperiment::assays(codil_SE) <-
       SummarizedExperiment::assays(codil_SE)[c("Averaged", "Avg_Controls", "Metrics")]
 
