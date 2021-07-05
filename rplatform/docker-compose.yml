@@ -15,5 +15,6 @@ services:
     working_dir: ${RSTUDIO_VOLUME_MOUNT_POINT}
     volumes:
       - .:${RSTUDIO_VOLUME_MOUNT_POINT}
+      - ..:/home/rstudio/projects:z
     ports:
       - ${LISTEN_PORT}:${RSTUDIO_PORT}
