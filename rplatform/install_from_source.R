@@ -20,9 +20,9 @@ pkgs <- yaml::read_yaml(file.path(.wd, "rplatform", "git_dependencies.yml"))$pkg
 git2r::libgit2_features()
 
 for (nm in names(pkgs)){
-  
+
   #TODO: fix/remove this temporary fix
-  if (!nm %in% c("gDRutils", "gDRwrapper")){
+  if (!nm %in% "gDRutils"){
     rp::installAndVerify(
       install = devtools::install_git,
       url = pkgs[[nm]]$url,
@@ -40,5 +40,5 @@ for (nm in names(pkgs)){
     git2r::clone(pkgs[[nm]]$url, local_path = repo_path)
     git2r::checkout(object = repo_path, branch = pkgs[[nm]]$ref)
     devtools::install(file.path(repo_path, nm), upgrade = "never")
-  }  
+  }
 }
