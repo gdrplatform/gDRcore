@@ -87,8 +87,8 @@ calculate_GR_value <- function(rel_viability,
 #' @rdname calculate_GR_value
 #' @export
 #'
-calculate_time_dep_GR_value <- function(corrected_readout, 
-                                        day0_readout, 
+calculate_time_dep_GR_value <- function(corrected_readout,
+                                        day0_readout,
                                         untrt_readout, 
                                         ndigit_rounding) {
   round(2 ^ (log2(corrected_readout / day0_readout) / log2(untrt_readout / day0_readout)), ndigit_rounding) - 1

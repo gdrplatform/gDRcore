@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.0.9] - 2021-07-01
+#### Update
+- function for testing synthetic data
+
+#### [1.0.8] - 2021-06-25
+#### Update
+- move functions for importing template files to gDRimport package 
+
+#### [1.0.7] - 2021-06-23
+#### Update
+- add linter
+- remove obsolete functions from test.utils.R
+
+#### [1.0.6] - 2021-06-22
+#### Update
+- move importing functions to gDRimport package
+
+#### [1.0.5] - 2021-06-14
+#### Update
+- add unit tests for synthetic data
+
 #### [1.0.4] - 2021-06-14
 #### Update
 - remove deprecated functions and unit tests

@@ -1,5 +1,5 @@
-.drugNameRegex <- sprintf("^%s$|^%s_[[:digit:]]+$", 
-                          gDRutils::get_identifier("drugname"), 
+.drugNameRegex <- sprintf("^%s$|^%s_[[:digit:]]+$",
+                          gDRutils::get_identifier("drugname"),
                           gDRutils::get_identifier("drugname"))
 
 .untreated_tag_patterns <- vapply(gDRutils::get_identifier("untreated_tag"), sprintf, fmt = "^%s$", character(1))

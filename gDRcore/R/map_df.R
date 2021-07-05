@@ -72,14 +72,14 @@ map_df <- function(trt_md,
     match_idx <- which(apply(match_mx, 2, all)) # test matching conditions
     if (length(match_idx) == 0) {
       # No exact match, try to find best match (as many metadata fields as possible).
-      futile.logger::flog.warn("Missing reference controls '%s' for: ('%s')", ref_type, treatment)
+      futile.logger::flog.info("Missing reference controls '%s' for: ('%s')", ref_type, treatment)
       idx <- apply(match_mx, 2, function(y) sum(y, na.rm = TRUE)) 
       # TODO: Sort this out so that it also takes the average in case multiple are found.
       idx <- idx * match_mx[matchFactor, ]
-
+      
       if (any(idx > 0)) {
         match_idx <- which.max(idx)
-        futile.logger::flog.warn("Found partial match:", rownames(ref_md)[match_idx])
+        futile.logger::flog.info("Found partial match:", rownames(ref_md)[match_idx])
       } else { # failed to find any potential match
       futile.logger::flog.warn("No partial match found")
       }

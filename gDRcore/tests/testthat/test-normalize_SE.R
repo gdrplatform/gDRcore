@@ -14,9 +14,8 @@ test_that("normalize_SE works as expected", {
                                  Barcode = rep(c(1, 2), each = 3), 
                                  masked = rep(FALSE, 6))
 
-  coldata <- S4Vectors::DataFrame(cl_name = "Mickey Mouse", 
+  coldata <- S4Vectors::DataFrame(cl_name = "Mickey Mouse",
                                   ref_time = 1)
-
   rowdata <- S4Vectors::DataFrame(duration = 2)
 
   ctrl <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = ctrl_df)

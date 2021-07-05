@@ -1,33 +1,12 @@
-#' standardize_df
-#'
-#' Transform all the columns in a dataframe to character type
-#'
-#' @param df a dataframe for standardization
-#'
-#' @return a standardized dataframe
 #' @export
 #'
-standardize_df <- function(df) {
-  # Assertions:
-  stopifnot(inherits(df, "data.frame"))
-  data.frame(lapply(df, as.character))
-}
-
-
-#' read_ref_data
-#' 
-#' Read reference data 
-#'
-#' @param inDir a directory path of reference data
-#' @param prefix a prefix of reference file names ('ref' by default)
-#'
-#' @return a list of reference data
-#' @export
-#'
-read_ref_data <- function(inDir, prefix = "ref") {
-  # Assertions:
-  checkmate::assert_string(inDir)
-  checkmate::assert_string(prefix)
+test_synthetic_data <- function(original, reprocessed, dataName) {
+  normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
+  averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
+  metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
+  normalized_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Normalized")
+  averaged_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Averaged")
+  metrics_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Metrics")
   
   files <- list.files(inDir, paste0(prefix, "_.+\\.tsv$"), full.names = TRUE)
   lFiles <- lapply(files, function(x) {
@@ -99,15 +78,6 @@ write_ref_data_se <- function(se, outDir, prefix = "ref") {
   yaml::write_yaml(row_maps_yaml, file.path(outDir, paste0(prefix, "_row_maps.yaml")))
 }
 
-
-#' test_lData
-#'
-#' Test raw data against reference data
-#'
-#' @param lData a list with dataset
-#' @param lRef a list with reference data
-#'
-#' @return
 #' @export
 #'
 test_lData <- function(lData, lRef) {
@@ -276,4 +246,8 @@ check_identity_of_dfs <- function(mat1, mat2, i, j, cols = NULL) {
   a <- a[order(a[, cols]), ]
   b <- b[order(b[, cols]), ]
   testthat::expect_equal(a[, cols, drop = FALSE], b[, cols, drop = FALSE])
+}
+
+get_synthetic_data <- function(rds) {
+  readRDS(system.file("testdata", rds, package = "gDRtestData"))
 }

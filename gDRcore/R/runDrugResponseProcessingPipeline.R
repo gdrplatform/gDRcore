@@ -39,7 +39,7 @@
 #' @family runDrugResponseProcessingPipelineFxns
 #' @export
 #'
-runDrugResponseProcessingPipeline <- function(df_, 
+runDrugResponseProcessingPipeline <- function(df_,
                                                readout = "ReadoutValue",
                                                control_mean_fxn = function(x) {
                                                  mean(x, trim = 0.25)},
