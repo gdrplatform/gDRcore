@@ -114,8 +114,8 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
         temp_df[, c(header_names, paste0(header_names, "_2"))] <-
           temp_df[, c(paste0(header_names, "_2"), header_names)]
 
-        futile.logger::flog.warn(paste0("merge_data: swapping Drug and Drug_2 for %i ",
-        "rows because Concentration == 0 and Concentration_2 > 0"),
+        futile.logger::flog.warn("merge_data: swapping Drug and Drug_2 for %i
+                                 rows because Concentration == 0 and Concentration_2 > 0",
           sum(swap_idx))
 
         df_raw_data <- rbind(df_raw_data[!swap_idx, ], temp_df)

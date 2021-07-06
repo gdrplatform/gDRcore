@@ -1,17 +1,14 @@
-library(testthat)
-library(gDRcore)
-
 test_that("normalize_SE works as expected", {
   # Set up. 
   conc <- rep(seq(0.1, 0.3, 0.1), 2)
   ctrl_df <- S4Vectors::DataFrame(Barcode = c(1, 2),
                                   RefReadout = rep(2, 2),
-                                  Day0Readout = rep(1, 2), 
+                                  Day0Readout = rep(1, 2),
                                   UntrtReadout = rep(6, 2))
-
-  trt_df <- S4Vectors::DataFrame(CorrectedReadout = rep(seq(1, 3, 1), 2), 
+  
+  trt_df <- S4Vectors::DataFrame(CorrectedReadout = rep(seq(1, 3, 1), 2),
                                  Concentration = conc,
-                                 Barcode = rep(c(1, 2), each = 3), 
+                                 Barcode = rep(c(1, 2), each = 3),
                                  masked = rep(FALSE, 6))
 
   coldata <- S4Vectors::DataFrame(cl_name = "Mickey Mouse",

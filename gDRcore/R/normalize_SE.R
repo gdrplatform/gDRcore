@@ -10,14 +10,14 @@
 #' @param normalized_assay string of the assay name containing the normalized data.
 #' Defaults to \code{"Normalized"}.
 #' @param ref_GR_assay string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.
-#' @param ref_RV_assay string of the name of the reference Relative Viability assay in the 
-#' \linkS4class{SummarizedExperiment}.
+#' @param ref_RV_assay string of the name of the reference
+#' Relative Viability assay in the \linkS4class{SummarizedExperiment}.
 #' @param ndigit_rounding integer specifying number of digits of rounding during calculations.
 #' Defaults to \code{4}.
 #'
-#' @return \code{BumpyMatrix} object with a new assay named \code{"Normalized"} containing \code{DataFrame}s 
-#' holding \code{RelativeViability} and \code{GRvalue}, as well as new assays named 
-#' \code{RefRelativeViability}, \code{RefGRvalue}, and \code{DivisionTime} values.
+#' @return \code{BumpyMatrix} object with a new assay named \code{"Normalized"}containing \code{DataFrame}s 
+#' holding \code{RelativeViability} and \code{GRvalue}, as well as new assays named \code{RefRelativeViability},
+#' \code{RefGRvalue}, and \code{DivisionTime} values.
 #'
 #' @family runDrugResponseProcessingPipelineFxns
 #' @export
@@ -82,7 +82,7 @@ normalize_SE <- function(se,
       # pad the ref_df for missing values based on nested_keys (uses mean across all available values)
       if (!is.null(nested_keys) && length(nested_keys) > 0) {
         ref_df_complete <- unique(trt_df[, nested_keys, drop = FALSE])
-        ref_df_complete <- merge(ref_df_complete, ref_df, by = nested_keys, all = TRUE)
+        ref_df_complete <- merge(ref_df_complete, ref_df, by = nested_keys)
         data_columns <- setdiff(colnames(ref_df), nested_keys)
         ref_df_mean <- lapply(ref_df[, data_columns, drop = FALSE], function(x) mean(x, na.rm = TRUE))
         for (col in data_columns) {
@@ -102,8 +102,8 @@ normalize_SE <- function(se,
       colnames(normalized) <- c(norm_cols)
 
       # Normalized treated.
-      normalized$RelativeViability <- round(all_readouts_df$CorrectedReadout / all_readouts_df$UntrtReadout, 
-                                            ndigit_rounding)
+      normalized$RelativeViability <- round(all_readouts_df$CorrectedReadout /
+                                              all_readouts_df$UntrtReadout, ndigit_rounding)
       normalized$GRvalue <- calculate_GR_value(rel_viability = normalized$RelativeViability, 
         corrected_readout = all_readouts_df$CorrectedReadout, 
         day0_readout = all_readouts_df$Day0Readout, 
@@ -139,9 +139,8 @@ normalize_SE <- function(se,
 
       ref_rel_viability[i, j] <- round(mean(RV_vec, na.rm = TRUE), ndigit_rounding)
       ref_GR_value[i, j] <- round(mean(GR_vec, na.rm = TRUE), ndigit_rounding)
-      div_time[i, j] <- round(duration / log2(mean(ref_df_complete$UntrtReadout, 
-                                                   na.rm = TRUE) / mean(ref_df$Day0Readout, na.rm = TRUE)), 
-                              ndigit_rounding)
+      div_time[i, j] <- round(duration / log2(mean(ref_df$UntrtReadout / ref_df$Day0Readout,
+                                                   na.rm = TRUE)), ndigit_rounding)
     }
   }
 

@@ -1,6 +1,3 @@
-library(testthat)
-library(gDRcore)
-
 test_that("calculate_GR_value throws expected errors", {
   readouts <- c(rep(10000, 5))
   expect_error(calculate_GR_value(rel_viability = readouts,

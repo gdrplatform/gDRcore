@@ -60,8 +60,8 @@ calculate_GR_value <- function(rel_viability,
       GRvalue <- rep(NA, length(rel_viability))
     } else if (ref_div_time > 1.5 * duration) {
       warning(
-        sprintf(paste0("reference doubling time for '%s' is '%s', too long for GR calculation ", 
-                       "with assay duration ('%s'), setting GR values to NA"), 
+        sprintf("reference doubling time for '%s' is '%s', too long for GR calculation with assay duration ('%s'),
+                setting GR values to NA", 
           cl_name, ref_div_time, duration))
       GRvalue <- rep(NA, length(rel_viability))
     } else {
@@ -69,11 +69,11 @@ calculate_GR_value <- function(rel_viability,
         sprintf("no day 0 data, calculating GR value based on reference doubling time for '%s'", 
           cl_name))
       GRvalue <- calculate_endpt_GR_value(rel_viability = rel_viability, 
-  duration = duration, 
-  ref_div_time = ref_div_time, 
-  cap = cap,
-  ndigit_rounding = ndigit_rounding)
-    }
+                                          duration = duration, 
+                                          ref_div_time = ref_div_time, 
+                                          cap = cap,
+                                          ndigit_rounding = ndigit_rounding)
+      }
   } else {
     GRvalue <- calculate_time_dep_GR_value(corrected_readout, 
       day0_readout,  

@@ -7,8 +7,8 @@
 #' @param readout string of the name containing the cell viability readout values.
 #' @param control_mean_fxn function indicating how to average controls.
 #' Defaults to \code{mean(x, trim = 0.25)}.
-#' @param nested_keys character vector of column names to include in the data.frames in the assays of the resulting 
-#' \code{SummarizedExperiment} object. 
+#' @param nested_keys character vector of column names to include in the data.frames in the assays 
+#' of the resulting \code{SummarizedExperiment} object. 
 #' Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.
 #' @param override_untrt_controls named list containing defining factors in the treatments.
 #' Defaults to \code{NULL}. 
@@ -25,12 +25,13 @@
 #' @family runDrugResponseProcessingPipelineFxns
 #' @export
 #'
-create_SE <- function(df_, 
-                       readout = "ReadoutValue", 
-                       control_mean_fxn = function(x) {
-                         mean(x, trim = 0.25)}, 
-                       nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")), 
-                       override_untrt_controls = NULL) {
+create_SE <- function(df_,
+                      readout = "ReadoutValue",
+                      control_mean_fxn = function(x) {
+                        mean(x, trim = 0.25)
+                        },
+                      nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
+                      override_untrt_controls = NULL) {
 
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
@@ -74,11 +75,8 @@ create_SE <- function(df_,
   # TODO: take care of the row_endpoint_value_filter.
 
   ref_maps <- lapply(references, function(ref_type) {
-    map_df(treated, 
-           untreated, 
-           override_untrt_controls = override_untrt_controls, 
-           ref_cols = Keys[[ref_type]], 
-           ref_type = ref_type)
+    map_df(treated, untreated, override_untrt_controls = override_untrt_controls,
+           ref_cols = Keys[[ref_type]], ref_type = ref_type)
   })
 
   # creates another list for the co-treatment end points that are missing
@@ -90,7 +88,8 @@ create_SE <- function(df_,
 
     ref_type <- "ref_Endpoint"
     missing_cotrt <- vapply(ref_maps[[ref_type]], function(x) {
-      length(x) == 0L}, TRUE)
+      length(x) == 0L
+      }, TRUE)
     
     # Then look amongst the treated to fill any missing cotrt references.
     if (any(missing_cotrt)) {
@@ -177,12 +176,12 @@ create_SE <- function(df_,
                 out_col_name = "RefReadout"
             )
         } else {
-            cotrt_df <- infer_control_df(
-                cotrt_df, 
-                treated$Concentration_2[treated$groupings %in% trt],
-                control_cols = Keys[[ref_type]], 
-                control_mean_fxn, 
-                out_col_name = "RefReadout"
+          cotrt_df <- infer_control_df(
+            cotrt_df,
+            treated$Concentration_2[treated$groupings %in% trt],
+            control_cols = Keys[[ref_type]],
+            control_mean_fxn,
+            out_col_name = "RefReadout"
             )
         }
 
@@ -211,8 +210,7 @@ create_SE <- function(df_,
       }
       
       if (nrow(day0_df) > 0L) {
-        merge_cols <- intersect(colnames(day0_df), Keys$nested_keys)
-        ref_df <- merge(day0_df[, c("Day0Readout", merge_cols), drop = FALSE], ref_df, all = TRUE)
+        ref_df <- merge(day0_df[, setdiff(colnames(day0_df), Keys$nested_keys), drop = FALSE], ref_df)
       } else {
         ref_df$Day0Readout <- NA
       } 
@@ -239,10 +237,10 @@ create_SE <- function(df_,
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
   ref_keep <- !colnames(ref_out) %in% c("row_id", "col_id")
 
-  treated_mat <- BumpyMatrix::splitAsBumpyMatrix(
-    trt_out[, trt_keep, drop = FALSE], row = trt_out$row_id, col = trt_out$col_id)
-  reference_mat <- BumpyMatrix::splitAsBumpyMatrix(
-    ref_out[, ref_keep, drop = FALSE], row = ref_out$row_id, col = ref_out$col_id)
+  treated_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out[, trt_keep, drop = FALSE],
+                                                 row = trt_out$row_id, col = trt_out$col_id)
+  reference_mat <- BumpyMatrix::splitAsBumpyMatrix(ref_out[, ref_keep, drop = FALSE],
+                                                   row = ref_out$row_id, col = ref_out$col_id)
   matsL <- list(RawTreated = treated_mat, Controls = reference_mat)
 
   # Capture important values in experiment metadata.

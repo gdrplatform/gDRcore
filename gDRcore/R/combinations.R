@@ -15,7 +15,7 @@ add_codrug_group_SE <- function(se) {
 
   # find the pairs of drugs with relevant metadata
   drug_ids <- paste0(gDRutils::get_identifier("drugname"), c("", "_2"))
-  other_metadata <- c(#paste0(gDRutils::get_identifier("drug"), c('', '_2')),
+  other_metadata <- c(#paste0(gDRutils::get_identifier("drug"), c("", "_2")),
             setdiff(colnames(r_data), c("Concentration_2", drug_ids,
                 paste0(gDRutils::get_identifier("drug"), c("", "_2")),
                 paste0(gDRutils::get_identifier("drug_moa"), c("", "_2")))))

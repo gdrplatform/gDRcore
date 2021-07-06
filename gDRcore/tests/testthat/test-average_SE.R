@@ -1,6 +1,3 @@
-library(gDRcore)
-library(testthat)
-
 test_that("average_SE works as expected", {
   # Set up.
   d <- rep(seq(0.1, 0.9, 0.1), each = 4)
