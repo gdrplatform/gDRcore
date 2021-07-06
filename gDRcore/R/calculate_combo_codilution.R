@@ -5,7 +5,7 @@
 #' @return
 #' @export
 calculate_combo_codilution <- function(se) {
-  
+
   checkmate::assert_class(se, "SummarizedExperiment")
 
   # create new SE for the codilution
@@ -19,11 +19,10 @@ calculate_combo_codilution <- function(se) {
       S4Vectors::DataFrame(t(sapply(co_dilution_metrics, "[[", "condition")))
   S4Vectors::metadata(codil_SE) <- list()
   SummarizedExperiment::assays(codil_SE) <-
-      SummarizedExperiment::assays(codil_SE)[c("Averaged", "Avg_Controls", "Metrics")]
+      SummarizedExperiment::assays(codil_SE)[c("Averaged", "Metrics")]
 
   mSE_m <- SummarizedExperiment::assay(codil_SE, "Metrics")
   a_SE <- SummarizedExperiment::assay(codil_SE, "Averaged")
-  a_ctrl_SE <- SummarizedExperiment::assay(codil_SE, "Avg_Controls")
   flat_data <- gDRutils::convert_se_assay_to_dt(se, "Averaged")
   flat_data$rId <- as.factor(flat_data$rId)
   flat_data$cId <- as.factor(flat_data$cId)
@@ -37,14 +36,11 @@ calculate_combo_codilution <- function(se) {
           df_ <- df_[df_$Concentration_2 != 0, ]
           df_$Concentration_1 <- df_$Concentration
           df_$Concentration <- df_$Concentration_1 + df_$Concentration_2
+          browser()
           a_SE[[ic, iCL]] <- df_
-          a_ctrl_SE[[ic, iCL]]$RefReadout <- a_ctrl_SE[[ic, iCL]]$UntrtReadout
-          a_ctrl_SE[[ic, iCL]]$RefRelativeViability <- 1
-          a_ctrl_SE[[ic, iCL]]$RefGRvalue <- 1
       }
   }
   SummarizedExperiment::assay(codil_SE, "Averaged") <- a_SE
-  SummarizedExperiment::assay(codil_SE, "Avg_Controls") <- a_ctrl_SE
 
   codil_SE <- gDR::metrics_SE(codil_SE)
   single_SE <- se[SummarizedExperiment::rowData(se)$Concentration_2 == 0, ]
