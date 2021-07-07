@@ -79,7 +79,8 @@ calculate_combo_cotrt <- function(se) {
                 
                 for (i in c("RV_AOC_range", "RV_mean", "GR_AOC_range", "IC50", "GR50", "E_max", "GR_max")) {
                     SummarizedExperiment::assay(fixed_metrics, i)[combo_idx, iCL] <- as.numeric(cotrt_data[1, ..i])
-                    SummarizedExperiment::assay(fixed_metrics, paste0(i, "_ref"))[combo_idx, iCL] <- as.numeric(ref_data[1, ..i])
+                    SummarizedExperiment::assay(fixed_metrics, paste0(i, "_ref"))[combo_idx, iCL] <- 
+                        as.numeric(ref_data[1, ..i])
                 }
                 for (i in c("RV_AOC_range", "RV_mean", "GR_AOC_range", "E_max", "GR_max")) { # delta metrics
                     SummarizedExperiment::assay(fixed_metrics, paste0("delta_", i))[combo_idx, iCL] <- 

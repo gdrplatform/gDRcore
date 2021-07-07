@@ -66,8 +66,9 @@ calculate_combo_matrix <- function(se,
         flat_data$Concentration <- 10 ^ (.25 * round(4 * log10(flat_data$Concentration), 1))
         flat_data$Concentration_2 <- 10 ^ (.25 * round(4 * log10(flat_data$Concentration_2), 1))
 
-        print(sprintf("Calculation for cell line %s treated with %s x %s", SummarizedExperiment::colData(se)$CellLineName[iCL],
-            combo$condition["DrugName"], combo$condition["DrugName_2"]))
+        print(sprintf("Calculation for cell line %s treated with %s x %s", 
+                      SummarizedExperiment::colData(se)$CellLineName[iCL], 
+                      combo$condition["DrugName"], combo$condition["DrugName_2"]))
 
         # Secondary drug for some combinations becomes primary drug when viewed as single-agent (conc1=0), so swap. 
         # swap the data into the Gnumber and Gnumber_2 such that it can form a matrix
