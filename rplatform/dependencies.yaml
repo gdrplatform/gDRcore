@@ -1,0 +1,35 @@
+pkgs:
+  S4Vectors:
+    source: Bioc
+    ver: "3.13"
+  IRanges:
+    source: Bioc
+    ver: "3.13"
+  SummarizedExperiment:
+    source: Bioc
+    ver: "3.13"
+  BumpyMatrix:
+    source: Bioc
+    ver: "3.13"
+  gDRutils:
+    ver: '>=1.0.0'
+    url: https://github.roche.com/gdrplatform/gDRutils.git
+    ref: master
+    subdir: gDRutils
+  lintr:
+    ver: '>=1.0.0'
+    url: https://github.com/jimhester/lintr.git
+  gDRtestData:
+    ver: '>=1.0.0'
+    url: https://github.roche.com/gdrplatform/gDRtestData.git
+    ref: master
+    subdir: gDRtestData
+  gDRstyle:
+    ver: '>=0.0.3'
+    url: https://github.roche.com/gdrplatform/gDRstyle.git
+    ref: main
+    subdir: ~
+  pkgload:
+    source: CRAN
+  roxygen2:
+    source: CRAN
