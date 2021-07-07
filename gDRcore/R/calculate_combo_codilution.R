@@ -21,7 +21,7 @@ calculate_combo_codilution <- function(se) {
   SummarizedExperiment::assays(codil_SE) <-
       SummarizedExperiment::assays(codil_SE)[c("Averaged", "Metrics")]
 
-  mSE_m <- SummarizedExperiment::assay(codil_SE, "Metrics")
+  mSE_m <- SummarizedExperiment::assay(codil_SE, "Metrics") # not being used currently
   a_SE <- SummarizedExperiment::assay(codil_SE, "Averaged")
   flat_data <- gDRutils::convert_se_assay_to_dt(se, "Averaged")
   flat_data$rId <- as.factor(flat_data$rId)
@@ -29,14 +29,11 @@ calculate_combo_codilution <- function(se) {
 
   for (ic in seq_along(co_dilution_metrics)) {
       for (iCL in colnames(se)) {
-
           combo <- co_dilution_metrics[[ic]]
           df_ <- flat_data[flat_data$rId %in% combo$rows & flat_data$cId == iCL, ]
-          
           df_ <- df_[df_$Concentration_2 != 0, ]
           df_$Concentration_1 <- df_$Concentration
           df_$Concentration <- df_$Concentration_1 + df_$Concentration_2
-          browser()
           a_SE[[ic, iCL]] <- df_
       }
   }
