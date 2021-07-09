@@ -1,4 +1,4 @@
-library("gDR")
+library("gDRcore")
 library("testthat")
 
-test_check("gDR")
+test_check("gDRcore")
