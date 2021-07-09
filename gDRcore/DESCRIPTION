@@ -1,11 +1,12 @@
 Package: gDRcore
 Type: Package
 Title: Processing functions and interface to process and analyze drug dose-response data
-Version: 1.1.0
-Date: 2021-07-01
+Version: 1.1.1
+Date: 2021-07-09
 Authors@R: c(person("Bartosz", "Czech", role=c("aut", "cre"), email="bartosz.czech@contractors.roche.com"),
              person("Arkadiusz", "Gladki", role=c("aut")),
              person("Marc", "Hafner", role=c("aut")),
+             person("Pawel", "Piatkowski", role = c("aut")),
              person("Natalia", "Potocka", role=c("aut")),
              person("Dariusz", "Scigocki", role=c("aut")),
              person("Allison", "Vuong", role=c("aut")))
@@ -42,6 +43,6 @@ Suggests:
 VignetteBuilder: knitr
 ByteCompile: TRUE
 RoxygenNote: 7.1.1
-SwitchrLibrary: gDR
-DeploySubPath: gDR
+SwitchrLibrary: gDRcore
+DeploySubPath: gDRcore
 Encoding: UTF-8
