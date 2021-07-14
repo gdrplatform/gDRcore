@@ -54,7 +54,7 @@ RUN sudo grep -v "^CipherString = DEFAULT@SECLEVEL=2" /etc/ssl/openssl.cnf > /tm
 RUN sudo mv /tmp/openssl.fixed.cnf /etc/ssl/openssl.cnf 
 
 #================= Install dependencies
-COPY rplatform/dependencies.yaml /mnt/vol/dependencies.yaml
+COPY rplatform/dependencies.yaml rplatform/.github_access_token.txt* /mnt/vol/
 COPY rplatform/install_all_deps.R /mnt/vol/install_all_deps.R
 RUN R -f /mnt/vol/install_all_deps.R
 

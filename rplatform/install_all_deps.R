@@ -33,6 +33,16 @@ if (!"remotes" %in% installed.packages()) {
   install.packages(pkgs = "remotes")
 }
 
+# Use GitHub access_token if available
+gh_access_token_file <- file.path(base_dir, ".github_access_token.txt")
+access_token <- if (file.exists(gh_access_token_file)) {
+  ac <- readLines(gh_access_token_file, n = 1L)
+  stopifnot(length(ac) > 0)
+  ac
+} else {
+  remotes:::github_pat() # default value for the auth_token param in remotes::install_github
+}
+
 # Install essential tools
 for (pkg in essential_pkgs) {
   if (!pkg$name %in% installed.packages()) {
@@ -51,15 +61,6 @@ keys <- if (isTRUE(use_ssh)) {
   )
 }
 
-# Use GitHub access_token if available
-gh_access_token_file <- file.path(base_dir, ".github_access_token.txt")
-access_token <- if (file.exists(gh_access_token_file)) {
-  ac <- readLines(gh_access_token_file, n = 1L)
-  stopifnot(length(ac) > 0)
-  ac
-} else {
-  remotes:::github_pat() # default value for the auth_token param in remotes::install_github
-}
 
 # Install all dependencies
 deps <- yaml::read_yaml(deps_yaml)$pkgs
