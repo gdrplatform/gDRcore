@@ -6,7 +6,8 @@ essential_pkgs <- list(
   list(name = "yaml", version = "2.2.1"),
   list(name = "BiocManager", version = "1.30.16")
 )
-deps_yaml <- "/mnt/vol/dependencies.yaml"
+base_dir <- "/mnt/vol"
+deps_yaml <- file.path(base_dir, "/dependencies.yaml")
 use_ssh <- FALSE
 # ssh_key_pub <- "/home/rstudio/.ssh/id_rsa.pub"
 # ssh_key_priv <- "/home/rstudio/.ssh/id_rsa"
@@ -50,6 +51,16 @@ keys <- if (isTRUE(use_ssh)) {
   )
 }
 
+# Use GitHub access_token if available
+gh_access_token_file <- file.path(base_dir, ".github_access_token.txt")
+access_token <- if (file.exists(gh_access_token_file)) {
+  ac <- readLines(gh_access_token_file, n = 1L)
+  stopifnot(length(ac) > 0)
+  ac
+} else {
+  remotes:::github_pat() # default value for the auth_token param in remotes::install_github
+}
+
 # Install all dependencies
 deps <- yaml::read_yaml(deps_yaml)$pkgs
 for (name in names(deps)) {
@@ -83,7 +94,8 @@ for (name in names(deps)) {
       remotes::install_github(
         repo = pkg$url,
         ref = pkg$ref,
-        subdir = pkg$subdir
+        subdir = pkg$subdir,
+        auth_token = access_token
       )
       verify_version(name, pkg$ver)
     },
