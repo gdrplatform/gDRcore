@@ -67,12 +67,10 @@ gh_hostname <- get_github_hostname()
 
 # Use GitHub access_token if available
 gh_access_token_file <- file.path(base_dir, ".github_access_token.txt")
-access_token <- if (file.exists(gh_access_token_file)) {
+if (file.exists(gh_access_token_file)) {
   ac <- readLines(gh_access_token_file, n = 1L)
   stopifnot(length(ac) > 0)
-  ac
-} else {
-  remotes:::github_pat() # default value for the auth_token param in remotes::install_github
+  Sys.setenv(GITHUB_TOKEN = ac)
 }
 
 # Use SSH keys
@@ -118,7 +116,6 @@ for (name in names(deps)) {
         repo = pkg$url,
         ref = pkg$ref,
         subdir = pkg$subdir,
-        auth_token = access_token,
         host = gh_hostname
       )
       verify_version(name, pkg$ver)
