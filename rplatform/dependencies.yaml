@@ -13,22 +13,25 @@ pkgs:
     ver: "3.13"
   gDRutils:
     ver: '>=1.0.0'
-    url: https://github.roche.com/gdrplatform/gDRutils.git
+    url: gdrplatform/gDRutils
     ref: master
     subdir: gDRutils
+    source: GITHUB
   lintr:
     ver: '>=1.0.0'
     url: https://github.com/jimhester/lintr.git
   gDRtestData:
     ver: '>=1.0.0'
-    url: https://github.roche.com/gdrplatform/gDRtestData.git
+    url: gdrplatform/gDRtestData
     ref: master
     subdir: gDRtestData
+    source: GITHUB
   gDRstyle:
     ver: '>=0.0.3'
-    url: https://github.roche.com/gdrplatform/gDRstyle.git
+    url: gdrplatform/gDRstyle
     ref: main
     subdir: ~
+    source: GITHUB
   pkgload:
     source: CRAN
   roxygen2:
