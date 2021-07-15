@@ -13,23 +13,22 @@ pkgs:
     ver: "3.13"
   gDRutils:
     ver: '>=1.0.0'
-    url: https://github.roche.com/gdrplatform/gDRutils.git
+    url: https://{gh_hostname}/gdrplatform/gDRutils.git
     ref: master
     subdir: gDRutils
     source: GITHUB
   lintr:
     ver: '>=1.0.0'
     url: https://github.com/jimhester/lintr.git
-    source: GITHUB
   gDRtestData:
     ver: '>=1.0.0'
-    url: https://github.roche.com/gdrplatform/gDRtestData.git
+    url: https://{gh_hostname}/gdrplatform/gDRtestData.git
     ref: master
     subdir: gDRtestData
     source: GITHUB
   gDRstyle:
     ver: '>=0.0.3'
-    url: https://github.roche.com/gdrplatform/gDRstyle.git
+    url: https://{gh_hostname}/gdrplatform/gDRstyle.git
     ref: main
     subdir: ~
     source: GITHUB

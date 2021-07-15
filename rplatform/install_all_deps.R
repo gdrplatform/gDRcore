@@ -4,7 +4,8 @@ options(repos = repos)
 essential_pkgs <- list(
   list(name = "git2r", version = "0.28.0"),
   list(name = "yaml", version = "2.2.1"),
-  list(name = "BiocManager", version = "1.30.16")
+  list(name = "BiocManager", version = "1.30.16"),
+  list(name = "glue", version = "1.4.2")
 )
 base_dir <- "/mnt/vol"
 deps_yaml <- file.path(base_dir, "/dependencies.yaml")
@@ -27,21 +28,29 @@ verify_version <- function(name, required_version) {
     ))
   }
 }
+#' this function helps figuring out which GitHub domain should be used 
+#' github.roche.com will be chosen if available 
+#' otherwise github.com
+get_github_hostname <- function() {
+  conn_status <- tryCatch(
+    curl::curl_fetch_memory("github.roche.com"),
+    error = function(e) {
+      e
+    }
+  )
+  # error - github.roche.com not available
+  if (inherits(conn_status, "error")) {
+    "github.com"
+  } else {
+    "github.roche.com"
+  }
+}
 
 # Install {remotes}
 if (!"remotes" %in% installed.packages()) {
   install.packages(pkgs = "remotes")
 }
 
-# Use GitHub access_token if available
-gh_access_token_file <- file.path(base_dir, ".github_access_token.txt")
-access_token <- if (file.exists(gh_access_token_file)) {
-  ac <- readLines(gh_access_token_file, n = 1L)
-  stopifnot(length(ac) > 0)
-  ac
-} else {
-  remotes:::github_pat() # default value for the auth_token param in remotes::install_github
-}
 
 # Install essential tools
 for (pkg in essential_pkgs) {
@@ -51,6 +60,19 @@ for (pkg in essential_pkgs) {
       version = pkg$version
     )
   }
+}
+
+# determine GitHub domain
+gh_hostname <- get_github_hostname()
+
+# Use GitHub access_token if available
+gh_access_token_file <- file.path(base_dir, ".github_access_token.txt")
+access_token <- if (file.exists(gh_access_token_file)) {
+  ac <- readLines(gh_access_token_file, n = 1L)
+  stopifnot(length(ac) > 0)
+  ac
+} else {
+  remotes:::github_pat() # default value for the auth_token param in remotes::install_github
 }
 
 # Use SSH keys
@@ -93,10 +115,11 @@ for (name in names(deps)) {
     "GITHUB" = {
       if (is.null(pkg$ref)) { pkg$ref <- "HEAD" }
       remotes::install_github(
-        repo = pkg$url,
+        repo = glue::glue(pkg$url),
         ref = pkg$ref,
         subdir = pkg$subdir,
-        auth_token = access_token
+        auth_token = access_token,
+        host = gh_hostname
       )
       verify_version(name, pkg$ver)
     },
