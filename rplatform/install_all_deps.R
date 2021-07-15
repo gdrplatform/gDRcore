@@ -4,7 +4,8 @@ options(repos = repos)
 essential_pkgs <- list(
   list(name = "git2r", version = "0.28.0"),
   list(name = "yaml", version = "2.2.1"),
-  list(name = "BiocManager", version = "1.30.16")
+  list(name = "BiocManager", version = "1.30.16"),
+  list(name = "curl", version = "4.3.2")
 )
 base_dir <- "/mnt/vol"
 deps_yaml <- file.path(base_dir, "/dependencies.yaml")
