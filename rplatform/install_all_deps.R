@@ -4,8 +4,7 @@ options(repos = repos)
 essential_pkgs <- list(
   list(name = "git2r", version = "0.28.0"),
   list(name = "yaml", version = "2.2.1"),
-  list(name = "BiocManager", version = "1.30.16"),
-  list(name = "glue", version = "1.4.2")
+  list(name = "BiocManager", version = "1.30.16")
 )
 base_dir <- "/mnt/vol"
 deps_yaml <- file.path(base_dir, "/dependencies.yaml")
@@ -28,7 +27,7 @@ verify_version <- function(name, required_version) {
     ))
   }
 }
-#' this function helps figuring out which GitHub domain should be used 
+#' this function help figuring out which GitHub domain should be used 
 #' github.roche.com will be chosen if available 
 #' otherwise github.com
 get_github_hostname <- function() {
@@ -38,11 +37,11 @@ get_github_hostname <- function() {
       e
     }
   )
-  # error - github.roche.com not available
+  # error in connection to database will be returned as error list with exit_code = 2
   if (inherits(conn_status, "error")) {
-    "github.com"
+    "api.github.com"
   } else {
-    "github.roche.com"
+    "github.roche.com/api/v3"
   }
 }
 
@@ -115,7 +114,7 @@ for (name in names(deps)) {
     "GITHUB" = {
       if (is.null(pkg$ref)) { pkg$ref <- "HEAD" }
       remotes::install_github(
-        repo = glue::glue(pkg$url),
+        repo = pkg$url,
         ref = pkg$ref,
         subdir = pkg$subdir,
         auth_token = access_token,
