@@ -9,6 +9,8 @@
 #' Defaults to the \code{"Barcode"} and the \code{masked} identifier.
 #' @param override_untrt_controls named list containing defining factors in the treatments.
 #' Defaults to \code{NULL}.
+#' @param identifiers named list containing all identifiers to use during processing.
+#' By default, this value will be obtained by the environment.
 #'
 #' @return named list of key types and their corresponding key values. 
 #'
@@ -20,8 +22,9 @@
 #' @export
 #'
 identify_keys <- function(df_,  
-                           nested_keys = NULL,
-                           override_untrt_controls = NULL) {
+                          nested_keys = NULL,
+                          override_untrt_controls = NULL,
+                          identifiers = gDRutils::get_identifier()) {
   # Assertions:
   stopifnot(inherits(df_, c("data.frame", "DataFrame")))
 
@@ -41,13 +44,13 @@ identify_keys <- function(df_,
   }
 
   x <- c("Concentration", 
-    gDRutils::get_identifier("drug"), 
-    gDRutils::get_identifier("drugname"),
-    gDRutils::get_identifier("drug_moa"))
+    identifiers$drug, 
+    identifiers$drugname,
+    identifiers$drug_moa)
   pattern <- sprintf("%s|%s|%s|%s", x[1], x[2], x[3], x[4])
   pattern_keys <- grepl(pattern, all_keys)
   
-  duration_col <- gDRutils::get_identifier("duration")
+  duration_col <- identifiers$duration
 
   keys <- list(Trt = setdiff(all_keys, c(nested_keys, override_untrt_controls)),
     ref_Endpoint = setdiff(all_keys, c(x, override_untrt_controls)),
@@ -59,16 +62,16 @@ identify_keys <- function(df_,
   keys <- lapply(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),
     gDRutils::get_header("normalized_results"), 
     "Template", 
-    gDRutils::get_identifier("well_position"), 
+    identifiers$well_position, 
     gDRutils::get_header("averaged_results"),
     gDRutils::get_header("metrics_results"), 
-    gDRutils::get_identifier("cellline_ref_div_time"))))
+    identifiers$cellline_ref_div_time)))
 
-  keys$masked_tag <- gDRutils::get_identifier("masked_tag")
-  keys$cellline_name <- gDRutils::get_identifier("cellline_name")
-  keys$cellline_ref_div_time <- gDRutils::get_identifier("cellline_ref_div_time")
+  keys$masked_tag <- identifiers$masked_tag
+  keys$cellline_name <- identifiers$cellline_name
+  keys$cellline_ref_div_time <- identifiers$cellline_ref_div_time
   keys$duration <- duration_col 
-  keys$untreated_tag <- gDRutils::get_identifier("untreated_tag")
+  keys$untreated_tag <- identifiers$untreated_tag
 
   t0 <- df_[, duration_col] == 0
   # Remove keys where all values are NA.

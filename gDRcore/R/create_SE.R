@@ -48,6 +48,7 @@ create_SE <- function(df_,
     df_[, gDRutils::get_identifier("masked_tag")] <- FALSE
   }
 
+  identifiers <- get_identifier()
   # Remove background value from readout (at least 1e-10 to avoid artefactual normalized values).
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
 
@@ -82,7 +83,7 @@ create_SE <- function(df_,
   # creates another list for the co-treatment end points that are missing
   ref_maps[["cotrt_ref_Endpoint"]] <- NULL
   # focus on cases where the reference may be as primary drug (common in co-treatment experiments)
-  if (paste0(gDRutils::get_identifier("drug"), "_2") %in% colnames(treated)) {
+  if (paste0(identifier$drug), "_2") %in% colnames(treated)) {
     
     # NOTE: may have to deal with override_untrt_controls 
 
@@ -100,13 +101,13 @@ create_SE <- function(df_,
         
         # swap columns related to drug and drug_2
         idx_1 <- which(colnames(pseudo_untreated) %in% 
-            c(gDRutils::get_identifier("drug"), 
-                gDRutils::get_identifier("drugname"),
-                gDRutils::get_identifier("drug_moa")))
+            c(identifier$drug, 
+              identifier$drugname,
+              identifier$drug_moa)
         idx_2 <- which(colnames(pseudo_untreated) %in% 
-            paste0(c(gDRutils::get_identifier("drug"), 
-                gDRutils::get_identifier("drugname"),
-                gDRutils::get_identifier("drug_moa")), "_2"))
+            paste0(c(identifier$drug, 
+                identifier$drugname,
+                identifier$drug_moa), "_2"))
         colnames(pseudo_untreated)[idx_1] <- paste0(colnames(pseudo_untreated)[idx_1], "_2")
         colnames(pseudo_untreated)[idx_2] <- gsub("_2", "", colnames(pseudo_untreated)[idx_2])
 
@@ -244,7 +245,7 @@ create_SE <- function(df_,
   matsL <- list(RawTreated = treated_mat, Controls = reference_mat)
 
   # Capture important values in experiment metadata.
-  experiment_md <- list(experiment_metadata = exp_md, df_ = df_, Keys = Keys)
+  experiment_md <- list(experiment_metadata = exp_md, df_ = df_, Keys = Keys, identifiers = identifiers)
 
   # Filter out to 'treated' conditions only.
   treated_rowdata <- rowdata[rownames(treated_mat), , drop = FALSE] 
