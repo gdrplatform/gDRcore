@@ -48,7 +48,7 @@ create_SE <- function(df_,
     df_[, gDRutils::get_identifier("masked_tag")] <- FALSE
   }
 
-  identifiers <- get_identifier()
+  identifiers <- gDRutils::get_identifier()
   # Remove background value from readout (at least 1e-10 to avoid artefactual normalized values).
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
 
@@ -103,7 +103,7 @@ create_SE <- function(df_,
         idx_1 <- which(colnames(pseudo_untreated) %in% 
             c(identifiers$drug, 
               identifiers$drugname,
-              identifiers$drug_moa)
+              identifiers$drug_moa))
         idx_2 <- which(colnames(pseudo_untreated) %in% 
             paste0(c(identifiers$drug, 
                 identifiers$drugname,
