@@ -9,7 +9,7 @@
 #' Defaults to \code{mean(x, trim = 0.25)}.
 #' @param nested_keys character vector of column names to include in the data.frames in the assays 
 #' of the resulting \code{SummarizedExperiment} object. 
-#' Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.
+#' Defaults to \code{c(gDRutils::get_identifier("barcode"), gDRutils::get_identifier("masked_tag"))}.
 #' @param override_untrt_controls named list containing defining factors in the treatments.
 #' Defaults to \code{NULL}. 
 #'
@@ -30,7 +30,8 @@ create_SE <- function(df_,
                       control_mean_fxn = function(x) {
                         mean(x, trim = 0.25)
                         },
-                      nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
+                      nested_keys = c(gDRutils::get_identifier("barcode"),
+                        gDRutils::get_identifier("masked_tag")),
                       override_untrt_controls = NULL) {
 
   # Assertions:
@@ -42,13 +43,13 @@ create_SE <- function(df_,
     df_ <- S4Vectors::DataFrame(df_)
   }
 
+  identifiers <- gDRutils::get_identifier()
   Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
 
-  if (!(gDRutils::get_identifier("masked_tag") %in% colnames(df_))) {
-    df_[, gDRutils::get_identifier("masked_tag")] <- FALSE
+  if (!(identifiers$masked_tag %in% colnames(df_))) {
+    df_[, identifiers$masked_tag] <- FALSE
   }
 
-  identifiers <- gDRutils::get_identifier()
   # Remove background value from readout (at least 1e-10 to avoid artefactual normalized values).
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
 
@@ -62,7 +63,7 @@ create_SE <- function(df_,
   mapping_entries$groupings <- rownames(mapping_entries) 
 
   ## Identify treated and untreated conditions.
-  assigned_mapping_entries <- .assign_treated_and_untreated_conditions(mapping_entries)
+  assigned_mapping_entries <- .assign_treated_and_untreated_conditions(mapping_entries, identifiers$drugname)
   split_list <- split(mapping_entries, f = assigned_mapping_entries$treated_untreated)  
   if (length(split_list) != 2L) {
     stop(sprintf("unexpected conditions found: '%s'", 

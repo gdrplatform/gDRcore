@@ -42,10 +42,10 @@ normalize_SE <- function(se,
 
   nested_keys <- gDRutils::get_SE_keys(se, key_type = "nested_keys")
   trt_keys <- gDRutils::get_SE_keys(se, key_type = "Trt")
-  cl_name_key <- gDRutils::get_SE_keys(se, "cellline_name")
-  cl_ref_div_time_key <- gDRutils::get_SE_keys(se, "cellline_ref_div_time")
-  duration_key <- gDRutils::get_SE_keys(se, "duration")
-  masked_key <- gDRutils::get_SE_keys(se, "masked_tag")
+  cl_name_key <- gDRutils::get_SE_identifiers(se, "cellline_name")
+  cl_ref_div_time_key <- gDRutils::get_SE_identifiers(se, "cellline_ref_div_time")
+  duration_key <- gDRutils::get_SE_identifiers(se, "duration")
+  masked_key <- gDRutils::get_SE_identifiers(se, "masked_tag")
 
   norm_cols <- c("RelativeViability", "GRvalue")
   out <- vector("list", nrow(se) * ncol(se))
