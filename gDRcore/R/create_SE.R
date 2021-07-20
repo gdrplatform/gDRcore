@@ -42,7 +42,7 @@ create_SE <- function(df_,
     df_ <- S4Vectors::DataFrame(df_)
   }
 
-  Keys <- identify_keys(df_, nested_keys, override_untrt_controls)
+  Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
 
   if (!(gDRutils::get_identifier("masked_tag") %in% colnames(df_))) {
     df_[, gDRutils::get_identifier("masked_tag")] <- FALSE
@@ -83,7 +83,7 @@ create_SE <- function(df_,
   # creates another list for the co-treatment end points that are missing
   ref_maps[["cotrt_ref_Endpoint"]] <- NULL
   # focus on cases where the reference may be as primary drug (common in co-treatment experiments)
-  if (paste0(identifier$drug), "_2") %in% colnames(treated)) {
+  if (paste0(identifiers$drug), "_2") %in% colnames(treated)) {
     
     # NOTE: may have to deal with override_untrt_controls 
 
@@ -101,13 +101,13 @@ create_SE <- function(df_,
         
         # swap columns related to drug and drug_2
         idx_1 <- which(colnames(pseudo_untreated) %in% 
-            c(identifier$drug, 
-              identifier$drugname,
-              identifier$drug_moa)
+            c(identifiers$drug, 
+              identifiers$drugname,
+              identifiers$drug_moa)
         idx_2 <- which(colnames(pseudo_untreated) %in% 
-            paste0(c(identifier$drug, 
-                identifier$drugname,
-                identifier$drug_moa), "_2"))
+            paste0(c(identifiers$drug, 
+                identifiers$drugname,
+                identifiers$drug_moa), "_2"))
         colnames(pseudo_untreated)[idx_1] <- paste0(colnames(pseudo_untreated)[idx_1], "_2")
         colnames(pseudo_untreated)[idx_2] <- gsub("_2", "", colnames(pseudo_untreated)[idx_2])
 
