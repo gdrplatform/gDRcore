@@ -83,7 +83,7 @@ create_SE <- function(df_,
   # creates another list for the co-treatment end points that are missing
   ref_maps[["cotrt_ref_Endpoint"]] <- NULL
   # focus on cases where the reference may be as primary drug (common in co-treatment experiments)
-  if (paste0(identifiers$drug), "_2") %in% colnames(treated)) {
+  if (paste0(identifiers$drug, "_2") %in% colnames(treated)) {
     
     # NOTE: may have to deal with override_untrt_controls 
 
