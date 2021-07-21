@@ -11,9 +11,9 @@ test_that("normalize_SE works as expected", {
                                  Barcode = rep(c(1, 2), each = 3),
                                  masked = rep(FALSE, 6))
 
-  coldata <- S4Vectors::DataFrame(cl_name = "Mickey Mouse",
-                                  ref_time = 1)
-  rowdata <- S4Vectors::DataFrame(duration = 2)
+  coldata <- S4Vectors::DataFrame(CellLineName = "Mickey Mouse",
+                                  ReferenceDivisionTime = 1)
+  rowdata <- S4Vectors::DataFrame(Duration = 2)
 
   ctrl <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = ctrl_df)
   trted <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = trt_df)
@@ -36,3 +36,4 @@ test_that("normalize_SE works as expected", {
   expect_true(all(colnames(normalized) %in% c("Concentration", "masked", "GRvalue", "RelativeViability")))
   expect_equal(normalized$Concentration, conc)
 })
+
