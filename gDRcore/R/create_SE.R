@@ -9,7 +9,7 @@
 #' Defaults to \code{mean(x, trim = 0.25)}.
 #' @param nested_keys character vector of column names to include in the data.frames in the assays 
 #' of the resulting \code{SummarizedExperiment} object. 
-#' Defaults to \code{c("Barcode", gDRutils::get_identifier("masked_tag"))}.
+#' Defaults to \code{c(gDRutils::get_identifier("barcode"), gDRutils::get_identifier("masked_tag"))}.
 #' @param override_untrt_controls named list containing defining factors in the treatments.
 #' Defaults to \code{NULL}. 
 #'
@@ -30,7 +30,8 @@ create_SE <- function(df_,
                       control_mean_fxn = function(x) {
                         mean(x, trim = 0.25)
                         },
-                      nested_keys = c("Barcode", gDRutils::get_identifier("masked_tag")),
+                      nested_keys = c(gDRutils::get_identifier("barcode"),
+                        gDRutils::get_identifier("masked_tag")),
                       override_untrt_controls = NULL) {
 
   # Assertions:
@@ -42,10 +43,11 @@ create_SE <- function(df_,
     df_ <- S4Vectors::DataFrame(df_)
   }
 
-  Keys <- identify_keys(df_, nested_keys, override_untrt_controls)
+  identifiers <- gDRutils::get_identifier()
+  Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
 
-  if (!(gDRutils::get_identifier("masked_tag") %in% colnames(df_))) {
-    df_[, gDRutils::get_identifier("masked_tag")] <- FALSE
+  if (!(identifiers$masked_tag %in% colnames(df_))) {
+    df_[, identifiers$masked_tag] <- FALSE
   }
 
   # Remove background value from readout (at least 1e-10 to avoid artefactual normalized values).
@@ -61,7 +63,7 @@ create_SE <- function(df_,
   mapping_entries$groupings <- rownames(mapping_entries) 
 
   ## Identify treated and untreated conditions.
-  assigned_mapping_entries <- .assign_treated_and_untreated_conditions(mapping_entries)
+  assigned_mapping_entries <- .assign_treated_and_untreated_conditions(mapping_entries, identifiers$drugname)
   split_list <- split(mapping_entries, f = assigned_mapping_entries$treated_untreated)  
   if (length(split_list) != 2L) {
     stop(sprintf("unexpected conditions found: '%s'", 
@@ -82,7 +84,7 @@ create_SE <- function(df_,
   # creates another list for the co-treatment end points that are missing
   ref_maps[["cotrt_ref_Endpoint"]] <- NULL
   # focus on cases where the reference may be as primary drug (common in co-treatment experiments)
-  if (paste0(gDRutils::get_identifier("drug"), "_2") %in% colnames(treated)) {
+  if (paste0(identifiers$drug, "_2") %in% colnames(treated)) {
     
     # NOTE: may have to deal with override_untrt_controls 
 
@@ -100,13 +102,13 @@ create_SE <- function(df_,
         
         # swap columns related to drug and drug_2
         idx_1 <- which(colnames(pseudo_untreated) %in% 
-            c(gDRutils::get_identifier("drug"), 
-                gDRutils::get_identifier("drugname"),
-                gDRutils::get_identifier("drug_moa")))
+            c(identifiers$drug, 
+              identifiers$drugname,
+              identifiers$drug_moa))
         idx_2 <- which(colnames(pseudo_untreated) %in% 
-            paste0(c(gDRutils::get_identifier("drug"), 
-                gDRutils::get_identifier("drugname"),
-                gDRutils::get_identifier("drug_moa")), "_2"))
+            paste0(c(identifiers$drug, 
+                identifiers$drugname,
+                identifiers$drug_moa), "_2"))
         colnames(pseudo_untreated)[idx_1] <- paste0(colnames(pseudo_untreated)[idx_1], "_2")
         colnames(pseudo_untreated)[idx_2] <- gsub("_2", "", colnames(pseudo_untreated)[idx_2])
 
@@ -244,7 +246,7 @@ create_SE <- function(df_,
   matsL <- list(RawTreated = treated_mat, Controls = reference_mat)
 
   # Capture important values in experiment metadata.
-  experiment_md <- list(experiment_metadata = exp_md, df_ = df_, Keys = Keys)
+  experiment_md <- list(experiment_metadata = exp_md, df_ = df_, Keys = Keys, identifiers = identifiers)
 
   # Filter out to 'treated' conditions only.
   treated_rowdata <- rowdata[rownames(treated_mat), , drop = FALSE] 

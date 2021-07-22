@@ -10,15 +10,20 @@
 #'
 #' Assign the treated and untreated conditions to a data.frame
 #'
-#' @param df_ containing the drug name field as specified by \code{gDRutils::get_identifier("drugname")}..
+#' @param df_ data.frame containing the drug name field.
+#' @param drugname_col string of the column in \code{df_} corresponding to the drug name. 
+#' Defaults to \code{gDRutils::get_identifier("drugname")}..
 #'
 #' @return data.frame containing an additional factor column called \code{treated_untreated} specifying
 #' whether the condition is a treated or untreated entry.
 #'
 #' @export
 #'
-.assign_treated_and_untreated_conditions <- function(df_) {
-  drugnames <- tolower(as.data.frame(df_)[, gDRutils::get_identifier("drugname")])
+.assign_treated_and_untreated_conditions <- function(df_, drugname_col = gDRutils::get_identifier("drugname")) {
+  if (!drugname_col %in% colnames(df_)) {
+    stop(sprintf("missing drug name column: %s", drugname_col))
+  }
+  drugnames <- tolower(as.data.frame(df_)[, drugname_col])
   untreated <- grepl(.untreatedDrugNameRegex, drugnames)
   if (!any(untreated)) {
     stop(sprintf("no untreated conditions matching pattern: '%s'", .untreatedDrugNameRegex))

@@ -4,7 +4,12 @@
 \alias{identify_keys}
 \title{identify_keys}
 \usage{
-identify_keys(df_, nested_keys = NULL, override_untrt_controls = NULL)
+identify_keys(
+  df_,
+  nested_keys = NULL,
+  override_untrt_controls = NULL,
+  identifiers = gDRutils::get_identifier()
+)
 }
 \arguments{
 \item{df_}{a data.frame to identify keys for.}
@@ -16,6 +21,9 @@ Defaults to the \code{"Barcode"} and the \code{masked} identifier.}
 
 \item{override_untrt_controls}{named list containing defining factors in the treatments.
 Defaults to \code{NULL}.}
+
+\item{identifiers}{named list containing all identifiers to use during processing.
+By default, this value will be obtained by the environment.}
 }
 \value{
 named list of key types and their corresponding key values.
