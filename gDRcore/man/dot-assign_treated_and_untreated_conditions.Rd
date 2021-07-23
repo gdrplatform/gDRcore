@@ -4,10 +4,16 @@
 \alias{.assign_treated_and_untreated_conditions}
 \title{.assign_treated_and_untreated_conditions}
 \usage{
-.assign_treated_and_untreated_conditions(df_)
+.assign_treated_and_untreated_conditions(
+  df_,
+  drugname_col = gDRutils::get_identifier("drugname")
+)
 }
 \arguments{
-\item{df_}{containing the drug name field as specified by \code{gDRutils::get_identifier("drugname")}..}
+\item{df_}{data.frame containing the drug name field.}
+
+\item{drugname_col}{string of the column in \code{df_} corresponding to the drug name. 
+Defaults to \code{gDRutils::get_identifier("drugname")}..}
 }
 \value{
 data.frame containing an additional factor column called \code{treated_untreated} specifying
