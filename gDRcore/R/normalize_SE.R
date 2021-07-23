@@ -137,5 +137,5 @@ fill_NA_ref <- function(ref_df, nested_keys) {
   for (col in data_columns) {
     ref_df[is.na(ref_df[, col]), col] <- ref_df_mean[[col]]
   }
-  DataFrame(ref_df)
+  S4Vectors::DataFrame(ref_df)
 }
