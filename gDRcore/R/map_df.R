@@ -81,7 +81,8 @@ map_df <- function(trt_md,
       
       if (any(idx > 0)) {
         match_idx <- which.max(idx)
-        msgs <- c(msgs, sprintf("Found partial match: ('%s') for treatment: ('%s')", rownames(ref_md)[match_idx], treatment))
+        msgs <- c(msgs, sprintf("Found partial match: ('%s') for treatment: ('%s')",
+          rownames(ref_md)[match_idx], treatment))
       } else { # failed to find any potential match
         msgs <- c(msgs, sprintf("No partial match found for treatment: ('%s')", treatment))
       }

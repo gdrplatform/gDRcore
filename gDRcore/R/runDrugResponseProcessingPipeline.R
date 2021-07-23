@@ -78,8 +78,8 @@ create_and_normalize_SE <- function(df_,
                                     control_assay = "Controls",
                                     raw_treated_assay = "RawTreated",
                                     normalized_assay = "Normalized",
-				                            ref_GR_assay = "RefGRvalue",
-				                            ref_RV_assay = "RefRelativeViability") {
+                                    ref_GR_assay = "RefGRvalue",
+                                    ref_RV_assay = "RefRelativeViability") {
   se <- create_SE(df_ = df_, 
     readout = readout, 
     control_mean_fxn = control_mean_fxn, 
