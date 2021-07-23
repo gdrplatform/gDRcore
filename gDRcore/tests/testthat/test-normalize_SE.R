@@ -17,17 +17,22 @@ test_that("normalize_SE works as expected", {
 
   ctrl <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = ctrl_df)
   trted <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = trt_df)
+  
+  keys <- list("nested_keys" = "Barcode", 
+               "Trt" = "Concentration")
+  
+  metadata <- list(identifiers = list("cellline_name" = "CellLineName", 
+                                      "cellline_ref_div_time" = "ReferenceDivisionTime", 
+                                      "duration" = "Duration", 
+                                      "masked_tag" = "masked"),
+                   Keys = keys)
+  
   se <- SummarizedExperiment::SummarizedExperiment(assays = list("RawTreated" = trted, "Controls" = ctrl), 
                                                    colData = coldata, 
-                                                   rowData = rowdata)
-  keys <- list("nested_keys" = "Barcode", 
-               "Trt" = "Concentration", 
-               "cellline_name" = "cl_name", 
-               "cellline_ref_div_time" = "ref_time", 
-               "duration" = "duration", 
-               "masked_tag" = "masked")
+                                                   rowData = rowdata,
+                                                   metadata = metadata)
 
-  se <- gDRutils::set_SE_keys(se, keys) 
+
   se <- normalize_SE(se)
   normalized <- SummarizedExperiment::assays(se)[["Normalized"]][1, 1][[1]]
 
