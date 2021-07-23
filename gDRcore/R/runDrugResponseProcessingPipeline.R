@@ -1,7 +1,8 @@
 #' Run drug response processing pipeline
 #'
-#' Create a SummarizedExperiment of raw data and proceed to 
-#' normalize, average, and fit the processed data. 
+#' Run different components of the gDR drug response processing pipeline.
+#' Either: create a SummarizedExperiment and normalize raw treated and control data (create_and_normalize_SE),
+#' average data (average_SE), or fit the processed data (fit_SE). See details for more in-depth explanations.
 #'
 #' @param df_ data.frame of raw drug response data containing both treated and untreated values. 
 #' @param readout string of the name containing the cell viability readout values.
@@ -9,7 +10,8 @@
 #' Defaults to \code{mean(x, trim = 0.25)}.
 #' @param nested_keys character vector of column names to include in the data.frames
 #' in the assays of the resulting \code{SummarizedExperiment} object.
-#' Defaults to \code{c(gDRutils::get_identifier("barcode"), gDRutils::get_identifier("masked_tag"))}.
+#' @param Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
+#' \code{create_and_normalize_SE} or \code{runDrugResponseProcessingPipeline}.
 #' @param override_untrt_controls named list containing defining factors in the treatments.
 #' Defaults to \code{NULL}.
 #' @param override_masked boolean indicating whether or not to override the masked wells
@@ -36,49 +38,111 @@
 #' in the returned \linkS4class{SummarizedExperiment}
 #' Defaults to \code{"Metrics"}.
 #'
+#' @details
+#' \code{runDrugResponseProcessingPipeline} is made up of 3 separate steps:
+#' \itemize{
+#'  \item{"create_and_normalize_SE"}
+#'  \item{"average_SE"}
+#'  \item{"fit_SE"}
+#'}
 #'
-#' @family runDrugResponseProcessingPipelineFxns
+#' For create_and_normalize_SE, this creates a SummarizedExperiment object from a data.frame, 
+#' where the data.frame contains treatments on rows, and conditions on columns. 
+#' A \linkS4class{SummarizedExperiment} object containing two asssays is created:
+#' treated readouts will live in an assay called \code{"RawTreated"},
+#' and reference readouts live in an assay called \code{"Controls"}. Subsequently, the treated
+#' and control elements will be normalized to output two metrics: 
+#'
+#' For average_SE, take the normalized assay and average the nested \code{DataFrame}s across unique
+#' \code{nested_identifiers}. 
+#'
+#' For fit_SE, take the averaged assay and fit curves to obtain metrics, one set of metrics for each
+#' normalization type set.
+#'
+#' @name runDrugResponseProcessingPipelineFxns
+#'
+NULL
+
+
+#' @rdname runDrugResponseProcessingPipelineFxns
 #' @export
-#'
-runDrugResponseProcessingPipeline <- function(df_,
-                                               readout = "ReadoutValue",
-                                               control_mean_fxn = function(x) {
-                                                 mean(x, trim = 0.25)
-                                                 },
-                                               nested_keys = c(gDRutils::get_identifier("barcode"), 
-                                                 gDRutils::get_identifier("masked_tag")),
-                                               override_untrt_controls = NULL,
-                                               override_masked = FALSE,
-                                               ndigit_rounding = 4,
-                                               n_point_cutoff = 4,
-                                               control_assay = "Controls",
-                                               raw_treated_assay = "RawTreated",
-                                               normalized_assay = "Normalized",
-                                               ref_GR_assay = "RefGRvalue",
-                                               ref_RV_assay = "RefRelativeViability",
-                                               averaged_assay = "Averaged",
-                                               metrics_assay = "Metrics") {
+create_and_normalize_SE <- function(df_,
+                                    readout = "ReadoutValue",
+                                    control_mean_fxn = function(x) {
+                                      mean(x, trim = 0.25)
+                                    },
+                                    nested_identifiers = gDRutils::get_identifier("concentration"),
+                                    nested_confounders = gDRutils::get_identifier("barcode"),
+                                    override_untrt_controls = NULL,
+                                    ndigit_rounding = 4,
+                                    control_assay = "Controls",
+                                    raw_treated_assay = "RawTreated",
+                                    normalized_assay = "Normalized",
+				                            ref_GR_assay = "RefGRvalue",
+				                            ref_RV_assay = "RefRelativeViability") {
   se <- create_SE(df_ = df_, 
-                   readout = readout, 
-                   control_mean_fxn = control_mean_fxn, 
-                   nested_keys = nested_keys, 
-                   override_untrt_controls = override_untrt_controls)
+    readout = readout, 
+    control_mean_fxn = control_mean_fxn, 
+    nested_keys = c(nested_identifiers, nested_confounders), 
+    override_untrt_controls = override_untrt_controls)
+
   se <- normalize_SE(se = se, 
-                      control_assay = control_assay, 
-                      raw_treated_assay = raw_treated_assay, 
-                      normalized_assay = normalized_assay,
-                      ref_GR_assay = ref_GR_assay, 
-                      ref_RV_assay = ref_RV_assay, 
-                      ndigit_rounding = ndigit_rounding)
+    nested_identifiers = nested_identifiers,
+    nested_confounders = nested_confounders,
+    control_assay = control_assay, 
+    raw_treated_assay = raw_treated_assay, 
+    normalized_assay = normalized_assay,
+    ref_GR_assay = ref_GR_assay, 
+    ref_RV_assay = ref_RV_assay, 
+    ndigit_rounding = ndigit_rounding)
+  se
+}
+
+
+#' @rdname runDrugResponseProcessingPipelineFxns 
+#' @export
+runDrugResponseProcessingPipeline <- function(df_,
+                                              readout = "ReadoutValue",
+                                              control_mean_fxn = function(x) {
+                                                mean(x, trim = 0.25)
+                                              },
+                                              nested_identifiers = gDRutils::get_identifier("concentration"),
+                                              nested_confounders = gDRutils::get_identifier("barcode"),
+                                              override_untrt_controls = NULL,
+                                              override_masked = FALSE,
+                                              ndigit_rounding = 4,
+                                              n_point_cutoff = 4,
+                                              control_assay = "Controls",
+                                              raw_treated_assay = "RawTreated",
+                                              normalized_assay = "Normalized",
+                                              ref_GR_assay = "RefGRvalue",
+                                              ref_RV_assay = "RefRelativeViability",
+                                              averaged_assay = "Averaged",
+                                              metrics_assay = "Metrics") {
+
+  se <- create_and_normalize_SE(df_ = df_,
+    readout = readout,
+    control_mean_fxn = control_mean_fxn,
+    nested_identifiers = nested_identifiers,
+    nested_confounders = nested_confounders,
+    control_assay = control_assay, 
+    raw_treated_assay = raw_treated_assay, 
+    normalized_assay = normalized_assay,
+    ref_GR_assay = ref_GR_assay, 
+    ref_RV_assay = ref_RV_assay, 
+    ndigit_rounding = ndigit_rounding)
+
   se <- average_SE(se = se, 
-                    override_masked = override_masked, 
-                    normalized_assay = normalized_assay, 
-                    averaged_assay = averaged_assay)
+                   nested_identifiers = nested_identifiers,
+                   override_masked = override_masked, 
+                   normalized_assay = normalized_assay, 
+                   averaged_assay = averaged_assay)
   se <- fit_SE(se = se, 
-                averaged_assay = averaged_assay, 
-                ref_GR_assay = ref_GR_assay, 
-                metrics_assay = metrics_assay, 
-                n_point_cutoff = n_point_cutoff)
+               nested_identifiers = nested_identifiers,
+               averaged_assay = averaged_assay, 
+               ref_GR_assay = ref_GR_assay, 
+               metrics_assay = metrics_assay, 
+               n_point_cutoff = n_point_cutoff)
   se <- add_codrug_group_SE(se)
   se
 }
