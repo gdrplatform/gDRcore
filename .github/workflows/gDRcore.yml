@@ -14,7 +14,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04 
+    runs-on: ubuntu-18.04
     container: rocker/verse:4.1.0
     env:
       GITHUB_TOKEN: ${{ secrets.PRIVATE_ACCESS_TOKEN }}
@@ -32,14 +32,17 @@ jobs:
         with:
           path: '/usr/local/lib/R/site-library'
           key: ${{ runner.os }}-${{ hashFiles('gDRcore/DESCRIPTION') }}
-      
+
       - name: Install dependencies
         run: Rscript rplatform/install_all_deps.R
-      
+
       - name: R CMD check
         run: Rscript -e "rcmdcheck::rcmdcheck('gDRcore', args = '--no-manual', error_on = 'error')"
-        env: 
+        env:
           _R_CHECK_FORCE_SUGGESTS_: false
 
       - name: Lint code
         run: Rscript -e "gDRstyle::lintPkg('gDRcore')"
+
+      - name: Test coverage
+        run: Rscript -e "covr::codecov()"
