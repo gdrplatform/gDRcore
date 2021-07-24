@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.2] - 2021-07-23
+#### Update
+- remove obsolete dependencies from DESCRIPTION:Imports
+
 #### [1.0.9] - 2021-07-01
 #### Update
 - function for testing synthetic data
