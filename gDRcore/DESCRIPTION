@@ -23,6 +23,7 @@ Imports:
     SummarizedExperiment
 Suggests:
     BumpyMatrix,
+    covr,
     kcloak (>= 0.0.8),
     futile.logger,
     knitr,
