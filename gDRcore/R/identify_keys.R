@@ -36,7 +36,7 @@ identify_keys <- function(df_,
     nested_keys <- intersect(nested_keys, all_keys)
   }
 
-  dropped_override_untrt_controls <- setdiff(override_untrt_controls, all_keys)
+  dropped_override_untrt_controls <- setdiff(names(override_untrt_controls), all_keys)
   if (length(dropped_override_untrt_controls) != 0L) {
     warning(sprintf("ignoring override_untrt_controls input: '%s' which are not present in data.frame",
       paste0(dropped_override_untrt_controls, collapse = ", ")))

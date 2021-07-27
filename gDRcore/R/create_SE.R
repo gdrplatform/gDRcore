@@ -49,7 +49,6 @@ create_SE <- function(df_,
 
   ## Map references.
   references <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0", ref_Endpoint = "ref_Endpoint")
-  # TODO: take care of the row_endpoint_value_filter.
 
   ref_maps <- lapply(references, function(ref_type) {
     map_df(treated, untreated, override_untrt_controls = override_untrt_controls,
