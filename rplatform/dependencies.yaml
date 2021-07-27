@@ -32,6 +32,8 @@ pkgs:
     ref: main
     subdir: ~
     source: GITHUB
+  covr:
+    source: CRAN
   futile.logger:
     source: CRAN
   pkgload:

@@ -15,23 +15,20 @@ License: file GNE_LICENSE
 LazyLoad: yes
 Imports:
     data.table,
-    digest,
     drc,
+<<<<<<< HEAD
     gDRutils (>= 1.0.8),
     httr,
+=======
+    gDRutils (>= 1.0.0),
+>>>>>>> master
     magrittr,
-    openxlsx,
-    plyr,
-    readr,
-    readxl,
     reshape2,
     S4Vectors,
-    SummarizedExperiment,
-    stringr,
-    writexl,
-    XML
+    SummarizedExperiment
 Suggests:
     BumpyMatrix,
+    covr,
     kcloak (>= 0.0.8),
     futile.logger,
     knitr,
