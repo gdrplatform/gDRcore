@@ -14,7 +14,7 @@ pkgs:
   gDRutils:
     ver: '>=1.0.0'
     url: gdrplatform/gDRutils
-    ref: set_SE_identifiers
+    ref: master
     subdir: gDRutils
     source: GITHUB
   lintr:
