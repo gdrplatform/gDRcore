@@ -7,10 +7,11 @@
 #' @return data
 #' @export
 calculate_combo_matrix <- function(se,
-                                    conc_margin = 10 ^ 0.5,
-                                    log2_pos_offset = log10(3) / 2,
-                                    norm_types = c("RelativeViability", "GRvalue")
-                                    ) {
+                                   series_identifiers,
+                                   conc_margin = 10 ^ 0.5,
+                                   log2_pos_offset = log10(3) / 2,
+                                   norm_types = c("RelativeViability", "GRvalue")
+                                   ) {
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_number(conc_margin)
   checkmate::assert_number(log2_pos_offset)
@@ -109,6 +110,7 @@ calculate_combo_matrix <- function(se,
         df_ <- flat_data[flat_data$Concentration_2 %in% 0 & flat_data$Concentration > 0, ]
         fit_drug1 <- gDRutils::fit_curves(
           df_ = df_[!is.na(df_[, norm_method]), ],
+          series_identifiers = series_identifiers,
           force_fit = TRUE,
           cap = 0.2,
           normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR")
@@ -139,6 +141,7 @@ calculate_combo_matrix <- function(se,
         df_$Concentration <- df_$Concentration_2 # necessary for the fit
         fit_drug2 <- gDRutils::fit_curves(
           df_ = df_[!is.na(df_[, norm_method]), ],
+          series_identifiers = series_identifiers,
           normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR"),
           force_fit = TRUE,
           cap = 0.2
@@ -217,6 +220,7 @@ calculate_combo_matrix <- function(se,
 
           fit_res <- gDRutils::fit_curves(
             df_,
+            series_identifiers = series_identifiers,
             e_0 = mx[idx, 1], # use single agent fit
             GR_0 = mx[idx, 1], # use single agent fit
             normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR"),
@@ -229,6 +233,7 @@ calculate_combo_matrix <- function(se,
               df_[, norm_method] <- 1 - df_[, norm_method]
             fit_res <- gDRutils::fit_curves(
               df_,
+              series_identifiers = series_identifiers,
               e_0 = 1 - mx[idx, 1], # use single agent fit
               GR_0 = 1 - mx[idx, 1], # use single agent fit
               normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR"),
@@ -317,6 +322,7 @@ calculate_combo_matrix <- function(se,
 
                 fit_res <- gDRutils::fit_curves(
                   df_,
+                  series_identifiers = series_identifiers,
                   e_0 = 1,
                   GR_0 = 1,
                   normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR"),

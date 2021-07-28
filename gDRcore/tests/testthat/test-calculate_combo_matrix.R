@@ -4,7 +4,7 @@ test_that("check printed output", {
   drug_names1 <- rep(paste0("drug_00", seq(4, 6)), each = 2)
   drug_names2 <- rep(c("drug_021", "drug_026"), 3)
   
-  ccm <- suppressWarnings(calculate_combo_matrix(se))
+  ccm <- suppressWarnings(calculate_combo_matrix(se, series_identifiers = "Concentration"))
   
   exp_data_names <-
     c("bliss_q10", "CI_100x_80", "CI_100x_50", "hsa_q10")

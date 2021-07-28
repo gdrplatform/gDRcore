@@ -6,6 +6,7 @@
 \usage{
 calculate_combo_matrix(
   se,
+  series_identifiers,
   conc_margin = 10^0.5,
   log2_pos_offset = log10(3)/2,
   norm_types = c("RelativeViability", "GRvalue")
