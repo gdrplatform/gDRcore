@@ -1,39 +1,15 @@
-#' average_SE
-#'
-#' Average the normalized data within the nested \code{DataFrame}s. 
-#'
-#' @param se a \linkS4class{SummarizedExperiment} with drug response data that has a 
-#' \code{normalized_assay}.
-#' @param override_masked boolean indicating whether or not to override the masked wells
-#' in the averaging and include all wells. 
-#' Defaults to \code{FALSE}.
-#' @param normalized_assay string of the assay name containing the normalized data.
-#' Defaults to \code{"Normalized"}.
-#' @param averaged_assay string of the assay to output averaged values in.
-#' Defaults to \code{"Averaged"}.
-#'
-#' @return a \linkS4class{SummarizedExperiment} with an additional assay 
-#' specified by \code{averaged_assay} containing normalized data with 
-#' mean and standard deviation calculations for each unique treatment in the nested
-#' \code{DataFrame}s. 
-#'
-#' @details Expects that \code{gDRutils::get_SE_keys(se)} will have values for both 
-#' \code{"Trt"} and \code{"masked_tag"}.
-#'
-#' @family runDrugResponseProcessingPipelineFxns
-#'
+#' @rdname runDrugResponseProcessingPipelineFxns
 #' @export
 #'
-average_SE <- function(se, 
-                        override_masked = FALSE, 
-                        normalized_assay = "Normalized", 
-                        averaged_assay = "Averaged") {
+average_SE <- function(se,
+                       nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration"),
+                       override_masked = FALSE,
+                       normalized_assay = "Normalized", 
+                       averaged_assay = "Averaged") {
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
-  if (!(normalized_assay %in% SummarizedExperiment::assayNames(se))) {
-    stop(sprintf("missing expected assays: '%s'", normalized_assay))
-  }
+  gDRutils::validate_se_assay_name(se, normalized_assay)
 
   trt_keys <- gDRutils::get_SE_keys(se, "Trt")
   masked_tag_key <- gDRutils::get_SE_keys(se, "masked_tag")
@@ -71,16 +47,16 @@ average_SE <- function(se,
         }
 
         avg_df <- stats::aggregate(norm_df[!masked, std_cols],
-          by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
+          by = as.list(norm_df[!masked, nested_identifiers, drop = FALSE]), 
           function(x) mean(x, na.rm = TRUE))
 
         std_df <- stats::aggregate(norm_df[!masked, std_cols],
-          by = as.list(norm_df[!masked, p_trt_keys, drop = FALSE]), 
+          by = as.list(norm_df[!masked, nested_identifiers, drop = FALSE]), 
           function(x) stats::sd(x, na.rm = TRUE))
         colnames(std_df)[colnames(std_df) %in% std_cols] <-
           paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
 
-        agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = p_trt_keys))
+        agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = nested_identifiers))
       } else {
         # only one or no unmasked value --> create degenerated dataframe
         all_cols <- c(std_cols, p_trt_keys, paste0("std_", std_cols), "row_id", "col_id")
@@ -102,5 +78,5 @@ average_SE <- function(se,
     col = out$col_id)
 
   SummarizedExperiment::assays(se)[[averaged_assay]] <- averaged
-  return(se)
+  se
 }

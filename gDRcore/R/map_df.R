@@ -57,6 +57,7 @@ map_df <- function(trt_md,
   names(present_ref_cols) <- present_ref_cols
 
   out <- list("vector", length(trt_rnames))
+  msgs <- NULL
   for (i in seq_len(length(trt_rnames))) {
     treatment <- trt_rnames[i]
     refs <- lapply(present_ref_cols, function(y) {
@@ -74,20 +75,21 @@ map_df <- function(trt_md,
     match_idx <- which(apply(match_mx, 2, all)) # test matching conditions
     if (length(match_idx) == 0) {
       # No exact match, try to find best match (as many metadata fields as possible).
-      futile.logger::flog.info("Missing reference controls '%s' for: ('%s')", ref_type, treatment)
       idx <- apply(match_mx, 2, function(y) sum(y, na.rm = TRUE)) 
       # TODO: Sort this out so that it also takes the average in case multiple are found.
       idx <- idx * match_mx[matchFactor, ]
       
       if (any(idx > 0)) {
         match_idx <- which.max(idx)
-        futile.logger::flog.info("Found partial match:", rownames(ref_md)[match_idx])
+        msgs <- c(msgs, sprintf("Found partial match: ('%s') for treatment: ('%s')",
+          rownames(ref_md)[match_idx], treatment))
       } else { # failed to find any potential match
-        futile.logger::flog.info("No partial match found")
+        msgs <- c(msgs, sprintf("No partial match found for treatment: ('%s')", treatment))
       }
     }
     out[[i]] <- rownames(ref_md)[match_idx] # TODO: Check that this properly handles NAs. 
   }
+  futile.logger::flog.info(paste0(msgs, collapse = "\n"))
   names(out) <- trt_rnames
   out
 }

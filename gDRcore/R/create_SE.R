@@ -1,37 +1,12 @@
-#' Create a SummarizedExperiment object
-#'
-#' Create a SummarizedExperiment object from a data.frame, where the data.frame contains treatments on rows,
-#' and conditions on columns. 
-#'
-#' @param df_ data.frame of raw drug response data containing both treated and untreated values.
-#' @param readout string of the name containing the cell viability readout values.
-#' @param control_mean_fxn function indicating how to average controls.
-#' Defaults to \code{mean(x, trim = 0.25)}.
-#' @param nested_keys character vector of column names to include in the data.frames in the assays 
-#' of the resulting \code{SummarizedExperiment} object. 
-#' Defaults to \code{c(gDRutils::get_identifier("barcode"), gDRutils::get_identifier("masked_tag"))}.
-#' @param override_untrt_controls named list containing defining factors in the treatments.
-#' Defaults to \code{NULL}. 
-#'
-#' @return A \linkS4class{SummarizedExperiment} object containing two asssays.
-#' Treated readouts will live in an assay called \code{"RawTreated"},
-#' and reference readouts live in an assay called \code{"Controls"}.
-#' \code{rownames} and \code{colnames} are made up of available metadata on treatments and conditions 
-#' and is pasted together.
-#'
-#' @details 
-#' This is most commonly used in preparation for downstream normalization.
-#'
-#' @family runDrugResponseProcessingPipelineFxns
+#' @rdname runDrugResponseProcessingPipelineFxns
 #' @export
 #'
 create_SE <- function(df_,
                       readout = "ReadoutValue",
                       control_mean_fxn = function(x) {
                         mean(x, trim = 0.25)
-                        },
-                      nested_keys = c(gDRutils::get_identifier("barcode"),
-                        gDRutils::get_identifier("masked_tag")),
+                      },
+                      nested_keys,
                       override_untrt_controls = NULL) {
 
   # Assertions:
@@ -74,7 +49,6 @@ create_SE <- function(df_,
 
   ## Map references.
   references <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0", ref_Endpoint = "ref_Endpoint")
-  # TODO: take care of the row_endpoint_value_filter.
 
   ref_maps <- lapply(references, function(ref_type) {
     map_df(treated, untreated, override_untrt_controls = override_untrt_controls,
