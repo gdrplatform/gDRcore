@@ -15,9 +15,14 @@ calculate_combo_matrix(
 \arguments{
 \item{se}{a BumpyMatrix SE with drug response data}
 
+\item{series_identifiers}{character vector of the column names in \code{data.frame}
+whose combination represents a unique series for which to fit curves.}
+
 \item{conc_margin}{margin for calculation and plots as fold-change over highest test conc for calculation}
 
 \item{log2_pos_offset}{max offset for conc}
+
+\item{norm_types}{character vector of normalization types used for calculating combo matrix}
 }
 \value{
 data

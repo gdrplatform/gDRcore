@@ -1,8 +1,11 @@
 #' calculate_combo_matrix
 #'
 #' @param se a BumpyMatrix SE with drug response data
+#' @param series_identifiers character vector of the column names in \code{data.frame}
+#' whose combination represents a unique series for which to fit curves. 
 #' @param conc_margin margin for calculation and plots as fold-change over highest test conc for calculation
 #' @param log2_pos_offset max offset for conc
+#' @param norm_types character vector of normalization types used for calculating combo matrix
 #'
 #' @return data
 #' @export
