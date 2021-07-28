@@ -232,9 +232,9 @@ create_SE <- function(df_,
     metadata = list(df_ = df_))
 
   # Capture important values in experiment metadata.
-  set_SE_identifiers(se, identifiers)
-  set_SE_experiment_metadata(se, exp_md)
-  set_SE_keys(se, Keys)
+  se <- gDRutils::set_SE_identifiers(se, identifiers)
+  se <- gDRutils::set_SE_experiment_metadata(se, exp_md)
+  se <- gDRutils::set_SE_keys(se, Keys)
 
   se
 }
