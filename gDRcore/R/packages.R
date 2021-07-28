@@ -1,7 +1,7 @@
-#' 'gDR - a package with core functionality'
+#' 'gDRcore - a package with core functionality'
 #'
 #' @docType package
-#' @name gDR
+#' @name gDRcore
 #' @importFrom magrittr %$% %>% %<>%
 NULL
 
