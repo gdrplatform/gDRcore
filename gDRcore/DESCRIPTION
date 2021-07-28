@@ -16,12 +16,8 @@ LazyLoad: yes
 Imports:
     data.table,
     drc,
-<<<<<<< HEAD
     gDRutils (>= 1.0.8),
     httr,
-=======
-    gDRutils (>= 1.0.0),
->>>>>>> master
     magrittr,
     reshape2,
     S4Vectors,
