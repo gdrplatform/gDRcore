@@ -219,9 +219,6 @@ create_SE <- function(df_,
                                                    row = ref_out$row_id, col = ref_out$col_id)
   matsL <- list(RawTreated = treated_mat, Controls = reference_mat)
 
-  # Capture important values in experiment metadata.
-  experiment_md <- list(experiment_metadata = exp_md, df_ = df_, Keys = Keys, identifiers = identifiers)
-
   # Filter out to 'treated' conditions only.
   treated_rowdata <- rowdata[rownames(treated_mat), , drop = FALSE] 
   
@@ -232,6 +229,12 @@ create_SE <- function(df_,
   se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
     colData = coldata[match(colnames(treated_mat), rownames(coldata)), ],
     rowData = treated_rowdata,
-    metadata = experiment_md)
+    metadata = list(df_ = df_))
+
+  # Capture important values in experiment metadata.
+  se <- gDRutils::set_SE_identifiers(se, identifiers)
+  se <- gDRutils::set_SE_experiment_metadata(se, exp_md)
+  se <- gDRutils::set_SE_keys(se, Keys)
+
   se
 }
