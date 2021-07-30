@@ -62,6 +62,11 @@ normalize_SE <- function(se,
         ref_df <- fill_NA_ref(ref_df, nested_keys)
       }
 
+      # Extract common nested_confounders shared by trt_df and ref_df
+      nested_confounders <- Reduce(intersect, list(nested_confounders,
+                                                   names(trt_df),
+                                                   names(ref_df)))
+      
       # Merge to ensure that the proper discard_key values are mapped.
       all_readouts_df <- merge(trt_df, 
         ref_df, 
