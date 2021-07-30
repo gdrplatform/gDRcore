@@ -1,7 +1,12 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
-#### [1.0.10] - 2021-07-27
+
+#### [1.1.4] - 2021-07-30
+#### Update
+- fix bug for nested_confounders not present in ref_df
+
+#### [1.1.3] - 2021-07-27
 #### Update
 - add support for nested_identifiers and nested_confounders 
 
