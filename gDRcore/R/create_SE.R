@@ -6,7 +6,8 @@ create_SE <- function(df_,
                       control_mean_fxn = function(x) {
                         mean(x, trim = 0.25)
                       },
-                      nested_keys,
+                      nested_keys = c(gDRutils::get_identifier("concentration"),
+                                      gDRutils::get_identifier("barcode")),
                       override_untrt_controls = NULL) {
 
   # Assertions:
