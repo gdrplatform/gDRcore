@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.5] - 2021-08-04
+#### Update
+- refactor reading annotations and add default parameters
+
 #### [1.1.4] - 2021-07-30
 #### Update
 - fix bug for nested_confounders not present in ref_df
