@@ -117,7 +117,8 @@ add_Drug_annotation <- function(df_metadata,
     # Read local drugs annotations
     annotationPackage <- ifelse(requireNamespace("gDRinternal", quietly = TRUE),
                                 "gDRinternal", "gDRtestData")
-    Drug_info <- data.table::fread(system.file("data/drugs.csv", package = annotationPackage), fill = TRUE, header = TRUE)
+    Drug_info <- data.table::fread(system.file("data/drugs.csv", package = annotationPackage),
+                                   fill = TRUE, header = TRUE)
     Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa")]
     data.table::setnames(Drug_info, c("drug", "drug_name", "drug_moa"))
     drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
