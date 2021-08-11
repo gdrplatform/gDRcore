@@ -7,34 +7,40 @@ fit_codilutions <- function(measured, nested_identifiers, normalization_type) {
   single_agents <- measured[[id]] == 0 | measured[[id2]] == 0
   measured <- measured[!single_agents, , drop = FALSE]
 
-  # Calculate concentration ratios.
-  measured$ratios <- measured[[id2]]/measured[[id]] # TODO: Fix to cacluation the same ratios as below?
-  ##n_conc_codil <- min(ncol(mx_response), nrow(mx_response)) - 1
-  ##conc_ratio <- 2 ^ unique(round(log2(
-  ##  as.numeric(colnames(mx_response))[ncol(mx_response):(ncol(mx_response) - n_conc_codil + 1)] / 
-  ##    as.numeric(rownames(mx_response))[nrow(mx_response):(nrow(mx_response) - n_conc_codil + 1)]), 1))
-
-  # Split by ratios.
-
-
-  # Filter only to what diagonals are valid for a fit. (>4 points)
-  valid <- lapply(, function(x) {length(x) > 4})
+  # Filter only to what diagonals are valid for a fit (>4 points).
+  measured$ratios <- measured[[id2]]/measured[[id]]
+  ratios <- S4Vectors::split(measured, measured$ratios)
+  keep <- unlist(lapply(ratios, function(x) {nrow(x) > 4}))
+  valid <- ratios[keep]
 
   fits <- vector("list", length(valid))
   for (i in seq_along(fits)) {
-    # Fit the diagonal.
-    # TODO: Call the wrapper function to fit_curves which also binds the IRanges object.
-    fit_res <- gDRutils::fit_curves(
-      df_,
-      series_identifiers = series_identifiers,
-      e_0 = 1,
-      GR_0 = 1,
-      normalization_type = normalization_type,
-      force_fit = TRUE
-    )
-    fits[[i]] <- fit_res
+    fits[[i]] <- fit_codilution_series(valid[[i]], id, id2, e_0 = 1, GR_0 = 1, normalization_type)
   }
 
   out <- do.call("rbind", fits)
+  out
+}
+
+
+#' @keywords internal
+fit_codilution_series <- function(measured, series_1, series_2, e_0, GR_0, normalization_type, summed_col = "summed_codil_conc") {
+  if (length(unique(measured[[series_2]] / measured[[series_1]])) != 1L) {
+    stop("more than one ratio between 'series_2' and 'series_1' detected")
+  }
+
+  measured[summed_col] <- measured[[series_1]] + measured[[series_2]]
+  keep <- setdiff(colnames(measured), c(series_1, series_2))
+  codilution_fit <- gDRutils::fit_curves(
+    df_ = measured[, keep, drop = FALSE],
+    series_identifiers = summed_col,
+    e_0 = e_0,
+    GR_0 = GR_0,
+    force_fit = TRUE,
+    cap = 0.2,
+    normalization_type = normalization_type
+  )
+
+  out <- DataFrame(IRanges::DataFrameList(measured[, c(series_1, series_2)]), codilution_fit)
   out
 }
