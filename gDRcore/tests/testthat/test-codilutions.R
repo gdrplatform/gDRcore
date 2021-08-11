@@ -1,7 +1,7 @@
 library(gDRcore)
 library(testthat)
 
-test_that("fit_codilutions works as expected", {
+test_that("fit_combo_codilutions works as expected", {
   n <- 10
   concs <- seq(0, n, 1)
   start <- gDRutils::logistic_4parameters(concs, Vinf = 0.1, V0 = 1, EC50 = 0.5, h = 2)
@@ -14,7 +14,7 @@ test_that("fit_codilutions works as expected", {
     Concentration_2 = rep(concs, each = n),
     GRvalue = vals)
 
-  obs <- gDRcore:::fit_codilutions(measured, nested_identifiers, "GR")
+  obs <- gDRcore:::fit_combo_codilutions(measured, nested_identifiers, "GR")
   expect_equal(dim(obs), c(3, 18))
   expect_true(all(nested_identifiers %in% colnames(obs)))
   expect_equal(unname(vapply(obs[, nested_identifiers], class, "")), c("SimpleNumericList", "SimpleNumericList"))
