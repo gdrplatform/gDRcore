@@ -28,8 +28,6 @@ fit_SE.combinations <- function(se,
   checkmate::assert_number(log2_pos_offset)
   checkmate::assert_character(norm_types)
 
-  hsa_q10 <- CI_100x_50 <- CI_100x_80 <- bliss_q10 <- 
-    matrix(NA, ncol(se), nrow(se), dimnames = c(rownames(se), colnames(se)))
   avg <- assay(se, averaged_assay)
   # TODO: Get the reference assay for the single-agents.
 
@@ -38,7 +36,14 @@ fit_SE.combinations <- function(se,
   cl_name <- get_SE_identifier(se, "CellLineName")
   d_name <- get_SE_identifier(se, "DrugName")
   d_name2 <- get_SE_identifier(se, "DrugName_2")
+  summed_codil_col <- "summed_codil_conc"
 
+  id <- nested_identifiers[1]
+  id2 <- nested_identifiers[2]
+
+  bliss_excess <- hsa_excess <- matrix(NA, ncol(se), nrow(se), dimnames = c(rownames(se), colnames(se)))
+
+  all_fits <- vector("list", nrow(se) * ncol(se))
   for (i in seq_len(ncol(se))) { # each cell line
     for (j in seq_len(nrow(se))) { # each drug pair
       avg_combo <- avg[j, i][[1]] # all combo readouts per cell line, drug pair
@@ -49,48 +54,50 @@ fit_SE.combinations <- function(se,
         next
       }
 
-      measured_ctrl <- gDRutils::convert_se_ref_assay_to_dt(se[combo$rows, i]) # TODO: Fix me.
+      measured_ctrl <- gDRutils::convert_se_ref_assay_to_dt(se[j, i]) # TODO: Fix me.
       measured <- as.data.frame(rbind(avg_combo, measured_ctrl))
 
-      cotrt_fittings <- fit_cotreatments(measured, nested_identifiers, normalization_type)
-      codilution_fittings <- fit_codilutions(measured, nested_identifiers, normalization_type)
+      col_fittings <- fit_combo_cotreatments(measured, series_id = id, cotrt_id = id2, normalization_type)
+      row_fittings <- fit_combo_cotreatments(measured, series_id = id2, cotrt_id = id, normalization_type)
+      codilution_fittings <- fit_combo_codilutions(measured, nested_identifiers, normalization_type, summed_codil_col)
 
       # Calculate the value for each fit along all the available concentrations.
-      ##fitted_cotrt <- 
-      ##fitted_codilution <- 
+      row_fittings$values <- gDRutils::logistic_4parameters(row_fittings[[id]],
+        row_fittings$x_inf,
+        row_fittings$x_0,
+        row_fittings$c50,
+        row_fittings$h)
+      col_fittings$values <- gDRutils::logistic_4parameters(col_fittings[[id2]],
+        col_fittings$x_inf,
+        col_fittings$x_0,
+        col_fittings$c50,
+        col_fittings$h)
+      codilution_fittings$values <- gDRutils::logistic_4parameters(codilution_fittings[[summed_codil_col]],
+        codilution_fittings$x_inf,
+        codilution_fittings$x_0,
+        codilution_fittings$c50,
+        codilution_fittings$h)
 
-      # TODO: Calculate the mean of the raw-measured, row-fit, column-fit, and potential diagonal-fit.
-      # NOTE: this is the mean of the actual values after applying the fit, not the original values.
-      # TODO: This should now have one value per concentration pair.
-      ##mean_readout <- mean(fitted_cotrt, fitted_codilution)
+      mean_readout <- calculate_combo_mean(nested_identifiers, row_fittings, col_fittings, codilution_fittings)
 
-      ################################
-      # Calculate combination scores
-      ################################
       hsa <- calculate_HSA(mean_readout)
-      hsa_excess <- hsa - mean_readout
+      h_excess <- hsa - mean_readout
 
       bliss <- calculate_Bliss(mean_readout)
-      bliss_excess <- bliss - mean_readout
+      b_excess <- bliss - mean_readout
 
       # decide on the isobologram cutoff levels for the Loewe model 
       loewe <- calculate_Loewe(mean_readout)
       #calculate_isobolograms()
 
-      # store the aggregated metrics for each drug pair/cell line
-      CI_100x_50[i, j] <- ifelse(length(df_CI_100x) == 0, 1,
-          ifelse("0.5" %in% df_CI_100x$level, 2 ^ df_CI_100x$log2_CI[df_CI_100x$level == 0.5], 1))
-      CI_100x_80[i, j] <- ifelse(length(df_CI_100x) == 0, 1,
-          ifelse("0.2" %in% df_CI_100x$level, 2 ^ df_CI_100x$log2_CI[df_CI_100x$level == 0.2], 1))
-      hsa_q10[i, j] <- mean(
-        all_mx$hsa_excess[all_mx$hsa_excess <= quantile(all_mx$hsa_excess, .1, na.rm = TRUE)])
-      bliss_q10[i, j] <- mean(
-        all_mx$bliss_excess[all_mx$bliss_excess <= quantile(all_mx$bliss_excess, .1, na.rm = TRUE)])
-
       ## TODO: Create another assay in here with each spot in the matrix as the 2 nested_identifier concentrations
       ## and then each new metric that should go for each spot is another column in the nested DataFrame
+
+      bliss_excess[j, i] <- b_excess
+      hsa_excess[j, i] <- h_excess
     }
   }
+
   assays(se)[["bliss_excess"]] <- bliss_excess
   assays(se)[["hsa_excess"]] <- hsa_excess
   se

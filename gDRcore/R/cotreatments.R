@@ -1,32 +1,20 @@
 #' @keywords internal
-fit_combo_cotreatments <- function(measured, nested_identifiers, normalization_type) {       
-  id <- nested_identifiers[1] # (i.e. conc1)
-  id2 <- nested_identifiers[2] # (i.e. conc2)
-
-  all_conc1 <- setdiff(unique(measured[, id]), 0)
-  all_conc2 <- setdiff(unique(measured[, id2]), 0)
+fit_combo_cotreatments <- function(measured, series_id, cotrt_id, normalization_type) {
+  series_concs <- setdiff(unique(measured[, series_id]), 0)
+  cotrt_concs <- setdiff(unique(measured[, cotrt_id]), 0)
 
   # Single agent fits.
-  sa_fit1 <- fit_cotreatment_series(measured, series_id = id, cotrt_id = id2, cotrt_value = 0,
-    normalization_type = normalization_type, e_0 = 1, GR_0 = 1)
-  sa_fit2 <- fit_cotreatment_series(measured, series_id = id2, cotrt_id = id, cotrt_value = 0,
+  sa_fit <- fit_cotreatment_series(measured, series_id = series_id, cotrt_id = cotrt_id, cotrt_value = 0,
     normalization_type = normalization_type, e_0 = 1, GR_0 = 1)
 
   # Fit cotreatments in matrix.
-  cotrt_fittings <- vector("list", sum(length(all_conc1), length(all_conc2)))
-  n <- 1
-  for (conc1 in all_conc1) {
+  cotrt_fittings <- vector("list", length(all_conc))
+  for (i in seq_along(cotrt_concs)) {
     # TODO: Switch to ec50 once c50 -> ec50
-    single_agent2 <- gDRutils::logistic_4parameters(conc1, sa_fit1$x_inf, sa_fit1$x_0, sa_fit1$c50, sa_fit1$h)
-    cotrt_fittings[[n]] <- fit_cotreatment_series(measured, series_id = id2, cotrt_id = id,
-      cotrt_value = conc1, normalization_type = normalization_type, e_0 = single_agent2, GR_0 = single_agent2)
-    n <- n + 1
-  }
-  for (conc2 in all_conc2) {
-    single_agent1 <- gDRutils::logistic_4parameters(conc2, sa_fit2$x_inf, sa_fit2$x_0, sa_fit2$c50, sa_fit2$h)
-    cotrt_fittings[[n]] <- fit_cotreatment_series(measured, series_id = id, cotrt_id = id2,
-      cotrt_value = conc2, normalization_type = normalization_type, e_0 = single_agent1, GR_0 = single_agent1)
-    n <- n + 1
+    conc <- cotrt_concs[i]
+    sa <- gDRutils::logistic_4parameters(conc, sa_fit$x_inf, sa_fit$x_0, sa_fit$c50, sa_fit$h)
+    cotrt_fittings[[i]] <- fit_cotreatment_series(measured, series_id = series_id, cotrt_id = cotrt_id,
+      cotrt_value = conc, normalization_type = normalization_type, e_0 = sa, GR_0 = sa)
   }
 
   do.call("rbind", cotrt_fittings)

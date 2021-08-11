@@ -12,6 +12,19 @@
 }
 
 
+calculate_combo_mean <- function(row_fittings, col_fittings, codilution_fittings, nested_identifiers) {
+  if (dim(row_fittings) != dim(col_fittings) || dim(col_fittings) != dim(codilution_fittings)) {
+    stop("all input fittings must have the same dimensions")
+  }
+
+  merged <- merge(row_fittings, col_fittings, by = nested_identifiers)
+  merged <- merge(merged, codilution_fittings, by = nested_identifiers)
+
+  merged$average <- rowMeans(as.matrix(merged[, !colnames(merged) %in% nested_identifiers]))
+  merged
+}
+
+
 #' @details HSA takes the minimum of the two single agents readouts.
 calculate_HSA <- function(mean_matrix) {
   .calculate_matrix_metric(mean_matrix, pmin)
@@ -25,6 +38,7 @@ calculate_Bliss <- function(mean_matrix) {
 
 
 #' @keywords internal
+# TODO: Fix me so I work off a DataFrame instead of a matrix.
 .calculate_matrix_metric <- function(mean_matrix, FXN) {
   single_agent1 <- mean_matrix[-1, 1]
   single_agent2 <- mean_matrix[1, -1]
