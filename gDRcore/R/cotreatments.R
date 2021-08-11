@@ -39,6 +39,6 @@ fit_cotreatment_series <- function(measured, series_id, cotrt_id, cotrt_value, n
   nested_df[series_id] <- df_[[series_id]]
   nested_df[cotrt_id] <- cotrt_value
 
-  out <- DataFrame(IRanges::DataFrameList(nested_df), cotrt_fit)
+  out <- DataFrame(DataFrame(nested_df), cotrt_fit)
   out
 }

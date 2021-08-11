@@ -41,6 +41,6 @@ fit_codilution_series <- function(measured, series_1, series_2, e_0, GR_0, norma
     normalization_type = normalization_type
   )
 
-  out <- DataFrame(IRanges::DataFrameList(measured[, c(series_1, series_2)]), codilution_fit)
+  out <- DataFrame(DataFrame(measured[, c(series_1, series_2)]), codilution_fit)
   out
 }
