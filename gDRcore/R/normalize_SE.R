@@ -31,6 +31,11 @@ normalize_SE <- function(se,
   refs <- SummarizedExperiment::assays(se)[[control_assay]]
   trt <- SummarizedExperiment::assays(se)[[raw_treated_assay]]
   
+  # Extract common nested_confounders shared by trt_df and ref_df
+  nested_confounders <- Reduce(intersect, list(nested_confounders,
+                                               names(BumpyMatrix::unsplitAsDataFrame(trt)),
+                                               names(BumpyMatrix::unsplitAsDataFrame(refs))))
+  
   norm_cols <- c("RelativeViability", "GRvalue")
   out <- vector("list", nrow(se) * ncol(se))
   ref_rel_viability <- ref_GR_value <- div_time <- matrix(NA, nrow = nrow(se), ncol = ncol(se), dimnames = dimnames(se))
@@ -61,7 +66,7 @@ normalize_SE <- function(se,
       if (!is.null(nested_keys) && length(nested_keys) > 0) {
         ref_df <- fill_NA_ref(ref_df, nested_keys)
       }
-
+      
       # Merge to ensure that the proper discard_key values are mapped.
       all_readouts_df <- merge(trt_df, 
         ref_df, 

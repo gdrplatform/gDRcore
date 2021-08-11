@@ -36,7 +36,7 @@ add_CellLine_annotation <- function(df_metadata,
     # Read local cell_lines annotations
     annotationPackage <- ifelse(requireNamespace("gDRinternal", quietly = TRUE),
                                 "gDRinternal", "gDRtestData")
-    CLs_info <- data.table::fread(system.file("data", "cell_lines.csv", package = annotationPackage))
+    CLs_info <- data.table::fread(system.file("data", "cell_lines.csv", package = annotationPackage), fill = TRUE)
     CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate), with = FALSE]
   
     if (nrow(CLs_info) == 0) return(df_metadata)
@@ -117,8 +117,10 @@ add_Drug_annotation <- function(df_metadata,
     # Read local drugs annotations
     annotationPackage <- ifelse(requireNamespace("gDRinternal", quietly = TRUE),
                                 "gDRinternal", "gDRtestData")
-    Drug_info <- data.table::fread(system.file("data/drugs.csv", package = annotationPackage))
-    colnames(Drug_info) <- c("drug", "drug_name", "drug_moa")
+    Drug_info <- data.table::fread(system.file("data/drugs.csv", package = annotationPackage),
+                                   fill = TRUE, header = TRUE)
+    Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa")]
+    data.table::setnames(Drug_info, c("drug", "drug_name", "drug_moa"))
     drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
     validatedDrugs <- drugsTreated %in% Drug_info[["drug"]]
     #### function should be parallelized

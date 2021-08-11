@@ -2,7 +2,7 @@
 #' @export
 #'
 fit_SE <- function(se, 
-                   nested_identifiers,
+                   nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration"),
                    averaged_assay = "Averaged", 
                    ref_GR_assay = "RefGRvalue",
                    ref_RV_assay = "RefRelativeViability",
