@@ -1,5 +1,5 @@
 #' @keywords internal
-fit_combo_codilutions <- function(measured, nested_identifiers, normalization_type, summed_col = "summed_codil_conc") {
+fit_combo_codilutions <- function(measured, nested_identifiers, normalization_type) {
   id <- nested_identifiers[1]
   id2 <- nested_identifiers[2]
 
@@ -15,7 +15,7 @@ fit_combo_codilutions <- function(measured, nested_identifiers, normalization_ty
 
   fits <- vector("list", length(valid))
   for (i in seq_along(fits)) {
-    fits[[i]] <- fit_codilution_series(valid[[i]], id, id2, e_0 = 1, GR_0 = 1, normalization_type, summed_col)
+    fits[[i]] <- fit_codilution_series(valid[[i]], id, id2, e_0 = 1, GR_0 = 1, normalization_type)
   }
 
   out <- do.call("rbind", fits)
@@ -24,16 +24,17 @@ fit_combo_codilutions <- function(measured, nested_identifiers, normalization_ty
 
 
 #' @keywords internal
-fit_codilution_series <- function(measured, series_1, series_2, e_0, GR_0, normalization_type, summed_col = "summed_codil_conc") {
-  if (length(unique(measured[[series_2]] / measured[[series_1]])) != 1L) {
+fit_codilution_series <- function(measured, series_1, series_2, e_0, GR_0, normalization_type) {
+  ratio <- unique(measured[[series_2]] / measured[[series_1]])
+  if (length(ratio) != 1L) {
     stop("more than one ratio between 'series_2' and 'series_1' detected")
   }
 
-  measured[summed_col] <- measured[[series_1]] + measured[[series_2]]
+  measured$summed_conc <- measured[[series_1]] + measured[[series_2]]
   keep <- setdiff(colnames(measured), c(series_1, series_2))
   codilution_fit <- gDRutils::fit_curves(
     df_ = measured[, keep, drop = FALSE],
-    series_identifiers = summed_col,
+    series_identifiers = "summed_conc",
     e_0 = e_0,
     GR_0 = GR_0,
     force_fit = TRUE,
@@ -41,6 +42,6 @@ fit_codilution_series <- function(measured, series_1, series_2, e_0, GR_0, norma
     normalization_type = normalization_type
   )
 
-  out <- DataFrame(DataFrame(measured[, c(series_1, series_2)]), codilution_fit)
-  out
+  codilution_fit$ratio <- ratio 
+  codilution_fit
 }

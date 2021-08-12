@@ -8,11 +8,11 @@ fit_combo_cotreatments <- function(measured, series_id, cotrt_id, normalization_
     normalization_type = normalization_type, e_0 = 1, GR_0 = 1)
 
   # Fit cotreatments in matrix.
-  cotrt_fittings <- vector("list", length(all_conc))
+  cotrt_fittings <- vector("list", length(cotrt_concs))
   for (i in seq_along(cotrt_concs)) {
     # TODO: Switch to ec50 once c50 -> ec50
     conc <- cotrt_concs[i]
-    sa <- gDRutils::logistic_4parameters(conc, sa_fit$x_inf, sa_fit$x_0, sa_fit$c50, sa_fit$h)
+    sa <- gDRutils::logistic_4parameters(conc, sa_fit$x_inf, sa_fit$x_0, sa_fit$c50, sa_fit$h) # TODO: Is this conc correct?
     cotrt_fittings[[i]] <- fit_cotreatment_series(measured, series_id = series_id, cotrt_id = cotrt_id,
       cotrt_value = conc, normalization_type = normalization_type, e_0 = sa, GR_0 = sa)
   }
@@ -35,10 +35,6 @@ fit_cotreatment_series <- function(measured, series_id, cotrt_id, cotrt_value, n
     normalization_type = normalization_type
   )
 
-  nested_df <- DataFrame()
-  nested_df[series_id] <- df_[[series_id]]
-  nested_df[cotrt_id] <- cotrt_value
-
-  out <- DataFrame(DataFrame(nested_df), cotrt_fit)
-  out
+  cotrt_fit$cotrt_value <- cotrt_value
+  cotrt_fit
 }

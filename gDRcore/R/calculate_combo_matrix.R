@@ -17,8 +17,6 @@
 #'
 fit_SE.combinations <- function(se,
                                 nested_identifiers = c("Concentration", "Concentration_2"),
-                                conc_margin = 10 ^ 0.5,
-                                log2_pos_offset = log10(3) / 2,
                                 normalization_types = c("RV", "GR"),
                                 averaged_assay = "Averaged"
                                 ) {
@@ -31,12 +29,15 @@ fit_SE.combinations <- function(se,
   avg <- assay(se, averaged_assay)
   # TODO: Get the reference assay for the single-agents.
 
+  if ("GR" %in% normalization_types) {
+    metric <- "GRvalue"
+  }
+
   rdata <- rowData(se)
   cdata <- colData(se)
   cl_name <- get_SE_identifier(se, "CellLineName")
   d_name <- get_SE_identifier(se, "DrugName")
   d_name2 <- get_SE_identifier(se, "DrugName_2")
-  summed_codil_col <- "summed_codil_conc"
 
   id <- nested_identifiers[1]
   id2 <- nested_identifiers[2]
@@ -57,37 +58,47 @@ fit_SE.combinations <- function(se,
       measured_ctrl <- gDRutils::convert_se_ref_assay_to_dt(se[j, i]) # TODO: Fix me.
       measured <- as.data.frame(rbind(avg_combo, measured_ctrl))
 
-      col_fittings <- fit_combo_cotreatments(measured, series_id = id, cotrt_id = id2, normalization_type)
-      row_fittings <- fit_combo_cotreatments(measured, series_id = id2, cotrt_id = id, normalization_type)
-      codilution_fittings <- fit_combo_codilutions(measured, nested_identifiers, normalization_type, summed_codil_col)
+      col_fittings <- gDRcore:::fit_combo_cotreatments(measured, series_id = id, cotrt_id = id2, normalization_type)
+      row_fittings <- gDRcore:::fit_combo_cotreatments(measured, series_id = id2, cotrt_id = id, normalization_type)
+      codilution_fittings <- gDRcore:::fit_combo_codilutions(measured, nested_identifiers, normalization_type)
 
-      # Calculate the value for each fit along all the available concentrations.
-      row_fittings$values <- gDRutils::logistic_4parameters(row_fittings[[id]],
-        row_fittings$x_inf,
-        row_fittings$x_0,
-        row_fittings$c50,
-        row_fittings$h)
-      col_fittings$values <- gDRutils::logistic_4parameters(col_fittings[[id2]],
-        col_fittings$x_inf,
-        col_fittings$x_0,
-        col_fittings$c50,
-        col_fittings$h)
-      codilution_fittings$values <- gDRutils::logistic_4parameters(codilution_fittings[[summed_codil_col]],
-        codilution_fittings$x_inf,
-        codilution_fittings$x_0,
-        codilution_fittings$c50,
-        codilution_fittings$h)
+      # Match the fits to the concentrations.
+      ridx <- S4Vectors::match(measured[[id]], row_fittings$cotrt_value)
+      cidx <- S4Vectors::match(measured[[id2]], col_fittings$cotrt_value)
+      didx <- S4Vectors::match(measured[[id2]]/measured[[id]], codilution_fittings$ratio)
+      row_metrics <- row_fittings[ridx, c("cotrt_value", "x_inf", "x_0", "c50", "h")]
+      col_metrics <- col_fittings[cidx, c("cotrt_value", "x_inf", "x_0", "c50", "h")]
+      codil_metrics <- codilution_fittings[didx, c("x_inf", "x_0", "c50", "h")]
 
-      mean_readout <- calculate_combo_mean(nested_identifiers, row_fittings, col_fittings, codilution_fittings)
+      # Extrapolate fitted values.
+      measured$row_values <- gDRutils::logistic_4parameters(row_metrics$cotrt_value,
+        row_metrics$x_inf,
+        row_metrics$x_0,
+        row_metrics$c50,
+        row_metrics$h)
+      measured$col_values <- gDRutils::logistic_4parameters(col_metrics$cotrt_value,
+        col_metrics$x_inf,
+        col_metrics$x_0,
+        col_metrics$c50,
+        col_metrics$h)
+      measured$codil_values <- gDRutils::logistic_4parameters(measured[[id]] + measured[[id2]],
+        codil_metrics$x_inf,
+        codil_metrics$x_0,
+        codil_metrics$c50,
+        codil_metrics$h)
 
+      mat <- as.matrix(measured[, c(metric, "row_values", "col_values", "codil_values")])
+      measured$average <- rowMeans(mat, na.rm = TRUE)
+
+      mean_readout <- measured[, c(nested_identifiers, "average")]
       hsa <- calculate_HSA(mean_readout)
-      h_excess <- hsa - mean_readout
+      h_excess <- hsa - mean_readout$average
 
       bliss <- calculate_Bliss(mean_readout)
-      b_excess <- bliss - mean_readout
+      b_excess <- bliss - mean_readout$average
 
       # decide on the isobologram cutoff levels for the Loewe model 
-      loewe <- calculate_Loewe(mean_readout)
+      #loewe <- calculate_Loewe(mean_readout)
       #calculate_isobolograms()
 
       ## TODO: Create another assay in here with each spot in the matrix as the 2 nested_identifier concentrations

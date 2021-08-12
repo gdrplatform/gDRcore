@@ -12,45 +12,36 @@
 }
 
 
-calculate_combo_mean <- function(row_fittings, col_fittings, codilution_fittings, nested_identifiers) {
-  if (dim(row_fittings) != dim(col_fittings) || dim(col_fittings) != dim(codilution_fittings)) {
-    stop("all input fittings must have the same dimensions")
-  }
-
-  merged <- merge(row_fittings, col_fittings, by = nested_identifiers)
-  merged <- merge(merged, codilution_fittings, by = nested_identifiers)
-
-  merged$average <- rowMeans(as.matrix(merged[, !colnames(merged) %in% nested_identifiers]))
-  merged
-}
-
-
 #' @details HSA takes the minimum of the two single agents readouts.
-calculate_HSA <- function(mean_matrix) {
-  .calculate_matrix_metric(mean_matrix, pmin)
+calculate_HSA <- function(nested_identifiers, smooth_readout) {
+  .calculate_matrix_metric(nested_identifiers, smooth_readout, pmin)
 }
 
 
 #' @details Bliss is the mulitplication of the single agent readouts.
-calculate_Bliss <- function(mean_matrix) {
-  .calculate_matrix_metric(mean_matrix, "*")
+calculate_Bliss <- function(nested_identifiers, smooth_readout) {
+  .calculate_matrix_metric(nested_identifiers, smooth_readout, "*")
 }
 
 
 #' @keywords internal
-# TODO: Fix me so I work off a DataFrame instead of a matrix.
-.calculate_matrix_metric <- function(mean_matrix, FXN) {
-  single_agent1 <- mean_matrix[-1, 1]
-  single_agent2 <- mean_matrix[1, -1]
+.calculate_matrix_metric <- function(nested_identifiers, smooth_readout, FXN) {
+  if (length(nested_identfiers) != 2L) {
+    stop("'nested_identifiers' must have length '2'")
+  }
 
-  m <- nrow(mean_matrix)
-  n <- ncol(mean_matrix)
+  id <- nested_identifiers[1]
+  id2 <- nested_identifiers[2]
 
-  mat <- matrix(NA, m - 1, n - 1)
-  sa_mat1 <- t(matrix(t(single_agent2), n - 1, m - 1))
-  sa_mat2 <- matrix(single_agent1, m - 1, n - 1)
-  mat <- FXN(sa_mat1, sa_mat2)
-  mat
+  # TODO: Sort these by concentration?
+  single_agent1 <- smooth_readout[smooth_readout[[id]] == 0, ]
+  single_agent2 <- smooth_readout[smooth_readout[[id2]] == 0, ]
+
+  out1 <- rep(single_agent1, n)
+  out2 <- rep(single_agent2, each = m)
+
+  out <- FXN(out1, out2)
+  out
 }
 
 

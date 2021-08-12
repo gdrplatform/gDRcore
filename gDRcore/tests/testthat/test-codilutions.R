@@ -15,9 +15,9 @@ test_that("fit_combo_codilutions works as expected", {
     GRvalue = vals)
 
   obs <- gDRcore:::fit_combo_codilutions(measured, nested_identifiers, "GR")
-  expect_equal(dim(obs), c(3, 18))
-  expect_true(all(nested_identifiers %in% colnames(obs)))
-  expect_equal(unname(vapply(obs[, nested_identifiers], class, "")), c("SimpleNumericList", "SimpleNumericList"))
+  expect_equal(dim(obs), c(3, 17))
+  expect_true("ratio" %in% colnames(obs))
+  expect_equal(obs$ratio, c(0.5, 1.0, 2.0))
 })
 
 
@@ -26,6 +26,7 @@ test_that("fit_codilution_series works as expected", {
   concs <- seq(1, n, 1)
   start <- gDRutils::logistic_4parameters(concs, Vinf = 0.1, V0 = 1, EC50 = 0.5, h = 2)
   vals  <- NULL
+  ratio <- 0.5
   for (i in seq(n)) {
     vals <- c(vals, start + i*concs)
   }
@@ -35,7 +36,7 @@ test_that("fit_codilution_series works as expected", {
     GRvalue = vals)
 
   ratios <- measured$Concentration_2/measured$Concentration
-  keep <- !is.na(ratios) & ratios == 0.5
+  keep <- !is.na(ratios) & ratios == ratio
   codilution <- measured[keep, ]
 
   obs <- gDRcore:::fit_codilution_series(codilution, 
@@ -45,7 +46,7 @@ test_that("fit_codilution_series works as expected", {
     GR_0 = 1,
     normalization_type = "GR")
 
-  expect_equal(dim(obs), c(1, 18))
-  expect_true(all(nested_identifiers %in% colnames(obs)))
-  expect_equal(unname(vapply(obs[, nested_identifiers], class, "")), c("SimpleNumericList", "SimpleNumericList"))
+  expect_equal(dim(obs), c(1, 17))
+  expect_true("ratio" %in% colnames(obs))
+  expect_equal(obs$ratio, ratio)
 })
