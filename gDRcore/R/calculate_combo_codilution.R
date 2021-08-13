@@ -5,6 +5,7 @@
 #' @return
 #' @export
 calculate_combo_codilution <- function(se) {
+  .Deprecated("fit_SE.combinations")
 
   checkmate::assert_class(se, "SummarizedExperiment")
 

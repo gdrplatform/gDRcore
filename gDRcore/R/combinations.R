@@ -12,6 +12,20 @@
 }
 
 
+
+map_ids_to_fits <- function(ids, fittings, fitting_id_col) {
+  ridx <- S4Vectors::match(ids, row_fittings$cotrt_value)
+  row_metrics <- row_fittings[ridx, c("cotrt_value", "x_inf", "x_0", "c50", "h")]
+  # Extrapolate fitted values.
+  out <- gDRutils::logistic_4parameters(row_metrics$cotrt_value,
+    row_metrics$x_inf,
+    row_metrics$x_0,
+    row_metrics$c50,
+    row_metrics$h)
+  out
+}
+
+
 #' @details HSA takes the minimum of the two single agents readouts.
 calculate_HSA <- function(nested_identifiers, smooth_readout) {
   .calculate_matrix_metric(nested_identifiers, smooth_readout, pmin)
@@ -45,7 +59,7 @@ calculate_Bliss <- function(nested_identifiers, smooth_readout) {
 }
 
 
-calculate_Loewe <- function(mean_matrix) {
+calculate_Loewe <- function(mean_matrix, row_fittings, col_fittings, dilution_fittings) {
   if (min(mean_matrix, na.rm = TRUE) > 0.7) {
     iso_cutoff <- NULL
   } else {
@@ -66,25 +80,24 @@ calculate_Loewe <- function(mean_matrix) {
   names(all_iso) <- iso_cutoff
   for (isobol_value in iso_cutoff) { # run through the different isobolograms
     # cutoff point by row
-    df_fit <- all_fits[["by_row"]]
-    df_fit <- df_fit[nrow(df_fit):1, ]
-    df_iso <- cbind(df_fit[, "conc_1", drop = FALSE], data.frame(conc_2 =
-      ifelse(df_fit$x_0 < isobol_value, 0, ifelse(df_fit$x_inf > isobol_value,
+    row_fittings <- row_fittings[nrow(row_fittings):1, ]
+    df_iso <- cbind(row_fittings[, "conc_1", drop = FALSE], data.frame(conc_2 =
+      ifelse(row_fittings$x_0 < isobol_value, 0, ifelse(row_fittings$x_inf > isobol_value,
         Inf,
-        df_fit$ec50 * ((((df_fit$x_0 - df_fit$x_inf) / (isobol_value - df_fit$x_inf)) - 1) ^
-            (1 / pmax(df_fit$h, 0.01))))
+        row_fittings$ec50 * ((((row_fittings$x_0 - row_fittings$x_inf) / (isobol_value - row_fittings$x_inf)) - 1) ^
+            (1 / pmax(row_fittings$h, 0.01))))
           ),
           fit_type = "by_row"))
 
     # cutoff point by columns
-    df_fit <- all_fits[["by_col"]]
+    col_fittings <- all_fits[["by_col"]]
     df_iso <- rbind(df_iso, cbind(data.frame(conc_1 =
-      ifelse(df_fit$x_0 < isobol_value, 0, ifelse(df_fit$x_inf > isobol_value,
+      ifelse(col_fittings$x_0 < isobol_value, 0, ifelse(col_fittings$x_inf > isobol_value,
         Inf,
-        df_fit$ec50 * ((((df_fit$x_0 - df_fit$x_inf) / (isobol_value - df_fit$x_inf)) - 1) ^
-            (1 / pmax(df_fit$h, 0.01))))
+        col_fittings$ec50 * ((((col_fittings$x_0 - col_fittings$x_inf) / (isobol_value - col_fittings$x_inf)) - 1) ^
+            (1 / pmax(col_fittings$h, 0.01))))
           ),
-      df_fit[, "conc_2", drop = FALSE],
+      col_fittings[, "conc_2", drop = FALSE],
         fit_type = "by_col")))
 
 
@@ -98,24 +111,23 @@ calculate_Loewe <- function(mean_matrix) {
 
     # cutoff point by diagonal (co-dilution)
     # co-dil is given as concentration of drug 1
-    df_fit <- all_fits[["by_codil"]]
-    if (nrow(df_fit) > 1) {
-      df_fit <- df_fit[nrow(df_fit):1, ]
-      df_fit <- df_fit[df_fit$fit_type %in% "DRC3pHillFitModelFixS0", ]
-      conc_mix <- ifelse(df_fit$x_0 < isobol_value, 0, ifelse(df_fit$x_inf > isobol_value,
+    if (nrow(codilution_fittings) > 1) {
+      codilution_fittings <- codilution_fittings[nrow(codilution_fittings):1, ]
+      codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
+      conc_mix <- ifelse(codilution_fittings$x_0 < isobol_value, 0, ifelse(codilution_fittings$x_inf > isobol_value,
         Inf,
-        df_fit$ec50 * ((((df_fit$x_0 - df_fit$x_inf) / (isobol_value - df_fit$x_inf)) - 1) ^
-            (1 / df_fit$h)))
+        codilution_fittings$ec50 * ((((codilution_fittings$x_0 - codilution_fittings$x_inf) / (isobol_value - codilution_fittings$x_inf)) - 1) ^
+            (1 / codilution_fittings$h)))
           )
-      df_iso_codil <- data.frame(conc_1 = conc_mix / (1 + 1 / df_fit$conc_ratio),
-                        conc_2 = conc_mix / (1 + df_fit$conc_ratio), fit_type = "by_codil")
+      df_iso_codil <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$conc_ratio),
+                        conc_2 = conc_mix / (1 + codilution_fittings$conc_ratio), fit_type = "by_codil")
       # avoid extrapolation
       capped_idx <- df_iso_codil$conc_1 > (max(drug1_axis$conc_1) * conc_margin) |
             df_iso_codil$conc_2 > (max(drug2_axis$conc_2) * conc_margin)
       df_iso_codil$conc_1[capped_idx] <- pmin(max(drug1_axis$conc_1) * conc_margin,
-                  df_fit$conc_ratio * (max(drug2_axis$conc_2) * conc_margin))[capped_idx]
+                  codilution_fittings$conc_ratio * (max(drug2_axis$conc_2) * conc_margin))[capped_idx]
       df_iso_codil$conc_2[capped_idx] <- pmin(max(drug2_axis$conc_2) * conc_margin,
-                  (max(drug1_axis$conc_1) * conc_margin) / df_fit$conc_ratio)[capped_idx]
+                  (max(drug1_axis$conc_1) * conc_margin) / codilution_fittings$conc_ratio)[capped_idx]
 
       df_iso <- rbind(df_iso, df_iso_codil)
     }

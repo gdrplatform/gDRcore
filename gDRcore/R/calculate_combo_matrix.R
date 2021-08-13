@@ -29,6 +29,7 @@ fit_SE.combinations <- function(se,
   avg <- assay(se, averaged_assay)
   # TODO: Get the reference assay for the single-agents.
 
+  # TODO: Fix me.
   if ("GR" %in% normalization_types) {
     metric <- "GRvalue"
   }
@@ -62,35 +63,16 @@ fit_SE.combinations <- function(se,
       row_fittings <- gDRcore:::fit_combo_cotreatments(measured, series_id = id2, cotrt_id = id, normalization_type)
       codilution_fittings <- gDRcore:::fit_combo_codilutions(measured, nested_identifiers, normalization_type)
 
-      # Match the fits to the concentrations.
-      ridx <- S4Vectors::match(measured[[id]], row_fittings$cotrt_value)
-      cidx <- S4Vectors::match(measured[[id2]], col_fittings$cotrt_value)
-      didx <- S4Vectors::match(measured[[id2]]/measured[[id]], codilution_fittings$ratio)
-      row_metrics <- row_fittings[ridx, c("cotrt_value", "x_inf", "x_0", "c50", "h")]
-      col_metrics <- col_fittings[cidx, c("cotrt_value", "x_inf", "x_0", "c50", "h")]
-      codil_metrics <- codilution_fittings[didx, c("x_inf", "x_0", "c50", "h")]
-
-      # Extrapolate fitted values.
-      measured$row_values <- gDRutils::logistic_4parameters(row_metrics$cotrt_value,
-        row_metrics$x_inf,
-        row_metrics$x_0,
-        row_metrics$c50,
-        row_metrics$h)
-      measured$col_values <- gDRutils::logistic_4parameters(col_metrics$cotrt_value,
-        col_metrics$x_inf,
-        col_metrics$x_0,
-        col_metrics$c50,
-        col_metrics$h)
-      measured$codil_values <- gDRutils::logistic_4parameters(measured[[id]] + measured[[id2]],
-        codil_metrics$x_inf,
-        codil_metrics$x_0,
-        codil_metrics$c50,
-        codil_metrics$h)
-
+      measured$row_values <- map_ids_to_fits(measured[[id]], row_fittings, "cotrt_value")
+      measured$col_values <- map_ids_to_fits(measured[[id2]], col_fittings, "cotrt_value")
+      measured$codil_values <- map_ids_to_fits(measured[[id2]]/measured[[id]], codilution_fittings, "ratio")
+    
       mat <- as.matrix(measured[, c(metric, "row_values", "col_values", "codil_values")])
       measured$average <- rowMeans(mat, na.rm = TRUE)
 
       mean_readout <- measured[, c(nested_identifiers, "average")]
+
+      # TODO: Do the below require only the single-agent data? If so, maybe we just pass that alone.
       hsa <- calculate_HSA(mean_readout)
       h_excess <- hsa - mean_readout$average
 

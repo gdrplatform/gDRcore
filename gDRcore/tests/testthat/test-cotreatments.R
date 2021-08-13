@@ -6,15 +6,18 @@ test_that("fit_combo_cotreatments works as expected", {
   for (i in seq(n)) {
     vals <- c(vals, start + i*concs)
   }
-  nested_identifiers <- c("Concentration", "Concentration_2")
   measured <- DataFrame(Concentration = rep(concs, n),
     Concentration_2 = rep(concs, each = n),
     GRvalue = vals)
 
-  obs <- gDRcore:::fit_combo_cotreatments(measured, nested_identifiers, "GR")
-  expect_equal(dim(obs), c(20, 18))
-  expect_true(nested_identifiers %in% colnames(obs))
-  expect_equal(unname(vapply(obs[, nested_identifiers], class, "")), c("SimpleNumericList", "SimpleNumericList"))
+  obs <- gDRcore:::fit_combo_cotreatments(measured, 
+    series_id = "Concentration",
+    cotrt_id = "Concentration_2",
+    normalization_type = "GR")
+  expect_equal(dim(obs), c(10, 17))
+  expect_true("cotrt_value" %in% colnames(obs))
+  expect_equal(class(obs$cotrt_value), "numeric")
+  # TODO: test that all the fits are the same.
 })
 
 
@@ -39,7 +42,7 @@ test_that("fit_cotreatment_series works as expected", {
     cotrt_value = 1,
     normalization_type = "GR")
 
-  expect_equal(dim(obs), c(1, 18))
-  expect_true(all(nested_identifiers %in% colnames(obs)))
-  expect_equal(unname(vapply(obs[, nested_identifiers], class, "")), c("SimpleNumericList", "SimpleNumericList"))
+  expect_equal(dim(obs), c(1, 17))
+  expect_true("cotrt_value" %in% colnames(obs))
+  expect_equal(class(obs$cotrt_value), "numeric")
 })
