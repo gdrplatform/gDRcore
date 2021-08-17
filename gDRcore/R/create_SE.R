@@ -49,51 +49,12 @@ create_SE <- function(df_,
   untreated <- split_list[["untreated"]]
 
   ## Map references.
-  references <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0", ref_Endpoint = "ref_Endpoint")
+  references <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
 
   ref_maps <- lapply(references, function(ref_type) {
     map_df(treated, untreated, override_untrt_controls = override_untrt_controls,
            ref_cols = Keys[[ref_type]], ref_type = ref_type)
   })
-
-  # creates another list for the co-treatment end points that are missing
-  ref_maps[["cotrt_ref_Endpoint"]] <- NULL
-  # focus on cases where the reference may be as primary drug (common in co-treatment experiments)
-  if (paste0(identifiers$drug, "_2") %in% colnames(treated)) {
-    
-    # NOTE: may have to deal with override_untrt_controls 
-
-    ref_type <- "ref_Endpoint"
-    missing_cotrt <- vapply(ref_maps[[ref_type]], function(x) {
-      length(x) == 0L
-      }, TRUE)
-    
-    # Then look amongst the treated to fill any missing cotrt references.
-    if (any(missing_cotrt)) {
-        # try to find the co-treated reference among treated data (with Drug/Drug_2 swap)    
-        pseudo_untreated <- treated[treated$Concentration_2 == 0, ]
-        # remove Concentration as is will have to be matched with the Concentration
-        pseudo_untreated$Concentration_2 <- NULL 
-        
-        # swap columns related to drug and drug_2
-        idx_1 <- which(colnames(pseudo_untreated) %in% 
-            c(identifiers$drug, 
-              identifiers$drugname,
-              identifiers$drug_moa))
-        idx_2 <- which(colnames(pseudo_untreated) %in% 
-            paste0(c(identifiers$drug, 
-                identifiers$drugname,
-                identifiers$drug_moa), "_2"))
-        colnames(pseudo_untreated)[idx_1] <- paste0(colnames(pseudo_untreated)[idx_1], "_2")
-        colnames(pseudo_untreated)[idx_2] <- gsub("_2", "", colnames(pseudo_untreated)[idx_2])
-
-        ref_maps[["cotrt_ref_Endpoint"]] <- map_df(treated[missing_cotrt, ], pseudo_untreated, 
-            override_untrt_controls = override_untrt_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
-
-    } # we may be able to extend to other cases if applicable
-  }
-
-  ## TODO: Check for failed cotreatment mappings. 
 
   ## Combine all references with respective treatments.
   # Merge raw data back with groupings.
@@ -111,6 +72,7 @@ create_SE <- function(df_,
     if (nrow(trt_df) == 0L) {
       next # do nothing, there is no data to handle
     } else {
+function(ref_type) {
       ref_type <- "untrt_Endpoint"
       untrt_ref <- ref_maps[[ref_type]][[trt]]  
       untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
@@ -131,63 +93,12 @@ create_SE <- function(df_,
         out_col_name = "Day0Readout"
       )
 
-      ref_type <- "ref_Endpoint"
-      cotrt_ref <- ref_maps[[ref_type]][[trt]]  
-      if (length(cotrt_ref) > 0L) {
-        cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
-        cotrt_df <- create_control_df(
-          cotrt_df, 
-          control_cols = Keys[[ref_type]], 
-          control_mean_fxn, 
-          out_col_name = "RefReadout"
-        )
-      } else if (length(ref_maps[[paste0("cotrt_", ref_type)]][[trt]]) > 0L) {
-        cotrt_ref <- ref_maps[[paste0("cotrt_", ref_type)]][[trt]]
-        cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
-
-        if (any(cotrt_df$Concentration == treated$Concentration_2[treated$groupings %in% trt])) {
-            cotrt_df <- create_control_df(
-                cotrt_df[cotrt_df$Concentration == treated$Concentration_2[treated$groupings %in% trt], ], 
-                control_cols = Keys[[ref_type]], 
-                control_mean_fxn, 
-                out_col_name = "RefReadout"
-            )
-        } else {
-          cotrt_df <- infer_control_df(
-            cotrt_df,
-            treated$Concentration_2[treated$groupings %in% trt],
-            control_cols = Keys[[ref_type]],
-            control_mean_fxn,
-            out_col_name = "RefReadout"
-            )
-        }
-
-        
-      } else {
-        # Set the cotrt reference to NA if not found 
-        cotrt_df <- untrt_df 
-        cotrt_df$UntrtReadout <- NA
-        colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df))] <- "RefReadout"
-        
-      }
-   
       ## Merge all data.frames together.
       # Try to merge by plate, but otherwise just use mean. 
-      ref_df <- untrt_df
-      if (nrow(cotrt_df) > 0L) {
-        merge_cols <- intersect(colnames(cotrt_df), Keys$nested_keys)
-        ref_df <- merge(untrt_df, cotrt_df[, c("RefReadout", merge_cols), drop = FALSE], by = merge_cols, all = TRUE)
-        if (!all(sort(unique(cotrt_df$Barcode)) == sort(unique(untrt_df$Barcode)))) {
-            # Merging by barcodes will result in NAs. 
-            ### It is ok as we won't assign data to a plate that doesn't have them. 
-            ###        We deal with the NA later in the normalization function
-        }   
-      } else {
-        ref_df$RefReadout <- ref_df$UntrtReadout
-      }
-      
+      ref_df <- untrt_df 
+      merge_cols <- intersect(colnames(day0_df), Keys$nested_keys)
       if (nrow(day0_df) > 0L) {
-        ref_df <- merge(day0_df[, setdiff(colnames(day0_df), Keys$nested_keys), drop = FALSE], ref_df)
+        ref_df <- merge(untrt_df, day0_df, by = merge_cols, all = TRUE)
       } else {
         ref_df$Day0Readout <- NA
       } 

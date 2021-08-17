@@ -93,3 +93,88 @@ map_df <- function(trt_md,
   names(out) <- trt_rnames
   out
 }
+
+
+.map_cotreatments <- function() {
+  # TODO: Temporarily remove the cotreatments endpoint from create_SE,
+  # since I think we will want to be able to do that in fit_SE later anyway.
+  # creates another list for the co-treatment end points that are missing
+
+      ref_type <- "ref_Endpoint"
+      cotrt_ref <- ref_maps[[ref_type]][[trt]]  
+      if (length(cotrt_ref) > 0L) {
+        cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
+        cotrt_df <- create_control_df(
+          cotrt_df, 
+          control_cols = Keys[[ref_type]], 
+          control_mean_fxn, 
+          out_col_name = "RefReadout"
+        )
+      } else if (length(ref_maps[[paste0("cotrt_", ref_type)]][[trt]]) > 0L) {
+        cotrt_ref <- ref_maps[[paste0("cotrt_", ref_type)]][[trt]]
+        cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
+
+        if (any(cotrt_df$Concentration == treated$Concentration_2[treated$groupings %in% trt])) {
+            cotrt_df <- create_control_df(
+                cotrt_df[cotrt_df$Concentration == treated$Concentration_2[treated$groupings %in% trt], ], 
+                control_cols = Keys[[ref_type]], 
+                control_mean_fxn, 
+                out_col_name = "RefReadout"
+            )
+        } else {
+          cotrt_df <- infer_control_df(
+            cotrt_df,
+            treated$Concentration_2[treated$groupings %in% trt],
+            control_cols = Keys[[ref_type]],
+            control_mean_fxn,
+            out_col_name = "RefReadout"
+            )
+        }
+
+        
+      } else {
+        # Set the cotrt reference to NA if not found 
+        cotrt_df <- untrt_df 
+        cotrt_df$UntrtReadout <- NA
+        colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df))] <- "RefReadout"
+        
+      }
+   
+  ref_maps[["cotrt_ref_Endpoint"]] <- NULL
+  # focus on cases where the reference may be as primary drug (common in co-treatment experiments)
+  if (paste0(identifiers$drug, "_2") %in% colnames(treated)) {
+    
+    # NOTE: may have to deal with override_untrt_controls 
+
+    ref_type <- "ref_Endpoint"
+    missing_cotrt <- vapply(ref_maps[[ref_type]], function(x) {
+      length(x) == 0L
+      }, TRUE)
+    
+    # Then look amongst the treated to fill any missing cotrt references.
+    if (any(missing_cotrt)) {
+        # try to find the co-treated reference among treated data (with Drug/Drug_2 swap)    
+        pseudo_untreated <- treated[treated$Concentration_2 == 0, ]
+        # remove Concentration as is will have to be matched with the Concentration
+        pseudo_untreated$Concentration_2 <- NULL 
+        
+        # swap columns related to drug and drug_2
+        idx_1 <- which(colnames(pseudo_untreated) %in% 
+            c(identifiers$drug, 
+              identifiers$drugname,
+              identifiers$drug_moa))
+        idx_2 <- which(colnames(pseudo_untreated) %in% 
+            paste0(c(identifiers$drug, 
+                identifiers$drugname,
+                identifiers$drug_moa), "_2"))
+        colnames(pseudo_untreated)[idx_1] <- paste0(colnames(pseudo_untreated)[idx_1], "_2")
+        colnames(pseudo_untreated)[idx_2] <- gsub("_2", "", colnames(pseudo_untreated)[idx_2])
+
+        ref_maps[["cotrt_ref_Endpoint"]] <- map_df(treated[missing_cotrt, ], pseudo_untreated, 
+            override_untrt_controls = override_untrt_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
+
+    } # we may be able to extend to other cases if applicable
+  }
+
+  ## TODO: Check for failed cotreatment mappings. 
+}
