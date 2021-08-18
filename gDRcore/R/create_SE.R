@@ -72,7 +72,6 @@ create_SE <- function(df_,
     if (nrow(trt_df) == 0L) {
       next # do nothing, there is no data to handle
     } else {
-function(ref_type) {
       ref_type <- "untrt_Endpoint"
       untrt_ref <- ref_maps[[ref_type]][[trt]]  
       untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]

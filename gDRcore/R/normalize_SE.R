@@ -96,23 +96,6 @@ normalize_SE <- function(se,
       normalized$col_id <- rep(colnames(se)[j], nrow(trt_df))
 
       out[[nrow(se) * (j - 1) + i]] <- normalized
-
-      ## Perform the calculations on all references.
-      ## Then, take the mean to report the final reference normalized value.
-      RV_vec <- ref_df$RefReadout / ref_df$UntrtReadout
-      GR_vec <- calculate_GR_value(rel_viability = RV_vec, 
-        corrected_readout = ref_df$RefReadout, 
-        day0_readout = ref_df$Day0Readout, 
-        untrt_readout = ref_df$UntrtReadout, 
-        ndigit_rounding = ndigit_rounding, 
-        duration = duration, 
-        ref_div_time = ref_div_time, 
-        cl_name = cl_name)
-
-      ref_rel_viability[i, j] <- round(mean(RV_vec, na.rm = TRUE), ndigit_rounding)
-      ref_GR_value[i, j] <- round(mean(GR_vec, na.rm = TRUE), ndigit_rounding)
-      div_time[i, j] <- round(duration / log2(mean(ref_df$UntrtReadout / ref_df$Day0Readout,
-                                                   na.rm = TRUE)), ndigit_rounding)
     }
   }
 
@@ -126,11 +109,6 @@ normalize_SE <- function(se,
     col = out$col_id)
 
   SummarizedExperiment::assays(se)[[normalized_assay]] <- norm
-
-  SummarizedExperiment::assays(se)[[ref_GR_assay]] <- ref_GR_value
-  SummarizedExperiment::assays(se)[[ref_RV_assay]] <- ref_rel_viability
-  SummarizedExperiment::assays(se)[["DivisionTime"]] <- div_time
-
   se
 }
 
