@@ -12,7 +12,8 @@
 #' @export
 #'
 .assign_treated_and_untreated_conditions <- function(df_, drugname_col) {
-#.assign_treated_and_untreated_conditions <- function(df_, drugname_col = gDRutils::get_identifier(c("drugname", "drugname2"))) {
+#.assign_treated_and_untreated_conditions <- function(df_, drugname_col = 
+#  gDRutils::get_identifier(c("drugname", "drugname2"))) {
 # TODO: Replace once GDR-911 has been merged.
   valid <- intersect(drugname_col, colnames(df_))
   if (length(valid) == 0L) {
