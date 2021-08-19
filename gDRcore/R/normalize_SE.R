@@ -6,11 +6,9 @@ normalize_SE <- function(se,
                          nested_confounders = gDRutils::get_SE_identifiers(se, "barcode"),
                          control_assay = "Controls", 
                          raw_treated_assay = "RawTreated", 
-                         normalized_assay = "Normalized", 
-                         ref_GR_assay = "RefGRvalue", 
-                         ref_RV_assay = "RefRelativeViability", 
+                         normalized_assay = "Normalized",
                          ndigit_rounding = 4) {
-
+  
   # Assertions
   checkmate::assert_number(ndigit_rounding)
   gDRutils::validate_se_assay_name(se, control_assay)
@@ -23,7 +21,7 @@ normalize_SE <- function(se,
   
   cdata <- SummarizedExperiment::colData(se)
   rdata <- SummarizedExperiment::rowData(se)
-  
+
   cl_names <- cdata[, gDRutils::get_SE_identifiers(se, "cellline_name"), drop = FALSE]
   cl_ref_div_times <- cdata[, gDRutils::get_SE_identifiers(se, "cellline_ref_div_time"), drop = FALSE]
   durations <- rdata[, gDRutils::get_SE_identifiers(se, "duration"), drop = FALSE]
