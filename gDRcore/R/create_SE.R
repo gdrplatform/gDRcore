@@ -39,7 +39,8 @@ create_SE <- function(df_,
   mapping_entries$groupings <- rownames(mapping_entries) 
 
   ## Identify treated and untreated conditions.
-  assigned_mapping_entries <- .assign_treated_and_untreated_conditions(mapping_entries, c(identifiers$drugname, paste0(identifiers$drugname, "_2")))
+  assigned_mapping_entries <- .assign_treated_and_untreated_conditions(mapping_entries,
+    c(identifiers$drugname, paste0(identifiers$drugname, "_2")))
   split_list <- split(mapping_entries, f = assigned_mapping_entries$treated_untreated)  
   if (length(split_list) != 2L) {
     stop(sprintf("unexpected conditions found: '%s'", 
