@@ -25,9 +25,11 @@ fit_SE.combinations <- function(se,
   checkmate::assert_number(conc_margin)
   checkmate::assert_number(log2_pos_offset)
   checkmate::assert_character(norm_types)
+  if (length(nested_identfiers) != 2L) {
+    stop("'nested_identifiers' must have length '2'")
+  }
 
   avg <- assay(se, averaged_assay)
-  # TODO: Get the reference assay for the single-agents.
 
   # TODO: Fix me.
   if ("GR" %in% normalization_types) {
@@ -56,8 +58,13 @@ fit_SE.combinations <- function(se,
         next
       }
 
-      measured_ctrl <- gDRutils::convert_se_ref_assay_to_dt(se[j, i]) # TODO: Fix me.
-      measured <- as.data.frame(rbind(avg_combo, measured_ctrl))
+      sa <- avg_combo[[id]] == 0 | avg_combo[[id2]] == 0
+      single_agent <- avg_combo[sa, ]
+      measured <- avg_combo[!sa, ]
+
+      # TODO: Sort these by concentration?
+      sa1 <- single_agent[single_agent[[id]] == 0, ]
+      sa2 <- single_agent[single_agent[[id2]] == 0, ]
 
       col_fittings <- gDRcore:::fit_combo_cotreatments(measured, series_id = id, cotrt_id = id2, normalization_type)
       row_fittings <- gDRcore:::fit_combo_cotreatments(measured, series_id = id2, cotrt_id = id, normalization_type)
@@ -71,6 +78,7 @@ fit_SE.combinations <- function(se,
       measured$average <- rowMeans(mat, na.rm = TRUE)
 
       mean_readout <- measured[, c(nested_identifiers, "average")]
+      # TODO: I think we want to ensure though that the mean readout still get the single-agent data and also teh fitted single-agent data.
 
       # TODO: Do the below require only the single-agent data? If so, maybe we just pass that alone.
       hsa <- calculate_HSA(mean_readout)

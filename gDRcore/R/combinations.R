@@ -39,21 +39,9 @@ calculate_Bliss <- function(nested_identifiers, smooth_readout) {
 
 
 #' @keywords internal
-.calculate_matrix_metric <- function(nested_identifiers, smooth_readout, FXN) {
-  if (length(nested_identfiers) != 2L) {
-    stop("'nested_identifiers' must have length '2'")
-  }
-
-  id <- nested_identifiers[1]
-  id2 <- nested_identifiers[2]
-
-  # TODO: Sort these by concentration?
-  single_agent1 <- smooth_readout[smooth_readout[[id]] == 0, ]
-  single_agent2 <- smooth_readout[smooth_readout[[id2]] == 0, ]
-
+.calculate_matrix_metric <- function(single_agent1, single_agent2, FXN) {
   out1 <- rep(single_agent1, n)
   out2 <- rep(single_agent2, each = m)
-
   out <- FXN(out1, out2)
   out
 }
