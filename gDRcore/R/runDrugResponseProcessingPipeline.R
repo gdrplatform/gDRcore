@@ -76,7 +76,8 @@ create_and_normalize_SE <- function(df_,
   se <- create_SE(df_ = df_, 
     readout = readout, 
     control_mean_fxn = control_mean_fxn, 
-    nested_keys = c(nested_identifiers, nested_confounders), 
+    nested_identifiers = nested_identifiers,
+    nested_confounders = nested_confounders,
     override_untrt_controls = override_untrt_controls)
 
   se <- normalize_SE(se = se, 

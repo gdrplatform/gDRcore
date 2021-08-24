@@ -19,12 +19,11 @@
 #' @seealso identify_keys
 #' @export
 #'
-
 map_df <- function(trt_md, 
                    ref_md, 
                    override_untrt_controls = NULL, 
                    ref_cols, 
-                   ref_type = c("Day0", "untrt_Endpoint", "ref_Endpoint")) {
+                   ref_type = c("Day0", "untrt_Endpoint")) {
   # Assertions:
   checkmate::assert_class(trt_md, "data.frame")
   checkmate::assert_class(ref_md, "data.frame")
@@ -45,9 +44,6 @@ map_df <- function(trt_md,
   } else if (ref_type == "untrt_Endpoint") {
     matching_list <- list(conc = is_ref_conc)
     matchFactor <- duration_col 
-  } else if (ref_type == "ref_Endpoint") {
-    matching_list <- NULL
-    matchFactor <- NULL
   }
 
   trt_rnames <- rownames(trt_md)
@@ -64,7 +60,7 @@ map_df <- function(trt_md,
       ref_md[, y] == trt_md[treatment, y]
       })
 
-    if (!is.null(override_untrt_controls) && ref_type != "ref_Endpoint") {
+    if (!is.null(override_untrt_controls)) {
         for (overridden in names(override_untrt_controls)) {
             refs[[overridden]] <- ref_md[, overridden] == override_untrt_controls[[overridden]]
     }}
@@ -75,6 +71,7 @@ map_df <- function(trt_md,
     match_idx <- which(apply(match_mx, 2, all)) # test matching conditions
     if (length(match_idx) == 0) {
       # No exact match, try to find best match (as many metadata fields as possible).
+      # TODO: rowSums?
       idx <- apply(match_mx, 2, function(y) sum(y, na.rm = TRUE)) 
       # TODO: Sort this out so that it also takes the average in case multiple are found.
       idx <- idx * match_mx[matchFactor, ]
@@ -130,14 +127,11 @@ map_df <- function(trt_md,
             out_col_name = "RefReadout"
             )
         }
-
-        
       } else {
         # Set the cotrt reference to NA if not found 
         cotrt_df <- untrt_df 
         cotrt_df$UntrtReadout <- NA
         colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df))] <- "RefReadout"
-        
       }
    
   ref_maps[["cotrt_ref_Endpoint"]] <- NULL
@@ -177,4 +171,41 @@ map_df <- function(trt_md,
   }
 
   ## TODO: Check for failed cotreatment mappings. 
+}
+
+
+#' @details
+#' Using the given rownames, map the treated and reference conditions.
+.map_references <- function(mat_elem) {
+  clid <- get_env_identifiers("cellline")
+  valid <- intersect(c(get_env_identifiers(c("drugname", "drugname2"))), colnames(mat_elem))
+  drug_cols <- mat_elem[valid]
+
+  untrt_tag <- get_env_identifiers("untreated_tag")
+  pattern <- paste0(sprintf("^%s$", untrt_tag), collapse = "|")
+  pattern <- "vehicle|untreated"
+  has_tag <- as.data.frame(lapply(drug_cols, function(x) grepl(pattern, x)))
+  ntag <- rowSums(has_tag)
+
+  is_untrt <- ntag == length(valid)
+  is_ref <- ntag != 0L & !is_untrt
+
+  trt <- mat_elem[!is_ref & !is_untrt, ]
+  ref <- mat_elem[is_ref, ]
+
+  out <- vector("list", nrow(trt))
+  names(out) <- rownames(trt)
+
+  compare_cols <- c(valid, clid)
+  
+  for (t in rownames(trt)) {
+    refs <- NULL
+    for (r in rownames(ref)) {
+      if (all(setdiff(as.character(ref[r, compare_cols]), as.character(trt[t, compare_cols])) %in% untrt_tag)) {
+        refs <- c(refs, r)
+      }
+    }
+    out[[t]] <- refs
+  }
+  out
 }
