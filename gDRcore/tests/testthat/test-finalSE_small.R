@@ -1,3 +1,4 @@
+library(testthat); library(gDRcore)
 data <- "finalSE_small.RDS"
 original <- get_synthetic_data(data)
 
