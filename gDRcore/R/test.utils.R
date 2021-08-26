@@ -28,9 +28,13 @@ test_synthetic_data2 <- function(original, reprocessed, dataName, asys = c("Norm
     sort_cols <- c("Gnumber", "Gnumber_2", "clid", "Concentration", "Concentration_2")
     order_cols <- c(intersect(sort_cols, colnames(o_df)), setdiff(colnames(o_df), sort_cols))
     
+    # Get rid of all untreated from old and references from new.    
+    o_df <- o_df[o_df$Concentration == 0 & o_df$Concentration_2 == 0, ]
+    n_df <- n_df[n_df$Concentration == 0 & n_df$Concentration_2 == 0, ]
+
     o_df <- unique(o_df)[order_cols]
     n_df <- unique(n_df)[order_cols]
-    
+
     o_df <- o_df[S4Vectors::order(o_df), ]
     n_df <- n_df[S4Vectors::order(n_df), ]
 
