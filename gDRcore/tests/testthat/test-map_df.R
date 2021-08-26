@@ -37,11 +37,12 @@ test_that(".map_references works as expected", {
     DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
     clid = rep(c("C1", "C2"), each = 4))
   obs <- gDRcore:::.map_references(mat_elem)
-  exp <- list(`3` = c(`2`, `4`), `7` = c(`6`, `8`))
+  exp <- list("3" = c("2", "4"), "7" = c("6", "8"))
   expect_equal(obs, exp)
 
   # Single-agent data.
   mat_elem2 <- mat_elem[c("DrugName", "clid")]
   obs2 <- gDRcore:::.map_references(mat_elem2)
-  expect_equal(obs2, NULL)
+  exp2 <- list("2" = NULL, "3" = NULL, "6" = NULL, "7" = NULL)
+  expect_equal(obs2, exp2)
 })
