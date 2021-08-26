@@ -59,7 +59,7 @@ average_SE <- function(se,
         agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = nested_identifiers))
       } else {
         # only one or no unmasked value --> create degenerated dataframe
-        all_cols <- c(std_cols, p_trt_keys, paste0("std_", std_cols), "row_id", "col_id")
+        all_cols <- unique(c(nested_identifiers, std_cols, p_trt_keys, paste0("std_", std_cols), "row_id", "col_id"))
         agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
         colnames(agg_df) <- all_cols
       }
