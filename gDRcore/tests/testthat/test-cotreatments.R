@@ -4,7 +4,7 @@ test_that("fit_combo_cotreatments works as expected", {
   start <- gDRutils::logistic_4parameters(concs, Vinf = 0.1, V0 = 1, EC50 = 0.5, h = 2)
   vals  <- NULL
   for (i in seq(n)) {
-    vals <- c(vals, start + i*concs)
+    vals <- c(vals, start + i * concs)
   }
   measured <- DataFrame(Concentration = rep(concs, n),
     Concentration_2 = rep(concs, each = n),
@@ -27,7 +27,7 @@ test_that("fit_cotreatment_series works as expected", {
   start <- gDRutils::logistic_4parameters(concs, Vinf = 0.1, V0 = 1, EC50 = 0.5, h = 2)
   vals  <- NULL
   for (i in seq(n)) {
-    vals <- c(vals, start + i*concs)
+    vals <- c(vals, start + i * concs)
   }
   nested_identifiers <- c("Concentration", "Concentration_2")
   measured <- DataFrame(Concentration = rep(concs, n),

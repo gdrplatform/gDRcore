@@ -7,7 +7,7 @@ test_that("fit_combo_codilutions works as expected", {
   start <- gDRutils::logistic_4parameters(concs, Vinf = 0.1, V0 = 1, EC50 = 0.5, h = 2)
   vals  <- NULL
   for (i in seq(n)) {
-    vals <- c(vals, start + i*concs)
+    vals <- c(vals, start + i * concs)
   }
   nested_identifiers <- c("Concentration", "Concentration_2")
   measured <- DataFrame(Concentration = rep(concs, n),
@@ -28,14 +28,14 @@ test_that("fit_codilution_series works as expected", {
   vals  <- NULL
   ratio <- 0.5
   for (i in seq(n)) {
-    vals <- c(vals, start + i*concs)
+    vals <- c(vals, start + i * concs)
   }
   nested_identifiers <- c("Concentration", "Concentration_2")
   measured <- DataFrame(Concentration = rep(concs, n),
     Concentration_2 = rep(concs, each = n),
     GRvalue = vals)
 
-  ratios <- measured$Concentration_2/measured$Concentration
+  ratios <- measured$Concentration_2 / measured$Concentration
   keep <- !is.na(ratios) & ratios == ratio
   codilution <- measured[keep, ]
 
