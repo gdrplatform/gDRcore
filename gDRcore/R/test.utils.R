@@ -1,6 +1,8 @@
 #' @export
 #'
-test_synthetic_data <- function(original, reprocessed, dataName) {
+test_synthetic_data <- function(original, long_df, dataName) {
+  reprocessed <- gDRcore::runDrugResponseProcessingPipeline(long_df, override_untrt_controls = NULL)
+
   normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
   averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
   metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
@@ -15,9 +17,12 @@ test_synthetic_data <- function(original, reprocessed, dataName) {
   })
 }
 
+# Test that the data is consistent after moving the RefReadout out of the create_and_normalize_SE logic.
 #' @export
-#'
-test_synthetic_data2 <- function(original, reprocessed, dataName, asys = c("Normalized", "Averaged", "Metrics")) {
+test_synthetic_data2 <- function(original, long_df, dataName, asys = c("Normalized", "Averaged")) {
+  nested_ids <- intersect(c("Concentration", "Concentration_2"), colnames(long_df))
+  reprocessed <- create_and_normalize_SE(long_df, nested_identifiers = nested_ids, nested_confounders = "Barcode")
+  reprocessed <- average_SE(reprocessed, nested_identifiers = nested_ids)
   for (asy in asys) {
     o_df <- S4Vectors::DataFrame(gDRutils::convert_se_assay_to_dt(original, asy))
     n_df <- S4Vectors::DataFrame(gDRutils::convert_se_assay_to_dt(reprocessed, asy))
