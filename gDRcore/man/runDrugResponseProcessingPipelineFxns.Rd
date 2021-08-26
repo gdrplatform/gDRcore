@@ -23,16 +23,16 @@ create_SE(
   df_,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
-  nested_keys,
+  nested_identifiers = gDRutils::get_env_identifiers(c("concentration",
+    "concentration2")),
+  nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL
 )
 
 fit_SE(
   se,
-  nested_identifiers,
+  nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration"),
   averaged_assay = "Averaged",
-  ref_GR_assay = "RefGRvalue",
-  ref_RV_assay = "RefRelativeViability",
   metrics_assay = "Metrics",
   n_point_cutoff = 4,
   range_conc = c(0.005, 5),
@@ -49,8 +49,6 @@ normalize_SE(
   control_assay = "Controls",
   raw_treated_assay = "RawTreated",
   normalized_assay = "Normalized",
-  ref_GR_assay = "RefGRvalue",
-  ref_RV_assay = "RefRelativeViability",
   ndigit_rounding = 4
 )
 
@@ -64,9 +62,7 @@ create_and_normalize_SE(
   ndigit_rounding = 4,
   control_assay = "Controls",
   raw_treated_assay = "RawTreated",
-  normalized_assay = "Normalized",
-  ref_GR_assay = "RefGRvalue",
-  ref_RV_assay = "RefRelativeViability"
+  normalized_assay = "Normalized"
 )
 
 runDrugResponseProcessingPipeline(
@@ -82,8 +78,6 @@ runDrugResponseProcessingPipeline(
   control_assay = "Controls",
   raw_treated_assay = "RawTreated",
   normalized_assay = "Normalized",
-  ref_GR_assay = "RefGRvalue",
-  ref_RV_assay = "RefRelativeViability",
   averaged_assay = "Averaged",
   metrics_assay = "Metrics"
 )
@@ -106,18 +100,8 @@ Defaults to \code{"Averaged"}.}
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
 
-\item{nested_keys}{character vector of column names to include in the data.frames
-in the assays of the resulting \code{SummarizedExperiment} object.}
-
 \item{override_untrt_controls}{named list containing defining factors in the treatments.
 Defaults to \code{NULL}.}
-
-\item{ref_GR_assay}{string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.
-Defaults to \code{"RefGRvalue"}.}
-
-\item{ref_RV_assay}{string of the name of the reference Relative Viability assay
-in the \linkS4class{SummarizedExperiment}.
-Defaults to \code{"RefRelativeViability"}.}
 
 \item{metrics_assay}{string of the name of the metrics assay to output
 in the returned \linkS4class{SummarizedExperiment}
@@ -134,6 +118,9 @@ Defaults to \code{"RawTreated"}.}
 
 \item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
 Defaults to \code{4}.}
+
+\item{nested_keys}{character vector of column names to include in the data.frames
+in the assays of the resulting \code{SummarizedExperiment} object.}
 
 \item{Defaults}{to the \code{nested_identifiers} and \code{nested_confounders} if passed through
 \code{create_and_normalize_SE} or \code{runDrugResponseProcessingPipeline}.}

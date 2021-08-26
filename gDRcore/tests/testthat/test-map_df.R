@@ -29,3 +29,20 @@ test_that("map_df works as expected", {
 
 
 # TODO: test_that("NAs are returned for missing controls", {}) # nolint
+
+
+test_that(".map_references works as expected", {
+  # Combination data.
+  mat_elem <- data.frame(DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
+    DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
+    clid = rep(c("C1", "C2"), each = 4))
+  obs <- gDRcore:::.map_references(mat_elem)
+  exp <- list("3" = c("2", "4"), "7" = c("6", "8"))
+  expect_equal(obs, exp)
+
+  # Single-agent data.
+  mat_elem2 <- mat_elem[c("DrugName", "clid")]
+  obs2 <- gDRcore:::.map_references(mat_elem2)
+  exp2 <- list("2" = NULL, "3" = NULL, "6" = NULL, "7" = NULL)
+  expect_equal(obs2, exp2)
+})
