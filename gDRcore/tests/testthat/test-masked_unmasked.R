@@ -1,4 +1,4 @@
-test_that("masked and unmasked values are processed properly" {
+test_that("masked and unmasked values are processed properly", {
   data <- "finalSE_small.RDS"
   original <- get_synthetic_data(data)
   
