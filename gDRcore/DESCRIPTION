@@ -16,7 +16,7 @@ LazyLoad: yes
 Imports:
     data.table,
     drc,
-    gDRutils (>= 1.0.7),
+    gDRutils (>= 1.0.10),
     httr,
     magrittr,
     reshape2,

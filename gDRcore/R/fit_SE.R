@@ -43,9 +43,8 @@ fit_SE <- function(se,
         next
         }
       
-      additional_cols <- c("normalization_type", "fit_source")
-      fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(c(metric_cols, additional_cols))))
-      colnames(fit_df) <- c(metric_cols, additional_cols)
+      fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
+      colnames(fit_df) <- metric_cols
       rownames(fit_df) <- c("RV", "GR")
 
       if (!is.null(avg_df) && all(dim(avg_df) > 0) && sum(!is.na(avg_df$RelativeViability)) > 0) {
