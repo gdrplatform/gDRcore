@@ -19,12 +19,15 @@ test_synthetic_data <- function(original, reprocessed, dataName) {
 #' @export
 #'
 test_synthetic_data2 <- function(original, reprocessed, dataName, asys = c("Normalized", "Averaged", "Metrics")) {
-  # TODO: remove row_id, col_id
-  # TODO: order rows appropriately
   for (asy in asys) {
     o_df <- S4Vectors::DataFrame(gDRutils::convert_se_assay_to_dt(original, asy))
-    n_df <- S4Vectors::DataFrame(gDRutils::convert_se_assay_to_dt(reprocessed, asy))[names(o_dt)]
+    n_df <- S4Vectors::DataFrame(gDRutils::convert_se_assay_to_dt(reprocessed, asy))[names(o_df)]
     
+    o_df$rId <- o_df$cId <- NULL
+    n_df$rId <- n_df$cId <- NULL
+    
+    o_df <- o_df[S4Vectors::order(o_df), ]
+    n_df <- n_df[S4Vectors::order(n_df), ]
     tolerance <- 10e-4
     test_that(sprintf("Original data %s and recreated data are identical for assay %s", dataName, asy), {
       expect_equal(o_df, n_df, tolerance = tolerance)
