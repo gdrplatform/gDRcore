@@ -196,16 +196,18 @@ map_df <- function(trt_md,
   out <- vector("list", nrow(trt))
   names(out) <- rownames(trt)
 
-  compare_cols <- c(valid, clid)
-  
-  for (t in rownames(trt)) {
-    refs <- NULL
-    for (r in rownames(ref)) {
-      if (all(setdiff(as.character(ref[r, compare_cols]), as.character(trt[t, compare_cols])) %in% untrt_tag)) {
-        refs <- c(refs, r)
+  if (any(is_ref)) {
+    compare_cols <- c(valid, clid)
+    
+    for (t in rownames(trt)) {
+      refs <- NULL
+      for (r in rownames(ref)) {
+        if (all(setdiff(as.character(ref[r, compare_cols]), as.character(trt[t, compare_cols])) %in% untrt_tag)) {
+          refs <- c(refs, r)
+        }
       }
+      out[[t]] <- refs
     }
-    out[[t]] <- refs
   }
   out
 }
