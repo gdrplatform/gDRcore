@@ -39,7 +39,8 @@ fit_SE <- function(se,
       colnames(fit_df) <- metric_cols
       rownames(fit_df) <- c("RV", "GR")
 
-      if (!is.null(avg_df) && all(dim(avg_df) > 0) && sum(!is.na(avg_df$RelativeViability)) > 0) {
+      
+      if (!is.null(avg_df) && all(dim(avg_df) > 0)) {
         fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
           series_identifiers = nested_identifiers,
           e_0 = 1,
