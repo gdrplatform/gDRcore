@@ -3,7 +3,8 @@
 #' Perform fittings for combination screens.
 #'
 #' @param se \code{SummarizedExperiment} object with a BumpyMatrix assay containing averaged data.
-#' @param series_identifiers character vector of the column names in the nested \code{DFrame} corresponding to nested identifiers.
+#' @param series_identifiers character vector of the column names in the nested \code{DFrame}
+#' corresponding to nested identifiers.
 #' whose combination represents a unique series for which to fit curves. 
 #' @param conc_margin margin for calculation and plots as fold-change over highest test conc for calculation
 #' @param log2_pos_offset max offset for conc
@@ -16,17 +17,15 @@
 #' @export
 #'
 fit_SE.combinations <- function(se,
-                                nested_identifiers = c("Concentration", "Concentration_2"),
+                                series_identifiers = c("Concentration", "Concentration_2"),
                                 normalization_types = c("RV", "GR"),
                                 averaged_assay = "Averaged"
                                 ) {
 
   checkmate::assert_class(se, "SummarizedExperiment")
-  checkmate::assert_number(conc_margin)
-  checkmate::assert_number(log2_pos_offset)
-  checkmate::assert_character(norm_types)
-  if (length(nested_identfiers) != 2L) {
-    stop("'nested_identifiers' must have length '2'")
+  checkmate::assert_character(normalization_types)
+  if (length(series_identifiers) != 2L) {
+    stop("'series_identifiers' must have length '2'")
   }
 
   avg <- assay(se, averaged_assay)
@@ -38,14 +37,12 @@ fit_SE.combinations <- function(se,
 
   rdata <- rowData(se)
   cdata <- colData(se)
-  cl_name <- get_SE_identifier(se, "CellLineName")
-  d_name <- get_SE_identifier(se, "DrugName")
-  d_name2 <- get_SE_identifier(se, "DrugName_2")
+  cl_name <- get_SE_identifiers(se, "cellline_name")
 
-  id <- nested_identifiers[1]
-  id2 <- nested_identifiers[2]
+  id <- series_identifiers[1]
+  id2 <- series_identifiers[2]
 
-  bliss_excess <- hsa_excess <- matrix(NA, ncol(se), nrow(se), dimnames = c(rownames(se), colnames(se)))
+  bliss_excess <- hsa_excess <- matrix(NA, ncol(se), nrow(se), dimnames = list(rownames(se), colnames(se)))
 
   all_fits <- vector("list", nrow(se) * ncol(se))
   for (i in seq_len(ncol(se))) { # each cell line
@@ -53,8 +50,6 @@ fit_SE.combinations <- function(se,
       avg_combo <- avg[j, i][[1]] # all combo readouts per cell line, drug pair
 
       if (nrow(avg_combo) == 0L) {
-        print(sprintf("Skipping %s for %s x %s", cdata[i, cl_name],
-          rdata[j, d_name], rdata[j, d_name2]))
         next
       }
 
@@ -66,32 +61,33 @@ fit_SE.combinations <- function(se,
       sa1 <- single_agent[single_agent[[id]] == 0, ]
       sa2 <- single_agent[single_agent[[id2]] == 0, ]
 
-      col_fittings <- gDRcore:::fit_combo_cotreatments(measured, series_id = id, cotrt_id = id2, normalization_type)
-      row_fittings <- gDRcore:::fit_combo_cotreatments(measured, series_id = id2, cotrt_id = id, normalization_type)
-      codilution_fittings <- gDRcore:::fit_combo_codilutions(measured, nested_identifiers, normalization_type)
+      for (normalization_type in normalization_types) {
+        # TODO: fix to support more than 1 normalization type
+        col_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id, cotrt_id = id2, normalization_type)
+        row_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id2, cotrt_id = id, normalization_type)
+        codilution_fittings <- gDRcore:::fit_combo_codilutions(measured, series_identifiers, normalization_type)
 
-      measured$row_values <- map_ids_to_fits(measured[[id]], row_fittings, "cotrt_value")
-      measured$col_values <- map_ids_to_fits(measured[[id2]], col_fittings, "cotrt_value")
-      measured$codil_values <- map_ids_to_fits(measured[[id2]]/measured[[id]], codilution_fittings, "ratio")
-    
-      mat <- as.matrix(measured[, c(metric, "row_values", "col_values", "codil_values")])
-      measured$average <- rowMeans(mat, na.rm = TRUE)
+        measured$row_values <- map_ids_to_fits(measured[[id]], row_fittings, "cotrt_value")
+        measured$col_values <- map_ids_to_fits(measured[[id2]], col_fittings, "cotrt_value")
+        if (!is.null(codilution_fittings)) {
+          measured$codil_values <- map_ids_to_fits(measured[[id2]] / measured[[id]], codilution_fittings, "ratio")
+        }
+      
+        keep <- intersect(colnames(measured), c(metric, "row_values", "col_values", "codil_values"))
+        mat <- as.matrix(measured[, keep])
+        measured$average <- rowMeans(mat, na.rm = TRUE)
 
-      mean_readout <- measured[, c(nested_identifiers, "average")]
-      # TODO: I think we want to ensure though that the mean readout still get the single-agent data and also teh fitted single-agent data.
-
+      }
       # TODO: Do the below require only the single-agent data? If so, maybe we just pass that alone.
-      hsa <- calculate_HSA(mean_readout)
-      h_excess <- hsa - mean_readout$average
+      hsa <- calculate_HSA(sa1, sa2)
+      h_excess <- hsa - measured$average
 
-      bliss <- calculate_Bliss(mean_readout)
-      b_excess <- bliss - mean_readout$average
+      bliss <- calculate_Bliss(sa1, sa2)
+      b_excess <- bliss - measured$average
 
-      # decide on the isobologram cutoff levels for the Loewe model 
-      #loewe <- calculate_Loewe(mean_readout)
-      #calculate_isobolograms()
+      # TODO: call calculate_Loewe and calculate_isoobolograms
 
-      ## TODO: Create another assay in here with each spot in the matrix as the 2 nested_identifier concentrations
+      ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
       ## and then each new metric that should go for each spot is another column in the nested DataFrame
 
       bliss_excess[j, i] <- b_excess
@@ -111,9 +107,8 @@ calculate_combo_matrix <- function(se,
                                    conc_margin = 10 ^ 0.5,
                                    log2_pos_offset = log10(3) / 2,
                                    norm_types = c("RelativeViability", "GRvalue"),
-                                   averaged_assay = "Averaged"
-                                   ) {
-  .Deprecated(new="fit_SE.combinations")
+                                   averaged_assay = "Averaged") {
+  .Deprecated(new = "fit_SE.combinations")
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_number(conc_margin)
   checkmate::assert_number(log2_pos_offset)

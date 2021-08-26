@@ -14,27 +14,27 @@
 
 
 map_ids_to_fits <- function(ids, fittings, fitting_id_col) {
-  ridx <- S4Vectors::match(ids, row_fittings$cotrt_value)
-  row_metrics <- row_fittings[ridx, c("cotrt_value", "x_inf", "x_0", "c50", "h")]
+  ridx <- S4Vectors::match(ids, fittings[[fitting_id_col]])
+  metrics <- fittings[ridx, c("cotrt_value", "x_inf", "x_0", "c50", "h")]
   # Extrapolate fitted values.
-  out <- gDRutils::logistic_4parameters(row_metrics$cotrt_value,
-    row_metrics$x_inf,
-    row_metrics$x_0,
-    row_metrics$c50,
-    row_metrics$h)
+  out <- gDRutils::logistic_4parameters(metrics$cotrt_value,
+    metrics$x_inf,
+    metrics$x_0,
+    metrics$c50,
+    metrics$h)
   out
 }
 
 
 #' @details HSA takes the minimum of the two single agents readouts.
-calculate_HSA <- function(nested_identifiers, smooth_readout) {
-  .calculate_matrix_metric(nested_identifiers, smooth_readout, pmin)
+calculate_HSA <- function(sa1, sa2) {
+  .calculate_matrix_metric(sa1, sa2, pmin)
 }
 
 
 #' @details Bliss is the mulitplication of the single agent readouts.
-calculate_Bliss <- function(nested_identifiers, smooth_readout) {
-  .calculate_matrix_metric(nested_identifiers, smooth_readout, "*")
+calculate_Bliss <- function(sa1, sa2) {
+  .calculate_matrix_metric(sa1, sa2, "*")
 }
 
 
@@ -102,11 +102,14 @@ calculate_Loewe <- function(mean_matrix, row_fittings, col_fittings, dilution_fi
     if (nrow(codilution_fittings) > 1) {
       codilution_fittings <- codilution_fittings[nrow(codilution_fittings):1, ]
       codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
-      conc_mix <- ifelse(codilution_fittings$x_0 < isobol_value, 0, ifelse(codilution_fittings$x_inf > isobol_value,
+      conc_mix <- if (codilution_fittings$x_0 < isobol_value) {
+        0
+        } else {
+          ifelse(codilution_fittings$x_inf > isobol_value,
         Inf,
         codilution_fittings$ec50 * ((((codilution_fittings$x_0 - codilution_fittings$x_inf) / (isobol_value - codilution_fittings$x_inf)) - 1) ^
             (1 / codilution_fittings$h)))
-          )
+        }  
       df_iso_codil <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$conc_ratio),
                         conc_2 = conc_mix / (1 + codilution_fittings$conc_ratio), fit_type = "by_codil")
       # avoid extrapolation

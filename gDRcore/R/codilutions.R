@@ -8,9 +8,11 @@ fit_combo_codilutions <- function(measured, nested_identifiers, normalization_ty
   measured <- measured[!single_agents, , drop = FALSE]
 
   # Filter only to what diagonals are valid for a fit (>4 points).
-  measured$ratios <- measured[[id2]]/measured[[id]]
+  measured$ratios <- measured[[id2]] / measured[[id]]
   ratios <- S4Vectors::split(measured, measured$ratios)
-  keep <- unlist(lapply(ratios, function(x) {nrow(x) > 4}))
+  keep <- unlist(lapply(ratios, function(x) {
+    nrow(x) > 4
+  }))
   valid <- ratios[keep]
 
   fits <- vector("list", length(valid))

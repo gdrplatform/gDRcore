@@ -17,7 +17,7 @@ calculate_combo_cotrt <- function(se) {
                                   "_", 
                                   df_all_combo$Concentration_2)
   
-  fixed_metrics <- SummarizedExperiment::SummarizedExperiment( 
+  fixed_metrics <- SummarizedExperiment::SummarizedExperiment(
       assays = list(delta_RV_AOC_range = matrix(NA, nrow(df_all_combo), ncol(se)),
                     RV_AOC_range = matrix(NA, nrow(df_all_combo), ncol(se)),
                     RV_AOC_range_ref = matrix(NA, nrow(df_all_combo), ncol(se)),
