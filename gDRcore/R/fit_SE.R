@@ -4,8 +4,6 @@
 fit_SE <- function(se, 
                    nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration"),
                    averaged_assay = "Averaged", 
-                   ref_GR_assay = "RefGRvalue",
-                   ref_RV_assay = "RefRelativeViability",
                    metrics_assay = "Metrics", 
                    n_point_cutoff = 4,
                    range_conc = c(5e-3, 5),
@@ -21,18 +19,12 @@ fit_SE <- function(se,
   checkmate::assert_logical(force_fit)
   checkmate::assert_number(pcutoff)
   checkmate::assert_number(cap)
-  req_assays <- c(averaged_assay, ref_GR_assay, ref_RV_assay)
-  present <- req_assays %in% SummarizedExperiment::assayNames(se)
-  if (!all(present)) {
-    stop(sprintf("unable to find required assays: '%s'", 
-      paste0(req_assays[!present], collapse = ", ")))
-  }
+  req_assays <- c(averaged_assay)
+  lapply(req_assays, function(x) gDRutils::validate_se_assay_name(se, x))
 
   metric_cols <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
   out <- vector("list", nrow(se) * ncol(se))
   avg_trt <- SummarizedExperiment::assay(se, averaged_assay)
-  ref_GR <- SummarizedExperiment::assay(se, ref_GR_assay)
-  ref_RV <- SummarizedExperiment::assay(se, ref_RV_assay)
 
   count <- 0
   for (i in seq_len(nrow(se))) {
@@ -47,11 +39,12 @@ fit_SE <- function(se,
       colnames(fit_df) <- metric_cols
       rownames(fit_df) <- c("RV", "GR")
 
-      if (!is.null(avg_df) && all(dim(avg_df) > 0) && sum(!is.na(avg_df$RelativeViability)) > 0) {
+      
+      if (!is.null(avg_df) && all(dim(avg_df) > 0)) {
         fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
           series_identifiers = nested_identifiers,
-          e_0 = ref_RV[i, j],
-          GR_0 = ref_GR[i, j],
+          e_0 = 1,
+          GR_0 = 1,
           n_point_cutoff = n_point_cutoff,
           range_conc = range_conc,
           force_fit = force_fit,

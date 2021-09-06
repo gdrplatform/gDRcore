@@ -29,11 +29,6 @@
 #' Defaults to \code{"Normalized"}.
 #' @param averaged_assay string of the name of the averaged assay in the \linkS4class{SummarizedExperiment}.
 #' Defaults to \code{"Averaged"}.
-#' @param ref_GR_assay string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.
-#' Defaults to \code{"RefGRvalue"}.
-#' @param ref_RV_assay string of the name of the reference Relative Viability assay
-#' in the \linkS4class{SummarizedExperiment}.
-#' Defaults to \code{"RefRelativeViability"}.
 #' @param metrics_assay string of the name of the metrics assay to output
 #' in the returned \linkS4class{SummarizedExperiment}
 #' Defaults to \code{"Metrics"}.
@@ -77,13 +72,12 @@ create_and_normalize_SE <- function(df_,
                                     ndigit_rounding = 4,
                                     control_assay = "Controls",
                                     raw_treated_assay = "RawTreated",
-                                    normalized_assay = "Normalized",
-                                    ref_GR_assay = "RefGRvalue",
-                                    ref_RV_assay = "RefRelativeViability") {
+                                    normalized_assay = "Normalized") {
   se <- create_SE(df_ = df_, 
     readout = readout, 
     control_mean_fxn = control_mean_fxn, 
-    nested_keys = c(nested_identifiers, nested_confounders), 
+    nested_identifiers = nested_identifiers,
+    nested_confounders = nested_confounders,
     override_untrt_controls = override_untrt_controls)
 
   se <- normalize_SE(se = se, 
@@ -92,8 +86,6 @@ create_and_normalize_SE <- function(df_,
     control_assay = control_assay, 
     raw_treated_assay = raw_treated_assay, 
     normalized_assay = normalized_assay,
-    ref_GR_assay = ref_GR_assay, 
-    ref_RV_assay = ref_RV_assay, 
     ndigit_rounding = ndigit_rounding)
   se
 }
@@ -115,8 +107,6 @@ runDrugResponseProcessingPipeline <- function(df_,
                                               control_assay = "Controls",
                                               raw_treated_assay = "RawTreated",
                                               normalized_assay = "Normalized",
-                                              ref_GR_assay = "RefGRvalue",
-                                              ref_RV_assay = "RefRelativeViability",
                                               averaged_assay = "Averaged",
                                               metrics_assay = "Metrics") {
 
@@ -129,8 +119,6 @@ runDrugResponseProcessingPipeline <- function(df_,
     control_assay = control_assay, 
     raw_treated_assay = raw_treated_assay, 
     normalized_assay = normalized_assay,
-    ref_GR_assay = ref_GR_assay, 
-    ref_RV_assay = ref_RV_assay, 
     ndigit_rounding = ndigit_rounding)
 
   se <- average_SE(se = se, 
@@ -141,7 +129,6 @@ runDrugResponseProcessingPipeline <- function(df_,
   se <- fit_SE(se = se, 
                nested_identifiers = nested_identifiers,
                averaged_assay = averaged_assay, 
-               ref_GR_assay = ref_GR_assay, 
                metrics_assay = metrics_assay, 
                n_point_cutoff = n_point_cutoff)
   se <- add_codrug_group_SE(se)

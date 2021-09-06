@@ -9,7 +9,7 @@ map_df(
   ref_md,
   override_untrt_controls = NULL,
   ref_cols,
-  ref_type = c("Day0", "untrt_Endpoint", "ref_Endpoint")
+  ref_type = c("Day0", "untrt_Endpoint")
 )
 }
 \arguments{
