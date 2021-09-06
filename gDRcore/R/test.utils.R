@@ -13,7 +13,7 @@ test_synthetic_data <- function(original, long_df, dataName) {
   test_that(sprintf("Original data %s and recreated data are identical", dataName), {
     expect_equal(normalized_new, normalized)
     expect_equal(averaged_new, averaged)
-    expect_equal(metrics_new, metrics, tolerance = 10e-4)
+    expect_equivalent(metrics_new, metrics, tolerance = 10e-4)
   })
 }
 
