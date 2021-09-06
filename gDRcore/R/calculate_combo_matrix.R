@@ -129,7 +129,7 @@ calculate_combo_matrix <- function(se,
             df_inf[, 1], 
             fit_drug1$x_inf, 
             fit_drug1$x_0, 
-            fit_drug1$c50, fit_drug1$h)
+            fit_drug1$ec50, fit_drug1$h)
           colnames(df_inf)[2] <- norm_method
           
           df_out <- as.data.frame(df_[df_$Concentration_2 == 0, ])[seq_len(nrow(df_inf)), ] # get the metadata
@@ -160,7 +160,7 @@ calculate_combo_matrix <- function(se,
             df_inf[, 1], 
             fit_drug2$x_inf, 
             fit_drug2$x_0, 
-            fit_drug2$c50, 
+            fit_drug2$ec50, 
             fit_drug2$h)
           colnames(df_inf)[2] <- norm_method
           
@@ -247,7 +247,7 @@ calculate_combo_matrix <- function(se,
           }
 
           mx[idx, -1] <- gDRutils::logistic_4parameters(as.numeric(colnames(mx))[-1],
-            fit_res$x_inf, fit_res$x_0, fit_res$c50, fit_res$h)
+            fit_res$x_inf, fit_res$x_0, fit_res$ec50, fit_res$h)
           if (!by_row) {
             mx <- t(mx)
           }
@@ -258,12 +258,12 @@ calculate_combo_matrix <- function(se,
         
         # get the fits for the first row (single agent) and create empty matrices
         mx_fit[1, -1] <- gDRutils::logistic_4parameters(as.numeric(colnames(mx_fit))[-1],
-            fit_drug2$x_inf, fit_drug2$x_0, fit_drug2$c50, fit_drug2$h)
+            fit_drug2$x_inf, fit_drug2$x_0, fit_drug2$ec50, fit_drug2$h)
         all_fits <- list(by_row = cbind(data.frame(conc_1 = 0), fit_drug2))
         
         # get the fits for the first column (single agent)
         mx_fit[-1, 1] <- gDRutils::logistic_4parameters(as.numeric(rownames(mx_fit))[-1],
-            fit_drug1$x_inf, fit_drug1$x_0, fit_drug1$c50, fit_drug1$h)
+            fit_drug1$x_inf, fit_drug1$x_0, fit_drug1$ec50, fit_drug1$h)
         all_fits[["by_col"]] <- cbind(data.frame(conc_2 = 0), fit_drug1)
         # matrices with first row/column populated
         mx_fit <- lapply(1:3, function(x) mx_fit)
@@ -335,7 +335,7 @@ calculate_combo_matrix <- function(se,
                 fit_resp <- gDRutils::logistic_4parameters(
                   as.numeric(rownames(mx_fit[["by_codil"]]))[idx$row_idx] +
                       as.numeric(colnames(mx_fit[["by_codil"]]))[idx$col_idx],
-                  fit_res$x_inf, fit_res$x_0, fit_res$c50, fit_res$h)
+                  fit_res$x_inf, fit_res$x_0, fit_res$ec50, fit_res$h)
                 for (j in seq_len(nrow(idx))) {
                   mx_fit[["by_codil"]][idx$row_idx[j], idx$col_idx[j]] <- fit_resp[j]
                 }
@@ -397,7 +397,7 @@ calculate_combo_matrix <- function(se,
           df_iso <- cbind(df_fit[, "conc_1", drop = FALSE], data.frame(conc_2 =
             ifelse(df_fit$x_0 < isobol_value, 0, ifelse(df_fit$x_inf > isobol_value,
               Inf,
-              df_fit$c50 * ((((df_fit$x_0 - df_fit$x_inf) / (isobol_value - df_fit$x_inf)) - 1) ^
+              df_fit$ec50 * ((((df_fit$x_0 - df_fit$x_inf) / (isobol_value - df_fit$x_inf)) - 1) ^
                   (1 / pmax(df_fit$h, 0.01))))
                 ),
                 fit_type = "by_row"))
@@ -407,7 +407,7 @@ calculate_combo_matrix <- function(se,
           df_iso <- rbind(df_iso, cbind(data.frame(conc_1 =
             ifelse(df_fit$x_0 < isobol_value, 0, ifelse(df_fit$x_inf > isobol_value,
               Inf,
-              df_fit$c50 * ((((df_fit$x_0 - df_fit$x_inf) / (isobol_value - df_fit$x_inf)) - 1) ^
+              df_fit$ec50 * ((((df_fit$x_0 - df_fit$x_inf) / (isobol_value - df_fit$x_inf)) - 1) ^
                   (1 / pmax(df_fit$h, 0.01))))
                 ),
             df_fit[, "conc_2", drop = FALSE],
@@ -430,7 +430,7 @@ calculate_combo_matrix <- function(se,
             df_fit <- df_fit[df_fit$fit_type %in% "DRC3pHillFitModelFixS0", ]
             conc_mix <- ifelse(df_fit$x_0 < isobol_value, 0, ifelse(df_fit$x_inf > isobol_value,
               Inf,
-              df_fit$c50 * ((((df_fit$x_0 - df_fit$x_inf) / (isobol_value - df_fit$x_inf)) - 1) ^
+              df_fit$ec50 * ((((df_fit$x_0 - df_fit$x_inf) / (isobol_value - df_fit$x_inf)) - 1) ^
                   (1 / df_fit$h)))
                 )
             df_iso_codil <- data.frame(conc_1 = conc_mix / (1 + 1 / df_fit$conc_ratio),
