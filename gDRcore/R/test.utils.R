@@ -10,10 +10,90 @@ test_synthetic_data <- function(original, long_df, dataName) {
   averaged_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Averaged")
   metrics_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Metrics")
   
+  COLUMNS_TO_TEST_NORMALIZED <- c(
+    "rId",
+    "cId",
+    "Concentration",
+    "masked",
+    "RelativeViability",
+    "GRvalue",
+    "Gnumber",
+    "DrugName",
+    "drug_moa",
+    "Duration",             
+    "clid",
+    "CellLineName",
+    "Tissue",
+    "ReferenceDivisionTime"
+  )
+  
+  COLUMNS_TO_TEST_AVERAGED <- c(
+    "rId",
+    "cId",
+    "Concentration",
+    "GRvalue",
+    "RelativeViability",
+    "std_GRvalue",
+    "std_RelativeViability",
+    "Gnumber",
+    "DrugName",
+    "drug_moa",
+    "Duration",
+    "clid",
+    "CellLineName",
+    "Tissue",
+    "ReferenceDivisionTime"
+  )
+    
+  COLUMNS_TO_TEST_METRICS <- c(
+    "rId",
+    "cId",
+    "x_mean",
+    "x_AOC",
+    "x_AOC_range",
+    "xc50",
+    "x_max",
+    "ec50",
+    "x_inf",
+    "x_0",
+    "h",
+    "r2",
+    "x_sd_avg",
+    "fit_type",
+    "maxlog10Concentration",
+    "N_conc",
+    "normalization_type",
+    "fit_source",
+    "Gnumber",
+    "DrugName",
+    "drug_moa",
+    "Duration",
+    "clid",
+    "CellLineName",
+    "Tissue",
+    "ReferenceDivisionTime"
+  )
+  
   test_that(sprintf("Original data %s and recreated data are identical", dataName), {
-    expect_equal(normalized_new, normalized)
-    expect_equal(averaged_new, averaged)
-    expect_equivalent(metrics_new, metrics, tolerance = 10e-4)
+    expect_equal(ncol(normalized), 14)
+    expect_equal(ncol(averaged), 15)
+    expect_equal(ncol(metrics), 26)
+    
+    expect_equivalent(
+      normalized_new[, c(which(colnames(normalized_new) %in% COLUMNS_TO_TEST_NORMALIZED))], 
+      normalized[, c(which(colnames(normalized) %in% COLUMNS_TO_TEST_NORMALIZED))]
+    )
+    
+    expect_equivalent(
+      averaged_new[, c(which(colnames(averaged_new) %in% COLUMNS_TO_TEST_AVERAGED))], 
+      averaged[, c(which(colnames(averaged) %in% COLUMNS_TO_TEST_AVERAGED))]
+    )
+
+    expect_equivalent(
+      metrics_new[, c(which(colnames(metrics_new) %in% COLUMNS_TO_TEST_METRICS))], 
+      metrics[, c(which(colnames(metrics) %in% COLUMNS_TO_TEST_METRICS))], 
+      tolerance = 10e-4
+      )
   })
 }
 
