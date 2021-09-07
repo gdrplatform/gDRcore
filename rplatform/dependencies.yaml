@@ -12,9 +12,9 @@ pkgs:
     source: Bioc
     ver: "3.13"
   gDRutils:
-    ver: '>=1.0.10'
+    ver: '>=1.0.12'
     url: gdrplatform/gDRutils
-    ref: master
+    ref: GDR-1072
     subdir: gDRutils
     source: GITHUB
   lintr:
