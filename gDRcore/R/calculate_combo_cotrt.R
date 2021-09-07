@@ -11,9 +11,9 @@ calculate_combo_cotrt <- function(se) {
     drug_combos <- S4Vectors::metadata(se)$drug_combinations
     df_all_combo <- do.call(rbind, 
                            lapply(drug_combos, function(x) as.data.frame(x$condition)))
-    rownames(df_all_combo) <- paste0(df_all_combo$Gnumber, 
+    rownames(df_all_combo) <- paste0(df_all_combo$DrugName, 
                                     "_", 
-                                    df_all_combo$Gnumber_2, 
+                                    df_all_combo$DrugName_2, 
                                     "_", 
                                     df_all_combo$Concentration_2)
     
