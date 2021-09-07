@@ -30,7 +30,7 @@ map_df <- function(trt_md,
   checkmate::assert_class(ref_md, "data.frame")
   ref_type <- match.arg(ref_type)
 
-  duration_col <- gDRutils::get_identifier("duration")
+  duration_col <- gDRutils::get_env_identifiers("duration")
 
   conc <- cbind(array(0, nrow(ref_md)), # padding to avoid empty df;
     ref_md[, agrep("Concentration", colnames(ref_md)), drop = FALSE])

@@ -31,18 +31,18 @@ cleanup_metadata <- function(df_metadata) {
   data.table::setDT(df_metadata)
 
   # clean up numberic fields
-  df_metadata[[gDRutils::get_identifier("duration")]] <-
-    round(as.numeric(df_metadata[[gDRutils::get_identifier("duration")]], 6))
+  df_metadata[[gDRutils::get_env_identifiers("duration")]] <-
+    round(as.numeric(df_metadata[[gDRutils::get_env_identifiers("duration")]], 6))
 
   # identify potential numeric fields and replace NA by 0 - convert strings in factors
   for (c in setdiff(1:dim(df_metadata)[2], c(
-    agrep(gDRutils::get_identifier("drug"), colnames(df_metadata)),
+    agrep(gDRutils::get_env_identifiers("drug"), colnames(df_metadata)),
     agrep("Concentration", colnames(df_metadata)),
     grep(paste(
       c(
-        gDRutils::get_identifier("cellline"),
+        gDRutils::get_env_identifiers("cellline"),
         gDRutils::get_header("manifest"),
-        gDRutils::get_identifier("well_position"),
+        gDRutils::get_env_identifiers("well_position"),
         "compoundId"
       ),
       collapse = "|"
@@ -68,8 +68,8 @@ cleanup_metadata <- function(df_metadata) {
     df_metadata <- add_CellLine_annotation(df_metadata)
     # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
 
-    for (i in agrep(gDRutils::get_identifier("drug"), colnames(df_metadata))) { # correct case issues
-        for (w in gDRutils::get_identifier("untreated_tag")) {
+    for (i in agrep(gDRutils::get_env_identifiers("drug"), colnames(df_metadata))) { # correct case issues
+        for (w in gDRutils::get_env_identifiers("untreated_tag")) {
             df_metadata[grep(w, df_metadata[[i]], ignore.case = TRUE), i] <- w
         }
     }
@@ -82,13 +82,13 @@ cleanup_metadata <- function(df_metadata) {
     for (i in agrep("Concentration", colnames(df_metadata))) {
         trt_n <- ifelse(regexpr("_\\d", colnames(df_metadata)[i]) > 0,
                             substr(colnames(df_metadata)[i], 15, 20), 1)
-        DrugID_col <- ifelse(trt_n == 1, gDRutils::get_identifier("drug"),
-                             paste0(gDRutils::get_identifier("drug"), "_", trt_n))
+        DrugID_col <- ifelse(trt_n == 1, gDRutils::get_env_identifiers("drug"),
+                             paste0(gDRutils::get_env_identifiers("drug"), "_", trt_n))
         df_metadata[df_metadata[, DrugID_col] %in%
-                      gDRutils::get_identifier("untreated_tag"), i] <- 0 # set all untreated to 0
+                      gDRutils::get_env_identifiers("untreated_tag"), i] <- 0 # set all untreated to 0
 
         DrugID_0 <- setdiff(unique(df_metadata[df_metadata[, i] == 0, DrugID_col]),
-                            gDRutils::get_identifier("untreated_tag"))
+                            gDRutils::get_env_identifiers("untreated_tag"))
         DrugID_0 <- DrugID_0[!is.na(DrugID_0)]
         if (length(DrugID_0) > 0) {
           futile.logger::flog.warn("Some concentration for %s are 0: %s",
@@ -128,12 +128,12 @@ Order_result_df <- function(df_) {
   row_order_col <-
     intersect(
       c(
-        gDRutils::get_identifier("cellline_name"),
-        gDRutils::get_identifier("duration"),
-        gDRutils::get_identifier("drugname"),
+        gDRutils::get_env_identifiers("cellline_name"),
+        gDRutils::get_env_identifiers("duration"),
+        gDRutils::get_env_identifiers("drugname"),
         "Concentration",
         paste0(c(
-          paste0(gDRutils::get_identifier("drugname"), "_"), "Concentration_"
+          paste0(gDRutils::get_env_identifiers("drugname"), "_"), "Concentration_"
         ),
         sort(rep(2:10, 2))),
         setdiff(colnames(df_), c(
