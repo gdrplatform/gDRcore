@@ -24,7 +24,7 @@
 identify_keys <- function(df_,  
                           nested_keys = NULL,
                           override_untrt_controls = NULL,
-                          identifiers = gDRutils::get_identifier()) {
+                          identifiers = gDRutils::get_env_identifiers()) {
   # Assertions:
   stopifnot(inherits(df_, c("data.frame", "DataFrame")))
 

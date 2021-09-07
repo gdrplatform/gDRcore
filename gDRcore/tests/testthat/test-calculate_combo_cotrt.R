@@ -1,6 +1,8 @@
 
 test_that("check printed output", {
   se <- get_synthetic_data("finalSE_combo_codilution_small.RDS")
+  se <- get_synthetic_data("finalSE_combo_2dose_nonoise.RDS")
+  
   
   n <- 4
   drug_names <- paste0("drug_00", seq(n))
