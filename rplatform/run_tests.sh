@@ -9,7 +9,7 @@ echo "Working directory contains: `ls | tr '\n' ' '`"
 set -e
 
 echo ">>>>>>>> Running linter"
-#Rscript -e "gDRstyle::lintPkgInDir('/mnt/vol/gDRcore')"
+Rscript -e "gDRstyle::lintPkgInDir('/mnt/vol/gDRcore')"
 
 echo ">>>>> RUNNING UNIT TESTS"
 Rscript -e "testthat::test_local(path = '/mnt/vol/gDRcore', stop_on_failure = TRUE)"
