@@ -6,8 +6,8 @@ create_SE <- function(df_,
                       control_mean_fxn = function(x) {
                         mean(x, trim = 0.25)
                       },
-                      nested_keys = c(gDRutils::get_identifier("concentration"),
-                                      gDRutils::get_identifier("barcode")),
+                      nested_keys = c(gDRutils::get_env_identifiers("concentration"),
+                                      gDRutils::get_env_identifiers("barcode")),
                       override_untrt_controls = NULL) {
 
   # Assertions:
@@ -19,7 +19,7 @@ create_SE <- function(df_,
     df_ <- S4Vectors::DataFrame(df_)
   }
 
-  identifiers <- gDRutils::get_identifier()
+  identifiers <- gDRutils::get_env_identifiers()
   Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
 
   if (!(identifiers$masked_tag %in% colnames(df_))) {

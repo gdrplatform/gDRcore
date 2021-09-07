@@ -76,9 +76,9 @@ calculate_combo_matrix <- function(se,
 
         # Secondary drug for some combinations becomes primary drug when viewed as single-agent (conc1=0), so swap. 
         # swap the data into the Gnumber and Gnumber_2 such that it can form a matrix
-        swap_idx <- flat_data[, gDRutils::get_identifier("drugname")] == 
-          combo$condition[[paste0(gDRutils::get_identifier("drugname"), "_2")]] & 
-          flat_data$Gnumber_2 %in% gDRutils::get_identifier("untreated_tag")
+        swap_idx <- flat_data[, gDRutils::get_env_identifiers("drugname")] == 
+          combo$condition[[paste0(gDRutils::get_env_identifiers("drugname"), "_2")]] & 
+          flat_data$Gnumber_2 %in% gDRutils::get_env_identifiers("untreated_tag")
         temp_df <- flat_data[swap_idx, ]
         temp_df[, c("Gnumber", "DrugName", "drug_moa", "Concentration",
                     "Gnumber_2", "DrugName_2", "drug_moa_2", "Concentration_2")] <- 
@@ -100,9 +100,9 @@ calculate_combo_matrix <- function(se,
   
         # check the there is only one drug for DrugName and one for DrugName_2
         stopifnot(all(unique(flat_data$DrugName) %in% c(combo$condition["DrugName"],
-              gDRutils::get_identifier()$untreated_tag)))
+              gDRutils::get_env_identifiers()$untreated_tag)))
         stopifnot(all(unique(flat_data$DrugName_2) %in% c(combo$condition["DrugName_2"],
-              gDRutils::get_identifier()$untreated_tag)))
+              gDRutils::get_env_identifiers()$untreated_tag)))
 
         # check what are the combo concentrations
         conc_combo <- unique(flat_data[flat_data$Concentration > 0 & flat_data$Concentration_2 > 0, 
