@@ -177,11 +177,12 @@ map_df <- function(trt_md,
 #' @details
 #' Using the given rownames, map the treated and reference conditions.
 .map_references <- function(mat_elem) {
-  clid <- get_env_identifiers("cellline")
-  valid <- intersect(c(get_env_identifiers(c("drugname", "drugname2"))), colnames(mat_elem))
+  clid <- gDRutils::get_env_identifiers("cellline")
+  valid <- intersect(c(gDRutils::get_env_identifiers(c("drugname", "drugname2"))),
+                     colnames(mat_elem))
   drug_cols <- mat_elem[valid]
 
-  untrt_tag <- get_env_identifiers("untreated_tag")
+  untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
   pattern <- paste0(sprintf("^%s$", untrt_tag), collapse = "|")
   pattern <- "vehicle|untreated"
   has_tag <- as.data.frame(lapply(drug_cols, function(x) grepl(pattern, x)))
