@@ -31,6 +31,7 @@ fit_SE <- function(se,
     for (j in seq_len(ncol(se))) {
       count <- count + 1
       avg_df <- avg_trt[i, j][[1]]
+      avg_df <- avg_df[avg_df$Concentration != 0,]
       if (nrow(avg_df) == 0L) {
         next
         }
