@@ -29,8 +29,8 @@ add_CellLine_annotation <- function(df_metadata,
     DB_cellid_header <- "cell_line_identifier"
     DB_cell_annotate <- c("cell_line_name", "primary_tissue", "doubling_time",
                           "parental_identifier", "subtype")
-    cellline <- gDRutils::get_identifier("cellline")
-    cellline_name <- gDRutils::get_identifier("cellline_name")
+    cellline <- gDRutils::get_env_identifiers("cellline")
+    cellline_name <- gDRutils::get_env_identifiers("cellline_name")
     add_clid <- gDRutils::get_header("add_clid")
   
     # Read local cell_lines annotations
@@ -108,10 +108,10 @@ add_Drug_annotation <- function(df_metadata,
     nrows_df <- nrow(df_metadata)
   
     DB_drug_identifier <- c("gnumber", "drug_name", "drug_moa")
-    drug <- gDRutils::get_identifier("drug")
-    untreated_tag <- gDRutils::get_identifier("untreated_tag")
-    drugname <- gDRutils::get_identifier("drugname")
-    drug_moa <- gDRutils::get_identifier("drug_moa")
+    drug <- gDRutils::get_env_identifiers("drug")
+    untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
+    drugname <- gDRutils::get_env_identifiers("drugname")
+    drug_moa <- gDRutils::get_env_identifiers("drug_moa")
     drugsTreated <- unique(df_metadata[[drug]])
   
     # Read local drugs annotations
