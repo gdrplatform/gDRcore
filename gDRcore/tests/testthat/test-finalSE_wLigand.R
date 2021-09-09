@@ -21,4 +21,4 @@ df_merged_data <- rbind(df_merged_data, df_merged_data2)
 
 finalSE <- gDRcore::runDrugResponseProcessingPipeline(df_merged_data, override_untrt_controls = c(Ligand = 0.1))
 
-test_synthetic_data(original, finalSE, data)
+test_synthetic_data(original, finalSE, data, additional_columns = 1)

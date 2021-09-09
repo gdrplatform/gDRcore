@@ -1,7 +1,12 @@
 #' @export
 #'
-test_synthetic_data <- function(original, long_df, dataName) {
-  reprocessed <- gDRcore::runDrugResponseProcessingPipeline(long_df, override_untrt_controls = NULL)
+test_synthetic_data <- function(original, long_df, dataName, additional_columns = 0) {
+  
+  if (class(long_df) != "SummarizedExperiment" ){
+    reprocessed <- gDRcore::runDrugResponseProcessingPipeline(long_df, override_untrt_controls = NULL)
+  } else {
+    reprocessed <- long_df
+  }
 
   normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
   averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
@@ -75,9 +80,9 @@ test_synthetic_data <- function(original, long_df, dataName) {
   )
   
   test_that(sprintf("Original data %s and recreated data are identical", dataName), {
-    expect_equal(ncol(normalized), 14)
-    expect_equal(ncol(averaged), 15)
-    expect_equal(ncol(metrics), 26)
+    expect_equal(ncol(normalized), 14 + additional_columns)
+    expect_equal(ncol(averaged), 15 + additional_columns)
+    expect_equal(ncol(metrics), 26 + additional_columns)
     
     expect_equivalent(
       subset(normalized_new, select = which(colnames(normalized_new) %in% COLUMNS_TO_TEST_NORMALIZED)), 
