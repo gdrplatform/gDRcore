@@ -1,7 +1,8 @@
 #' @export
 #'
-test_synthetic_data <- function(original, long_df, dataName) {
-  reprocessed <- gDRcore::runDrugResponseProcessingPipeline(long_df, override_untrt_controls = NULL)
+test_synthetic_data <- function(original, long_df, dataName, override_untrt_controls = NULL) {
+  reprocessed <- gDRcore::runDrugResponseProcessingPipeline(long_df,
+                                                            override_untrt_controls = override_untrt_controls)
 
   normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
   averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
