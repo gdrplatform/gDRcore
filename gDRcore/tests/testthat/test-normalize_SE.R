@@ -41,7 +41,8 @@ test_that("normalize_SE works as expected", {
   expect_true(all(colnames(normalized) %in% c("Concentration", "masked", "GRvalue", "RelativeViability")))
   expect_equal(normalized$Concentration, conc)
   
-  se2 <- normalize_SE(se, nested_confounders = c(gDRutils::get_SE_identifiers(se, "barcode"), "masked"))
+  se2 <- normalize_SE(se, nested_confounders = 
+                        c(gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE), "masked"))
   expect_s4_class(se2, "SummarizedExperiment")
 })
 
