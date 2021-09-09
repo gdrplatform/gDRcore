@@ -1,3 +1,6 @@
+
+skip(message = "Combo")
+
 data <- "finalSE_combo_matrix.RDS"
 original <- get_synthetic_data(data)
 

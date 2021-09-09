@@ -1,3 +1,6 @@
+
+skip(message = "Combo")
+
 data <- "finalSE_combo_1dose_many_drugs.RDS"
 original <- get_synthetic_data(data)
 
