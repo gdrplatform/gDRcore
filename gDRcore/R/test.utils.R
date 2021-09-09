@@ -80,18 +80,18 @@ test_synthetic_data <- function(original, long_df, dataName) {
     expect_equal(ncol(metrics), 26)
     
     expect_equivalent(
-      normalized_new[, c(which(colnames(normalized_new) %in% COLUMNS_TO_TEST_NORMALIZED))], 
-      normalized[, c(which(colnames(normalized) %in% COLUMNS_TO_TEST_NORMALIZED))]
+      subset(normalized_new, select = which(colnames(normalized_new) %in% COLUMNS_TO_TEST_NORMALIZED)), 
+      subset(normalized, select = which(colnames(normalized) %in% COLUMNS_TO_TEST_NORMALIZED))
     )
     
     expect_equivalent(
-      averaged_new[, c(which(colnames(averaged_new) %in% COLUMNS_TO_TEST_AVERAGED))], 
-      averaged[, c(which(colnames(averaged) %in% COLUMNS_TO_TEST_AVERAGED))]
+      subset(averaged_new, select = which(colnames(averaged_new) %in% COLUMNS_TO_TEST_AVERAGED)), 
+      subset(averaged, select = which(colnames(averaged) %in% COLUMNS_TO_TEST_AVERAGED))
     )
 
     expect_equivalent(
-      metrics_new[, c(which(colnames(metrics_new) %in% COLUMNS_TO_TEST_METRICS))], 
-      metrics[, c(which(colnames(metrics) %in% COLUMNS_TO_TEST_METRICS))], 
+      subset(metrics_new, select = which(colnames(metrics_new) %in% COLUMNS_TO_TEST_METRICS)), 
+      subset(metrics, select = which(colnames(metrics) %in% COLUMNS_TO_TEST_METRICS)),
       tolerance = 10e-4
       )
   })
