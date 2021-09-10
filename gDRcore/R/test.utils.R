@@ -2,7 +2,7 @@
 #'
 test_synthetic_data <- function(original, long_df, dataName, additional_columns = 0, override_untrt_controls = NULL) {
   
-  if (class(long_df) != "SummarizedExperiment" ){
+  if (class(long_df) != "SummarizedExperiment") {
       reprocessed <- gDRcore::runDrugResponseProcessingPipeline(long_df,
                                                             override_untrt_controls = override_untrt_controls)
   } else {
