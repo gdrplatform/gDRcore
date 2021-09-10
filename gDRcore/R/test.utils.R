@@ -1,13 +1,13 @@
 #' @export
 #'
-test_synthetic_data <- function(original, long_df, dataName, additional_columns = 0) {
+test_synthetic_data <- function(original, long_df, dataName, additional_columns = 0, override_untrt_controls = NULL) {
   
-  if (class(long_df) != "SummarizedExperiment") {
-    reprocessed <- gDRcore::runDrugResponseProcessingPipeline(long_df, override_untrt_controls = NULL)
+  if (class(long_df) != "SummarizedExperiment" ){
+      reprocessed <- gDRcore::runDrugResponseProcessingPipeline(long_df,
+                                                            override_untrt_controls = override_untrt_controls)
   } else {
     reprocessed <- long_df
   }
-
   normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
   averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
   metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
