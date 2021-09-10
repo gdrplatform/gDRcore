@@ -1,3 +1,6 @@
+
+skip(message = "Ligand")
+
 data <- "finalSE_wLigand.RDS"
 original <- get_synthetic_data(data)
 
