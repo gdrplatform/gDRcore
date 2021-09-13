@@ -25,7 +25,7 @@ fit_SE.combinations <- function(se,
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_character(normalization_types)
   if (length(series_identifiers) != 2L) {
-    stop("'series_identifiers' must have length '2'")
+    stop("gDR only supports 'series_identifiers' arguments with length '2' for the 'fit_SE.combinations' function")
   }
 
   avg <- assay(se, averaged_assay)
@@ -57,7 +57,6 @@ fit_SE.combinations <- function(se,
       single_agent <- avg_combo[sa, ]
       measured <- avg_combo[!sa, ]
 
-      # TODO: Sort these by concentration?
       sa1 <- single_agent[single_agent[[id]] == 0, ]
       sa2 <- single_agent[single_agent[[id2]] == 0, ]
 
@@ -76,14 +75,13 @@ fit_SE.combinations <- function(se,
         keep <- intersect(colnames(measured), c(metric, "row_values", "col_values", "codil_values"))
         mat <- as.matrix(measured[, keep])
         measured$average <- rowMeans(mat, na.rm = TRUE)
-
       }
-      # TODO: Do the below require only the single-agent data? If so, maybe we just pass that alone.
+
       hsa <- calculate_HSA(sa1, sa2)
-      h_excess <- hsa - measured$average
+      h_excess <- calculate_excess(hsa, measured$average)
 
       bliss <- calculate_Bliss(sa1, sa2)
-      b_excess <- bliss - measured$average
+      b_excess <- calculate_excess(bliss, measured$average)
 
       # TODO: call calculate_Loewe and calculate_isoobolograms
 
