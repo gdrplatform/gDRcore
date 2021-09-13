@@ -39,12 +39,12 @@ create_SE <- function(df_,
 
   mapping_entries <- .create_mapping_factors(rowdata, coldata)
   mapping_entries$groupings <- rownames(mapping_entries)
-  refs <- .map_references(mapping_entries)
 
+  refs <- .map_references(mapping_entries)
   trt_conditions <- names(refs)
   sa_conditions <- unique(unname(unlist(refs)))
 
-  treated <- mapping_entries[names(refs), ]
+  treated <- mapping_entries[trt_conditions, ]
   untreated <- mapping_entries[!rownames(mapping_entries) %in% c(trt_conditions, sa_conditions), ]
 
   ## Map controls.
@@ -69,7 +69,7 @@ create_SE <- function(df_,
     trt_df$row_id <- unique(dfs[groupings %in% trt, "row_id"]) # Override the row_id of the references.
 
     if (nrow(trt_df) == 0L) {
-      next # do nothing, there is no data to handle
+      next # No data.
     } else {
       ctl_type <- "untrt_Endpoint"
       untrt_ref <- ctl_maps[[ctl_type]][[trt]]  
