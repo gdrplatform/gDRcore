@@ -11,8 +11,6 @@
   out
 }
 
-
-
 map_ids_to_fits <- function(ids, fittings, fitting_id_col) {
   ridx <- S4Vectors::match(ids, fittings[[fitting_id_col]])
   metrics <- fittings[ridx, c("cotrt_value", "x_inf", "x_0", "c50", "h")]

@@ -62,7 +62,7 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
   }
 
   # check for the expected columns
-  expected_headers <- gDRutils::get_identifier("cellline")
+  expected_headers <- gDRutils::get_env_identifiers("cellline")
   headersOK <- expected_headers %in% colnames(df_metadata)
   if (any(!headersOK)) {
     stop(sprintf(
@@ -72,7 +72,7 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
   }
 
   # remove wells not labeled
-  drug_id <- gDRutils::get_identifier("drug")
+  drug_id <- gDRutils::get_env_identifiers("drug")
   df_metadata_trimmed <-
     df_metadata[!is.na(df_metadata[, drug_id]), ]
   futile.logger::flog.warn("%i well loaded, %i wells discarded for lack of annotation, %i data point selected\n",
@@ -87,7 +87,7 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
   stopifnot(nrow(cleanedup_metadata) == nrow(df_metadata_trimmed)) # should not happen
 
   df_merged <- merge(cleanedup_metadata, data, by = c("Barcode",
-                                                      gDRutils::get_identifier("well_position")))
+                                                      gDRutils::get_env_identifiers("well_position")))
   if (nrow(df_merged) != nrow(data)) {
     # need to identify issue and output relevant warning
     futile.logger::flog.warn("merge_data: Not all results have been matched with treatments;
@@ -107,10 +107,10 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
         # Secondary drug for some combinations can primary drug when viewed as single-agent (conc1 = 0), so swap. 
         # swap the data related to Drug and Drug_2 such that it can considered as a single-agent condition
         swap_idx <- df_raw_data$Concentration_2 > 0 &
-                      df_raw_data[, drug_id] %in% gDRutils::get_identifier("untreated_tag")
+                      df_raw_data[, drug_id] %in% gDRutils::get_env_identifiers("untreated_tag")
         temp_df <- df_raw_data[swap_idx, ]
-        header_names <- c(drug_id, gDRutils::get_identifier("drugname"), 
-                          gDRutils::get_identifier("drug_moa"), "Concentration")
+        header_names <- c(drug_id, gDRutils::get_env_identifiers("drugname"), 
+                          gDRutils::get_env_identifiers("drug_moa"), "Concentration")
         temp_df[, c(header_names, paste0(header_names, "_2"))] <-
           temp_df[, c(paste0(header_names, "_2"), header_names)]
 

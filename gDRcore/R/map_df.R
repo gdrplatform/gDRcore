@@ -29,7 +29,7 @@ map_df <- function(trt_md,
   checkmate::assert_class(ref_md, "data.frame")
   ref_type <- match.arg(ref_type)
 
-  duration_col <- gDRutils::get_identifier("duration")
+  duration_col <- gDRutils::get_env_identifiers("duration")
 
   conc <- cbind(array(0, nrow(ref_md)), # padding to avoid empty df;
     ref_md[, agrep("Concentration", colnames(ref_md)), drop = FALSE])
@@ -47,6 +47,7 @@ map_df <- function(trt_md,
   }
 
   trt_rnames <- rownames(trt_md)
+  ref_rnames <- rownames(ref_md)
 
   # define matrix with matching metadata
   present_ref_cols <- intersect(ref_cols, names(ref_md))
@@ -61,9 +62,10 @@ map_df <- function(trt_md,
       })
 
     if (!is.null(override_untrt_controls)) {
-        for (overridden in names(override_untrt_controls)) {
-            refs[[overridden]] <- ref_md[, overridden] == override_untrt_controls[[overridden]]
-    }}
+      for (overridden in names(override_untrt_controls)) {
+        refs[[overridden]] <- ref_md[, overridden] == override_untrt_controls[[overridden]]
+      }
+    }
 
     all_checks <- c(refs, matching_list)
     match_mx <- do.call("rbind", all_checks)
@@ -84,7 +86,7 @@ map_df <- function(trt_md,
         msgs <- c(msgs, sprintf("No partial match found for treatment: ('%s')", treatment))
       }
     }
-    out[[i]] <- rownames(ref_md)[match_idx] # TODO: Check that this properly handles NAs. 
+    out[[i]] <- ref_rnames[match_idx] # TODO: Check that this properly handles NAs or NULLs. 
   }
   futile.logger::flog.info(paste0(msgs, collapse = "\n"))
   names(out) <- trt_rnames
@@ -177,13 +179,13 @@ map_df <- function(trt_md,
 #' @details
 #' Using the given rownames, map the treated and reference conditions.
 .map_references <- function(mat_elem) {
-  clid <- get_env_identifiers("cellline")
-  valid <- intersect(c(get_env_identifiers(c("drugname", "drugname2"))), colnames(mat_elem))
+  clid <- gDRutils::get_env_identifiers("cellline")
+  valid <- intersect(c(gDRutils::get_env_identifiers(c("drugname", "drugname2"))),
+                     colnames(mat_elem))
   drug_cols <- mat_elem[valid]
 
-  untrt_tag <- get_env_identifiers("untreated_tag")
+  untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
   pattern <- paste0(sprintf("^%s$", untrt_tag), collapse = "|")
-  pattern <- "vehicle|untreated"
   has_tag <- as.data.frame(lapply(drug_cols, function(x) grepl(pattern, x)))
   ntag <- rowSums(has_tag)
 
