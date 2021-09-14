@@ -13,34 +13,56 @@
 
 map_ids_to_fits <- function(ids, fittings, fitting_id_col) {
   ridx <- S4Vectors::match(ids, fittings[[fitting_id_col]])
-  metrics <- fittings[ridx, c("cotrt_value", "x_inf", "x_0", "c50", "h")]
+  metrics <- fittings[ridx, c("cotrt_value", "x_inf", "x_0", "ec50", "h")]
   # Extrapolate fitted values.
   out <- gDRutils::logistic_4parameters(metrics$cotrt_value,
     metrics$x_inf,
     metrics$x_0,
-    metrics$c50,
+    metrics$ec50,
     metrics$h)
   out
 }
 
 
 #' @details HSA takes the minimum of the two single agents readouts.
-calculate_HSA <- function(sa1, sa2) {
-  .calculate_matrix_metric(sa1, sa2, pmin)
+calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
+  .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN = pmin)
 }
 
 
 #' @details Bliss is the mulitplication of the single agent readouts.
-calculate_Bliss <- function(sa1, sa2) {
-  .calculate_matrix_metric(sa1, sa2, "*")
+calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
+  .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN = "*")
 }
 
 
 #' @keywords internal
-.calculate_matrix_metric <- function(single_agent1, single_agent2, FXN) {
-  out1 <- rep(single_agent1, n)
-  out2 <- rep(single_agent2, each = m)
-  out <- FXN(out1, out2)
+.calculate_matrix_metric <- function(sa1, series_id1, sa2, series_id2, metric, FXN) {
+  colnames(sa1)[colnames(sa1) == metric] <- "metric1"
+  colnames(sa2)[colnames(sa2) == metric] <- "metric2"
+
+  # TODO: ensure they're unique?
+  u <- expand.grid(sa1[[series_id1]], sa2[[series_id2]])
+  colnames(u) <- c(series_id1, series_id2)
+
+  idx <- match(u[[series_id1]], sa1[[series_id1]])
+  u <- base::merge(u, sa1[, c(series_id1, "metric1")], by = series_id1)
+  u <- base::merge(u, sa2[, c(series_id2, "metric2")], by = series_id2)
+
+  metric <- do.call(FXN, list(u$metric1, u$metric2))
+  cbind(u, metric)
+}
+
+
+calculate_excess <- function(metric, measured, series_identifiers, metric_col, measured_col) {
+  # TODO: Ensure same dims metric, measured
+  # TODO: Ensure there is a unique entry for series_id1, series_id2 and no repeats
+  # TODO: Check that there are no NAs
+  idx <- S4Vectors::match(DataFrame(metric[, series_identifiers]), DataFrame(measured[, series_identifiers]))
+  
+  out <- measured[, series_identifiers]
+  excess <- metric[idx, metric_col] - measured[, measured_col]
+  out$excess <- excess
   out
 }
 

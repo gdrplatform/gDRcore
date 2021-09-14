@@ -42,11 +42,12 @@ fit_SE.combinations <- function(se,
   id <- series_identifiers[1]
   id2 <- series_identifiers[2]
 
-  bliss_excess <- hsa_excess <- matrix(NA, ncol(se), nrow(se), dimnames = list(rownames(se), colnames(se)))
+  bliss_score <- hsa_score <- matrix(NA, ncol(se), nrow(se), dimnames = list(rownames(se), colnames(se)))
 
-  all_fits <- vector("list", nrow(se) * ncol(se))
-  for (i in seq_len(ncol(se))) { # each cell line
-    for (j in seq_len(nrow(se))) { # each drug pair
+  bliss_excess <- hsa_excess <- vector("list", nrow(se) * ncol(se))
+  count <- 1
+  for (i in colnames(se)) { # each cell line
+    for (j in rownames(se)) { # each drug pair
       avg_combo <- avg[j, i][[1]] # all combo readouts per cell line, drug pair
 
       if (nrow(avg_combo) == 0L) {
@@ -57,8 +58,8 @@ fit_SE.combinations <- function(se,
       single_agent <- avg_combo[sa, ]
       measured <- avg_combo[!sa, ]
 
-      sa1 <- single_agent[single_agent[[id]] == 0, ]
-      sa2 <- single_agent[single_agent[[id2]] == 0, ]
+      sa1 <- single_agent[single_agent[[id]] == 0, c(id, id2, metric)]
+      sa2 <- single_agent[single_agent[[id2]] == 0, c(id, id2, metric)]
 
       for (normalization_type in normalization_types) {
         # TODO: fix to support more than 1 normalization type
@@ -77,24 +78,38 @@ fit_SE.combinations <- function(se,
         measured$average <- rowMeans(mat, na.rm = TRUE)
       }
 
-      hsa <- calculate_HSA(sa1, sa2)
-      h_excess <- calculate_excess(hsa, measured$average)
+      hsa <- calculate_HSA(sa1, id2, sa2, id, metric)
+      h_excess <- calculate_excess(hsa, measured, series_identifiers = c(id, id2), metric_col = "metric", measured_col = "average")
 
-      bliss <- calculate_Bliss(sa1, sa2)
-      b_excess <- calculate_excess(bliss, measured$average)
+      bliss <- calculate_Bliss(sa1, id2, sa2, id, metric)
+      b_excess <- calculate_excess(bliss, measured, series_identifiers = c(id, id2), metric_col = "metric", measured_col = "average")
 
       # TODO: call calculate_Loewe and calculate_isoobolograms
-
       ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
       ## and then each new metric that should go for each spot is another column in the nested DataFrame
+      bliss_score[j, i] <- mean(
+        b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)])
+      hsa_score[j, i] <- mean(
+        h_excess$excess[h_excess$excess <= quantile(h_excess$excess, 0.1, na.rm = TRUE)])
 
-      bliss_excess[j, i] <- b_excess
-      hsa_excess[j, i] <- h_excess
+      b_excess$row_id <- h_excess$row_id <- j
+      b_excess$col_id <- h_excess$col_id <- i
+      
+      bliss_excess[[count]] <- b_excess
+      hsa_excess[[count]] <- h_excess
+      count <- count + 1
     }
   }
 
-  assays(se)[["bliss_excess"]] <- bliss_excess
-  assays(se)[["hsa_excess"]] <- hsa_excess
+  all_b_excess <- do.call(rbind, bliss_excess)
+  all_hsa_excess <- do.call(rbind, bliss_excess)
+
+  assays(se)[["BlissExcess"]] <- splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess) %in% c("row_id", "col_id")], row = all_b_excess$row_id, col = all_b_excess$col_id)
+  assays(se)[["HSAExcess"]] <- splitAsBumpyMatrix(all_hsa_excess[!colnames(all_hsa_excess) %in% c("row_id", "col_id")], row = all_hsa_excess$row_id, col = all_hsa_excess$col_id)
+
+  assays(se)[["BlissScore"]] <- bliss_score
+  assays(se)[["HSAScore"]] <- hsa_score
+
   se
 }
   
