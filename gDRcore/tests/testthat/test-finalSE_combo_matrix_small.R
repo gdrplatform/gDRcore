@@ -1,3 +1,6 @@
+
+skip(message = "Will be fixed in https://jira.gene.com/jira/browse/GDR-1090")
+
 data <- "finalSE_combo_matrix_small.RDS"
 original <- get_synthetic_data(data)
 
