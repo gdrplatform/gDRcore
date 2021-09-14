@@ -1,3 +1,6 @@
+
+skip(message = "Will be fixed in https://jira.gene.com/jira/browse/GDR-1090")
+
 skip("[FIX IT] skipped due to invalid IC50 values on R 4.1/BioC 3.13")
 data <- "finalSE_combo_2dose_nonoise3.RDS"
 original <- get_synthetic_data(data)

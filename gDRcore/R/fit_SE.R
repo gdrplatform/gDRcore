@@ -33,7 +33,7 @@ fit_SE <- function(se,
       avg_df <- avg_trt[i, j][[1]]
       if (nrow(avg_df) == 0L) {
         next
-        }
+      }
       
       fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
       colnames(fit_df) <- metric_cols
@@ -41,9 +41,10 @@ fit_SE <- function(se,
 
       
       if (!is.null(avg_df) && all(dim(avg_df) > 0)) {
-        avg_df <- avg_df[avg_df[[
-          gDRutils::get_env_identifiers("concentration")]] != 0, ]
-        avg_df <- avg_df[gDRutils::get_env_identifiers("concentration") != 0, ]
+        if (!all(is.na(avg_df[[gDRutils::get_env_identifiers("concentration")]]))) {
+          avg_df <- avg_df[avg_df[[
+            gDRutils::get_env_identifiers("concentration")]] != 0, ]
+        }
         fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
           series_identifiers = nested_identifiers,
           e_0 = 1,
@@ -63,7 +64,7 @@ fit_SE <- function(se,
       out[[count]] <- fit_df
     }
   }
-
+  
   out <- S4Vectors::DataFrame(do.call("rbind", out))
   metrics <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c("row_id", "col_id")], 
     row = out$row_id, 

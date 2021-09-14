@@ -1,3 +1,6 @@
+
+skip(message = "Will be fixed in https://jira.gene.com/jira/browse/GDR-1090")
+
 data <- "finalSE_combo_2dose_nonoise.RDS"
 original <- get_synthetic_data(data)
 
@@ -11,4 +14,4 @@ df_layout_2 <- merge(df_layout, df_2, by = NULL)
 
 df_merged_data <- gDRtestData::generate_response_data(df_layout_2, 0)
 
-test_synthetic_data2(original, df_merged_data, data)
+test_synthetic_data(original, df_merged_data, data)
