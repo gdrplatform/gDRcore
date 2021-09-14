@@ -81,25 +81,3 @@ add_codrug_group_SE <- function(se) {
   S4Vectors::metadata(se)$drug_combinations <- pair_list
   return(se)
 }
-
-
-
-
-# Perform the calculations on all references.
-# Then, take the mean to report the final reference normalized value.
-.calculate_references <- function(ref_df) {
-  RV_vec <- ref_df$RefReadout / ref_df$UntrtReadout
-  GR_vec <- calculate_GR_value(rel_viability = RV_vec, 
-                               corrected_readout = ref_df$RefReadout, 
-                               day0_readout = ref_df$Day0Readout, 
-                               untrt_readout = ref_df$UntrtReadout, 
-                               ndigit_rounding = ndigit_rounding, 
-                               duration = duration, 
-                               ref_div_time = ref_div_time, 
-                               cl_name = cl_name)
-
-  ref_rel_viability[i, j] <- round(mean(RV_vec, na.rm = TRUE), ndigit_rounding)
-  ref_GR_value[i, j] <- round(mean(GR_vec, na.rm = TRUE), ndigit_rounding)
-  div_time[i, j] <- round(duration / log2(mean(ref_df$UntrtReadout / ref_df$Day0Readout,
-                                               na.rm = TRUE)), ndigit_rounding)
-}
