@@ -42,7 +42,7 @@ fit_SE.combinations <- function(se,
   id <- series_identifiers[1]
   id2 <- series_identifiers[2]
 
-  bliss_score <- hsa_score <- matrix(NA, ncol(se), nrow(se), dimnames = list(rownames(se), colnames(se)))
+  bliss_score <- hsa_score <- matrix(NA, nrow(se), ncol(se), dimnames = list(rownames(se), colnames(se)))
 
   bliss_excess <- hsa_excess <- vector("list", nrow(se) * ncol(se))
   count <- 1
