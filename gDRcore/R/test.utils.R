@@ -18,105 +18,36 @@ test_synthetic_data <- function(original,
   averaged_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Averaged")
   metrics_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Metrics")
   
-  COLUMNS_TO_TEST_NORMALIZED <- c(
-    "rId",
-    "cId",
-    "Concentration",
-    "masked",
-    "RelativeViability",
-    "GRvalue",
-    "Gnumber",
-    "DrugName",
-    "drug_moa",
-    "Duration",
-    "clid",
-    "CellLineName",
-    "Tissue",
-    "ReferenceDivisionTime"
+  OMITTED_COLUMNS_TO_TEST_NORMALIZED <- c(
   )
   
-  COLUMNS_TO_TEST_AVERAGED <- c(
-    "rId",
-    "cId",
-    "Concentration",
-    "GRvalue",
-    "RelativeViability",
-    "std_GRvalue",
-    "std_RelativeViability",
-    "Gnumber",
-    "DrugName",
-    "drug_moa",
-    "Duration",
-    "clid",
-    "CellLineName",
-    "Tissue",
-    "ReferenceDivisionTime"
+  OMITTED_COLUMNS_TO_TEST_AVERAGED <- c(
   )
   
-  COLUMNS_TO_TEST_METRICS <- c(
-    "rId",
-    "cId",
-    "x_mean",
-    "x_AOC",
-    "x_AOC_range",
-    "xc50",
-    "x_max",
-    "ec50",
-    "x_inf",
-    "x_0",
-    "h",
-    "r2",
-    "x_sd_avg",
-    "fit_type",
-    "maxlog10Concentration",
-    "N_conc",
-    "normalization_type",
-    "fit_source",
-    "Gnumber",
-    "DrugName",
-    "drug_moa",
-    "Duration",
-    "clid",
-    "CellLineName",
-    "Tissue",
-    "ReferenceDivisionTime"
+  OMITTED_COLUMNS_TO_TEST_METRICS <- c(
   )
   
   test_that(sprintf("Original data %s and recreated data are identical", dataName), {
-              expect_equal(ncol(normalized), 14 + additional_columns)
-              expect_equal(ncol(averaged), 15 + additional_columns)
-              expect_equal(ncol(metrics), 26 + additional_columns)
-              
-              expect_equivalent(
-                subset(
-                  normalized_new,
-                  select = which(colnames(normalized_new) %in% COLUMNS_TO_TEST_NORMALIZED)
-                ),
-                subset(
-                  normalized,
-                  select = which(colnames(normalized) %in% COLUMNS_TO_TEST_NORMALIZED)
-              ))
-              
-              expect_equivalent(
-                subset(
-                  averaged_new,
-                  select = which(colnames(averaged_new) %in% COLUMNS_TO_TEST_AVERAGED)
-                ),
-                subset(
-                  averaged,
-                  select = which(colnames(averaged) %in% COLUMNS_TO_TEST_AVERAGED)
-              ))
-              
-              expect_equivalent(
-                subset(
-                  metrics_new,
-                  select = which(colnames(metrics_new) %in% COLUMNS_TO_TEST_METRICS)
-                ),
-                subset(metrics, select = which(
-                  colnames(metrics) %in% COLUMNS_TO_TEST_METRICS
-                )),
-                tolerance = tolerance)
-            })
+    expect_equal(ncol(normalized), 14 + additional_columns)
+    expect_equal(ncol(averaged), 15 + additional_columns)
+    expect_equal(ncol(metrics), 26 + additional_columns)
+    
+    expect_equivalent(
+      subset(normalized_new, select = which(!colnames(normalized_new) %in% OMITTED_COLUMNS_TO_TEST_NORMALIZED)),
+      subset(normalized, select = which(!colnames(normalized) %in% OMITTED_COLUMNS_TO_TEST_NORMALIZED))
+    )
+    
+    expect_equivalent(
+      subset(averaged_new, select = which(!colnames(averaged_new) %in% OMITTED_COLUMNS_TO_TEST_AVERAGED)),
+      subset(averaged, select = which(!colnames(averaged) %in% OMITTED_COLUMNS_TO_TEST_AVERAGED))
+    )
+    
+    expect_equivalent(
+      subset(metrics_new, select = which(!colnames(metrics_new) %in% OMITTED_COLUMNS_TO_TEST_METRICS)),
+      subset(metrics, select = which(!colnames(metrics) %in% OMITTED_COLUMNS_TO_TEST_METRICS)), 
+      tolerance = tolerance
+    )
+  })
 }
 
 
