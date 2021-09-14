@@ -11,6 +11,11 @@ test_synthetic_data <- function(original,
   } else {
     reprocessed <- gDRcore::runDrugResponseProcessingPipeline(data, override_untrt_controls = override_untrt_controls)
   }
+  
+  if (!is.null(override_untrt_controls)) {
+    original <- original[rowData(original)[[names(override_untrt_controls)]] == override_untrt_controls, ]
+    reprocessed <- reprocessed[rowData(reprocessed)[[names(override_untrt_controls)]] == override_untrt_controls, ]
+  }
   normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
   averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
   metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
