@@ -1,12 +1,15 @@
 #' @export
 #'
-test_synthetic_data <- function(original, long_df, dataName, additional_columns = 0, override_untrt_controls = NULL) {
-  
-  if (class(long_df) != "SummarizedExperiment") {
-    reprocessed <- gDRcore::runDrugResponseProcessingPipeline(long_df,
-                                                              override_untrt_controls = override_untrt_controls)
+test_synthetic_data <- function(original,
+                                data,
+                                dataName,
+                                additional_columns = 0,
+                                override_untrt_controls = NULL,
+                                tolerance = 10e-7) {
+  if (inherits(data, "SummarizedExperiment")) {
+    reprocessed <- data
   } else {
-    reprocessed <- long_df
+    reprocessed <- gDRcore::runDrugResponseProcessingPipeline(data, override_untrt_controls = override_untrt_controls)
   }
   normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
   averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
@@ -25,7 +28,7 @@ test_synthetic_data <- function(original, long_df, dataName, additional_columns 
     "Gnumber",
     "DrugName",
     "drug_moa",
-    "Duration",             
+    "Duration",
     "clid",
     "CellLineName",
     "Tissue",
@@ -49,7 +52,7 @@ test_synthetic_data <- function(original, long_df, dataName, additional_columns 
     "Tissue",
     "ReferenceDivisionTime"
   )
-    
+  
   COLUMNS_TO_TEST_METRICS <- c(
     "rId",
     "cId",
@@ -79,28 +82,47 @@ test_synthetic_data <- function(original, long_df, dataName, additional_columns 
     "ReferenceDivisionTime"
   )
   
-  test_that(sprintf("Original data %s and recreated data are identical", dataName), {
-    expect_equal(ncol(normalized), 14 + additional_columns)
-    expect_equal(ncol(averaged), 15 + additional_columns)
-    expect_equal(ncol(metrics), 26 + additional_columns)
-    
-    expect_equivalent(
-      subset(normalized_new, select = which(colnames(normalized_new) %in% COLUMNS_TO_TEST_NORMALIZED)), 
-      subset(normalized, select = which(colnames(normalized) %in% COLUMNS_TO_TEST_NORMALIZED))
-    )
-    
-    expect_equivalent(
-      subset(averaged_new, select = which(colnames(averaged_new) %in% COLUMNS_TO_TEST_AVERAGED)), 
-      subset(averaged, select = which(colnames(averaged) %in% COLUMNS_TO_TEST_AVERAGED))
-    )
-
-    expect_equivalent(
-      subset(metrics_new, select = which(colnames(metrics_new) %in% COLUMNS_TO_TEST_METRICS)), 
-      subset(metrics, select = which(colnames(metrics) %in% COLUMNS_TO_TEST_METRICS)),
-      tolerance = 10e-4
-      )
-  })
+  test_that(sprintf("Original data %s and recreated data are identical", dataName),
+            {
+              expect_equal(ncol(normalized), 14 + additional_columns)
+              expect_equal(ncol(averaged), 15 + additional_columns)
+              expect_equal(ncol(metrics), 26 + additional_columns)
+              
+              expect_equivalent(
+                subset(
+                  normalized_new,
+                  select = which(colnames(normalized_new) %in% COLUMNS_TO_TEST_NORMALIZED)
+                ),
+                subset(
+                  normalized,
+                  select = which(colnames(normalized) %in% COLUMNS_TO_TEST_NORMALIZED)
+              ))
+              
+              expect_equivalent(
+                subset(
+                  averaged_new,
+                  select = which(colnames(averaged_new) %in% COLUMNS_TO_TEST_AVERAGED)
+                ),
+                subset(
+                  averaged,
+                  select = which(colnames(averaged) %in% COLUMNS_TO_TEST_AVERAGED)
+              ))
+              
+              expect_equivalent(
+                subset(
+                  metrics_new,
+                  select = which(colnames(metrics_new) %in% COLUMNS_TO_TEST_METRICS)
+                ),
+                subset(metrics, select = which(
+                  colnames(metrics) %in% COLUMNS_TO_TEST_METRICS
+                )),
+                tolerance = tolerance)
+            })
 }
+
+
+
+
 
 # Test that the data is consistent after moving the RefReadout out of the create_and_normalize_SE logic.
 #' @export
