@@ -44,7 +44,6 @@ fit_SE <- function(se,
         if (!all(is.na(avg_df[[gDRutils::get_env_identifiers("concentration")]]))) {
           avg_df <- avg_df[avg_df[[
             gDRutils::get_env_identifiers("concentration")]] != 0, ]
-          avg_df <- avg_df[gDRutils::get_env_identifiers("concentration") != 0, ]
         }
         fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
           series_identifiers = nested_identifiers,
