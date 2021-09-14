@@ -82,8 +82,7 @@ test_synthetic_data <- function(original,
     "ReferenceDivisionTime"
   )
   
-  test_that(sprintf("Original data %s and recreated data are identical", dataName),
-            {
+  test_that(sprintf("Original data %s and recreated data are identical", dataName), {
               expect_equal(ncol(normalized), 14 + additional_columns)
               expect_equal(ncol(averaged), 15 + additional_columns)
               expect_equal(ncol(metrics), 26 + additional_columns)
