@@ -127,7 +127,7 @@ Order_result_df <- function(df_) {
   row_order_col <-
     intersect(
       c(
-        gDRutils::get_env_identifiers(c("cellline_name", "duration", "drugname")),
+        gDRutils::get_env_identifiers(c("cellline_name", "duration", "drugname"), simplify = FALSE),
         "Concentration",
         paste0(c(
           paste0(gDRutils::get_env_identifiers("drugname"), "_"), "Concentration_"

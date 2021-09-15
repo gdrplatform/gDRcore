@@ -6,7 +6,8 @@ create_SE <- function(df_,
                       control_mean_fxn = function(x) {
                         mean(x, trim = 0.25)
                       },
-                      nested_identifiers = gDRutils::get_env_identifiers(c("concentration", "concentration2")),
+                      nested_identifiers = gDRutils::get_env_identifiers(c("concentration", "concentration2"),
+                                                                         simplify = FALSE),
                       nested_confounders = gDRutils::get_env_identifiers("barcode"),
                       override_untrt_controls = NULL) {
 
