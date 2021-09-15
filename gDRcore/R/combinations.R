@@ -12,7 +12,7 @@
 }
 
 map_ids_to_fits <- function(ids, fittings, fitting_id_col) {
-  ridx <- S4Vectors::match(round(ids, 4), round(fittings[[fitting_id_col]], 4)) # TODO: Later can get rid of sigfig and depend on env
+  ridx <- S4Vectors::match(round(log10(ids), 2), round(log10(fittings[[fitting_id_col]]), 2))
   metrics <- fittings[ridx, c(fitting_id_col, "x_inf", "x_0", "ec50", "h")]
   # Extrapolate fitted values.
   out <- gDRutils::logistic_4parameters(metrics[[fitting_id_col]],
