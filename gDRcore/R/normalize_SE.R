@@ -2,8 +2,8 @@
 #' @export
 #'
 normalize_SE <- function(se, 
-                         nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration"),
-                         nested_confounders = gDRutils::get_SE_identifiers(se, "barcode"),
+                         nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify = TRUE),
+                         nested_confounders = gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE),
                          control_assay = "Controls", 
                          raw_treated_assay = "RawTreated", 
                          normalized_assay = "Normalized", 
@@ -18,15 +18,15 @@ normalize_SE <- function(se,
 
   # Keys
   nested_keys <- c(nested_identifiers, nested_confounders)
-  masked_key <- gDRutils::get_SE_identifiers(se, "masked_tag")
+  masked_key <- gDRutils::get_SE_identifiers(se, "masked_tag", simplify = TRUE)
   trt_keys <- gDRutils::get_SE_keys(se, key_type = "Trt")
   
   cdata <- SummarizedExperiment::colData(se)
   rdata <- SummarizedExperiment::rowData(se)
   
-  cl_names <- cdata[, gDRutils::get_SE_identifiers(se, "cellline_name"), drop = FALSE]
-  cl_ref_div_times <- cdata[, gDRutils::get_SE_identifiers(se, "cellline_ref_div_time"), drop = FALSE]
-  durations <- rdata[, gDRutils::get_SE_identifiers(se, "duration"), drop = FALSE]
+  cl_names <- cdata[, gDRutils::get_SE_identifiers(se, "cellline_name", simplify = TRUE), drop = FALSE]
+  cl_ref_div_times <- cdata[, gDRutils::get_SE_identifiers(se, "cellline_ref_div_time", simplify = TRUE), drop = FALSE]
+  durations <- rdata[, gDRutils::get_SE_identifiers(se, "duration", simplify = TRUE), drop = FALSE]
 
   refs <- SummarizedExperiment::assays(se)[[control_assay]]
   trt <- SummarizedExperiment::assays(se)[[raw_treated_assay]]
