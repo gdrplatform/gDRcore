@@ -2,7 +2,7 @@
 #' @export
 #'
 fit_SE <- function(se, 
-                   nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration"),
+                   nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify = TRUE),
                    averaged_assay = "Averaged", 
                    metrics_assay = "Metrics", 
                    n_point_cutoff = 4,
