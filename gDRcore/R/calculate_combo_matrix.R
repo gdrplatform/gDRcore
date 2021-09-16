@@ -79,10 +79,12 @@ fit_SE.combinations <- function(se,
       }
 
       hsa <- calculate_HSA(sa1, id2, sa2, id, metric)
-      h_excess <- calculate_excess(hsa, measured, series_identifiers = c(id, id2), metric_col = "metric", measured_col = "average")
+      h_excess <- calculate_excess(hsa, measured, series_identifiers = c(id, id2), metric_col = "metric",
+                                   measured_col = "average")
 
       bliss <- calculate_Bliss(sa1, id2, sa2, id, metric)
-      b_excess <- calculate_excess(bliss, measured, series_identifiers = c(id, id2), metric_col = "metric", measured_col = "average")
+      b_excess <- calculate_excess(bliss, measured, series_identifiers = c(id, id2), metric_col = "metric",
+                                   measured_col = "average")
 
       # TODO: call calculate_Loewe and calculate_isoobolograms
       ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
@@ -104,8 +106,10 @@ fit_SE.combinations <- function(se,
   all_b_excess <- do.call(rbind, bliss_excess)
   all_hsa_excess <- do.call(rbind, bliss_excess)
 
-  assays(se)[["BlissExcess"]] <- splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess) %in% c("row_id", "col_id")], row = all_b_excess$row_id, col = all_b_excess$col_id)
-  assays(se)[["HSAExcess"]] <- splitAsBumpyMatrix(all_hsa_excess[!colnames(all_hsa_excess) %in% c("row_id", "col_id")], row = all_hsa_excess$row_id, col = all_hsa_excess$col_id)
+  assays(se)[["BlissExcess"]] <- splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess) %in% c("row_id", "col_id")],
+                                                    row = all_b_excess$row_id, col = all_b_excess$col_id)
+  assays(se)[["HSAExcess"]] <- splitAsBumpyMatrix(all_hsa_excess[!colnames(all_hsa_excess) %in% c("row_id", "col_id")],
+                                                  row = all_hsa_excess$row_id, col = all_hsa_excess$col_id)
 
   assays(se)[["BlissScore"]] <- bliss_score
   assays(se)[["HSAScore"]] <- hsa_score
