@@ -27,7 +27,7 @@ fit_combo_codilutions <- function(measured, nested_identifiers, normalization_ty
 
 #' @keywords internal
 fit_codilution_series <- function(measured, series_1, series_2, e_0, GR_0, normalization_type) {
-  ratio <- unique(round(measured[[series_2]] / measured[[series_1]], digits = 4)) # TODO: Late rcan get rid of this digits parameter, as can be used from global settings
+  ratio <- 10 ^ unique(round(log10(measured[[series_2]] / measured[[series_1]]), digits = 2))
   if (length(ratio) != 1L) {
     stop("more than one ratio between 'series_2' and 'series_1' detected")
   }

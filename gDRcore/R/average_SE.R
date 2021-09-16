@@ -2,7 +2,7 @@
 #' @export
 #'
 average_SE <- function(se,
-                       nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration"),
+                       nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify = TRUE),
                        override_masked = FALSE,
                        normalized_assay = "Normalized", 
                        averaged_assay = "Averaged") {
