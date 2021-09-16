@@ -127,8 +127,9 @@ calculate_Loewe <- function(mean_matrix, row_fittings, col_fittings, dilution_fi
         } else {
           ifelse(codilution_fittings$x_inf > isobol_value,
         Inf,
-        codilution_fittings$ec50 * ((((codilution_fittings$x_0 - codilution_fittings$x_inf) / (isobol_value - codilution_fittings$x_inf)) - 1) ^
-            (1 / codilution_fittings$h)))
+        codilution_fittings$ec50 * ((((codilution_fittings$x_0 - codilution_fittings$x_inf) /
+                                        (isobol_value - codilution_fittings$x_inf)) - 1) ^
+                                      (1 / codilution_fittings$h)))
         }  
       df_iso_codil <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$conc_ratio),
                         conc_2 = conc_mix / (1 + codilution_fittings$conc_ratio), fit_type = "by_codil")
