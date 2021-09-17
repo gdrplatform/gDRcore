@@ -67,7 +67,7 @@ create_SE <- function(df_,
   for (i in seq_len(nrow(treated))) {
     trt <- rownames(treated)[i]
     trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]  
-    trt_df$row_id <- unique(dfs[groupings %in% trt, "row_id"]) # Override the row_id of the references.
+    trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
 
     if (nrow(trt_df) == 0L) {
       next # No data.
@@ -121,11 +121,11 @@ create_SE <- function(df_,
   trt_out <- do.call(rbind, trt_out)
   ctl_out <- do.call(rbind, ctl_out)
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
-  ref_keep <- !colnames(ctl_out) %in% c("row_id", "col_id")
+  ctl_keep <- !colnames(ctl_out) %in% c("row_id", "col_id")
 
   trt_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out[, trt_keep, drop = FALSE],
                                                  row = trt_out$row_id, col = trt_out$col_id)
-  ctl_mat <- BumpyMatrix::splitAsBumpyMatrix(ctl_out[, ref_keep, drop = FALSE],
+  ctl_mat <- BumpyMatrix::splitAsBumpyMatrix(ctl_out[, ctl_keep, drop = FALSE],
                                                    row = ctl_out$row_id, col = ctl_out$col_id)
   matsL <- list(RawTreated = trt_mat, Controls = ctl_mat)
 
