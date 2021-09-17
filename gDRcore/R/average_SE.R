@@ -2,14 +2,20 @@
 #' @export
 #'
 average_SE <- function(se,
-                       nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify = TRUE),
+                       series_identifiers = NULL,
                        override_masked = FALSE,
                        normalized_assay = "Normalized", 
                        averaged_assay = "Averaged") {
 
+  if (is.null(series_identifiers)) {
+    series_identifiers <- c(gDRutils::get_SE_identifiers(se, "concentration", simplify = TRUE),
+      gDRutils::get_SE_identifiers(se, "concentration2", simplify = TRUE))
+  }
+
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
   gDRutils::validate_se_assay_name(se, normalized_assay)
+
 
   trt_keys <- gDRutils::get_SE_keys(se, "Trt")
   masked_tag_key <- gDRutils::get_SE_keys(se, "masked_tag")
@@ -37,29 +43,30 @@ average_SE <- function(se,
 
       # bypass 'masked' filter
       masked <- norm_df[[masked_tag_key]] & !override_masked
-
-      p_trt_keys <- intersect(trt_keys, colnames(norm_df))
-
       if (sum(!masked) > 0) {
+        series_identifiers <- intersect(series_identifiers, colnames(norm_df))
+        p_trt_keys <- intersect(trt_keys, colnames(norm_df))
+
         if (length(missing <- setdiff(std_cols, colnames(norm_df))) > 0L) {
           stop(sprintf("missing expected columns in nested normalized dataframe: '%s'", 
             paste0(missing, collapse = ", ")))
         }
 
-        avg_df <- stats::aggregate(norm_df[!masked, std_cols],
-          by = as.list(norm_df[!masked, nested_identifiers, drop = FALSE]), 
+        unmasked <- norm_df[!masked, , drop = FALSE]
+        avg_df <- stats::aggregate(unmasked[, std_cols],
+          by = as.list(unmasked[, series_identifiers, drop = FALSE]), 
           function(x) mean(x, na.rm = TRUE))
 
-        std_df <- stats::aggregate(norm_df[!masked, std_cols],
-          by = as.list(norm_df[!masked, nested_identifiers, drop = FALSE]), 
+        std_df <- stats::aggregate(unmasked[, std_cols],
+          by = as.list(unmasked[, series_identifiers, drop = FALSE]), 
           function(x) stats::sd(x, na.rm = TRUE))
         colnames(std_df)[colnames(std_df) %in% std_cols] <-
           paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
 
-        agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = nested_identifiers))
+        agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = series_identifiers))
       } else {
         # only one or no unmasked value --> create degenerated dataframe
-        all_cols <- unique(c(nested_identifiers, std_cols, p_trt_keys, paste0("std_", std_cols), "row_id", "col_id"))
+        all_cols <- unique(c(series_identifiers, std_cols, p_trt_keys, paste0("std_", std_cols), "row_id", "col_id"))
         agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
         colnames(agg_df) <- all_cols
       }
