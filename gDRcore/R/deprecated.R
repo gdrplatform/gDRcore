@@ -756,25 +756,25 @@ calculate_combo_cotrt <- function(se) {
 add_codrug_group_SE <- function(se) {
 
   r_data <- SummarizedExperiment::rowData(se)
-  if (!(paste0(gDRutils::get_identifier("drugname"), "_2") %in% colnames(r_data)) ||
-     all(r_data[[paste0(gDRutils::get_identifier("drugname"), "_2")]] %in%
-       gDRutils::get_identifier("untreated_tag"))) return(se)
+  if (!(paste0(gDRutils::get_SE_identifiers(se, "drugname"), "_2") %in% colnames(r_data)) ||
+     all(r_data[[paste0(gDRutils::get_SE_identifiers(se, "drugname"), "_2")]] %in%
+       gDRutils::get_SE_identifiers(se, "untreated_tag"))) return(se)
 
   # find the pairs of drugs with relevant metadata
   drug_ids <- paste0(gDRutils::get_identifier("drugname"), c("", "_2"))
   other_metadata <- c(#paste0(gDRutils::get_identifier("drug"), c("", "_2")),
             setdiff(colnames(r_data), c("Concentration_2", drug_ids,
-                paste0(gDRutils::get_identifier("drug"), c("", "_2")),
-                paste0(gDRutils::get_identifier("drug_moa"), c("", "_2")))))
+                paste0(gDRutils::get_SE_identifiers(se, "drug"), c("", "_2")),
+                paste0(gDRutils::get_SE_identifiers(se, "drug_moa"), c("", "_2")))))
   drug_pairs <- unique(r_data[, c(drug_ids, other_metadata)])
-  drug_pairs <- drug_pairs[!(drug_pairs[, drug_ids[2]] %in% gDRutils::get_identifier("untreated_tag")), ]
+  drug_pairs <- drug_pairs[!(drug_pairs[, drug_ids[2]] %in% gDRutils::get_SE_identifiers(se, "untreated_tag")), ]
 
   pair_list <- vector("list", nrow(drug_pairs))
   # loop through the pairs to assess the number of individual concentration pairs
   for (idp in 1:nrow(drug_pairs)) {
     row_idx <- r_data[, drug_ids[1]] %in% unlist(drug_pairs[idp, drug_ids]) &
             r_data[, drug_ids[2]] %in% c(unlist(drug_pairs[idp, drug_ids]),
-                gDRutils::get_identifier("untreated_tag")) &
+                gDRutils::get_SE_identifiers(se, "untreated_tag")) &
             apply(as.matrix(
                 IRanges::LogicalList(c(
                   lapply(other_metadata,
