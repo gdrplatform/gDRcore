@@ -106,9 +106,9 @@ fit_SE.combinations <- function(se,
   all_b_excess <- do.call(rbind, bliss_excess)
   all_hsa_excess <- do.call(rbind, bliss_excess)
 
-  assays(se)[["BlissExcess"]] <- splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess) %in% c("row_id", "col_id")],
+  assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess) %in% c("row_id", "col_id")],
                                                     row = all_b_excess$row_id, col = all_b_excess$col_id)
-  assays(se)[["HSAExcess"]] <- splitAsBumpyMatrix(all_hsa_excess[!colnames(all_hsa_excess) %in% c("row_id", "col_id")],
+  assays(se)[["HSAExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_hsa_excess[!colnames(all_hsa_excess) %in% c("row_id", "col_id")],
                                                   row = all_hsa_excess$row_id, col = all_hsa_excess$col_id)
 
   assays(se)[["BlissScore"]] <- bliss_score
