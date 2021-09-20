@@ -98,8 +98,8 @@ runDrugResponseProcessingPipeline <- function(df_,
                                               control_mean_fxn = function(x) {
                                                 mean(x, trim = 0.25)
                                               },
-                                              nested_identifiers = gDRutils::get_identifier("concentration"),
-                                              nested_confounders = gDRutils::get_identifier("barcode"),
+                                              nested_identifiers = NULL,
+                                              nested_confounders = gDRutils::get_env_identifiers("barcode"),
                                               override_untrt_controls = NULL,
                                               override_masked = FALSE,
                                               ndigit_rounding = 4,
@@ -109,6 +109,18 @@ runDrugResponseProcessingPipeline <- function(df_,
                                               normalized_assay = "Normalized",
                                               averaged_assay = "Averaged",
                                               metrics_assay = "Metrics") {
+
+  
+  data_type <- data_model(df_)
+  
+  if (is.null(nested_identifiers)) {
+    nested_identifiers <- if (data_type == "single_agent") {
+      gDRutils::get_env_identifiers("concentration")
+    } else {
+      unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
+                                           simplify = FALSE))
+    }
+  }
 
   se <- create_and_normalize_SE(df_ = df_,
     readout = readout,
@@ -122,15 +134,23 @@ runDrugResponseProcessingPipeline <- function(df_,
     ndigit_rounding = ndigit_rounding)
 
   se <- average_SE(se = se, 
-                   nested_identifiers = nested_identifiers,
+                   series_identifiers = nested_identifiers,
                    override_masked = override_masked, 
                    normalized_assay = normalized_assay, 
                    averaged_assay = averaged_assay)
-  se <- fit_SE(se = se, 
-               nested_identifiers = nested_identifiers,
-               averaged_assay = averaged_assay, 
-               metrics_assay = metrics_assay, 
-               n_point_cutoff = n_point_cutoff)
+  
   se <- add_codrug_group_SE(se)
+  
+  se <- if (data_type == "single-agent") {
+    fit_SE(se = se, 
+           nested_identifiers = nested_identifiers,
+           averaged_assay = averaged_assay, 
+           metrics_assay = metrics_assay, 
+           n_point_cutoff = n_point_cutoff)
+  } else {
+    fit_SE.combinations(se = se,
+                        series_identifiers = nested_identifiers,
+                        averaged_assay = averaged_assay)
+  }
   se
 }
