@@ -23,7 +23,7 @@ fit_combo_cotreatments <- function(measured, series_id, cotrt_id, normalization_
 
 #' @keywords internal
 fit_cotreatment_series <- function(measured, series_id, cotrt_id, cotrt_value, normalization_type, e_0, GR_0) {
-  assert_numeric(cotrt_value)
+  checkmate::assert_numeric(cotrt_value)
   df_ <- measured[measured[[cotrt_id]] == cotrt_value & measured[[series_id]] > 0, , drop = FALSE]
   cotrt_fit <- gDRutils::fit_curves(
     df_ = df_,
