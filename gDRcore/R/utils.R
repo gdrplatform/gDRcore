@@ -144,3 +144,27 @@ Order_result_df <- function(df_) {
 
   return(df_)
 }
+
+
+#' Detect model of data
+#'
+#' @param df_ data.frame of raw drug response data containing both treated and untreated values. 
+#'
+#' @return string with the information of the raw data follows single-agent or combo data model
+#' @export
+data_model <- function(df_) {
+  checkmate::assert_data_frame(df_)
+  if (all(gDRutils::get_env_identifiers(c("concentration",
+                                      "concentration2"),
+                                    simplify = FALSE) %in% colnames(df_))) {
+    if (all(df_[[gDRutils::get_env_identifiers("concentration2")]] %in% gDRutils::get_env_identifiers("untreated_tag"))) {
+      "single-agent"
+    } else {
+      "combo"
+    }
+  } else if (gDRutils::get_env_identifiers("concentration") %in% colnames(df_)) {
+    "single-agent"
+  } else {
+    stop("Unknown data model")
+  }
+}
