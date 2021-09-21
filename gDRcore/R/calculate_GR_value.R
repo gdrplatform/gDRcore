@@ -55,9 +55,13 @@ calculate_GR_value <- function(rel_viability,
       GRvalue <- rep(NA, length(rel_viability))
     } else if (ref_div_time > 1.5 * duration) {
       warning(
-        sprintf("reference doubling time for 'cell line' is '%s', too long for GR calculation with assay duration ('%s'),
-                setting GR values to NA", 
-          ref_div_time, duration))
+        sprintf(
+          "reference doubling time for 'cell line' is '%s', too long for GR calculation with assay duration ('%s'),
+          setting GR values to NA",
+          ref_div_time,
+          duration
+        )
+      )
       GRvalue <- rep(NA, length(rel_viability))
     } else {
       warning("no day 0 data, calculating GR value based on reference doubling time for 'cell line'")
