@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.7] - 2021-09-21
+#### Update
+- calculate_GR_value by removing cl_name param
+
 #### [1.1.6] - 2021-08-25
 #### Update
 - fix but with missing `nested_identifiers` variables for creating DataFrame for masked values
