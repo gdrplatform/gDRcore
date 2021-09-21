@@ -13,5 +13,5 @@ test_that("calculate_excess works as expected", {
   obs <- calculate_excess(metric, measured, series_identifiers, metric_col, measured_col)
   
   expect_equal(obs[, series_identifiers], measured[, series_identifiers])
-  expect_equal(obs$excess, c())
+  expect_equal(obs$excess, rep(100, 6))
 })
