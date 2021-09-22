@@ -11,11 +11,11 @@
   out
 }
 
-map_ids_to_fits <- function(ids, fittings, fitting_id_col) {
+map_ids_to_fits <- function(conc, ids, fittings, fitting_id_col) {
   ridx <- S4Vectors::match(round(log10(ids), 2), round(log10(fittings[[fitting_id_col]]), 2))
   metrics <- fittings[ridx, c(fitting_id_col, "x_inf", "x_0", "ec50", "h")]
   # Extrapolate fitted values.
-  out <- gDRutils::logistic_4parameters(metrics[[fitting_id_col]],
+  out <- gDRutils::logistic_4parameters(conc,
     metrics$x_inf,
     metrics$x_0,
     metrics$ec50,
@@ -72,10 +72,10 @@ calculate_excess <- function(metric, measured, series_identifiers, metric_col, m
   # TODO: Ensure same dims metric, measured
   # TODO: Ensure there is a unique entry for series_id1, series_id2 and no repeats
   # TODO: Check that there are no NAs
-  idx <- S4Vectors::match(DataFrame(metric[, series_identifiers]), DataFrame(measured[, series_identifiers]))
+  idx <- S4Vectors::match(DataFrame(measured[, series_identifiers]), DataFrame(metric[, series_identifiers]))
   
   out <- measured[, series_identifiers]
-  excess <- metric[idx, metric_col] - measured[, measured_col]
+  excess <- measured[, measured_col] - metric[idx, metric_col]
   out$excess <- excess
   out
 }

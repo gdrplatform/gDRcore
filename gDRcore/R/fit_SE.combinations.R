@@ -30,11 +30,6 @@ fit_SE.combinations <- function(se,
 
   avg <- assay(se, averaged_assay)
 
-  # TODO: Fix me.
-  if ("GR" %in% normalization_types) {
-    metric <- "GRvalue"
-  }
-
   rdata <- rowData(se)
   cdata <- colData(se)
   cl_name <- get_SE_identifiers(se, "cellline_name")
@@ -58,48 +53,62 @@ fit_SE.combinations <- function(se,
       single_agent <- avg_combo[sa, ]
       measured <- avg_combo[!sa, ]
 
-      sa1 <- single_agent[single_agent[[id]] == 0, c(id, id2, metric)]
-      sa2 <- single_agent[single_agent[[id2]] == 0, c(id, id2, metric)]
+      for (normalization_type in normalization_types[1]) {
+        # TODO: need to have it run for both RV and GR and stored accordingly
 
-      for (normalization_type in normalization_types) {
+        if (normalization_type == "GR") {
+          metric <- "GRvalue"
+        } else if (normalization_type == "RV") {
+          metric <- "RelativeViability"
+        }
+
+        sa1 <- single_agent[single_agent[[id]] == 0, c(id, id2, metric)]
+        sa2 <- single_agent[single_agent[[id2]] == 0, c(id, id2, metric)]
+
         # TODO: fix to support more than 1 normalization type
+        # fit by column: the series in the primary identifier, the cotrt is the secondary one
         col_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id, cotrt_id = id2, normalization_type)
+        # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
         row_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id2, cotrt_id = id, normalization_type)
         codilution_fittings <- gDRcore:::fit_combo_codilutions(measured, series_identifiers, normalization_type)
 
-        measured$row_values <- map_ids_to_fits(measured[[id]], row_fittings, "cotrt_value")
-        measured$col_values <- map_ids_to_fits(measured[[id2]], col_fittings, "cotrt_value")
+        # apply the fit the get smoothed data: results per column (along primary identifier for each value of the secondary identifier)
+        measured$col_values <- map_ids_to_fits(conc = measured[[id]], ids = measured[[id2]], col_fittings, "cotrt_value")
+        # apply the fit the get smoothed data: results per row (along secondary identifier for each value of the primary identifier)
+        measured$row_values <- map_ids_to_fits(conc = measured[[id2]], ids = measured[[id]],  row_fittings, "cotrt_value")
         if (!is.null(codilution_fittings)) {
-          measured$codil_values <- map_ids_to_fits(measured[[id2]] / measured[[id]], codilution_fittings, "ratio")
+          # apply the fit the get smoothed data: codilution results (along sum of identifiers for each ratio)
+          measured$codil_values <- map_ids_to_fits(conc = measured[[id2]] + measured[[id]], ids = measured[[id2]] / measured[[id]], codilution_fittings, "ratio")
         }
       
         keep <- intersect(colnames(measured), c(metric, "row_values", "col_values", "codil_values"))
         mat <- as.matrix(measured[, keep])
         measured$average <- rowMeans(mat, na.rm = TRUE)
-      }
-
-      hsa <- calculate_HSA(sa1, id2, sa2, id, metric)
-      h_excess <- calculate_excess(hsa, measured, series_identifiers = c(id, id2), metric_col = "metric",
-                                   measured_col = "average")
-
-      bliss <- calculate_Bliss(sa1, id2, sa2, id, metric)
-      b_excess <- calculate_excess(bliss, measured, series_identifiers = c(id, id2), metric_col = "metric",
-                                   measured_col = "average")
-
-      # TODO: call calculate_Loewe and calculate_isoobolograms
-      ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
-      ## and then each new metric that should go for each spot is another column in the nested DataFrame
-      bliss_score[j, i] <- mean(
-        b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)])
-      hsa_score[j, i] <- mean(
-        h_excess$excess[h_excess$excess <= quantile(h_excess$excess, 0.1, na.rm = TRUE)])
-
-      b_excess$row_id <- h_excess$row_id <- j
-      b_excess$col_id <- h_excess$col_id <- i
       
-      bliss_excess[[count]] <- b_excess
-      hsa_excess[[count]] <- h_excess
-      count <- count + 1
+
+        hsa <- calculate_HSA(sa1, id2, sa2, id, metric)
+        h_excess <- calculate_excess(hsa, measured, series_identifiers = c(id, id2), metric_col = "metric",
+                                    measured_col = "average")
+
+        bliss <- calculate_Bliss(sa1, id2, sa2, id, metric)
+        b_excess <- calculate_excess(bliss, measured, series_identifiers = c(id, id2), metric_col = "metric",
+                                    measured_col = "average")
+
+        # TODO: call calculate_Loewe and calculate_isoobolograms
+        ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
+        ## and then each new metric that should go for each spot is another column in the nested DataFrame
+        hsa_score[j, i] <- mean(
+          h_excess$excess[h_excess$excess <= quantile(h_excess$excess, 0.1, na.rm = TRUE)])
+        bliss_score[j, i] <- mean(
+          b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)])
+        
+        b_excess$row_id <- h_excess$row_id <- j
+        b_excess$col_id <- h_excess$col_id <- i
+        
+        hsa_excess[[count]] <- h_excess
+        bliss_excess[[count]] <- b_excess
+        count <- count + 1
+      }
     }
   }
 
