@@ -61,7 +61,8 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
 #' @param metric data.frame often representing readouts derived by calculating some metric.
 #' Examples of this could include hsa or bliss calculations from single-agent data. 
 #' @param measured data.frame often representing measured data from an experiment.
-#' @param series_identifiers character vector of identifiers in \code{measured} or \code{metric} which define a unique data point.
+#' @param series_identifiers character vector of identifiers in \code{measured} or \code{metric}
+#' which define a unique data point.
 #' @param metric_col string of the column in \code{metric} to use in the excess calculation.
 #' @param measured_col string of the column in \code{measured} to use in the excess calculation.
 #'

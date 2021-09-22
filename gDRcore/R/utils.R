@@ -157,7 +157,8 @@ data_model <- function(df_) {
   if (all(gDRutils::get_env_identifiers(c("concentration",
                                       "concentration2"),
                                     simplify = FALSE) %in% colnames(df_))) {
-    if (all(df_[[gDRutils::get_env_identifiers("concentration2")]] %in% gDRutils::get_env_identifiers("untreated_tag"))) {
+    if (all(df_[[gDRutils::get_env_identifiers("concentration2")]]
+            %in% gDRutils::get_env_identifiers("untreated_tag"))) {
       "single-agent"
     } else {
       "combo"

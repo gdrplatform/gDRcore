@@ -46,13 +46,13 @@ test_synthetic_data <- function(original,
       new$Concentration_2 <- round(new$Concentration_2, 7)
       
       if (assay == "averaged") {
-        original <- data.frame(lapply(original, function(x) if(is.numeric(x)) round(x, 4) else x))
-        new <- data.frame(lapply(new, function(x) if(is.numeric(x)) round(x, 4) else x))
+        original <- data.frame(lapply(original, function(x) if (is.numeric(x)) round(x, 4) else x))
+        new <- data.frame(lapply(new, function(x) if (is.numeric(x)) round(x, 4) else x))
       }
       
       d1 <- do.call("paste", original)
       d2 <- do.call("paste", new)
-      expect_equal(dim(unique(original[d1%in%d2, ])), dim(original))
+      expect_equal(dim(unique(original[d1 %in% d2, ])), dim(original))
     }
   } else {
     test_that(sprintf("Original data %s and recreated data are identical", dataName), {
