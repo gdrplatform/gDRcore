@@ -67,29 +67,14 @@ calculate_excess <- function(metric, measured, series_identifiers, metric_col, m
 }
 
 
-calculate_Loewe <- function(mean_matrix, 
-                      row_fittings, 
-                      col_fittings, 
-                      codilution_fittings, 
-                      series_identifiers,
-                      normalization_type,
+define_matrix_position <- function(mean_matrix,
                       conc_margin = 10 ^ 0.5,
                       log2_pos_offset = log10(3) / 2
-                    ) {
+              ) {
 
   checkmate::assert_number(conc_margin)
   checkmate::assert_number(log2_pos_offset)
-  checkmate::assert_character(normalization_type) 
 
-  #######################################
-  # clean up and set up parmaters
-
-  # remove empty rows/columns
-  mean_matrix <- mean_matrix[rowSums(!is.na(mean_matrix)) > 2, colSums(!is.na(mean_matrix)) > 2]
-
-  # id is diluted along the rows and will be the y-axis of the matrix plots 
-  #     NOTE: not all variables in axis_1/2 are needed in this function and this part may
-  #           be moved in the main function while the necessary variables are passed as arg
   axis_1 <- data.frame(conc_1 = round(as.numeric(rownames(mean_matrix)), 5),
           log10conc_1 = 0, pos_y = 0, marks_y = 0)
   axis_1$log10conc_1 <- log10(axis_1$conc)
@@ -104,6 +89,29 @@ calculate_Loewe <- function(mean_matrix,
   axis_2$pos_x <- axis_2$log10conc_2
   axis_2$pos_x[1] <- 2 * axis_2$pos_x[2] - axis_2$pos_x[3] - log10(1.5)
   axis_2$marks_x <- sprintf("%.2g", axis_2$conc_2)
+
+  list(axis_1 = axis_1, axis_2 = axis_2)
+}
+
+
+
+calculate_Loewe <- function(mean_matrix, 
+                      row_fittings, 
+                      col_fittings, 
+                      codilution_fittings, 
+                      series_identifiers,
+                      normalization_type,
+                      conc_margin = 10 ^ 0.5,
+                      log2_pos_offset = log10(3) / 2
+                    ) {
+
+  checkmate::assert_number(conc_margin)
+  checkmate::assert_number(log2_pos_offset)
+  checkmate::assert_character(normalization_type) 
+
+  axes = define_matrix_position(mean_matrix, conc_margin = conc_margin, log2_pos_offset = log2_pos_offset)
+  axis_1 = axes$axis_1
+  axis_2 = axes$axis_2
 
   if (min(mean_matrix, na.rm = TRUE) > 0.7) {
     iso_cutoff <- NULL

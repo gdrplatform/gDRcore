@@ -37,9 +37,9 @@ fit_SE.combinations <- function(se,
   id <- series_identifiers[1]
   id2 <- series_identifiers[2]
 
-  bliss_score <- hsa_score <- CIScore <- matrix(NA, nrow(se), ncol(se), dimnames = list(rownames(se), colnames(se)))
+  bliss_score <- hsa_score <- CIScore_50 <- CIScore_80 <- matrix(NA, nrow(se), ncol(se), dimnames = list(rownames(se), colnames(se)))
 
-  bliss_excess <- hsa_excess <- isobolograms <- vector("list", nrow(se) * ncol(se))
+  smooth_mx <- bliss_excess <- hsa_excess <- isobolograms <- vector("list", nrow(se) * ncol(se))
   count <- 1
   for (i in colnames(se)) { # each cell line
     for (j in rownames(se)) { # each drug pair
@@ -97,23 +97,29 @@ fit_SE.combinations <- function(se,
         # contruct full matrix with single agent
         mean_matrix <- acast(as.data.frame(measured[, c('average', id, id2)]), formula = sprintf('%s ~ %s', id, id2), value.var = 'average')
         mean_matrix['0','0'] = 1 # add the corner of the matrix
+        # remove empty rows/columns
+        mean_matrix <- mean_matrix[rowSums(!is.na(mean_matrix)) > 2, colSums(!is.na(mean_matrix)) > 2]
 
         # TO DO : measured$average or mean_matrix should be saved for further plots in some manner
+        mean_df <- reshape2::melt(mean_matrix, varnames = c(id, id2), value.name = metric)
 
         # call calculate_Loewe and calculate_isobolograms: 
         isobologram_out = calculate_Loewe(mean_matrix, row_fittings, col_fittings, codilution_fittings, normalization_type = normalization_type) 
         ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
         ## and then each new metric that should go for each spot is another column in the nested DataFrame
         hsa_score[j, i] <- mean(
-          h_excess$excess[h_excess$excess <= quantile(h_excess$excess, 0.1, na.rm = TRUE)])
+          h_excess$excess[h_excess$excess <= quantile(h_excess$excess, 0.1, na.rm = TRUE)], na.rm = TRUE)
         bliss_score[j, i] <- mean(
-          b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)])
-        CIScore[j, i] <- isobologram_out$df_all_AUC_log2CI$CI_100x[isobologram_out$df_all_AUC_log2CI$iso_level == 
+          b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)], na.rm = TRUE)
+        CIScore_50[j, i] <- isobologram_out$df_all_AUC_log2CI$CI_100x[isobologram_out$df_all_AUC_log2CI$iso_level == 
                                   min(isobologram_out$df_all_AUC_log2CI$iso_level[isobologram_out$df_all_AUC_log2CI$iso_level >= 0.5])]
+        CIScore_80[j, i] <- isobologram_out$df_all_AUC_log2CI$CI_100x[isobologram_out$df_all_AUC_log2CI$iso_level == 
+                                  min(isobologram_out$df_all_AUC_log2CI$iso_level[isobologram_out$df_all_AUC_log2CI$iso_level >= 0.2])]
         
-        b_excess$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_curves$row_id <- j
-        b_excess$col_id <- h_excess$col_id <- isobologram_out$df_all_iso_curves$col_id <- i
+        mean_df$row_id <- b_excess$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_curves$row_id <- j
+        mean_df$col_id <- b_excess$col_id <- h_excess$col_id <- isobologram_out$df_all_iso_curves$col_id <- i
         
+        smooth_mx[[count]] <- mean_df
         hsa_excess[[count]] <- h_excess
         bliss_excess[[count]] <- b_excess
         isobolograms[[count]] <- isobologram_out$df_all_iso_curves
@@ -122,10 +128,13 @@ fit_SE.combinations <- function(se,
     }
   }
 
+  all_smooth_mx <- do.call(rbind, smooth_mx)
   all_b_excess <- do.call(rbind, bliss_excess)
   all_hsa_excess <- do.call(rbind, hsa_excess)
   all_isobolograms <- do.call(rbind, isobolograms)
 
+  assays(se)[["SmoothMatrix"]] <- BumpyMatrix::splitAsBumpyMatrix(all_smooth_mx[!colnames(all_smooth_mx) %in% c("row_id", "col_id")],
+                                                    row = all_smooth_mx$row_id, col = all_smooth_mx$col_id)
   assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess) %in% c("row_id", "col_id")],
                                                     row = all_b_excess$row_id, col = all_b_excess$col_id)
   assays(se)[["HSAExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_hsa_excess[!colnames(all_hsa_excess) %in% c("row_id", "col_id")],
@@ -135,7 +144,8 @@ fit_SE.combinations <- function(se,
 
   assays(se)[["BlissScore"]] <- bliss_score
   assays(se)[["HSAScore"]] <- hsa_score
-  assays(se)[["CIScore"]] <- CIScore
+  assays(se)[["CIScore_50"]] <- CIScore_50
+  assays(se)[["CIScore_80"]] <- CIScore_80
 
   se
 }
