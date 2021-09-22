@@ -14,7 +14,7 @@ pkgs:
   gDRutils:
     ver: '>=1.0.14'
     url: gdrplatform/gDRutils
-    ref: master
+    ref: GDR-1097
     subdir: gDRutils
     source: GITHUB
   lintr:
