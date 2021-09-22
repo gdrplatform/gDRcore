@@ -73,12 +73,12 @@ fit_SE.combinations <- function(se,
         codilution_fittings <- gDRcore:::fit_combo_codilutions(measured, series_identifiers, normalization_type)
 
         # apply the fit the get smoothed data: results per column (along primary identifier for each value of the secondary identifier)
-        measured$col_values <- map_ids_to_fits(conc = measured[[id]], ids = measured[[id2]], col_fittings, "cotrt_value")
+        measured$col_values <- map_ids_to_fits(pred = measured[[id]], match_col = measured[[id2]], col_fittings, "cotrt_value")
         # apply the fit the get smoothed data: results per row (along secondary identifier for each value of the primary identifier)
-        measured$row_values <- map_ids_to_fits(conc = measured[[id2]], ids = measured[[id]],  row_fittings, "cotrt_value")
+        measured$row_values <- map_ids_to_fits(pred = measured[[id2]], match_col = measured[[id]], row_fittings, "cotrt_value")
         if (!is.null(codilution_fittings)) {
           # apply the fit the get smoothed data: codilution results (along sum of identifiers for each ratio)
-          measured$codil_values <- map_ids_to_fits(conc = measured[[id2]] + measured[[id]], ids = measured[[id2]] / measured[[id]], codilution_fittings, "ratio")
+          measured$codil_values <- map_ids_to_fits(pred = measured[[id2]] + measured[[id]], match_col = measured[[id2]] / measured[[id]], codilution_fittings, "ratio")
         }
       
         keep <- intersect(colnames(measured), c(metric, "row_values", "col_values", "codil_values"))
