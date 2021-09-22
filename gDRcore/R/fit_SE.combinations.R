@@ -37,9 +37,9 @@ fit_SE.combinations <- function(se,
   id <- series_identifiers[1]
   id2 <- series_identifiers[2]
 
-  bliss_score <- hsa_score <- matrix(NA, nrow(se), ncol(se), dimnames = list(rownames(se), colnames(se)))
+  bliss_score <- hsa_score <- CIScore <- matrix(NA, nrow(se), ncol(se), dimnames = list(rownames(se), colnames(se)))
 
-  bliss_excess <- hsa_excess <- vector("list", nrow(se) * ncol(se))
+  bliss_excess <- hsa_excess <- isobolograms <- vector("list", nrow(se) * ncol(se))
   count <- 1
   for (i in colnames(se)) { # each cell line
     for (j in rownames(se)) { # each drug pair
@@ -51,7 +51,7 @@ fit_SE.combinations <- function(se,
 
       sa <- avg_combo[[id]] == 0 | avg_combo[[id2]] == 0
       single_agent <- avg_combo[sa, ]
-      measured <- avg_combo[!sa, ]
+      measured <- avg_combo#[!sa, ] # we can keep the single agent to have a full matrix
 
       for (normalization_type in normalization_types[1]) {
         # TODO: need to have it run for both RV and GR and stored accordingly
@@ -94,34 +94,48 @@ fit_SE.combinations <- function(se,
         b_excess <- calculate_excess(bliss, measured, series_identifiers = c(id, id2), metric_col = "metric",
                                     measured_col = "average")
 
-        # TODO: call calculate_Loewe and calculate_isoobolograms
+        # contruct full matrix with single agent
+        mean_matrix <- acast(as.data.frame(measured[, c('average', id, id2)]), formula = sprintf('%s ~ %s', id, id2), value.var = 'average')
+        mean_matrix['0','0'] = 1 # add the corner of the matrix
+
+        # TO DO : measured$average or mean_matrix should be saved for further plots in some manner
+
+        # call calculate_Loewe and calculate_isobolograms: 
+        isobologram_out = calculate_Loewe(mean_matrix, row_fittings, col_fittings, codilution_fittings, normalization_type = normalization_type) 
         ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
         ## and then each new metric that should go for each spot is another column in the nested DataFrame
         hsa_score[j, i] <- mean(
           h_excess$excess[h_excess$excess <= quantile(h_excess$excess, 0.1, na.rm = TRUE)])
         bliss_score[j, i] <- mean(
           b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)])
+        CIScore[j, i] <- isobologram_out$df_all_AUC_log2CI$CI_100x[isobologram_out$df_all_AUC_log2CI$iso_level == 
+                                  min(isobologram_out$df_all_AUC_log2CI$iso_level[isobologram_out$df_all_AUC_log2CI$iso_level >= 0.5])]
         
-        b_excess$row_id <- h_excess$row_id <- j
-        b_excess$col_id <- h_excess$col_id <- i
+        b_excess$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_curves$row_id <- j
+        b_excess$col_id <- h_excess$col_id <- isobologram_out$df_all_iso_curves$col_id <- i
         
         hsa_excess[[count]] <- h_excess
         bliss_excess[[count]] <- b_excess
+        isobolograms[[count]] <- isobologram_out$df_all_iso_curves
         count <- count + 1
       }
     }
   }
 
   all_b_excess <- do.call(rbind, bliss_excess)
-  all_hsa_excess <- do.call(rbind, bliss_excess)
+  all_hsa_excess <- do.call(rbind, hsa_excess)
+  all_isobolograms <- do.call(rbind, isobolograms)
 
   assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess) %in% c("row_id", "col_id")],
                                                     row = all_b_excess$row_id, col = all_b_excess$col_id)
   assays(se)[["HSAExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_hsa_excess[!colnames(all_hsa_excess) %in% c("row_id", "col_id")],
                                                   row = all_hsa_excess$row_id, col = all_hsa_excess$col_id)
+  assays(se)[["isobolograms"]] <- BumpyMatrix::splitAsBumpyMatrix(all_isobolograms[!colnames(all_isobolograms) %in% c("row_id", "col_id")],
+                                                  row = all_isobolograms$row_id, col = all_isobolograms$col_id)
 
   assays(se)[["BlissScore"]] <- bliss_score
   assays(se)[["HSAScore"]] <- hsa_score
+  assays(se)[["CIScore"]] <- CIScore
 
   se
 }
