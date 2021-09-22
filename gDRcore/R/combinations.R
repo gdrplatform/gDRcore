@@ -11,11 +11,24 @@
   out
 }
 
-map_ids_to_fits <- function(conc, ids, fittings, fitting_id_col) {
-  ridx <- S4Vectors::match(round(log10(ids), 2), round(log10(fittings[[fitting_id_col]]), 2))
+#' Get predicted values for a given fit and input.
+#'
+#' Map fittings to identifiers and compute the predicted values for corresponding fits.
+#'
+#' @param pred numeric vector for which you want predictions.
+#' @param match_col vector to match on \code{fittings} to get the correct fit.
+#' @param fittings data.frame of fit metrics.
+#' @param fitting_id_col string of the column name in \code{fittings} that should be
+#' used to match with \code{match_col} .
+#'
+#' @return numeric vector of predicted values given \code{pred} inputs and \code{fittings} values.
+#'
+#' @export
+map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
+  ridx <- S4Vectors::match(round(log10(match_col), 2), round(log10(fittings[[fitting_id_col]]), 2))
   metrics <- fittings[ridx, c(fitting_id_col, "x_inf", "x_0", "ec50", "h")]
   # Extrapolate fitted values.
-  out <- gDRutils::logistic_4parameters(conc,
+  out <- gDRutils::logistic_4parameters(pred,
     metrics$x_inf,
     metrics$x_0,
     metrics$ec50,
