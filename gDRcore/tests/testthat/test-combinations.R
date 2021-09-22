@@ -13,3 +13,22 @@ test_that("calculate_excess works as expected", {
   expect_equal(obs[, series_identifiers], measured[, series_identifiers])
   expect_equal(obs$excess, rep(100, 6))
 })
+
+
+test_that("map_ids_to_fits works as expected", {
+  pred <- c(1, 5, 5)
+  match_col <- c(1, 1, 2)
+  fitting_id_col <- "match_on_me"
+
+  fit1 <- data.frame(h = 2.09, x_inf = 0.68, x_0 = 1, ec50 = 0.003)
+  fit2 <- data.frame(h = 0.906, x_inf = 0.46, x_0 = 1, ec50 = 0.001)
+  fittings <- do.call(rbind, list(fit1, fit2))
+  fittings[[fitting_id_col]] <- c(1, 2)
+
+  obs <- map_ids_to_fits(pred, match_col, fittings, fitting_id_col)
+  exp1 <- gDRutils::logistic_4parameters(pred[1], fit1$x_inf, fit1$x_0, fit1$ec50, fit1$h)
+  exp2 <- gDRutils::logistic_4parameters(pred[2], fit1$x_inf, fit1$x_0, fit1$ec50, fit1$h)
+  exp3 <- gDRutils::logistic_4parameters(pred[3], fit2$x_inf, fit2$x_0, fit2$ec50, fit2$h)
+
+  expect_equal(obs, c(exp1, exp2, exp3))
+})
