@@ -17,7 +17,7 @@ test_that("fit_combo_codilutions works as expected", {
   obs <- gDRcore:::fit_combo_codilutions(measured, nested_identifiers, "GR")
   expect_equal(dim(obs), c(3, 17))
   expect_true("ratio" %in% colnames(obs))
-  expect_equal(obs$ratio, c(0.5, 1.0, 2.0))
+  expect_equal(obs$ratio, c(0.5, 1.0, 2.0), tolerance = 10e-3)
 })
 
 
@@ -48,5 +48,5 @@ test_that("fit_codilution_series works as expected", {
 
   expect_equal(dim(obs), c(1, 17))
   expect_true("ratio" %in% colnames(obs))
-  expect_equal(obs$ratio, ratio)
+  expect_equal(obs$ratio, ratio, tolerance = 10e-3)
 })
