@@ -1,5 +1,3 @@
-library(testthat); library(gDRcore)
-
 test_that("calculate_excess works as expected", {
   metric <- data.frame(Concentration = c(1, 2, 3, 1, 2, 3),
     Concentration_2 = c(1, 1, 1, 2, 2, 2),
