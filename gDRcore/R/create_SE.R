@@ -66,8 +66,12 @@ create_SE <- function(df_,
   trt_out <- ctl_out <- vector("list", nrow(treated))
   for (i in seq_len(nrow(treated))) {
     trt <- rownames(treated)[i]
-    trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]  
-    trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
+    trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]
+    override_rows <- unique(dfs[groupings == trt, "row_id"])
+    
+    if (NROW(override_rows) != 0) { # for Concentration_2 == 0
+      trt_df$row_id <- override_rows # Override the row_id of the references.
+    }
 
     if (nrow(trt_df) == 0L) {
       next # No data.
