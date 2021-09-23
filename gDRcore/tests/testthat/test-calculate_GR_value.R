@@ -52,7 +52,7 @@ test_that("calculate_GR_value works as expected", {
     ref_div_time = (duration * 1.5) - 1
   )
   expect_true(all(gr1 != gr3))
-  
+
   # day0_readout is NA, reference division time is present but not valid.
   gr4 <- calculate_GR_value(
     rel_viability = rv,
