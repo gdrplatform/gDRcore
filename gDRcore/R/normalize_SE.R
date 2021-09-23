@@ -81,7 +81,7 @@ normalize_SE <- function(se,
                                               all_readouts_df$UntrtReadout, ndigit_rounding)
       
       if (any(is.na(all_readouts_df$Day0Readout))) {
-        warning(sprintf("no day 0 for '%s'", cl_name))
+        warning(sprintf("could not calculate GR values for '%s'", cl_name))
       }
       
       normalized$GRvalue <- calculate_GR_value(rel_viability = normalized$RelativeViability, 
