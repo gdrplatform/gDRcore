@@ -110,8 +110,7 @@ normalize_SE <- function(se,
         untrt_readout = ref_df$UntrtReadout, 
         ndigit_rounding = ndigit_rounding, 
         duration = duration, 
-        ref_div_time = ref_div_time, 
-        cl_name = cl_name)
+        ref_div_time = ref_div_time)
 
       ref_rel_viability[i, j] <- round(mean(RV_vec, na.rm = TRUE), ndigit_rounding)
       ref_GR_value[i, j] <- round(mean(GR_vec, na.rm = TRUE), ndigit_rounding)
