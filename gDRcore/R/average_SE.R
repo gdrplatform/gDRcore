@@ -79,7 +79,8 @@ average_SE <- function(se,
     }
   }
   
-  out <- S4Vectors::DataFrame(do.call("rbind", out))
+  # Remove empty elements of list and rbind them
+  out <- S4Vectors::DataFrame(do.call("rbind", out[lengths(out) > 0]))
   averaged <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c(masked_tag_key, "row_id", "col_id")], 
     row = out$row_id, 
     col = out$col_id)

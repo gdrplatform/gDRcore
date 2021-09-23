@@ -72,8 +72,8 @@ create_SE <- function(df_,
   for (i in seq_len(nrow(treated))) {
     trt <- rownames(treated)[i]
     trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]
-
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
+
     ctl_type <- "untrt_Endpoint"
     untrt_ref <- ctl_maps[[ctl_type]][[trt]]  
     untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]

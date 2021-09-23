@@ -76,16 +76,23 @@ normalize_SE <- function(se,
       colnames(normalized) <- c(norm_cols)
 
       # Normalized treated.
-      normalized$RelativeViability <- round(all_readouts_df$CorrectedReadout /
-                                              all_readouts_df$UntrtReadout, ndigit_rounding)
-      normalized$GRvalue <- calculate_GR_value(rel_viability = normalized$RelativeViability, 
-        corrected_readout = all_readouts_df$CorrectedReadout, 
-        day0_readout = all_readouts_df$Day0Readout, 
-        untrt_readout = all_readouts_df$UntrtReadout, 
-        ndigit_rounding = ndigit_rounding, 
-        duration = duration, 
-        ref_div_time = ref_div_time, 
-        cl_name = cl_name)
+      # required usage of 'replace' for cases with Concentration_2 == 0
+      
+      relativeViability <- round(all_readouts_df$CorrectedReadout /
+                                   all_readouts_df$UntrtReadout, ndigit_rounding)
+      normalized$RelativeViability <- replace(normalized$RelativeViability,
+                                              values = relativeViability)
+      
+      
+      normalized$GRvalue <- replace(normalized$GRvalue,
+                                    values = calculate_GR_value(rel_viability = relativeViability,
+                                                                corrected_readout = all_readouts_df$CorrectedReadout,
+                                                                day0_readout = all_readouts_df$Day0Readout,
+                                                                untrt_readout = all_readouts_df$UntrtReadout,
+                                                                ndigit_rounding = ndigit_rounding,
+                                                                duration = duration,
+                                                                ref_div_time = ref_div_time,
+                                                                cl_name = cl_name))
 
       # Carry over present treated keys.
       keep <- intersect(c(nested_identifiers, trt_keys, masked_key), colnames(all_readouts_df))
@@ -101,7 +108,9 @@ normalize_SE <- function(se,
   if (!is.null(msgs)) {
     futile.logger::flog.warn(paste0(msgs, collapse = "\n"))
   }
-  out <- do.call("rbind", out)
+  
+  # Remove empty elements of list and rbind them
+  out <- do.call("rbind", out[lengths(out) > 0])
   
   norm <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(normalized) %in% c("row_id", "col_id")], 
     row = out$row_id, 
