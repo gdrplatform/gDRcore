@@ -50,27 +50,19 @@ calculate_GR_value <- function(rel_viability,
   # TODO: Is it correct to put the 'any' here?
   if (any(is.na(day0_readout))) {
     ## Back-calculate the day0_readout using the reference doubling time and the duration of treatment.
-    if (is.null(ref_div_time) || is.na(ref_div_time)) {
-      warning("no day 0, no reference doubling time, so GR values are NA for 'cell line'")
-      GRvalue <- rep(NA, length(rel_viability))
+    GRvalue <- if (is.null(ref_div_time) || is.na(ref_div_time)) {
+      rep(NA, length(rel_viability))
     } else if (ref_div_time > 1.5 * duration) {
-      warning(
-        sprintf(
-          "reference doubling time for 'cell line' is '%s', too long for GR calculation with assay duration ('%s'),
-          setting GR values to NA",
-          ref_div_time,
-          duration
-        )
-      )
-      GRvalue <- rep(NA, length(rel_viability))
+      rep(NA, length(rel_viability))
     } else {
-      warning("no day 0 data, calculating GR value based on reference doubling time for 'cell line'")
-      GRvalue <- calculate_endpt_GR_value(rel_viability = rel_viability, 
-                                          duration = duration, 
-                                          ref_div_time = ref_div_time, 
-                                          cap = cap,
-                                          ndigit_rounding = ndigit_rounding)
-      }
+      calculate_endpt_GR_value(
+        rel_viability = rel_viability,
+        duration = duration,
+        ref_div_time = ref_div_time,
+        cap = cap,
+        ndigit_rounding = ndigit_rounding
+      )
+    }
   } else {
     GRvalue <- calculate_time_dep_GR_value(corrected_readout, 
       day0_readout,  
