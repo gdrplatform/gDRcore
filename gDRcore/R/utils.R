@@ -169,3 +169,8 @@ data_model <- function(df_) {
     stop("Unknown data model")
   }
 }
+
+
+.filter_empty_list_elements <- function(obj) {
+  obj[lengths(obj) > 0L]
+}
