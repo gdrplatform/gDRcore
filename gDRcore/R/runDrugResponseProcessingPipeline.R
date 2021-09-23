@@ -66,7 +66,7 @@ create_and_normalize_SE <- function(df_,
                                     control_mean_fxn = function(x) {
                                       mean(x, trim = 0.25)
                                     },
-                                    nested_identifiers = gDRutils::get_identifier("concentration"),
+                                    nested_identifiers = c(gDRutils::get_identifier("concentration"), gDRutils::get_identifier("concentration2")),
                                     nested_confounders = gDRutils::get_identifier("barcode"),
                                     override_untrt_controls = NULL,
                                     ndigit_rounding = 4,
