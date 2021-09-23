@@ -110,7 +110,7 @@ normalize_SE <- function(se,
   }
   
   # Remove empty elements of list and rbind them
-  out <- do.call("rbind", out[lengths(out) > 0])
+  out <- do.call("rbind", .filter_empty_list_elements(out))
   
   norm <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(normalized) %in% c("row_id", "col_id")], 
     row = out$row_id, 

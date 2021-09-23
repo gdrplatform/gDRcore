@@ -118,8 +118,8 @@ fit_SE.combinations <- function(se,
     }
   }
   # Remove empty elements of list and rbind them
-  all_b_excess <- do.call(rbind, bliss_excess[lengths(bliss_excess) > 0])
-  all_hsa_excess <- do.call(rbind, hsa_excess[lengths(hsa_excess) > 0])
+  all_b_excess <- do.call(rbind, .filter_empty_list_elements(bliss_excess))
+  all_hsa_excess <- do.call(rbind, .filter_empty_list_elements(hsa_excess))
 
   assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess)
                                                                               %in% c("row_id", "col_id")],
