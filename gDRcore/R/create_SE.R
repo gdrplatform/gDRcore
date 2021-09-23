@@ -63,57 +63,58 @@ create_SE <- function(df_,
   groupings <- dfs$groupings
   dfs <- dfs[c(md$data_fields, "row_id", "col_id")]
 
+  ## The mapping_entries contain all exhaustive combinations of treatments and cells.
+  ## Not all conditions will actually exist in the data, so filter out those that 
+  ## do not exist. 
+  treated <- treated[rownames(treated) %in% unique(groupings), ]
+
   trt_out <- ctl_out <- vector("list", nrow(treated))
   for (i in seq_len(nrow(treated))) {
     trt <- rownames(treated)[i]
-    trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]  
+    trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]
+
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
+    ctl_type <- "untrt_Endpoint"
+    untrt_ref <- ctl_maps[[ctl_type]][[trt]]  
+    untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
+    untrt_df <- create_control_df(
+      untrt_df, 
+      control_cols = Keys[[ctl_type]], 
+      control_mean_fxn, 
+      out_col_name = "UntrtReadout"
+    )
 
-    if (nrow(trt_df) == 0L) {
-      next # No data.
+    ctl_type <- "Day0"
+    day0_ref <- ctl_maps[[ctl_type]][[trt]]
+    day0_df <- dfs[groupings %in% day0_ref, , drop = FALSE]
+    day0_df <- create_control_df(
+      day0_df, 
+      control_cols = Keys[[ctl_type]],
+      control_mean_fxn, 
+      out_col_name = "Day0Readout"
+    )
+
+    ## Merge all data.frames together.
+    # Try to merge by plate, but otherwise just use mean. 
+    ctl_df <- untrt_df 
+    merge_cols <- intersect(colnames(day0_df), Keys$nested_keys)
+    if (nrow(day0_df) > 0L) {
+      ctl_df <- merge(untrt_df, day0_df, by = merge_cols, all = TRUE)
     } else {
-      ctl_type <- "untrt_Endpoint"
-      untrt_ref <- ctl_maps[[ctl_type]][[trt]]  
-      untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
-      untrt_df <- create_control_df(
-        untrt_df, 
-        control_cols = Keys[[ctl_type]], 
-        control_mean_fxn, 
-        out_col_name = "UntrtReadout"
-      )
-
-      ctl_type <- "Day0"
-      day0_ref <- ctl_maps[[ctl_type]][[trt]]
-      day0_df <- dfs[groupings %in% day0_ref, , drop = FALSE]
-      day0_df <- create_control_df(
-        day0_df, 
-        control_cols = Keys[[ctl_type]],
-        control_mean_fxn, 
-        out_col_name = "Day0Readout"
-      )
-
-      ## Merge all data.frames together.
-      # Try to merge by plate, but otherwise just use mean. 
-      ctl_df <- untrt_df 
-      merge_cols <- intersect(colnames(day0_df), Keys$nested_keys)
-      if (nrow(day0_df) > 0L) {
-        ctl_df <- merge(untrt_df, day0_df, by = merge_cols, all = TRUE)
-      } else {
-        ctl_df$Day0Readout <- NA
-      } 
-      
-      row_id <- unique(trt_df$row_id)
-      col_id <- unique(trt_df$col_id)
-      if (length(row_id) != 1L || length(col_id) != 1L) {
-        stop(sprintf("non-unique row_ids: '%s' and col_ids: '%s'", 
-          paste0(row_id, collapse = ", "), paste0(col_id, collapse = ", ")))
-      }
-      ctl_df$row_id <- row_id
-      ctl_df$col_id <- col_id
+      ctl_df$Day0Readout <- NA
+    } 
     
-      ctl_out[[i]] <- ctl_df
-      trt_out[[i]] <- trt_df
+    row_id <- unique(trt_df$row_id)
+    col_id <- unique(trt_df$col_id)
+    if (length(row_id) != 1L || length(col_id) != 1L) {
+      stop(sprintf("non-unique row_ids: '%s' and col_ids: '%s'", 
+        paste0(row_id, collapse = ", "), paste0(col_id, collapse = ", ")))
     }
+    ctl_df$row_id <- row_id
+    ctl_df$col_id <- col_id
+  
+    ctl_out[[i]] <- ctl_df
+    trt_out[[i]] <- trt_df
   }
 
   names(ctl_out) <- names(trt_out) <- rownames(treated)
