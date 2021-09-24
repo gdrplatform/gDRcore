@@ -66,13 +66,14 @@ create_and_normalize_SE <- function(df_,
                                     control_mean_fxn = function(x) {
                                       mean(x, trim = 0.25)
                                     },
-                                    nested_identifiers = c(gDRutils::get_identifier("concentration"), gDRutils::get_identifier("concentration2")),
-                                    nested_confounders = gDRutils::get_identifier("barcode"),
+                                    nested_identifiers = NULL,
+                                    nested_confounders = gDRutils::get_env_identifiers("barcode"),
                                     override_untrt_controls = NULL,
                                     ndigit_rounding = 4,
                                     control_assay = "Controls",
                                     raw_treated_assay = "RawTreated",
                                     normalized_assay = "Normalized") {
+  
   se <- create_SE(df_ = df_, 
     readout = readout, 
     control_mean_fxn = control_mean_fxn, 
@@ -111,18 +112,7 @@ runDrugResponseProcessingPipeline <- function(df_,
                                               metrics_assay = "Metrics") {
 
   
-  data_type <- data_model(df_)
-  
-  if (is.null(nested_identifiers)) {
-    nested_identifiers <- if (data_type == "single_agent") {
-      gDRutils::get_env_identifiers("concentration")
-    } else {
-      unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
-                                           simplify = FALSE))
-    }
-  }
-
-  se <- create_and_normalize_SE(df_ = df_,
+se <- create_and_normalize_SE(df_ = df_,
     readout = readout,
     control_mean_fxn = control_mean_fxn,
     nested_identifiers = nested_identifiers,

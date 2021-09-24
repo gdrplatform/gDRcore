@@ -7,15 +7,13 @@ average_SE <- function(se,
                        normalized_assay = "Normalized", 
                        averaged_assay = "Averaged") {
 
-  if (is.null(series_identifiers)) {
-    series_identifiers <- c(gDRutils::get_SE_identifiers(se, "concentration", simplify = TRUE),
-      gDRutils::get_SE_identifiers(se, "concentration2", simplify = TRUE))
-  }
-
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
   gDRutils::validate_se_assay_name(se, normalized_assay)
 
+  if (is.null(series_identifiers)) {
+    series_identifiers <- get_SE_nested_identifiers(se, normalized_assay)
+  }
 
   trt_keys <- gDRutils::get_SE_keys(se, "Trt")
   masked_tag_key <- gDRutils::get_SE_keys(se, "masked_tag")

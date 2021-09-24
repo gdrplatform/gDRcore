@@ -2,7 +2,7 @@
 #' @export
 #'
 normalize_SE <- function(se, 
-                         nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify = TRUE),
+                         nested_identifiers = NULL,
                          nested_confounders = gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE),
                          control_assay = "Controls", 
                          raw_treated_assay = "RawTreated", 
@@ -14,6 +14,11 @@ normalize_SE <- function(se,
   gDRutils::validate_se_assay_name(se, control_assay)
   gDRutils::validate_se_assay_name(se, raw_treated_assay)
 
+  
+  if (is.null(nested_identifiers)) {
+    nested_identifiers <- get_SE_nested_identifiers(se, raw_treated_assay)
+  }
+  
   # Keys
   nested_keys <- c(nested_identifiers, nested_confounders)
   masked_key <- gDRutils::get_SE_identifiers(se, "masked_tag", simplify = TRUE)

@@ -17,17 +17,22 @@
 #' @export
 #'
 fit_SE.combinations <- function(se,
-                                series_identifiers = c("Concentration", "Concentration_2"),
+                                series_identifiers = NULL,
                                 normalization_types = c("RV", "GR"),
                                 averaged_assay = "Averaged"
                                 ) {
 
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_character(normalization_types)
+  
+  if (is.null(series_identifiers)) {
+    series_identifiers <- get_SE_nested_identifiers(se, averaged_assay)
+  }
+  
   if (length(series_identifiers) != 2L) {
     stop("gDR only supports 'series_identifiers' arguments with length '2' for the 'fit_SE.combinations' function")
   }
-
+  
   avg <- assay(se, averaged_assay)
 
   rdata <- rowData(se)

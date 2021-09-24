@@ -170,6 +170,37 @@ data_model <- function(df_) {
   }
 }
 
+#' Get default nested identifiers
+#'
+#' @param df_ data.frame of raw drug response data containing both treated and untreated values. 
+#'
+#' @return vector of nested identifiers
+#' @export
+get_nested_identifiers <- function(df_) {
+  checkmate::assert_data_frame(df_)
+  data_type <- data_model(df_)
+  if (data_type == "single-agent") {
+    gDRutils::get_env_identifiers("concentration")
+  } else {
+    unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
+                                         simplify = FALSE))
+  }
+}
+
+#' Get SE nested identifiers
+#'
+#' @param SE SummarizedExperiment
+#' @param assayName assay name used for checking nested identifiers
+#'
+#' @return vector of nested identifiers
+#' @export
+get_SE_nested_identifiers <- function(se,
+                                      assayName = tail(SummarizedExperiment::assayNames(se), 1)) {
+  checkmate::assert_class(se, "SummarizedExperiment")
+  intersect(unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
+                                                 simplify = FALSE)),
+            names(assay(SE, assayName)[[1]]))
+}
 
 .filter_empty_list_elements <- function(obj) {
   obj[lengths(obj) > 0L]

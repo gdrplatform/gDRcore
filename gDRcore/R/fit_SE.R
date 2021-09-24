@@ -2,7 +2,7 @@
 #' @export
 #'
 fit_SE <- function(se, 
-                   nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify = TRUE),
+                   nested_identifiers = NULL,
                    averaged_assay = "Averaged", 
                    metrics_assay = "Metrics", 
                    n_point_cutoff = 4,
@@ -22,6 +22,12 @@ fit_SE <- function(se,
   req_assays <- c(averaged_assay)
   lapply(req_assays, function(x) gDRutils::validate_se_assay_name(se, x))
 
+  
+  if (is.null(nested_identifiers)) {
+    nested_identifiers <- get_SE_nested_identifiers(se, averaged_assay)
+  }
+  
+  
   metric_cols <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
   out <- vector("list", nrow(se) * ncol(se))
   avg_trt <- SummarizedExperiment::assay(se, averaged_assay)

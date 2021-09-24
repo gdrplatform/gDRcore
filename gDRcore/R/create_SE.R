@@ -6,17 +6,21 @@ create_SE <- function(df_,
                       control_mean_fxn = function(x) {
                         mean(x, trim = 0.25)
                       },
-                      nested_identifiers = gDRutils::get_env_identifiers(c("concentration", "concentration2"),
-                                                                         simplify = FALSE),
+                      nested_identifiers = NULL,
                       nested_confounders = gDRutils::get_env_identifiers("barcode"),
                       override_untrt_controls = NULL) {
 
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(readout)
-  checkmate::assert_character(nested_identifiers, null.ok = FALSE)
+  checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
 
+  
+  if (is.null(nested_identifiers)) {
+    nested_identifiers <- get_nested_identifiers(df_)
+  }
+  
   if (is(df_, "data.table")) {
     df_ <- S4Vectors::DataFrame(df_)
   }
