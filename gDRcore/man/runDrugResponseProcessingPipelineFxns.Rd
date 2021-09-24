@@ -23,16 +23,14 @@ create_SE(
   df_,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
-  nested_identifiers = gDRutils::get_env_identifiers(c("concentration",
-    "concentration2"), simplify = FALSE),
+  nested_identifiers = NULL,
   nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL
 )
 
 fit_SE(
   se,
-  nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify =
-    TRUE),
+  nested_identifiers = NULL,
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
   n_point_cutoff = 4,
@@ -45,8 +43,7 @@ fit_SE(
 
 normalize_SE(
   se,
-  nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify =
-    TRUE),
+  nested_identifiers = NULL,
   nested_confounders = gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE),
   control_assay = "Controls",
   raw_treated_assay = "RawTreated",
@@ -58,8 +55,8 @@ create_and_normalize_SE(
   df_,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
-  nested_identifiers = gDRutils::get_identifier("concentration"),
-  nested_confounders = gDRutils::get_identifier("barcode"),
+  nested_identifiers = NULL,
+  nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL,
   ndigit_rounding = 4,
   control_assay = "Controls",
