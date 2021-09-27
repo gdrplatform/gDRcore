@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{get_SE_nested_identifiers}
 \alias{get_SE_nested_identifiers}
-\title{Get SE nested identifiers}
+\title{Get se nested identifiers}
 \usage{
 get_SE_nested_identifiers(
   se,
@@ -10,13 +10,13 @@ get_SE_nested_identifiers(
 )
 }
 \arguments{
-\item{assayName}{assay name used for checking nested identifiers}
+\item{se}{SummarizedExperiment}
 
-\item{SE}{SummarizedExperiment}
+\item{assayName}{assay name used for checking nested identifiers}
 }
 \value{
 vector of nested identifiers
 }
 \description{
-Get SE nested identifiers
+Get se nested identifiers
 }

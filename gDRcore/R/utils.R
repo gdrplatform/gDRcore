@@ -187,9 +187,9 @@ get_nested_identifiers <- function(df_) {
   }
 }
 
-#' Get SE nested identifiers
+#' Get se nested identifiers
 #'
-#' @param SE SummarizedExperiment
+#' @param se SummarizedExperiment
 #' @param assayName assay name used for checking nested identifiers
 #'
 #' @return vector of nested identifiers
@@ -199,7 +199,7 @@ get_SE_nested_identifiers <- function(se,
   checkmate::assert_class(se, "SummarizedExperiment")
   intersect(unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
                                                  simplify = FALSE)),
-            names(assay(SE, assayName)[[1]]))
+            names(BumpyMatrix::unsplitAsDataFrame(assay(se, assayName))))
 }
 
 .filter_empty_list_elements <- function(obj) {
