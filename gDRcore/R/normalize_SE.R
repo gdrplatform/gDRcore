@@ -44,7 +44,8 @@ normalize_SE <- function(se,
   out <- vector("list", nrow(se) * ncol(se))
   ref_rel_viability <- ref_GR_value <- div_time <- matrix(NA, nrow = nrow(se), ncol = ncol(se), dimnames = dimnames(se))
   msgs <- NULL
-  out <- S4Vectors::DataFrame()
+  out <- list()
+  cnt <- 0
   # Column major order, so go down first.
   for (j in unique(c(refs$column, trt$column))) {
     cl_name <- cl_names[j, ]
@@ -63,6 +64,7 @@ normalize_SE <- function(se,
         next # skip if no data
       }
 
+      cnt <- cnt + 1
       # pad the ref_df for missing values based on nested_keys (uses mean across all available values)
       if (!is.null(nested_keys) && length(nested_keys) > 0) {
         ref_df <- fill_NA_ref(ref_df, nested_keys)
@@ -100,7 +102,7 @@ normalize_SE <- function(se,
 
       normalized$row_id <- i
       normalized$col_id <- j
-      out <- rbind(out, normalized)
+      out[[cnt]] <- normalized
     }
   }
 
@@ -108,7 +110,9 @@ normalize_SE <- function(se,
     futile.logger::flog.warn(paste0(msgs, collapse = "\n"))
   }
   
-  norm <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(normalized) %in% c("row_id", "col_id")], 
+  out <- S4Vectors::DataFrame(do.call("rbind", out))
+  
+  norm <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c("row_id", "col_id")], 
     row = out$row_id, 
     col = out$col_id)
 

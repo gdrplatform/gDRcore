@@ -29,14 +29,15 @@ average_SE <- function(se,
   normalized <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, normalized_assay))
 
   std_cols <- c("GRvalue", "RelativeViability")
-  out <- S4Vectors::DataFrame()
+  out <- list()
+  cnt <- 0
   for (i in unique(normalized$row)) {
     for (j in unique(normalized$column)) {
       norm_df <- normalized[normalized$row == i & normalized$column == j, ]
       if (nrow(norm_df) == 0L) {
         next
         }
-
+      cnt <- cnt + 1
       # bypass 'masked' filter
       masked <- norm_df[[masked_tag_key]] & !override_masked
       if (sum(!masked) > 0) {
@@ -71,9 +72,11 @@ average_SE <- function(se,
         agg_df$row_id <- i
         agg_df$col_id <- j
       }
-      out <- rbind(out, agg_df)
+      out[[cnt]] <- agg_df
     }
   }
+  
+  out <- S4Vectors::DataFrame(do.call("rbind", out))
   
   averaged <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c(masked_tag_key, "row_id", "col_id")], 
     row = out$row_id, 

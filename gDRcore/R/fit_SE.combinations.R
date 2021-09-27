@@ -44,7 +44,8 @@ fit_SE.combinations <- function(se,
 
   bliss_score <- hsa_score <- matrix(NA, nrow(se), ncol(se), dimnames = list(rownames(se), colnames(se)))
 
-  bliss_excess <- hsa_excess <- S4Vectors::DataFrame()
+  bliss_excess <- hsa_excess <- list()
+  cnt <- 0
   for (i in unique(avg$column)) { # each cell line
     for (j in unique(avg$row)) { # each drug pair
       avg_combo <- avg[avg$row == j & avg$column == i, ]
@@ -52,7 +53,7 @@ fit_SE.combinations <- function(se,
       if (nrow(avg_combo) == 0L) {
         next
       }
-
+      cnt <- cnt + 1
       sa <- avg_combo[[id]] == 0 | avg_combo[[id2]] == 0
       single_agent <- avg_combo[sa, ]
       measured <- avg_combo[!sa, ]
@@ -108,12 +109,15 @@ fit_SE.combinations <- function(se,
         b_excess$row_id <- h_excess$row_id <- j
         b_excess$col_id <- h_excess$col_id <- i
           
-        hsa_excess <- rbind(hsa_excess, h_excess)
-        bliss_excess <- rbind(bliss_excess, b_excess)
+        hsa_excess[[cnt]] <- h_excess
+        bliss_excess[[cnt]] <- b_excess
       }
     }
   }
 
+  hsa_excess <- S4Vectors::DataFrame(do.call("rbind", hsa_excess))
+  bliss_excess <- S4Vectors::DataFrame(do.call("rbind", bliss_excess))
+  
   assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(bliss_excess[!colnames(bliss_excess)
                                                                               %in% c("row_id", "col_id")],
                                                     row = bliss_excess$row_id, col = bliss_excess$col_id)
