@@ -58,7 +58,7 @@ fit_SE.combinations <- function(se,
       single_agent <- avg_combo[sa, ]
       measured <- avg_combo[!sa, ]
 
-      for (metric in normalization_types[[1]]) {
+      for (metric in normalization_types) {
         # TODO: need to have it run for both RV and GR and stored accordingly
 
         sa1 <- single_agent[single_agent[[id]] == 0, c(id, id2, metric)]
