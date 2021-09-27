@@ -14,8 +14,7 @@ calculate_GR_value(
   ndigit_rounding,
   duration,
   ref_div_time,
-  cap = 1.25,
-  cl_name = "cell line"
+  cap = 1.25
 )
 
 calculate_time_dep_GR_value(
@@ -49,8 +48,6 @@ calculate_endpt_GR_value(
 \item{ref_div_time}{numeric value specifying the reference division time for the cell line in the experiment.}
 
 \item{cap}{numeric value representing the value to cap the highest allowed relative viability at.}
-
-\item{cl_name}{character string specifying the name for the cell line of interest.}
 }
 \value{
 numeric vector containing GR values, one value for each element of the input vectors.
@@ -66,7 +63,6 @@ to produce a GR value.
 
 In the case of calculating the reference GR value from multiple reference readout values, the vectorized
 calculation is performed and then the resulting vector should be averaged outside of this function. 
-The \code{cl_name} is used purely for warning messages and will default to \code{"cell line"}. 
 
 Note that it is expected that the \code{ref_div_time} and \code{duration} are reported in the same units.
 }
