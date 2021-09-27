@@ -99,6 +99,10 @@ normalize_SE <- function(se,
                                                                 ref_div_time = ref_div_time,
                                                                 cl_name = cl_name))
 
+      if (any(is.na(all_readouts_df$Day0Readout))) {
+        warning(sprintf("could not calculate GR values for '%s'", cl_name))
+      }
+      
       # Carry over present treated keys.
       keep <- intersect(c(nested_identifiers, trt_keys, masked_key), colnames(all_readouts_df))
       normalized <- cbind(all_readouts_df[keep], normalized) 
