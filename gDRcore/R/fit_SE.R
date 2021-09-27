@@ -12,7 +12,7 @@ fit_SE <- function(se,
                    force_fit = FALSE,
                    pcutoff = 0.05,
                    cap = 0.1,
-                   curve_type = c("GR", "RV")) {
+                   curve_type = c("GRvalue", "RelativeViability")) {
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
