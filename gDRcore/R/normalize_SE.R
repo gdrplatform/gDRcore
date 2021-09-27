@@ -79,14 +79,18 @@ normalize_SE <- function(se,
       # Normalized treated.
       normalized$RelativeViability <- round(all_readouts_df$CorrectedReadout /
                                               all_readouts_df$UntrtReadout, ndigit_rounding)
+      
+      if (any(is.na(all_readouts_df$Day0Readout))) {
+        warning(sprintf("could not calculate GR values for '%s'", cl_name))
+      }
+      
       normalized$GRvalue <- calculate_GR_value(rel_viability = normalized$RelativeViability, 
         corrected_readout = all_readouts_df$CorrectedReadout, 
         day0_readout = all_readouts_df$Day0Readout, 
         untrt_readout = all_readouts_df$UntrtReadout, 
         ndigit_rounding = ndigit_rounding, 
         duration = duration, 
-        ref_div_time = ref_div_time, 
-        cl_name = cl_name)
+        ref_div_time = ref_div_time)
 
       # Carry over present treated keys.
       keep <- intersect(c(nested_identifiers, trt_keys, masked_key), colnames(all_readouts_df))
@@ -106,8 +110,7 @@ normalize_SE <- function(se,
         untrt_readout = ref_df$UntrtReadout, 
         ndigit_rounding = ndigit_rounding, 
         duration = duration, 
-        ref_div_time = ref_div_time, 
-        cl_name = cl_name)
+        ref_div_time = ref_div_time)
 
       ref_rel_viability[i, j] <- round(mean(RV_vec, na.rm = TRUE), ndigit_rounding)
       ref_GR_value[i, j] <- round(mean(GR_vec, na.rm = TRUE), ndigit_rounding)

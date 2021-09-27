@@ -13,7 +13,8 @@
 \usage{
 average_SE(
   se,
-  nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration"),
+  nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify =
+    TRUE),
   override_masked = FALSE,
   normalized_assay = "Normalized",
   averaged_assay = "Averaged"
@@ -23,13 +24,15 @@ create_SE(
   df_,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
-  nested_keys,
+  nested_keys = c(gDRutils::get_env_identifiers("concentration"),
+    gDRutils::get_env_identifiers("barcode")),
   override_untrt_controls = NULL
 )
 
 fit_SE(
   se,
-  nested_identifiers,
+  nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify =
+    TRUE),
   averaged_assay = "Averaged",
   ref_GR_assay = "RefGRvalue",
   ref_RV_assay = "RefRelativeViability",
@@ -44,8 +47,9 @@ fit_SE(
 
 normalize_SE(
   se,
-  nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration"),
-  nested_confounders = gDRutils::get_SE_identifiers(se, "barcode"),
+  nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify =
+    TRUE),
+  nested_confounders = gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE),
   control_assay = "Controls",
   raw_treated_assay = "RawTreated",
   normalized_assay = "Normalized",
