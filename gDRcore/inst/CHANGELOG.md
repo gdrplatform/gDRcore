@@ -2,7 +2,6 @@
 
 All notable changes to this project will be documented in this file.
 
-<<<<<<< HEAD
 #### [1.1.8] - 2021-09-27
 #### Update
 - updated normalization_types in 'calculate_combo_matrix' and 'fit_SE'
