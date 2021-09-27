@@ -18,7 +18,7 @@
 #'
 fit_SE.combinations <- function(se,
                                 series_identifiers = NULL,
-                                normalization_types = c("RV", "GR"),
+                                normalization_types = c("GRvalue", "RelativeViability"),
                                 averaged_assay = "Averaged"
                                 ) {
 
@@ -33,7 +33,7 @@ fit_SE.combinations <- function(se,
     stop("gDR only supports 'series_identifiers' arguments with length '2' for the 'fit_SE.combinations' function")
   }
   
-  avg <- assay(se, averaged_assay)
+  avg <- BumpyMatrix::unsplitAsDataFrame(assay(se, averaged_assay))
 
   rdata <- rowData(se)
   cdata <- colData(se)
@@ -44,12 +44,11 @@ fit_SE.combinations <- function(se,
 
   bliss_score <- hsa_score <- matrix(NA, nrow(se), ncol(se), dimnames = list(rownames(se), colnames(se)))
 
-  bliss_excess <- hsa_excess <- vector("list", nrow(se) * ncol(se))
-  count <- 1
-  for (i in colnames(se)) { # each cell line
-    for (j in rownames(se)) { # each drug pair
-      avg_combo <- avg[j, i][[1]] # all combo readouts per cell line, drug pair
-
+  bliss_excess <- hsa_excess <- S4Vectors::DataFrame()
+  for (i in unique(avg$column)) { # each cell line
+    for (j in unique(avg$row)) { # each drug pair
+      avg_combo <- avg[avg$row == j & avg$column == i, ]
+      
       if (nrow(avg_combo) == 0L) {
         next
       }
@@ -58,14 +57,8 @@ fit_SE.combinations <- function(se,
       single_agent <- avg_combo[sa, ]
       measured <- avg_combo[!sa, ]
 
-      for (normalization_type in normalization_types[1]) {
+      for (metric in normalization_types[[1]]) {
         # TODO: need to have it run for both RV and GR and stored accordingly
-
-        if (normalization_type == "GR") {
-          metric <- "GRvalue"
-        } else if (normalization_type == "RV") {
-          metric <- "RelativeViability"
-        }
 
         sa1 <- single_agent[single_agent[[id]] == 0, c(id, id2, metric)]
         sa2 <- single_agent[single_agent[[id2]] == 0, c(id, id2, metric)]
@@ -113,30 +106,26 @@ fit_SE.combinations <- function(se,
           b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)])
         
         
-       if (nrow(b_excess) == 0 && nrow(h_excess) == 0) { # for cases when Concentration_2 == 0
-         emptyDF <- S4Vectors::DataFrame(matrix(NA, nrow = 1, ncol = length(b_excess)))
-         colnames(emptyDF) <- c(series_identifiers, "excess")
-         b_excess <- h_excess <- emptyDF
-       }
+       # if (nrow(b_excess) == 0 && nrow(h_excess) == 0) { # for cases when Concentration_2 == 0
+       #   emptyDF <- S4Vectors::DataFrame(matrix(NA, nrow = 1, ncol = length(b_excess)))
+       #   colnames(emptyDF) <- c(series_identifiers, "excess")
+       #   b_excess <- h_excess <- emptyDF
+       # }
         b_excess$row_id <- h_excess$row_id <- j
         b_excess$col_id <- h_excess$col_id <- i
           
-        hsa_excess[[count]] <- h_excess
-        bliss_excess[[count]] <- b_excess
-        count <- count + 1
+        hsa_excess <- rbind(hsa_excess, h_excess)
+        bliss_excess <- rbind(bliss_excess, b_excess)
       }
     }
   }
-  # Remove empty elements of list and rbind them
-  all_b_excess <- do.call(rbind, .filter_empty_list_elements(bliss_excess))
-  all_hsa_excess <- do.call(rbind, .filter_empty_list_elements(hsa_excess))
 
-  assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess)
+  assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(bliss_excess[!colnames(bliss_excess)
                                                                               %in% c("row_id", "col_id")],
-                                                    row = all_b_excess$row_id, col = all_b_excess$col_id)
-  assays(se)[["HSAExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_hsa_excess[!colnames(all_hsa_excess)
+                                                    row = bliss_excess$row_id, col = bliss_excess$col_id)
+  assays(se)[["HSAExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(hsa_excess[!colnames(hsa_excess)
                                                                               %in% c("row_id", "col_id")],
-                                                  row = all_hsa_excess$row_id, col = all_hsa_excess$col_id)
+                                                  row = hsa_excess$row_id, col = hsa_excess$col_id)
 
   assays(se)[["BlissScore"]] <- bliss_score
   assays(se)[["HSAScore"]] <- hsa_score

@@ -32,38 +32,35 @@ normalize_SE <- function(se,
   cl_ref_div_times <- cdata[, gDRutils::get_SE_identifiers(se, "cellline_ref_div_time", simplify = TRUE), drop = FALSE]
   durations <- rdata[, gDRutils::get_SE_identifiers(se, "duration", simplify = TRUE), drop = FALSE]
 
-  refs <- SummarizedExperiment::assays(se)[[control_assay]]
-  trt <- SummarizedExperiment::assays(se)[[raw_treated_assay]]
+  refs <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assays(se)[[control_assay]])
+  trt <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assays(se)[[raw_treated_assay]])
   
   # Extract common nested_confounders shared by trt_df and ref_df
   nested_confounders <- Reduce(intersect, list(nested_confounders,
-                                               names(BumpyMatrix::unsplitAsDataFrame(trt)),
-                                               names(BumpyMatrix::unsplitAsDataFrame(refs))))
+                                               names(trt),
+                                               names(refs)))
   
   norm_cols <- c("RelativeViability", "GRvalue")
   out <- vector("list", nrow(se) * ncol(se))
   ref_rel_viability <- ref_GR_value <- div_time <- matrix(NA, nrow = nrow(se), ncol = ncol(se), dimnames = dimnames(se))
   msgs <- NULL
+  out <- S4Vectors::DataFrame()
   # Column major order, so go down first.
-  for (j in seq_along(colnames(se))) {
+  for (j in unique(c(refs$column, trt$column))) {
     cl_name <- cl_names[j, ]
     ref_div_time <- cl_ref_div_times[j, ]
 
-    for (i in seq_along(rownames(se))) {
+    for (i in unique(c(refs$row, trt$row))) {
       duration <- durations[i, ]
 
-      ref_df <- refs[i, j][[1]]
-      trt_df <- trt[i, j][[1]]
-
-      if (length(trt_df) == 0L || nrow(trt_df) == 0L) {
-        next # skip if no data
-      }
+      ref_df <- refs[refs$row == i & refs$column == j, ]
+      trt_df <- trt[trt$row == i & trt$column == j, ]
 
       if (length(ref_df) == 0L || nrow(ref_df) == 0L) {
         msgs <- c(msgs,
           sprintf("Missing control data. Treatment Id: '%s' Cell_line Id: '%s'", 
-            rownames(se)[i], colnames(se)[j]))
-        next
+            i, j))
+        next # skip if no data
       }
 
       # pad the ref_df for missing values based on nested_keys (uses mean across all available values)
@@ -81,23 +78,17 @@ normalize_SE <- function(se,
       colnames(normalized) <- c(norm_cols)
 
       # Normalized treated.
-      # required usage of 'replace' for cases with Concentration_2 == 0
-      
-      relativeViability <- round(all_readouts_df$CorrectedReadout /
-                                   all_readouts_df$UntrtReadout, ndigit_rounding)
-      normalized$RelativeViability <- replace(normalized$RelativeViability,
-                                              values = relativeViability)
+      normalized$RelativeViability <- round(all_readouts_df$CorrectedReadout /
+                                              all_readouts_df$UntrtReadout, ndigit_rounding)
       
       
-      normalized$GRvalue <- replace(normalized$GRvalue,
-                                    values = calculate_GR_value(rel_viability = relativeViability,
-                                                                corrected_readout = all_readouts_df$CorrectedReadout,
-                                                                day0_readout = all_readouts_df$Day0Readout,
-                                                                untrt_readout = all_readouts_df$UntrtReadout,
-                                                                ndigit_rounding = ndigit_rounding,
-                                                                duration = duration,
-                                                                ref_div_time = ref_div_time,
-                                                                cl_name = cl_name))
+      normalized$GRvalue <- calculate_GR_value(rel_viability = normalized$RelativeViability,
+                                               corrected_readout = all_readouts_df$CorrectedReadout,
+                                               day0_readout = all_readouts_df$Day0Readout,
+                                               untrt_readout = all_readouts_df$UntrtReadout,
+                                               ndigit_rounding = ndigit_rounding,
+                                               duration = duration,
+                                               ref_div_time = ref_div_time)
 
       if (any(is.na(all_readouts_df$Day0Readout))) {
         warning(sprintf("could not calculate GR values for '%s'", cl_name))
@@ -107,19 +98,15 @@ normalize_SE <- function(se,
       keep <- intersect(c(nested_identifiers, trt_keys, masked_key), colnames(all_readouts_df))
       normalized <- cbind(all_readouts_df[keep], normalized) 
 
-      normalized$row_id <- rep(rownames(se)[i], nrow(trt_df))
-      normalized$col_id <- rep(colnames(se)[j], nrow(trt_df))
-
-      out[[nrow(se) * (j - 1) + i]] <- normalized
+      normalized$row_id <- i
+      normalized$col_id <- j
+      out <- rbind(out, normalized)
     }
   }
 
   if (!is.null(msgs)) {
     futile.logger::flog.warn(paste0(msgs, collapse = "\n"))
   }
-  
-  # Remove empty elements of list and rbind them
-  out <- do.call("rbind", .filter_empty_list_elements(out))
   
   norm <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(normalized) %in% c("row_id", "col_id")], 
     row = out$row_id, 
@@ -132,7 +119,7 @@ normalize_SE <- function(se,
 
 #' @keywords internal
 fill_NA_ref <- function(ref_df, nested_keys) {
-  data_columns <- setdiff(colnames(ref_df), nested_keys)
+  data_columns <- setdiff(colnames(ref_df), c(nested_keys, "row", "column"))
   ref_df_mean <- colMeans(data.frame(ref_df[, data_columns, drop = FALSE]), na.rm = TRUE)
   for (col in data_columns) {
     ref_df[is.na(ref_df[, col]), col] <- ref_df_mean[[col]]

@@ -26,15 +26,13 @@ average_SE <- function(se,
     stop("unexpected masked_tag on 'se' object")
   }
 
-  normalized <- SummarizedExperiment::assay(se, normalized_assay)
+  normalized <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, normalized_assay))
 
   std_cols <- c("GRvalue", "RelativeViability")
-  out <- vector("list", nrow(se) * ncol(se))
-  count <- 0
-  for (i in seq_len(nrow(se))) {
-    for (j in seq_len(ncol(se))) {
-      count <- count + 1
-      norm_df <- normalized[i, j][[1]]
+  out <- S4Vectors::DataFrame()
+  for (i in unique(normalized$row)) {
+    for (j in unique(normalized$column)) {
+      norm_df <- normalized[normalized$row == i & normalized$column == j, ]
       if (nrow(norm_df) == 0L) {
         next
         }
@@ -70,15 +68,13 @@ average_SE <- function(se,
       }
 
       if (nrow(agg_df) != 0L) {
-        agg_df$row_id <- rep(rownames(se)[i], nrow(agg_df))
-        agg_df$col_id <- rep(colnames(se)[j], nrow(agg_df))
+        agg_df$row_id <- i
+        agg_df$col_id <- j
       }
-      out[[count]] <- agg_df
+      out <- rbind(out, agg_df)
     }
   }
   
-  # Remove empty elements of list and rbind them
-  out <- S4Vectors::DataFrame(do.call("rbind", out[lengths(out) > 0]))
   averaged <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c(masked_tag_key, "row_id", "col_id")], 
     row = out$row_id, 
     col = out$col_id)
