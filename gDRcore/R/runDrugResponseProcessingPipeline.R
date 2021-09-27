@@ -110,9 +110,8 @@ runDrugResponseProcessingPipeline <- function(df_,
                                               normalized_assay = "Normalized",
                                               averaged_assay = "Averaged",
                                               metrics_assay = "Metrics") {
-
-  
-se <- create_and_normalize_SE(df_ = df_,
+  data_type <- data_model(df_)
+  se <- create_and_normalize_SE(df_ = df_,
     readout = readout,
     control_mean_fxn = control_mean_fxn,
     nested_identifiers = nested_identifiers,
