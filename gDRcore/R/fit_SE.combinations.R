@@ -105,12 +105,6 @@ fit_SE.combinations <- function(se,
         bliss_score[j, i] <- mean(
           b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)])
         
-        
-       # if (nrow(b_excess) == 0 && nrow(h_excess) == 0) { # for cases when Concentration_2 == 0
-       #   emptyDF <- S4Vectors::DataFrame(matrix(NA, nrow = 1, ncol = length(b_excess)))
-       #   colnames(emptyDF) <- c(series_identifiers, "excess")
-       #   b_excess <- h_excess <- emptyDF
-       # }
         b_excess$row_id <- h_excess$row_id <- j
         b_excess$col_id <- h_excess$col_id <- i
           
