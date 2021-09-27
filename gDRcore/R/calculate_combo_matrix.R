@@ -116,7 +116,7 @@ calculate_combo_matrix <- function(se,
           series_identifiers = series_identifiers,
           force_fit = TRUE,
           cap = 0.2,
-          normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR")
+          normalization_type = norm_method
         )
 
         # check if missing concentration for the single agent for drug 1 and infer if needed
@@ -145,7 +145,7 @@ calculate_combo_matrix <- function(se,
         fit_drug2 <- gDRutils::fit_curves(
           df_ = df_[!is.na(df_[, norm_method]), ],
           series_identifiers = series_identifiers,
-          normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR"),
+          normalization_type = norm_method,
           force_fit = TRUE,
           cap = 0.2
         )
@@ -226,7 +226,7 @@ calculate_combo_matrix <- function(se,
             series_identifiers = series_identifiers,
             e_0 = mx[idx, 1], # use single agent fit
             GR_0 = mx[idx, 1], # use single agent fit
-            normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR"),
+            normalization_type = norm_method,
             force_fit = TRUE,
             cap = 0.2
           )
@@ -239,7 +239,7 @@ calculate_combo_matrix <- function(se,
               series_identifiers = series_identifiers,
               e_0 = 1 - mx[idx, 1], # use single agent fit
               GR_0 = 1 - mx[idx, 1], # use single agent fit
-              normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR"),
+              normalization_type = norm_method,
               force_fit = TRUE,
               cap = 0.2
             )
@@ -328,7 +328,7 @@ calculate_combo_matrix <- function(se,
                   series_identifiers = series_identifiers,
                   e_0 = 1,
                   GR_0 = 1,
-                  normalization_type = ifelse(norm_method == "RelativeViability", "RV", "GR"),
+                  normalization_type = norm_method,
                   force_fit = TRUE
                 )
 
