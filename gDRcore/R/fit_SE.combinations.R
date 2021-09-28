@@ -33,7 +33,7 @@ fit_SE.combinations <- function(se,
     stop("gDR only supports 'series_identifiers' arguments with length '2' for the 'fit_SE.combinations' function")
   }
   
-  avg <- BumpyMatrix::unsplitAsDataFrame(assay(se, averaged_assay))
+  avg <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, averaged_assay))
 
   rdata <- rowData(se)
   cdata <- colData(se)
