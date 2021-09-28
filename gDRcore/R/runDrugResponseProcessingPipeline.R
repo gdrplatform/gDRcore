@@ -112,15 +112,15 @@ runDrugResponseProcessingPipeline <- function(df_,
                                               metrics_assay = "Metrics") {
   data_type <- data_model(df_)
   se <- create_and_normalize_SE(df_ = df_,
-    readout = readout,
-    control_mean_fxn = control_mean_fxn,
-    nested_identifiers = nested_identifiers,
-    nested_confounders = nested_confounders,
-    override_untrt_controls = override_untrt_controls,
-    control_assay = control_assay, 
-    raw_treated_assay = raw_treated_assay, 
-    normalized_assay = normalized_assay,
-    ndigit_rounding = ndigit_rounding)
+      readout = readout,
+      control_mean_fxn = control_mean_fxn,
+      nested_identifiers = nested_identifiers,
+      nested_confounders = nested_confounders,
+      override_untrt_controls = override_untrt_controls,
+      control_assay = control_assay, 
+      raw_treated_assay = raw_treated_assay, 
+      normalized_assay = normalized_assay,
+      ndigit_rounding = ndigit_rounding)
 
   se <- average_SE(se = se, 
                    series_identifiers = nested_identifiers,
