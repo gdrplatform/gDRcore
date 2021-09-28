@@ -79,7 +79,8 @@ fit_SE.combinations <- function(se,
       if (!is.null(codilution_fittings)) {
         # apply the fit the get smoothed data: codilution results (along sum of identifiers for each ratio)
         measured$codil_values <- map_ids_to_fits(pred = measured[[id2]] + measured[[id]],
-                                                 match_col = measured[[id2]] / measured[[id]], codilution_fittings, "ratio")
+                                                 match_col = measured[[id2]] / measured[[id]],
+                                                 codilution_fittings, "ratio")
       }
     
       keep <- intersect(colnames(measured), c(metric, "row_values", "col_values", "codil_values"))
