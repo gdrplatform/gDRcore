@@ -29,52 +29,50 @@ average_SE <- function(se,
   normalized <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, normalized_assay))
 
   std_cols <- c("GRvalue", "RelativeViability")
+  iterator <- unique(normalized[, c("column", "row")])
   out <- list()
-  cnt <- 0
-  for (i in unique(normalized$row)) {
-    for (j in unique(normalized$column)) {
-      norm_df <- normalized[normalized$row == i & normalized$column == j, ]
-      if (nrow(norm_df) == 0L) {
-        next
-        }
-      cnt <- cnt + 1
-      # bypass 'masked' filter
-      masked <- norm_df[[masked_tag_key]] & !override_masked
-      if (sum(!masked) > 0) {
-        series_identifiers <- intersect(series_identifiers, colnames(norm_df))
-        p_trt_keys <- intersect(trt_keys, colnames(norm_df))
+  for (row in seq_len(nrow(iterator))) {
+    x <- iterator[row, ]
+    i <- x[["row"]]
+    j <- x[["column"]]
+    norm_df <- normalized[normalized$row == i & normalized$column == j, ]
 
-        if (length(missing <- setdiff(std_cols, colnames(norm_df))) > 0L) {
-          stop(sprintf("missing expected columns in nested normalized dataframe: '%s'", 
-            paste0(missing, collapse = ", ")))
-        }
+    # bypass 'masked' filter
+    masked <- norm_df[[masked_tag_key]] & !override_masked
+    if (sum(!masked) > 0) {
+      series_identifiers <- intersect(series_identifiers, colnames(norm_df))
+      p_trt_keys <- intersect(trt_keys, colnames(norm_df))
 
-        unmasked <- norm_df[!masked, , drop = FALSE]
-        avg_df <- stats::aggregate(unmasked[, std_cols],
-          by = as.list(unmasked[, series_identifiers, drop = FALSE]), 
-          function(x) mean(x, na.rm = TRUE))
-
-        std_df <- stats::aggregate(unmasked[, std_cols],
-          by = as.list(unmasked[, series_identifiers, drop = FALSE]), 
-          function(x) stats::sd(x, na.rm = TRUE))
-        colnames(std_df)[colnames(std_df) %in% std_cols] <-
-          paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
-
-        agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = series_identifiers))
-      } else {
-        # only one or no unmasked value --> create degenerated dataframe
-        all_cols <- unique(c(series_identifiers, std_cols, p_trt_keys, paste0("std_", std_cols), "row_id", "col_id"))
-        agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
-        colnames(agg_df) <- all_cols
+      if (length(missing <- setdiff(std_cols, colnames(norm_df))) > 0L) {
+        stop(sprintf("missing expected columns in nested normalized dataframe: '%s'", 
+          paste0(missing, collapse = ", ")))
       }
 
-      if (nrow(agg_df) != 0L) {
-        agg_df$row_id <- i
-        agg_df$col_id <- j
-      }
-      out[[cnt]] <- agg_df
+      unmasked <- norm_df[!masked, , drop = FALSE]
+      avg_df <- stats::aggregate(unmasked[, std_cols],
+        by = as.list(unmasked[, series_identifiers, drop = FALSE]), 
+        function(x) mean(x, na.rm = TRUE))
+
+      std_df <- stats::aggregate(unmasked[, std_cols],
+        by = as.list(unmasked[, series_identifiers, drop = FALSE]), 
+        function(x) stats::sd(x, na.rm = TRUE))
+      colnames(std_df)[colnames(std_df) %in% std_cols] <-
+        paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
+
+      agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = series_identifiers))
+    } else {
+      # only one or no unmasked value --> create degenerated dataframe
+      all_cols <- unique(c(series_identifiers, std_cols, p_trt_keys, paste0("std_", std_cols), "row_id", "col_id"))
+      agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
+      colnames(agg_df) <- all_cols
     }
-  }
+
+    if (nrow(agg_df) != 0L) {
+      agg_df$row_id <- i
+      agg_df$col_id <- j
+    }
+    out[[row]] <- agg_df
+}
   
   out <- S4Vectors::DataFrame(do.call("rbind", out))
   
