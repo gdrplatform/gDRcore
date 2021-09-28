@@ -46,7 +46,7 @@ normalize_SE <- function(se,
   msgs <- NULL
   iterator <- unique(rbind(refs[, c("column", "row")],
                            trt[, c("column", "row")]))
-  out <- list()
+  out <- vector("list", nrow(iterator))
   # Column major order, so go down first.
   for (row in seq_len(nrow(iterator))) {
     x <- iterator[row, ]

@@ -29,9 +29,9 @@ fit_SE <- function(se,
   
   
   metric_cols <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
-  out <- vector("list", nrow(se) * ncol(se))
   avg_trt <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, averaged_assay))
   iterator <- unique(avg_trt[, c("column", "row")])
+  out <- vector("list", nrow(iterator))
   for (row in seq_len(nrow(iterator))) {
     x <- iterator[row, ]
     i <- x[["row"]]
