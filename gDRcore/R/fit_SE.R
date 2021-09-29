@@ -24,7 +24,7 @@ fit_SE <- function(se,
 
   
   if (is.null(nested_identifiers)) {
-    nested_identifiers <- get_SE_nested_identifiers(se, averaged_assay)
+    nested_identifiers <- get_nested_default_identifiers(se, averaged_assay)
   }
   
   

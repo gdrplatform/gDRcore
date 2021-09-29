@@ -12,7 +12,7 @@ average_SE <- function(se,
   gDRutils::validate_se_assay_name(se, normalized_assay)
 
   if (is.null(series_identifiers)) {
-    series_identifiers <- get_SE_nested_identifiers(se, normalized_assay)
+    series_identifiers <- get_nested_default_identifiers(se, normalized_assay)
   }
 
   trt_keys <- gDRutils::get_SE_keys(se, "Trt")

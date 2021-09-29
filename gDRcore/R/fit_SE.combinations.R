@@ -26,7 +26,7 @@ fit_SE.combinations <- function(se,
   checkmate::assert_character(normalization_types)
   
   if (is.null(series_identifiers)) {
-    series_identifiers <- get_SE_nested_identifiers(se, averaged_assay)
+    series_identifiers <- get_nested_default_identifiers(se, averaged_assay)
   }
   
   if (length(series_identifiers) != 2L) {

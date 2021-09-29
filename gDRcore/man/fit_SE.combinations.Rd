@@ -7,7 +7,7 @@
 fit_SE.combinations(
   se,
   series_identifiers = NULL,
-  normalization_types = c("RV", "GR"),
+  normalization_types = c("GRvalue", "RelativeViability"),
   averaged_assay = "Averaged"
 )
 }

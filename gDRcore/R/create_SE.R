@@ -18,7 +18,7 @@ create_SE <- function(df_,
 
   
   if (is.null(nested_identifiers)) {
-    nested_identifiers <- get_nested_identifiers(df_)
+    nested_identifiers <- get_nested_default_identifiers(df_)
   }
   
   if (is(df_, "data.table")) {

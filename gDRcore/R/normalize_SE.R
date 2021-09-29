@@ -16,7 +16,7 @@ normalize_SE <- function(se,
 
   
   if (is.null(nested_identifiers)) {
-    nested_identifiers <- get_SE_nested_identifiers(se, raw_treated_assay)
+    nested_identifiers <- get_nested_default_identifiers(se, raw_treated_assay)
   }
   
   # Keys
