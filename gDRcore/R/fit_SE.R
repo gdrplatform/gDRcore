@@ -10,7 +10,7 @@ fit_SE <- function(se,
                    force_fit = FALSE,
                    pcutoff = 0.05,
                    cap = 0.1,
-                   curve_type = c("GR", "RV")) {
+                   curve_type = c("GRvalue", "RelativeViability")) {
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
@@ -29,46 +29,43 @@ fit_SE <- function(se,
   
   
   metric_cols <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
-  out <- vector("list", nrow(se) * ncol(se))
-  avg_trt <- SummarizedExperiment::assay(se, averaged_assay)
+  avg_trt <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, averaged_assay))
+  iterator <- unique(avg_trt[, c("column", "row")])
+  out <- vector("list", nrow(iterator))
+  for (row in seq_len(nrow(iterator))) {
+    x <- iterator[row, ]
+    i <- x[["row"]]
+    j <- x[["column"]]
+ 
+    avg_df <- avg_trt[avg_trt$row == i & avg_trt$column == j, ]
 
-  count <- 0
-  for (i in seq_len(nrow(se))) {
-    for (j in seq_len(ncol(se))) {
-      count <- count + 1
-      avg_df <- avg_trt[i, j][[1]]
-      if (nrow(avg_df) == 0L) {
-        next
-      }
-      
-      fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
-      colnames(fit_df) <- metric_cols
-      rownames(fit_df) <- c("RV", "GR")
+    fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
+    colnames(fit_df) <- metric_cols
+    rownames(fit_df) <- c("RV", "GR")
 
-      
-      if (!is.null(avg_df) && all(dim(avg_df) > 0)) {
-        if (!all(is.na(avg_df[[gDRutils::get_env_identifiers("concentration")]]))) {
-          avg_df <- avg_df[avg_df[[
-            gDRutils::get_env_identifiers("concentration")]] != 0, ]
-        }
-        fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
-          series_identifiers = nested_identifiers,
-          e_0 = 1,
-          GR_0 = 1,
-          n_point_cutoff = n_point_cutoff,
-          range_conc = range_conc,
-          force_fit = force_fit,
-          pcutoff = pcutoff,
-          cap = cap,
-          normalization_type = curve_type))
+    
+    if (!is.null(avg_df) && all(dim(avg_df) > 0)) {
+      if (!all(is.na(avg_df[[gDRutils::get_env_identifiers("concentration")]]))) {
+        avg_df <- avg_df[avg_df[[
+          gDRutils::get_env_identifiers("concentration")]] != 0, ]
       }
-
-      if (nrow(fit_df) != 0L) {
-        fit_df$row_id <- rep(rownames(se)[i], nrow(fit_df))
-        fit_df$col_id <- rep(colnames(se)[j], nrow(fit_df))
-      }
-      out[[count]] <- fit_df
+      fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
+        series_identifiers = nested_identifiers,
+        e_0 = 1,
+        GR_0 = 1,
+        n_point_cutoff = n_point_cutoff,
+        range_conc = range_conc,
+        force_fit = force_fit,
+        pcutoff = pcutoff,
+        cap = cap,
+        normalization_type = curve_type))
     }
+
+    if (nrow(fit_df) != 0L) {
+      fit_df$row_id <- i
+      fit_df$col_id <- j
+    }
+    out[[row]] <- fit_df
   }
   
   out <- S4Vectors::DataFrame(do.call("rbind", out))

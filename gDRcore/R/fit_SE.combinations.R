@@ -18,7 +18,7 @@
 #'
 fit_SE.combinations <- function(se,
                                 series_identifiers = NULL,
-                                normalization_types = c("RV", "GR"),
+                                normalization_types = c("GRvalue", "RelativeViability"),
                                 averaged_assay = "Averaged"
                                 ) {
 
@@ -33,7 +33,7 @@ fit_SE.combinations <- function(se,
     stop("gDR only supports 'series_identifiers' arguments with length '2' for the 'fit_SE.combinations' function")
   }
   
-  avg <- assay(se, averaged_assay)
+  avg <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, averaged_assay))
 
   rdata <- rowData(se)
   cdata <- colData(se)
@@ -42,104 +42,99 @@ fit_SE.combinations <- function(se,
   id <- series_identifiers[1]
   id2 <- series_identifiers[2]
 
-  bliss_score <- hsa_score <- matrix(NA, nrow(se), ncol(se), dimnames = list(rownames(se), colnames(se)))
+  iterator <- unique(avg[, c("column", "row")])
+  bliss_excess <- hsa_excess <- vector("list", nrow(iterator))
+  bliss_score <- hsa_score <- S4Vectors::DataFrame(matrix(NA, nrow(iterator), 0))
+  for (row in seq_len(nrow(iterator))) {
+    x <- iterator[row, ]
+    i <- x[["row"]]
+    j <- x[["column"]]
+    avg_combo <- avg[avg$row == i & avg$column == j, ]
 
-  bliss_excess <- hsa_excess <- vector("list", nrow(se) * ncol(se))
-  count <- 1
-  for (i in colnames(se)) { # each cell line
-    for (j in rownames(se)) { # each drug pair
-      avg_combo <- avg[j, i][[1]] # all combo readouts per cell line, drug pair
+    sa <- avg_combo[[id]] == 0 | avg_combo[[id2]] == 0
+    single_agent <- avg_combo[sa, ]
+    measured <- avg_combo[!sa, ]
 
-      if (nrow(avg_combo) == 0L) {
-        next
+    for (metric in normalization_types) {
+      # TODO: need to have it run for both RV and GR and stored accordingly
+
+      sa1 <- single_agent[single_agent[[id]] == 0, c(id, id2, metric)]
+      sa2 <- single_agent[single_agent[[id2]] == 0, c(id, id2, metric)]
+
+      # TODO: fix to support more than 1 normalization type
+      # fit by column: the series in the primary identifier, the cotrt is the secondary one
+      col_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id, cotrt_id = id2, metric)
+      # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
+      row_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id2, cotrt_id = id, metric)
+      codilution_fittings <- gDRcore:::fit_combo_codilutions(measured, series_identifiers, metric)
+
+      # apply the fit the get smoothed data: results per column
+      # (along primary identifier for each value of the secondary identifier)
+      measured$col_values <- map_ids_to_fits(pred = measured[[id]],
+                                             match_col = measured[[id2]], col_fittings, "cotrt_value")
+      # apply the fit the get smoothed data: results per row
+      # (along secondary identifier for each value of the primary identifier)
+      measured$row_values <- map_ids_to_fits(pred = measured[[id2]],
+                                             match_col = measured[[id]], row_fittings, "cotrt_value")
+      if (!is.null(codilution_fittings)) {
+        # apply the fit the get smoothed data: codilution results (along sum of identifiers for each ratio)
+        measured$codil_values <- map_ids_to_fits(pred = measured[[id2]] + measured[[id]],
+                                                 match_col = measured[[id2]] / measured[[id]],
+                                                 codilution_fittings, "ratio")
       }
+    
+      keep <- intersect(colnames(measured), c(metric, "row_values", "col_values", "codil_values"))
+      mat <- as.matrix(measured[, keep])
+      measured$average <- rowMeans(mat, na.rm = TRUE)
+    
 
-      sa <- avg_combo[[id]] == 0 | avg_combo[[id2]] == 0
-      single_agent <- avg_combo[sa, ]
-      measured <- avg_combo[!sa, ]
+      hsa <- calculate_HSA(sa1, id2, sa2, id, metric)
+      h_excess <- calculate_excess(hsa, measured, series_identifiers = c(id, id2), metric_col = "metric",
+                                  measured_col = "average")
 
-      for (normalization_type in normalization_types[1]) {
-        # TODO: need to have it run for both RV and GR and stored accordingly
+      bliss <- calculate_Bliss(sa1, id2, sa2, id, metric)
+      b_excess <- calculate_excess(bliss, measured, series_identifiers = c(id, id2), metric_col = "metric",
+                                  measured_col = "average")
 
-        if (normalization_type == "GR") {
-          metric <- "GRvalue"
-        } else if (normalization_type == "RV") {
-          metric <- "RelativeViability"
-        }
-
-        sa1 <- single_agent[single_agent[[id]] == 0, c(id, id2, metric)]
-        sa2 <- single_agent[single_agent[[id2]] == 0, c(id, id2, metric)]
-
-        # TODO: fix to support more than 1 normalization type
-        # fit by column: the series in the primary identifier, the cotrt is the secondary one
-        col_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id, cotrt_id = id2, normalization_type)
-        # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
-        row_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id2, cotrt_id = id, normalization_type)
-        codilution_fittings <- gDRcore:::fit_combo_codilutions(measured, series_identifiers, normalization_type)
-
-        # apply the fit the get smoothed data: results per column
-        # (along primary identifier for each value of the secondary identifier)
-        measured$col_values <- map_ids_to_fits(pred = measured[[id]],
-                                               match_col = measured[[id2]], col_fittings, "cotrt_value")
-        # apply the fit the get smoothed data: results per row
-        # (along secondary identifier for each value of the primary identifier)
-        measured$row_values <- map_ids_to_fits(pred = measured[[id2]],
-                                               match_col = measured[[id]], row_fittings, "cotrt_value")
-        if (!is.null(codilution_fittings)) {
-          # apply the fit the get smoothed data: codilution results (along sum of identifiers for each ratio)
-          measured$codil_values <- map_ids_to_fits(pred = measured[[id2]] + measured[[id]],
-                                                   match_col = measured[[id2]] / measured[[id]], codilution_fittings, "ratio")
-        }
+      # TODO: call calculate_Loewe and calculate_isoobolograms
+      ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
+      ## and then each new metric that should go for each spot is another column in the nested DataFrame
       
-        keep <- intersect(colnames(measured), c(metric, "row_values", "col_values", "codil_values"))
-        mat <- as.matrix(measured[, keep])
-        measured$average <- rowMeans(mat, na.rm = TRUE)
+      metric_name <- switch(metric,
+                            "GRvalue" = "GR",
+                            "RelativeViability" = "RV",
+                            "unknown")
+      hsa_score[row, metric_name] <- mean(
+        h_excess$excess[h_excess$excess <= quantile(h_excess$excess, 0.1, na.rm = TRUE)])
+      bliss_score[row, metric_name] <- mean(
+        b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)])
       
-
-        hsa <- calculate_HSA(sa1, id2, sa2, id, metric)
-        h_excess <- calculate_excess(hsa, measured, series_identifiers = c(id, id2), metric_col = "metric",
-                                    measured_col = "average")
-
-        bliss <- calculate_Bliss(sa1, id2, sa2, id, metric)
-        b_excess <- calculate_excess(bliss, measured, series_identifiers = c(id, id2), metric_col = "metric",
-                                    measured_col = "average")
-
-        # TODO: call calculate_Loewe and calculate_isoobolograms
-        ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
-        ## and then each new metric that should go for each spot is another column in the nested DataFrame
-        hsa_score[j, i] <- mean(
-          h_excess$excess[h_excess$excess <= quantile(h_excess$excess, 0.1, na.rm = TRUE)])
-        bliss_score[j, i] <- mean(
-          b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)])
-        
-        
-       if (nrow(b_excess) == 0 && nrow(h_excess) == 0) { # for cases when Concentration_2 == 0
-         emptyDF <- S4Vectors::DataFrame(matrix(NA, nrow = 1, ncol = length(b_excess)))
-         colnames(emptyDF) <- c(series_identifiers, "excess")
-         b_excess <- h_excess <- emptyDF
-       }
-        b_excess$row_id <- h_excess$row_id <- j
-        b_excess$col_id <- h_excess$col_id <- i
-          
-        hsa_excess[[count]] <- h_excess
-        bliss_excess[[count]] <- b_excess
-        count <- count + 1
+      b_excess$row_id <- h_excess$row_id <- hsa_score[row, "row_id"] <- bliss_score[row, "row_id"] <- i
+      b_excess$col_id <- h_excess$col_id <- hsa_score[row, "col_id"] <- bliss_score[row, "col_id"] <- j
+      b_excess$normalization_type <- h_excess$normalization_type <- metric_name
+      
+      hsa_excess[[row]] <- rbind(hsa_excess[[row]], h_excess)
+      bliss_excess[[row]] <- rbind(bliss_excess[[row]], b_excess)
       }
-    }
   }
-  # Remove empty elements of list and rbind them
-  all_b_excess <- do.call(rbind, .filter_empty_list_elements(bliss_excess))
-  all_hsa_excess <- do.call(rbind, .filter_empty_list_elements(hsa_excess))
 
-  assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess)
-                                                                              %in% c("row_id", "col_id")],
-                                                    row = all_b_excess$row_id, col = all_b_excess$col_id)
-  assays(se)[["HSAExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_hsa_excess[!colnames(all_hsa_excess)
-                                                                              %in% c("row_id", "col_id")],
-                                                  row = all_hsa_excess$row_id, col = all_hsa_excess$col_id)
+  hsa_excess <- S4Vectors::DataFrame(do.call("rbind", hsa_excess))
+  bliss_excess <- S4Vectors::DataFrame(do.call("rbind", bliss_excess))
 
-  assays(se)[["BlissScore"]] <- bliss_score
-  assays(se)[["HSAScore"]] <- hsa_score
+  assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(bliss_excess[!colnames(bliss_excess)
+                                                                              %in% c("row_id", "col_id")],
+                                                                 row = bliss_excess$row_id, col = bliss_excess$col_id)
+  assays(se)[["HSAExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(hsa_excess[!colnames(hsa_excess)
+                                                                              %in% c("row_id", "col_id")],
+                                                               row = hsa_excess$row_id, col = hsa_excess$col_id)
+
+  assays(se)[["BlissScore"]] <- BumpyMatrix::splitAsBumpyMatrix(bliss_score[!colnames(bliss_score)
+                                                                           %in% c("row_id", "col_id")],
+                                                                row = bliss_score$row_id, col = bliss_score$col_id)
+    
+  assays(se)[["HSAScore"]] <- BumpyMatrix::splitAsBumpyMatrix(hsa_score[!colnames(hsa_score)
+                                                                          %in% c("row_id", "col_id")],
+                                                              row = hsa_score$row_id, col = hsa_score$col_id)
 
   se
 }
