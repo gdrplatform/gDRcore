@@ -30,7 +30,7 @@ average_SE <- function(se,
 
   std_cols <- c("GRvalue", "RelativeViability")
   iterator <- unique(normalized[, c("column", "row")])
-  out <- list()
+  out <- vector("list", nrow(iterator))
   for (row in seq_len(nrow(iterator))) {
     x <- iterator[row, ]
     i <- x[["row"]]
