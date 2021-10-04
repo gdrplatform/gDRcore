@@ -14,7 +14,7 @@ test_that("fit_combo_codilutions works as expected", {
     Concentration_2 = rep(concs, each = n),
     GRvalue = vals)
 
-  obs <- gDRcore:::fit_combo_codilutions(measured, nested_identifiers, "GR")
+  obs <- gDRcore:::fit_combo_codilutions(measured, nested_identifiers, "GRvalue")
   expect_equal(dim(obs), c(3, 17))
   expect_true("ratio" %in% colnames(obs))
   expect_equal(obs$ratio, c(0.5, 1.0, 2.0), tolerance = 10e-3)
@@ -44,7 +44,7 @@ test_that("fit_codilution_series works as expected", {
     series_2 = "Concentration_2",
     e_0 = 1,
     GR_0 = 1,
-    normalization_type = "GR")
+    normalization_type = "GRvalue")
 
   expect_equal(dim(obs), c(1, 17))
   expect_true("ratio" %in% colnames(obs))

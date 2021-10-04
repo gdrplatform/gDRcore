@@ -64,7 +64,6 @@ fit_SE.combinations <- function(se,
       sa1 <- single_agent[single_agent[[id]] == 0, c(id, id2, metric)]
       sa2 <- single_agent[single_agent[[id2]] == 0, c(id, id2, metric)]
 
-      # TODO: fix to support more than 1 normalization type
       # fit by column: the series in the primary identifier, the cotrt is the secondary one
       col_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id, cotrt_id = id2, metric)
       # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
@@ -206,8 +205,8 @@ calculate_combo_matrix <- function(se,
         }
 
         # include_controls and bind
-        flat_data_ctrl <- gDRutils::convert_se_ref_assay_to_dt(se[combo$rows, iCL])
-        flat_data <- as.data.frame(rbind(flat_data, flat_data_ctrl))
+        # flat_data_ctrl <- gDRutils::convert_se_ref_assay_to_dt(se[combo$rows, iCL])
+        #flat_data <- as.data.frame(rbind(flat_data, flat_data_ctrl))
         
         # avoid mismatch because of numerical rounding
         flat_data$Concentration <- 10 ^ (.25 * round(4 * log10(flat_data$Concentration), 1))
