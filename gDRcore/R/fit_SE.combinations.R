@@ -112,16 +112,16 @@ fit_SE.combinations <- function(se,
       bliss_score[row, metric_name] <- mean(
         b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)])
       
-      b_excess$row_id <- h_excess$row_id <- codilution_fittings$row_id <- 
+      b_excess$row_id <- h_excess$row_id <- col_fittings$row_id <- 
         hsa_score[row, "row_id"] <- bliss_score[row, "row_id"] <- i
-      b_excess$col_id <- h_excess$col_id <- codilution_fittings$col_id <- 
+      b_excess$col_id <- h_excess$col_id <- col_fittings$col_id <- 
         hsa_score[row, "col_id"] <- bliss_score[row, "col_id"] <- j
       b_excess$normalization_type <- h_excess$normalization_type <- metric_name
       
       hsa_excess[[row]] <- rbind(hsa_excess[[row]], h_excess)
       bliss_excess[[row]] <- rbind(bliss_excess[[row]], b_excess)
       
-      metrics[[row]] <- rbind(metrics[[row]], codilution_fittings)
+      metrics[[row]] <- rbind(metrics[[row]], col_fittings)
       }
   }
 
@@ -130,8 +130,8 @@ fit_SE.combinations <- function(se,
   metrics <- S4Vectors::DataFrame(do.call("rbind", metrics))
 
   assays(se)[[metrics_assay]] <- BumpyMatrix::splitAsBumpyMatrix(metrics[!colnames(metrics)
-                                                                         %in% c("row_id", "col_id")],
-                                                                 row = metrics$row_id, col = metrics$col_id)
+                                                                       %in% c("row_id", "col_id")],
+                                                               row = metrics$row_id, col = metrics$col_id)
   assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(bliss_excess[!colnames(bliss_excess)
                                                                               %in% c("row_id", "col_id")],
                                                                  row = bliss_excess$row_id, col = bliss_excess$col_id)

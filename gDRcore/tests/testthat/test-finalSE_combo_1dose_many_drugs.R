@@ -1,6 +1,3 @@
-
-skip(message = "Will be fixed in https://jira.gene.com/jira/browse/GDR-1090")
-
 data <- "finalSE_combo_1dose_many_drugs.RDS"
 original <- get_synthetic_data(data)
 
@@ -16,5 +13,5 @@ df_merged_data <- gDRtestData::generate_response_data(df_layout_2)
 
 finalSE <- gDRcore::runDrugResponseProcessingPipeline(df_merged_data, override_untrt_controls = NULL)
 
-test_synthetic_data(original, finalSE, data)
+test_synthetic_data(original, finalSE, data, combo = TRUE)
 
