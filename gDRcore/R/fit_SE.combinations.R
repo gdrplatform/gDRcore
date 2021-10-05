@@ -126,7 +126,7 @@ fit_SE.combinations <- function(se,
       mean_df <- reshape2::melt(mean_matrix, varnames = c(id, id2), value.name = metric)
 
       # call calculate_Loewe and calculate_isobolograms: 
-      isobologram_out <- calculate_Loewe(mean_matrix, row_fittings, col_fittings, codilution_fittings, normalization_type = normalization_type) 
+      isobologram_out <- calculate_Loewe(mean_matrix, row_fittings, col_fittings, codilution_fittings, normalization_type = metric) 
       ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
       ## and then each new metric that should go for each spot is another column in the nested DataFrame
       hsa_score[row, metric_name] <- mean(
@@ -149,7 +149,7 @@ fit_SE.combinations <- function(se,
         col_fittings$col_id <- hsa_score[row, "col_id"] <- bliss_score[row, "col_id"] <-
         CIScore_50[row, "col_id"] <- CIScore_80[row, "col_id"] <- metrics_merged$col_id <- j
       b_excess$normalization_type <- h_excess$normalization_type <-
-        isobologram_out$df_all_iso_curves$normalizaiton_type <- metric_name
+        isobologram_out$df_all_iso_curves$normalization_type <- metric_name
       
       hsa_excess[[row]] <- rbind(hsa_excess[[row]], h_excess)
       bliss_excess[[row]] <- rbind(bliss_excess[[row]], b_excess)
