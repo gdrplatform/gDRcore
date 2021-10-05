@@ -157,7 +157,8 @@ data_model <- function(df_) {
   if (all(gDRutils::get_env_identifiers(c("concentration",
                                       "concentration2"),
                                     simplify = FALSE) %in% colnames(df_))) {
-    if (all(df_[[gDRutils::get_env_identifiers("concentration2")]] %in% gDRutils::get_env_identifiers("untreated_tag"))) {
+    if (all(df_[[gDRutils::get_env_identifiers("concentration2")]]
+            %in% gDRutils::get_env_identifiers("untreated_tag"))) {
       "single-agent"
     } else {
       "combo"
@@ -167,4 +168,49 @@ data_model <- function(df_) {
   } else {
     stop("Unknown data model")
   }
+}
+
+
+#' Get default nested identifiers
+#'
+#' @param x data.frame with raw data or SummarizedExperiment object with gDR assays
+#' @param single_agent_cols vector of nested identifiers expected in single-agent data
+#' @param combo_cols vector of nested identifiers expected in combo data
+#' @param assayName assay name used for finding nested_identifiers in SummarizedExperiment object
+#' @return vector of nested identifiers
+#' @export
+get_nested_default_identifiers <- function(x, ...) {
+  single_agent_cols <- gDRutils::get_env_identifiers("concentration")
+  combo_cols <- unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
+                                                    simplify = FALSE))
+  UseMethod("get_nested_default_identifiers")
+}
+
+
+#' @export
+#' @describeIn get_nested_default_identifiers
+get_nested_default_identifiers.data.frame <- function(x) {
+  checkmate::assert_data_frame(x)
+  data_type <- data_model(x)
+  if (data_type == "single-agent") {
+    single_agent_cols
+  } else {
+    combo_cols
+  }
+}
+
+#' @export
+#' @describeIn get_nested_default_identifiers
+get_nested_default_identifiers.SummarizedExperiment <- function(x,
+                                                                assayName =
+                                                                  tail(SummarizedExperiment::assayNames(x), 1)) {
+  checkmate::assert_class(x, "SummarizedExperiment")
+  intersect(combo_cols,
+            names(BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, assayName))))
+}
+
+#' @keywords internal
+#' @export
+.filter_empty_list_elements <- function(obj) {
+  obj[lengths(obj) > 0L]
 }

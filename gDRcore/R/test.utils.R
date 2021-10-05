@@ -21,10 +21,13 @@ test_synthetic_data <- function(original,
   }
   normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
   averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
-  metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
   normalized_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Normalized")
   averaged_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Averaged")
-  metrics_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Metrics")
+
+  if (!combo) {
+    metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
+    metrics_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Metrics")
+  }
   
   OMITTED_COLUMNS_TO_TEST_NORMALIZED <- c(
   )
@@ -36,23 +39,28 @@ test_synthetic_data <- function(original,
   )
   
   if (combo) {
-    for (assay in c("normalized", "averaged", "metrics")) {
+    for (assay in c("normalized", "averaged")) {
       refColNames <- intersect(unname(unlist(get_env_identifiers())), names(get(assay)))
       concCols <- grep("Concentration", refColNames, value = TRUE)
-      original <- unique(get(assay)[get(assay)[, apply(.SD != 0, 1, all), .SDcols = refColNames], ])
-      new <- unique(get(paste0(assay, "_new"))[get(paste0(assay, "_new"))[, apply(.SD != 0, 1, all),
-                                                                          .SDcols = refColNames], ])
+      original <- unique(get(assay)[get(assay)[, apply(.SD != 0, 1, all), .SDcols = concCols], ])
+      new <- unique(get(paste0(assay, "_new"))[
+        get(paste0(assay, "_new"))[, apply(.SD != 0, 1, all), .SDcols = concCols], ])
+
       original$Concentration_2 <- round(original$Concentration_2, 7)
       new$Concentration_2 <- round(new$Concentration_2, 7)
-      
       if (assay == "averaged") {
-        original <- data.frame(lapply(original, function(x) if(is.numeric(x)) round(x, 4) else x))
-        new <- data.frame(lapply(new, function(x) if(is.numeric(x)) round(x, 4) else x))
+        original <- data.frame(lapply(original, function(x) if (is.numeric(x)) round(x, 4) else x))
+        new <- data.frame(lapply(new, function(x) if (is.numeric(x)) round(x, 4) else x))
+        data.table::setDT(original)
+        data.table::setDT(new)
       }
+      colsCompare <- setdiff(colnames(new), c(refColNames, "rId", "cId"))
       
-      d1 <- do.call("paste", original)
-      d2 <- do.call("paste", new)
-      expect_equal(dim(unique(original[d1%in%d2, ])), dim(original))
+      data.table::setorderv(new, colsCompare)
+      data.table::setorderv(original, colsCompare)
+      test_that(sprintf("Original data %s and recreated data are identical", dataName), {
+      expect_equal(new[, ..colsCompare], original[, ..colsCompare])
+      })
     }
   } else {
     test_that(sprintf("Original data %s and recreated data are identical", dataName), {

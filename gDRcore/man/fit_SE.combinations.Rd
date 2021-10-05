@@ -6,8 +6,8 @@
 \usage{
 fit_SE.combinations(
   se,
-  series_identifiers = c("Concentration", "Concentration_2"),
-  normalization_types = c("RV", "GR"),
+  series_identifiers = NULL,
+  normalization_types = c("GRvalue", "RelativeViability"),
   averaged_assay = "Averaged"
 )
 }
