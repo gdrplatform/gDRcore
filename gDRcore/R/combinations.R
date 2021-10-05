@@ -163,7 +163,7 @@ calculate_Loewe <- function(mean_matrix,
   names(all_iso) <- iso_cutoff
   for (isobol_value in iso_cutoff) { # run through the different isobolograms
     # cutoff point by row
-    row_fittings <- row_fittings[order(row_fittings$cotrt_value, decreasing = T), ]
+    row_fittings <- row_fittings[order(row_fittings$cotrt_value, decreasing = TRUE), ]
     df_iso <- cbind(conc_1 = row_fittings[, "cotrt_value"], data.frame(conc_2 =
       ifelse(row_fittings$x_0 < isobol_value, 0, ifelse(row_fittings$x_inf > isobol_value,
         Inf,
@@ -173,7 +173,7 @@ calculate_Loewe <- function(mean_matrix,
           fit_type = "by_row"))
 
     # cutoff point by columns
-    col_fittings <- col_fittings[order(row_fittings$cotrt_value, decreasing = F), ]
+    col_fittings <- col_fittings[order(row_fittings$cotrt_value, decreasing = FALSE), ]
     df_iso <- rbind(df_iso, cbind(data.frame(conc_1 =
       ifelse(col_fittings$x_0 < isobol_value, 0, ifelse(col_fittings$x_inf > isobol_value,
         Inf,
@@ -195,7 +195,7 @@ calculate_Loewe <- function(mean_matrix,
     # cutoff point by diagonal (co-dilution)
     # co-dil is given as concentration of drug 1
     if (nrow(codilution_fittings) > 1) {
-      codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = T), ]
+      codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
       codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
       conc_mix <- ifelse (codilution_fittings$x_0 < isobol_value, 
           0,
