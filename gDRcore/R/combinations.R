@@ -45,7 +45,7 @@ calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
 
 #' @details Bliss is the mulitplication of the single agent readouts.
 calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
-  .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN = "*")
+  .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN = function(x,y) 1 - (1-x) - (1-y) + (1-x)*(1-y))
 }
 
 
