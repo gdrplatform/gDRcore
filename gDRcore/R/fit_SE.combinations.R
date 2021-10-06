@@ -38,8 +38,8 @@ fit_SE.combinations <- function(se,
   
   avg <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, averaged_assay))
 
-  rdata <- rowData(se)
-  cdata <- colData(se)
+  rdata <- SummarizedExperiment::rowData(se)
+  cdata <- SummarizedExperiment::colData(se)
   cl_name <- get_SE_identifiers(se, "cellline_name")
 
   id <- series_identifiers[1]
