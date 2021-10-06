@@ -179,39 +179,39 @@ fit_SE.combinations <- function(se,
 
   all_hsa_excess <- S4Vectors::DataFrame(do.call("rbind", hsa_excess))
   all_b_excess <- S4Vectors::DataFrame(do.call("rbind", bliss_excess))
-  all_smooth_mx <- S4Vectors::DataFrame(do.call(rbind, smooth_mx))
-  all_isobolograms <- S4Vectors::DataFrame(do.call(rbind, isobolograms))
+  all_smooth_mx <- S4Vectors::DataFrame(do.call("rbind", smooth_mx))
+  all_isobolograms <- S4Vectors::DataFrame(do.call("rbind", isobolograms))
   all_CIScore_50 <- S4Vectors::DataFrame(do.call("rbind", CIScore_50))
   all_CIScore_80 <- S4Vectors::DataFrame(do.call("rbind", CIScore_80))
   all_metrics <- S4Vectors::DataFrame(do.call("rbind", metrics))
 
-  assays(se)[["SmoothMatrix"]] <- BumpyMatrix::splitAsBumpyMatrix(all_smooth_mx[!colnames(all_smooth_mx)
+  SummarizedExperiment::assays(se)[["SmoothMatrix"]] <- BumpyMatrix::splitAsBumpyMatrix(all_smooth_mx[!colnames(all_smooth_mx)
                                                                                 %in% c("row_id", "col_id")],
                                                     row = all_smooth_mx$row_id, col = all_smooth_mx$col_id)
-  assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess)
+  SummarizedExperiment::assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess)
                                                                               %in% c("row_id", "col_id")],
                                                     row = all_b_excess$row_id, col = all_b_excess$col_id)
-  assays(se)[["HSAExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_hsa_excess[!colnames(all_hsa_excess)
+  SummarizedExperiment::assays(se)[["HSAExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_hsa_excess[!colnames(all_hsa_excess)
                                                                               %in% c("row_id", "col_id")],
                                                   row = all_hsa_excess$row_id, col = all_hsa_excess$col_id)
-  assays(se)[["isobolograms"]] <- BumpyMatrix::splitAsBumpyMatrix(all_isobolograms[!colnames(all_isobolograms)
+  SummarizedExperiment::assays(se)[["isobolograms"]] <- BumpyMatrix::splitAsBumpyMatrix(all_isobolograms[!colnames(all_isobolograms)
                                                                                    %in% c("row_id", "col_id")],
                                                   row = all_isobolograms$row_id, col = all_isobolograms$col_id)
-  assays(se)[["BlissScore"]] <- BumpyMatrix::splitAsBumpyMatrix(bliss_score[!colnames(bliss_score)
+  SummarizedExperiment::assays(se)[["BlissScore"]] <- BumpyMatrix::splitAsBumpyMatrix(bliss_score[!colnames(bliss_score)
                                                                             %in% c("row_id", "col_id")],
                                                                 row = bliss_score$row_id, col = bliss_score$col_id)
   
-  assays(se)[["HSAScore"]] <- BumpyMatrix::splitAsBumpyMatrix(hsa_score[!colnames(hsa_score)
+  SummarizedExperiment::assays(se)[["HSAScore"]] <- BumpyMatrix::splitAsBumpyMatrix(hsa_score[!colnames(hsa_score)
                                                                         %in% c("row_id", "col_id")],
                                                               row = hsa_score$row_id, col = hsa_score$col_id)
-  assays(se)[["CIScore_50"]] <- BumpyMatrix::splitAsBumpyMatrix(CIScore_50[!colnames(CIScore_50)
+  SummarizedExperiment::assays(se)[["CIScore_50"]] <- BumpyMatrix::splitAsBumpyMatrix(CIScore_50[!colnames(CIScore_50)
                                                                         %in% c("row_id", "col_id")],
                                                               row = CIScore_50$row_id, col = CIScore_50$col_id)
-  assays(se)[["CIScore_80"]] <- BumpyMatrix::splitAsBumpyMatrix(CIScore_80[!colnames(CIScore_80)
+  SummarizedExperiment::assays(se)[["CIScore_80"]] <- BumpyMatrix::splitAsBumpyMatrix(CIScore_80[!colnames(CIScore_80)
                                                                            %in% c("row_id", "col_id")],
                                                                 row = CIScore_80$row_id, col = CIScore_80$col_id)
   
-  assays(se)[[metrics_assay]] <- BumpyMatrix::splitAsBumpyMatrix(all_metrics[!colnames(all_metrics)
+  SummarizedExperiment::assays(se)[[metrics_assay]] <- BumpyMatrix::splitAsBumpyMatrix(all_metrics[!colnames(all_metrics)
                                                                        %in% c("row_id", "col_id")],
                                                                row = all_metrics$row_id, col = all_metrics$col_id)
 
