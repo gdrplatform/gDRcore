@@ -8,14 +8,18 @@ fit_SE.combinations(
   se,
   series_identifiers = NULL,
   normalization_types = c("GRvalue", "RelativeViability"),
-  averaged_assay = "Averaged"
+  averaged_assay = "Averaged",
+  metrics_assay = "Metrics"
 )
 }
 \arguments{
 \item{se}{\code{SummarizedExperiment} object with a BumpyMatrix assay containing averaged data.}
 
 \item{series_identifiers}{character vector of the column names in the nested \code{DFrame}
-corresponding to nested identifiers.
+corresponding to nested identifiers.}
+
+\item{metrics_assay}{string of the name of the metrics assay to output
+in the returned \linkS4class{SummarizedExperiment}
 whose combination represents a unique series for which to fit curves.}
 
 \item{conc_margin}{margin for calculation and plots as fold-change over highest test conc for calculation}
