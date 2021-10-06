@@ -40,7 +40,7 @@ fit_SE.combinations <- function(se,
 
   rdata <- SummarizedExperiment::rowData(se)
   cdata <- SummarizedExperiment::colData(se)
-  cl_name <- get_SE_identifiers(se, "cellline_name")
+  cl_name <- gDRutils::get_SE_identifiers(se, "cellline_name")
 
   id <- series_identifiers[1]
   id2 <- series_identifiers[2]
