@@ -80,7 +80,6 @@ create_and_normalize_SE <- function(df_,
     nested_identifiers = nested_identifiers,
     nested_confounders = nested_confounders,
     override_untrt_controls = override_untrt_controls)
-
   se <- normalize_SE(se = se, 
     nested_identifiers = nested_identifiers,
     nested_confounders = nested_confounders,
@@ -121,7 +120,6 @@ runDrugResponseProcessingPipeline <- function(df_,
       raw_treated_assay = raw_treated_assay, 
       normalized_assay = normalized_assay,
       ndigit_rounding = ndigit_rounding)
-
   se <- average_SE(se = se, 
                    series_identifiers = nested_identifiers,
                    override_masked = override_masked, 
