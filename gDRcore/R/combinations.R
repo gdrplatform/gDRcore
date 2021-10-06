@@ -195,7 +195,7 @@ calculate_Loewe <- function(mean_matrix,
 
     # cutoff point by diagonal (co-dilution)
     # co-dil is given as concentration of drug 1
-    if (nrow(codilution_fittings) > 1) {
+    if (NROW(codilution_fittings) > 1) {
       codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
       codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
       conc_mix <- ifelse(codilution_fittings$x_0 < isobol_value, 
