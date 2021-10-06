@@ -345,11 +345,12 @@ calculate_Loewe <- function(mean_matrix,
     all_iso <- all_iso[!vapply(all_iso, is.null, FUN.VALUE = logical(1))]
 
     df_all_iso_points <- do.call(rbind, lapply(names(all_iso), 
-            function(x) cbind(iso_level = x, all_iso[[x]]$df_iso[, c('conc_1', 'conc_2', 'pos_x', 'pos_y', 'fit_type')])))
+            function(x) cbind(iso_level = x, all_iso[[x]]$df_iso[, c("conc_1", "conc_2", "pos_x", "pos_y", "fit_type")])))
     df_all_iso_curves <- do.call(rbind, lapply(names(all_iso), 
-            function(x) cbind(iso_level = x, all_iso[[x]]$df_iso_curve[, c('pos_x', 'pos_y', 'pos_x_ref', 'pos_y_ref', 'log10_ratio_conc', 'log2_CI')])))
+            function(x) cbind(iso_level = x, all_iso[[x]]$df_iso_curve[, c("pos_x", "pos_y", "pos_x_ref", "pos_y_ref", "log10_ratio_conc", "log2_CI")])))
     df_all_AUC_log2CI <- do.call(rbind, lapply(names(all_iso), 
-            function(x) data.frame(iso_level = x, CI_100x = all_iso[[x]]$AUC_log2CI, ref_conc_1 = all_iso[[x]]$ref_conc_1, ref_conc_2 = all_iso[[x]]$ref_conc_2)))
+            function(x) data.frame(iso_level = x, CI_100x = all_iso[[x]]$AUC_log2CI,
+                                   ref_conc_1 = all_iso[[x]]$ref_conc_1, ref_conc_2 = all_iso[[x]]$ref_conc_2)))
     
     isobologram_out <- list(
       df_all_iso_points = df_all_iso_points,

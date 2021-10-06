@@ -117,8 +117,9 @@ fit_SE.combinations <- function(se,
       
 
       # contruct full matrix with single agent
-      mean_matrix <- reshape2::acast(as.data.frame(measured[, c('average', id, id2)]), formula = sprintf('%s ~ %s', id, id2), value.var = 'average')
-      mean_matrix['0', '0'] <- 1 # add the corner of the matrix
+      mean_matrix <- reshape2::acast(as.data.frame(measured[, c("average", id, id2)]),
+                                     formula = sprintf("%s ~ %s", id, id2), value.var = "average")
+      mean_matrix["0", "0"] <- 1 # add the corner of the matrix
       # remove empty rows/columns
       mean_matrix <- mean_matrix[rowSums(!is.na(mean_matrix)) > 2, colSums(!is.na(mean_matrix)) > 2]
 
@@ -126,7 +127,8 @@ fit_SE.combinations <- function(se,
       mean_df <- reshape2::melt(mean_matrix, varnames = c(id, id2), value.name = metric)
 
       # call calculate_Loewe and calculate_isobolograms: 
-      isobologram_out <- calculate_Loewe(mean_matrix, row_fittings, col_fittings, codilution_fittings, normalization_type = metric) 
+      isobologram_out <- calculate_Loewe(mean_matrix, row_fittings, col_fittings,
+                                         codilution_fittings, normalization_type = metric) 
       ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
       ## and then each new metric that should go for each spot is another column in the nested DataFrame
       hsa_score[row, metric_name] <- mean(
@@ -136,10 +138,12 @@ fit_SE.combinations <- function(se,
       if (all(vapply(isobologram_out, is.null, logical(1)))) {
         CIScore_50[row, metric_name] <- CIScore_80[row, metric_name] <- NA
       } else {
-        CIScore_50[row, metric_name] <- isobologram_out$df_all_AUC_log2CI$CI_100x[isobologram_out$df_all_AUC_log2CI$iso_level == 
-                                                                                    min(isobologram_out$df_all_AUC_log2CI$iso_level[isobologram_out$df_all_AUC_log2CI$iso_level >= 0.5])]
-        CIScore_80[row, metric_name] <- isobologram_out$df_all_AUC_log2CI$CI_100x[isobologram_out$df_all_AUC_log2CI$iso_level == 
-                                                                                    min(isobologram_out$df_all_AUC_log2CI$iso_level[isobologram_out$df_all_AUC_log2CI$iso_level >= 0.2])]
+        CIScore_50[row, metric_name] <- isobologram_out$df_all_AUC_log2CI$CI_100x[
+          isobologram_out$df_all_AUC_log2CI$iso_level ==
+            min(isobologram_out$df_all_AUC_log2CI$iso_level[isobologram_out$df_all_AUC_log2CI$iso_level >= 0.5])]
+        CIScore_80[row, metric_name] <- isobologram_out$df_all_AUC_log2CI$CI_100x[
+          isobologram_out$df_all_AUC_log2CI$iso_level == 
+            min(isobologram_out$df_all_AUC_log2CI$iso_level[isobologram_out$df_all_AUC_log2CI$iso_level >= 0.2])]
       }
       
       b_excess$row_id <- mean_df$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_curves$row_id <- 
@@ -176,13 +180,17 @@ fit_SE.combinations <- function(se,
   all_CIScore_80 <- S4Vectors::DataFrame(do.call("rbind", CIScore_80))
   all_metrics <- S4Vectors::DataFrame(do.call("rbind", metrics))
 
-  assays(se)[["SmoothMatrix"]] <- BumpyMatrix::splitAsBumpyMatrix(all_smooth_mx[!colnames(all_smooth_mx) %in% c("row_id", "col_id")],
+  assays(se)[["SmoothMatrix"]] <- BumpyMatrix::splitAsBumpyMatrix(all_smooth_mx[!colnames(all_smooth_mx)
+                                                                                %in% c("row_id", "col_id")],
                                                     row = all_smooth_mx$row_id, col = all_smooth_mx$col_id)
-  assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess) %in% c("row_id", "col_id")],
+  assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_b_excess[!colnames(all_b_excess)
+                                                                              %in% c("row_id", "col_id")],
                                                     row = all_b_excess$row_id, col = all_b_excess$col_id)
-  assays(se)[["HSAExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_hsa_excess[!colnames(all_hsa_excess) %in% c("row_id", "col_id")],
+  assays(se)[["HSAExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(all_hsa_excess[!colnames(all_hsa_excess)
+                                                                              %in% c("row_id", "col_id")],
                                                   row = all_hsa_excess$row_id, col = all_hsa_excess$col_id)
-  assays(se)[["isobolograms"]] <- BumpyMatrix::splitAsBumpyMatrix(all_isobolograms[!colnames(all_isobolograms) %in% c("row_id", "col_id")],
+  assays(se)[["isobolograms"]] <- BumpyMatrix::splitAsBumpyMatrix(all_isobolograms[!colnames(all_isobolograms)
+                                                                                   %in% c("row_id", "col_id")],
                                                   row = all_isobolograms$row_id, col = all_isobolograms$col_id)
   assays(se)[["BlissScore"]] <- BumpyMatrix::splitAsBumpyMatrix(bliss_score[!colnames(bliss_score)
                                                                             %in% c("row_id", "col_id")],
@@ -263,10 +271,6 @@ calculate_combo_matrix <- function(se,
           next
         }
 
-        # include_controls and bind
-        # flat_data_ctrl <- gDRutils::convert_se_ref_assay_to_dt(se[combo$rows, iCL])
-        #flat_data <- as.data.frame(rbind(flat_data, flat_data_ctrl))
-        
         # avoid mismatch because of numerical rounding
         flat_data$Concentration <- 10 ^ (.25 * round(4 * log10(flat_data$Concentration), 1))
         flat_data$Concentration_2 <- 10 ^ (.25 * round(4 * log10(flat_data$Concentration_2), 1))
