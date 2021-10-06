@@ -67,15 +67,19 @@ fit_SE.combinations <- function(se,
       # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
       row_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id2, cotrt_id = id, metric)
       codilution_fittings <- gDRcore:::fit_combo_codilutions(measured, series_identifiers, metric)
-      data.table::setDT(codilution_fittings)
-      data.table::setnames(codilution_fittings, "ratio", "cotrt_value")
-      metrics_names <- c("col_fittings", "row_fittings", "codilution_fittings")
-      metrics_merged <- do.call(rbind, mget(metrics_names))
-      metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
       
-      data.table::setnames(codilution_fittings, "cotrt_value", "ratio")
-      data.table::setDF(codilution_fittings)
-      
+      if (!is.null(codilution_fittings)) {
+        data.table::setnames(codilution_fittings, "ratio", "cotrt_value")
+        metrics_names <- c("col_fittings", "row_fittings", "codilution_fittings")
+        metrics_merged <- do.call(rbind, mget(metrics_names))
+        metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
+        data.table::setnames(codilution_fittings, "cotrt_value", "ratio")
+      } else {
+        metrics_names <- c("col_fittings", "row_fittings")
+        metrics_merged <- do.call(rbind, mget(metrics_names))
+        metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
+      }
+
       # apply the fit the get smoothed data: results per column
       # (along primary identifier for each value of the secondary identifier)
       measured$col_values <- map_ids_to_fits(pred = measured[[id]],
