@@ -68,18 +68,6 @@ fit_SE.combinations <- function(se,
       row_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id2, cotrt_id = id, metric)
       codilution_fittings <- gDRcore:::fit_combo_codilutions(measured, series_identifiers, metric)
       
-      if (!is.null(codilution_fittings)) {
-        data.table::setnames(codilution_fittings, "ratio", "cotrt_value")
-        metrics_names <- c("col_fittings", "row_fittings", "codilution_fittings")
-        metrics_merged <- do.call(rbind, mget(metrics_names))
-        metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
-        data.table::setnames(codilution_fittings, "cotrt_value", "ratio")
-      } else {
-        metrics_names <- c("col_fittings", "row_fittings")
-        metrics_merged <- do.call(rbind, mget(metrics_names))
-        metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
-      }
-
       # apply the fit the get smoothed data: results per column
       # (along primary identifier for each value of the secondary identifier)
       measured$col_values <- map_ids_to_fits(pred = measured[[id]],
@@ -93,6 +81,15 @@ fit_SE.combinations <- function(se,
         measured$codil_values <- map_ids_to_fits(pred = measured[[id2]] + measured[[id]],
                                                  match_col = measured[[id2]] / measured[[id]],
                                                  codilution_fittings, "ratio")
+        data.table::setnames(codilution_fittings, "ratio", "cotrt_value")
+        metrics_names <- c("col_fittings", "row_fittings", "codilution_fittings")
+        metrics_merged <- do.call(rbind, mget(metrics_names))
+        metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
+        data.table::setnames(codilution_fittings, "cotrt_value", "ratio")
+      } else {
+        metrics_names <- c("col_fittings", "row_fittings")
+        metrics_merged <- do.call(rbind, mget(metrics_names))
+        metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
         }
     
       keep <- intersect(colnames(measured), c(metric, "row_values", "col_values", "codil_values"))
@@ -130,10 +127,16 @@ fit_SE.combinations <- function(se,
 
       # TO DO : measured$average or mean_matrix should be saved for further plots in some manner
       mean_df <- reshape2::melt(mean_matrix, varnames = c(id, id2), value.name = metric)
-
+      if (nrow(mean_df) == 0) {
+        mean_df <- NULL
+      }
       # call calculate_Loewe and calculate_isobolograms: 
-      isobologram_out <- calculate_Loewe(mean_matrix, row_fittings, col_fittings,
-                                         codilution_fittings, normalization_type = metric) 
+      isobologram_out <- if (ncol(mean_matrix) > 3) {
+        calculate_Loewe(mean_matrix, row_fittings, col_fittings,
+                        codilution_fittings, normalization_type = metric) 
+      } else {
+          NULL
+        }
       ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
       ## and then each new metric that should go for each spot is another column in the nested DataFrame
       hsa_score[row, metric_name] <- mean(
@@ -167,11 +170,7 @@ fit_SE.combinations <- function(se,
       } else {
         smooth_mx[[row]] <- mean_df
       }
-      if (length(isobologram_out$df_all_iso_curves) == 3) {
-        isobolograms[[row]] <- list(NULL)
-      } else {
-        isobolograms[[row]] <- rbind(isobolograms[[row]], isobologram_out$df_all_iso_curves)
-      }
+      isobolograms[[row]] <- rbind(isobolograms[[row]], as.data.frame(isobologram_out$df_all_iso_curves))
       metrics[[row]] <- rbind(metrics[[row]], metrics_merged)
     }
   }
