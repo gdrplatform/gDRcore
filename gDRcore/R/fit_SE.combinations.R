@@ -173,6 +173,9 @@ fit_SE.combinations <- function(se,
       } else {
         smooth_mx[[row]] <- mean_df
       }
+      if (length(isobologram_out$df_all_iso_curves) == 3) {
+        isobologram_out$df_all_iso_curves <- NULL
+      }
       isobolograms[[row]] <- rbind(isobolograms[[row]], as.data.frame(isobologram_out$df_all_iso_curves))
       metrics[[row]] <- rbind(metrics[[row]], metrics_merged)
     }
