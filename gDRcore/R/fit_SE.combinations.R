@@ -121,7 +121,10 @@ fit_SE.combinations <- function(se,
       # contruct full matrix with single agent
       mean_matrix <- reshape2::acast(as.data.frame(measured[, c("average", id, id2)]),
                                      formula = sprintf("%s ~ %s", id, id2), value.var = "average")
-      mean_matrix["0", "0"] <- 1 # add the corner of the matrix
+      
+      if (0 %in% measured$Concentration && 0 %in% measured$Concentration_2) {
+        mean_matrix["0", "0"] <- 1 # add the corner of the matrix
+      }
       # remove empty rows/columns
       mean_matrix <- mean_matrix[rowSums(!is.na(mean_matrix)) > 2, colSums(!is.na(mean_matrix)) > 2]
 
