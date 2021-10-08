@@ -206,7 +206,7 @@ get_nested_default_identifiers.SummarizedExperiment <- function(x,
                                                                   tail(SummarizedExperiment::assayNames(x), 1)) {
   checkmate::assert_class(x, "SummarizedExperiment")
   intersect(combo_cols,
-            names(BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, assayName))))
+            names(BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(x, assayName))))
 }
 
 #' @keywords internal

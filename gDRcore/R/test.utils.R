@@ -40,7 +40,7 @@ test_synthetic_data <- function(original,
   
   if (combo) {
     for (assay in c("normalized", "averaged")) {
-      refColNames <- intersect(unname(unlist(get_env_identifiers())), names(get(assay)))
+      refColNames <- intersect(unname(unlist(gDRutils::get_env_identifiers())), names(get(assay)))
       concCols <- grep("Concentration", refColNames, value = TRUE)
       original <- unique(get(assay)[get(assay)[, apply(.SD != 0, 1, all), .SDcols = concCols], ])
       new <- unique(get(paste0(assay, "_new"))[
