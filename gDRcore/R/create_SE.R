@@ -6,17 +6,21 @@ create_SE <- function(df_,
                       control_mean_fxn = function(x) {
                         mean(x, trim = 0.25)
                       },
-                      nested_identifiers = gDRutils::get_env_identifiers(c("concentration", "concentration2"),
-                                                                         simplify = FALSE),
+                      nested_identifiers = NULL,
                       nested_confounders = gDRutils::get_env_identifiers("barcode"),
                       override_untrt_controls = NULL) {
 
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(readout)
-  checkmate::assert_character(nested_identifiers, null.ok = FALSE)
+  checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
 
+  
+  if (is.null(nested_identifiers)) {
+    nested_identifiers <- get_nested_default_identifiers(df_)
+  }
+  
   if (is(df_, "data.table")) {
     df_ <- S4Vectors::DataFrame(df_)
   }
@@ -63,57 +67,58 @@ create_SE <- function(df_,
   groupings <- dfs$groupings
   dfs <- dfs[c(md$data_fields, "row_id", "col_id")]
 
+  ## The mapping_entries contain all exhaustive combinations of treatments and cells.
+  ## Not all conditions will actually exist in the data, so filter out those that 
+  ## do not exist. 
+  treated <- treated[rownames(treated) %in% unique(groupings), ]
+
   trt_out <- ctl_out <- vector("list", nrow(treated))
   for (i in seq_len(nrow(treated))) {
     trt <- rownames(treated)[i]
-    trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]  
-    trt_df$row_id <- unique(dfs[groupings %in% trt, "row_id"]) # Override the row_id of the references.
+    trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]
+    trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
 
-    if (nrow(trt_df) == 0L) {
-      next # No data.
+    ctl_type <- "untrt_Endpoint"
+    untrt_ref <- ctl_maps[[ctl_type]][[trt]]  
+    untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
+    untrt_df <- create_control_df(
+      untrt_df, 
+      control_cols = Keys[[ctl_type]], 
+      control_mean_fxn, 
+      out_col_name = "UntrtReadout"
+    )
+
+    ctl_type <- "Day0"
+    day0_ref <- ctl_maps[[ctl_type]][[trt]]
+    day0_df <- dfs[groupings %in% day0_ref, , drop = FALSE]
+    day0_df <- create_control_df(
+      day0_df, 
+      control_cols = Keys[[ctl_type]],
+      control_mean_fxn, 
+      out_col_name = "Day0Readout"
+    )
+
+    ## Merge all data.frames together.
+    # Try to merge by plate, but otherwise just use mean. 
+    ctl_df <- untrt_df 
+    merge_cols <- intersect(colnames(day0_df), Keys$nested_keys)
+    if (nrow(day0_df) > 0L) {
+      ctl_df <- merge(untrt_df, day0_df, by = merge_cols, all = TRUE)
     } else {
-      ctl_type <- "untrt_Endpoint"
-      untrt_ref <- ctl_maps[[ctl_type]][[trt]]  
-      untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
-      untrt_df <- create_control_df(
-        untrt_df, 
-        control_cols = Keys[[ctl_type]], 
-        control_mean_fxn, 
-        out_col_name = "UntrtReadout"
-      )
-
-      ctl_type <- "Day0"
-      day0_ref <- ctl_maps[[ctl_type]][[trt]]
-      day0_df <- dfs[groupings %in% day0_ref, , drop = FALSE]
-      day0_df <- create_control_df(
-        day0_df, 
-        control_cols = Keys[[ctl_type]],
-        control_mean_fxn, 
-        out_col_name = "Day0Readout"
-      )
-
-      ## Merge all data.frames together.
-      # Try to merge by plate, but otherwise just use mean. 
-      ctl_df <- untrt_df 
-      merge_cols <- intersect(colnames(day0_df), Keys$nested_keys)
-      if (nrow(day0_df) > 0L) {
-        ctl_df <- merge(untrt_df, day0_df, by = merge_cols, all = TRUE)
-      } else {
-        ctl_df$Day0Readout <- NA
-      } 
-      
-      row_id <- unique(trt_df$row_id)
-      col_id <- unique(trt_df$col_id)
-      if (length(row_id) != 1L || length(col_id) != 1L) {
-        stop(sprintf("non-unique row_ids: '%s' and col_ids: '%s'", 
-          paste0(row_id, collapse = ", "), paste0(col_id, collapse = ", ")))
-      }
-      ctl_df$row_id <- row_id
-      ctl_df$col_id <- col_id
+      ctl_df$Day0Readout <- NA
+    } 
     
-      ctl_out[[i]] <- ctl_df
-      trt_out[[i]] <- trt_df
+    row_id <- unique(trt_df$row_id)
+    col_id <- unique(trt_df$col_id)
+    if (length(row_id) != 1L || length(col_id) != 1L) {
+      stop(sprintf("non-unique row_ids: '%s' and col_ids: '%s'", 
+        paste0(row_id, collapse = ", "), paste0(col_id, collapse = ", ")))
     }
+    ctl_df$row_id <- row_id
+    ctl_df$col_id <- col_id
+  
+    ctl_out[[i]] <- ctl_df
+    trt_out[[i]] <- trt_df
   }
 
   names(ctl_out) <- names(trt_out) <- rownames(treated)
@@ -121,11 +126,11 @@ create_SE <- function(df_,
   trt_out <- do.call(rbind, trt_out)
   ctl_out <- do.call(rbind, ctl_out)
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
-  ref_keep <- !colnames(ctl_out) %in% c("row_id", "col_id")
+  ctl_keep <- !colnames(ctl_out) %in% c("row_id", "col_id")
 
   trt_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out[, trt_keep, drop = FALSE],
                                                  row = trt_out$row_id, col = trt_out$col_id)
-  ctl_mat <- BumpyMatrix::splitAsBumpyMatrix(ctl_out[, ref_keep, drop = FALSE],
+  ctl_mat <- BumpyMatrix::splitAsBumpyMatrix(ctl_out[, ctl_keep, drop = FALSE],
                                                    row = ctl_out$row_id, col = ctl_out$col_id)
   matsL <- list(RawTreated = trt_mat, Controls = ctl_mat)
 

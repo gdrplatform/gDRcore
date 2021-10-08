@@ -18,45 +18,50 @@ test_that("calculate_GR_value works as expected", {
   untrt <- rep(c(115000, 118000), 5)
 
   # No cell line is specified.
-  gr1 <- calculate_GR_value(rel_viability = rv,
+  gr1 <- calculate_GR_value(
+    rel_viability = rv,
     corrected_readout = corrected,
     day0_readout = day0,
     untrt_readout = untrt,
     ndigit_rounding = 4,
     duration = duration,
-    ref_div_time = duration / 2)
+    ref_div_time = duration / 2
+  )
   expect_true(is.numeric(gr1))
-
+  
   # day0_readout is NA, reference division time missing.
-  expect_warning(gr2 <- calculate_GR_value(rel_viability = rv,
+  gr2 <- calculate_GR_value(
+    rel_viability = rv,
     corrected_readout = corrected,
     day0_readout = NA,
     untrt_readout = untrt,
     ndigit_rounding = 4,
     duration = duration,
-    ref_div_time = NA,
-    cl_name = "CELLLINE_NAME"), regexp = "GR values are NA")
+    ref_div_time = NA
+  )
   expect_true(all(is.na(gr2)))
-
+  
   # day0_readout is NA, reference division time is present and valid.
-  expect_warning(gr3 <- calculate_GR_value(rel_viability = rv,
+  gr3 <- calculate_GR_value(
+    rel_viability = rv,
     corrected_readout = corrected,
     day0_readout = NA,
     untrt_readout = untrt,
     ndigit_rounding = 4,
     duration = duration,
-    ref_div_time = (duration * 1.5) - 1,
-    cl_name = "CELLLINE_NAME"), regexp = "calculating GR value based on reference doubling time")
+    ref_div_time = (duration * 1.5) - 1
+  )
   expect_true(all(gr1 != gr3))
 
   # day0_readout is NA, reference division time is present but not valid.
-  expect_warning(gr4 <- calculate_GR_value(rel_viability = rv,
+  gr4 <- calculate_GR_value(
+    rel_viability = rv,
     corrected_readout = corrected,
     day0_readout = NA,
     untrt_readout = untrt,
     ndigit_rounding = 4,
     duration = duration,
-    ref_div_time = (duration * 1.5) + 1,
-    cl_name = "CELLLINE_NAME"), regexp = "too long for GR calculation")
+    ref_div_time = (duration * 1.5) + 1
+  )
   expect_true(all(is.na(gr4)))
 })

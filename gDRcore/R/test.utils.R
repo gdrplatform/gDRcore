@@ -5,7 +5,8 @@ test_synthetic_data <- function(original,
                                 dataName,
                                 additional_columns = 0,
                                 override_untrt_controls = NULL,
-                                tolerance = 10e-7) {
+                                tolerance = 10e-7,
+                                combo = FALSE) {
   if (inherits(data, "SummarizedExperiment")) {
     reprocessed <- data
   } else {
@@ -20,10 +21,13 @@ test_synthetic_data <- function(original,
   }
   normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
   averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
-  metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
   normalized_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Normalized")
   averaged_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Averaged")
-  metrics_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Metrics")
+
+  if (!combo) {
+    metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
+    metrics_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Metrics")
+  }
   
   OMITTED_COLUMNS_TO_TEST_NORMALIZED <- c(
   )
@@ -34,31 +38,54 @@ test_synthetic_data <- function(original,
   OMITTED_COLUMNS_TO_TEST_METRICS <- c(
   )
   
-  test_that(sprintf("Original data %s and recreated data are identical", dataName), {
-    expect_equal(ncol(normalized), 14 + additional_columns)
-    expect_equal(ncol(averaged), 15 + additional_columns)
-    expect_equal(ncol(metrics), 26 + additional_columns)
-    
-    expect_equivalent(
-      subset(normalized_new, select = which(!colnames(normalized_new) %in% OMITTED_COLUMNS_TO_TEST_NORMALIZED)),
-      subset(normalized, select = which(!colnames(normalized) %in% OMITTED_COLUMNS_TO_TEST_NORMALIZED))
-    )
-    
-    expect_equivalent(
-      subset(averaged_new, select = which(!colnames(averaged_new) %in% OMITTED_COLUMNS_TO_TEST_AVERAGED)),
-      subset(averaged, select = which(!colnames(averaged) %in% OMITTED_COLUMNS_TO_TEST_AVERAGED))
-    )
-    
-    expect_equivalent(
-      subset(metrics_new, select = which(!colnames(metrics_new) %in% OMITTED_COLUMNS_TO_TEST_METRICS)),
-      subset(metrics, select = which(!colnames(metrics) %in% OMITTED_COLUMNS_TO_TEST_METRICS)), 
-      tolerance = tolerance
-    )
-  })
+  if (combo) {
+    for (assay in c("normalized", "averaged")) {
+      refColNames <- intersect(unname(unlist(gDRutils::get_env_identifiers())), names(get(assay)))
+      concCols <- grep("Concentration", refColNames, value = TRUE)
+      original <- unique(get(assay)[get(assay)[, apply(.SD != 0, 1, all), .SDcols = concCols], ])
+      new <- unique(get(paste0(assay, "_new"))[
+        get(paste0(assay, "_new"))[, apply(.SD != 0, 1, all), .SDcols = concCols], ])
+
+      original$Concentration_2 <- round(original$Concentration_2, 7)
+      new$Concentration_2 <- round(new$Concentration_2, 7)
+      if (assay == "averaged") {
+        original <- data.frame(lapply(original, function(x) if (is.numeric(x)) round(x, 4) else x))
+        new <- data.frame(lapply(new, function(x) if (is.numeric(x)) round(x, 4) else x))
+        data.table::setDT(original)
+        data.table::setDT(new)
+      }
+      colsCompare <- setdiff(colnames(new), c(refColNames, "rId", "cId"))
+      
+      data.table::setorderv(new, colsCompare)
+      data.table::setorderv(original, colsCompare)
+      test_that(sprintf("Original data %s and recreated data are identical", dataName), {
+      expect_equal(new[, ..colsCompare], original[, ..colsCompare])
+      })
+    }
+  } else {
+    test_that(sprintf("Original data %s and recreated data are identical", dataName), {
+      expect_equal(ncol(normalized), 14 + additional_columns)
+      expect_equal(ncol(averaged), 15 + additional_columns)
+      expect_equal(ncol(metrics), 26 + additional_columns)
+      
+      expect_equivalent(
+        subset(normalized_new, select = which(!colnames(normalized_new) %in% OMITTED_COLUMNS_TO_TEST_NORMALIZED)),
+        subset(normalized, select = which(!colnames(normalized) %in% OMITTED_COLUMNS_TO_TEST_NORMALIZED))
+      )
+      
+      expect_equivalent(
+        subset(averaged_new, select = which(!colnames(averaged_new) %in% OMITTED_COLUMNS_TO_TEST_AVERAGED)),
+        subset(averaged, select = which(!colnames(averaged) %in% OMITTED_COLUMNS_TO_TEST_AVERAGED))
+      )
+      
+      expect_equivalent(
+        subset(metrics_new, select = which(!colnames(metrics_new) %in% OMITTED_COLUMNS_TO_TEST_METRICS)),
+        subset(metrics, select = which(!colnames(metrics) %in% OMITTED_COLUMNS_TO_TEST_METRICS)), 
+        tolerance = tolerance
+      )
+    })
+  }
 }
-
-
-
 
 
 # Test that the data is consistent after moving the RefReadout out of the create_and_normalize_SE logic.

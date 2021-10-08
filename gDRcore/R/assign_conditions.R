@@ -2,15 +2,18 @@
 #'
 #' Assign the treated, untreated, and reference conditions to a data.frame
 #'
-#' @param df_ data.frame containing the drug name field.
+#' @param df_ data.frame containing the \code{nested_identifiers}.
 #' @param nested_identifiers Character vector of column names in \code{df_}
-#' that 
+#' that will determine a condition type.
 #'
-#' @return data.frame containing an additional factor column called \code{condition} specifying
-#' whether the condition is a treated, untreated, or reference entry.
+#' @return data.frame containing an additional factor column called \code{"conditions"} specifying
+#' whether the condition is a \code{"treated"}, \code{"untreated"}, or \code{"reference"} entry.
 #' 
-#' @details Untreated rows are identified by having both nested_identifiers set to 0.
-#' When nested_identifiers are drugs, this represent entries where all drugs are at 0 concentration.
+#' @details Conditions are considered \code{"untreated"} when both \code{nested_identifiers}
+#' have a value of 0. When nested_identifiers are drugs, this represent entries where all drugs 
+#' are at 0 concentration. Conditions are considered \code{"reference"} when only one
+#' of the \code{nested_identifiers} is 0. In the context of drugs, this represents a single-agent 
+#' response.
 #'
 #' @export
 #'
