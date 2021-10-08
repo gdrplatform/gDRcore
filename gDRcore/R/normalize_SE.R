@@ -11,7 +11,7 @@ normalize_SE <- function(se,
   
   # Assertions
   checkmate::assert_class(se, "SummarizedExperiment")
-  checkmate::assert_character(nested_identifiers)
+  checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_string(control_assay)
   checkmate::assert_string(raw_treated_assay)
