@@ -27,7 +27,7 @@ map_df <- function(trt_md,
   # Assertions:
   checkmate::assert_class(trt_md, "data.frame")
   checkmate::assert_class(ref_md, "data.frame")
-  checkmate::assert_character(override_untrt_controls, null.ok = TRUE)
+  checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
   checkmate::assert_character(ref_cols)
   checkmate::assert_character(ref_type)
   
