@@ -74,6 +74,17 @@ create_and_normalize_SE <- function(df_,
                                     raw_treated_assay = "RawTreated",
                                     normalized_assay = "Normalized") {
   
+  checkmate::assert_data_frame(df_)
+  checkmate::assert_string(readout)
+  checkmate::assert_function(control_mean_fxn)
+  checkmate::assert_character(nested_identifiers, null.ok = TRUE)
+  checkmate::assert_character(nested_confounders, null.ok = TRUE)
+  checkmate::assert_character(override_untrt_controls, null.ok = TRUE)
+  checkmate::assert_numeric(ndigit_rounding)
+  checkmate::assert_string(control_assay)
+  checkmate::assert_string(raw_treated_assay)
+  checkmate::assert_string(normalized_assay)
+  
   se <- create_SE(df_ = df_, 
     readout = readout, 
     control_mean_fxn = control_mean_fxn, 
@@ -109,6 +120,22 @@ runDrugResponseProcessingPipeline <- function(df_,
                                               normalized_assay = "Normalized",
                                               averaged_assay = "Averaged",
                                               metrics_assay = "Metrics") {
+  
+  checkmate::assert_data_frame(df_)
+  checkmate::assert_string(readout)
+  checkmate::assert_function(control_mean_fxn)
+  checkmate::assert_character(nested_identifiers, null.ok = TRUE)
+  checkmate::assert_character(nested_confounders, null.ok = TRUE)
+  checkmate::assert_character(override_untrt_controls, null.ok = TRUE)
+  checkmate::assert_flag(override_masked)
+  checkmate::assert_numeric(ndigit_rounding)
+  checkmate::assert_number(n_point_cutoff)
+  checkmate::assert_string(control_assay)
+  checkmate::assert_string(raw_treated_assay)
+  checkmate::assert_string(normalized_assay)
+  checkmate::assert_string(averaged_assay)
+  checkmate::assert_string(metrics_assay)
+  
   data_type <- data_model(df_)
   se <- create_and_normalize_SE(df_ = df_,
       readout = readout,

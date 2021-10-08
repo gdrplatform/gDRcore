@@ -208,9 +208,3 @@ get_nested_default_identifiers.SummarizedExperiment <- function(x,
   intersect(combo_cols,
             names(BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(x, assayName))))
 }
-
-#' @keywords internal
-#' @export
-.filter_empty_list_elements <- function(obj) {
-  obj[lengths(obj) > 0L]
-}

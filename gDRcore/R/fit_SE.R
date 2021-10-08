@@ -14,11 +14,16 @@ fit_SE <- function(se,
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_character(nested_identifiers, null.ok = TRUE)
+  checkmate::assert_string(averaged_assay)
+  checkmate::assert_string(metrics_assay)
   checkmate::assert_number(n_point_cutoff)
   checkmate::assert_numeric(range_conc)
   checkmate::assert_logical(force_fit)
   checkmate::assert_number(pcutoff)
   checkmate::assert_number(cap)
+  checkmate::assert_character(curve_type)
+  
   req_assays <- c(averaged_assay)
   lapply(req_assays, function(x) gDRutils::validate_se_assay_name(se, x))
 

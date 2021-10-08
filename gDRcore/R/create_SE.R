@@ -13,10 +13,11 @@ create_SE <- function(df_,
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(readout)
+  checkmate::assert_function(control_mean_fxn)
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
+  checkmate::assert_character(override_untrt_controls, null.ok = TRUE)
 
-  
   if (is.null(nested_identifiers)) {
     nested_identifiers <- get_nested_default_identifiers(df_)
   }

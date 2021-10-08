@@ -18,6 +18,8 @@
 #' @export
 #'
 .assign_conditions <- function(df_, nested_identifiers) {
+  checkmate::assert_data_frame(df_)
+  checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   valid <- intersect(nested_identifiers, colnames(df_))
   if (length(valid) == 0L) {
     stop(sprintf("input 'df_' does not contain nested_identifiers: '%s'", paste0(valid, ", ")))

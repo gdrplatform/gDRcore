@@ -9,6 +9,11 @@ average_SE <- function(se,
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_character(series_identifiers, null.ok = TRUE)
+  checkmate::assert_flag(override_masked)
+  checkmate::assert_string(normalized_assay)
+  checkmate::assert_string(averaged_assay)
+  
   gDRutils::validate_se_assay_name(se, normalized_assay)
 
   if (is.null(series_identifiers)) {

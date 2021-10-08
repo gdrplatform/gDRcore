@@ -10,7 +10,14 @@ normalize_SE <- function(se,
                          ndigit_rounding = 4) {
   
   # Assertions
-  checkmate::assert_number(ndigit_rounding)
+  checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_character(nested_identifiers)
+  checkmate::assert_character(nested_confounders, null.ok = TRUE)
+  checkmate::assert_string(control_assay)
+  checkmate::assert_string(raw_treated_assay)
+  checkmate::assert_string(normalized_assay)
+  checkmate::assert_number(n_point_cutoff)
+  
   gDRutils::validate_se_assay_name(se, control_assay)
   gDRutils::validate_se_assay_name(se, raw_treated_assay)
 
