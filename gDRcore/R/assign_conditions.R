@@ -7,7 +7,7 @@
 #' that will determine a condition type.
 #'
 #' @return data.frame containing an additional factor column called \code{"conditions"} specifying
-#' whether the condition is a \code{"treated"}, \code{"untreated"}, or \code{"reference"} entry.
+#' whether the condition is a \code{"treated"} (drug treated), \code{"untreated"}, or \code{"reference"} entry.
 #' 
 #' @details Conditions are considered \code{"untreated"} when both \code{nested_identifiers}
 #' have a value of 0. When nested_identifiers are drugs, this represent entries where all drugs 

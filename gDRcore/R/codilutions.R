@@ -1,5 +1,9 @@
 #' @keywords internal
-fit_combo_codilutions <- function(measured, nested_identifiers, normalization_type) {
+fit_combo_codilutions <- function(measured,
+                                  nested_identifiers,
+                                  normalization_type,
+                                  e_0 = 1,
+                                  GR_0 = 1) {
   id <- nested_identifiers[1]
   id2 <- nested_identifiers[2]
 
@@ -17,7 +21,7 @@ fit_combo_codilutions <- function(measured, nested_identifiers, normalization_ty
 
   fits <- vector("list", length(valid))
   for (i in seq_along(fits)) {
-    fits[[i]] <- fit_codilution_series(valid[[i]], id, id2, e_0 = 1, GR_0 = 1, normalization_type)
+    fits[[i]] <- fit_codilution_series(valid[[i]], id, id2, e_0 = e_0, GR_0 = GR_0, normalization_type)
   }
 
   out <- do.call("rbind", fits)
