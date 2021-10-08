@@ -1,9 +1,10 @@
 #' @keywords internal
 .create_combo_control <- function(nested_identifiers) {
   out <- data.frame()
-  for (i in nested_identifiers) {
-    out[[i]] <- 0
+  for (id in nested_identifiers) {
+    out[[id]] <- 0
   }
+
   out$GRvalue <- 1
   out$std_GRvalue <- 0
   out$RelativeViability <- 1
