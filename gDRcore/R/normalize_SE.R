@@ -95,7 +95,8 @@ normalize_SE <- function(se,
                                              ref_div_time = ref_div_time)
 
     if (any(is.na(all_readouts_df$Day0Readout))) {
-      warning(sprintf("could not calculate GR values for '%s'", cl_name))
+      msgs <- c(msgs,
+                sprintf("could not calculate GR values for '%s'", cl_name))
     }
     
     # Carry over present treated keys.
