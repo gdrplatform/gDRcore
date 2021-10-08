@@ -182,13 +182,13 @@ fit_SE.combinations <- function(se,
   }
 
 
-  all_hsa_excess <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, hsa_excess))
-  all_b_excess <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, bliss_excess))
-  all_smooth_mx <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, smooth_mx))
+  all_hsa_excess <- S4Vectors::DataFrame(do.call(rbind, hsa_excess))
+  all_b_excess <- S4Vectors::DataFrame(do.call(rbind, bliss_excess))
+  all_smooth_mx <- S4Vectors::DataFrame(do.call(rbind, smooth_mx))
   all_isobolograms <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, isobolograms))
-  all_CIScore_50 <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, CIScore_50))
-  all_CIScore_80 <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, CIScore_80))
-  all_metrics <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, metrics))
+  all_CIScore_50 <- S4Vectors::DataFrame(do.call(rbind, CIScore_50))
+  all_CIScore_80 <- S4Vectors::DataFrame(do.call(rbind, CIScore_80))
+  all_metrics <- S4Vectors::DataFrame(do.call(rbind, metrics))
 
   SummarizedExperiment::assays(se)[["SmoothMatrix"]] <- BumpyMatrix::splitAsBumpyMatrix(
     all_smooth_mx[!colnames(all_smooth_mx) %in% c("row_id", "col_id")],
