@@ -154,16 +154,14 @@ Order_result_df <- function(df_) {
 #' @export
 data_model <- function(df_) {
   checkmate::assert_data_frame(df_)
-  if (all(gDRutils::get_env_identifiers(c("concentration",
-                                      "concentration2"),
-                                    simplify = FALSE) %in% colnames(df_))) {
+  if (all(.get_default_combo_identifiers() %in% colnames(df_))) {
     if (all(df_[[gDRutils::get_env_identifiers("concentration2")]]
             %in% gDRutils::get_env_identifiers("untreated_tag"))) {
       "single-agent"
     } else {
       "combo"
     }
-  } else if (gDRutils::get_env_identifiers("concentration") %in% colnames(df_)) {
+  } else if (.get_default_single_agent_identifiers() %in% colnames(df_)) {
     "single-agent"
   } else {
     stop("Unknown data model")
