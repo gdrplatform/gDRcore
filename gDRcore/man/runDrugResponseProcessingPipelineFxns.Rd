@@ -66,6 +66,7 @@ create_and_normalize_SE(
 
 runDrugResponseProcessingPipeline(
   df_,
+  data_type = data_model(df_),
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
   nested_identifiers = NULL,
@@ -117,6 +118,8 @@ Defaults to \code{"RawTreated"}.}
 
 \item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
 Defaults to \code{4}.}
+
+\item{data_type}{string specyfying what type of data represents \code{df_} (either single-agent or combo)}
 
 \item{nested_keys}{character vector of column names to include in the data.frames
 in the assays of the resulting \code{SummarizedExperiment} object.}

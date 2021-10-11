@@ -14,7 +14,7 @@ that will determine a condition type.}
 }
 \value{
 data.frame containing an additional factor column called \code{"conditions"} specifying
-whether the condition is a \code{"treated"}, \code{"untreated"}, or \code{"reference"} entry.
+whether the condition is a \code{"treated"} (drug treated), \code{"untreated"}, or \code{"reference"} entry.
 }
 \description{
 Assign the treated, untreated, and reference conditions to a data.frame
