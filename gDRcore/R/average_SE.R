@@ -35,12 +35,11 @@ average_SE <- function(se,
 
   std_cols <- c("GRvalue", "RelativeViability")
   iterator <- unique(normalized[, c("column", "row")])
-  out <- vector("list", nrow(iterator))
   # Parallel computing
   clusters <- makeCluster(4, type = "FORK")
   registerDoParallel(clusters)
   
-  out <- foreach(row = seq_len(nrow(iterator)), .combine = "c") %dopar% {
+  out <- foreach(row = seq_len(nrow(iterator))) %dopar% {
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
@@ -80,7 +79,7 @@ average_SE <- function(se,
       agg_df$row_id <- i
       agg_df$col_id <- j
     }
-    out[[row]] <- agg_df
+    agg_df
   }
   stopCluster(clusters)
   

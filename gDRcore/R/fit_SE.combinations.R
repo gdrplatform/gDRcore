@@ -49,18 +49,16 @@ fit_SE.combinations <- function(se,
   id2 <- series_identifiers[2]
 
   iterator <- unique(avg[, c("column", "row")])
-  bliss_excess <- hsa_excess <- metrics <- isobolograms <- smooth_mx <- vector("list", nrow(iterator))
-  bliss_score <- hsa_score <- CIScore_50 <- CIScore_80 <- S4Vectors::DataFrame(matrix(NA, nrow(iterator), 0))
   # Parallel computing
   clusters <- makeCluster(4, type = "FORK")
   registerDoParallel(clusters)
   
-  out <- foreach(row = seq_len(nrow(iterator)), .combine = "c") %dopar% {
+  out <- foreach(row = seq_len(nrow(iterator))) %dopar% {
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
     avg_combo <- avg[avg$row == i & avg$column == j, ]
-
+    bliss_score <- hsa_score <- CIScore_50 <- CIScore_80 <- S4Vectors::DataFrame(matrix(NA, 1, 0))
     sa <- avg_combo[[id]] == 0 | avg_combo[[id2]] == 0
     single_agent <- avg_combo[sa, ]
     measured <- avg_combo#[!sa, ] # we can keep the single agent to have a full matrix
@@ -119,9 +117,9 @@ fit_SE.combinations <- function(se,
                             "GRvalue" = "GR",
                             "RelativeViability" = "RV",
                             "unknown")
-      hsa_score[row, metric_name] <- mean(
+      hsa_score[, metric_name] <- mean(
         h_excess$excess[h_excess$excess <= quantile(h_excess$excess, 0.1, na.rm = TRUE)])
-      bliss_score[row, metric_name] <- mean(
+      bliss_score[, metric_name] <- mean(
         b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)])
       
 
@@ -149,52 +147,64 @@ fit_SE.combinations <- function(se,
         }
       ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
       ## and then each new metric that should go for each spot is another column in the nested DataFrame
-      hsa_score[row, metric_name] <- mean(
+      hsa_score[, metric_name] <- mean(
         h_excess$excess[h_excess$excess <= quantile(h_excess$excess, 0.1, na.rm = TRUE)], na.rm = TRUE)
-      bliss_score[row, metric_name] <- mean(
+      bliss_score[, metric_name] <- mean(
         b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)], na.rm = TRUE)
       if (all(vapply(isobologram_out, is.null, logical(1)))) {
-        CIScore_50[row, metric_name] <- CIScore_80[row, metric_name] <- NA
+        CIScore_50[, metric_name] <- CIScore_80[, metric_name] <- NA
       } else {
-        CIScore_50[row, metric_name] <- isobologram_out$df_all_AUC_log2CI$CI_100x[
+        CIScore_50[, metric_name] <- isobologram_out$df_all_AUC_log2CI$CI_100x[
           isobologram_out$df_all_AUC_log2CI$iso_level ==
             min(isobologram_out$df_all_AUC_log2CI$iso_level[isobologram_out$df_all_AUC_log2CI$iso_level >= 0.5])]
-        CIScore_80[row, metric_name] <- isobologram_out$df_all_AUC_log2CI$CI_100x[
+        CIScore_80[, metric_name] <- isobologram_out$df_all_AUC_log2CI$CI_100x[
           isobologram_out$df_all_AUC_log2CI$iso_level == 
             min(isobologram_out$df_all_AUC_log2CI$iso_level[isobologram_out$df_all_AUC_log2CI$iso_level >= 0.2])]
       }
       
       b_excess$row_id <- mean_df$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_curves$row_id <- 
-        col_fittings$row_id <- hsa_score[row, "row_id"] <- bliss_score[row, "row_id"] <-
-        CIScore_50[row, "row_id"] <- CIScore_80[row, "row_id"] <- metrics_merged$row_id <- i
+        col_fittings$row_id <- hsa_score[, "row_id"] <- bliss_score[, "row_id"] <-
+        CIScore_50[, "row_id"] <- CIScore_80[, "row_id"] <- metrics_merged$row_id <- i
       b_excess$col_id <- mean_df$col_id <- h_excess$col_id <- isobologram_out$df_all_iso_curves$col_id <- 
-        col_fittings$col_id <- hsa_score[row, "col_id"] <- bliss_score[row, "col_id"] <-
-        CIScore_50[row, "col_id"] <- CIScore_80[row, "col_id"] <- metrics_merged$col_id <- j
+        col_fittings$col_id <- hsa_score[, "col_id"] <- bliss_score[, "col_id"] <-
+        CIScore_50[, "col_id"] <- CIScore_80[, "col_id"] <- metrics_merged$col_id <- j
       b_excess$normalization_type <- h_excess$normalization_type <-
         isobologram_out$df_all_iso_curves$normalization_type <- metric_name
       
-      hsa_excess[[row]] <- rbind(hsa_excess[[row]], h_excess)
-      bliss_excess[[row]] <- rbind(bliss_excess[[row]], b_excess)
-      if (!is.null(smooth_mx[[row]])) {
-        smooth_mx[[row]] <- merge(smooth_mx[[row]], mean_df, all = TRUE)
+      hsa_excess <- rbind(hsa_excess, h_excess)
+      bliss_excess <- rbind(bliss_excess, b_excess)
+      if (!is.null(smooth_mx)) {
+        smooth_mx <- merge(smooth_mx, mean_df, all = TRUE)
       } else {
-        smooth_mx[[row]] <- mean_df
+        smooth_mx <- mean_df
       }
-      isobolograms[[row]] <- rbind(isobolograms[[row]], as.data.frame(isobologram_out$df_all_iso_curves))
-      metrics[[row]] <- rbind(metrics[[row]], metrics_merged)
+      isobolograms <- rbind(isobolograms, as.data.frame(isobologram_out$df_all_iso_curves))
+      metrics <- rbind(metrics, metrics_merged)
     }
+    list(hsa_excess = hsa_excess,
+         bliss_excess = bliss_excess,
+         smooth_mx =  smooth_mx,
+         isobolograms = isobolograms,
+         CIScore_50 = CIScore_50,
+         CIScore_80 = CIScore_80,
+         metrics = metrics,
+         hsa_score = hsa_score,
+         bliss_score = bliss_score
+         )
   }
 
   stopCluster(clusters)
 
-  all_hsa_excess <- S4Vectors::DataFrame(do.call(rbind, hsa_excess))
-  all_b_excess <- S4Vectors::DataFrame(do.call(rbind, bliss_excess))
-  all_smooth_mx <- S4Vectors::DataFrame(do.call(rbind, smooth_mx))
-  all_isobolograms <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, isobolograms))
-  all_CIScore_50 <- S4Vectors::DataFrame(do.call(rbind, CIScore_50))
-  all_CIScore_80 <- S4Vectors::DataFrame(do.call(rbind, CIScore_80))
-  all_metrics <- S4Vectors::DataFrame(do.call(rbind, metrics))
-
+  all_hsa_excess <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "hsa_excess")))
+  all_b_excess <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "bliss_excess")))
+  all_smooth_mx <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "smooth_mx")))
+  all_isobolograms <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, lapply(out, "[[", "isobolograms")))
+  all_CIScore_50 <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "CIScore_50")))
+  all_CIScore_80 <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "CIScore_80")))
+  all_metrics <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "metrics")))
+  bliss_score <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "bliss_score")))
+  hsa_score <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "hsa_score")))
+  
   SummarizedExperiment::assays(se)[["SmoothMatrix"]] <- BumpyMatrix::splitAsBumpyMatrix(
     all_smooth_mx[!colnames(all_smooth_mx) %in% c("row_id", "col_id")],
     row = all_smooth_mx$row_id, col = all_smooth_mx$col_id)
@@ -215,11 +225,11 @@ fit_SE.combinations <- function(se,
     hsa_score[!colnames(hsa_score) %in% c("row_id", "col_id")],
     row = hsa_score$row_id, col = hsa_score$col_id)
   SummarizedExperiment::assays(se)[["CIScore_50"]] <- BumpyMatrix::splitAsBumpyMatrix(
-    CIScore_50[!colnames(CIScore_50) %in% c("row_id", "col_id")],
-    row = CIScore_50$row_id, col = CIScore_50$col_id)
+    all_CIScore_50[!colnames(all_CIScore_50) %in% c("row_id", "col_id")],
+    row = all_CIScore_50$row_id, col = all_CIScore_50$col_id)
   SummarizedExperiment::assays(se)[["CIScore_80"]] <- BumpyMatrix::splitAsBumpyMatrix(
-    CIScore_80[!colnames(CIScore_80) %in% c("row_id", "col_id")],
-    row = CIScore_80$row_id, col = CIScore_80$col_id)
+    all_CIScore_80[!colnames(all_CIScore_80) %in% c("row_id", "col_id")],
+    row = all_CIScore_80$row_id, col = all_CIScore_80$col_id)
   
   SummarizedExperiment::assays(se)[[metrics_assay]] <- BumpyMatrix::splitAsBumpyMatrix(
     all_metrics[!colnames(all_metrics) %in% c("row_id", "col_id")],

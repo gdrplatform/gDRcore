@@ -73,13 +73,11 @@ create_SE <- function(df_,
   ## do not exist. 
   treated <- treated[rownames(treated) %in% unique(groupings), ]
 
-  trt_out <- ctl_out <- vector("list", nrow(treated))
-  
   # Parallel computing
   clusters <- makeCluster(4, type = "FORK")
   registerDoParallel(clusters)
   
-  out <- foreach(i = seq_len(nrow(treated)), .combine = "c") %dopar% {
+  out <- foreach(i = seq_len(nrow(treated))) %dopar% {
     trt <- rownames(treated)[i]
     trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
@@ -123,15 +121,13 @@ create_SE <- function(df_,
     ctl_df$row_id <- row_id
     ctl_df$col_id <- col_id
   
-    ctl_out[[i]] <- ctl_df
-    trt_out[[i]] <- trt_df
+    list(ctl_df = ctl_df,
+         trt_df = trt_df)
   }
   stopCluster(clusters)
 
-  names(ctl_out) <- names(trt_out) <- rownames(treated)
-  
-  trt_out <- do.call(rbind, trt_out)
-  ctl_out <- do.call(rbind, ctl_out)
+  trt_out <- do.call(rbind, lapply(out, "[[", "trt_df"))
+  ctl_out <- do.call(rbind, lapply(out, "[[", "ctl_df"))
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
   ctl_keep <- !colnames(ctl_out) %in% c("row_id", "col_id")
 
