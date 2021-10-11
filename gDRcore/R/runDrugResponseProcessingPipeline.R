@@ -5,6 +5,7 @@
 #' average data (average_SE), or fit the processed data (fit_SE). See details for more in-depth explanations.
 #'
 #' @param df_ data.frame of raw drug response data containing both treated and untreated values. 
+#' @param data_type string specyfying what type of data represents \code{df_} (either single-agent or combo)
 #' @param readout string of the name containing the cell viability readout values.
 #' @param control_mean_fxn function indicating how to average controls.
 #' Defaults to \code{mean(x, trim = 0.25)}.
@@ -105,6 +106,7 @@ create_and_normalize_SE <- function(df_,
 #' @rdname runDrugResponseProcessingPipelineFxns 
 #' @export
 runDrugResponseProcessingPipeline <- function(df_,
+                                              data_type = data_model(df_),
                                               readout = "ReadoutValue",
                                               control_mean_fxn = function(x) {
                                                 mean(x, trim = 0.25)
@@ -122,6 +124,7 @@ runDrugResponseProcessingPipeline <- function(df_,
                                               metrics_assay = "Metrics") {
   
   checkmate::assert_data_frame(df_)
+  checkmate::assert_choice(data_type, c("single-agent", "combo"))
   checkmate::assert_string(readout)
   checkmate::assert_function(control_mean_fxn)
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
@@ -136,7 +139,6 @@ runDrugResponseProcessingPipeline <- function(df_,
   checkmate::assert_string(averaged_assay)
   checkmate::assert_string(metrics_assay)
   
-  data_type <- data_model(df_)
   se <- create_and_normalize_SE(df_ = df_,
       readout = readout,
       control_mean_fxn = control_mean_fxn,
