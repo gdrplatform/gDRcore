@@ -5,6 +5,7 @@
 #' @importFrom magrittr %$% %>% %<>%
 #' @import S4Vectors
 #' @import parallel
+#' @import doParallel
 #' @importFrom foreach foreach
 NULL
 
