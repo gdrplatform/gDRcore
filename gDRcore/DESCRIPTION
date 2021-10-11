@@ -17,6 +17,8 @@ Imports:
     catchr,
     data.table,
     drc,
+    foreach,
+    doParallel,
     gDRutils (>= 1.0.10),
     httr,
     magrittr,
