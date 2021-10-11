@@ -6,7 +6,11 @@ test_synthetic_data <- function(original,
                                 additional_columns = 0,
                                 override_untrt_controls = NULL,
                                 tolerance = 10e-7,
-                                combo = FALSE) {
+                                combo = FALSE,
+                                OMITTED_COLUMNS_TO_TEST_NORMALIZED = NULL,
+                                OMITTED_COLUMNS_TO_TEST_AVERAGED = NULL,
+                                OMITTED_COLUMNS_TO_TEST_METRICS = NULL
+                                ) {
   if (inherits(data, "SummarizedExperiment")) {
     reprocessed <- data
   } else {
@@ -28,15 +32,6 @@ test_synthetic_data <- function(original,
     metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
     metrics_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Metrics")
   }
-  
-  OMITTED_COLUMNS_TO_TEST_NORMALIZED <- c(
-  )
-  
-  OMITTED_COLUMNS_TO_TEST_AVERAGED <- c(
-  )
-  
-  OMITTED_COLUMNS_TO_TEST_METRICS <- c(
-  )
   
   if (combo) {
     for (assay in c("normalized", "averaged")) {
