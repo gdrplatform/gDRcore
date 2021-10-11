@@ -176,7 +176,7 @@ data_model <- function(df_) {
 #' @param assayName assay name used for finding nested_identifiers in SummarizedExperiment object
 #' @return vector of nested identifiers
 #' @export
-get_nested_default_identifiers <- function(x) {
+get_nested_default_identifiers <- function(x, ...) {
   UseMethod("get_nested_default_identifiers")
 }
 

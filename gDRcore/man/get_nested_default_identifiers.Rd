@@ -4,7 +4,7 @@
 \alias{get_nested_default_identifiers}
 \title{Get default nested identifiers}
 \usage{
-get_nested_default_identifiers(x)
+get_nested_default_identifiers(x, ...)
 }
 \arguments{
 \item{x}{data.frame with raw data or SummarizedExperiment object with gDR assays}
