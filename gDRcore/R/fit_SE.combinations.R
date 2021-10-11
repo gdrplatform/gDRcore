@@ -51,7 +51,7 @@ fit_SE.combinations <- function(se,
   iterator <- unique(avg[, c("column", "row")])
   bliss_excess <- hsa_excess <- metrics <- isobolograms <- smooth_mx <- vector("list", nrow(iterator))
   bliss_score <- hsa_score <- CIScore_50 <- CIScore_80 <- S4Vectors::DataFrame(matrix(NA, nrow(iterator), 0))
-  catchWarnings <- for (row in seq_len(nrow(iterator))) {
+  for (row in seq_len(nrow(iterator))) {
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
