@@ -139,7 +139,7 @@ runDrugResponseProcessingPipeline <- function(df_,
   checkmate::assert_string(averaged_assay)
   checkmate::assert_string(metrics_assay)
   
-  se <- create_and_normalize_SE(df_ = df_,
+  se <- catchr::catch_expr(create_and_normalize_SE(df_ = df_,
       readout = readout,
       control_mean_fxn = control_mean_fxn,
       nested_identifiers = nested_identifiers,
@@ -148,16 +148,19 @@ runDrugResponseProcessingPipeline <- function(df_,
       control_assay = control_assay, 
       raw_treated_assay = raw_treated_assay, 
       normalized_assay = normalized_assay,
-      ndigit_rounding = ndigit_rounding)
-  se <- average_SE(se = se, 
+      ndigit_rounding = ndigit_rounding),
+      warning)
+  .catch_warnings(se)
+  se <- catchr::catch_expr(average_SE(se = se$value, 
                    series_identifiers = nested_identifiers,
                    override_masked = override_masked, 
                    normalized_assay = normalized_assay, 
-                   averaged_assay = averaged_assay)
+                   averaged_assay = averaged_assay),
+                   warning)
+  .catch_warnings(se)
+  se <- add_codrug_group_SE(se$value)
   
-  se <- add_codrug_group_SE(se)
-  
-  se <- if (data_type == "single-agent") {
+  se <- catchr::catch_expr(if (data_type == "single-agent") {
     fit_SE(se = se, 
            nested_identifiers = nested_identifiers,
            averaged_assay = averaged_assay, 
@@ -167,6 +170,8 @@ runDrugResponseProcessingPipeline <- function(df_,
     fit_SE.combinations(se = se,
                         series_identifiers = nested_identifiers,
                         averaged_assay = averaged_assay)
-  }
-  se
+  }, warning)
+  .catch_warnings(se)
+  se$value
 }
+  

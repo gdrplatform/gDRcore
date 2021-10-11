@@ -761,7 +761,7 @@ add_codrug_group_SE <- function(se) {
        gDRutils::get_SE_identifiers(se, "untreated_tag"))) return(se)
 
   # find the pairs of drugs with relevant metadata
-  drug_ids <- paste0(gDRutils::get_identifier("drugname"), c("", "_2"))
+  drug_ids <- unlist(gDRutils::get_env_identifiers(c("drugname", "drugname2"), simplify = FALSE))
   other_metadata <- c(#paste0(gDRutils::get_identifier("drug"), c("", "_2")),
             setdiff(colnames(r_data), c("Concentration_2", drug_ids,
                 paste0(gDRutils::get_SE_identifiers(se, "drug"), c("", "_2")),
