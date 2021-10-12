@@ -58,7 +58,7 @@ add_CellLine_annotation <- function(df_metadata,
       CLs_info <- rbind(CLs_info, missingTblCellLines)
     }
   
-    colnames(CLs_info) <- c(cellline, add_clid, tail(DB_cell_annotate, 2))
+    colnames(CLs_info) <- unlist(c(cellline, add_clid, tail(DB_cell_annotate, 2)))
     CLIDs <- unique(df_metadata[[cellline]])
     bad_CL <- CLs_info[cellline %in% CLIDs][[cellline]]
     if (any(bad_CL)) {

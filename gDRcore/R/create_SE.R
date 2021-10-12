@@ -6,19 +6,27 @@ create_SE <- function(df_,
                       control_mean_fxn = function(x) {
                         mean(x, trim = 0.25)
                       },
-                      nested_keys = c(gDRutils::get_env_identifiers("concentration"),
-                                      gDRutils::get_env_identifiers("barcode")),
+                      nested_identifiers = NULL,
+                      nested_confounders = gDRutils::get_env_identifiers("barcode"),
                       override_untrt_controls = NULL) {
 
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(readout)
-  checkmate::assert_character(nested_keys, null.ok = TRUE)
+  checkmate::assert_function(control_mean_fxn)
+  checkmate::assert_character(nested_identifiers, null.ok = TRUE)
+  checkmate::assert_character(nested_confounders, null.ok = TRUE)
+  checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
 
+  if (is.null(nested_identifiers)) {
+    nested_identifiers <- get_nested_default_identifiers(df_)
+  }
+  
   if (is(df_, "data.table")) {
     df_ <- S4Vectors::DataFrame(df_)
   }
 
+  nested_keys <- c(nested_identifiers, nested_confounders)
   identifiers <- gDRutils::get_env_identifiers()
   Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
 
@@ -36,66 +44,23 @@ create_SE <- function(df_,
   exp_md <- md$experiment_md
 
   mapping_entries <- .create_mapping_factors(rowdata, coldata)
-  mapping_entries$groupings <- rownames(mapping_entries) 
+  mapping_entries$groupings <- rownames(mapping_entries)
 
-  ## Identify treated and untreated conditions.
-  assigned_mapping_entries <- .assign_treated_and_untreated_conditions(mapping_entries, identifiers$drugname)
-  split_list <- split(mapping_entries, f = assigned_mapping_entries$treated_untreated)  
-  if (length(split_list) != 2L) {
-    stop(sprintf("unexpected conditions found: '%s'", 
-      paste(setdiff(levels(assigned_mapping_entries$treated_untreated), c("treated", "untreated")), collapse = ",")))
-  }
-  treated <- split_list[["treated"]]
-  untreated <- split_list[["untreated"]]
+  refs <- .map_references(mapping_entries)
+  trt_conditions <- names(refs)
+  sa_conditions <- unique(unname(unlist(refs)))
 
-  ## Map references.
-  references <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0", ref_Endpoint = "ref_Endpoint")
+  treated <- mapping_entries[trt_conditions, ]
+  untreated <- mapping_entries[!rownames(mapping_entries) %in% c(trt_conditions, sa_conditions), ]
 
-  ref_maps <- lapply(references, function(ref_type) {
+  ## Map controls.
+  controls <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
+  ctl_maps <- lapply(controls, function(ctl_type) {
     map_df(treated, untreated, override_untrt_controls = override_untrt_controls,
-           ref_cols = Keys[[ref_type]], ref_type = ref_type)
+           ref_cols = Keys[[ctl_type]], ref_type = ctl_type)
   })
 
-  # creates another list for the co-treatment end points that are missing
-  ref_maps[["cotrt_ref_Endpoint"]] <- NULL
-  # focus on cases where the reference may be as primary drug (common in co-treatment experiments)
-  if (paste0(identifiers$drug, "_2") %in% colnames(treated)) {
-    
-    # NOTE: may have to deal with override_untrt_controls 
-
-    ref_type <- "ref_Endpoint"
-    missing_cotrt <- vapply(ref_maps[[ref_type]], function(x) {
-      length(x) == 0L
-      }, TRUE)
-    
-    # Then look amongst the treated to fill any missing cotrt references.
-    if (any(missing_cotrt)) {
-        # try to find the co-treated reference among treated data (with Drug/Drug_2 swap)    
-        pseudo_untreated <- treated[treated$Concentration_2 == 0, ]
-        # remove Concentration as is will have to be matched with the Concentration
-        pseudo_untreated$Concentration_2 <- NULL 
-        
-        # swap columns related to drug and drug_2
-        idx_1 <- which(colnames(pseudo_untreated) %in% 
-            c(identifiers$drug, 
-              identifiers$drugname,
-              identifiers$drug_moa))
-        idx_2 <- which(colnames(pseudo_untreated) %in% 
-            paste0(c(identifiers$drug, 
-                identifiers$drugname,
-                identifiers$drug_moa), "_2"))
-        colnames(pseudo_untreated)[idx_1] <- paste0(colnames(pseudo_untreated)[idx_1], "_2")
-        colnames(pseudo_untreated)[idx_2] <- gsub("_2", "", colnames(pseudo_untreated)[idx_2])
-
-        ref_maps[["cotrt_ref_Endpoint"]] <- map_df(treated[missing_cotrt, ], pseudo_untreated, 
-            override_untrt_controls = override_untrt_controls, ref_cols = Keys[[ref_type]], ref_type = ref_type)
-
-    } # we may be able to extend to other cases if applicable
-  }
-
-  ## TODO: Check for failed cotreatment mappings. 
-
-  ## Combine all references with respective treatments.
+  ## Combine all controls with respective treatments.
   # Merge raw data back with groupings.
   dfs <- merge(df_, mapping_entries, by = c(colnames(rowdata), colnames(coldata)))
 
@@ -103,134 +68,82 @@ create_SE <- function(df_,
   groupings <- dfs$groupings
   dfs <- dfs[c(md$data_fields, "row_id", "col_id")]
 
-  trt_out <- ref_out <- vector("list", nrow(treated))
+  ## The mapping_entries contain all exhaustive combinations of treatments and cells.
+  ## Not all conditions will actually exist in the data, so filter out those that 
+  ## do not exist. 
+  treated <- treated[rownames(treated) %in% unique(groupings), ]
+
+  trt_out <- ctl_out <- vector("list", nrow(treated))
   for (i in seq_len(nrow(treated))) {
     trt <- rownames(treated)[i]
-    trt_df <- dfs[groupings == trt, , drop = FALSE]  
+    trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]
+    trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
 
-    if (nrow(trt_df) == 0L) {
-      next # do nothing, there is no data to handle
+    ctl_type <- "untrt_Endpoint"
+    untrt_ref <- ctl_maps[[ctl_type]][[trt]]  
+    untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
+    untrt_df <- create_control_df(
+      untrt_df, 
+      control_cols = Keys[[ctl_type]], 
+      control_mean_fxn, 
+      out_col_name = "UntrtReadout"
+    )
+
+    ctl_type <- "Day0"
+    day0_ref <- ctl_maps[[ctl_type]][[trt]]
+    day0_df <- dfs[groupings %in% day0_ref, , drop = FALSE]
+    day0_df <- create_control_df(
+      day0_df, 
+      control_cols = Keys[[ctl_type]],
+      control_mean_fxn, 
+      out_col_name = "Day0Readout"
+    )
+
+    ## Merge all data.frames together.
+    # Try to merge by plate, but otherwise just use mean. 
+    ctl_df <- untrt_df 
+    merge_cols <- intersect(colnames(day0_df), Keys$nested_keys)
+    if (nrow(day0_df) > 0L) {
+      ctl_df <- merge(untrt_df, day0_df, by = merge_cols, all = TRUE)
     } else {
-      ref_type <- "untrt_Endpoint"
-      untrt_ref <- ref_maps[[ref_type]][[trt]]  
-      untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
-      untrt_df <- create_control_df(
-        untrt_df, 
-        control_cols = Keys[[ref_type]], 
-        control_mean_fxn, 
-        out_col_name = "UntrtReadout"
-      )
-
-      ref_type <- "Day0"
-      day0_ref <- ref_maps[[ref_type]][[trt]]
-      day0_df <- dfs[groupings %in% day0_ref, , drop = FALSE]
-      day0_df <- create_control_df(
-        day0_df, 
-        control_cols = Keys[[ref_type]],
-        control_mean_fxn, 
-        out_col_name = "Day0Readout"
-      )
-
-      ref_type <- "ref_Endpoint"
-      cotrt_ref <- ref_maps[[ref_type]][[trt]]  
-      if (length(cotrt_ref) > 0L) {
-        cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
-        cotrt_df <- create_control_df(
-          cotrt_df, 
-          control_cols = Keys[[ref_type]], 
-          control_mean_fxn, 
-          out_col_name = "RefReadout"
-        )
-      } else if (length(ref_maps[[paste0("cotrt_", ref_type)]][[trt]]) > 0L) {
-        cotrt_ref <- ref_maps[[paste0("cotrt_", ref_type)]][[trt]]
-        cotrt_df <- dfs[groupings %in% cotrt_ref, , drop = FALSE]
-
-        if (any(cotrt_df$Concentration == treated$Concentration_2[treated$groupings %in% trt])) {
-            cotrt_df <- create_control_df(
-                cotrt_df[cotrt_df$Concentration == treated$Concentration_2[treated$groupings %in% trt], ], 
-                control_cols = Keys[[ref_type]], 
-                control_mean_fxn, 
-                out_col_name = "RefReadout"
-            )
-        } else {
-          cotrt_df <- infer_control_df(
-            cotrt_df,
-            treated$Concentration_2[treated$groupings %in% trt],
-            control_cols = Keys[[ref_type]],
-            control_mean_fxn,
-            out_col_name = "RefReadout"
-            )
-        }
-
-        
-      } else {
-        # Set the cotrt reference to NA if not found 
-        cotrt_df <- untrt_df 
-        cotrt_df$UntrtReadout <- NA
-        colnames(cotrt_df)[grepl("UntrtReadout", colnames(cotrt_df))] <- "RefReadout"
-        
-      }
-   
-      ## Merge all data.frames together.
-      # Try to merge by plate, but otherwise just use mean. 
-      ref_df <- untrt_df
-      if (nrow(cotrt_df) > 0L) {
-        merge_cols <- intersect(colnames(cotrt_df), Keys$nested_keys)
-        ref_df <- merge(untrt_df, cotrt_df[, c("RefReadout", merge_cols), drop = FALSE], by = merge_cols, all = TRUE)
-        if (!all(sort(unique(cotrt_df$Barcode)) == sort(unique(untrt_df$Barcode)))) {
-            # Merging by barcodes will result in NAs. 
-            ### It is ok as we won't assign data to a plate that doesn't have them. 
-            ###        We deal with the NA later in the normalization function
-        }   
-      } else {
-        ref_df$RefReadout <- ref_df$UntrtReadout
-      }
-      
-      if (nrow(day0_df) > 0L) {
-        ref_df <- merge(day0_df[, setdiff(colnames(day0_df), Keys$nested_keys), drop = FALSE], ref_df)
-      } else {
-        ref_df$Day0Readout <- NA
-      } 
-      
-      row_id <- unique(trt_df$row_id)
-      col_id <- unique(trt_df$col_id)
-      if (length(row_id) != 1L || length(col_id) != 1L) {
-        stop(sprintf("non-unique row_ids: '%s' and col_ids: '%s'", 
-          paste0(row_id, collapse = ", "), paste0(col_id, collapse = ", ")))
-      }
-      ref_df$row_id <- row_id
-      ref_df$col_id <- col_id
+      ctl_df$Day0Readout <- NA
+    } 
     
-      ref_out[[i]] <- ref_df
-      trt_out[[i]] <- trt_df
+    row_id <- unique(trt_df$row_id)
+    col_id <- unique(trt_df$col_id)
+    if (length(row_id) != 1L || length(col_id) != 1L) {
+      stop(sprintf("non-unique row_ids: '%s' and col_ids: '%s'", 
+        paste0(row_id, collapse = ", "), paste0(col_id, collapse = ", ")))
     }
-
+    ctl_df$row_id <- row_id
+    ctl_df$col_id <- col_id
+  
+    ctl_out[[i]] <- ctl_df
+    trt_out[[i]] <- trt_df
   }
 
-  names(ref_out) <- names(trt_out) <- rownames(treated)
+  names(ctl_out) <- names(trt_out) <- rownames(treated)
   
   trt_out <- do.call(rbind, trt_out)
-  ref_out <- do.call(rbind, ref_out)
+  ctl_out <- do.call(rbind, ctl_out)
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
-  ref_keep <- !colnames(ref_out) %in% c("row_id", "col_id")
+  ctl_keep <- !colnames(ctl_out) %in% c("row_id", "col_id")
 
-  treated_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out[, trt_keep, drop = FALSE],
+  trt_mat <- BumpyMatrix::splitAsBumpyMatrix(trt_out[, trt_keep, drop = FALSE],
                                                  row = trt_out$row_id, col = trt_out$col_id)
-  reference_mat <- BumpyMatrix::splitAsBumpyMatrix(ref_out[, ref_keep, drop = FALSE],
-                                                   row = ref_out$row_id, col = ref_out$col_id)
-  matsL <- list(RawTreated = treated_mat, Controls = reference_mat)
+  ctl_mat <- BumpyMatrix::splitAsBumpyMatrix(ctl_out[, ctl_keep, drop = FALSE],
+                                                   row = ctl_out$row_id, col = ctl_out$col_id)
+  matsL <- list(RawTreated = trt_mat, Controls = ctl_mat)
 
   # Filter out to 'treated' conditions only.
-  treated_rowdata <- rowdata[rownames(treated_mat), , drop = FALSE] 
-  
-  # Assertions.
-  stopifnot(nrow(treated_rowdata) > 0)
-  stopifnot(nrow(treated_rowdata) == length(unique(trt_out$row_id)))
+  trt_rowdata <- rowdata[rownames(trt_mat), , drop = FALSE] 
+  stopifnot(nrow(trt_rowdata) > 0)
+  stopifnot(nrow(trt_rowdata) == length(unique(trt_out$row_id)))
  
   se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
-    colData = coldata[match(colnames(treated_mat), rownames(coldata)), ],
-    rowData = treated_rowdata,
-    metadata = list(df_ = df_))
+    colData = coldata[match(colnames(trt_mat), rownames(coldata)), ],
+    rowData = trt_rowdata,
+    metadata = list())
 
   # Capture important values in experiment metadata.
   se <- gDRutils::set_SE_identifiers(se, identifiers)

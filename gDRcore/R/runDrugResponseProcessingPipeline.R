@@ -5,6 +5,7 @@
 #' average data (average_SE), or fit the processed data (fit_SE). See details for more in-depth explanations.
 #'
 #' @param df_ data.frame of raw drug response data containing both treated and untreated values. 
+#' @param data_type string specyfying what type of data represents \code{df_} (either single-agent or combo)
 #' @param readout string of the name containing the cell viability readout values.
 #' @param control_mean_fxn function indicating how to average controls.
 #' Defaults to \code{mean(x, trim = 0.25)}.
@@ -29,11 +30,6 @@
 #' Defaults to \code{"Normalized"}.
 #' @param averaged_assay string of the name of the averaged assay in the \linkS4class{SummarizedExperiment}.
 #' Defaults to \code{"Averaged"}.
-#' @param ref_GR_assay string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.
-#' Defaults to \code{"RefGRvalue"}.
-#' @param ref_RV_assay string of the name of the reference Relative Viability assay
-#' in the \linkS4class{SummarizedExperiment}.
-#' Defaults to \code{"RefRelativeViability"}.
 #' @param metrics_assay string of the name of the metrics assay to output
 #' in the returned \linkS4class{SummarizedExperiment}
 #' Defaults to \code{"Metrics"}.
@@ -71,29 +67,37 @@ create_and_normalize_SE <- function(df_,
                                     control_mean_fxn = function(x) {
                                       mean(x, trim = 0.25)
                                     },
-                                    nested_identifiers = gDRutils::get_identifier("concentration"),
-                                    nested_confounders = gDRutils::get_identifier("barcode"),
+                                    nested_identifiers = NULL,
+                                    nested_confounders = gDRutils::get_env_identifiers("barcode"),
                                     override_untrt_controls = NULL,
                                     ndigit_rounding = 4,
                                     control_assay = "Controls",
                                     raw_treated_assay = "RawTreated",
-                                    normalized_assay = "Normalized",
-                                    ref_GR_assay = "RefGRvalue",
-                                    ref_RV_assay = "RefRelativeViability") {
+                                    normalized_assay = "Normalized") {
+  
+  checkmate::assert_data_frame(df_)
+  checkmate::assert_string(readout)
+  checkmate::assert_function(control_mean_fxn)
+  checkmate::assert_character(nested_identifiers, null.ok = TRUE)
+  checkmate::assert_character(nested_confounders, null.ok = TRUE)
+  checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
+  checkmate::assert_numeric(ndigit_rounding)
+  checkmate::assert_string(control_assay)
+  checkmate::assert_string(raw_treated_assay)
+  checkmate::assert_string(normalized_assay)
+  
   se <- create_SE(df_ = df_, 
     readout = readout, 
     control_mean_fxn = control_mean_fxn, 
-    nested_keys = c(nested_identifiers, nested_confounders), 
+    nested_identifiers = nested_identifiers,
+    nested_confounders = nested_confounders,
     override_untrt_controls = override_untrt_controls)
-
   se <- normalize_SE(se = se, 
     nested_identifiers = nested_identifiers,
     nested_confounders = nested_confounders,
     control_assay = control_assay, 
     raw_treated_assay = raw_treated_assay, 
     normalized_assay = normalized_assay,
-    ref_GR_assay = ref_GR_assay, 
-    ref_RV_assay = ref_RV_assay, 
     ndigit_rounding = ndigit_rounding)
   se
 }
@@ -102,12 +106,13 @@ create_and_normalize_SE <- function(df_,
 #' @rdname runDrugResponseProcessingPipelineFxns 
 #' @export
 runDrugResponseProcessingPipeline <- function(df_,
+                                              data_type = data_model(df_),
                                               readout = "ReadoutValue",
                                               control_mean_fxn = function(x) {
                                                 mean(x, trim = 0.25)
                                               },
-                                              nested_identifiers = gDRutils::get_identifier("concentration"),
-                                              nested_confounders = gDRutils::get_identifier("barcode"),
+                                              nested_identifiers = NULL,
+                                              nested_confounders = gDRutils::get_env_identifiers("barcode"),
                                               override_untrt_controls = NULL,
                                               override_masked = FALSE,
                                               ndigit_rounding = 4,
@@ -115,35 +120,58 @@ runDrugResponseProcessingPipeline <- function(df_,
                                               control_assay = "Controls",
                                               raw_treated_assay = "RawTreated",
                                               normalized_assay = "Normalized",
-                                              ref_GR_assay = "RefGRvalue",
-                                              ref_RV_assay = "RefRelativeViability",
                                               averaged_assay = "Averaged",
                                               metrics_assay = "Metrics") {
-
-  se <- create_and_normalize_SE(df_ = df_,
-    readout = readout,
-    control_mean_fxn = control_mean_fxn,
-    nested_identifiers = nested_identifiers,
-    nested_confounders = nested_confounders,
-    override_untrt_controls = override_untrt_controls,
-    control_assay = control_assay, 
-    raw_treated_assay = raw_treated_assay, 
-    normalized_assay = normalized_assay,
-    ref_GR_assay = ref_GR_assay, 
-    ref_RV_assay = ref_RV_assay, 
-    ndigit_rounding = ndigit_rounding)
-
-  se <- average_SE(se = se, 
-                   nested_identifiers = nested_identifiers,
+  
+  checkmate::assert_data_frame(df_)
+  checkmate::assert_choice(data_type, c("single-agent", "combo"))
+  checkmate::assert_string(readout)
+  checkmate::assert_function(control_mean_fxn)
+  checkmate::assert_character(nested_identifiers, null.ok = TRUE)
+  checkmate::assert_character(nested_confounders, null.ok = TRUE)
+  checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
+  checkmate::assert_flag(override_masked)
+  checkmate::assert_numeric(ndigit_rounding)
+  checkmate::assert_number(n_point_cutoff)
+  checkmate::assert_string(control_assay)
+  checkmate::assert_string(raw_treated_assay)
+  checkmate::assert_string(normalized_assay)
+  checkmate::assert_string(averaged_assay)
+  checkmate::assert_string(metrics_assay)
+  
+  se <- catchr::catch_expr(create_and_normalize_SE(df_ = df_,
+      readout = readout,
+      control_mean_fxn = control_mean_fxn,
+      nested_identifiers = nested_identifiers,
+      nested_confounders = nested_confounders,
+      override_untrt_controls = override_untrt_controls,
+      control_assay = control_assay, 
+      raw_treated_assay = raw_treated_assay, 
+      normalized_assay = normalized_assay,
+      ndigit_rounding = ndigit_rounding),
+      warning)
+  .catch_warnings(se)
+  se <- catchr::catch_expr(average_SE(se = se$value, 
+                   series_identifiers = nested_identifiers,
                    override_masked = override_masked, 
                    normalized_assay = normalized_assay, 
-                   averaged_assay = averaged_assay)
-  se <- fit_SE(se = se, 
-               nested_identifiers = nested_identifiers,
-               averaged_assay = averaged_assay, 
-               ref_GR_assay = ref_GR_assay, 
-               metrics_assay = metrics_assay, 
-               n_point_cutoff = n_point_cutoff)
-  se <- add_codrug_group_SE(se)
-  se
+                   averaged_assay = averaged_assay),
+                   warning)
+  .catch_warnings(se)
+  se <- add_codrug_group_SE(se$value)
+  
+  se <- catchr::catch_expr(if (data_type == "single-agent") {
+    fit_SE(se = se, 
+           nested_identifiers = nested_identifiers,
+           averaged_assay = averaged_assay, 
+           metrics_assay = metrics_assay, 
+           n_point_cutoff = n_point_cutoff)
+  } else {
+    fit_SE.combinations(se = se,
+                        series_identifiers = nested_identifiers,
+                        averaged_assay = averaged_assay)
+  }, warning)
+  .catch_warnings(se)
+  se$value
 }
+  

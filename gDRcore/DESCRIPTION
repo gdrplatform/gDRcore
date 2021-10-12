@@ -1,8 +1,8 @@
 Package: gDRcore
 Type: Package
 Title: Processing functions and interface to process and analyze drug dose-response data
-Version: 1.1.8
-Date: 2021-09-27
+Version: 1.1.9
+Date: 2021-10-12
 Authors@R: c(person("Bartosz", "Czech", role=c("aut", "cre"), email="bartosz.czech@contractors.roche.com"),
              person("Arkadiusz", "Gladki", role=c("aut")),
              person("Marc", "Hafner", role=c("aut")),
@@ -14,6 +14,7 @@ Description: This package contains core functions to process and analyze drug re
 License: file GNE_LICENSE
 LazyLoad: yes
 Imports:
+    catchr,
     data.table,
     drc,
     gDRutils (>= 1.0.10),
@@ -35,7 +36,7 @@ Suggests:
     gDRinternal
 VignetteBuilder: knitr
 ByteCompile: TRUE
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 SwitchrLibrary: gDRcore
 DeploySubPath: gDRcore
 Encoding: UTF-8

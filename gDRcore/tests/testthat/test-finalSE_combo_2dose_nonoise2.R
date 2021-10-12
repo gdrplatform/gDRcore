@@ -15,4 +15,4 @@ df_merged_data <- df_merged_data[!(df_merged_data$Gnumber %in% c("vehicle", drug
 
 finalSE <- gDRcore::runDrugResponseProcessingPipeline(df_merged_data, override_untrt_controls = NULL)
 
-test_synthetic_data(original, finalSE, data)
+test_synthetic_data(original, finalSE, data, combo = TRUE)

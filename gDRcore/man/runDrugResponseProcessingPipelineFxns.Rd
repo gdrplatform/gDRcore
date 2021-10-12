@@ -13,8 +13,7 @@
 \usage{
 average_SE(
   se,
-  nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify =
-    TRUE),
+  series_identifiers = NULL,
   override_masked = FALSE,
   normalized_assay = "Normalized",
   averaged_assay = "Averaged"
@@ -24,37 +23,31 @@ create_SE(
   df_,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
-  nested_keys = c(gDRutils::get_env_identifiers("concentration"),
-    gDRutils::get_env_identifiers("barcode")),
+  nested_identifiers = NULL,
+  nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL
 )
 
 fit_SE(
   se,
-  nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify =
-    TRUE),
+  nested_identifiers = NULL,
   averaged_assay = "Averaged",
-  ref_GR_assay = "RefGRvalue",
-  ref_RV_assay = "RefRelativeViability",
   metrics_assay = "Metrics",
   n_point_cutoff = 4,
   range_conc = c(0.005, 5),
   force_fit = FALSE,
   pcutoff = 0.05,
   cap = 0.1,
-  curve_type = c("GR", "RV")
+  curve_type = c("GRvalue", "RelativeViability")
 )
 
 normalize_SE(
   se,
-  nested_identifiers = gDRutils::get_SE_identifiers(se, "concentration", simplify =
-    TRUE),
+  nested_identifiers = NULL,
   nested_confounders = gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE),
   control_assay = "Controls",
   raw_treated_assay = "RawTreated",
   normalized_assay = "Normalized",
-  ref_GR_assay = "RefGRvalue",
-  ref_RV_assay = "RefRelativeViability",
   ndigit_rounding = 4
 )
 
@@ -62,23 +55,22 @@ create_and_normalize_SE(
   df_,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
-  nested_identifiers = gDRutils::get_identifier("concentration"),
-  nested_confounders = gDRutils::get_identifier("barcode"),
+  nested_identifiers = NULL,
+  nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL,
   ndigit_rounding = 4,
   control_assay = "Controls",
   raw_treated_assay = "RawTreated",
-  normalized_assay = "Normalized",
-  ref_GR_assay = "RefGRvalue",
-  ref_RV_assay = "RefRelativeViability"
+  normalized_assay = "Normalized"
 )
 
 runDrugResponseProcessingPipeline(
   df_,
+  data_type = data_model(df_),
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
-  nested_identifiers = gDRutils::get_identifier("concentration"),
-  nested_confounders = gDRutils::get_identifier("barcode"),
+  nested_identifiers = NULL,
+  nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL,
   override_masked = FALSE,
   ndigit_rounding = 4,
@@ -86,8 +78,6 @@ runDrugResponseProcessingPipeline(
   control_assay = "Controls",
   raw_treated_assay = "RawTreated",
   normalized_assay = "Normalized",
-  ref_GR_assay = "RefGRvalue",
-  ref_RV_assay = "RefRelativeViability",
   averaged_assay = "Averaged",
   metrics_assay = "Metrics"
 )
@@ -110,18 +100,8 @@ Defaults to \code{"Averaged"}.}
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
 
-\item{nested_keys}{character vector of column names to include in the data.frames
-in the assays of the resulting \code{SummarizedExperiment} object.}
-
 \item{override_untrt_controls}{named list containing defining factors in the treatments.
 Defaults to \code{NULL}.}
-
-\item{ref_GR_assay}{string of the name of the reference GR assay in the \linkS4class{SummarizedExperiment}.
-Defaults to \code{"RefGRvalue"}.}
-
-\item{ref_RV_assay}{string of the name of the reference Relative Viability assay
-in the \linkS4class{SummarizedExperiment}.
-Defaults to \code{"RefRelativeViability"}.}
 
 \item{metrics_assay}{string of the name of the metrics assay to output
 in the returned \linkS4class{SummarizedExperiment}
@@ -138,6 +118,11 @@ Defaults to \code{"RawTreated"}.}
 
 \item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
 Defaults to \code{4}.}
+
+\item{data_type}{string specyfying what type of data represents \code{df_} (either single-agent or combo)}
+
+\item{nested_keys}{character vector of column names to include in the data.frames
+in the assays of the resulting \code{SummarizedExperiment} object.}
 
 \item{Defaults}{to the \code{nested_identifiers} and \code{nested_confounders} if passed through
 \code{create_and_normalize_SE} or \code{runDrugResponseProcessingPipeline}.}

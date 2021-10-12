@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.9] - 2021-10-12
+#### Update
+- refactor the logic for combo data
+
 #### [1.1.8] - 2021-09-27
 #### Update
 - updated normalization_types in 'calculate_combo_matrix' and 'fit_SE'

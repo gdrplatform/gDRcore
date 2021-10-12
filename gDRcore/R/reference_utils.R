@@ -139,7 +139,7 @@ identify_treatment_references <- function(row_maps_cotrt, trt_rdata, ref_rdata) 
         list(Gnumber = trt_rdata$Gnumber ==
                trt_rdata[rnames, "Gnumber_2"]),
         list(Gnumber_2 = trt_rdata$Gnumber_2 %in%
-               gDRutils::get_identifier("untreated_tag")))), 2, all)
+               gDRutils::get_env_identifiers("untreated_tag")))), 2, all)
       if (any(ref_match)) {
         row_maps_cotrt[rnames] <- rownames(normSE)[ref_match]
       }

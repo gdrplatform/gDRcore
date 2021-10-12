@@ -1,20 +1,11 @@
-#' calculate_combo_matrix
-#'
-#' @param se a BumpyMatrix SE with drug response data
-#' @param series_identifiers character vector of the column names in \code{data.frame}
-#' whose combination represents a unique series for which to fit curves. 
-#' @param conc_margin margin for calculation and plots as fold-change over highest test conc for calculation
-#' @param log2_pos_offset max offset for conc
-#' @param norm_types character vector of normalization types used for calculating combo matrix
-#'
-#' @return data
 #' @export
 calculate_combo_matrix <- function(se,
                                    series_identifiers,
                                    conc_margin = 10 ^ 0.5,
                                    log2_pos_offset = log10(3) / 2,
-                                   norm_types = c("RelativeViability", "GRvalue")
-                                   ) {
+                                   norm_types = c("RelativeViability", "GRvalue"),
+                                   averaged_assay = "Averaged") {
+  .Deprecated(new = "fit_SE.combinations")
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_number(conc_margin)
   checkmate::assert_number(log2_pos_offset)
@@ -49,7 +40,7 @@ calculate_combo_matrix <- function(se,
       for (iCL in seq_len(ncol(se))) {
         # get all data as flat data.frame
         
-        flat_data <- gDRutils::convert_se_assay_to_dt(se[combo$rows, iCL], "Averaged")
+        flat_data <- gDRutils::convert_se_assay_to_dt(se[combo$rows, iCL], averaged_assay)
 
 
         # skip if not matrix combo data or too few measured values
@@ -595,4 +586,245 @@ calculate_combo_matrix <- function(se,
   return(list(all_combo_variables_norm <- all_combo_variables_norm, agg_results_norm = agg_results_norm))
 
 }
+
+
+#' Calculate combo co-dilution
+#'
+#' @param se a BumpyMatrix SE with drug response data
+#'
+#' @return
+#' @export
+calculate_combo_codilution <- function(se) {
+  .Deprecated("fit_SE.combinations")
+
+  checkmate::assert_class(se, "SummarizedExperiment")
+
+  # create new SE for the codilution
+  co_dilution_metrics <- S4Vectors::metadata(se)$drug_combinations
+
+  codil_SE <- se[seq_along(co_dilution_metrics), ]
+  rownames(codil_SE) <- vapply(co_dilution_metrics, function(x)
+      paste0(x$condition[["DrugName"]], "_", x$condition[["DrugName_2"]]),
+      character(1))
+  SummarizedExperiment::rowData(codil_SE) <- 
+      S4Vectors::DataFrame(t(sapply(co_dilution_metrics, "[[", "condition")))
+  S4Vectors::metadata(codil_SE) <- list()
+  SummarizedExperiment::assays(codil_SE) <-
+      SummarizedExperiment::assays(codil_SE)[c("Averaged", "Metrics")]
+
+  mSE_m <- SummarizedExperiment::assay(codil_SE, "Metrics") # not being used currently
+  a_SE <- SummarizedExperiment::assay(codil_SE, "Averaged")
+  flat_data <- gDRutils::convert_se_assay_to_dt(se, "Averaged")
+  flat_data$rId <- as.factor(flat_data$rId)
+  flat_data$cId <- as.factor(flat_data$cId)
+
+  for (ic in seq_along(co_dilution_metrics)) {
+      for (iCL in colnames(se)) {
+          combo <- co_dilution_metrics[[ic]]
+          df_ <- flat_data[flat_data$rId %in% combo$rows & flat_data$cId == iCL, ]
+          df_ <- df_[df_$Concentration_2 != 0, ]
+          df_$Concentration_1 <- df_$Concentration
+          df_$Concentration <- df_$Concentration_1 + df_$Concentration_2
+          a_SE[[ic, iCL]] <- df_
+      }
+  }
+  SummarizedExperiment::assay(codil_SE, "Averaged") <- a_SE
+
+  codil_SE <- gDR::metrics_SE(codil_SE)
+  single_SE <- se[SummarizedExperiment::rowData(se)$Concentration_2 == 0, ]
+  SummarizedExperiment::assays(single_SE) <- 
+    SummarizedExperiment::assays(single_SE)[names(SummarizedExperiment::assays(codil_SE))]
+  SummarizedExperiment::rowData(single_SE)$Concentration_2 <- NULL
+  SummarizedExperiment::rowData(single_SE)$conc_log10_ratio <- NA
   
+  codil_SE <- rbind(codil_SE, single_SE)
+
+}
+
+
+#' Calculate combo co-treatment
+#'
+#' @param se a BumpyMatrix SE with drug response data
+#'
+#' @return
+#' @export
+calculate_combo_cotrt <- function(se) {
+  .Deprecated("fit_SE.combinations")
+  checkmate::assert_class(se, "SummarizedExperiment")
+  
+  drug_combos <- S4Vectors::metadata(se)$drug_combinations
+  df_all_combo <- do.call(rbind, 
+                         lapply(drug_combos, function(x) as.data.frame(x$condition)))
+  rownames(df_all_combo) <- paste0(df_all_combo$Gnumber, 
+                                  "_", 
+                                  df_all_combo$Gnumber_2, 
+                                  "_", 
+                                  df_all_combo$Concentration_2)
+  
+  fixed_metrics <- SummarizedExperiment::SummarizedExperiment(
+      assays = list(delta_RV_AOC_range = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    RV_AOC_range = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    RV_AOC_range_ref = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    
+                    delta_RV_mean = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    RV_mean = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    RV_mean_ref = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    
+                    delta_GR_AOC_range = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    GR_AOC_range = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    GR_AOC_range_ref = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    
+                    log10_ratio_IC50 = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    IC50 = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    IC50_ref = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    
+                    log10_ratio_GR50 = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    GR50 = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    GR50_ref = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    
+                    delta_E_max = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    E_max = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    E_max_ref = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    
+                    delta_GR_max = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    GR_max = matrix(NA, nrow(df_all_combo), ncol(se)),
+                    GR_max_ref = matrix(NA, nrow(df_all_combo), ncol(se))
+      ),
+      rowData = df_all_combo,
+      colData = SummarizedExperiment::colData(se))
+  
+  
+  # run through all drug combinations
+  for (idc in seq_along(S4Vectors::metadata(se)$drug_combinations)) {
+    combo <- S4Vectors::metadata(se)$drug_combinations[[idc]]
+    print(sprintf("%s x %s (%i/%i)", combo$condition$DrugName, combo$condition$DrugName_2,
+                  idc, length(S4Vectors::metadata(se)$drug_combinations)))
+    combo_idxes <- df_all_combo$Gnumber == combo$condition$Gnumber & 
+        df_all_combo$Gnumber_2 == combo$condition$Gnumber_2        
+    
+    # run through all cell lines
+    for (iCL in seq_len(ncol(se))) {
+      # get all data as flat data.frame
+      
+      flat_data <- gDRutils::convert_se_assay_to_dt(se[combo$rows, iCL], "Metrics")
+      if (nrow(flat_data) < 2) next
+      
+      ref_data <- flat_data[flat_data$Gnumber %in% combo$condition$Gnumber & 
+                                flat_data$Concentration_2 == 0, ]
+      
+      for (c2 in combo$condition$Concentration_2) {
+        combo_idx <- which(combo_idxes & (df_all_combo$Concentration_2 == c2))
+        
+        cotrt_data <- flat_data[flat_data$Gnumber %in% combo$condition$Gnumber & 
+                                    flat_data$Gnumber_2 %in% combo$condition$Gnumber_2 & 
+                                    flat_data$Concentration_2 == c2, ]
+        
+        if (nrow(ref_data) != 1 || nrow(cotrt_data) != 1) next
+        
+        for (i in c("RV_AOC_range", "RV_mean", "GR_AOC_range", "IC50", "GR50", "E_max", "GR_max")) {
+          SummarizedExperiment::assay(fixed_metrics, i)[combo_idx, iCL] <- as.numeric(cotrt_data[1, ..i])
+          SummarizedExperiment::assay(fixed_metrics, paste0(i, "_ref"))[combo_idx, iCL] <- 
+              as.numeric(ref_data[1, ..i])
+        }
+        for (i in c("RV_AOC_range", "RV_mean", "GR_AOC_range", "E_max", "GR_max")) { # delta metrics
+          SummarizedExperiment::assay(fixed_metrics, paste0("delta_", i))[combo_idx, iCL] <- 
+              as.numeric(cotrt_data[, ..i] - ref_data[, ..i])
+        }
+        
+        SummarizedExperiment::assay(fixed_metrics, "log10_ratio_IC50")[combo_idx, iCL] <- log10(
+            min(2 * 10 ^ ref_data$maxlog10Concentration, ref_data$IC50) / 
+                min(2 * 10 ^ cotrt_data$maxlog10Concentration, cotrt_data$IC50)
+        )
+        SummarizedExperiment::assay(fixed_metrics, "log10_ratio_GR50")[combo_idx, iCL] <- log10(
+            min(2 * 10 ^ ref_data$maxlog10Concentration, ref_data$GR50) / 
+                min(2 * 10 ^ cotrt_data$maxlog10Concentration, cotrt_data$GR50)
+        )
+      }
+    }
+  }
+}
+
+
+#' Add codrug group
+#'
+#' @param se 
+#'
+#' @return
+#' @export
+#'
+# TODO: Utilize the set_SE_metadata functions. 
+add_codrug_group_SE <- function(se) {
+
+  r_data <- SummarizedExperiment::rowData(se)
+  if (!(paste0(gDRutils::get_SE_identifiers(se, "drugname"), "_2") %in% colnames(r_data)) ||
+     all(r_data[[paste0(gDRutils::get_SE_identifiers(se, "drugname"), "_2")]] %in%
+       gDRutils::get_SE_identifiers(se, "untreated_tag"))) return(se)
+
+  # find the pairs of drugs with relevant metadata
+  drug_ids <- unlist(gDRutils::get_env_identifiers(c("drugname", "drugname2"), simplify = FALSE))
+  other_metadata <- c(#paste0(gDRutils::get_identifier("drug"), c("", "_2")),
+            setdiff(colnames(r_data), c("Concentration_2", drug_ids,
+                paste0(gDRutils::get_SE_identifiers(se, "drug"), c("", "_2")),
+                paste0(gDRutils::get_SE_identifiers(se, "drug_moa"), c("", "_2")))))
+  drug_pairs <- unique(r_data[, c(drug_ids, other_metadata)])
+  drug_pairs <- drug_pairs[!(drug_pairs[, drug_ids[2]] %in% gDRutils::get_SE_identifiers(se, "untreated_tag")), ]
+
+  pair_list <- vector("list", nrow(drug_pairs))
+  # loop through the pairs to assess the number of individual concentration pairs
+  for (idp in 1:nrow(drug_pairs)) {
+    row_idx <- r_data[, drug_ids[1]] %in% unlist(drug_pairs[idp, drug_ids]) &
+            r_data[, drug_ids[2]] %in% c(unlist(drug_pairs[idp, drug_ids]),
+                gDRutils::get_SE_identifiers(se, "untreated_tag")) &
+            apply(as.matrix(
+                IRanges::LogicalList(c(
+                  lapply(other_metadata,
+                    function(y) # matching the metadata
+                    r_data[, y] == drug_pairs[idp, y])
+                  ))), 2, all)
+
+    # reverse engineer the type of combination experiment
+    flat_data <- gDRutils::convert_se_assay_to_dt(se[row_idx, ], "Averaged")
+    flat_data <- flat_data[flat_data$Concentration_2 > 0, ]
+    conc_1 <- table(flat_data$Concentration)
+    conc_2 <- table(flat_data$Concentration_2)
+    n_conc_pairs <- nrow(unique(flat_data[, c("Concentration", "Concentration_2")]))
+    conc_ratio <- table(round(log10(flat_data$Concentration / flat_data$Concentration_2), 2))
+    conc_ratio <- conc_ratio[!names(conc_ratio) %in% c("Inf", "-Inf")]
+
+    condition_name <- paste(paste(other_metadata, unlist(drug_pairs[idp, other_metadata]), sep = "="),
+                  collapse = " ")
+    if (length(conc_ratio) <= 2) {
+      type <- "co-dilution"
+      print(sprintf("Found %s combination with %s and %s: ratio of %.2f, %i concentrations (%s)",
+          type, drug_pairs[idp, 1], drug_pairs[idp, 2], 10**as.numeric(names(conc_ratio)),
+            length(conc_2), condition_name))
+      condition <- c(as.list(drug_pairs[idp, ]), list(conc_ratio = 10**as.numeric(names(conc_ratio))))
+    } else if (n_conc_pairs == length(conc_1) * length(conc_2) & length(conc_2) >= 4) {
+      type <- "matrix"
+      print(sprintf("Found %s combination with %s and %s: %i x %i concentrations (%s)",
+          type, drug_pairs[idp, 1], drug_pairs[idp, 2], length(conc_1), length(conc_2), condition_name))
+      condition <- c(as.list(drug_pairs[idp, ]), list(
+            Concentration = as.numeric(names(conc_1)), Concentration_2 = as.numeric(names(conc_2))))
+    } else if (length(conc_2) < 4) {
+      type <- "fixed"
+      print(sprintf("Found %s combination of %s with %s at %.3g uM (%s)",
+          type, drug_pairs[idp, 1], drug_pairs[idp, 2], as.numeric(names(conc_2)), condition_name))
+      condition <- c(as.list(drug_pairs[idp, ]), list(Concentration_2 = as.numeric(names(conc_2))))
+    } else {
+      type <- "other"
+      print(sprintf("Found %s combination with %s and %s: %i concentration pairs (%s)",
+        type, drug_pairs[idp, 1], drug_pairs[idp, 2], n_conc_pairs, condition_name))
+      condition <- c(as.list(drug_pairs[idp, ]), list(
+            Concentration = as.numeric(names(conc_1)), Concentration_2 = as.numeric(names(conc_2))))
+    }
+
+    pair_list[[idp]] <- list(condition = condition,
+                          rows = rownames(r_data)[row_idx],
+                          type = type,
+                          name = sprintf("%s x %s (%s)", drug_pairs[idp, 1], drug_pairs[idp, 2], 
+                              condition_name))
+  }
+
+  S4Vectors::metadata(se)$drug_combinations <- pair_list
+  return(se)
+}

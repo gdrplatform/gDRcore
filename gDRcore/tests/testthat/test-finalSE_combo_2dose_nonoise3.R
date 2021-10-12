@@ -1,4 +1,3 @@
-skip("[FIX IT] skipped due to invalid IC50 values on R 4.1/BioC 3.13")
 data <- "finalSE_combo_2dose_nonoise3.RDS"
 original <- get_synthetic_data(data)
 
@@ -15,4 +14,4 @@ df_merged_data <- gDRtestData::generate_response_data(df_layout_2, 0)
 
 finalSE <- gDRcore::runDrugResponseProcessingPipeline(df_merged_data, override_untrt_controls = NULL)
 
-test_synthetic_data(original, finalSE, data)
+test_synthetic_data(original, finalSE, data, combo = TRUE)

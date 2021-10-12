@@ -19,15 +19,18 @@
 #' @seealso identify_keys
 #' @export
 #'
-
 map_df <- function(trt_md, 
                    ref_md, 
                    override_untrt_controls = NULL, 
                    ref_cols, 
-                   ref_type = c("Day0", "untrt_Endpoint", "ref_Endpoint")) {
+                   ref_type = c("Day0", "untrt_Endpoint")) {
   # Assertions:
   checkmate::assert_class(trt_md, "data.frame")
   checkmate::assert_class(ref_md, "data.frame")
+  checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
+  checkmate::assert_character(ref_cols)
+  checkmate::assert_character(ref_type)
+  
   ref_type <- match.arg(ref_type)
 
   duration_col <- gDRutils::get_env_identifiers("duration")
@@ -45,12 +48,10 @@ map_df <- function(trt_md,
   } else if (ref_type == "untrt_Endpoint") {
     matching_list <- list(conc = is_ref_conc)
     matchFactor <- duration_col 
-  } else if (ref_type == "ref_Endpoint") {
-    matching_list <- NULL
-    matchFactor <- NULL
   }
 
   trt_rnames <- rownames(trt_md)
+  ref_rnames <- rownames(ref_md)
 
   # define matrix with matching metadata
   present_ref_cols <- intersect(ref_cols, names(ref_md))
@@ -64,10 +65,11 @@ map_df <- function(trt_md,
       ref_md[, y] == trt_md[treatment, y]
       })
 
-    if (!is.null(override_untrt_controls) && ref_type != "ref_Endpoint") {
-        for (overridden in names(override_untrt_controls)) {
-            refs[[overridden]] <- ref_md[, overridden] == override_untrt_controls[[overridden]]
-    }}
+    if (!is.null(override_untrt_controls)) {
+      for (overridden in names(override_untrt_controls)) {
+        refs[[overridden]] <- ref_md[, overridden] == override_untrt_controls[[overridden]]
+      }
+    }
 
     all_checks <- c(refs, matching_list)
     match_mx <- do.call("rbind", all_checks)
@@ -75,6 +77,7 @@ map_df <- function(trt_md,
     match_idx <- which(apply(match_mx, 2, all)) # test matching conditions
     if (length(match_idx) == 0) {
       # No exact match, try to find best match (as many metadata fields as possible).
+      # TODO: rowSums?
       idx <- apply(match_mx, 2, function(y) sum(y, na.rm = TRUE)) 
       # TODO: Sort this out so that it also takes the average in case multiple are found.
       idx <- idx * match_mx[matchFactor, ]
@@ -87,9 +90,48 @@ map_df <- function(trt_md,
         msgs <- c(msgs, sprintf("No partial match found for treatment: ('%s')", treatment))
       }
     }
-    out[[i]] <- rownames(ref_md)[match_idx] # TODO: Check that this properly handles NAs. 
+    out[[i]] <- ref_rnames[match_idx] # TODO: Check that this properly handles NAs or NULLs. 
   }
   futile.logger::flog.info(paste0(msgs, collapse = "\n"))
   names(out) <- trt_rnames
+  out
+}
+
+
+#' @details
+#' Using the given rownames, map the treated and reference conditions.
+.map_references <- function(mat_elem) {
+  clid <- gDRutils::get_env_identifiers("cellline")
+  valid <- intersect(c(gDRutils::get_env_identifiers(c("drugname", "drugname2"), simplify = FALSE)),
+                     colnames(mat_elem))
+  drug_cols <- mat_elem[valid]
+
+  untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  pattern <- paste0(sprintf("^%s$", untrt_tag), collapse = "|")
+  has_tag <- as.data.frame(lapply(drug_cols, function(x) grepl(pattern, x)))
+  ntag <- rowSums(has_tag)
+
+  is_untrt <- ntag == length(valid)
+  is_ref <- ntag != 0L & !is_untrt
+
+  trt <- mat_elem[!is_ref & !is_untrt, ]
+  ref <- mat_elem[is_ref, ]
+
+  out <- vector("list", nrow(trt))
+  names(out) <- rownames(trt)
+
+  if (any(is_ref)) {
+    compare_cols <- c(valid, clid)
+    
+    for (t in rownames(trt)) {
+      refs <- NULL
+      for (r in rownames(ref)) {
+        if (all(setdiff(as.character(ref[r, compare_cols]), as.character(trt[t, compare_cols])) %in% untrt_tag)) {
+          refs <- c(refs, r)
+        }
+      }
+      out[[t]] <- refs
+    }
+  }
   out
 }
