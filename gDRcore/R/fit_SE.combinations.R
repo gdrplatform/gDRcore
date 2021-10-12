@@ -50,7 +50,7 @@ fit_SE.combinations <- function(se,
 
   iterator <- unique(avg[, c("column", "row")])
   # Parallel computing
-  clusters <- makeCluster(4, type = "FORK")
+  clusters <- makeCluster(4)
   registerDoParallel(clusters)
   
   out <- foreach(row = seq_len(nrow(iterator))) %dopar% {
@@ -59,6 +59,7 @@ fit_SE.combinations <- function(se,
     j <- x[["column"]]
     avg_combo <- avg[avg$row == i & avg$column == j, ]
     bliss_score <- hsa_score <- CIScore_50 <- CIScore_80 <- S4Vectors::DataFrame(matrix(NA, 1, 0))
+    hsa_excess <- bliss_excess <- smooth_mx <-isobolograms <- metrics <- NULL
     sa <- avg_combo[[id]] == 0 | avg_combo[[id2]] == 0
     single_agent <- avg_combo[sa, ]
     measured <- avg_combo#[!sa, ] # we can keep the single agent to have a full matrix
