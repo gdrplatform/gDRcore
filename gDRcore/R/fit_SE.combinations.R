@@ -133,11 +133,12 @@ fit_SE.combinations <- function(se,
 
       # TO DO : measured$average or mean_matrix should be saved for further plots in some manner
       mean_df <- reshape2::melt(mean_matrix, varnames = c(id, id2), value.name = metric)
-      if (nrow(mean_df) == 0) {
+      if (NROW(mean_df) == 0) {
         mean_df <- NULL
       }
+  
       # call calculate_Loewe and calculate_isobolograms: 
-      isobologram_out <- if (ncol(mean_matrix) > 3) {
+      isobologram_out <- if (NCOL(mean_matrix) > 3 && min(row_fittings$cotrt_value) == 0) {
         calculate_Loewe(mean_matrix, row_fittings, col_fittings,
                         codilution_fittings, normalization_type = metric) 
       } else {
@@ -176,7 +177,8 @@ fit_SE.combinations <- function(se,
       } else {
         smooth_mx[[row]] <- mean_df
       }
-      isobolograms[[row]] <- rbind(isobolograms[[row]], as.data.frame(isobologram_out$df_all_iso_curves))
+      isobolograms[[row]] <- plyr::rbind.fill(isobolograms[[row]],
+                                              as.data.frame(isobologram_out$df_all_iso_curves))
       metrics[[row]] <- rbind(metrics[[row]], metrics_merged)
     }
   }
