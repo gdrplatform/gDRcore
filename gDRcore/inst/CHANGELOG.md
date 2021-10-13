@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.10] - 2021-10-13
+#### Update
+- refactor the logic for calculation Loewe when there is no `Concentration == 0`
+
 #### [1.1.9] - 2021-10-12
 #### Update
 - refactor the logic for combo data
