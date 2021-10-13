@@ -33,9 +33,10 @@ identifiers and the corresponding calculated metric for each row.
 Calculate a metric based off of single-agent values in combination screens.
 }
 \details{
-HSA takes the minimum of the two single agents readouts.
-
-Bliss additivity calculation based on the multiplication 
-of the single agent effects for the corresponding normalization.
+\code{calculate_HSA} takes the minimum of the two single agents readouts.
+\code{calculate_Bliss} performs Bliss additivity calculation based on the single agent effects,
+defined as \code{1-x} for the corresponding normalization.
+See https://www.sciencedirect.com/science/article/pii/S1359644619303460?via%3Dihub#tb0005
+for more details.
 }
 \keyword{internal}

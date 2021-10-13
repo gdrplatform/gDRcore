@@ -24,7 +24,6 @@ map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
 }
 
 
-#' @details HSA takes the minimum of the two single agents readouts.
 #' @rdname calculate_matrix_metric
 #' @export
 calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
@@ -32,8 +31,6 @@ calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
 }
 
 
-#' @details Bliss additivity calculation based on the multiplication 
-#' of the single agent effects for the corresponding normalization.
 #' @rdname calculate_matrix_metric
 #' @export
 calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
@@ -59,6 +56,12 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
 #' identifiers and the corresponding calculated metric for each row.
 #'
 #' @name calculate_matrix_metric
+#' @details
+#' \code{calculate_HSA} takes the minimum of the two single agents readouts.
+#' \code{calculate_Bliss} performs Bliss additivity calculation based on the single agent effects,
+#' defined as \code{1-x} for the corresponding normalization.
+#' See https://www.sciencedirect.com/science/article/pii/S1359644619303460?via%3Dihub#tb0005
+#' for more details.
 #' @keywords internal
 NULL
 
