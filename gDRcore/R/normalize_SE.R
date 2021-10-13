@@ -55,7 +55,7 @@ normalize_SE <- function(se,
                            trt[, c("column", "row")]))
   # Column major order, so go down first.
   # Parallel computing
-  clusters <- makeCluster(4, type = "FORK")
+  clusters <- makeCluster(cores)
   registerDoParallel(clusters)
   
   out <- foreach(row = seq_len(nrow(iterator))) %dopar% {

@@ -22,6 +22,7 @@ Imports:
     gDRutils (>= 1.0.10),
     httr,
     magrittr,
+    parallel,
     reshape2,
     S4Vectors,
     SummarizedExperiment

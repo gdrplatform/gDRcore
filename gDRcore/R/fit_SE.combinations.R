@@ -50,7 +50,7 @@ fit_SE.combinations <- function(se,
 
   iterator <- unique(avg[, c("column", "row")])
   # Parallel computing
-  clusters <- makeCluster(4)
+  clusters <- makeCluster(cores)
   registerDoParallel(clusters)
   
   out <- foreach(row = seq_len(nrow(iterator))) %dopar% {

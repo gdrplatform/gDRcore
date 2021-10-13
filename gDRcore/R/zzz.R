@@ -4,3 +4,4 @@
 
 # data.table awareness
 .datatable.aware <- TRUE
+cores <- parallel::detectCores() - 1
