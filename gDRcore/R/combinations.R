@@ -34,8 +34,10 @@ calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
 #' @rdname calculate_matrix_metric
 #' @export
 calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
-  .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN =
-                             function(x, y) {1 - (1 - x) - (1 - y) + (1 - x) * (1 - y)})
+  lambda <- function(x, y) {
+    1 - (1 - x) - (1 - y) + (1 - x) * (1 - y)
+  }
+  .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN = lambda)
 }
 
 
