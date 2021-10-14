@@ -38,17 +38,22 @@ create_SE <- function(df_,
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
 
   ## if combo data with single agent --> duplicate single agent to be also found as Drug_2
-  if ('Concentration_2' %in% nested_keys) {
-    df_temp <- df_dupl <- df_[ df_$Gnumber %in% setdiff(unique(df_$Gnumber_2), c('untreated', 'vehicle')) & 
-                      df_$Concentration_2 == 0, ]
-    swap_var <- intersect(colnames(df_dupl), c('Gnumber', 'DrugName', 'drug_moa', 'Concentration'))
-    df_dupl[,paste0(swap_var, '_2')] <- df_dupl[,swap_var]
-    df_dupl[,swap_var] <- df_temp[,paste0(swap_var, '_2')]
-    df_ = rbind(df_, df_dupl)
+  if (gDRutils::get_env_identifiers("concentration2") %in% nested_keys)) {
+    df_temp <- df_dupl <- df_[df_[[gDRutils::get_env_identifiers("drug")]]
+                              %in% setdiff(unique(df_[[gDRutils::get_env_identifiers("drug2")]]),
+                                           gDRutils::get_env_identifiers("untreated_tag")) & 
+                      df_[[gDRutils::get_env_identifiers("concentration2")]] == 0, ]
+    
+    drug_cols <- c("drug", "drugname", "drug_moa", "concentration")
+    swap_var <- unlist(gDRutils::get_env_identifiers(drug_cols, simplify = FALSE))
+    swap_var2 <- unlist(gDRutils::get_env_identifiers(paste0(drug_cols, "2"), simplify = FALSE))
+    df_dupl[, swap_var2] <- df_dupl[, swap_var]
+    df_dupl[, swap_var] <- df_temp[, swap_var2]
+    df_ <- rbind(df_, df_dupl)
 
     # also rounding the concentration to avoid small mismatches
-    df_$Concentration = 10**(round(log10(df_$Concentration),3))
-    df_$Concentration_2 = 10**(round(log10(df_$Concentration_2),3))
+    df_[[swap_var[["concentration"]]]] <- 10 ^ (round(log10(df_[[swap_var[["concentration"]]]]), 3))
+    df_[[swap_var2[["concentration2"]]]] <- 10 ^ (round(log10(df_[[swap_var2[["concentration2"]]]]), 3))
   }
   ## Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
