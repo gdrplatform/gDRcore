@@ -37,6 +37,19 @@ create_SE <- function(df_,
   # Remove background value from readout (at least 1e-10 to avoid artefactual normalized values).
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
 
+  ## if combo data with single agent --> duplicate single agent to be also found as Drug_2
+  if ('Concentration_2' %in% nested_keys) {
+    df_temp <- df_dupl <- df_[ df_$Gnumber %in% setdiff(unique(df_$Gnumber_2), c('untreated', 'vehicle')) & 
+                      df_$Concentration_2 == 0, ]
+    swap_var <- intersect(colnames(df_dupl), c('Gnumber', 'DrugName', 'drug_moa', 'Concentration'))
+    df_dupl[,paste0(swap_var, '_2')] <- df_dupl[,swap_var]
+    df_dupl[,swap_var] <- df_temp[,paste0(swap_var, '_2')]
+    df_ = rbind(df_, df_dupl)
+
+    # also rounding the concentration to avoid small mismatches
+    df_$Concentration = 10**(round(log10(df_$Concentration),3))
+    df_$Concentration_2 = 10**(round(log10(df_$Concentration_2),3))
+  }
   ## Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
   coldata <- md$condition_md
