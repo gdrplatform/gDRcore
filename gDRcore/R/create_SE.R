@@ -45,6 +45,7 @@ create_SE <- function(df_,
     
     drug_cols <- c("drug", "drugname", "drug_moa", "concentration")
     swap_var <- unlist(gDRutils::get_env_identifiers(drug_cols, simplify = FALSE))
+    checkmate::assert_true(all(swap_var %in% colnames(df_)))
     swap_var2 <- unlist(gDRutils::get_env_identifiers(paste0(drug_cols, "2"), simplify = FALSE))
     df_dupl[, swap_var2] <- df_dupl[, swap_var]
     df_dupl[, swap_var] <- df_temp[, swap_var2]
