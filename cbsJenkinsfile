@@ -128,7 +128,7 @@ DockerfilePipeline(
           error("Failing build. Cause: Something went wrong with API request (timeout, bad response)")
         }
         // docker RUN TESTS
-        sh "docker run --rm -v ${WORKSPACE}:/mnt/vol -i -e PASSWORD=run_tests -w='/mnt/vol' ${cbs_docker_image}:${env.BUILD_ID} /bin/sh -c 'rp_env=DOCKER /bin/sh rplatform/run_tests.sh'"
+        sh "docker run --rm -v ${WORKSPACE}:/mnt/vol -i -e PASSWORD=run_tests -w='/mnt/vol' ${cbs_docker_image}:${env.BUILD_ID} /bin/sh -c 'rp_env=DOCKER /bin/sh rplatform/run_tests.sh' --env NUM_CORES=2"
         // tests SUCCESS
         response = sh(script: """
           curl --retry 5 -w '%{http_code}' --retry-delay 0 -H "Cookie: rpsession=${rpsession_cookie}" \
