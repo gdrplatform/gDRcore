@@ -9,7 +9,6 @@ create_SE <- function(df_,
                       nested_identifiers = NULL,
                       nested_confounders = gDRutils::get_env_identifiers("barcode"),
                       override_untrt_controls = NULL) {
-
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(readout)
@@ -38,7 +37,7 @@ create_SE <- function(df_,
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
 
   ## if combo data with single agent --> duplicate single agent to be also found as Drug_2
-  if (gDRutils::get_env_identifiers("concentration2") %in% nested_keys)) {
+  if (gDRutils::get_env_identifiers("concentration2") %in% nested_keys) {
     df_temp <- df_dupl <- df_[df_[[gDRutils::get_env_identifiers("drug")]]
                               %in% setdiff(unique(df_[[gDRutils::get_env_identifiers("drug2")]]),
                                            gDRutils::get_env_identifiers("untreated_tag")) & 
