@@ -1,17 +1,3 @@
-#' @keywords internal
-.create_combo_control <- function(nested_identifiers) {
-  out <- data.frame()
-  for (id in nested_identifiers) {
-    out[[id]] <- 0
-  }
-
-  out$GRvalue <- 1
-  out$std_GRvalue <- 0
-  out$RelativeViability <- 1
-  out$std_RelativeViability <- 0
-  out
-}
-
 #' Get predicted values for a given fit and input.
 #'
 #' Map fittings to identifiers and compute the predicted values for corresponding fits.
@@ -38,18 +24,48 @@ map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
 }
 
 
-#' @details HSA takes the minimum of the two single agents readouts.
+#' @rdname calculate_matrix_metric
+#' @export
 calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
   .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN = pmin)
 }
 
 
-#' @details Bliss is the mulitplication of the single agent readouts.
+#' @rdname calculate_matrix_metric
+#' @export
 calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
-  .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN =
-                             function(x, y) 1 - (1 - x) - (1 - y) + (1 - x) * (1 - y))
+  lambda <- function(x, y) {
+    1 - (1 - x) - (1 - y) + (1 - x) * (1 - y)
+  }
+  .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN = lambda)
 }
 
+
+#' Calculate a metric for combination data.
+#'
+#' Calculate a metric based off of single-agent values in combination screens.
+#'
+#' @param sa1 data.frame containing single agent data where id1 is \code{0}.
+#' Columns of the data.frame include identifiers and the \code{metric} of interest.
+#' @param series_id1 String representing the column within \code{sa1} that represents id1.
+#' @param sa2 data.frame containing single agent data where id2 is \code{0}.
+#' Columns of the data.frame include identifiers and the \code{metric} of interest.
+#' @param series_id2 String representing the column within \code{sa1} that represents id2.
+#' @param metric String of the column specifying the metric of interest. 
+#' @param FXN Function to apply to the single-agent fits to calculate a metric.
+#'
+#' @return DataFrame containing a single row for every unique combination of the two series
+#' identifiers and the corresponding calculated metric for each row.
+#'
+#' @name calculate_matrix_metric
+#' @details
+#' \code{calculate_HSA} takes the minimum of the two single agents readouts.
+#' \code{calculate_Bliss} performs Bliss additivity calculation based on the single agent effects,
+#' defined as \code{1-x} for the corresponding normalization.
+#' See https://www.sciencedirect.com/science/article/pii/S1359644619303460?via%3Dihub#tb0005
+#' for more details.
+#' @keywords internal
+NULL
 
 #' @keywords internal
 .calculate_matrix_metric <- function(sa1, series_id1, sa2, series_id2, metric, FXN) {
