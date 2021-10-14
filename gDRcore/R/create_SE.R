@@ -45,15 +45,15 @@ create_SE <- function(df_,
     
     drug_cols <- c("drug", "drugname", "drug_moa", "concentration")
     swap_var <- unlist(gDRutils::get_env_identifiers(drug_cols, simplify = FALSE))
-    checkmate::assert_true(all(swap_var %in% colnames(df_)))
+    checkmate::assert_true(all(swap_var %in% colnames(df_))) # assert all required columns are in df_
     swap_var2 <- unlist(gDRutils::get_env_identifiers(paste0(drug_cols, "2"), simplify = FALSE))
     df_dupl[, swap_var2] <- df_dupl[, swap_var]
     df_dupl[, swap_var] <- df_temp[, swap_var2]
     df_ <- rbind(df_, df_dupl)
 
     # also rounding the concentration to avoid small mismatches
-    df_[[swap_var[["concentration"]]]] <- 10 ^ (round(log10(df_[[swap_var[["concentration"]]]]), 3))
-    df_[[swap_var2[["concentration2"]]]] <- 10 ^ (round(log10(df_[[swap_var2[["concentration2"]]]]), 3))
+    df_[[swap_var[["concentration"]]]] <- .round_concentration(df_[[swap_var[["concentration"]]]])
+    df_[[swap_var2[["concentration2"]]]] <- .round_concentration(df_[[swap_var[["concentration2"]]]])
   }
   ## Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)

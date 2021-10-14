@@ -217,3 +217,6 @@ get_nested_default_identifiers.SummarizedExperiment <- function(x,
   }
 }
 
+.round_concentration <- function(x) {
+  10 ^ (round(log10(x), 3))
+}
