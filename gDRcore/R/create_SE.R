@@ -9,7 +9,6 @@ create_SE <- function(df_,
                       nested_identifiers = NULL,
                       nested_confounders = gDRutils::get_env_identifiers("barcode"),
                       override_untrt_controls = NULL) {
-
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(readout)
@@ -37,6 +36,25 @@ create_SE <- function(df_,
   # Remove background value from readout (at least 1e-10 to avoid artefactual normalized values).
   df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
 
+  ## if combo data with single agent --> duplicate single agent to be also found as Drug_2
+  if (gDRutils::get_env_identifiers("concentration2") %in% nested_keys) {
+    df_temp <- df_dupl <- df_[df_[[gDRutils::get_env_identifiers("drug")]]
+                              %in% setdiff(unique(df_[[gDRutils::get_env_identifiers("drug2")]]),
+                                           gDRutils::get_env_identifiers("untreated_tag")) & 
+                      df_[[gDRutils::get_env_identifiers("concentration2")]] == 0, ]
+    
+    drug_cols <- c("drug", "drugname", "drug_moa", "concentration")
+    swap_var <- unlist(gDRutils::get_env_identifiers(drug_cols, simplify = FALSE))
+    checkmate::assert_true(all(swap_var %in% colnames(df_))) # assert all required columns are in df_
+    swap_var2 <- unlist(gDRutils::get_env_identifiers(paste0(drug_cols, "2"), simplify = FALSE))
+    df_dupl[, swap_var2] <- df_dupl[, swap_var]
+    df_dupl[, swap_var] <- df_temp[, swap_var2]
+    df_ <- rbind(df_, df_dupl)
+
+    # also rounding the concentration to avoid small mismatches
+    df_[[swap_var[["concentration"]]]] <- .round_concentration(df_[[swap_var[["concentration"]]]])
+    df_[[swap_var2[["concentration2"]]]] <- .round_concentration(df_[[swap_var2[["concentration2"]]]])
+  }
   ## Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
   coldata <- md$condition_md

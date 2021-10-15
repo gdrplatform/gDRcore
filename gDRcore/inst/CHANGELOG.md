@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.11] - 2021-10-14
+#### Update
+- address issues in creating the SE for combo matrix experiments
+
 #### [1.1.10] - 2021-10-13
 #### Update
 - refactor the logic for calculation Loewe when there is no `Concentration == 0`
