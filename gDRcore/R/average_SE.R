@@ -36,7 +36,7 @@ average_SE <- function(se,
   std_cols <- c("GRvalue", "RelativeViability")
   iterator <- unique(normalized[, c("column", "row")])
   # Parallel computing
-  clusters <- makeCluster(cores)
+  clusters <- makeCluster(cores, type = "FORK")
   registerDoParallel(clusters)
   
   out <- foreach(row = seq_len(nrow(iterator))) %dopar% {
