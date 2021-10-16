@@ -71,7 +71,7 @@ fit_SE.combinations <- function(se,
       row_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id2, cotrt_id = id, metric)
       codilution_fittings <- gDRcore:::fit_combo_codilutions(measured, series_identifiers, metric)
       
-      # apply the fit the get smoothed data: results per column
+      # apply the fit to get smoothed data: results per column
       # (along primary identifier for each value of the secondary identifier)
       measured$col_values <- map_ids_to_fits(pred = measured[[id]],
                                              match_col = measured[[id2]], col_fittings, "cotrt_value")
@@ -79,22 +79,18 @@ fit_SE.combinations <- function(se,
       # (along secondary identifier for each value of the primary identifier)
       measured$row_values <- map_ids_to_fits(pred = measured[[id2]],
                                              match_col = measured[[id]], row_fittings, "cotrt_value")
+      metrics_names <- c("col_fittings", "row_fittings")
       if (!is.null(codilution_fittings)) {
         # apply the fit the get smoothed data: codilution results (along sum of identifiers for each ratio)
         measured$codil_values <- map_ids_to_fits(pred = measured[[id2]] + measured[[id]],
                                                  match_col = measured[[id2]] / measured[[id]],
                                                  codilution_fittings, "ratio")
-        data.table::setnames(codilution_fittings, "ratio", "cotrt_value")
-        metrics_names <- c("col_fittings", "row_fittings", "codilution_fittings")
-        metrics_merged <- do.call(rbind, mget(metrics_names))
-        metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
+        metrics_names <- c(metrics_names, "codilution_fittings")
         data.table::setnames(codilution_fittings, "cotrt_value", "ratio")
-      } else {
-        metrics_names <- c("col_fittings", "row_fittings")
-        metrics_merged <- do.call(rbind, mget(metrics_names))
-        metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
-        }
-    
+      } 
+      metrics_merged <- do.call(rbind, mget(metrics_names))
+      metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
+
       keep <- intersect(colnames(measured), c(metric, "row_values", "col_values", "codil_values"))
       mat <- as.matrix(measured[, keep])
       measured$average <- rowMeans(mat, na.rm = TRUE)
@@ -184,44 +180,27 @@ fit_SE.combinations <- function(se,
   }
 
 
+  all_smooth_mx <- S4Vectors::DataFrame(do.call(rbind, smooth_mx))
   all_hsa_excess <- S4Vectors::DataFrame(do.call(rbind, hsa_excess))
   all_b_excess <- S4Vectors::DataFrame(do.call(rbind, bliss_excess))
-  all_smooth_mx <- S4Vectors::DataFrame(do.call(rbind, smooth_mx))
   all_isobolograms <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, isobolograms))
+
   all_CIScore_50 <- S4Vectors::DataFrame(do.call(rbind, CIScore_50))
   all_CIScore_80 <- S4Vectors::DataFrame(do.call(rbind, CIScore_80))
+
   all_metrics <- S4Vectors::DataFrame(do.call(rbind, metrics))
 
-  SummarizedExperiment::assays(se)[["SmoothMatrix"]] <- BumpyMatrix::splitAsBumpyMatrix(
-    all_smooth_mx[!colnames(all_smooth_mx) %in% c("row_id", "col_id")],
-    row = all_smooth_mx$row_id, col = all_smooth_mx$col_id)
-  SummarizedExperiment::assays(se)[["BlissExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(
-    all_b_excess[!colnames(all_b_excess) %in% c("row_id", "col_id")],
-    row = all_b_excess$row_id, col = all_b_excess$col_id)
-  SummarizedExperiment::assays(se)[["HSAExcess"]] <- BumpyMatrix::splitAsBumpyMatrix(
-    all_hsa_excess[!colnames(all_hsa_excess) %in% c("row_id", "col_id")],
-    row = all_hsa_excess$row_id, col = all_hsa_excess$col_id)
-  SummarizedExperiment::assays(se)[["isobolograms"]] <- BumpyMatrix::splitAsBumpyMatrix(
-    all_isobolograms[!colnames(all_isobolograms) %in% c("row_id", "col_id")],
-    row = all_isobolograms$row_id, col = all_isobolograms$col_id)
-  SummarizedExperiment::assays(se)[["BlissScore"]] <- BumpyMatrix::splitAsBumpyMatrix(
-    bliss_score[!colnames(bliss_score) %in% c("row_id", "col_id")],
-    row = bliss_score$row_id, col = bliss_score$col_id)
-  
-  SummarizedExperiment::assays(se)[["HSAScore"]] <- BumpyMatrix::splitAsBumpyMatrix(
-    hsa_score[!colnames(hsa_score) %in% c("row_id", "col_id")],
-    row = hsa_score$row_id, col = hsa_score$col_id)
-  SummarizedExperiment::assays(se)[["CIScore_50"]] <- BumpyMatrix::splitAsBumpyMatrix(
-    CIScore_50[!colnames(CIScore_50) %in% c("row_id", "col_id")],
-    row = CIScore_50$row_id, col = CIScore_50$col_id)
-  SummarizedExperiment::assays(se)[["CIScore_80"]] <- BumpyMatrix::splitAsBumpyMatrix(
-    CIScore_80[!colnames(CIScore_80) %in% c("row_id", "col_id")],
-    row = CIScore_80$row_id, col = CIScore_80$col_id)
-  
-  SummarizedExperiment::assays(se)[[metrics_assay]] <- BumpyMatrix::splitAsBumpyMatrix(
-    all_metrics[!colnames(all_metrics) %in% c("row_id", "col_id")],
-    row = all_metrics$row_id, col = all_metrics$col_id)
+  SummarizedExperiment::assays(se)[["SmoothMatrix"]] <- convertDFtoBumpyMatrixUsingIds(all_smooth_mx)
+  SummarizedExperiment::assays(se)[["BlissExcess"]] <- convertDFtoBumpyMatrixUsingIds(all_b_excess)
+  SummarizedExperiment::assays(se)[["HSAExcess"]] <- convertDFtoBumpyMatrixUsingIds(all_hsa_excess)
+  SummarizedExperiment::assays(se)[["isobolograms"]] <- convertDFtoBumpyMatrixUsingIds(all_isobolograms)
 
+  SummarizedExperiment::assays(se)[["BlissScore"]] <- convertDFtoBumpyMatrixUsingIds(bliss_score)
+  SummarizedExperiment::assays(se)[["HSAScore"]] <- convertDFtoBumpyMatrixUsingIds(hsa_score)
+  SummarizedExperiment::assays(se)[["CIScore_50"]] <- convertDFtoBumpyMatrixUsingIds(CIScore_50)
+  SummarizedExperiment::assays(se)[["CIScore_80"]] <- convertDFtoBumpyMatrixUsingIds(CIScore_80)
+
+  SummarizedExperiment::assays(se)[[metrics_assay]] <- convertDFtoBumpyMatrixUsingIds(all_metrics)
   se
 }
   
