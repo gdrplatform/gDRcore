@@ -112,6 +112,15 @@ calculate_excess <- function(metric, measured, series_identifiers, metric_col, m
 }
 
 
+#' @keywords internal
+#' @noRd
+convertDFtoBumpyMatrixUsingIds <- function(df, row_id = "row_id", col_id = "col_id") {
+  BumpyMatrix::splitAsBumpyMatrix(
+    df[!colnames(df) %in% c(row_id, col_id)],
+    row = df[[row_id]], col = df[[col_id]])
+}
+
+
 define_matrix_position <- function(mean_matrix,
                       conc_margin = 10 ^ 0.5,
                       log2_pos_offset = log10(3) / 2
