@@ -86,9 +86,8 @@ fit_SE.combinations <- function(se,
                                                  match_col = measured[[id2]] / measured[[id]],
                                                  codilution_fittings, "ratio")
         metrics_names <- c(metrics_names, "codilution_fittings")
-        data.table::setnames(codilution_fittings, "cotrt_value", "ratio")
       } 
-      metrics_merged <- do.call(rbind, mget(metrics_names))
+      metrics_merged <- do.call(plyr::rbind.fill, mget(metrics_names))
       metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
 
       keep <- intersect(colnames(measured), c(metric, "row_values", "col_values", "codil_values"))
