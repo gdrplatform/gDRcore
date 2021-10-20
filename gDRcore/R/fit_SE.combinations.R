@@ -110,12 +110,7 @@ fit_SE.combinations <- function(se,
                             "GRvalue" = "GR",
                             "RelativeViability" = "RV",
                             "unknown")
-      hsa_score[row, metric_name] <- mean(
-        h_excess$excess[h_excess$excess <= quantile(h_excess$excess, 0.1, na.rm = TRUE)])
-      bliss_score[row, metric_name] <- mean(
-        b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)])
       
-
       # contruct full matrix with single agent
       mean_matrix <- reshape2::acast(as.data.frame(measured[, c("average", id, id2)]),
                                      formula = sprintf("%s ~ %s", id, id2), value.var = "average")
@@ -141,10 +136,13 @@ fit_SE.combinations <- function(se,
         }
       ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
       ## and then each new metric that should go for each spot is another column in the nested DataFrame
+
+      # average the top 10-percentile excess to get a single value for the excess
       hsa_score[row, metric_name] <- mean(
-        h_excess$excess[h_excess$excess <= quantile(h_excess$excess, 0.1, na.rm = TRUE)], na.rm = TRUE)
+        h_excess$excess[h_excess$excess >= quantile(h_excess$excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
       bliss_score[row, metric_name] <- mean(
-        b_excess$excess[b_excess$excess <= quantile(b_excess$excess, 0.1, na.rm = TRUE)], na.rm = TRUE)
+        b_excess$excess[b_excess$excess >= quantile(b_excess$excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
+
       if (all(vapply(isobologram_out, is.null, logical(1)))) {
         CIScore_50[row, metric_name] <- CIScore_80[row, metric_name] <- NA
       } else {

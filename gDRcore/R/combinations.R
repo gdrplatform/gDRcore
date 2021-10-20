@@ -34,8 +34,26 @@ calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
 #' @rdname calculate_matrix_metric
 #' @export
 calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
-  lambda <- function(x, y) {
-    1 - (1 - x) - (1 - y) + (1 - x) * (1 - y)
+  if (metric %in% c("GRvalue", "GR")) {
+    lambda <- function(x, y) {
+      ifelse ( x < 0 | y < 0,
+        pmin(x, y),
+        2 ^ (log2(x+1) * log2(y+1)) - 1
+        # formula for GR combination adapted from Holbeck et al. Cancer Res, vol.77(13), 2017 
+        #   https://cancerres.aacrjournals.org/content/77/13/3564
+        # growth rates are multiplicative, not GR values directly
+      )
+    }
+  } else {
+    lambda <- function(x, y) {
+      ifelse ( x < 0 | y < 0,
+        pmin(x, y),
+        x * y
+        # Generalized Bliss formula for combination with potential negative values 
+        #   ( Holbeck et al. Cancer Res, vol.77(13), 2017 
+        #     https://cancerres.aacrjournals.org/content/77/13/3564 )
+      )
+    }
   }
   .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN = lambda)
 }
@@ -62,7 +80,7 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
 #' \code{calculate_HSA} takes the minimum of the two single agents readouts.
 #' \code{calculate_Bliss} performs Bliss additivity calculation based on the single agent effects,
 #' defined as \code{1-x} for the corresponding normalization.
-#' See https://www.sciencedirect.com/science/article/pii/S1359644619303460?via%3Dihub#tb0005
+#' See https://www.sciencedirect.com/science/article/pii/S1359644619303460 
 #' for more details.
 #' @keywords internal
 NULL
@@ -97,7 +115,7 @@ NULL
 #' @param metric_col string of the column in \code{metric} to use in the excess calculation.
 #' @param measured_col string of the column in \code{measured} to use in the excess calculation.
 #'
-#' @return DataFrame of \code{measured}, now with an additional column named \code{excess}.
+#' @return DataFrame of \code{measured}, now with an additional column named \code{excess} (positive values for synergy/benefit).
 #' @export
 calculate_excess <- function(metric, measured, series_identifiers, metric_col, measured_col) {
   # TODO: Ensure same dims metric, measured
@@ -106,7 +124,7 @@ calculate_excess <- function(metric, measured, series_identifiers, metric_col, m
   idx <- S4Vectors::match(DataFrame(measured[, series_identifiers]), DataFrame(metric[, series_identifiers]))
   
   out <- measured[, series_identifiers]
-  excess <- measured[, measured_col] - metric[idx, metric_col]
+  excess <- metric[idx, metric_col] - measured[, measured_col]
   out$excess <- excess
   out
 }
