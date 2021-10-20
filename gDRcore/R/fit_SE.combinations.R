@@ -56,10 +56,19 @@ fit_SE.combinations <- function(se,
     i <- x[["row"]]
     j <- x[["column"]]
     avg_combo <- avg[avg$row == i & avg$column == j, ]
-
+    
     sa <- avg_combo[[id]] == 0 | avg_combo[[id2]] == 0
+    
+    if (is.na(sa)) { # masked rows
+      emptyDF <- data.frame(row_id = i, col_id = j)
+      smooth_mx[[row]] <- hsa_excess[[row]] <- bliss_excess[[row]] <- isobolograms[[row]] <- 
+        CIScore_50[row, c("row_id", "col_id")] <- CIScore_80[row, c("row_id", "col_id")] <-
+        bliss_score[row, c("row_id", "col_id")] <- hsa_score[row, c("row_id", "col_id")] <- metrics[[row]] <- emptyDF
+      next
+    }
+    
     single_agent <- avg_combo[sa, ]
-    measured <- avg_combo#[!sa, ] # we can keep the single agent to have a full matrix
+    measured <- avg_combo #[!sa, ] # we can keep the single agent to have a full matrix
 
     for (metric in normalization_types) {
       sa1 <- single_agent[single_agent[[id]] == 0, c(id, id2, metric)]
@@ -179,15 +188,15 @@ fit_SE.combinations <- function(se,
   }
 
 
-  all_smooth_mx <- S4Vectors::DataFrame(do.call(rbind, smooth_mx))
-  all_hsa_excess <- S4Vectors::DataFrame(do.call(rbind, hsa_excess))
-  all_b_excess <- S4Vectors::DataFrame(do.call(rbind, bliss_excess))
+  all_smooth_mx <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, smooth_mx))
+  all_hsa_excess <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, hsa_excess))
+  all_b_excess <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, bliss_excess))
   all_isobolograms <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, isobolograms))
 
   all_CIScore_50 <- S4Vectors::DataFrame(do.call(rbind, CIScore_50))
   all_CIScore_80 <- S4Vectors::DataFrame(do.call(rbind, CIScore_80))
 
-  all_metrics <- S4Vectors::DataFrame(do.call(rbind, metrics))
+  all_metrics <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, metrics))
 
   SummarizedExperiment::assays(se)[["SmoothMatrix"]] <- convertDFtoBumpyMatrixUsingIds(all_smooth_mx)
   SummarizedExperiment::assays(se)[["BlissExcess"]] <- convertDFtoBumpyMatrixUsingIds(all_b_excess)

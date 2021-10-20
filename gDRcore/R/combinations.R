@@ -108,7 +108,7 @@ calculate_excess <- function(metric, measured, series_identifiers, metric_col, m
   out <- measured[, series_identifiers]
   excess <- measured[, measured_col] - metric[idx, metric_col]
   out$excess <- excess
-  out
+  as.data.frame(out)
 }
 
 
