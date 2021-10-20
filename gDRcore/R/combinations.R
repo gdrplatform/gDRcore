@@ -171,26 +171,29 @@ calculate_Loewe <- function(mean_matrix,
     iso_cutoff <- NULL
   } else {
     if (normalization_type == "GR") {
-      iso_cutoff <- seq(max(-0.25, ceiling(20 * min(mean_matrix + 0.08, na.rm = TRUE)) / 20), 0.8,  0.05)
+      max_val <- -0.25
     } else {
-      iso_cutoff <- seq(max(0.2, ceiling(20 * min(mean_matrix + 0.08, na.rm = TRUE)) / 20), 0.8,  0.05)
+      max_val <- 0.2
     }
+    iso_cutoff <- seq(max(max_val, ceiling(20 * min(mean_matrix + 0.08, na.rm = TRUE)) / 20), 0.8,  0.05)
     names(iso_cutoff) <- as.character(iso_cutoff)
   }
 
   # create the variable for the different isobolograms
   all_iso <- vector("list", length(iso_cutoff))
+  names(all_iso) <- iso_cutoff
   
   # TOOD: by_col and by_row should become encoded by the IRanges object length
 
   # get the IC50/GR50 on the marginal (single agent) based on the fit functions and capping
-  ref_x50 <- c(conc_1 = min(col_fittings[col_fittings$cotrt_value == 0, "xc50"], max(axis_1$conc_1) * conc_margin),
-              conc_2 = min(row_fittings[1, "xc50"], max(axis_2$conc_2) * conc_margin))
+  max1_cap <- max(axis_1$conc_1) * conc_margin
+  max2_cap <- max(axis_2$conc_2) * conc_margin
+  ref_x50 <- c(conc_1 = min(col_fittings[col_fittings$cotrt_value == 0, "xc50"], max1_cap),
+               conc_2 = min(row_fittings[1, "xc50"], max2_cap))
 
-  names(all_iso) <- iso_cutoff
+  row_fittings <- row_fittings[order(row_fittings$cotrt_value, decreasing = TRUE), ]
   for (isobol_value in iso_cutoff) { # run through the different isobolograms
     # cutoff point by row
-    row_fittings <- row_fittings[order(row_fittings$cotrt_value, decreasing = TRUE), ]
     df_iso <- cbind(conc_1 = row_fittings[, "cotrt_value"], data.frame(conc_2 =
       ifelse(row_fittings$x_0 < isobol_value, 0, ifelse(row_fittings$x_inf > isobol_value,
         Inf,
@@ -211,13 +214,11 @@ calculate_Loewe <- function(mean_matrix,
         fit_type = "by_col")))
 
     # capping
-    df_iso$conc_1 <- pmin(df_iso$conc_1, max(axis_1$conc_1) * conc_margin)
-    df_iso$conc_2 <- pmin(df_iso$conc_2, max(axis_2$conc_2) * conc_margin)
+    df_iso$conc_1 <- pmin(df_iso$conc_1, max1_cap)
+    df_iso$conc_2 <- pmin(df_iso$conc_2, max2_cap)
 
-    ref_conc_1 <- pmin(df_iso$conc_1[df_iso$conc_2 == 0 & df_iso$fit_type == "by_col"],
-                    max(axis_1$conc_1) * conc_margin)
-    ref_conc_2 <- pmin(df_iso$conc_2[df_iso$conc_1 == 0 & df_iso$fit_type == "by_row"],
-                    max(axis_2$conc_2) * conc_margin)
+    ref_conc_1 <- pmin(df_iso$conc_1[df_iso$conc_2 == 0 & df_iso$fit_type == "by_col"], max1_cap)
+    ref_conc_2 <- pmin(df_iso$conc_2[df_iso$conc_1 == 0 & df_iso$fit_type == "by_row"], max2_cap)
 
     # cutoff point by diagonal (co-dilution)
     # co-dil is given as concentration of drug 1
