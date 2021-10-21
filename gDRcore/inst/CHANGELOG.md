@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.12] - 2021-10-20
+#### Update
+- add support for masked data in fit_SE.combinations.R
+
 #### [1.1.11] - 2021-10-14
 #### Update
 - address issues in creating the SE for combo matrix experiments
