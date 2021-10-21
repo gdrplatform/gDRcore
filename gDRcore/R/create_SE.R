@@ -52,8 +52,8 @@ create_SE <- function(df_,
     df_ <- rbind(df_, df_dupl)
 
     # also rounding the concentration to avoid small mismatches
-    df_[[swap_var[["concentration"]]]] <- .round_concentration(df_[[swap_var[["concentration"]]]])
-    df_[[swap_var2[["concentration2"]]]] <- .round_concentration(df_[[swap_var2[["concentration2"]]]])
+    df_[[swap_var[["concentration"]]]] <- round_concentration(df_[[swap_var[["concentration"]]]])
+    df_[[swap_var2[["concentration2"]]]] <- round_concentration(df_[[swap_var2[["concentration2"]]]])
   }
   ## Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
