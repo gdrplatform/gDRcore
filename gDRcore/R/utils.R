@@ -220,3 +220,9 @@ get_nested_default_identifiers.SummarizedExperiment <- function(x,
 .round_concentration <- function(x) {
   10 ^ (round(log10(x), 3))
 }
+
+#' @keywords internal
+#' @noRd
+rbindList <- function(x) {
+  S4Vectors::DataFrame(do.call(plyr::rbind.fill, x))
+}
