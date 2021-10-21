@@ -139,6 +139,32 @@ convertDFtoBumpyMatrixUsingIds <- function(df, row_id = "row_id", col_id = "col_
 }
 
 
+define_matrix_position_from_df <- function(df_mean,
+                      conc_margin = 10 ^ 0.5,
+                      log2_pos_offset = log10(3) / 2
+              ) {
+
+  checkmate::assert_number(conc_margin)
+  checkmate::assert_number(log2_pos_offset)
+
+  axis_1 <- data.frame(conc_1 = sort(unique(10 ^ round(log10(df_mean$Concentration), 3))),
+          log10conc_1 = 0, pos_y = 0, marks_y = 0)
+  axis_1$log10conc_1 <- log10(axis_1$conc)
+  axis_1$pos_y <- axis_1$log10conc_1
+  axis_1$pos_y[1] <- 2 * axis_1$pos_y[2] - axis_1$pos_y[3] - log10(1.5)
+  axis_1$marks_y <- sprintf("%.2g", axis_1$conc_1)
+
+  # drug_2 is diluted along the columns and will be the x-axis of the matrix plots
+  axis_2 <- data.frame(conc_2 = sort(unique(10 ^ round(log10(df_mean$Concentration_2), 3))),
+                log10conc_2 = 0, pos_x = 0, marks_x = 0)
+  axis_2$log10conc_2 <- log10(axis_2$conc_2)
+  axis_2$pos_x <- axis_2$log10conc_2
+  axis_2$pos_x[1] <- 2 * axis_2$pos_x[2] - axis_2$pos_x[3] - log10(1.5)
+  axis_2$marks_x <- sprintf("%.2g", axis_2$conc_2)
+
+  list(axis_1 = axis_1, axis_2 = axis_2)
+}
+
 define_matrix_position <- function(mean_matrix,
                       conc_margin = 10 ^ 0.5,
                       log2_pos_offset = log10(3) / 2
