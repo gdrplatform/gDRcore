@@ -217,6 +217,40 @@ get_nested_default_identifiers.SummarizedExperiment <- function(x,
   }
 }
 
-.round_concentration <- function(x) {
-  10 ^ (round(log10(x), 3))
+#' Round concentration to ndigit significant digits
+#'
+#' @param x value to be rounded.
+#' @param ndigit number of significant digits (default = 4).
+#'
+#' @return rounded x
+#' @export
+round_concentration <- function(x, ndigit = 4) {
+  round(10 ^ (round(log10(x), ndigit)), ndigit-1-floor(log10(x)))
+}
+
+#' Equal concentrations to ndigit significant digits in log10 domain
+#'
+#' @param x value to be tested.
+#' @param y value to be tested.
+#' @param ndigit number of significant digits (default = 3).
+#'
+#' @return boolean
+#' @export
+equal_concentration <- function(x, y, ndigit = 3) {
+  abs(log10(x) - log10(y)) < 10^-ndigit
+}
+
+#' Replace concentrations in x by values in y if matching to the ndigit significant digits in log10 domain
+#'
+#' @param x value to change if equal to values in y.
+#' @param y reference values.
+#' @param ndigit number of significant digits (default = 3).
+#'
+#' @return adjusted x values
+#' @export
+replace_concentration <- function(x, y, ndigit = 3) {
+  for (i in unique(y)) {
+    x[equal_concentration(x, i, ndigit)] <- i
+  }
+  x
 }
