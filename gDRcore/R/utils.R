@@ -224,7 +224,7 @@ get_nested_default_identifiers.SummarizedExperiment <- function(x,
 #'
 #' @return rounded x
 #' @export
-round_concentration <- function(x, ndigit = 4) {
+round_concentration <- function(x, ndigit = 3) {
   round(10 ^ (round(log10(x), ndigit)), ndigit-1-floor(log10(x)))
 }
 
@@ -249,7 +249,7 @@ equal_concentration <- function(x, y, ndigit = 3) {
 #' @return adjusted x values
 #' @export
 replace_concentration <- function(x, y, ndigit = 3) {
-  for (i in unique(y)) {
+  for (i in setdiff(unique(y), 0)) {
     x[equal_concentration(x, i, ndigit)] <- i
   }
   x

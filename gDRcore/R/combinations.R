@@ -129,7 +129,7 @@ define_matrix_position <- function(mean_matrix,
   checkmate::assert_number(conc_margin)
   checkmate::assert_number(log2_pos_offset)
 
-  axis_1 <- data.frame(conc_1 = round(as.numeric(rownames(mean_matrix)), 5),
+  axis_1 <- data.frame(conc_1 = round_concentration(as.numeric(rownames(mean_matrix))),
           log10conc_1 = 0, pos_y = 0, marks_y = 0)
   axis_1$log10conc_1 <- log10(axis_1$conc)
   axis_1$pos_y <- axis_1$log10conc_1
@@ -137,7 +137,7 @@ define_matrix_position <- function(mean_matrix,
   axis_1$marks_y <- sprintf("%.2g", axis_1$conc_1)
 
   # drug_2 is diluted along the columns and will be the x-axis of the matrix plots
-  axis_2 <- data.frame(conc_2 = round(as.numeric(colnames(mean_matrix)), 5),
+  axis_2 <- data.frame(conc_2 = round_concentration(as.numeric(colnames(mean_matrix))),
                 log10conc_2 = 0, pos_x = 0, marks_x = 0)
   axis_2$log10conc_2 <- log10(axis_2$conc_2)
   axis_2$pos_x <- axis_2$log10conc_2
@@ -186,8 +186,8 @@ calculate_Loewe <- function(mean_matrix,
   # TOOD: by_col and by_row should become encoded by the IRanges object length
 
   # get the IC50/GR50 on the marginal (single agent) based on the fit functions and capping
-  max1_cap <- max(axis_1$conc_1) * conc_margin
-  max2_cap <- max(axis_2$conc_2) * conc_margin
+  max1_cap <- round_concentration(max(axis_1$conc_1) * conc_margin)
+  max2_cap <- round_concentration(max(axis_2$conc_2) * conc_margin)
   ref_x50 <- c(conc_1 = min(col_fittings[col_fittings$cotrt_value == 0, "xc50"], max1_cap),
                conc_2 = min(row_fittings[1, "xc50"], max2_cap))
 

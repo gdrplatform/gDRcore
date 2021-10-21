@@ -57,6 +57,11 @@ fit_SE.combinations <- function(se,
     j <- x[["column"]]
     avg_combo <- avg[avg$row == i & avg$column == j, ]
 
+    # round the concentrations and ensure matching between the two drugs
+    rounded_concentrations = unique(c(round_concentration(avg_combo[[id]]), round_concentration(avg_combo[[id]])))
+    avg_combo[[id]] = replace_concentration(avg_combo[[id]], rounded_concentrations)
+    avg_combo[[id2]] = replace_concentration(avg_combo[[id2]], rounded_concentrations)
+
     sa <- avg_combo[[id]] == 0 | avg_combo[[id2]] == 0
     single_agent <- avg_combo[sa, ]
     measured <- avg_combo#[!sa, ] # we can keep the single agent to have a full matrix
