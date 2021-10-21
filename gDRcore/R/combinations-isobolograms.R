@@ -52,8 +52,6 @@ calculate_Loewe <- function(mean_matrix,
   # get the IC50/GR50 on the marginal (single agent) based on the fit functions and capping
   max1_cap <- max(axis_1$conc_1) * conc_margin
   max2_cap <- max(axis_2$conc_2) * conc_margin
-  ref_x50 <- c(conc_1 = min(col_fittings[col_fittings$cotrt_value == 0, "xc50"], max1_cap),
-               conc_2 = min(row_fittings[1, "xc50"], max2_cap))
 
   row_fittings <- row_fittings[order(row_fittings$cotrt_value, decreasing = TRUE), ]
   col_fittings <- col_fittings[order(col_fittings$cotrt_value, decreasing = FALSE), ]
