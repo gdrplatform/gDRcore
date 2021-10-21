@@ -126,6 +126,7 @@ calculate_excess <- function(metric, measured, series_identifiers, metric_col, m
   out <- measured[, series_identifiers]
   excess <- metric[idx, metric_col] - measured[, measured_col]
   out$excess <- excess
+  out$excess[ apply(out[, series_identifiers], 1, function(x) any(x == 0)) ] = 0 # set marginal to 0
   as.data.frame(out)
 }
 
@@ -143,11 +144,14 @@ define_matrix_position_from_df <- function(df_mean,
                       conc_margin = 10 ^ 0.5,
                       log2_pos_offset = log10(3) / 2
               ) {
+  
+  # TODO: abstract 'Concentration' and 'Concentration_2'
+  # TODO: merge with function define_matrix_position
 
   checkmate::assert_number(conc_margin)
   checkmate::assert_number(log2_pos_offset)
 
-  axis_1 <- data.frame(conc_1 = round_concentration(as.numeric(rownames(mean_matrix))),
+  axis_1 <- data.frame(conc_1 = sort(unique(round_concentration(df_mean$Concentration))),
           log10conc_1 = 0, pos_y = 0, marks_y = 0)
   axis_1$log10conc_1 <- log10(axis_1$conc)
   axis_1$pos_y <- axis_1$log10conc_1
@@ -155,7 +159,7 @@ define_matrix_position_from_df <- function(df_mean,
   axis_1$marks_y <- sprintf("%.2g", axis_1$conc_1)
 
   # drug_2 is diluted along the columns and will be the x-axis of the matrix plots
-  axis_2 <- data.frame(conc_2 = round_concentration(as.numeric(colnames(mean_matrix))),
+  axis_2 <- data.frame(conc_2 = sort(unique(round_concentration(df_mean$Concentration_2))),
                 log10conc_2 = 0, pos_x = 0, marks_x = 0)
   axis_2$log10conc_2 <- log10(axis_2$conc_2)
   axis_2$pos_x <- axis_2$log10conc_2
