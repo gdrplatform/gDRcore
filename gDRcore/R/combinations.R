@@ -162,29 +162,16 @@ calculate_Loewe <- function(mean_matrix,
   checkmate::assert_number(conc_margin)
   checkmate::assert_number(log2_pos_offset)
   checkmate::assert_character(normalization_type) 
+ 
+  iso_cutoff <- get_isocutoffs(mean_matrix, normalization_type)
+
+  all_iso <- vector("list", length(iso_cutoff))
+  names(all_iso) <- iso_cutoff
 
   axes <- define_matrix_position(mean_matrix, conc_margin = conc_margin, log2_pos_offset = log2_pos_offset)
   axis_1 <- axes$axis_1
   axis_2 <- axes$axis_2
-
-  if (min(mean_matrix, na.rm = TRUE) > 0.7) {
-    iso_cutoff <- NULL
-  } else {
-    if (normalization_type == "GR") {
-      max_val <- -0.25
-    } else {
-      max_val <- 0.2
-    }
-    iso_cutoff <- seq(max(max_val, ceiling(20 * min(mean_matrix + 0.08, na.rm = TRUE)) / 20), 0.8,  0.05)
-    names(iso_cutoff) <- as.character(iso_cutoff)
-  }
-
-  # create the variable for the different isobolograms
-  all_iso <- vector("list", length(iso_cutoff))
-  names(all_iso) <- iso_cutoff
   
-  # TOOD: by_col and by_row should become encoded by the IRanges object length
-
   # get the IC50/GR50 on the marginal (single agent) based on the fit functions and capping
   max1_cap <- max(axis_1$conc_1) * conc_margin
   max2_cap <- max(axis_2$conc_2) * conc_margin
@@ -192,26 +179,17 @@ calculate_Loewe <- function(mean_matrix,
                conc_2 = min(row_fittings[1, "xc50"], max2_cap))
 
   row_fittings <- row_fittings[order(row_fittings$cotrt_value, decreasing = TRUE), ]
+  col_fittings <- col_fittings[order(col_fittings$cotrt_value, decreasing = FALSE), ]
   for (isobol_value in iso_cutoff) { # run through the different isobolograms
     # cutoff point by row
-    df_iso <- cbind(conc_1 = row_fittings[, "cotrt_value"], data.frame(conc_2 =
-      ifelse(row_fittings$x_0 < isobol_value, 0, ifelse(row_fittings$x_inf > isobol_value,
-        Inf,
-        row_fittings$ec50 * ((((row_fittings$x_0 - row_fittings$x_inf) / (isobol_value - row_fittings$x_inf)) - 1) ^
-            (1 / pmax(row_fittings$h, 0.01))))
-          ),
-          fit_type = "by_row"))
+    df_iso <- cbind(conc_1 = row_fittings[, "cotrt_value"],
+      data.frame(conc_2 = evaluate_fit_at_iso_value(row_fittings, isobol_value),
+                 fit_type = "by_row"))
 
     # cutoff point by columns
-    col_fittings <- col_fittings[order(row_fittings$cotrt_value, decreasing = FALSE), ]
-    df_iso <- rbind(df_iso, cbind(data.frame(conc_1 =
-      ifelse(col_fittings$x_0 < isobol_value, 0, ifelse(col_fittings$x_inf > isobol_value,
-        Inf,
-        col_fittings$ec50 * ((((col_fittings$x_0 - col_fittings$x_inf) / (isobol_value - col_fittings$x_inf)) - 1) ^
-            (1 / pmax(col_fittings$h, 0.01))))
-          ),
+    df_iso <- rbind(df_iso, cbind(data.frame(conc_1 = evaluate_fit_at_iso_value(col_fittings, isobol_value),
       conc_2 = col_fittings[, "cotrt_value"],
-        fit_type = "by_col")))
+      fit_type = "by_col")))
 
     # capping
     df_iso$conc_1 <- pmin(df_iso$conc_1, max1_cap)
@@ -225,28 +203,20 @@ calculate_Loewe <- function(mean_matrix,
     if (NROW(codilution_fittings) > 1) {
       codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
       codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
-      conc_mix <- ifelse(codilution_fittings$x_0 < isobol_value, 
-          0,
-          ifelse(codilution_fittings$x_inf > isobol_value,
-            Inf,
-            codilution_fittings$ec50 * ((((codilution_fittings$x_0 - codilution_fittings$x_inf) /
-                                        (isobol_value - codilution_fittings$x_inf)) - 1) ^
-                                      (1 / codilution_fittings$h))
-          )
-        )
+      conc_mix <- evaluate_fit_at_iso_value(codilution_fittings, isobol_value)
         
       df_iso_codil <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$ratio),
                         conc_2 = conc_mix / (1 + codilution_fittings$ratio), fit_type = "by_codil")
       # avoid extrapolation
-      capped_idx <- df_iso_codil$conc_1 > (max(axis_1$conc_1) * conc_margin) |
-            df_iso_codil$conc_2 > (max(axis_2$conc_2) * conc_margin)
-      df_iso_codil$conc_1[capped_idx] <- pmin(max(axis_1$conc_1) * conc_margin,
-                  codilution_fittings$conc_ratio * (max(axis_2$conc_2) * conc_margin))[capped_idx]
-      df_iso_codil$conc_2[capped_idx] <- pmin(max(axis_2$conc_2) * conc_margin,
-                  (max(axis_1$conc_1) * conc_margin) / codilution_fittings$conc_ratio)[capped_idx]
+      capped_idx <- df_iso_codil$conc_1 > max1_cap | df_iso_codil$conc_2 > max2_cap
+      df_iso_codil$conc_1[capped_idx] <- pmin(max1_cap,
+                  codilution_fittings$conc_ratio * (max2_cap))[capped_idx]
+      df_iso_codil$conc_2[capped_idx] <- pmin(max2_cap,
+                  (max1_cap) / codilution_fittings$conc_ratio)[capped_idx]
 
       df_iso <- rbind(df_iso, df_iso_codil)
     }
+
     # remove low concentration values
     df_iso <- df_iso[!is.na(df_iso$conc_1) & !is.na(df_iso$conc_2), ]
     df_iso <- df_iso[(df_iso$conc_1 > axis_1$conc_1[2] / 2 | df_iso$fit_type == "by_row") &
@@ -387,4 +357,34 @@ calculate_Loewe <- function(mean_matrix,
       df_all_iso_curves = df_all_iso_curves,
       df_all_AUC_log2CI = df_all_AUC_log2CI
     )
+}
+
+
+evaluate_fit_at_iso_value <- function(fitting, isobol_value) {
+  if (fitting$x_0 < isobol_value) {
+    0
+  } else {
+    if (fitting$x_inf > isobol_value) {
+      Inf
+    } else {
+    fitting$ec50 * ((((fitting$x_0 - fitting$x_inf) / (isobol_value - fitting$x_inf)) - 1) ^
+        (1 / pmax(fitting$h, 0.01)))
+    }
+  }
+}
+
+
+get_isocutoffs <- function(mean_matrix, normalization_type) {
+  if (min(mean_matrix, na.rm = TRUE) > 0.7) {
+    iso_cutoff <- NULL
+  } else {
+    if (normalization_type == "GR") {
+      max_val <- -0.25
+    } else {
+      max_val <- 0.2
+    }
+    iso_cutoff <- seq(max(max_val, ceiling(20 * min(mean_matrix + 0.08, na.rm = TRUE)) / 20), 0.8,  0.05)
+    names(iso_cutoff) <- as.character(iso_cutoff)
+  }
+  iso_cutoff
 }
