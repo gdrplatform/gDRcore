@@ -254,3 +254,10 @@ replace_concentration <- function(x, y, ndigit = 2) {
   }
   x
 }
+
+#' @keywords internal
+#' @noRd
+rbindList <- function(x) {
+  S4Vectors::DataFrame(do.call(plyr::rbind.fill, x))
+}
+

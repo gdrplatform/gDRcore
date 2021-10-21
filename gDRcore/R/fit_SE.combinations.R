@@ -61,11 +61,19 @@ fit_SE.combinations <- function(se,
     rounded_concentrations = unique(c(round_concentration(avg_combo[[id]]), round_concentration(avg_combo[[id]])))
     avg_combo[[id]] = replace_concentration(avg_combo[[id]], rounded_concentrations)
     avg_combo[[id2]] = replace_concentration(avg_combo[[id2]], rounded_concentrations)
-
     sa <- avg_combo[[id]] == 0 | avg_combo[[id2]] == 0
+    
+    if (is.na(sa)) { # masked rows
+      emptyDF <- data.frame(row_id = i, col_id = j)
+      smooth_mx[[row]] <- hsa_excess[[row]] <- bliss_excess[[row]] <- isobolograms[[row]] <- 
+        CIScore_50[row, c("row_id", "col_id")] <- CIScore_80[row, c("row_id", "col_id")] <-
+        bliss_score[row, c("row_id", "col_id")] <- hsa_score[row, c("row_id", "col_id")] <- metrics[[row]] <- emptyDF
+      next
+    }
+    
     single_agent <- avg_combo[sa, ]
 
-    # complete is the full matrix including missing values
+    # complete is the full matrix including missing values and single agent
     complete = merge(sort(unique(avg_combo[, id, drop = FALSE])), 
                       sort(unique(avg_combo[, id2, drop = FALSE])),
                         by = NULL)
@@ -186,17 +194,12 @@ fit_SE.combinations <- function(se,
     }
   }
 
-
-  all_smooth_mx <- S4Vectors::DataFrame(do.call(rbind, smooth_mx))
-  all_hsa_excess <- S4Vectors::DataFrame(do.call(rbind, hsa_excess))
-  all_b_excess <- S4Vectors::DataFrame(do.call(rbind, bliss_excess))
-  all_isobolograms <- S4Vectors::DataFrame(do.call(plyr::rbind.fill, isobolograms))
-
-  all_CIScore_50 <- S4Vectors::DataFrame(do.call(rbind, CIScore_50))
-  all_CIScore_80 <- S4Vectors::DataFrame(do.call(rbind, CIScore_80))
-
-  all_metrics <- S4Vectors::DataFrame(do.call(rbind, metrics))
-
+  all_smooth_mx <- rbindList(smooth_mx)
+  all_hsa_excess <- rbindList(hsa_excess)
+  all_b_excess <- rbindList(bliss_excess)
+  all_isobolograms <- rbindList(isobolograms)
+  all_metrics <- rbindList(metrics)
+  
   SummarizedExperiment::assays(se)[["SmoothMatrix"]] <- convertDFtoBumpyMatrixUsingIds(all_smooth_mx)
   SummarizedExperiment::assays(se)[["BlissExcess"]] <- convertDFtoBumpyMatrixUsingIds(all_b_excess)
   SummarizedExperiment::assays(se)[["HSAExcess"]] <- convertDFtoBumpyMatrixUsingIds(all_hsa_excess)
