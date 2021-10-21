@@ -64,7 +64,12 @@ fit_SE.combinations <- function(se,
 
     sa <- avg_combo[[id]] == 0 | avg_combo[[id2]] == 0
     single_agent <- avg_combo[sa, ]
-    measured <- avg_combo#[!sa, ] # we can keep the single agent to have a full matrix
+
+    # complete is the full matrix including missing values
+    complete = merge(sort(unique(avg_combo[, id, drop = FALSE])), 
+                      sort(unique(avg_combo[, id2, drop = FALSE])),
+                        by = NULL)
+    complete = merge(complete, avg_combo[, c(id, id2, normalization_types)], all.x = T, by = c(id, id2))
 
     for (metric in normalization_types) {
       sa1 <- single_agent[single_agent[[id]] == 0, c(id, id2, metric)]
@@ -74,37 +79,37 @@ fit_SE.combinations <- function(se,
       col_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id, cotrt_id = id2, metric)
       # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
       row_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id2, cotrt_id = id, metric)
-      codilution_fittings <- gDRcore:::fit_combo_codilutions(measured, series_identifiers, metric)
+      codilution_fittings <- gDRcore:::fit_combo_codilutions(avg_combo, series_identifiers, metric)
       
       # apply the fit to get smoothed data: results per column
       # (along primary identifier for each value of the secondary identifier)
-      measured$col_values <- map_ids_to_fits(pred = measured[[id]],
-                                             match_col = measured[[id2]], col_fittings, "cotrt_value")
+      complete$col_values <- map_ids_to_fits(pred = complete[[id]],
+                                             match_col = complete[[id2]], col_fittings, "cotrt_value")
       # apply the fit the get smoothed data: results per row
       # (along secondary identifier for each value of the primary identifier)
-      measured$row_values <- map_ids_to_fits(pred = measured[[id2]],
-                                             match_col = measured[[id]], row_fittings, "cotrt_value")
+      complete$row_values <- map_ids_to_fits(pred = complete[[id2]],
+                                             match_col = complete[[id]], row_fittings, "cotrt_value")
       metrics_names <- c("col_fittings", "row_fittings")
       if (!is.null(codilution_fittings)) {
         # apply the fit the get smoothed data: codilution results (along sum of identifiers for each ratio)
-        measured$codil_values <- map_ids_to_fits(pred = measured[[id2]] + measured[[id]],
-                                                 match_col = measured[[id2]] / measured[[id]],
+        complete$codil_values <- map_ids_to_fits(pred = complete[[id2]] + complete[[id]],
+                                                 match_col = complete[[id2]] / complete[[id]],
                                                  codilution_fittings, "ratio")
         metrics_names <- c(metrics_names, "codilution_fittings")
       } 
       metrics_merged <- do.call(plyr::rbind.fill, mget(metrics_names))
       metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
 
-      keep <- intersect(colnames(measured), c(metric, "row_values", "col_values", "codil_values"))
-      mat <- as.matrix(measured[, keep])
-      measured$average <- rowMeans(mat, na.rm = TRUE)
+      keep <- intersect(colnames(complete), c(metric, "row_values", "col_values", "codil_values"))
+      mat <- as.matrix(complete[, keep])
+      complete$average <- rowMeans(mat, na.rm = TRUE)
       
       hsa <- calculate_HSA(sa1, id2, sa2, id, metric)
-      h_excess <- calculate_excess(hsa, measured, series_identifiers = c(id, id2), metric_col = "metric",
+      h_excess <- calculate_excess(hsa, complete, series_identifiers = c(id, id2), metric_col = "metric",
                                   measured_col = "average")
 
       bliss <- calculate_Bliss(sa1, id2, sa2, id, metric)
-      b_excess <- calculate_excess(bliss, measured, series_identifiers = c(id, id2), metric_col = "metric",
+      b_excess <- calculate_excess(bliss, complete, series_identifiers = c(id, id2), metric_col = "metric",
                                   measured_col = "average")
 
       # TODO: call calculate_Loewe and calculate_isoobolograms
@@ -117,10 +122,10 @@ fit_SE.combinations <- function(se,
                             "unknown")
       
       # contruct full matrix with single agent
-      mean_matrix <- reshape2::acast(as.data.frame(measured[, c("average", id, id2)]),
+      mean_matrix <- reshape2::acast(as.data.frame(complete[, c("average", id, id2)]),
                                      formula = sprintf("%s ~ %s", id, id2), value.var = "average")
       
-      if (0 %in% measured$Concentration && 0 %in% measured$Concentration_2) {
+      if (0 %in% complete$Concentration && 0 %in% complete$Concentration_2) {
         mean_matrix["0", "0"] <- 1 # add the corner of the matrix
       }
       # remove empty rows/columns

@@ -244,11 +244,11 @@ equal_concentration <- function(x, y, ndigit = 3) {
 #'
 #' @param x value to change if equal to values in y.
 #' @param y reference values.
-#' @param ndigit number of significant digits (default = 3).
+#' @param ndigit number of significant digits (default = 2).
 #'
 #' @return adjusted x values
 #' @export
-replace_concentration <- function(x, y, ndigit = 3) {
+replace_concentration <- function(x, y, ndigit = 2) {
   for (i in setdiff(unique(y), 0)) {
     x[equal_concentration(x, i, ndigit)] <- i
   }
