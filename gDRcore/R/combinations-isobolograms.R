@@ -230,7 +230,7 @@ calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittin
   conc2 <- gDRutils::predict_conc_from_efficacy(
     efficacy = isobol_value,
     x_inf = row_fittings$x_inf,
-    x_0 = row_fittings$x0,
+    x_0 = row_fittings$x_0,
     ec50 = row_fittings$ec50,
     h = row_fittings$h
   )
@@ -242,7 +242,7 @@ calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittin
   conc1 <- gDRutils::predict_conc_from_efficacy(
     efficacy = isobol_value,
     x_inf = col_fittings$x_inf,
-    x_0 = col_fittings$x0,
+    x_0 = col_fittings$x_0,
     ec50 = col_fittings$ec50,
     h = col_fittings$h
   )
@@ -260,7 +260,7 @@ calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittin
     conc_mix <- gDRutils::predict_conc_from_efficacy(
       efficacy = isobol_value,
       x_inf = codilution_fittings$x_inf,
-      x_0 = codilution_fittings$x0,
+      x_0 = codilution_fittings$x_0,
       ec50 = codilution_fittings$ec50,
       h = codilution_fittings$h
     ) 
