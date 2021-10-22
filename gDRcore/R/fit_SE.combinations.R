@@ -57,21 +57,19 @@ fit_SE.combinations <- function(se,
     j <- x[["column"]]
     avg_combo <- avg[avg$row == i & avg$column == j, ]
 
-    # round the concentrations and ensure matching between the two drugs
-    rounded_concentrations = unique(c(round_concentration(avg_combo[[id]]), round_concentration(avg_combo[[id]])))
-    avg_combo[[id]] = replace_concentration(avg_combo[[id]], rounded_concentrations)
-    avg_combo[[id2]] = replace_concentration(avg_combo[[id2]], rounded_concentrations)
-    sa <- avg_combo[[id]] == 0 | avg_combo[[id2]] == 0
-    
-    if (is.na(sa)) { # masked rows
+    if (is.na(avg_combo)) { # not data for a given combo / cell line pair
       emptyDF <- data.frame(row_id = i, col_id = j)
       smooth_mx[[row]] <- hsa_excess[[row]] <- bliss_excess[[row]] <- isobolograms[[row]] <- 
         CIScore_50[row, c("row_id", "col_id")] <- CIScore_80[row, c("row_id", "col_id")] <-
         bliss_score[row, c("row_id", "col_id")] <- hsa_score[row, c("row_id", "col_id")] <- metrics[[row]] <- emptyDF
       next
     }
+
+    # round the concentrations and ensure matching between the two drugs
+    rounded_concentrations = unique(c(round_concentration(avg_combo[[id]]), round_concentration(avg_combo[[id2]])))
+    avg_combo[[id]] = replace_concentration(avg_combo[[id]], rounded_concentrations)
+    avg_combo[[id2]] = replace_concentration(avg_combo[[id2]], rounded_concentrations)
     
-    single_agent <- avg_combo[sa, ]
 
     # complete is the full matrix including missing values and single agent
     # perform some calculation to get a regularly spaced dilution series matching measured values
@@ -96,22 +94,22 @@ fit_SE.combinations <- function(se,
     complete = merge(conc_1, conc_2, by = NULL)
     colnames(complete) = c(id, id2)
     rounded_avg_combo = avg_combo[, c(id, id2, normalization_types)]
-    rounded_avg_combo[,id] = replace_concentration(rounded_avg_combo[,id], complete[, id])
-    rounded_avg_combo[,id2] = replace_concentration(rounded_avg_combo[,id2], complete[, id2])
+    rounded_avg_combo[,id] = replace_concentration(rounded_avg_combo[,id], conc_1)
+    rounded_avg_combo[,id2] = replace_concentration(rounded_avg_combo[,id2], conc_2)
+
     complete = merge(complete, rounded_avg_combo, all.x = T, by = c(id, id2))
 
     for (metric in normalization_types) {
-      sa1 <- single_agent[single_agent[[id]] == 0, c(id, id2, metric)]
-      sa1[,id2] = replace_concentration(sa1[,id2], complete[, id2])
-      sa2 <- single_agent[single_agent[[id2]] == 0, c(id, id2, metric)]
-      sa2[,id] = replace_concentration(sa2[,id], complete[, id])
-
       # fit by column: the series in the primary identifier, the cotrt is the secondary one
       col_fittings <- gDRcore:::fit_combo_cotreatments(rounded_avg_combo, series_id = id, cotrt_id = id2, metric)
+      col_fittings = col_fittings[!is.na(col_fittings$fit_type),]
       # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
       row_fittings <- gDRcore:::fit_combo_cotreatments(rounded_avg_combo, series_id = id2, cotrt_id = id, metric)
+      row_fittings = row_fittings[!is.na(row_fittings$fit_type),]
+      # fit by codilution (diagonal)
       codilution_fittings <- gDRcore:::fit_combo_codilutions(rounded_avg_combo, series_identifiers, metric)
-      
+      codilution_fittings = codilution_fittings[!is.na(codilution_fittings$fit_type),]
+
       # apply the fit to get smoothed data: results per column
       # (along primary identifier for each value of the secondary identifier)
       complete$col_values <- map_ids_to_fits(pred = complete[[id]],
@@ -124,7 +122,7 @@ fit_SE.combinations <- function(se,
       if (!is.null(codilution_fittings)) {
         # apply the fit the get smoothed data: codilution results (along sum of identifiers for each ratio)
         complete$codil_values <- map_ids_to_fits(pred = complete[[id2]] + complete[[id]],
-                                                 match_col = complete[[id2]] / complete[[id]],
+                                                 match_col = round_concentration(complete[[id2]] / complete[[id]],1),
                                                  codilution_fittings, "ratio")
         metrics_names <- c(metrics_names, "codilution_fittings")
       } 
@@ -134,12 +132,15 @@ fit_SE.combinations <- function(se,
       keep <- intersect(colnames(complete), c(metric, "row_values", "col_values", "codil_values"))
       mat <- as.matrix(complete[, keep])
       complete$average <- rowMeans(mat, na.rm = TRUE)
+
+      sa1 <- complete[complete[[id2]] == 0, c(id, id2, "average")]
+      sa2 <- complete[complete[[id]] == 0 , c(id, id2, "average")]
       
-      hsa <- calculate_HSA(sa1, id2, sa2, id, metric)
+      hsa <- calculate_HSA(sa1, id, sa2, id2, "average")
       h_excess <- calculate_excess(hsa, complete, series_identifiers = c(id, id2), metric_col = "metric",
                                   measured_col = "average")
 
-      bliss <- calculate_Bliss(sa1, id2, sa2, id, metric)
+      bliss <- calculate_Bliss(sa1, id, sa2, id2, "average")
       b_excess <- calculate_excess(bliss, complete, series_identifiers = c(id, id2), metric_col = "metric",
                                   measured_col = "average")
 

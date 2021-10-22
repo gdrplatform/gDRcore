@@ -254,13 +254,13 @@ get_isocutoffs <- function(mean_matrix, normalization_type) {
 
 calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittings, isobol_value) {
   # cutoff point by row
-  conc2 <- gDRutils::predict_conc_from_fit(row_fittings$ec50, row_fittings$x0, row_fittings$x_inf, row_fittings$h, efficacy = isobol_value)
+  conc2 <- gDRutils::predict_conc_from_fit(row_fittings$ec50, row_fittings$x_0, row_fittings$x_inf, row_fittings$h, efficacy = isobol_value)
   df_iso <- cbind(conc_1 = row_fittings[, "cotrt_value"],
     data.frame(conc_2 = conc2,
                fit_type = "by_row"))
 
   # cutoff point by columns
-  conc1 <- gDRutils::predict_conc_from_fit(col_fittings$ec50, col_fittings$x0, col_fittings$x_inf, col_fittings$h, efficacy = isobol_value)
+  conc1 <- gDRutils::predict_conc_from_fit(col_fittings$ec50, col_fittings$x_0, col_fittings$x_inf, col_fittings$h, efficacy = isobol_value)
   df_iso <- rbind(df_iso, cbind(data.frame(conc_1 = conc1,
     conc_2 = col_fittings[, "cotrt_value"],
     fit_type = "by_col")))
@@ -272,7 +272,7 @@ calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittin
   # cutoff point by diagonal (co-dilution)
   # co-dil is given as concentration of drug 1
   if (NROW(codilution_fittings) > 1) {
-    conc_mix <- gDRutils::predict_conc_from_fit(codilution_fittings$ec50, codilution_fittings$x0, codilution_fittings$x_inf, codilution_fittings$h, efficacy = isobol_value)
+    conc_mix <- gDRutils::predict_conc_from_fit(codilution_fittings$ec50, codilution_fittings$x_0, codilution_fittings$x_inf, codilution_fittings$h, efficacy = isobol_value)
       
     df_iso_codil <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$ratio),
                       conc_2 = conc_mix / (1 + codilution_fittings$ratio), fit_type = "by_codil")
