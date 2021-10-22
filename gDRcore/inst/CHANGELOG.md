@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.13] - 2021-10-22
+#### Update
+- refacor isobolograms
+
 #### [1.1.12] - 2021-10-20
 #### Update
 - add support for masked data in fit_SE.combinations.R
