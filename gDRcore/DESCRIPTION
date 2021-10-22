@@ -17,7 +17,7 @@ Imports:
     catchr,
     data.table,
     drc,
-    gDRutils (>= 1.0.10),
+    gDRutils (>= 1.0.17),
     httr,
     magrittr,
     reshape2,
