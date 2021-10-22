@@ -174,7 +174,7 @@ fit_SE.combinations <- function(se,
                         codilution_fittings, normalization_type = metric) 
       } else {
           NULL
-        }
+      }
       ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
       ## and then each new metric that should go for each spot is another column in the nested DataFrame
 
