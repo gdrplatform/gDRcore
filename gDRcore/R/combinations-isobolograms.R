@@ -55,42 +55,14 @@ calculate_Loewe <- function(mean_matrix,
 
   row_fittings <- row_fittings[order(row_fittings$cotrt_value, decreasing = TRUE), ]
   col_fittings <- col_fittings[order(col_fittings$cotrt_value, decreasing = FALSE), ]
+  codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
+  codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
+
   for (isobol_value in iso_cutoff) { # run through the different isobolograms
-    # cutoff point by row
-    df_iso <- cbind(conc_1 = row_fittings[, "cotrt_value"],
-      data.frame(conc_2 = evaluate_fit_at_iso_value(row_fittings, isobol_value),
-                 fit_type = "by_row"))
-
-    # cutoff point by columns
-    df_iso <- rbind(df_iso, cbind(data.frame(conc_1 = evaluate_fit_at_iso_value(col_fittings, isobol_value),
-      conc_2 = col_fittings[, "cotrt_value"],
-      fit_type = "by_col")))
-
-    # capping
-    df_iso$conc_1 <- pmin(df_iso$conc_1, max1_cap)
-    df_iso$conc_2 <- pmin(df_iso$conc_2, max2_cap)
+    df_iso <- calculate_isobolograms(row_fittings, col_fittings, isobol_value)
 
     ref_conc_1 <- pmin(df_iso$conc_1[df_iso$conc_2 == 0 & df_iso$fit_type == "by_col"], max1_cap)
     ref_conc_2 <- pmin(df_iso$conc_2[df_iso$conc_1 == 0 & df_iso$fit_type == "by_row"], max2_cap)
-
-    # cutoff point by diagonal (co-dilution)
-    # co-dil is given as concentration of drug 1
-    if (NROW(codilution_fittings) > 1) {
-      codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
-      codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
-      conc_mix <- evaluate_fit_at_iso_value(codilution_fittings, isobol_value)
-        
-      df_iso_codil <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$ratio),
-                        conc_2 = conc_mix / (1 + codilution_fittings$ratio), fit_type = "by_codil")
-      # avoid extrapolation
-      capped_idx <- df_iso_codil$conc_1 > max1_cap | df_iso_codil$conc_2 > max2_cap
-      df_iso_codil$conc_1[capped_idx] <- pmin(max1_cap,
-                  codilution_fittings$conc_ratio * (max2_cap))[capped_idx]
-      df_iso_codil$conc_2[capped_idx] <- pmin(max2_cap,
-                  (max1_cap) / codilution_fittings$conc_ratio)[capped_idx]
-
-      df_iso <- rbind(df_iso, df_iso_codil)
-    }
 
     # remove low concentration values
     df_iso <- df_iso[!is.na(df_iso$conc_1) & !is.na(df_iso$conc_2), ]
@@ -262,4 +234,38 @@ get_isocutoffs <- function(mean_matrix, normalization_type) {
     names(iso_cutoff) <- as.character(iso_cutoff)
   }
   iso_cutoff
+}
+
+
+calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittings, isobol_value) {
+    # cutoff point by row
+    df_iso <- cbind(conc_1 = row_fittings[, "cotrt_value"],
+      data.frame(conc_2 = evaluate_fit_at_iso_value(row_fittings, isobol_value),
+                 fit_type = "by_row"))
+
+    # cutoff point by columns
+    df_iso <- rbind(df_iso, cbind(data.frame(conc_1 = evaluate_fit_at_iso_value(col_fittings, isobol_value),
+      conc_2 = col_fittings[, "cotrt_value"],
+      fit_type = "by_col")))
+
+    # capping
+    df_iso$conc_1 <- pmin(df_iso$conc_1, max1_cap)
+    df_iso$conc_2 <- pmin(df_iso$conc_2, max2_cap)
+
+    # cutoff point by diagonal (co-dilution)
+    # co-dil is given as concentration of drug 1
+    if (NROW(codilution_fittings) > 1) {
+      conc_mix <- evaluate_fit_at_iso_value(codilution_fittings, isobol_value)
+        
+      df_iso_codil <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$ratio),
+                        conc_2 = conc_mix / (1 + codilution_fittings$ratio), fit_type = "by_codil")
+      # avoid extrapolation
+      capped_idx <- df_iso_codil$conc_1 > max1_cap | df_iso_codil$conc_2 > max2_cap
+      df_iso_codil$conc_1[capped_idx] <- pmin(max1_cap,
+                  codilution_fittings$conc_ratio * (max2_cap))[capped_idx]
+      df_iso_codil$conc_2[capped_idx] <- pmin(max2_cap,
+                  (max1_cap) / codilution_fittings$conc_ratio)[capped_idx]
+
+      df_iso <- rbind(df_iso, df_iso_codil)
+    }
 }
