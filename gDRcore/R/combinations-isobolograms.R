@@ -224,58 +224,57 @@ get_isocutoffs <- function(mean_matrix, normalization_type) {
 
 
 calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittings, isobol_value,
-  max1_cap, max2_cap)
-{
-  # cutoff point by row
-  conc2 <- gDRutils::predict_conc_from_efficacy(
-    efficacy = isobol_value,
-    x_inf = row_fittings$x_inf,
-    x_0 = row_fittings$x_0,
-    ec50 = row_fittings$ec50,
-    h = row_fittings$h
-  )
-  row_iso <- data.frame(conc_1 = row_fittings[, "cotrt_value"],
-    conc_2 = conc2,
-    fit_type = "by_row")
-
-  # cutoff point by columns
-  conc1 <- gDRutils::predict_conc_from_efficacy(
-    efficacy = isobol_value,
-    x_inf = col_fittings$x_inf,
-    x_0 = col_fittings$x_0,
-    ec50 = col_fittings$ec50,
-    h = col_fittings$h
-  )
-  col_iso <- data.frame(conc_1 = conc1,
-    conc_2 = col_fittings[, "cotrt_value"],
-    fit_type = "by_col")
-
-  xy_iso <- do.call("rbind", list(row_iso, col_iso))
-  xy_iso$conc_1 <- pmin(xy_iso$conc_1, max1_cap)
-  xy_iso$conc_2 <- pmin(xy_iso$conc_2, max2_cap)
-
-  # cutoff point by diagonal (co-dilution)
-  # co-dil is given as concentration of drug 1
-  if (NROW(codilution_fittings) > 1) {
-    conc_mix <- gDRutils::predict_conc_from_efficacy(
+  max1_cap, max2_cap) {
+    # cutoff point by row
+    conc2 <- gDRutils::predict_conc_from_efficacy(
       efficacy = isobol_value,
-      x_inf = codilution_fittings$x_inf,
-      x_0 = codilution_fittings$x_0,
-      ec50 = codilution_fittings$ec50,
-      h = codilution_fittings$h
-    ) 
-    codil_iso <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$ratio),
-      conc_2 = conc_mix / (1 + codilution_fittings$ratio),
-      fit_type = "by_codil")
+      x_inf = row_fittings$x_inf,
+      x_0 = row_fittings$x_0,
+      ec50 = row_fittings$ec50,
+      h = row_fittings$h
+    )
+    row_iso <- data.frame(conc_1 = row_fittings[, "cotrt_value"],
+      conc_2 = conc2,
+      fit_type = "by_row")
 
-    # avoid extrapolation
-    capped_idx <- codil_iso$conc_1 > max1_cap | codil_iso$conc_2 > max2_cap
-    codil_iso$conc_1[capped_idx] <- pmin(max1_cap, codilution_fittings$conc_ratio * max2_cap)[capped_idx]
-    codil_iso$conc_2[capped_idx] <- pmin(max2_cap, max1_cap / codilution_fittings$conc_ratio)[capped_idx]
+    # cutoff point by columns
+    conc1 <- gDRutils::predict_conc_from_efficacy(
+      efficacy = isobol_value,
+      x_inf = col_fittings$x_inf,
+      x_0 = col_fittings$x_0,
+      ec50 = col_fittings$ec50,
+      h = col_fittings$h
+    )
+    col_iso <- data.frame(conc_1 = conc1,
+      conc_2 = col_fittings[, "cotrt_value"],
+      fit_type = "by_col")
 
-    isobologram_values <- do.call("rbind", list(xy_iso, codil_iso))
-  } else {
-    isobologram_values <- xy_iso
+    xy_iso <- do.call("rbind", list(row_iso, col_iso))
+    xy_iso$conc_1 <- pmin(xy_iso$conc_1, max1_cap)
+    xy_iso$conc_2 <- pmin(xy_iso$conc_2, max2_cap)
+
+    # cutoff point by diagonal (co-dilution)
+    # co-dil is given as concentration of drug 1
+    if (NROW(codilution_fittings) > 1) {
+      conc_mix <- gDRutils::predict_conc_from_efficacy(
+        efficacy = isobol_value,
+        x_inf = codilution_fittings$x_inf,
+        x_0 = codilution_fittings$x_0,
+        ec50 = codilution_fittings$ec50,
+        h = codilution_fittings$h
+      ) 
+      codil_iso <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$ratio),
+        conc_2 = conc_mix / (1 + codilution_fittings$ratio),
+        fit_type = "by_codil")
+
+      # avoid extrapolation
+      capped_idx <- codil_iso$conc_1 > max1_cap | codil_iso$conc_2 > max2_cap
+      codil_iso$conc_1[capped_idx] <- pmin(max1_cap, codilution_fittings$conc_ratio * max2_cap)[capped_idx]
+      codil_iso$conc_2[capped_idx] <- pmin(max2_cap, max1_cap / codilution_fittings$conc_ratio)[capped_idx]
+
+      isobologram_values <- do.call("rbind", list(xy_iso, codil_iso))
+    } else {
+      isobologram_values <- xy_iso
+    }
+    isobologram_values
   }
-  isobologram_values
-}
