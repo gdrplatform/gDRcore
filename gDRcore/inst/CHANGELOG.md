@@ -2,9 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [1.1.13] - 2021-10-22
+#### [1.1.14] - 2021-10-25
 #### Update
 - refacor isobolograms
+
+#### [1.1.13] - 2021-10-25
+#### Update
+- move p_trt_keys to the proper place
 
 #### [1.1.12] - 2021-10-20
 #### Update
