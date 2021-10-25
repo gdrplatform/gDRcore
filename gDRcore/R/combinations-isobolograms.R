@@ -59,7 +59,7 @@ calculate_Loewe <- function(mean_matrix,
   codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
 
   for (isobol_value in iso_cutoff) { # run through the different isobolograms
-    df_iso <- calculate_isobolograms(row_fittings, col_fittings, codilution_fittings, isobol_value)
+    df_iso <- calculate_isobolograms(row_fittings, col_fittings, codilution_fittings, isobol_value, max1_cap, max2_cap)
 
     ref_conc_1 <- pmin(df_iso$conc_1[df_iso$conc_2 == 0 & df_iso$fit_type == "by_col"], max1_cap)
     ref_conc_2 <- pmin(df_iso$conc_2[df_iso$conc_1 == 0 & df_iso$fit_type == "by_row"], max2_cap)
