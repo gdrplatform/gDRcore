@@ -88,7 +88,7 @@ calculate_Loewe <- function(mean_matrix,
   codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
 
   for (isobol_value in iso_cutoff) { # run through the different isobolograms
-    df_iso <- calculate_isobolograms(row_fittings, col_fittings, codilution_fittings, isobol_value)
+    df_iso <- calculate_isobolograms(row_fittings, col_fittings, codilution_fittings, isobol_value, max1_cap, max2_cap)
 
     ref_conc_1 <- pmin(df_iso$conc_1[df_iso$conc_2 == 0 & df_iso$fit_type == "by_col"], max1_cap)
     ref_conc_2 <- pmin(df_iso$conc_2[df_iso$conc_1 == 0 & df_iso$fit_type == "by_row"], max2_cap)
@@ -252,37 +252,58 @@ get_isocutoffs <- function(mean_matrix, normalization_type) {
 }
 
 
-calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittings, isobol_value) {
-  # cutoff point by row
-  conc2 <- gDRutils::predict_conc_from_fit(row_fittings$ec50, row_fittings$x_0, row_fittings$x_inf, row_fittings$h, efficacy = isobol_value)
-  df_iso <- cbind(conc_1 = row_fittings[, "cotrt_value"],
-    data.frame(conc_2 = conc2,
-               fit_type = "by_row"))
+calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittings, isobol_value,
+  max1_cap, max2_cap) {
+    # cutoff point by row
+    conc2 <- gDRutils::predict_conc_from_efficacy(
+      efficacy = isobol_value,
+      x_inf = row_fittings$x_inf,
+      x_0 = row_fittings$x_0,
+      ec50 = row_fittings$ec50,
+      h = row_fittings$h
+    )
+    row_iso <- data.frame(conc_1 = row_fittings[, "cotrt_value"],
+      conc_2 = conc2,
+      fit_type = "by_row")
 
-  # cutoff point by columns
-  conc1 <- gDRutils::predict_conc_from_fit(col_fittings$ec50, col_fittings$x_0, col_fittings$x_inf, col_fittings$h, efficacy = isobol_value)
-  df_iso <- rbind(df_iso, cbind(data.frame(conc_1 = conc1,
-    conc_2 = col_fittings[, "cotrt_value"],
-    fit_type = "by_col")))
+    # cutoff point by columns
+    conc1 <- gDRutils::predict_conc_from_efficacy(
+      efficacy = isobol_value,
+      x_inf = col_fittings$x_inf,
+      x_0 = col_fittings$x_0,
+      ec50 = col_fittings$ec50,
+      h = col_fittings$h
+    )
+    col_iso <- data.frame(conc_1 = conc1,
+      conc_2 = col_fittings[, "cotrt_value"],
+      fit_type = "by_col")
 
-  # capping
-  df_iso$conc_1 <- pmin(df_iso$conc_1, max1_cap)
-  df_iso$conc_2 <- pmin(df_iso$conc_2, max2_cap)
+    xy_iso <- do.call("rbind", list(row_iso, col_iso))
+    xy_iso$conc_1 <- pmin(xy_iso$conc_1, max1_cap)
+    xy_iso$conc_2 <- pmin(xy_iso$conc_2, max2_cap)
 
-  # cutoff point by diagonal (co-dilution)
-  # co-dil is given as concentration of drug 1
-  if (NROW(codilution_fittings) > 1) {
-    conc_mix <- gDRutils::predict_conc_from_fit(codilution_fittings$ec50, codilution_fittings$x_0, codilution_fittings$x_inf, codilution_fittings$h, efficacy = isobol_value)
-      
-    df_iso_codil <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$ratio),
-                      conc_2 = conc_mix / (1 + codilution_fittings$ratio), fit_type = "by_codil")
-    # avoid extrapolation
-    capped_idx <- df_iso_codil$conc_1 > max1_cap | df_iso_codil$conc_2 > max2_cap
-    df_iso_codil$conc_1[capped_idx] <- pmin(max1_cap,
-                codilution_fittings$conc_ratio * (max2_cap))[capped_idx]
-    df_iso_codil$conc_2[capped_idx] <- pmin(max2_cap,
-                (max1_cap) / codilution_fittings$conc_ratio)[capped_idx]
+    # cutoff point by diagonal (co-dilution)
+    # co-dil is given as concentration of drug 1
+    if (NROW(codilution_fittings) > 1) {
+      conc_mix <- gDRutils::predict_conc_from_efficacy(
+        efficacy = isobol_value,
+        x_inf = codilution_fittings$x_inf,
+        x_0 = codilution_fittings$x_0,
+        ec50 = codilution_fittings$ec50,
+        h = codilution_fittings$h
+      ) 
+      codil_iso <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$ratio),
+        conc_2 = conc_mix / (1 + codilution_fittings$ratio),
+        fit_type = "by_codil")
 
-    df_iso <- rbind(df_iso, df_iso_codil)
+      # Keep isobologram values within matrix values.
+      capped_idx <- codil_iso$conc_1 > max1_cap | codil_iso$conc_2 > max2_cap
+      codil_iso$conc_1[capped_idx] <- pmin(max1_cap, codilution_fittings$conc_ratio * max2_cap)[capped_idx]
+      codil_iso$conc_2[capped_idx] <- pmin(max2_cap, max1_cap / codilution_fittings$conc_ratio)[capped_idx]
+
+      isobologram_values <- do.call("rbind", list(xy_iso, codil_iso))
+    } else {
+      isobologram_values <- xy_iso
+    }
+    isobologram_values
   }
-}
