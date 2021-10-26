@@ -1,126 +1,3 @@
-#' Get predicted values for a given fit and input.
-#'
-#' Map fittings to identifiers and compute the predicted values for corresponding fits.
-#'
-#' @param pred numeric vector for which you want predictions.
-#' @param match_col vector to match on \code{fittings} to get the correct fit.
-#' @param fittings data.frame of fit metrics.
-#' @param fitting_id_col string of the column name in \code{fittings} that should be
-#' used to match with \code{match_col} .
-#'
-#' @return numeric vector of predicted values given \code{pred} inputs and \code{fittings} values.
-#'
-#' @export
-map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
-  ridx <- S4Vectors::match(round(log10(match_col), 2), round(log10(fittings[[fitting_id_col]]), 2))
-  metrics <- fittings[ridx, c(fitting_id_col, "x_inf", "x_0", "ec50", "h")]
-  # Extrapolate fitted values.
-  out <- gDRutils::logistic_4parameters(pred,
-    metrics$x_inf,
-    metrics$x_0,
-    metrics$ec50,
-    metrics$h)
-  out
-}
-
-
-#' @rdname calculate_matrix_metric
-#' @export
-calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
-  .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN = pmin)
-}
-
-
-#' @rdname calculate_matrix_metric
-#' @export
-calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
-  lambda <- function(x, y) {
-    1 - (1 - x) - (1 - y) + (1 - x) * (1 - y)
-  }
-  .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN = lambda)
-}
-
-
-#' Calculate a metric for combination data.
-#'
-#' Calculate a metric based off of single-agent values in combination screens.
-#'
-#' @param sa1 data.frame containing single agent data where id1 is \code{0}.
-#' Columns of the data.frame include identifiers and the \code{metric} of interest.
-#' @param series_id1 String representing the column within \code{sa1} that represents id1.
-#' @param sa2 data.frame containing single agent data where id2 is \code{0}.
-#' Columns of the data.frame include identifiers and the \code{metric} of interest.
-#' @param series_id2 String representing the column within \code{sa1} that represents id2.
-#' @param metric String of the column specifying the metric of interest. 
-#' @param FXN Function to apply to the single-agent fits to calculate a metric.
-#'
-#' @return DataFrame containing a single row for every unique combination of the two series
-#' identifiers and the corresponding calculated metric for each row.
-#'
-#' @name calculate_matrix_metric
-#' @details
-#' \code{calculate_HSA} takes the minimum of the two single agents readouts.
-#' \code{calculate_Bliss} performs Bliss additivity calculation based on the single agent effects,
-#' defined as \code{1-x} for the corresponding normalization.
-#' See https://www.sciencedirect.com/science/article/pii/S1359644619303460?via%3Dihub#tb0005
-#' for more details.
-#' @keywords internal
-NULL
-
-#' @keywords internal
-.calculate_matrix_metric <- function(sa1, series_id1, sa2, series_id2, metric, FXN) {
-  colnames(sa1)[colnames(sa1) == metric] <- "metric1"
-  colnames(sa2)[colnames(sa2) == metric] <- "metric2"
-
-  # TODO: ensure they're unique?
-  u <- expand.grid(sa1[[series_id1]], sa2[[series_id2]])
-  colnames(u) <- c(series_id1, series_id2)
-
-  idx <- match(u[[series_id1]], sa1[[series_id1]])
-  u <- base::merge(u, sa1[, c(series_id1, "metric1")], by = series_id1)
-  u <- base::merge(u, sa2[, c(series_id2, "metric2")], by = series_id2)
-
-  metric <- do.call(FXN, list(u$metric1, u$metric2))
-  cbind(u, metric)
-}
-
-
-#' Calculate the difference between values in two data.frames
-#'
-#' Calculate the difference between values, likely representing the same metric, from two data.frames.
-#'
-#' @param metric data.frame often representing readouts derived by calculating some metric.
-#' Examples of this could include hsa or bliss calculations from single-agent data. 
-#' @param measured data.frame often representing measured data from an experiment.
-#' @param series_identifiers character vector of identifiers in \code{measured} or \code{metric}
-#' which define a unique data point.
-#' @param metric_col string of the column in \code{metric} to use in the excess calculation.
-#' @param measured_col string of the column in \code{measured} to use in the excess calculation.
-#'
-#' @return DataFrame of \code{measured}, now with an additional column named \code{excess}.
-#' @export
-calculate_excess <- function(metric, measured, series_identifiers, metric_col, measured_col) {
-  # TODO: Ensure same dims metric, measured
-  # TODO: Ensure there is a unique entry for series_id1, series_id2 and no repeats
-  # TODO: Check that there are no NAs
-  idx <- S4Vectors::match(DataFrame(measured[, series_identifiers]), DataFrame(metric[, series_identifiers]))
-  
-  out <- measured[, series_identifiers]
-  excess <- measured[, measured_col] - metric[idx, metric_col]
-  out$excess <- excess
-  as.data.frame(out)
-}
-
-
-#' @keywords internal
-#' @noRd
-convertDFtoBumpyMatrixUsingIds <- function(df, row_id = "row_id", col_id = "col_id") {
-  BumpyMatrix::splitAsBumpyMatrix(
-    df[!colnames(df) %in% c(row_id, col_id)],
-    row = df[[row_id]], col = df[[col_id]])
-}
-
-
 define_matrix_position <- function(mean_matrix,
                       conc_margin = 10 ^ 0.5,
                       log2_pos_offset = log10(3) / 2
@@ -162,91 +39,31 @@ calculate_Loewe <- function(mean_matrix,
   checkmate::assert_number(conc_margin)
   checkmate::assert_number(log2_pos_offset)
   checkmate::assert_character(normalization_type) 
+ 
+  iso_cutoff <- get_isocutoffs(mean_matrix, normalization_type)
+
+  all_iso <- vector("list", length(iso_cutoff))
+  names(all_iso) <- iso_cutoff
 
   axes <- define_matrix_position(mean_matrix, conc_margin = conc_margin, log2_pos_offset = log2_pos_offset)
   axis_1 <- axes$axis_1
   axis_2 <- axes$axis_2
-
-  if (min(mean_matrix, na.rm = TRUE) > 0.7) {
-    iso_cutoff <- NULL
-  } else {
-    if (normalization_type == "GR") {
-      max_val <- -0.25
-    } else {
-      max_val <- 0.2
-    }
-    iso_cutoff <- seq(max(max_val, ceiling(20 * min(mean_matrix + 0.08, na.rm = TRUE)) / 20), 0.8,  0.05)
-    names(iso_cutoff) <- as.character(iso_cutoff)
-  }
-
-  # create the variable for the different isobolograms
-  all_iso <- vector("list", length(iso_cutoff))
-  names(all_iso) <- iso_cutoff
   
-  # TOOD: by_col and by_row should become encoded by the IRanges object length
-
   # get the IC50/GR50 on the marginal (single agent) based on the fit functions and capping
   max1_cap <- max(axis_1$conc_1) * conc_margin
   max2_cap <- max(axis_2$conc_2) * conc_margin
-  ref_x50 <- c(conc_1 = min(col_fittings[col_fittings$cotrt_value == 0, "xc50"], max1_cap),
-               conc_2 = min(row_fittings[1, "xc50"], max2_cap))
 
   row_fittings <- row_fittings[order(row_fittings$cotrt_value, decreasing = TRUE), ]
+  col_fittings <- col_fittings[order(col_fittings$cotrt_value, decreasing = FALSE), ]
+  codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
+  codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
+
   for (isobol_value in iso_cutoff) { # run through the different isobolograms
-    # cutoff point by row
-    df_iso <- cbind(conc_1 = row_fittings[, "cotrt_value"], data.frame(conc_2 =
-      ifelse(row_fittings$x_0 < isobol_value, 0, ifelse(row_fittings$x_inf > isobol_value,
-        Inf,
-        row_fittings$ec50 * ((((row_fittings$x_0 - row_fittings$x_inf) / (isobol_value - row_fittings$x_inf)) - 1) ^
-            (1 / pmax(row_fittings$h, 0.01))))
-          ),
-          fit_type = "by_row"))
-
-    # cutoff point by columns
-    col_fittings <- col_fittings[order(row_fittings$cotrt_value, decreasing = FALSE), ]
-    df_iso <- rbind(df_iso, cbind(data.frame(conc_1 =
-      ifelse(col_fittings$x_0 < isobol_value, 0, ifelse(col_fittings$x_inf > isobol_value,
-        Inf,
-        col_fittings$ec50 * ((((col_fittings$x_0 - col_fittings$x_inf) / (isobol_value - col_fittings$x_inf)) - 1) ^
-            (1 / pmax(col_fittings$h, 0.01))))
-          ),
-      conc_2 = col_fittings[, "cotrt_value"],
-        fit_type = "by_col")))
-
-    # capping
-    df_iso$conc_1 <- pmin(df_iso$conc_1, max1_cap)
-    df_iso$conc_2 <- pmin(df_iso$conc_2, max2_cap)
+    df_iso <- calculate_isobolograms(row_fittings, col_fittings, codilution_fittings, isobol_value, max1_cap, max2_cap)
 
     ref_conc_1 <- pmin(df_iso$conc_1[df_iso$conc_2 == 0 & df_iso$fit_type == "by_col"], max1_cap)
     ref_conc_2 <- pmin(df_iso$conc_2[df_iso$conc_1 == 0 & df_iso$fit_type == "by_row"], max2_cap)
 
-    # cutoff point by diagonal (co-dilution)
-    # co-dil is given as concentration of drug 1
-    if (NROW(codilution_fittings) > 1) {
-      codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
-      codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
-      conc_mix <- ifelse(codilution_fittings$x_0 < isobol_value, 
-          0,
-          ifelse(codilution_fittings$x_inf > isobol_value,
-            Inf,
-            codilution_fittings$ec50 * ((((codilution_fittings$x_0 - codilution_fittings$x_inf) /
-                                        (isobol_value - codilution_fittings$x_inf)) - 1) ^
-                                      (1 / codilution_fittings$h))
-          )
-        )
-        
-      df_iso_codil <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$ratio),
-                        conc_2 = conc_mix / (1 + codilution_fittings$ratio), fit_type = "by_codil")
-      # avoid extrapolation
-      capped_idx <- df_iso_codil$conc_1 > (max(axis_1$conc_1) * conc_margin) |
-            df_iso_codil$conc_2 > (max(axis_2$conc_2) * conc_margin)
-      df_iso_codil$conc_1[capped_idx] <- pmin(max(axis_1$conc_1) * conc_margin,
-                  codilution_fittings$conc_ratio * (max(axis_2$conc_2) * conc_margin))[capped_idx]
-      df_iso_codil$conc_2[capped_idx] <- pmin(max(axis_2$conc_2) * conc_margin,
-                  (max(axis_1$conc_1) * conc_margin) / codilution_fittings$conc_ratio)[capped_idx]
-
-      df_iso <- rbind(df_iso, df_iso_codil)
-    }
     # remove low concentration values
     df_iso <- df_iso[!is.na(df_iso$conc_1) & !is.na(df_iso$conc_2), ]
     df_iso <- df_iso[(df_iso$conc_1 > axis_1$conc_1[2] / 2 | df_iso$fit_type == "by_row") &
@@ -388,3 +205,76 @@ calculate_Loewe <- function(mean_matrix,
       df_all_AUC_log2CI = df_all_AUC_log2CI
     )
 }
+
+
+get_isocutoffs <- function(mean_matrix, normalization_type) {
+  if (min(mean_matrix, na.rm = TRUE) > 0.7) {
+    iso_cutoff <- NULL
+  } else {
+    if (normalization_type == "GR") {
+      max_val <- -0.25
+    } else {
+      max_val <- 0.2
+    }
+    iso_cutoff <- seq(max(max_val, ceiling(20 * min(mean_matrix + 0.08, na.rm = TRUE)) / 20), 0.8,  0.05)
+    names(iso_cutoff) <- as.character(iso_cutoff)
+  }
+  iso_cutoff
+}
+
+
+calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittings, isobol_value,
+  max1_cap, max2_cap) {
+    # cutoff point by row
+    conc2 <- gDRutils::predict_conc_from_efficacy(
+      efficacy = isobol_value,
+      x_inf = row_fittings$x_inf,
+      x_0 = row_fittings$x_0,
+      ec50 = row_fittings$ec50,
+      h = row_fittings$h
+    )
+    row_iso <- data.frame(conc_1 = row_fittings[, "cotrt_value"],
+      conc_2 = conc2,
+      fit_type = "by_row")
+
+    # cutoff point by columns
+    conc1 <- gDRutils::predict_conc_from_efficacy(
+      efficacy = isobol_value,
+      x_inf = col_fittings$x_inf,
+      x_0 = col_fittings$x_0,
+      ec50 = col_fittings$ec50,
+      h = col_fittings$h
+    )
+    col_iso <- data.frame(conc_1 = conc1,
+      conc_2 = col_fittings[, "cotrt_value"],
+      fit_type = "by_col")
+
+    xy_iso <- do.call("rbind", list(row_iso, col_iso))
+    xy_iso$conc_1 <- pmin(xy_iso$conc_1, max1_cap)
+    xy_iso$conc_2 <- pmin(xy_iso$conc_2, max2_cap)
+
+    # cutoff point by diagonal (co-dilution)
+    # co-dil is given as concentration of drug 1
+    if (NROW(codilution_fittings) > 1) {
+      conc_mix <- gDRutils::predict_conc_from_efficacy(
+        efficacy = isobol_value,
+        x_inf = codilution_fittings$x_inf,
+        x_0 = codilution_fittings$x_0,
+        ec50 = codilution_fittings$ec50,
+        h = codilution_fittings$h
+      ) 
+      codil_iso <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$ratio),
+        conc_2 = conc_mix / (1 + codilution_fittings$ratio),
+        fit_type = "by_codil")
+
+      # avoid extrapolation
+      capped_idx <- codil_iso$conc_1 > max1_cap | codil_iso$conc_2 > max2_cap
+      codil_iso$conc_1[capped_idx] <- pmin(max1_cap, codilution_fittings$conc_ratio * max2_cap)[capped_idx]
+      codil_iso$conc_2[capped_idx] <- pmin(max2_cap, max1_cap / codilution_fittings$conc_ratio)[capped_idx]
+
+      isobologram_values <- do.call("rbind", list(xy_iso, codil_iso))
+    } else {
+      isobologram_values <- xy_iso
+    }
+    isobologram_values
+  }
