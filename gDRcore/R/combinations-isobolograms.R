@@ -210,7 +210,8 @@ get_isocutoffs <- function(df_mean, normalization_type) {
     } else {
       max_val <- 0.2
     }
-    iso_cutoff <- seq(max(max_val, ceiling(20 * min(df_mean[[normalization_type]] + 0.08, na.rm = TRUE)) / 20), 0.8,  0.05)
+    iso_cutoff <- seq(max(max_val, ceiling(20 * min(df_mean[[normalization_type]] + 0.08,
+                                                    na.rm = TRUE)) / 20), 0.8,  0.05)
     names(iso_cutoff) <- as.character(iso_cutoff)
   }
   iso_cutoff

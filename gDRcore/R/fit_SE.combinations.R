@@ -66,38 +66,40 @@ fit_SE.combinations <- function(se,
     }
 
     # round the concentrations and ensure matching between the two drugs
-    rounded_concentrations = unique(c(round_concentration(avg_combo[[id]]), round_concentration(avg_combo[[id2]])))
-    avg_combo[[id]] = replace_concentration(avg_combo[[id]], rounded_concentrations)
-    avg_combo[[id2]] = replace_concentration(avg_combo[[id2]], rounded_concentrations)
+    rounded_concentrations <- unique(c(round_concentration(avg_combo[[id]]), round_concentration(avg_combo[[id2]])))
+    avg_combo[[id]] <- replace_concentration(avg_combo[[id]], rounded_concentrations)
+    avg_combo[[id2]] <- replace_concentration(avg_combo[[id2]], rounded_concentrations)
     
 
     # complete is the full matrix including missing values and single agent
     # perform some calculation to get a regularly spaced dilution series matching measured values
-    conc_1 <- sort(unique(avg_combo[avg_combo[,id2] > 0, id]))
+    conc_1 <- sort(unique(avg_combo[avg_combo[, id2] > 0, id]))
     log10_step <- as.numeric(names(sort(
           table(round_concentration(c(
             log10(conc_1[-1] / conc_1[-length(conc_1)]), 
-            log10(conc_1[-1:-2] / conc_1[-(length(conc_1)-(0:1))])
-          ),3)), 
+            log10(conc_1[-1:-2] / conc_1[-(length(conc_1) - (0:1))])
+          ), 3)), 
         decreasing = TRUE)[1]))
-    conc_1 <- c(0, sort(round_concentration(10 ^ seq(log10(max(conc_1)), log10(min(conc_1[conc_1>0])), -log10_step))))
+    conc_1 <- c(0, sort(round_concentration(10 ^ seq(log10(max(conc_1)),
+                                                     log10(min(conc_1[conc_1 > 0])), -log10_step))))
 
-    conc_2 <- sort(unique(avg_combo[avg_combo[,id] > 0, id2]))
+    conc_2 <- sort(unique(avg_combo[avg_combo[, id] > 0, id2]))
     log10_step <- as.numeric(names(sort(
           table(round_concentration(c(
             log10(conc_2[-1] / conc_2[-length(conc_2)]), 
-            log10(conc_2[-1:-2] / conc_2[-(length(conc_2)-(0:1))])
-          ),3)), 
+            log10(conc_2[-1:-2] / conc_2[-(length(conc_2) - (0:1))])
+          ), 3)), 
         decreasing = TRUE)[1]))
-    conc_2 <- c(0, sort(round_concentration(10 ^ seq(log10(max(conc_2)), log10(min(conc_2[conc_2>0])), -log10_step))))
+    conc_2 <- c(0, sort(round_concentration(10 ^ seq(log10(max(conc_2)),
+                                                     log10(min(conc_2[conc_2 > 0])), -log10_step))))
 
     complete <- merge(conc_1, conc_2, by = NULL)
     colnames(complete) <- c(id, id2)
     rounded_avg_combo <- avg_combo[, c(id, id2, normalization_types)]
-    rounded_avg_combo[,id] <- replace_concentration(rounded_avg_combo[,id], conc_1)
-    rounded_avg_combo[,id2] <- replace_concentration(rounded_avg_combo[,id2], conc_2)
+    rounded_avg_combo[, id] <- replace_concentration(rounded_avg_combo[, id], conc_1)
+    rounded_avg_combo[, id2] <- replace_concentration(rounded_avg_combo[, id2], conc_2)
 
-    complete <- merge(complete, rounded_avg_combo, all.x = T, by = c(id, id2))
+    complete <- merge(complete, rounded_avg_combo, all.x = TRUE, by = c(id, id2))
 
     for (metric in normalization_types) {
       metric_name <- switch(metric,
@@ -107,13 +109,13 @@ fit_SE.combinations <- function(se,
 
       # fit by column: the series in the primary identifier, the cotrt is the secondary one
       col_fittings <- gDRcore:::fit_combo_cotreatments(rounded_avg_combo, series_id = id, cotrt_id = id2, metric)
-      col_fittings = col_fittings[!is.na(col_fittings$fit_type),]
+      col_fittings <- col_fittings[!is.na(col_fittings$fit_type), ]
       # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
       row_fittings <- gDRcore:::fit_combo_cotreatments(rounded_avg_combo, series_id = id2, cotrt_id = id, metric)
-      row_fittings = row_fittings[!is.na(row_fittings$fit_type),]
+      row_fittings <- row_fittings[!is.na(row_fittings$fit_type), ]
       # fit by codilution (diagonal)
       codilution_fittings <- gDRcore:::fit_combo_codilutions(rounded_avg_combo, series_identifiers, metric)
-      codilution_fittings = codilution_fittings[!is.na(codilution_fittings$fit_type),]
+      codilution_fittings <- codilution_fittings[!is.na(codilution_fittings$fit_type), ]
 
       # apply the fit to get smoothed data: results per column
       # (along primary identifier for each value of the secondary identifier)
@@ -127,7 +129,7 @@ fit_SE.combinations <- function(se,
       if (!is.null(codilution_fittings)) {
         # apply the fit the get smoothed data: codilution results (along sum of identifiers for each ratio)
         complete$codil_values <- map_ids_to_fits(pred = complete[[id2]] + complete[[id]],
-                                                 match_col = round_concentration(complete[[id2]] / complete[[id]],1),
+                                                 match_col = round_concentration(complete[[id2]] / complete[[id]], 1),
                                                  codilution_fittings, "ratio")
         metrics_names <- c(metrics_names, "codilution_fittings")
       } 
@@ -139,19 +141,19 @@ fit_SE.combinations <- function(se,
       complete$average <- rowMeans(mat, na.rm = TRUE)
       
       # remove rows/columns with less than 2 values
-      discard_conc_1 <- names(which(table(complete[[id]][!is.na(complete$average)])<3))
-      discard_conc_2 <- names(which(table(complete[[id2]][!is.na(complete$average)])<3))
-      complete <- complete[ !(complete[[id]] %in% discard_conc_1) & !(complete[[id2]] %in% discard_conc_2), ]
+      discard_conc_1 <- names(which(table(complete[[id]][!is.na(complete$average)]) < 3))
+      discard_conc_2 <- names(which(table(complete[[id2]][!is.na(complete$average)]) < 3))
+      complete <- complete[!(complete[[id]] %in% discard_conc_1) & !(complete[[id2]] %in% discard_conc_2), ]
       # just keep the relevant columns and change to the metric name
-      av_matrix <- as.data.frame(complete[ , c(id, id2, "average")])
+      av_matrix <- as.data.frame(complete[, c(id, id2, "average")])
       av_matrix[av_matrix[[id]] == 0 & av_matrix[[id2]] == 0] <- 0
       colnames(av_matrix)[3] <- metric
 
       if (NROW(av_matrix) == 0) {
         av_matrix <- h_excess <- b_excess <- NULL
-      } else {  
+      } else {
         sa1 <- av_matrix[av_matrix[[id2]] == 0, c(id, id2, metric)]
-        sa2 <- av_matrix[av_matrix[[id]] == 0 , c(id, id2, metric)]
+        sa2 <- av_matrix[av_matrix[[id]] == 0, c(id, id2, metric)]
         
         hsa <- calculate_HSA(sa1, id, sa2, id2, metric)
         h_excess <- calculate_excess(hsa, av_matrix, series_identifiers = c(id, id2), metric_col = "metric",
@@ -166,7 +168,7 @@ fit_SE.combinations <- function(se,
       ## and then each new metric that should go for each spot is another column in the nested DataFrame
       
       # call calculate_Loewe and calculate_isobolograms: 
-      isobologram_out <- if ( sum((av_matrix[[id]] * av_matrix[[id2]]) > 0) > 9 && min(row_fittings$cotrt_value) == 0) {
+      isobologram_out <- if (sum((av_matrix[[id]] * av_matrix[[id2]]) > 0) > 9 && min(row_fittings$cotrt_value) == 0) {
         isobologram_out <- calculate_Loewe(av_matrix, row_fittings, col_fittings, codilution_fittings,
                         series_identifiers = c(id, id2), normalization_type = metric
                         ) 
@@ -207,7 +209,7 @@ fit_SE.combinations <- function(se,
       hsa_excess[[row]] <- rbind(hsa_excess[[row]], h_excess)
       bliss_excess[[row]] <- rbind(bliss_excess[[row]], b_excess)
       if (!is.null(smooth_mx[[row]])) {
-        smooth_mx[[row]] <- merge(smooth_mx[[row]], av_matrix, all = TRUE, by = c(id, id2, 'row_id', 'col_id'))
+        smooth_mx[[row]] <- merge(smooth_mx[[row]], av_matrix, all = TRUE, by = c(id, id2, "row_id", "col_id"))
       } else {
         smooth_mx[[row]] <- av_matrix
       }
