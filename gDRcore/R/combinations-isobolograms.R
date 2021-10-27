@@ -1,23 +1,16 @@
 define_matrix_position_from_df <- function(df_mean,
-                      conc_margin = 10 ^ 0.5,
-                      log2_pos_offset = log10(3) / 2
+                      series_identifiers
               ) {
-  
-  # TODO: abstract 'Concentration' and 'Concentration_2'
-  # TODO: merge with function define_matrix_position
 
-  checkmate::assert_number(conc_margin)
-  checkmate::assert_number(log2_pos_offset)
-
-  axis_1 <- data.frame(conc_1 = sort(unique(round_concentration(df_mean$Concentration))),
+  axis_1 <- data.frame(conc_1 = sort(unique(round_concentration(df_mean[[series_identifiers[1]]]))),
           log10conc_1 = 0, pos_y = 0, marks_y = 0)
-  axis_1$log10conc_1 <- log10(axis_1$conc)
+  axis_1$log10conc_1 <- log10(axis_1$conc_1)
   axis_1$pos_y <- axis_1$log10conc_1
   axis_1$pos_y[1] <- 2 * axis_1$pos_y[2] - axis_1$pos_y[3] - log10(1.5)
   axis_1$marks_y <- sprintf("%.2g", axis_1$conc_1)
 
   # drug_2 is diluted along the columns and will be the x-axis of the matrix plots
-  axis_2 <- data.frame(conc_2 = sort(unique(round_concentration(df_mean$Concentration_2))),
+  axis_2 <- data.frame(conc_2 = sort(unique(round_concentration(df_mean[[series_identifiers[2]]]))),
                 log10conc_2 = 0, pos_x = 0, marks_x = 0)
   axis_2$log10conc_2 <- log10(axis_2$conc_2)
   axis_2$pos_x <- axis_2$log10conc_2
@@ -32,30 +25,12 @@ define_matrix_position <- function(mean_matrix,
                       log2_pos_offset = log10(3) / 2
               ) {
 
-  checkmate::assert_number(conc_margin)
-  checkmate::assert_number(log2_pos_offset)
-
-  axis_1 <- data.frame(conc_1 = round_concentration(as.numeric(rownames(mean_matrix))),
-          log10conc_1 = 0, pos_y = 0, marks_y = 0)
-  axis_1$log10conc_1 <- log10(axis_1$conc)
-  axis_1$pos_y <- axis_1$log10conc_1
-  axis_1$pos_y[1] <- 2 * axis_1$pos_y[2] - axis_1$pos_y[3] - log10(1.5)
-  axis_1$marks_y <- sprintf("%.2g", axis_1$conc_1)
-
-  # drug_2 is diluted along the columns and will be the x-axis of the matrix plots
-  axis_2 <- data.frame(conc_2 = round_concentration(as.numeric(colnames(mean_matrix))),
-                log10conc_2 = 0, pos_x = 0, marks_x = 0)
-  axis_2$log10conc_2 <- log10(axis_2$conc_2)
-  axis_2$pos_x <- axis_2$log10conc_2
-  axis_2$pos_x[1] <- 2 * axis_2$pos_x[2] - axis_2$pos_x[3] - log10(1.5)
-  axis_2$marks_x <- sprintf("%.2g", axis_2$conc_2)
-
-  list(axis_1 = axis_1, axis_2 = axis_2)
+  stop(simpleError('define_matrix_position obsolete'))
 }
 
 
 
-calculate_Loewe <- function(mean_matrix, 
+calculate_Loewe <- function(df_mean, 
                       row_fittings, 
                       col_fittings, 
                       codilution_fittings, 
@@ -69,16 +44,15 @@ calculate_Loewe <- function(mean_matrix,
   checkmate::assert_number(log2_pos_offset)
   checkmate::assert_character(normalization_type) 
  
-  iso_cutoff <- get_isocutoffs(mean_matrix, normalization_type)
+  iso_cutoff <- get_isocutoffs(df_mean, normalization_type)
 
   all_iso <- vector("list", length(iso_cutoff))
   names(all_iso) <- iso_cutoff
 
-  axes <- define_matrix_position(mean_matrix, conc_margin = conc_margin, log2_pos_offset = log2_pos_offset)
+  axes <- define_matrix_position_from_df(df_mean, series_identifiers)
   axis_1 <- axes$axis_1
   axis_2 <- axes$axis_2
   
-  # get the IC50/GR50 on the marginal (single agent) based on the fit functions and capping
   max1_cap <- round_concentration(max(axis_1$conc_1) * conc_margin)
   max2_cap <- round_concentration(max(axis_2$conc_2) * conc_margin)
 
@@ -236,16 +210,16 @@ calculate_Loewe <- function(mean_matrix,
 }
 
 
-get_isocutoffs <- function(mean_matrix, normalization_type) {
-  if (min(mean_matrix, na.rm = TRUE) > 0.7) {
+get_isocutoffs <- function(df_mean, normalization_type) {
+  if (min(df_mean[[normalization_type]], na.rm = TRUE) > 0.7) {
     iso_cutoff <- NULL
   } else {
-    if (normalization_type == "GR") {
+    if (normalization_type == "GRvalue") {
       max_val <- -0.25
     } else {
       max_val <- 0.2
     }
-    iso_cutoff <- seq(max(max_val, ceiling(20 * min(mean_matrix + 0.08, na.rm = TRUE)) / 20), 0.8,  0.05)
+    iso_cutoff <- seq(max(max_val, ceiling(20 * min(df_mean[[normalization_type]] + 0.08, na.rm = TRUE)) / 20), 0.8,  0.05)
     names(iso_cutoff) <- as.character(iso_cutoff)
   }
   iso_cutoff

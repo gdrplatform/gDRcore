@@ -100,6 +100,11 @@ fit_SE.combinations <- function(se,
     complete = merge(complete, rounded_avg_combo, all.x = T, by = c(id, id2))
 
     for (metric in normalization_types) {
+      metric_name <- switch(metric,
+                            "GRvalue" = "GR",
+                            "RelativeViability" = "RV",
+                            "unknown")
+
       # fit by column: the series in the primary identifier, the cotrt is the secondary one
       col_fittings <- gDRcore:::fit_combo_cotreatments(rounded_avg_combo, series_id = id, cotrt_id = id2, metric)
       col_fittings = col_fittings[!is.na(col_fittings$fit_type),]
@@ -132,58 +137,52 @@ fit_SE.combinations <- function(se,
       keep <- intersect(colnames(complete), c(metric, "row_values", "col_values", "codil_values"))
       mat <- as.matrix(complete[, keep])
       complete$average <- rowMeans(mat, na.rm = TRUE)
-
-      sa1 <- complete[complete[[id2]] == 0, c(id, id2, "average")]
-      sa2 <- complete[complete[[id]] == 0 , c(id, id2, "average")]
       
-      hsa <- calculate_HSA(sa1, id, sa2, id2, "average")
-      h_excess <- calculate_excess(hsa, complete, series_identifiers = c(id, id2), metric_col = "metric",
-                                  measured_col = "average")
+      # remove rows/columns with less than 2 values
+      discard_conc_1 <- names(which(table(complete[[id]][!is.na(complete$average)])<3))
+      discard_conc_2 <- names(which(table(complete[[id2]][!is.na(complete$average)])<3))
+      complete <- complete[ !(complete[[id]] %in% discard_conc_1) & !(complete[[id2]] %in% discard_conc_2), ]
+      # just keep the relevant columns and change to the metric name
+      av_matrix <- as.data.frame(complete[ , c(id, id2, "average")])
+      av_matrix[av_matrix[[id]] == 0 & av_matrix[[id2]] == 0] <- 0
+      colnames(av_matrix)[3] = metric
 
-      bliss <- calculate_Bliss(sa1, id, sa2, id2, "average")
-      b_excess <- calculate_excess(bliss, complete, series_identifiers = c(id, id2), metric_col = "metric",
-                                  measured_col = "average")
+      if (NROW(av_matrix) == 0) {
+        av_matrix <- h_excess <- b_excess <- NULL
+      } else {  
+        sa1 <- av_matrix[av_matrix[[id2]] == 0, c(id, id2, metric)]
+        sa2 <- av_matrix[av_matrix[[id]] == 0 , c(id, id2, metric)]
+        
+        hsa <- calculate_HSA(sa1, id, sa2, id2, metric)
+        h_excess <- calculate_excess(hsa, av_matrix, series_identifiers = c(id, id2), metric_col = "metric",
+                                    measured_col = metric)
 
-      # TODO: call calculate_Loewe and calculate_isoobolograms
+        bliss <- calculate_Bliss(sa1, id, sa2, id2, metric)
+        b_excess <- calculate_excess(bliss, av_matrix, series_identifiers = c(id, id2), metric_col = "metric",
+                                    measured_col = metric)
+      }
+      
       ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
       ## and then each new metric that should go for each spot is another column in the nested DataFrame
       
-      metric_name <- switch(metric,
-                            "GRvalue" = "GR",
-                            "RelativeViability" = "RV",
-                            "unknown")
-      
-      # contruct full matrix with single agent
-      mean_matrix <- reshape2::acast(as.data.frame(complete[, c("average", id, id2)]),
-                                     formula = sprintf("%s ~ %s", id, id2), value.var = "average")
-      
-      if (0 %in% complete$Concentration && 0 %in% complete$Concentration_2) {
-        mean_matrix["0", "0"] <- 1 # add the corner of the matrix
-      }
-      # remove empty rows/columns
-      mean_matrix <- mean_matrix[rowSums(!is.na(mean_matrix)) > 2, colSums(!is.na(mean_matrix)) > 2]
-
-      # TO DO : measured$average or mean_matrix should be saved for further plots in some manner
-      mean_df <- reshape2::melt(mean_matrix, varnames = c(id, id2), value.name = metric)
-      if (NROW(mean_df) == 0) {
-        mean_df <- NULL
-      }
-  
       # call calculate_Loewe and calculate_isobolograms: 
-      isobologram_out <- if (NCOL(mean_matrix) > 3 && min(row_fittings$cotrt_value) == 0) {
-        calculate_Loewe(mean_matrix, row_fittings, col_fittings,
-                        codilution_fittings, normalization_type = metric) 
+      isobologram_out <- if ( sum((av_matrix[[id]] * av_matrix[[id2]]) > 0) > 9 && min(row_fittings$cotrt_value) == 0) {
+        isobologram_out <- calculate_Loewe(av_matrix, row_fittings, col_fittings, codilution_fittings,
+                        series_identifiers = c(id, id2), normalization_type = metric
+                        ) 
       } else {
-          NULL
+        NULL
       }
       ## TODO: Create another assay in here with each spot in the matrix as the 2 series_identifier concentrations
       ## and then each new metric that should go for each spot is another column in the nested DataFrame
 
       # average the top 10-percentile excess to get a single value for the excess
-      hsa_score[row, metric_name] <- mean(
+      hsa_score[row, metric_name] <- ifelse(is.null(h_excess), NA, mean(
         h_excess$excess[h_excess$excess >= quantile(h_excess$excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
-      bliss_score[row, metric_name] <- mean(
+      )
+      bliss_score[row, metric_name] <- ifelse(is.null(b_excess), NA, mean(
         b_excess$excess[b_excess$excess >= quantile(b_excess$excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
+      )
 
       if (all(vapply(isobologram_out, is.null, logical(1)))) {
         CIScore_50[row, metric_name] <- CIScore_80[row, metric_name] <- NA
@@ -196,21 +195,21 @@ fit_SE.combinations <- function(se,
             min(isobologram_out$df_all_AUC_log2CI$iso_level[isobologram_out$df_all_AUC_log2CI$iso_level >= 0.2])]
       }
       
-      b_excess$row_id <- mean_df$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_curves$row_id <- 
+      b_excess$row_id <- av_matrix$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_curves$row_id <-
         col_fittings$row_id <- hsa_score[row, "row_id"] <- bliss_score[row, "row_id"] <-
         CIScore_50[row, "row_id"] <- CIScore_80[row, "row_id"] <- metrics_merged$row_id <- i
-      b_excess$col_id <- mean_df$col_id <- h_excess$col_id <- isobologram_out$df_all_iso_curves$col_id <- 
+      b_excess$col_id <- av_matrix$col_id <- h_excess$col_id <- isobologram_out$df_all_iso_curves$col_id <- 
         col_fittings$col_id <- hsa_score[row, "col_id"] <- bliss_score[row, "col_id"] <-
         CIScore_50[row, "col_id"] <- CIScore_80[row, "col_id"] <- metrics_merged$col_id <- j
-      b_excess$normalization_type <- h_excess$normalization_type <-
+      b_excess$normalization_type <- h_excess$normalization_type <- 
         isobologram_out$df_all_iso_curves$normalization_type <- metric_name
       
       hsa_excess[[row]] <- rbind(hsa_excess[[row]], h_excess)
       bliss_excess[[row]] <- rbind(bliss_excess[[row]], b_excess)
       if (!is.null(smooth_mx[[row]])) {
-        smooth_mx[[row]] <- merge(smooth_mx[[row]], mean_df, all = TRUE)
+        smooth_mx[[row]] <- merge(smooth_mx[[row]], av_matrix, all = TRUE, by = c(id, id2, 'row_id', 'col_id'))
       } else {
-        smooth_mx[[row]] <- mean_df
+        smooth_mx[[row]] <- av_matrix
       }
       isobolograms[[row]] <- plyr::rbind.fill(isobolograms[[row]],
                                               as.data.frame(isobologram_out$df_all_iso_curves))
