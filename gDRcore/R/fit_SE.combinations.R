@@ -209,7 +209,8 @@ fit_SE.combinations <- function(se,
       hsa_excess[[row]] <- rbind(hsa_excess[[row]], as.data.frame(h_excess))
       bliss_excess[[row]] <- rbind(bliss_excess[[row]], as.data.frame(b_excess))
       if (!is.null(smooth_mx[[row]]) && length(smooth_mx[[row]]) != 2) { # check if it does not contain only ids
-        smooth_mx[[row]] <- as.data.frame(merge(smooth_mx[[row]], av_matrix, all = TRUE, by = c(id, id2, "row_id", "col_id")))
+        smooth_mx[[row]] <- as.data.frame(merge(smooth_mx[[row]], av_matrix, all = TRUE,
+                                                by = c(id, id2, "row_id", "col_id")))
       } else {
         smooth_mx[[row]] <- as.data.frame(av_matrix)
       }
