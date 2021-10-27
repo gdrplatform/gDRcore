@@ -41,13 +41,16 @@ calculate_Loewe <- function(df_mean,
   checkmate::assert_number(conc_margin)
   checkmate::assert_number(log2_pos_offset)
   checkmate::assert_character(normalization_type) 
+  if (length(series_identifiers) != 2L) {
+    stop("only series_identifiers of length 2 are currently supported")
+  }
  
-  iso_cutoff <- get_isocutoffs(df_mean, normalization_type)
+  iso_cutoffs <- get_isocutoffs(df_mean, normalization_type)
 
-  all_iso <- vector("list", length(iso_cutoff))
-  names(all_iso) <- iso_cutoff
+  all_iso <- vector("list", length(iso_cutoffs))
+  names(all_iso) <- iso_cutoffs
 
-  axes <- define_matrix_position_from_df(df_mean, series_identifiers)
+  axes <- define_matrix_grid_positions(df_mean[[series_identifiers[1]]], df_mean[[series_identifiers[2]]])
   axis_1 <- axes$axis_1
   axis_2 <- axes$axis_2
   
@@ -59,7 +62,7 @@ calculate_Loewe <- function(df_mean,
   codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
   codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
 
-  for (isobol_value in iso_cutoff) { # run through the different isobolograms
+  for (isobol_value in iso_cutoffs) { # run through the different isobolograms
     df_iso <- calculate_isobolograms(row_fittings, col_fittings, codilution_fittings, isobol_value, max1_cap, max2_cap)
 
     ref_conc_1 <- pmin(df_iso$conc_1[df_iso$conc_2 == 0 & df_iso$fit_type == "by_col"], max1_cap)
@@ -210,18 +213,18 @@ calculate_Loewe <- function(df_mean,
 
 get_isocutoffs <- function(df_mean, normalization_type) {
   if (min(df_mean[[normalization_type]], na.rm = TRUE) > 0.7) {
-    iso_cutoff <- NULL
+    iso_cutoffs <- NULL
   } else {
     if (normalization_type == "GRvalue") {
       max_val <- -0.25
     } else {
       max_val <- 0.2
     }
-    iso_cutoff <- seq(max(max_val, ceiling(20 * min(df_mean[[normalization_type]] + 0.08,
+    iso_cutoffs <- seq(max(max_val, ceiling(20 * min(df_mean[[normalization_type]] + 0.08,
                                                     na.rm = TRUE)) / 20), 0.8,  0.05)
-    names(iso_cutoff) <- as.character(iso_cutoff)
+    names(iso_cutoffs) <- as.character(iso_cutoffs)
   }
-  iso_cutoff
+  iso_cutoffs
 }
 
 
