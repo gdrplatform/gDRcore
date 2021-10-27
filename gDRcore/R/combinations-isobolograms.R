@@ -20,15 +20,6 @@ define_matrix_position_from_df <- function(df_mean,
   list(axis_1 = axis_1, axis_2 = axis_2)
 }
 
-define_matrix_position <- function(mean_matrix,
-                      conc_margin = 10 ^ 0.5,
-                      log2_pos_offset = log10(3) / 2
-              ) {
-
-  stop(simpleError('define_matrix_position obsolete'))
-}
-
-
 
 calculate_Loewe <- function(df_mean, 
                       row_fittings, 

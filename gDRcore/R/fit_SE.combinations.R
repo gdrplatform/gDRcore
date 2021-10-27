@@ -73,31 +73,31 @@ fit_SE.combinations <- function(se,
 
     # complete is the full matrix including missing values and single agent
     # perform some calculation to get a regularly spaced dilution series matching measured values
-    conc_1 = sort(unique(avg_combo[avg_combo[,id2] > 0, id]))
-    log10_step = as.numeric(names(sort(
+    conc_1 <- sort(unique(avg_combo[avg_combo[,id2] > 0, id]))
+    log10_step <- as.numeric(names(sort(
           table(round_concentration(c(
             log10(conc_1[-1] / conc_1[-length(conc_1)]), 
             log10(conc_1[-1:-2] / conc_1[-(length(conc_1)-(0:1))])
           ),3)), 
         decreasing = TRUE)[1]))
-    conc_1 = c(0, sort(round_concentration(10 ^ seq(log10(max(conc_1)), log10(min(conc_1[conc_1>0])), -log10_step))))
+    conc_1 <- c(0, sort(round_concentration(10 ^ seq(log10(max(conc_1)), log10(min(conc_1[conc_1>0])), -log10_step))))
 
-    conc_2 = sort(unique(avg_combo[avg_combo[,id] > 0, id2]))
-    log10_step = as.numeric(names(sort(
+    conc_2 <- sort(unique(avg_combo[avg_combo[,id] > 0, id2]))
+    log10_step <- as.numeric(names(sort(
           table(round_concentration(c(
             log10(conc_2[-1] / conc_2[-length(conc_2)]), 
             log10(conc_2[-1:-2] / conc_2[-(length(conc_2)-(0:1))])
           ),3)), 
         decreasing = TRUE)[1]))
-    conc_2 = c(0, sort(round_concentration(10 ^ seq(log10(max(conc_2)), log10(min(conc_2[conc_2>0])), -log10_step))))
+    conc_2 <- c(0, sort(round_concentration(10 ^ seq(log10(max(conc_2)), log10(min(conc_2[conc_2>0])), -log10_step))))
 
-    complete = merge(conc_1, conc_2, by = NULL)
-    colnames(complete) = c(id, id2)
-    rounded_avg_combo = avg_combo[, c(id, id2, normalization_types)]
-    rounded_avg_combo[,id] = replace_concentration(rounded_avg_combo[,id], conc_1)
-    rounded_avg_combo[,id2] = replace_concentration(rounded_avg_combo[,id2], conc_2)
+    complete <- merge(conc_1, conc_2, by = NULL)
+    colnames(complete) <- c(id, id2)
+    rounded_avg_combo <- avg_combo[, c(id, id2, normalization_types)]
+    rounded_avg_combo[,id] <- replace_concentration(rounded_avg_combo[,id], conc_1)
+    rounded_avg_combo[,id2] <- replace_concentration(rounded_avg_combo[,id2], conc_2)
 
-    complete = merge(complete, rounded_avg_combo, all.x = T, by = c(id, id2))
+    complete <- merge(complete, rounded_avg_combo, all.x = T, by = c(id, id2))
 
     for (metric in normalization_types) {
       metric_name <- switch(metric,
@@ -145,7 +145,7 @@ fit_SE.combinations <- function(se,
       # just keep the relevant columns and change to the metric name
       av_matrix <- as.data.frame(complete[ , c(id, id2, "average")])
       av_matrix[av_matrix[[id]] == 0 & av_matrix[[id2]] == 0] <- 0
-      colnames(av_matrix)[3] = metric
+      colnames(av_matrix)[3] <- metric
 
       if (NROW(av_matrix) == 0) {
         av_matrix <- h_excess <- b_excess <- NULL
