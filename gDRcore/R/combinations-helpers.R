@@ -36,7 +36,8 @@ map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
 #' @param metric_col string of the column in \code{metric} to use in the excess calculation.
 #' @param measured_col string of the column in \code{measured} to use in the excess calculation.
 #'
-#' @return DataFrame of \code{measured}, now with an additional column named \code{excess} (positive values for synergy/benefit).
+#' @return DataFrame of \code{measured}, now with an additional column named
+#' \code{excess} (positive values for synergy/benefit).
 #' @export
 calculate_excess <- function(metric, measured, series_identifiers, metric_col, measured_col) {
   # TODO: Ensure same dims metric, measured
@@ -46,6 +47,7 @@ calculate_excess <- function(metric, measured, series_identifiers, metric_col, m
   
   out <- measured[, series_identifiers]
   excess <- metric[idx, metric_col] - measured[, measured_col]
+  excess[apply(as.matrix(out[, series_identifiers]) == 0, 1, any)] <- 0 # single agent should be 0
   out$excess <- excess
   as.data.frame(out)
 }

@@ -225,7 +225,7 @@ get_nested_default_identifiers.SummarizedExperiment <- function(x,
 #' @return rounded x
 #' @export
 round_concentration <- function(x, ndigit = 3) {
-  round(10 ^ (round(log10(x), ndigit)), ndigit-1-floor(log10(x)))
+  round(10 ^ (round(log10(x), ndigit)), ndigit - 1 - floor(log10(x)))
 }
 
 #' Equal concentrations to ndigit significant digits in log10 domain
