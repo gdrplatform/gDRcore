@@ -138,7 +138,7 @@ fit_SE.combinations <- function(se,
 
       keep <- intersect(colnames(complete), c(metric, "row_values", "col_values", "codil_values"))
       mat <- as.matrix(complete[, keep])
-      complete$average <- row,Means(mat, na.rm = TRUE)
+      complete$average <- rowMeans(mat, na.rm = TRUE)
       
       # remove rows/columns with less than 2 values
       discard_conc_1 <- names(which(table(complete[[id]][!is.na(complete$average)]) < 3))
