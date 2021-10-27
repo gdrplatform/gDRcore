@@ -138,7 +138,7 @@ fit_SE.combinations <- function(se,
 
       keep <- intersect(colnames(complete), c(metric, "row_values", "col_values", "codil_values"))
       mat <- as.matrix(complete[, keep])
-      complete$average <- rowMeans(mat, na.rm = TRUE)
+      complete$average <- row,Means(mat, na.rm = TRUE)
       
       # remove rows/columns with less than 2 values
       discard_conc_1 <- names(which(table(complete[[id]][!is.na(complete$average)]) < 3))
@@ -206,8 +206,8 @@ fit_SE.combinations <- function(se,
       b_excess$normalization_type <- h_excess$normalization_type <- 
         isobologram_out$df_all_iso_curves$normalization_type <- metric_name
       
-      hsa_excess[[row]] <- rbind(hsa_excess[[row]], as.data.frame(h_excess))
-      bliss_excess[[row]] <- rbind(bliss_excess[[row]], as.data.frame(b_excess))
+      hsa_excess[[row]] <- plyr::rbind.fill(hsa_excess[[row]], as.data.frame(h_excess))
+      bliss_excess[[row]] <- plyr::rbind.fill(bliss_excess[[row]], as.data.frame(b_excess))
       if (!is.null(smooth_mx[[row]]) && length(smooth_mx[[row]]) != 2) { # check if it does not contain only ids
         smooth_mx[[row]] <- as.data.frame(merge(smooth_mx[[row]], av_matrix, all = TRUE,
                                                 by = c(id, id2, "row_id", "col_id")))
