@@ -143,7 +143,7 @@ fit_SE.combinations <- function(se,
       discard_conc_2 <- names(which(table(av_matrix[[id2]][!is.na(av_matrix[[metric]])]) < 3))
       av_matrix_dense <- av_matrix[!(av_matrix[[id]] %in% discard_conc_1) & !(av_matrix[[id2]] %in% discard_conc_2), ]
       isobologram_out <- if (sum((av_matrix_dense[[id]] * av_matrix_dense[[id2]]) > 0) > 9 &&
-                             min(row_fittings$cotrt_value) == 0 && !is.null(codilution_fittings)) {
+                             min(row_fittings$cotrt_value) == 0 ) {
         calculate_Loewe(av_matrix, row_fittings, col_fittings, codilution_fittings,
                         series_identifiers = c(id, id2), normalization_type = metric
                         )
