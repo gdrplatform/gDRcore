@@ -59,9 +59,8 @@ fit_SE.combinations <- function(se,
     avg_combo <- avg[avg$row == i & avg$column == j, ]
     conc_map <- map_conc_to_standardized_conc(avg_combo[[id]], avg_combo[[id2]])
 
-    # TODO: check that the matching works as expected.
-    avg_combo[[id]] <- conc_map[match(avg_combo[[id]], conc_map$concs), "rconcs"]
-    avg_combo[[id2]] <- conc_map[match(avg_combo[[id2]], conc_map$concs), "rconcs"]
+    avg_combo[[id]] <- replace_conc_with_standardized_conc(avg_combo[[id]], conc_map, "concs", "rconcs")
+    avg_combo[[id2]] <- replace_conc_with_standardized_conc(avg_combo[[id2]], conc_map, "concs", "rconcs")
     for (metric in normalization_types) {
       metric_name <- switch(metric,
                             "GRvalue" = "GR",

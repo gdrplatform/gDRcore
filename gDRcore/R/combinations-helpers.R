@@ -62,6 +62,28 @@ convertDFtoBumpyMatrixUsingIds <- function(df, row_id = "row_id", col_id = "col_
 }
 
 
+#' Standardize concentrations.
+#'
+#' Utilize a map to standardize concentrations.
+#'
+#' @param original_concs numeric vector of concentrations to replace using the \code{conc_map}.
+#' @param conc_map data.frame of two columns named \code{original_conc_col} and \code{standardized_conc_col}.
+#' @param original_conc_col string of the name of the column in \code{conc_map} containing the original concentrations to replace.
+#' @param standardized_conc_col string of the name of the column in \code{conc_map} containing the standardized concentrations to use for replacement.
+#'
+#' @return numeric vector of standardized concentrations.
+#'
+#' @seealso map_conc_to_standardized_conc
+#' @export
+replace_conc_with_standardized_conc <- function(original_concs, conc_map, original_conc_col, standardized_conc_col) {
+  out <- conc_map[match(original_concs, conc_map[[original_conc_col]]), standardized_conc_col]
+  if (length(out) != length(original_concs)) {
+    stop("standardized output is not the same length as the input")
+  }
+  out
+}
+
+
 #' Create a mapping of concentrations to standardized concentrations.
 #'
 #' Create a mapping of concentrations to standardized concentrations.
@@ -74,6 +96,7 @@ convertDFtoBumpyMatrixUsingIds <- function(df, row_id = "row_id", col_id = "col_
 #' respectively.
 #' and their new standardized concentrations.
 #'
+#' @seealso replace_conc_w_standardized_conc
 #' @details The concentrations are standardized in that they will contain regularly spaced dilutions
 #' and close values will be rounded.
 #' @export
