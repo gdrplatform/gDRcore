@@ -3,6 +3,7 @@
 S3method(get_nested_default_identifiers,SummarizedExperiment)
 S3method(get_nested_default_identifiers,data.frame)
 export(.assign_conditions)
+export(.standardize_conc)
 export(Order_result_df)
 export(add_CellLine_annotation)
 export(add_Drug_annotation)

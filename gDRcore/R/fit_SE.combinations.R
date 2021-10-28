@@ -55,20 +55,21 @@ fit_SE.combinations <- function(se,
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
-    futile.logger::flog.warn(sprintf('fitting: row %3i/%i\n %s\n   x  %s\n', row, nrow(iterator), i, j))
+    futile.logger::flog.warn(sprintf("fitting: row %3i/%i\n %s\n   x  %s\n", row, nrow(iterator), i, j))
 
     avg_combo <- avg[avg$row == i & avg$column == j, ]
     conc_map <- map_conc_to_standardized_conc(avg_combo[[id]], avg_combo[[id2]])
     avg_combo[[id]] <- conc_map[match(avg_combo[[id]], conc_map$concs), "rconcs"]
     avg_combo[[id2]] <- conc_map[match(avg_combo[[id2]], conc_map$concs), "rconcs"]
 
-    mean_avg_combo <- aggregate(avg_combo[, normalization_types, drop = F], by = as.list(avg_combo[, c(id, id2)]), 
-          FUN = function(x) mean(x, na.rm = TRUE)) # deal with cases of multiple concentrations mapped to the same value when rounded
+    mean_avg_combo <- aggregate(avg_combo[, normalization_types, drop = FALSE], by = as.list(avg_combo[, c(id, id2)]), 
+          FUN = function(x) mean(x, na.rm = TRUE))
+    # deal with cases of multiple concentrations mapped to the same value when rounded
     # create a complete matrix with the most frequence combo concentrations
     conc1 <- table(avg_combo[[id]])
-    conc1 <- sort(as.numeric(names(conc1)[conc1 > (max(conc1[names(conc1) != '0'])/2)]))
+    conc1 <- sort(as.numeric(names(conc1)[conc1 > (max(conc1[names(conc1) != "0"]) / 2)]))
     conc2 <- table(avg_combo[[id2]])
-    conc2 <- sort(as.numeric(names(conc2)[conc2 > (max(conc2[names(conc2) != '0'])/2)]))
+    conc2 <- sort(as.numeric(names(conc2)[conc2 > (max(conc2[names(conc2) != "0"]) / 2)]))
 
     complete <- merge(unique(c(0, conc1)), unique(c(0, conc2)), by = NULL)	# create matrix with single agent
     colnames(complete) <- c(id, id2)
@@ -142,7 +143,8 @@ fit_SE.combinations <- function(se,
       discard_conc_1 <- names(which(table(av_matrix[[id]][!is.na(av_matrix[[metric]])]) < 3))
       discard_conc_2 <- names(which(table(av_matrix[[id2]][!is.na(av_matrix[[metric]])]) < 3))
       av_matrix_dense <- av_matrix[!(av_matrix[[id]] %in% discard_conc_1) & !(av_matrix[[id2]] %in% discard_conc_2), ]
-      isobologram_out <- if (sum((av_matrix_dense[[id]] * av_matrix_dense[[id2]]) > 0) > 9 && min(row_fittings$cotrt_value) == 0) {
+      isobologram_out <- if (sum((av_matrix_dense[[id]] * av_matrix_dense[[id2]]) > 0) > 9 &&
+                             min(row_fittings$cotrt_value) == 0) {
         calculate_Loewe(av_matrix, row_fittings, col_fittings, codilution_fittings,
                         series_identifiers = c(id, id2), normalization_type = metric
                         ) 
