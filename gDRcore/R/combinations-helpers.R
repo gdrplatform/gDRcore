@@ -133,7 +133,7 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
 #'
 #' @export
 .standardize_conc <- function(conc) {
-  conc <- sort(unique(conc1))
+  conc <- sort(unique(conc))
   conc <- conc[conc > 0]
   rconc <- if (S4Vectors::isEmpty(conc)) {
     NULL
