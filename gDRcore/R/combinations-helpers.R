@@ -104,7 +104,7 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
 
   mismatched <- which(round_concentration(map$conc, 2) != round_concentration(map$rconc, 2))
   for (i in mismatched) {
-    warning(sprintf("mapped original concentration '%s' to '%s'",
+    warning(sprintf("mapping original concentration '%s' to '%s'",
       map[i, "concs"], map[i, "rconcs"]))
   }
 
