@@ -55,16 +55,22 @@ fit_SE.combinations <- function(se,
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
-    futile.logger::flog.warn(sprintf('fitting:\n %s\n   x  %s\n', i, j))
+    futile.logger::flog.warn(sprintf('fitting: row %3i/%i\n %s\n   x  %s\n', row, nrow(iterator), i, j))
 
     avg_combo <- avg[avg$row == i & avg$column == j, ]
     conc_map <- map_conc_to_standardized_conc(avg_combo[[id]], avg_combo[[id2]])
     avg_combo[[id]] <- conc_map[match(avg_combo[[id]], conc_map$concs), "rconcs"]
     avg_combo[[id2]] <- conc_map[match(avg_combo[[id2]], conc_map$concs), "rconcs"]
 
-    mean_avg_combo <- aggregate(avg_combo[, metric, drop = F], by = as.list(avg_combo[, c(id, id2)]), 
+    mean_avg_combo <- aggregate(avg_combo[, normalization_types, drop = F], by = as.list(avg_combo[, c(id, id2)]), 
           FUN = function(x) mean(x, na.rm = TRUE)) # deal with cases of multiple concentrations mapped to the same value when rounded
-    complete <- merge(sort(unique(avg_combo[[id]])), sort(unique(avg_combo[[id2]])), by = NULL)	
+    # create a complete matrix with the most frequence combo concentrations
+    conc1 <- table(avg_combo[[id]])
+    conc1 <- sort(as.numeric(names(conc1)[conc1 > (max(conc1[names(conc1) != '0'])/2)]))
+    conc2 <- table(avg_combo[[id2]])
+    conc2 <- sort(as.numeric(names(conc2)[conc2 > (max(conc2[names(conc2) != '0'])/2)]))
+
+    complete <- merge(unique(c(0, conc1)), unique(c(0, conc2)), by = NULL)	# create matrix with single agent
     colnames(complete) <- c(id, id2)
     complete <- merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2))
 
@@ -113,8 +119,8 @@ fit_SE.combinations <- function(se,
       
       # just keep the relevant columns and change to the metric name
       av_matrix <- as.data.frame(complete[, c(id, id2, "average")])
-      av_matrix[av_matrix[[id]] == 0 & av_matrix[[id2]] == 0] <- 0
       colnames(av_matrix)[3] <- metric
+      av_matrix[(av_matrix[[id]] == 0) & (av_matrix[[id2]] == 0), metric] <- 1
 
       if (NROW(av_matrix) == 0) {
         av_matrix <- h_excess <- b_excess <- NULL
@@ -174,7 +180,7 @@ fit_SE.combinations <- function(se,
       
       hsa_excess[[row]] <- plyr::rbind.fill(hsa_excess[[row]], as.data.frame(h_excess))
       bliss_excess[[row]] <- plyr::rbind.fill(bliss_excess[[row]], as.data.frame(b_excess))
-      if (!is.null(smooth_mx[[row]]) && length(smooth_mx[[row]]) != 2) { # check if it does not contain only ids
+      if (!is.null(smooth_mx[[row]]) && ncol(smooth_mx[[row]]) != 2) { # check if it does not contain only ids
         smooth_mx[[row]] <- as.data.frame(merge(smooth_mx[[row]], av_matrix, all = TRUE,
                                                 by = c(id, id2, "row_id", "col_id")))
       } else {

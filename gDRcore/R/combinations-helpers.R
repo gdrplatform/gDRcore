@@ -78,32 +78,34 @@ convertDFtoBumpyMatrixUsingIds <- function(df, row_id = "row_id", col_id = "col_
 map_conc_to_standardized_conc <- function(conc1, conc2) {
   
   conc_1 <- sort(unique(conc1))
-  rconc_1 <- if (!any(conc_1>0)) {
+  conc_1 <- conc_1[conc_1>0]
+  rconc_1 <- if (is.empty(conc_1)) {
     NULL
-  } else if (length(unique(round_concentration(conc_1[conc_1>0], 3)))>2) {
-    log10_step1 <- .calculate_dilution_ratio(conc_1[conc1 > 0])
+  } else if (length(unique(round_concentration(conc_1, 3)))>2) {
+    log10_step1 <- .calculate_dilution_ratio(conc_1)
     sort(round_concentration(10 ^ seq(log10(max(conc_1)),
                                                 log10(min(conc_1))-.1, # -.1 to ensure that the min is included due to rounding
                                                 -log10_step1), 3))
   } else {
-    round_concentration(conc_1[conc_1>0], 3)
+    round_concentration(conc_1, 3)
   }
 
   conc_2 <- sort(unique(conc2[conc1 > 0]))
-  rconc_2 <- if (!any(conc_2>0)) {
+  conc_2 <- conc_2[conc_2>0]
+  rconc_2 <- if (is.empty(conc_2)) {
     NULL
-  } else if (length(unique(round_concentration(conc_2[conc_2>0], 3)))>2) {
-    log10_step2 <- .calculate_dilution_ratio(conc_2[conc2 > 0])
+  } else if (length(unique(round_concentration(conc_2, 3)))>2) {
+    log10_step2 <- .calculate_dilution_ratio(conc_2)
     sort(round_concentration(10 ^ seq(log10(max(conc_2)),
                                                 log10(min(conc_2))-.1, # -.1 to ensure that the min is included due to rounding
                                                 -log10_step2), 3))
   } else {
     round_concentration(conc_2[conc_2>0], 3)
   }
-  
+
   rconc <- c(0, unique(round_concentration(c(rconc_1, rconc_2), 3)))
 
-  concs <- c(conc1, conc2)
+  concs <- unique(c(conc1, conc2))
   mapped_rconcs <- vapply(concs, function(x) {rconc[abs(rconc - x) == min(abs(rconc - x))]}, numeric(1))
 
   map <- unique(data.frame(concs = concs, rconcs = mapped_rconcs))
