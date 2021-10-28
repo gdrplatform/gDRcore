@@ -144,7 +144,7 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
     log10_step <- .calculate_dilution_ratio(conc)
     sort(round_concentration(10 ^ seq(log10(max(conc)),
                                       log10(min(conc)) - .1, # -.1 to ensure that the min is included due to rounding
-                                      -log10_step), 3))
+                                      - log10_step), 3))
   } else {
     round_concentration(conc, 3)
   }
