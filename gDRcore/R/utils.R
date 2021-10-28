@@ -236,9 +236,10 @@ round_concentration <- function(x, ndigit = 3) {
 #'
 #' @return boolean
 #' @export
-equal_concentration <- function(x, y, ndigit = 3) {
+is_equal_concentration <- function(x, y, ndigit = 3) {
   abs(log10(x) - log10(y)) < 10^-ndigit
 }
+
 
 #' Replace concentrations in x by values in y if matching to the ndigit significant digits in log10 domain
 #'
@@ -250,14 +251,14 @@ equal_concentration <- function(x, y, ndigit = 3) {
 #' @export
 replace_concentration <- function(x, y, ndigit = 2) {
   for (i in setdiff(unique(y), 0)) {
-    x[equal_concentration(x, i, ndigit)] <- i
+    x[is_equal_concentration(x, i, ndigit)] <- i
   }
   x
 }
+
 
 #' @keywords internal
 #' @noRd
 rbindList <- function(x) {
   S4Vectors::DataFrame(do.call(plyr::rbind.fill, x))
 }
-
