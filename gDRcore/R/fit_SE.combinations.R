@@ -55,7 +55,6 @@ fit_SE.combinations <- function(se,
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
-    futile.logger::flog.warn(sprintf("fitting: row %3i/%i\n %s\n   x  %s\n", row, nrow(iterator), i, j))
 
     avg_combo <- avg[avg$row == i & avg$column == j, ]
     conc_map <- map_conc_to_standardized_conc(avg_combo[[id]], avg_combo[[id2]])
@@ -83,30 +82,30 @@ fit_SE.combinations <- function(se,
                             "unknown")
 
       # fit by column: the series in the primary identifier, the cotrt is the secondary one
-      col_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id, cotrt_id = id2, metric)
+      col_fittings <- fit_combo_cotreatments(avg_combo, series_id = id, cotrt_id = id2, metric)
       col_fittings <- col_fittings[!is.na(col_fittings$fit_type), ]
 
       # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
-      row_fittings <- gDRcore:::fit_combo_cotreatments(avg_combo, series_id = id2, cotrt_id = id, metric)
+      row_fittings <- fit_combo_cotreatments(avg_combo, series_id = id2, cotrt_id = id, metric)
       row_fittings <- row_fittings[!is.na(row_fittings$fit_type), ]
 
       # fit by codilution (diagonal)
-      codilution_fittings <- gDRcore:::fit_combo_codilutions(avg_combo, series_identifiers, metric)
+      codilution_fittings <- fit_combo_codilutions(avg_combo, series_identifiers, metric)
       codilution_fittings <- codilution_fittings[!is.na(codilution_fittings$fit_type), ]
 
       # apply the fit to get smoothed data: results per column
       # (along primary identifier for each value of the secondary identifier)
-      avg_combo$col_values <- map_ids_to_fits(pred = avg_combo[[id]],
-                                             match_col = avg_combo[[id2]], col_fittings, "cotrt_value")
+      complete$col_values <- map_ids_to_fits(pred = complete[[id]],
+                                             match_col = complete[[id2]], col_fittings, "cotrt_value")
       # apply the fit the get smoothed data: results per row
       # (along secondary identifier for each value of the primary identifier)
-      avg_combo$row_values <- map_ids_to_fits(pred = avg_combo[[id2]],
-                                             match_col = avg_combo[[id]], row_fittings, "cotrt_value")
+      complete$row_values <- map_ids_to_fits(pred = complete[[id2]],
+                                             match_col = complete[[id]], row_fittings, "cotrt_value")
       metrics_names <- c("col_fittings", "row_fittings")
       if (!is.null(codilution_fittings)) {
         # apply the fit the get smoothed data: codilution results (along sum of identifiers for each ratio)
-        avg_combo$codil_values <- map_ids_to_fits(pred = avg_combo[[id2]] + avg_combo[[id]],
-                                                 match_col = round_concentration(avg_combo[[id2]] / avg_combo[[id]], 1),
+        complete$codil_values <- map_ids_to_fits(pred = complete[[id2]] + complete[[id]],
+                                                 match_col = round_concentration(complete[[id2]] / complete[[id]], 1),
                                                  codilution_fittings, "ratio")
         metrics_names <- c(metrics_names, "codilution_fittings")
       } 
@@ -115,27 +114,27 @@ fit_SE.combinations <- function(se,
       # remove degenerated fits
       metrics_merged <- metrics_merged[metrics_merged$N_conc > 1, ]
 
-      keep <- intersect(colnames(avg_combo), c(metric, "row_values", "col_values", "codil_values"))
-      mat <- as.matrix(avg_combo[, keep])
-      avg_combo$average <- rowMeans(mat, na.rm = TRUE)
+      keep <- intersect(colnames(complete), c(metric, "row_values", "col_values", "codil_values"))
+      mat <- as.matrix(complete[, keep])
+      complete$average <- rowMeans(mat, na.rm = TRUE)
      
       # just keep the relevant columns and change to the metric name
       av_matrix <- as.data.frame(complete[, c(id, id2, "average")])
       colnames(av_matrix)[3] <- metric
       av_matrix[(av_matrix[[id]] == 0) & (av_matrix[[id2]] == 0), metric] <- 1
 
-      if (NROW(avg) == 0) {
-        avg <- h_excess <- b_excess <- NULL
+      if (NROW(av_matrix) == 0) {
+        av_matrix <- h_excess <- b_excess <- NULL
       } else {
-        sa1 <- avg[avg[[id2]] == 0, c(id, id2, metric)]
-        sa2 <- avg[avg[[id]] == 0, c(id, id2, metric)]
+        sa1 <- av_matrix[av_matrix[[id2]] == 0, c(id, id2, metric)]
+        sa2 <- av_matrix[av_matrix[[id]] == 0, c(id, id2, metric)]
         
         hsa <- calculate_HSA(sa1, id, sa2, id2, metric)
-        h_excess <- calculate_excess(hsa, avg, series_identifiers = c(id, id2), metric_col = "metric",
+        h_excess <- calculate_excess(hsa, av_matrix, series_identifiers = c(id, id2), metric_col = "metric",
                                     measured_col = metric)
 
         bliss <- calculate_Bliss(sa1, id, sa2, id2, metric)
-        b_excess <- calculate_excess(bliss, avg, series_identifiers = c(id, id2), metric_col = "metric",
+        b_excess <- calculate_excess(bliss, av_matrix, series_identifiers = c(id, id2), metric_col = "metric",
                                     measured_col = metric)
       }
       # call calculate_Loewe and calculate_isobolograms: 
@@ -171,10 +170,10 @@ fit_SE.combinations <- function(se,
             min(isobologram_out$df_all_AUC_log2CI$iso_level[isobologram_out$df_all_AUC_log2CI$iso_level >= 0.2])]
       }
       
-      b_excess$row_id <- avg$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_curves$row_id <-
+      b_excess$row_id <- av_matrix$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_curves$row_id <-
         col_fittings$row_id <- hsa_score[row, "row_id"] <- bliss_score[row, "row_id"] <-
         CIScore_50[row, "row_id"] <- CIScore_80[row, "row_id"] <- metrics_merged$row_id <- i
-      b_excess$col_id <- avg$col_id <- h_excess$col_id <- isobologram_out$df_all_iso_curves$col_id <- 
+      b_excess$col_id <- av_matrix$col_id <- h_excess$col_id <- isobologram_out$df_all_iso_curves$col_id <- 
         col_fittings$col_id <- hsa_score[row, "col_id"] <- bliss_score[row, "col_id"] <-
         CIScore_50[row, "col_id"] <- CIScore_80[row, "col_id"] <- metrics_merged$col_id <- j
       b_excess$normalization_type <- h_excess$normalization_type <- 
@@ -186,7 +185,7 @@ fit_SE.combinations <- function(se,
         smooth_mx[[row]] <- as.data.frame(merge(smooth_mx[[row]], av_matrix, all = TRUE,
                                                 by = c(id, id2, "row_id", "col_id")))
       } else {
-        smooth_mx[[row]] <- as.data.frame(avg)
+        smooth_mx[[row]] <- as.data.frame(av_matrix)
       }
       isobolograms[[row]] <- plyr::rbind.fill(isobolograms[[row]],
                                               as.data.frame(isobologram_out$df_all_iso_curves))
