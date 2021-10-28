@@ -79,7 +79,6 @@ convertDFtoBumpyMatrixUsingIds <- function(df, row_id = "row_id", col_id = "col_
 #' @export
 replace_conc_with_standardized_conc <- function(original_concs, conc_map, original_conc_col, standardized_conc_col) {
   out <- conc_map[match(original_concs, conc_map[[original_conc_col]]), standardized_conc_col]
-  out[is.na(out)] <- 0
   if (length(out) != length(original_concs)) {
     stop("standardized output is not the same length as the input")
   }
@@ -104,15 +103,20 @@ replace_conc_with_standardized_conc <- function(original_concs, conc_map, origin
 #' and close values will be rounded.
 #' @export
 map_conc_to_standardized_conc <- function(conc1, conc2) {
+  conc_1 <- sort(unique(conc1))
+  conc_1 <- conc_1[conc_1 > 0]
   
-  concList_1 <- .standardize_conc(conc1)
-  concList_2 <- .standardize_conc(conc2)
+  rconc1 <- .standardize_conc(conc_1)
+  
+  conc_2 <- sort(unique(conc2[conc1 > 0]))
+  conc_2 <- conc_2[conc_2 > 0]
+  rconc2 <- .standardize_conc(conc_2)
 
-  rconc <- c(0, unique(round_concentration(c(concList_1$rconc, concList_2$rconc), 3)))
+  rconc <- c(0, unique(round_concentration(c(rconc1, rconc2), 3)))
   .find_closest_match <- function(x) {
     rconc[abs(rconc - x) == min(abs(rconc - x))]
   }
-  concs <- unique(c(concList_2$conc, concList_2$conc))
+  concs <- unique(c(conc1, conc2))
   mapped_rconcs <- vapply(concs, .find_closest_match, numeric(1))
   map <- unique(data.frame(concs = concs, rconcs = mapped_rconcs))
   mismatched <- which(round_concentration(map$conc, 2) != round_concentration(map$rconc, 2))
@@ -134,20 +138,17 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
 #'
 #' @export
 .standardize_conc <- function(conc) {
-  conc <- sort(unique(conc))
-  conc <- conc[conc > 0]
   rconc <- if (S4Vectors::isEmpty(conc)) {
     NULL
   } else if (length(unique(round_concentration(conc, 3))) > 2) {
-    log10_step1 <- .calculate_dilution_ratio(conc)
+    log10_step <- .calculate_dilution_ratio(conc)
     sort(round_concentration(10 ^ seq(log10(max(conc)),
-                                      log10(min(conc)) - .1, 
-                                      # -.1 to ensure that the min is included due to rounding
-                                      - log10_step1), 3))
+                                      log10(min(conc)) - .1, # -.1 to ensure that the min is included due to rounding
+                                      -log10_step), 3))
   } else {
     round_concentration(conc, 3)
   }
-  list(conc = conc, rconc = rconc)
+  rconc
 }
 
 
