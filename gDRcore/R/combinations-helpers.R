@@ -68,8 +68,10 @@ convertDFtoBumpyMatrixUsingIds <- function(df, row_id = "row_id", col_id = "col_
 #'
 #' @param original_concs numeric vector of concentrations to replace using the \code{conc_map}.
 #' @param conc_map data.frame of two columns named \code{original_conc_col} and \code{standardized_conc_col}.
-#' @param original_conc_col string of the name of the column in \code{conc_map} containing the original concentrations to replace.
-#' @param standardized_conc_col string of the name of the column in \code{conc_map} containing the standardized concentrations to use for replacement.
+#' @param original_conc_col string of the name of the column in \code{conc_map}
+#' containing the original concentrations to replace.
+#' @param standardized_conc_col string of the name of the column in \code{conc_map}
+#' containing the standardized concentrations to use for replacement.
 #'
 #' @return numeric vector of standardized concentrations.
 #'
@@ -140,7 +142,7 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
     sort(round_concentration(10 ^ seq(log10(max(conc)),
                                       log10(min(conc)) -.1, 
                                       # -.1 to ensure that the min is included due to rounding
-                                      -log10_step1), 3))
+                                      - log10_step1), 3))
   } else {
     round_concentration(conc, 3)
   }
