@@ -110,7 +110,7 @@ fit_SE.combinations <- function(se,
         metrics_names <- c(metrics_names, "codilution_fittings")
       } 
       metrics_merged <- do.call(plyr::rbind.fill, mget(metrics_names))
-      metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
+      # metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))    #### why were we doing this?
       # remove degenerated fits
       metrics_merged <- metrics_merged[metrics_merged$N_conc > 1, ]
 
