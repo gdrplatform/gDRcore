@@ -69,7 +69,9 @@ convertDFtoBumpyMatrixUsingIds <- function(df, row_id = "row_id", col_id = "col_
 #' @param conc1 numeric vector of the concentrations for drug 1.
 #' @param conc2 numeric vector of the concentrations for drug 2.
 #'
-#' @return data.frame of 4 columns containing the original conc1, conc2,
+#' @return data.frame of 2 columns named \code{"concs"} and \code{"rconcs"}
+#' containing the original concentrations and their closest matched standardized concentrations
+#' respectively.
 #' and their new standardized concentrations.
 #'
 #' @details The concentrations are standardized in that they will contain regularly spaced dilutions
@@ -93,7 +95,10 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
                                                log10(min(conc_2)),
                                                -log10_step2), 3))
   rconc <- unique(round_concentration(c(rconc_1, rconc_2), 3))
-  mapped_rconcs <- vapply(concs, function(x) {rconc[abs(rconc - x) == min(abs(rconc - x))]}, numeric(1))
+  .find_closest_match <- function(x) {
+    rconc[abs(rconc - x) == min(abs(rconc - x))]
+  }
+  mapped_rconcs <- vapply(concs, .find_closest_match, numeric(1))
 
   map <- data.frame(concs = concs, rconcs = mapped_rconcs)
 
