@@ -17,3 +17,12 @@ test_that("map_conc_to_standardized_conc works as expected", {
   obs <- map_conc_to_standardized_conc(conc1, conc2)
   expect_true(is(obs, "data.frame"))
 })
+
+
+test_that("replace_conc_with_standardized_conc works as expected", {
+  conc_map <- data.frame(orig = c(0.99, 0.6, 0.456, 0.4), std = c(1, 0.6, 0.46, 0.4))
+  original_concs <- c(0.456, 0.456, 0.4, 0.99)
+  exp <- c(0.46, 0.46, 0.4, 1)
+  obs <- replace_conc_with_standardized_conc(original_concs, conc_map, original_conc_col = "orig", standardized_conc_col = "std")
+  expect_equal(obs, exp)
+})

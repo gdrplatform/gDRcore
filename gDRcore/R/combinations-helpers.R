@@ -62,6 +62,28 @@ convertDFtoBumpyMatrixUsingIds <- function(df, row_id = "row_id", col_id = "col_
 }
 
 
+#' Standardize concentrations.
+#'
+#' Utilize a map to standardize concentrations.
+#'
+#' @param original_concs numeric vector of concentrations to replace using the \code{conc_map}.
+#' @param conc_map data.frame of two columns named \code{original_conc_col} and \code{standardized_conc_col}.
+#' @param original_conc_col string of the name of the column in \code{conc_map} containing the original concentrations to replace.
+#' @param standardized_conc_col string of the name of the column in \code{conc_map} containing the standardized concentrations to use for replacement.
+#'
+#' @return numeric vector of standardized concentrations.
+#'
+#' @seealso map_conc_to_standardized_conc
+#' @export
+replace_conc_with_standardized_conc <- function(original_concs, conc_map, original_conc_col, standardized_conc_col) {
+  out <- conc_map[match(original_concs, conc_map[[original_conc_col]]), standardized_conc_col]
+  if (length(out) != length(original_concs)) {
+    stop("standardized output is not the same length as the input")
+  }
+  out
+}
+
+
 #' Create a mapping of concentrations to standardized concentrations.
 #'
 #' Create a mapping of concentrations to standardized concentrations.
@@ -69,9 +91,12 @@ convertDFtoBumpyMatrixUsingIds <- function(df, row_id = "row_id", col_id = "col_
 #' @param conc1 numeric vector of the concentrations for drug 1.
 #' @param conc2 numeric vector of the concentrations for drug 2.
 #'
-#' @return data.frame of 4 columns containing the original conc1, conc2,
+#' @return data.frame of 2 columns named \code{"concs"} and \code{"rconcs"}
+#' containing the original concentrations and their closest matched standardized concentrations
+#' respectively.
 #' and their new standardized concentrations.
 #'
+#' @seealso replace_conc_w_standardized_conc
 #' @details The concentrations are standardized in that they will contain regularly spaced dilutions
 #' and close values will be rounded.
 #' @export
@@ -81,17 +106,15 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
   concList_2 <- .standardize_conc(conc2)
 
   rconc <- c(0, unique(round_concentration(c(concList_1$rconc, concList_2$rconc), 3)))
-
-  concs <- unique(c(concList_2$conc, concList_2$conc))
-  mapped_rconcs <- vapply(concs, function(x) {
+  .find_closest_match <- function(x) {
     rconc[abs(rconc - x) == min(abs(rconc - x))]
-    }, numeric(1))
-
+  }
+  concs <- unique(c(concList_2$conc, concList_2$conc))
+  mapped_rconcs <- vapply(concs, .find_closest_match, numeric(1))
   map <- unique(data.frame(concs = concs, rconcs = mapped_rconcs))
-
   mismatched <- which(round_concentration(map$conc, 2) != round_concentration(map$rconc, 2))
   for (i in mismatched) {
-    warning(sprintf("mapped original concentration '%s' to '%s'",
+    warning(sprintf("mapping original concentration '%s' to '%s'",
       map[i, "concs"], map[i, "rconcs"]))
   }
   map
