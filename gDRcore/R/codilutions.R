@@ -10,6 +10,9 @@ fit_combo_codilutions <- function(measured,
   # Filter out all single-agents.
   single_agents <- measured[[id]] == 0 | measured[[id2]] == 0
   measured <- measured[!single_agents, , drop = FALSE]
+  if (nrow(measured) < 4) {
+    return(NULL)
+  }
 
   # Filter only to what diagonals are valid for a fit (>4 points).
   measured$ratios <- round_concentration(measured[[id2]] / measured[[id]], ndigit = 1)

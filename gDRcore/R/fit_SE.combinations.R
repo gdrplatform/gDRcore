@@ -63,7 +63,7 @@ fit_SE.combinations <- function(se,
     avg_combo[[id2]] <- conc_map[match(avg_combo[[id2]], conc_map$concs), "rconcs"]
 
     mean_avg_combo <- aggregate(avg_combo[, metric, drop = F], by = as.list(avg_combo[, c(id, id2)]), 
-          FUN = function(x) mean(x, na.rm = TRUE))
+          FUN = function(x) mean(x, na.rm = TRUE)) # deal with cases of multiple concentrations mapped to the same value when rounded
     complete <- merge(sort(unique(avg_combo[[id]])), sort(unique(avg_combo[[id2]])), by = NULL)	
     colnames(complete) <- c(id, id2)
     complete <- merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2))
@@ -104,6 +104,8 @@ fit_SE.combinations <- function(se,
       } 
       metrics_merged <- do.call(plyr::rbind.fill, mget(metrics_names))
       metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
+      # remove degenerated fits
+      metrics_merged <- metrics_merged[metrics_merged$N_conc > 1, ]
 
       keep <- intersect(colnames(complete), c(metric, "row_values", "col_values", "codil_values"))
       mat <- as.matrix(complete[, keep])
