@@ -47,7 +47,7 @@ calculate_excess <- function(metric, measured, series_identifiers, metric_col, m
   
   out <- measured[, series_identifiers]
   excess <- metric[idx, metric_col] - measured[, measured_col]
-  excess[apply(as.matrix(out[, series_identifiers]) == 0, 1, any)] <- 0 # single agent should be 0
+  excess[apply(as.matrix(out[, series_identifiers]) == 0, 1, any)] <- 0 
   out$excess <- excess
   as.data.frame(out)
 }
@@ -59,4 +59,74 @@ convertDFtoBumpyMatrixUsingIds <- function(df, row_id = "row_id", col_id = "col_
   BumpyMatrix::splitAsBumpyMatrix(
     df[!colnames(df) %in% c(row_id, col_id)],
     row = df[[row_id]], col = df[[col_id]])
+}
+
+
+#' Create a mapping of concentrations to standardized concentrations.
+#'
+#' Create a mapping of concentrations to standardized concentrations.
+#'
+#' @param conc1 numeric vector of the concentrations for drug 1.
+#' @param conc2 numeric vector of the concentrations for drug 2.
+#'
+#' @return data.frame of 4 columns containing the original conc1, conc2,
+#' and their new standardized concentrations.
+#'
+#' @details The concentrations are standardized in that they will contain regularly spaced dilutions
+#' and close values will be rounded.
+#' @export
+map_conc_to_standardized_conc <- function(conc1, conc2) {
+  # Remove any single-agent data.
+  conc1 <- conc1[conc1 > 0]
+  conc2 <- conc2[conc2 > 0]
+  concs <- c(conc1, conc2)
+
+  conc_1 <- sort(unique(conc1))
+  log10_step1 <- .calculate_dilution_ratio(conc_1)
+  rconc_1 <- sort(round_concentration(10 ^ seq(log10(max(conc_1)),
+                                               log10(min(conc_1)),
+                                               -log10_step1), 3))
+
+  conc_2 <- sort(unique(conc2[conc1 > 0]))
+  log10_step2 <- .calculate_dilution_ratio(conc_2)
+  rconc_2 <- sort(round_concentration(10 ^ seq(log10(max(conc_2)),
+                                               log10(min(conc_2)),
+                                               -log10_step2), 3))
+  rconc <- unique(round_concentration(c(rconc_1, rconc_2), 3))
+  mapped_rconcs <- vapply(concs, function(x) {rconc[abs(rconc - x) == min(abs(rconc - x))]}, numeric(1))
+
+  map <- data.frame(concs = concs, rconcs = mapped_rconcs)
+
+  mismatched <- which(round_concentration(map$conc, 2) != round_concentration(map$rconc, 2))
+  for (i in mismatched) {
+    warning(sprintf("mapped original concentration '%s' to '%s'",
+      map[i, "concs"], map[i, "rconcs"]))
+  }
+
+  map
+}
+
+
+
+#' Calculate a dilution ratio.
+#'
+#' Calculation a dilution ratio from a vector of concentrations.
+#'
+#' @param concs numeric vector of concentrations.
+#'
+#' @return numeric value of the dilution ratio for a given set of concentrations.
+#' @keywords internal
+#' @noRd
+.calculate_dilution_ratio <- function(concs) {
+  first_removed <- concs[-1]
+  first_two_removed <- first_removed[-1]
+  last_removed <- concs[-length(concs)]
+  last_two_removed <- last_removed[-length(last_removed)]
+
+  dil_ratios <- c(log10(first_removed / last_removed), log10(first_two_removed / last_two_removed))
+  rounded_dil_ratios <- round_concentration(dil_ratios, 3)
+
+  # Get most frequent dilution ratio.
+  highest_freq_ratio <- names(sort(table(rounded_dil_ratios), decreasing = TRUE))[[1]]
+  as.numeric(highest_freq_ratio)
 }
