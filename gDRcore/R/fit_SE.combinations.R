@@ -55,11 +55,19 @@ fit_SE.combinations <- function(se,
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
+    futile.logger::flog.warn(sprintf('fitting:\n %s\n   x  %s\n', i, j))
 
     avg_combo <- avg[avg$row == i & avg$column == j, ]
     conc_map <- map_conc_to_standardized_conc(avg_combo[[id]], avg_combo[[id2]])
     avg_combo[[id]] <- conc_map[match(avg_combo[[id]], conc_map$concs), "rconcs"]
     avg_combo[[id2]] <- conc_map[match(avg_combo[[id2]], conc_map$concs), "rconcs"]
+
+    mean_avg_combo <- aggregate(avg_combo[, metric, drop = F], by = as.list(avg_combo[, c(id, id2)]), 
+          FUN = function(x) mean(x, na.rm = TRUE))
+    complete <- merge(sort(unique(avg_combo[[id]])), sort(unique(avg_combo[[id2]])), by = NULL)	
+    colnames(complete) <- c(id, id2)
+    complete <- merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2))
+
     for (metric in normalization_types) {
       metric_name <- switch(metric,
                             "GRvalue" = "GR",
@@ -101,10 +109,6 @@ fit_SE.combinations <- function(se,
       mat <- as.matrix(complete[, keep])
       complete$average <- rowMeans(mat, na.rm = TRUE)
       
-      # remove rows/columns with less than 2 values
-      discard_conc_1 <- names(which(table(complete[[id]][!is.na(complete$average)]) < 3))
-      discard_conc_2 <- names(which(table(complete[[id2]][!is.na(complete$average)]) < 3))
-      complete <- complete[!(complete[[id]] %in% discard_conc_1) & !(complete[[id2]] %in% discard_conc_2), ]
       # just keep the relevant columns and change to the metric name
       av_matrix <- as.data.frame(complete[, c(id, id2, "average")])
       av_matrix[av_matrix[[id]] == 0 & av_matrix[[id2]] == 0] <- 0
@@ -126,7 +130,11 @@ fit_SE.combinations <- function(se,
       }
       
       # call calculate_Loewe and calculate_isobolograms: 
-      isobologram_out <- if (sum((av_matrix[[id]] * av_matrix[[id2]]) > 0) > 9 && min(row_fittings$cotrt_value) == 0) {
+      # remove rows/columns with less than 2 values
+      discard_conc_1 <- names(which(table(av_matrix[[id]][!is.na(av_matrix[[metric]])]) < 3))
+      discard_conc_2 <- names(which(table(av_matrix[[id2]][!is.na(av_matrix[[metric]])]) < 3))
+      av_matrix_dense <- av_matrix[!(av_matrix[[id]] %in% discard_conc_1) & !(av_matrix[[id2]] %in% discard_conc_2), ]
+      isobologram_out <- if (sum((av_matrix_dense[[id]] * av_matrix_dense[[id2]]) > 0) > 9 && min(row_fittings$cotrt_value) == 0) {
         calculate_Loewe(av_matrix, row_fittings, col_fittings, codilution_fittings,
                         series_identifiers = c(id, id2), normalization_type = metric
                         ) 
