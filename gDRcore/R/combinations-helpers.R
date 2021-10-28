@@ -120,7 +120,9 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
   concs <- unique(c(conc1, conc2))
   mapped_rconcs <- vapply(concs, .find_closest_match, numeric(1))
   map <- unique(data.frame(concs = concs, rconcs = mapped_rconcs))
-  mismatched <- which(round_concentration(map$conc, 1) != round_concentration(map$rconc, 1))
+
+  tol <- 1
+  mismatched <- which(round_concentration(map$conc, tol) != round_concentration(map$rconc, tol))
   for (i in mismatched) {
     warning(sprintf("mapping original concentration '%s' to '%s'",
       map[i, "concs"], map[i, "rconcs"]))
