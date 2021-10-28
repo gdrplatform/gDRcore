@@ -140,7 +140,7 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
   } else if (length(unique(round_concentration(conc, 3))) > 2) {
     log10_step1 <- .calculate_dilution_ratio(conc)
     sort(round_concentration(10 ^ seq(log10(max(conc)),
-                                      log10(min(conc)) -.1, 
+                                      log10(min(conc)) - .1, 
                                       # -.1 to ensure that the min is included due to rounding
                                       - log10_step1), 3))
   } else {
