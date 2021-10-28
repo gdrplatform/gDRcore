@@ -847,3 +847,33 @@ add_codrug_group_SE <- function(se) {
   out
 }
 
+
+#' Equal concentrations to ndigit significant digits in log10 domain
+#'
+#' @param x value to be tested.
+#' @param y value to be tested.
+#' @param ndigit number of significant digits (default = 3).
+#'
+#' @return boolean
+#' @export
+is_equal_concentration <- function(x, y, ndigit = 3) {
+  .Deprecated("map_conc_to_standardized_conc")
+  abs(log10(x) - log10(y)) < 10^-ndigit
+}
+
+
+#' Replace concentrations in x by values in y if matching to the ndigit significant digits in log10 domain
+#'
+#' @param x value to change if equal to values in y.
+#' @param y reference values.
+#' @param ndigit number of significant digits (default = 2).
+#'
+#' @return adjusted x values
+#' @export
+replace_concentration <- function(x, y, ndigit = 2) {
+  .Deprecated("map_conc_to_standardized_conc")
+  for (i in setdiff(unique(y), 0)) {
+    x[is_equal_concentration(x, i, ndigit)] <- i
+  }
+  x
+}
