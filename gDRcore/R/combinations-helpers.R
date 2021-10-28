@@ -68,8 +68,10 @@ convertDFtoBumpyMatrixUsingIds <- function(df, row_id = "row_id", col_id = "col_
 #'
 #' @param original_concs numeric vector of concentrations to replace using the \code{conc_map}.
 #' @param conc_map data.frame of two columns named \code{original_conc_col} and \code{standardized_conc_col}.
-#' @param original_conc_col string of the name of the column in \code{conc_map} containing the original concentrations to replace.
-#' @param standardized_conc_col string of the name of the column in \code{conc_map} containing the standardized concentrations to use for replacement.
+#' @param original_conc_col string of the name of the column in \code{conc_map}
+#' containing the original concentrations to replace.
+#' @param standardized_conc_col string of the name of the column in \code{conc_map}
+#' containing the standardized concentrations to use for replacement.
 #'
 #' @return numeric vector of standardized concentrations.
 #'
@@ -101,37 +103,52 @@ replace_conc_with_standardized_conc <- function(original_concs, conc_map, origin
 #' and close values will be rounded.
 #' @export
 map_conc_to_standardized_conc <- function(conc1, conc2) {
-  # Remove any single-agent data.
-  conc1 <- conc1[conc1 > 0]
-  conc2 <- conc2[conc2 > 0]
-  concs <- c(conc1, conc2)
-
   conc_1 <- sort(unique(conc1))
-  log10_step1 <- .calculate_dilution_ratio(conc_1)
-  rconc_1 <- sort(round_concentration(10 ^ seq(log10(max(conc_1)),
-                                               log10(min(conc_1)),
-                                               -log10_step1), 3))
-
+  conc_1 <- conc_1[conc_1 > 0]
+  
+  rconc1 <- .standardize_conc(conc_1)
+  
   conc_2 <- sort(unique(conc2[conc1 > 0]))
-  log10_step2 <- .calculate_dilution_ratio(conc_2)
-  rconc_2 <- sort(round_concentration(10 ^ seq(log10(max(conc_2)),
-                                               log10(min(conc_2)),
-                                               -log10_step2), 3))
-  rconc <- unique(round_concentration(c(rconc_1, rconc_2), 3))
+  conc_2 <- conc_2[conc_2 > 0]
+  rconc2 <- .standardize_conc(conc_2)
+
+  rconc <- c(0, unique(round_concentration(c(rconc1, rconc2), 3)))
   .find_closest_match <- function(x) {
     rconc[abs(rconc - x) == min(abs(rconc - x))]
   }
+  concs <- unique(c(conc1, conc2))
   mapped_rconcs <- vapply(concs, .find_closest_match, numeric(1))
-
-  map <- data.frame(concs = concs, rconcs = mapped_rconcs)
-
+  map <- unique(data.frame(concs = concs, rconcs = mapped_rconcs))
   mismatched <- which(round_concentration(map$conc, 2) != round_concentration(map$rconc, 2))
   for (i in mismatched) {
     warning(sprintf("mapping original concentration '%s' to '%s'",
       map[i, "concs"], map[i, "rconcs"]))
   }
-
   map
+}
+
+
+#' Standardize concentration values.
+#'
+#' Standardize concentration values.
+#'
+#' @param conc numeric vector of the concentrations
+#'
+#' @return vector of standardized concentrations
+#'
+#' @export
+.standardize_conc <- function(conc) {
+  rconc <- if (S4Vectors::isEmpty(conc)) {
+    NULL
+  } else if (length(unique(round_concentration(conc, 3))) > 2) {
+    log10_step <- .calculate_dilution_ratio(conc)
+    sort(round_concentration(10 ^ seq(log10(max(conc)),
+                                      log10(min(conc)) - .1, # -.1 to ensure that the min is included due to rounding
+                                      - log10_step), 3))
+  } else {
+    round_concentration(conc, 3)
+  }
+  rconc
 }
 
 
@@ -152,7 +169,7 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
   last_two_removed <- last_removed[-length(last_removed)]
 
   dil_ratios <- c(log10(first_removed / last_removed), log10(first_two_removed / last_two_removed))
-  rounded_dil_ratios <- round_concentration(dil_ratios, 3)
+  rounded_dil_ratios <- round_concentration(dil_ratios, 2)
 
   # Get most frequent dilution ratio.
   highest_freq_ratio <- names(sort(table(rounded_dil_ratios), decreasing = TRUE))[[1]]
