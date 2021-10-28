@@ -135,7 +135,7 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
 .standardize_conc <- function(conc) {
   conc <- sort(unique(conc1))
   conc <- conc[conc > 0]
-  rconc <- if (is.empty(conc)) {
+  rconc <- if (S4Vectors::isEmpty(conc)) {
     NULL
   } else if (length(unique(round_concentration(conc, 3))) > 2) {
     log10_step1 <- .calculate_dilution_ratio(conc)
