@@ -61,7 +61,7 @@ average_SE <- function(se,
       colnames(std_df)[colnames(std_df) %in% std_cols] <-
         paste0("std_", colnames(std_df)[colnames(std_df) %in% std_cols])
 
-      agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = series_identifiers))
+      agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df, by = series_identifiers, sort = FALSE))
     } else {
       # <= 1L unmasked values
       p_trt_keys <- intersect(trt_keys, colnames(norm_df))

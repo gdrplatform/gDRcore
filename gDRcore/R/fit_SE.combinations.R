@@ -110,7 +110,8 @@ fit_SE.combinations <- function(se,
         metrics_names <- c(metrics_names, "codilution_fittings")
       } 
       metrics_merged <- do.call(plyr::rbind.fill, mget(metrics_names))
-      metrics_merged$fit_type <- sub("(.*)(\\..*)", "\\1", rownames(metrics_merged))
+      # we need it to distinguish which rows are col_fittings/row_fittings and codilution_fitting
+      metrics_merged$source <- rep(metrics_names, vapply(mget(metrics_names), nrow, numeric(1)))
       # remove degenerated fits
       metrics_merged <- metrics_merged[metrics_merged$N_conc > 1, ]
 
@@ -143,7 +144,7 @@ fit_SE.combinations <- function(se,
       discard_conc_2 <- names(which(table(av_matrix[[id2]][!is.na(av_matrix[[metric]])]) < 3))
       av_matrix_dense <- av_matrix[!(av_matrix[[id]] %in% discard_conc_1) & !(av_matrix[[id2]] %in% discard_conc_2), ]
       isobologram_out <- if (sum((av_matrix_dense[[id]] * av_matrix_dense[[id2]]) > 0) > 9 &&
-                             min(row_fittings$cotrt_value) == 0 && !is.null(codilution_fittings)) {
+                             min(row_fittings$cotrt_value) == 0) {
         calculate_Loewe(av_matrix, row_fittings, col_fittings, codilution_fittings,
                         series_identifiers = c(id, id2), normalization_type = metric
                         )

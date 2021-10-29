@@ -59,9 +59,11 @@ calculate_Loewe <- function(df_mean,
 
   row_fittings <- row_fittings[order(row_fittings$cotrt_value, decreasing = TRUE), ]
   col_fittings <- col_fittings[order(col_fittings$cotrt_value, decreasing = FALSE), ]
-  codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
-  codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
-
+  if (!is.null(codilution_fittings)) {
+    codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
+    codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
+    }
+  
   for (isobol_value in iso_cutoffs) { # run through the different isobolograms
     df_iso <- calculate_isobolograms(row_fittings, col_fittings, codilution_fittings, isobol_value, max1_cap, max2_cap)
 
@@ -260,7 +262,7 @@ calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittin
 
     # cutoff point by diagonal (co-dilution)
     # co-dil is given as concentration of drug 1
-    if (NROW(codilution_fittings) > 1) {
+    if (!is.null(codilution_fittings) && NROW(codilution_fittings) > 1) {
       conc_mix <- gDRutils::predict_conc_from_efficacy(
         efficacy = isobol_value,
         x_inf = codilution_fittings$x_inf,

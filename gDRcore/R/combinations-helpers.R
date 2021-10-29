@@ -103,23 +103,26 @@ replace_conc_with_standardized_conc <- function(original_concs, conc_map, origin
 #' and close values will be rounded.
 #' @export
 map_conc_to_standardized_conc <- function(conc1, conc2) {
-  conc_1 <- sort(unique(conc1))
-  conc_1 <- conc_1[conc_1 > 0]
-  
+  # Remove single-agent.
+  conc_1 <- setdiff(conc1, 0)
+  conc_2 <- setdiff(conc2, 0)
+
+  conc_1 <- sort(unique(conc_1))
   rconc1 <- .standardize_conc(conc_1)
   
-  conc_2 <- sort(unique(conc2[conc1 > 0]))
-  conc_2 <- conc_2[conc_2 > 0]
+  conc_2 <- sort(unique(conc_2))
   rconc2 <- .standardize_conc(conc_2)
 
-  rconc <- c(0, unique(round_concentration(c(rconc1, rconc2), 3)))
+  rconc <- c(0, unique(c(rconc1, rconc2)))
   .find_closest_match <- function(x) {
     rconc[abs(rconc - x) == min(abs(rconc - x))]
   }
   concs <- unique(c(conc1, conc2))
   mapped_rconcs <- vapply(concs, .find_closest_match, numeric(1))
   map <- unique(data.frame(concs = concs, rconcs = mapped_rconcs))
-  mismatched <- which(round_concentration(map$conc, 2) != round_concentration(map$rconc, 2))
+
+  tol <- 1
+  mismatched <- which(round_concentration(map$conc, tol) != round_concentration(map$rconc, tol))
   for (i in mismatched) {
     warning(sprintf("mapping original concentration '%s' to '%s'",
       map[i, "concs"], map[i, "rconcs"]))
@@ -135,17 +138,20 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
 #' @param conc numeric vector of the concentrations
 #'
 #' @return vector of standardized concentrations
+#' @details If no \code{conc} are passed, \code{NULL} is returned.
 #'
 #' @export
 .standardize_conc <- function(conc) {
   rconc <- if (S4Vectors::isEmpty(conc)) {
     NULL
-  } else if (length(unique(round_concentration(conc, 3))) > 2) {
+  } else if (length(unique(round_concentration(conc, 3))) > 4) {
+    # 4 is determined by the fewest number of concentrations required to be considered a "matrix".
     log10_step <- .calculate_dilution_ratio(conc)
-    sort(round_concentration(10 ^ seq(log10(max(conc)),
-                                      log10(min(conc)) - .1, # -.1 to ensure that the min is included due to rounding
-                                      - log10_step), 3))
+    num_steps <- round((log10(max(conc)) - log10(min(conc)) / log10_step), 0)
+    seqs <- log10(max(conc)) - (log10_step * c(0:num_steps))
+    sort(round_concentration(10 ^ seqs, 3))
   } else {
+    # Few enough concentrations, don't need to calculate a series.
     round_concentration(conc, 3)
   }
   rconc
