@@ -58,10 +58,11 @@ fit_SE.combinations <- function(se,
 
     avg_combo <- avg[avg$row == i & avg$column == j, ]
     
-    if(all(is.na(subset(avg_combo, select = -c(row, column))))) { # omit masked values (all NAs)
+    if (all(is.na(subset(avg_combo, select = -c(row, column))))) { # omit masked values (all NAs)
       smooth_mx[[row]] <- hsa_excess[[row]] <- bliss_excess[[row]] <- isobolograms[[row]] <- metrics[[row]] <- 
         bliss_score[row, c("row_id", "col_id")] <- hsa_score[row, c("row_id", "col_id")] <-
-        CIScore_50[row, c("row_id", "col_id")] <- CIScore_80[row, c("row_id", "col_id")] <- data.frame(row_id = i, col_id = j)
+        CIScore_50[row, c("row_id", "col_id")] <- CIScore_80[row, c("row_id", "col_id")] <-
+        data.frame(row_id = i, col_id = j)
       next
     }
     
