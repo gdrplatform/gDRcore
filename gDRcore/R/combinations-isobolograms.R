@@ -59,10 +59,10 @@ calculate_Loewe <- function(df_mean,
 
   row_fittings <- row_fittings[order(row_fittings$cotrt_value, decreasing = TRUE), ]
   col_fittings <- col_fittings[order(col_fittings$cotrt_value, decreasing = FALSE), ]
-  if (!is.null(codilution_fittings)){
+  if (!is.null(codilution_fittings)) {
     codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
     codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
-  }
+    }
   
   for (isobol_value in iso_cutoffs) { # run through the different isobolograms
     df_iso <- calculate_isobolograms(row_fittings, col_fittings, codilution_fittings, isobol_value, max1_cap, max2_cap)
