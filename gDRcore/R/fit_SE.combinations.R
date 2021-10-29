@@ -57,6 +57,14 @@ fit_SE.combinations <- function(se,
     j <- x[["column"]]
 
     avg_combo <- avg[avg$row == i & avg$column == j, ]
+    
+    if(all(is.na(subset(avg_combo, select = -c(row, column))))) { # omit masked values (all NAs)
+      smooth_mx[[row]] <- hsa_excess[[row]] <- bliss_excess[[row]] <- isobolograms[[row]] <- metrics[[row]] <- 
+        bliss_score[row, c("row_id", "col_id")] <- hsa_score[row, c("row_id", "col_id")] <-
+        CIScore_50[row, c("row_id", "col_id")] <- CIScore_80[row, c("row_id", "col_id")] <- data.frame(row_id = i, col_id = j)
+      next
+    }
+    
     conc_map <- map_conc_to_standardized_conc(avg_combo[[id]], avg_combo[[id2]])
 
     avg_combo[[id]] <- replace_conc_with_standardized_conc(avg_combo[[id]], conc_map, "concs", "rconcs")
