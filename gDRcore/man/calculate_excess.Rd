@@ -26,7 +26,8 @@ which define a unique data point.}
 \item{measured_col}{string of the column in \code{measured} to use in the excess calculation.}
 }
 \value{
-DataFrame of \code{measured}, now with an additional column named \code{excess}.
+DataFrame of \code{measured}, now with an additional column named
+\code{excess} (positive values for synergy/benefit).
 }
 \description{
 Calculate the difference between values, likely representing the same metric, from two data.frames.

@@ -34,8 +34,26 @@ calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
 #' @rdname calculate_matrix_metric
 #' @export
 calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
-  lambda <- function(x, y) {
-    1 - (1 - x) - (1 - y) + (1 - x) * (1 - y)
+  if (metric %in% c("GRvalue", "GR")) {
+    lambda <- function(x, y) {
+      ifelse(x < 0 | y < 0,
+        pmin(x, y),
+        2 ^ (log2(x + 1) * log2(y + 1)) - 1
+        # formula for GR combination adapted from Holbeck et al. Cancer Res, vol.77(13), 2017 
+        #   https://cancerres.aacrjournals.org/content/77/13/3564
+        # growth rates are multiplicative, not GR values directly
+      )
+    }
+  } else {
+    lambda <- function(x, y) {
+      ifelse(x < 0 | y < 0,
+        pmin(x, y),
+        x * y
+        # Generalized Bliss formula for combination with potential negative values 
+        #   ( Holbeck et al. Cancer Res, vol.77(13), 2017 
+        #     https://cancerres.aacrjournals.org/content/77/13/3564 )
+      )
+    }
   }
   .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN = lambda)
 }

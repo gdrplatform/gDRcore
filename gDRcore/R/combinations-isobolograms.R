@@ -1,32 +1,34 @@
-define_matrix_position <- function(mean_matrix,
-                      conc_margin = 10 ^ 0.5,
-                      log2_pos_offset = log10(3) / 2
-              ) {
+#' @details
+#' drug_1 is diluted along the rows as the y-axis and
+#' drug_2 is diluted along the columns and will be the x-axis.
+define_matrix_grid_positions <- function(conc1, conc2) {
+  .generate_gap_for_single_agent <- function(x) {
+    2 * x[2] - x[3] - log10(1.5)
+  } 
 
-  checkmate::assert_number(conc_margin)
-  checkmate::assert_number(log2_pos_offset)
+  conc_1 <- sort(unique(round_concentration(conc1)))
+  pos_y <- log10conc_1 <- log10(conc_1)
+  pos_y[1] <- .generate_gap_for_single_agent(log10conc_1)
+  axis_1 <- data.frame(conc_1 = conc_1,
+    log10conc_1 = log10conc_1,
+    pos_y = pos_y,
+    marks_y = sprintf("%.2g", conc_1)
+  )
 
-  axis_1 <- data.frame(conc_1 = round(as.numeric(rownames(mean_matrix)), 5),
-          log10conc_1 = 0, pos_y = 0, marks_y = 0)
-  axis_1$log10conc_1 <- log10(axis_1$conc)
-  axis_1$pos_y <- axis_1$log10conc_1
-  axis_1$pos_y[1] <- 2 * axis_1$pos_y[2] - axis_1$pos_y[3] - log10(1.5)
-  axis_1$marks_y <- sprintf("%.2g", axis_1$conc_1)
-
-  # drug_2 is diluted along the columns and will be the x-axis of the matrix plots
-  axis_2 <- data.frame(conc_2 = round(as.numeric(colnames(mean_matrix)), 5),
-                log10conc_2 = 0, pos_x = 0, marks_x = 0)
-  axis_2$log10conc_2 <- log10(axis_2$conc_2)
-  axis_2$pos_x <- axis_2$log10conc_2
-  axis_2$pos_x[1] <- 2 * axis_2$pos_x[2] - axis_2$pos_x[3] - log10(1.5)
-  axis_2$marks_x <- sprintf("%.2g", axis_2$conc_2)
+  conc_2 <- sort(unique(round_concentration(conc2)))
+  pos_x <- log10conc_2 <- log10(conc_2)
+  pos_x[1] <- .generate_gap_for_single_agent(log10conc_2)
+  axis_2 <- data.frame(conc_2 = conc_2,
+    log10conc_2 = log10conc_2,
+    pos_x = pos_x,
+    marks_x = sprintf("%.2g", conc_2)
+  )
 
   list(axis_1 = axis_1, axis_2 = axis_2)
 }
 
 
-
-calculate_Loewe <- function(mean_matrix, 
+calculate_Loewe <- function(df_mean, 
                       row_fittings, 
                       col_fittings, 
                       codilution_fittings, 
@@ -39,26 +41,30 @@ calculate_Loewe <- function(mean_matrix,
   checkmate::assert_number(conc_margin)
   checkmate::assert_number(log2_pos_offset)
   checkmate::assert_character(normalization_type) 
+  if (length(series_identifiers) != 2L) {
+    stop("only series_identifiers of length 2 are currently supported")
+  }
  
-  iso_cutoff <- get_isocutoffs(mean_matrix, normalization_type)
+  iso_cutoffs <- get_isocutoffs(df_mean, normalization_type)
 
-  all_iso <- vector("list", length(iso_cutoff))
-  names(all_iso) <- iso_cutoff
+  all_iso <- vector("list", length(iso_cutoffs))
+  names(all_iso) <- iso_cutoffs
 
-  axes <- define_matrix_position(mean_matrix, conc_margin = conc_margin, log2_pos_offset = log2_pos_offset)
+  axes <- define_matrix_grid_positions(df_mean[[series_identifiers[1]]], df_mean[[series_identifiers[2]]])
   axis_1 <- axes$axis_1
   axis_2 <- axes$axis_2
   
-  # get the IC50/GR50 on the marginal (single agent) based on the fit functions and capping
-  max1_cap <- max(axis_1$conc_1) * conc_margin
-  max2_cap <- max(axis_2$conc_2) * conc_margin
+  max1_cap <- round_concentration(max(axis_1$conc_1) * conc_margin)
+  max2_cap <- round_concentration(max(axis_2$conc_2) * conc_margin)
 
   row_fittings <- row_fittings[order(row_fittings$cotrt_value, decreasing = TRUE), ]
   col_fittings <- col_fittings[order(col_fittings$cotrt_value, decreasing = FALSE), ]
-  codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
-  codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
-
-  for (isobol_value in iso_cutoff) { # run through the different isobolograms
+  if (!is.null(codilution_fittings)) {
+    codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
+    codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
+    }
+  
+  for (isobol_value in iso_cutoffs) { # run through the different isobolograms
     df_iso <- calculate_isobolograms(row_fittings, col_fittings, codilution_fittings, isobol_value, max1_cap, max2_cap)
 
     ref_conc_1 <- pmin(df_iso$conc_1[df_iso$conc_2 == 0 & df_iso$fit_type == "by_col"], max1_cap)
@@ -207,19 +213,20 @@ calculate_Loewe <- function(mean_matrix,
 }
 
 
-get_isocutoffs <- function(mean_matrix, normalization_type) {
-  if (min(mean_matrix, na.rm = TRUE) > 0.7) {
-    iso_cutoff <- NULL
+get_isocutoffs <- function(df_mean, normalization_type) {
+  if (min(df_mean[[normalization_type]], na.rm = TRUE) > 0.7) {
+    iso_cutoffs <- NULL
   } else {
-    if (normalization_type == "GR") {
+    if (normalization_type == "GRvalue") {
       max_val <- -0.25
     } else {
       max_val <- 0.2
     }
-    iso_cutoff <- seq(max(max_val, ceiling(20 * min(mean_matrix + 0.08, na.rm = TRUE)) / 20), 0.8,  0.05)
-    names(iso_cutoff) <- as.character(iso_cutoff)
+    iso_cutoffs <- seq(max(max_val, ceiling(20 * min(df_mean[[normalization_type]] + 0.08,
+                                                    na.rm = TRUE)) / 20), 0.8,  0.05)
+    names(iso_cutoffs) <- as.character(iso_cutoffs)
   }
-  iso_cutoff
+  iso_cutoffs
 }
 
 
@@ -255,7 +262,7 @@ calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittin
 
     # cutoff point by diagonal (co-dilution)
     # co-dil is given as concentration of drug 1
-    if (NROW(codilution_fittings) > 1) {
+    if (!is.null(codilution_fittings) && NROW(codilution_fittings) > 1) {
       conc_mix <- gDRutils::predict_conc_from_efficacy(
         efficacy = isobol_value,
         x_inf = codilution_fittings$x_inf,
@@ -267,7 +274,7 @@ calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittin
         conc_2 = conc_mix / (1 + codilution_fittings$ratio),
         fit_type = "by_codil")
 
-      # avoid extrapolation
+      # Keep isobologram values within matrix values.
       capped_idx <- codil_iso$conc_1 > max1_cap | codil_iso$conc_2 > max2_cap
       codil_iso$conc_1[capped_idx] <- pmin(max1_cap, codilution_fittings$conc_ratio * max2_cap)[capped_idx]
       codil_iso$conc_2[capped_idx] <- pmin(max2_cap, max1_cap / codilution_fittings$conc_ratio)[capped_idx]

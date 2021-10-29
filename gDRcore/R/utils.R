@@ -217,9 +217,17 @@ get_nested_default_identifiers.SummarizedExperiment <- function(x,
   }
 }
 
-.round_concentration <- function(x) {
-  10 ^ (round(log10(x), 3))
+#' Round concentration to ndigit significant digits
+#'
+#' @param x value to be rounded.
+#' @param ndigit number of significant digits (default = 4).
+#'
+#' @return rounded x
+#' @export
+round_concentration <- function(x, ndigit = 3) {
+  round(10 ^ (round(log10(x), ndigit)), ndigit - 1 - floor(log10(x)))
 }
+
 
 #' @keywords internal
 #' @noRd
