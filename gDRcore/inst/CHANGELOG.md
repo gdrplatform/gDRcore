@@ -2,9 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.15] - 2021-10-29
+#### Update
+- solve rounding issues
+- add new bliss metric
+
 #### [1.1.14] - 2021-10-25
 #### Update
-- refacor isobolograms
+- refactor isobolograms
 
 #### [1.1.13] - 2021-10-25
 #### Update
