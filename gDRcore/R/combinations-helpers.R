@@ -105,7 +105,7 @@ replace_conc_with_standardized_conc <- function(original_concs, conc_map, origin
 map_conc_to_standardized_conc <- function(conc1, conc2) {
   # Remove single-agent.
   conc_1 <- setdiff(conc1, 0)
-  conc_2 <- setdiff(conc2[conc_1 > 0], 0)
+  conc_2 <- setdiff(conc2, 0)
 
   conc_1 <- sort(unique(conc_1))
   rconc1 <- .standardize_conc(conc_1)
