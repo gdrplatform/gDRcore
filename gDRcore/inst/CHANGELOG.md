@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.16] - 2021-11-02
+#### Update
+- detect co-trt data and treat them as single-agent
+
 #### [1.1.15] - 2021-10-29
 #### Update
 - solve rounding issues
