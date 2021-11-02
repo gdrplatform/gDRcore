@@ -63,7 +63,7 @@ for (pkg in essential_pkgs) {
   }
 }
 
-BiocManager::install(version = "3.13")
+BiocManager::install(version = "3.13", ask = FALSE)
 
 # determine GitHub domain
 gh_hostname <- get_github_hostname()
