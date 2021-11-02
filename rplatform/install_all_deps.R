@@ -63,6 +63,8 @@ for (pkg in essential_pkgs) {
   }
 }
 
+BiocManager::install(version = "3.13")
+
 # determine GitHub domain
 gh_hostname <- get_github_hostname()
 
@@ -102,7 +104,7 @@ for (name in names(deps)) {
 
     ## Bioconductor installation
     "BIOC" = {
-      if (is.null(pkg$ver)) { pkg$ver <- BiocManager::version(version = "3.13") }
+      if (is.null(pkg$ver)) { pkg$ver <- BiocManager::version() }
       BiocManager::install(
         pkgs = name,
         update = FALSE,
