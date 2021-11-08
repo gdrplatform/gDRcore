@@ -47,7 +47,7 @@ calculate_excess <- function(metric, measured, series_identifiers, metric_col, m
   
   out <- measured[, series_identifiers]
   excess <- metric[idx, metric_col] - measured[, measured_col]
-  excess[apply(as.matrix(out[, series_identifiers]) == 0, 1, any)] <- 0 
+  excess[apply(as.matrix(out[, series_identifiers]) == 0, 1, any)] <- NA
   out$excess <- excess
   as.data.frame(out)
 }
