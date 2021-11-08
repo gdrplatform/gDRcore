@@ -34,7 +34,21 @@ create_SE <- function(df_,
   }
 
   # Remove background value from readout (at least 1e-10 to avoid artefactual normalized values).
-  df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
+  if ("BackgroundValue" %in% colnames(df_)) {
+    df_$CorrectedReadout <- pmax(df_[[readout]] - df_$BackgroundValue, 1e-10)
+  } else {
+    df_$CorrectedReadout <- df_[[readout]]
+  }
+  
+  # overwrite "drug", "drugname", "drug_moa" with "untreated" if "concentration2" == 0
+  if (gDRutils::get_env_identifiers("concentration2") %in% colnames(df_)) {
+    single_agent_idx <- df_[[gDRutils::get_env_identifiers("concentration2")]] == 0
+
+    drug_cols <- c("drug", "drugname", "drug_moa")
+    drug2_var <- intersect(unlist(gDRutils::get_env_identifiers(paste0(drug_cols, "2"), simplify = FALSE)), colnames(df_))
+
+    df_[single_agent_idx, drug2_var] <- gDRutils::get_env_identifiers("untreated_tag")[1]
+  }
 
   ## if combo data with single agent --> duplicate single agent to be also found as Drug_2
   if (gDRutils::get_env_identifiers("concentration2") %in% nested_keys) {
