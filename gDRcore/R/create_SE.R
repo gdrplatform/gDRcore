@@ -59,8 +59,10 @@ create_SE <- function(df_,
     
     drug_cols <- c("drug", "drugname", "drug_moa", "concentration")
     swap_var <- unlist(gDRutils::get_env_identifiers(drug_cols, simplify = FALSE))
-    checkmate::assert_true(all(swap_var %in% colnames(df_))) # assert all required columns are in df_
+    drug_cols <- drug_cols[swap_var %in% colnames(df_temp)] # assert columns present in df_
+    swap_var <- swap_var[swap_var %in% colnames(df_temp)]
     swap_var2 <- unlist(gDRutils::get_env_identifiers(paste0(drug_cols, "2"), simplify = FALSE))
+    checkmate::assert_true(all(swap_var2 %in% colnames(df_))) # assert columns present in df_
     df_dupl[, swap_var2] <- df_dupl[, swap_var]
     df_dupl[, swap_var] <- df_temp[, swap_var2]
     df_ <- rbind(df_, df_dupl)
