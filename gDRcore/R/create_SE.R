@@ -34,7 +34,21 @@ create_SE <- function(df_,
   }
 
   # Remove background value from readout (at least 1e-10 to avoid artefactual normalized values).
-  df_$CorrectedReadout <- pmax(df_$ReadoutValue - df_$BackgroundValue, 1e-10)
+  if ("BackgroundValue" %in% colnames(df_)) {
+    df_$CorrectedReadout <- pmax(df_[[readout]] - df_$BackgroundValue, 1e-10)
+  } else {
+    df_$CorrectedReadout <- df_[[readout]]
+  }
+  
+  # overwrite "drug", "drugname", "drug_moa" with "untreated" if "concentration2" == 0
+  if (gDRutils::get_env_identifiers("concentration2") %in% colnames(df_)) {
+    single_agent_idx <- df_[[gDRutils::get_env_identifiers("concentration2")]] == 0
+
+    drug_cols <- c("drug", "drugname", "drug_moa")
+    drug2_var <- intersect(unlist(gDRutils::get_env_identifiers(paste0(drug_cols, "2"), simplify = FALSE)), colnames(df_))
+
+    df_[single_agent_idx, drug2_var] <- gDRutils::get_env_identifiers("untreated_tag")[1]
+  }
 
   ## if combo data with single agent --> duplicate single agent to be also found as Drug_2
   if (gDRutils::get_env_identifiers("concentration2") %in% nested_keys) {
@@ -45,8 +59,10 @@ create_SE <- function(df_,
     
     drug_cols <- c("drug", "drugname", "drug_moa", "concentration")
     swap_var <- unlist(gDRutils::get_env_identifiers(drug_cols, simplify = FALSE))
-    checkmate::assert_true(all(swap_var %in% colnames(df_))) # assert all required columns are in df_
+    drug_cols <- drug_cols[swap_var %in% colnames(df_temp)] # assert columns present in df_
+    swap_var <- swap_var[swap_var %in% colnames(df_temp)]
     swap_var2 <- unlist(gDRutils::get_env_identifiers(paste0(drug_cols, "2"), simplify = FALSE))
+    checkmate::assert_true(all(swap_var2 %in% colnames(df_))) # assert columns present in df_
     df_dupl[, swap_var2] <- df_dupl[, swap_var]
     df_dupl[, swap_var] <- df_temp[, swap_var2]
     df_ <- rbind(df_, df_dupl)
