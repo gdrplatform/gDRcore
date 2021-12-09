@@ -45,7 +45,8 @@ create_SE <- function(df_,
     single_agent_idx <- df_[[gDRutils::get_env_identifiers("concentration2")]] == 0
 
     drug_cols <- c("drug", "drugname", "drug_moa")
-    drug2_var <- intersect(unlist(gDRutils::get_env_identifiers(paste0(drug_cols, "2"), simplify = FALSE)), colnames(df_))
+    drug2_var <- intersect(unlist(gDRutils::get_env_identifiers(paste0(drug_cols,
+"2"), simplify = FALSE)), colnames(df_))
 
     df_[single_agent_idx, drug2_var] <- gDRutils::get_env_identifiers("untreated_tag")[1]
   }
