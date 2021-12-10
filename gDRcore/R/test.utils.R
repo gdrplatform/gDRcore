@@ -15,7 +15,7 @@ test_synthetic_data <- function(original,
     reprocessed <- data
   } else {
     data_type <- ifelse(combo, "combo", "single-agent")
-    nested_identifiers <- if(combo) {
+    nested_identifiers <- if (combo) {
       .get_default_combo_identifiers()
     } else {
       .get_default_single_agent_identifiers()
