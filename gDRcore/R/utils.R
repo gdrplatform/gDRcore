@@ -154,12 +154,21 @@ Order_result_df <- function(df_) {
 #' @export
 data_model <- function(df_) {
   checkmate::assert_data_frame(df_)
+  drug_ids <- unlist(gDRutils::get_env_identifiers(c("drugname", "drugname2"), simplify = FALSE))
+  cl_id <- gDRutils::get_env_identifiers("cellline")
+  conc2 <- gDRutils::get_env_identifiers("concentration2")
   if (all(.get_default_combo_identifiers() %in% colnames(df_))) {
-    if (all(df_[[gDRutils::get_env_identifiers("concentration2")]]
+    if (all(df_[[conc2]]
             %in% gDRutils::get_env_identifiers("untreated_tag"))) {
       "single-agent"
     } else {
-      "combo"
+      df_subset <- unique(subset(df_, select = c(drug_ids, cl_id, conc2)))
+      cotrt <- all(table(subset(df_subset, select = c(drug_ids, cl_id))) < 4) # detect co-trt
+      if (cotrt) {
+        "single-agent"
+      } else {
+        "combo"
+      }
     }
   } else if (.get_default_single_agent_identifiers() %in% colnames(df_)) {
     "single-agent"

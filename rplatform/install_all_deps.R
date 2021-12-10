@@ -10,6 +10,7 @@ essential_pkgs <- list(
 base_dir <- "/mnt/vol"
 deps_yaml <- file.path(base_dir, "/dependencies.yaml")
 use_ssh <- FALSE
+
 # ssh_key_pub <- "/home/rstudio/.ssh/id_rsa.pub"
 # ssh_key_priv <- "/home/rstudio/.ssh/id_rsa"
 
@@ -61,6 +62,8 @@ for (pkg in essential_pkgs) {
     )
   }
 }
+
+BiocManager::install(version = "3.13", ask = FALSE)
 
 # determine GitHub domain
 gh_hostname <- get_github_hostname()
