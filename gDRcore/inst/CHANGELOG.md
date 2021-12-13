@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.18] - 2021-12-07
+#### Update
+- update annotation script as per new csv annotation files
+
+#### [1.1.17] - 2021-12-07
+#### Update
+- detect co-trt data and treat them as single-agent
+
 #### [1.1.16] - 2021-11-08
 #### Update
 - set excess = NA for single-agent
