@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.19] - 2021-12-13
+#### Update
+- wrap SE into MAE on the level of runDrugResponseProcessingPipeline
+
 #### [1.1.18] - 2021-12-07
 #### Update
 - update annotation script as per new csv annotation files
