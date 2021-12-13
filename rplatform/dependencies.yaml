@@ -8,6 +8,9 @@ pkgs:
   SummarizedExperiment:
     source: Bioc
     ver: "3.13"
+  MultiAssayExperiment:
+    source: Bioc
+    ver: "3.13"
   BumpyMatrix:
     source: Bioc
     ver: "3.13"

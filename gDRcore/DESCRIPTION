@@ -20,6 +20,7 @@ Imports:
     gDRutils (>= 1.0.17),
     httr,
     magrittr,
+    MultiAssayExperiment,
     reshape2,
     S4Vectors,
     SummarizedExperiment
