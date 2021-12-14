@@ -243,3 +243,9 @@ round_concentration <- function(x, ndigit = 3) {
 rbindList <- function(x) {
   S4Vectors::DataFrame(do.call(plyr::rbind.fill, x))
 }
+
+#' @keywords internal
+#' @noRd
+rbindParallelList <- function(x, name) {
+  S4Vectors::DataFrame(do.call(plyr::rbind.fill, lapply(x, function(x) as.data.frame("[["(x, name)))))
+}

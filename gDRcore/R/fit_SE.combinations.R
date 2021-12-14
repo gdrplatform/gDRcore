@@ -224,16 +224,16 @@ fit_SE.combinations <- function(se,
          CIScore_80 = CIScore_80)
   }
 
-  all_smooth_mx <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "smooth_mx")))
-  all_hsa_excess <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "hsa_excess")))
-  all_b_excess <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "bliss_excess")))
-  all_isobolograms <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "isobolograms")))
-  all_metrics <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "metrics")))
+  all_smooth_mx <- rbindParallelList(out, "smooth_mx")
+  all_hsa_excess <- rbindParallelList(out, "hsa_excess")
+  all_b_excess <- rbindParallelList(out, "bliss_excess")
+  all_isobolograms <- rbindParallelList(out, "isobolograms")
+  all_metrics <- rbindParallelList(out, "metrics")
   
-  bliss_score <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "bliss_score")))
-  hsa_score <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "hsa_score")))
-  CIScore_50 <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "CIScore_50")))
-  CIScore_80 <- S4Vectors::DataFrame(do.call(rbind, lapply(out, "[[", "CIScore_80")))
+  bliss_score <- rbindParallelList(out, "bliss_score")
+  hsa_score <- rbindParallelList(out, "hsa_score")
+  CIScore_50 <- rbindParallelList(out, "CIScore_50")
+  CIScore_80 <- rbindParallelList(out, "CIScore_80")
   
   SummarizedExperiment::assays(se)[["SmoothMatrix"]] <- convertDFtoBumpyMatrixUsingIds(all_smooth_mx)
   SummarizedExperiment::assays(se)[["BlissExcess"]] <- convertDFtoBumpyMatrixUsingIds(all_b_excess)
