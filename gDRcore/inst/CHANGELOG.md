@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.18] - 2021-12-07
+#### Update
+- update annotation script as per new csv annotation files
+
+#### [1.1.17] - 2021-12-07
+#### Update
+- detect co-trt data and treat them as single-agent
+
+#### [1.1.16] - 2021-11-08
+#### Update
+- set excess = NA for single-agent
+
+#### [1.1.15] - 2021-10-29
+#### Update
+- solve rounding issues
+- add new bliss metric
+
+#### [1.1.14] - 2021-10-25
+#### Update
+- refactor isobolograms
+
+#### [1.1.13] - 2021-10-25
+#### Update
+- move p_trt_keys to the proper place
+
+#### [1.1.12] - 2021-10-20
+#### Update
+- add support for masked data in fit_SE.combinations.R
+
+#### [1.1.11] - 2021-10-14
+#### Update
+- address issues in creating the SE for combo matrix experiments
+
+#### [1.1.10] - 2021-10-13
+#### Update
+- refactor the logic for calculation Loewe when there is no `Concentration == 0`
+
+#### [1.1.9] - 2021-10-12
+#### Update
+- refactor the logic for combo data
+
 #### [1.1.8] - 2021-09-27
 #### Update
 - updated normalization_types in 'calculate_combo_matrix' and 'fit_SE'

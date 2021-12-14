@@ -12,16 +12,16 @@ pkgs:
     source: Bioc
     ver: "3.13"
   gDRutils:
-    ver: '>=1.0.14'
+    ver: '>=1.0.19'
     url: gdrplatform/gDRutils
-    ref: GDR-1097
+    ref: master 
     subdir: gDRutils
     source: GITHUB
   lintr:
     ver: '>=1.0.0'
     url: https://github.com/jimhester/lintr.git
   gDRtestData:
-    ver: '>=1.0.0'
+    ver: '>=1.0.6'
     url: gdrplatform/gDRtestData
     ref: master
     subdir: gDRtestData

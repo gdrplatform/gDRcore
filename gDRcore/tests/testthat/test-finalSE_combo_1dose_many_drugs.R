@@ -11,7 +11,4 @@ df_layout_2 <- merge(df_layout, df_2, by = NULL)
 
 df_merged_data <- gDRtestData::generate_response_data(df_layout_2)
 
-finalSE <- gDRcore::runDrugResponseProcessingPipeline(df_merged_data, override_untrt_controls = NULL)
-
-test_synthetic_data(original, finalSE, data, combo = TRUE)
-
+test_synthetic_data(original, df_merged_data, data, combo = TRUE)
