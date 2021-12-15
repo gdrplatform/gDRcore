@@ -15,3 +15,6 @@ vector of standardized concentrations
 \description{
 Standardize concentration values.
 }
+\details{
+If no \code{conc} are passed, \code{NULL} is returned.
+}
