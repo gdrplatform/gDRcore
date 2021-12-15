@@ -109,10 +109,10 @@ create_SE <- function(df_,
   treated <- treated[rownames(treated) %in% unique(groupings), ]
 
   # Parallel computing
-  clusters <- makeCluster(cores, type = "FORK")
-  registerDoParallel(clusters)
+  clusters <- parallel::makeCluster(cores, type = "FORK")
+  doParallel::registerDoParallel(clusters)
   
-  out <- foreach(i = seq_len(nrow(treated))) %dopar% {
+  out <- foreach::foreach(i = seq_len(nrow(treated))) %dopar% {
     trt <- rownames(treated)[i]
     trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
@@ -159,8 +159,8 @@ create_SE <- function(df_,
     list(ctl_df = ctl_df,
          trt_df = trt_df)
   }
-  stopCluster(clusters)
-
+  parallel::stopCluster(clusters)
+  
   trt_out <- do.call(rbind, lapply(out, "[[", "trt_df"))
   ctl_out <- do.call(rbind, lapply(out, "[[", "ctl_df"))
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")

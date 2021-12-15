@@ -37,10 +37,10 @@ fit_SE <- function(se,
   avg_trt <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, averaged_assay))
   iterator <- unique(avg_trt[, c("column", "row")])
   # Parallel computing
-  clusters <- makeCluster(cores, type = "FORK")
-  registerDoParallel(clusters)
+  clusters <- parallel::makeCluster(cores, type = "FORK")
+  doParallel::registerDoParallel(clusters)
   
-  out <- foreach(row = seq_len(nrow(iterator))) %dopar% {
+  out <- foreach::foreach(row = seq_len(nrow(iterator))) %dopar% {
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
@@ -75,7 +75,7 @@ fit_SE <- function(se,
     }
     fit_df
   }
-  stopCluster(clusters)
+  parallel::stopCluster(clusters)
   
   out <- S4Vectors::DataFrame(do.call("rbind", out))
   metrics <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c("row_id", "col_id")], 
