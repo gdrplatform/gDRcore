@@ -22,11 +22,8 @@ Imports:
     gDRutils (>= 1.0.17),
     httr,
     magrittr,
-<<<<<<< HEAD
     MultiAssayExperiment,
-=======
     parallel,
->>>>>>> master
     reshape2,
     S4Vectors,
     SummarizedExperiment
