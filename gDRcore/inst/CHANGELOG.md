@@ -2,9 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [1.1.19] - 2021-12-13
+#### [1.1.20] - 2021-12-29
 #### Update
 - wrap SE into MAE on the level of runDrugResponseProcessingPipeline
+
+#### [1.1.19] - 2021-12-14
+#### Update
+- use parallel computing as an alternative for `for` loops
 
 #### [1.1.18] - 2021-12-07
 #### Update
