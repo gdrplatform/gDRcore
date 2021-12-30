@@ -139,20 +139,17 @@ runDrugResponseProcessingPipeline <- function(df_,
   checkmate::assert_string(averaged_assay)
   checkmate::assert_string(metrics_assay)
   
-  experiments <- if (data_type == "single-agent") {
-    data_type
-  } else {
-    c("single-agent", "matrix")
-  }
-  
+  df_ <- identify_data_type(df_)
+  df_list <- split_raw_data(df_)
   mae <- MultiAssayExperiment::MultiAssayExperiment()
-  for (experiment in experiments) {
-    nested_identifiers <- if (experiment == "single-agent") {
-      .get_default_single_agent_identifiers()
-    } else {
+  
+  for (experiment in names(df_list)) {
+    nested_identifiers <- if (experiment == "matrix") {
       .get_default_combo_identifiers()
+    } else {
+      .get_default_single_agent_identifiers()
     }
-    se <- catchr::catch_expr(create_and_normalize_SE(df_ = df_,
+    se <- catchr::catch_expr(create_and_normalize_SE(df_ = df_list[[experiment]],
                                                      readout = readout,
                                                      control_mean_fxn = control_mean_fxn,
                                                      nested_identifiers = nested_identifiers,
@@ -171,16 +168,14 @@ runDrugResponseProcessingPipeline <- function(df_,
                                         averaged_assay = averaged_assay),
                              warning)
     .catch_warnings(se)
-    se <- add_codrug_group_SE(se$value)
-    
     se <- catchr::catch_expr(if (experiment == "single-agent") {
-      fit_SE(se = se, 
+      fit_SE(se = se$value, 
              nested_identifiers = nested_identifiers,
              averaged_assay = averaged_assay, 
              metrics_assay = metrics_assay, 
              n_point_cutoff = n_point_cutoff)
     } else {
-      fit_SE.combinations(se = se,
+      fit_SE.combinations(se = se$value,
                           series_identifiers = nested_identifiers,
                           averaged_assay = averaged_assay)
     }, warning)
