@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.20] - 2021-12-30
+#### Update
+- fix linter issues
+
 #### [1.1.19] - 2021-12-14
 #### Update
 - use parallel computing as an alternative for `for` loops
