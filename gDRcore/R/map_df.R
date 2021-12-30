@@ -107,6 +107,7 @@ map_df <- function(trt_md,
   drug_cols <- mat_elem[valid]
 
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  mat_elem[mat_elem == untrt_tag[[2]]] <- untrt_tag[[1]]
   pattern <- paste0(sprintf("^%s$", untrt_tag), collapse = "|")
   has_tag <- as.data.frame(lapply(drug_cols, function(x) grepl(pattern, x)))
   ntag <- rowSums(has_tag)
@@ -117,21 +118,11 @@ map_df <- function(trt_md,
   trt <- mat_elem[!is_ref & !is_untrt, ]
   ref <- mat_elem[is_ref, ]
 
-  out <- vector("list", nrow(trt))
-  names(out) <- rownames(trt)
-
   if (any(is_ref)) {
     compare_cols <- c(valid, clid)
-    
-    for (t in rownames(trt)) {
-      refs <- NULL
-      for (r in rownames(ref)) {
-        if (all(setdiff(as.character(ref[r, compare_cols]), as.character(trt[t, compare_cols])) %in% untrt_tag)) {
-          refs <- c(refs, r)
-        }
-      }
-      out[[t]] <- refs
-    }
+    out <- lapply(split(as.data.frame(lapply(valid, function(x) {
+      rownames(ref)[match(do.call(paste, trt[, c(clid, x)]), do.call(paste, ref[, c(clid, x)]))]
+    })), rownames(trt)), unlist, use.names = FALSE)
   }
   out
 }
