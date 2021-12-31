@@ -127,7 +127,7 @@ map_df <- function(trt_md,
                                     unlist(lapply(valid, function(y) do.call(paste, ref[, c(clid, y)])))
                           )]
     })), as.numeric(rownames(trt)))
-    lapply(out, function(x) as.character(sort(unlist(x))))
+    lapply(out, function(x) as.character(sort(as.numeric(unlist(x)))))
   } else {
     out
   }
