@@ -118,11 +118,16 @@ map_df <- function(trt_md,
   trt <- mat_elem[!is_ref & !is_untrt, ]
   ref <- mat_elem[is_ref, ]
 
+  out <- vector("list", nrow(trt))
+  names(out) <- rownames(trt)
+  
   if (any(is_ref)) {
-    compare_cols <- c(valid, clid)
     out <- lapply(split(as.data.frame(lapply(valid, function(x) {
-      rownames(ref)[match(do.call(paste, trt[, c(clid, x)]), do.call(paste, ref[, c(clid, x)]))]
+      sort(rep(as.numeric(rownames(ref)), length(valid))[match(do.call(paste, trt[, c(clid, x)]), unlist(lapply(valid, function(y) do.call(paste, ref[, c(clid, y)])))
+                          )])
     })), rownames(trt)), unlist, use.names = FALSE)
+    lapply(out, function(x) as.character(sort(x)))
+  } else {
+    out
   }
-  out
 }
