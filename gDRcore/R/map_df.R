@@ -122,13 +122,12 @@ map_df <- function(trt_md,
   names(out) <- rownames(trt)
   
   if (any(is_ref)) {
-    out <- lapply(split(as.data.frame(lapply(valid, function(x) {
-      sort(rep(as.numeric(rownames(ref)),
-               length(valid))[match(do.call(paste, trt[, c(clid, x)]),
+    out <- split(as.data.frame(lapply(valid, function(x) {
+      rep(rownames(ref), length(valid))[match(do.call(paste, trt[, c(clid, x)]),
                                     unlist(lapply(valid, function(y) do.call(paste, ref[, c(clid, y)])))
-                          )])
-    })), rownames(trt)), unlist, use.names = FALSE)
-    lapply(out, function(x) as.character(sort(x)))
+                          )]
+    })), as.numeric(rownames(trt)))
+    lapply(out, function(x) as.character(sort(unlist(x))))
   } else {
     out
   }
