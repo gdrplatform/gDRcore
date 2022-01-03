@@ -111,7 +111,7 @@ calculate_Loewe <- function(df_mean,
 
     # calculate the reference (additive model in the rotated space)
     c2 <- ref_conc_2 / (1 + (ref_conc_2 / ref_conc_1) * (10 ^ (
-                -(sqrt(2) * df_iso_curve$x1 + min(axis_2$pos_x) - min(axis_1$pos_y)))))
+                - (sqrt(2) * df_iso_curve$x1 + min(axis_2$pos_x) - min(axis_1$pos_y)))))
     df_iso_curve$x2_ref <- (log10(c2) - min(axis_2$pos_x) +
               (log10(ref_conc_1 * (1 - c2 / ref_conc_2)) - min(axis_1$pos_y))) / sqrt(2)
 
@@ -151,10 +151,10 @@ calculate_Loewe <- function(df_mean,
     # calculate CI across range to concentration ratios (in the rotated log10 space)
     df_iso_curve$log10_ratio_conc <- df_iso_curve$x1
     # delta in the log10 space is the ratio of 
-    df_iso_curve$log2_CI <- zoo::rollmean( 
-        log2(10) * (df_iso_curve$x2 - df_iso_curve$x2_ref) / sqrt(2), 4,
-        fill = c(0, 0, 0))
-
+    df_iso_curve$log2_CI <- zoo::rollmean(log2(10) * (df_iso_curve$x2 - df_iso_curve$x2_ref) / sqrt(2),
+                                          4,
+                                          fill = c(0, 0, 0))
+    
     # cap position for plotting the isobolograms
     df_iso$pos_y <- pmin(df_iso$pos_y, max(axis_1$pos_y) + log2_pos_offset)
     df_iso$pos_x <- pmin(df_iso$pos_x, max(axis_2$pos_x) + log2_pos_offset)
