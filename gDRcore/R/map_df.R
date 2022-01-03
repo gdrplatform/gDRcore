@@ -122,17 +122,21 @@ map_df <- function(trt_md,
   names(out) <- rownames(trt)
   
   if (any(is_ref)) {
-    outMatchList <- 
-      lapply(valid, function(x) {
-      grr::matches(do.call(paste, trt[, c(clid, x)]),
-                                    unlist(lapply(valid, function(y) do.call(paste, ref[, c(clid, y)]))),
-                                    list = FALSE, all.y = FALSE)
-      })
-    mergedList <- do.call(rbind, outMatchList)
-    out <- split(mergedList[["y"]], mergedList[["x"]])
-    names(out) <- rownames(trt)
+    trtNames <- rep(rownames(trt), length(valid))
     refNames <- rep(rownames(ref), length(valid))
-    lapply(out, function(x) stringr::str_sort(refNames[x], numeric = TRUE))
+    
+    trt <- lapply(valid, function(x) trt[, c(clid, x)])
+    trt <- do.call(paste, do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]])))))
+    
+    ref <- lapply(valid, function(x) ref[, c(clid, x)])
+    ref <- do.call(paste, do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]])))))
+    
+    matchTrtRef <- grr::matches(trt, ref, list = FALSE, all.y = FALSE)
+    matchTrtRef[["x"]] <- trtNames[matchTrtRef[["x"]]]
+    matchTrtRef[["y"]] <- refNames[matchTrtRef[["y"]]]
+    
+    out <- split(matchTrtRef[["y"]], matchTrtRef[["x"]])
+    out
   } else {
     out
   }
