@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.20] - 2022-01-03
+#### Update
+- speed-up functions for mapping treated and untreated cases
+
 #### [1.1.19] - 2021-12-14
 #### Update
 - use parallel computing as an alternative for `for` loops
