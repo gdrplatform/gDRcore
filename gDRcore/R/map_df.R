@@ -132,7 +132,7 @@ map_df <- function(trt_md,
     out <- split(mergedList[["y"]], mergedList[["x"]])
     names(out) <- rownames(trt)
     refNames <- rep(rownames(ref), length(valid))
-    lapply(out, function(x) gtools::mixedsort(refNames[x]))
+    lapply(out, function(x) stringr::str_sort(refNames[x], numeric = TRUE))
   } else {
     out
   }
