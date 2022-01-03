@@ -122,12 +122,17 @@ map_df <- function(trt_md,
   names(out) <- rownames(trt)
   
   if (any(is_ref)) {
-    out <- split(as.data.frame(lapply(valid, function(x) {
-      rep(rownames(ref), length(valid))[match(do.call(paste, trt[, c(clid, x)]),
-                                    unlist(lapply(valid, function(y) do.call(paste, ref[, c(clid, y)])))
-                          )]
-    })), as.numeric(rownames(trt)))
-    lapply(out, function(x) as.character(sort(as.numeric(unlist(x)))))
+    outMatchList <- 
+      lapply(valid, function(x) {
+      grr::matches(do.call(paste, trt[, c(clid, x)]),
+                                    unlist(lapply(valid, function(y) do.call(paste, ref[, c(clid, y)]))),
+                                    list = FALSE, all.y = FALSE)
+      })
+    mergedList <- do.call(rbind, outMatchList)
+    out <- split(mergedList[["y"]], mergedList[["x"]])
+    names(out) <- rownames(trt)
+    refNames <- rep(rownames(ref), length(valid))
+    lapply(out, function(x) gtools::mixedsort(refNames[x]))
   } else {
     out
   }
