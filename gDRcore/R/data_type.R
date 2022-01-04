@@ -18,7 +18,7 @@ identify_data_type <- function(df,
   cell <- gDRutils::get_env_identifiers("cellline")
   cols_pairs <- intersect(names(df),  c(drug_ids, cell))
   drug_pairs <- unique(df[, cols_pairs])
-  drug_pairs_list <- split(drug_pairs[, drug_ids], drug_pairs[[cell]])
+  # drug_pairs_list <- split(drug_pairs[, drug_ids], drug_pairs[[cell]]) #nolint
   
   cnt <- seq_len(nrow(df))
   df$type <- NA
@@ -28,9 +28,16 @@ identify_data_type <- function(df,
     df_matching <- merge(cbind(df, cnt), drug_pairs[idp, ])
     df_primary_matching <- merge(cbind(df, cnt), drug_pairs[idp, c(drug_ids[["drugname"]], cell)])
     matching_idx <- df_matching$cnt
-    type <- if (is.null(df[matching_idx, conc_ids[["concentration2"]]]) |
-                                    all(df_primary_matching[conc_ids[["concentration2"]]] == 0)) {
+    type <- if (is.null(df[matching_idx, conc_ids[["concentration2"]]])) {
+      if (all(df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag)) {
+      "control"
+    }
+    else {
       "single-agent"
+    }
+      } else if (all(df_primary_matching[conc_ids[["concentration2"]]] == 0) &
+                               any(df_primary_matching[conc_ids[["concentration"]]] != 0)) {
+        "single-agent"
       } else if (all(df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag & df[matching_idx, drug_ids[["drugname2"]]] %in% untreated_tag | 
                      df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag) |
                      all((df[matching_idx, drug_ids[["drugname2"]]] %in% untreated_tag) & any(df_primary_matching[conc_ids[["concentration2"]]] != 0))) {
@@ -84,7 +91,7 @@ split_raw_data <- function(df,
   control <- df_list[["control"]]
   df_list[["control"]] <- NULL
   cotrt_types <- setdiff(names(df_list), "single-agent")
-  control_sa_idx <- which(rowSums(control[, conc_idx] == 0) == length(conc_idx))
+  control_sa_idx <- which(rowSums(control[, conc_idx, drop = FALSE] == 0) == length(conc_idx))
   control_sa <- control[control_sa_idx, ]
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   
@@ -96,8 +103,8 @@ split_raw_data <- function(df,
   }
   if (length(cotrt_types) > 0) {
     df_list[cotrt_types] <- lapply(df_list[cotrt_types], function(x) {
-      unique_cotrt <- unique(x[, c(clid, gDRutils::get_env_identifiers("drug"))])
-      unique_cotrt_ctrl <- unique(control[control[[cl]] %in% unique_cotrt[[cl]] & control[[drug]] %in% untreated_tag, ][, c(clid, drug)])
+      unique_cotrt <- unique(x[, c(cl, gDRutils::get_env_identifiers("drug"))])
+      unique_cotrt_ctrl <- unique(control[control[[cl]] %in% unique_cotrt[[cl]] & control[[drug]] %in% untreated_tag, ][, c(cl, drug)])
       cotrt_matching <- rbind(unique_cotrt, unique_cotrt_ctrl)
       rbind(x, merge(cotrt_matching, control))
     })
