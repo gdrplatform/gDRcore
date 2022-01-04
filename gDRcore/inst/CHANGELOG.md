@@ -2,9 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [1.1.20] - 2021-12-29
+#### [1.1.22] - 2021-01-04
 #### Update
 - wrap SE into MAE on the level of runDrugResponseProcessingPipeline
+
+#### [1.1.21] - 2022-01-03
+#### Update
+- speed-up functions for mapping treated and untreated cases
+
+#### [1.1.20] - 2021-12-30
+#### Update
+- fix linter issues
 
 #### [1.1.19] - 2021-12-14
 #### Update

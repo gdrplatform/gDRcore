@@ -20,9 +20,6 @@ pkgs:
     ref: master 
     subdir: gDRutils
     source: GITHUB
-  lintr:
-    ver: '>=1.0.0'
-    url: https://github.com/jimhester/lintr.git
   gDRtestData:
     ver: '>=1.0.6'
     url: gdrplatform/gDRtestData
@@ -35,11 +32,3 @@ pkgs:
     ref: main
     subdir: ~
     source: GITHUB
-  covr:
-    source: CRAN
-  futile.logger:
-    source: CRAN
-  pkgload:
-    source: CRAN
-  roxygen2:
-    source: CRAN
