@@ -32,15 +32,15 @@ map_df <- function(trt_md,
   checkmate::assert_character(ref_type)
   
   ref_type <- match.arg(ref_type)
-
+  
   duration_col <- gDRutils::get_env_identifiers("duration")
-
+  
   conc <- cbind(array(0, nrow(ref_md)), # padding to avoid empty df;
-    ref_md[, agrep("Concentration", colnames(ref_md)), drop = FALSE])
+                ref_md[, agrep("Concentration", colnames(ref_md)), drop = FALSE])
   is_ref_conc <- apply(conc, 1, function(z) {
     all(z == 0)
-    })
-
+  })
+  
   if (ref_type == "Day0") {
     # Identifying which of the durations have a value of 0.
     matching_list <- list(T0 = ref_md[, duration_col] == 0, conc = is_ref_conc)
@@ -49,28 +49,33 @@ map_df <- function(trt_md,
     matching_list <- list(conc = is_ref_conc)
     matchFactor <- duration_col 
   }
-
+  
   trt_rnames <- rownames(trt_md)
   ref_rnames <- rownames(ref_md)
-
+  
   # define matrix with matching metadata
   present_ref_cols <- intersect(ref_cols, names(ref_md))
   names(present_ref_cols) <- present_ref_cols
-
+  
   out <- list("vector", length(trt_rnames))
   msgs <- NULL
-  for (i in seq_len(length(trt_rnames))) {
+  
+  # Parallel computing
+  clusters <- parallel::makeCluster(cores, type = "FORK")
+  doParallel::registerDoParallel(clusters)
+  
+  out <- foreach::foreach(i = seq_along(trt_rnames)) %dopar% {
     treatment <- trt_rnames[i]
     refs <- lapply(present_ref_cols, function(y) {
       ref_md[, y] == trt_md[treatment, y]
-      })
-
+    })
+    
     if (!is.null(override_untrt_controls)) {
       for (overridden in names(override_untrt_controls)) {
         refs[[overridden]] <- ref_md[, overridden] == override_untrt_controls[[overridden]]
       }
     }
-
+    
     all_checks <- c(refs, matching_list)
     match_mx <- do.call("rbind", all_checks)
     rownames(match_mx) <- names(all_checks)
@@ -85,13 +90,15 @@ map_df <- function(trt_md,
       if (any(idx > 0)) {
         match_idx <- which.max(idx)
         msgs <- c(msgs, sprintf("Found partial match: ('%s') for treatment: ('%s')",
-          rownames(ref_md)[match_idx], treatment))
+                                rownames(ref_md)[match_idx], treatment))
       } else { # failed to find any potential match
         msgs <- c(msgs, sprintf("No partial match found for treatment: ('%s')", treatment))
       }
     }
-    out[[i]] <- ref_rnames[match_idx] # TODO: Check that this properly handles NAs or NULLs. 
+    ref_rnames[match_idx] # TODO: Check that this properly handles NAs or NULLs. 
   }
+  parallel::stopCluster(clusters)
+  
   futile.logger::flog.info(paste0(msgs, collapse = "\n"))
   names(out) <- trt_rnames
   out
@@ -107,6 +114,7 @@ map_df <- function(trt_md,
   drug_cols <- mat_elem[valid]
 
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  mat_elem[mat_elem == untrt_tag[[2]]] <- untrt_tag[[1]]
   pattern <- paste0(sprintf("^%s$", untrt_tag), collapse = "|")
   has_tag <- as.data.frame(lapply(drug_cols, function(x) grepl(pattern, x)))
   ntag <- rowSums(has_tag)
@@ -119,19 +127,27 @@ map_df <- function(trt_md,
 
   out <- vector("list", nrow(trt))
   names(out) <- rownames(trt)
-
+  
   if (any(is_ref)) {
-    compare_cols <- c(valid, clid)
+    # store rownames of trt and ref and replicate them based on the length of drug columns
+    trtNames <- rep(rownames(trt), length(valid))
+    refNames <- rep(rownames(ref), length(valid))
     
-    for (t in rownames(trt)) {
-      refs <- NULL
-      for (r in rownames(ref)) {
-        if (all(setdiff(as.character(ref[r, compare_cols]), as.character(trt[t, compare_cols])) %in% untrt_tag)) {
-          refs <- c(refs, r)
-        }
-      }
-      out[[t]] <- refs
-    }
+    # split data.frames to simple model with clid column and drug column
+    trt <- lapply(valid, function(x) trt[, c(clid, x)])
+    trt <- do.call(paste, do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]])))))
+    
+    ref <- lapply(valid, function(x) ref[, c(clid, x)])
+    ref <- do.call(paste, do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]])))))
+    
+    # match trt and ref
+    matchTrtRef <- grr::matches(trt, ref, list = FALSE, all.y = FALSE)
+    matchTrtRef[["x"]] <- trtNames[matchTrtRef[["x"]]]
+    matchTrtRef[["y"]] <- refNames[matchTrtRef[["y"]]]
+    
+    out <- split(matchTrtRef[["y"]], matchTrtRef[["x"]])
+    out
+  } else {
+    out
   }
-  out
 }
