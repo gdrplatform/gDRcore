@@ -7,9 +7,9 @@ test_synthetic_data <- function(original,
                                 override_untrt_controls = NULL,
                                 tolerance = 10e-7,
                                 combo = FALSE,
-                                OMITTED_COLUMNS_TO_TEST_NORMALIZED = NULL,
-                                OMITTED_COLUMNS_TO_TEST_AVERAGED = NULL,
-                                OMITTED_COLUMNS_TO_TEST_METRICS = NULL
+                                OMITTED_COLUMNS_TO_TEST_NORMALIZED = c("rId", "cId"),
+                                OMITTED_COLUMNS_TO_TEST_AVERAGED = c("rId", "cId"),
+                                OMITTED_COLUMNS_TO_TEST_METRICS = c("rId", "cId")
                                 ) {
   if (inherits(data, "SummarizedExperiment")) {
     reprocessed <- data
@@ -28,17 +28,17 @@ test_synthetic_data <- function(original,
   if (!is.null(override_untrt_controls)) {
     original <- original[SummarizedExperiment::rowData(original)[[names(override_untrt_controls)]]
                          == override_untrt_controls, ]
-    reprocessed <- reprocessed[SummarizedExperiment::rowData(reprocessed)[[names(override_untrt_controls)]]
+    reprocessed[[1]] <- reprocessed[[1]][SummarizedExperiment::rowData(reprocessed[[1]])[[names(override_untrt_controls)]]
                                == override_untrt_controls, ]
   }
   normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
   averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
-  normalized_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Normalized")
-  averaged_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Averaged")
+  normalized_new <- gDRutils::convert_mae_assay_to_dt(reprocessed, "Normalized")
+  averaged_new <- gDRutils::convert_mae_assay_to_dt(reprocessed, "Averaged")
 
   if (!combo) {
     metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
-    metrics_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Metrics")
+    metrics_new <- gDRutils::convert_mae_assay_to_dt(reprocessed, "Metrics")
   }
   
   if (combo) {
