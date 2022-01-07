@@ -6,7 +6,7 @@
 #' @export
 #'
 identify_data_type <- function(df,
-                               fixed_conc = 4,
+                               cotreatment_conc = 4,
                                codilution_conc = 2,
                                matrix_conc = 4
                                ) {
@@ -62,8 +62,8 @@ identify_data_type <- function(df,
         "co-dilution"
       } else if (n_conc_pairs == length(conc_1) * length(conc_2) & length(conc_2) >= matrix_conc) {
         "matrix"
-      } else if (length(conc_2) < fixed_conc) {
-        "fixed"
+      } else if (length(conc_2) < cotreatment_conc) {
+        "cotreatment"
       } else {
         "other"
       }
