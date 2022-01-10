@@ -118,8 +118,6 @@ Defaults to \code{"RawTreated"}.}
 \item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
 Defaults to \code{4}.}
 
-\item{data_type}{string specyfying what type of data represents \code{df_} (either single-agent or combo)}
-
 \item{nested_keys}{character vector of column names to include in the data.frames
 in the assays of the resulting \code{SummarizedExperiment} object.}
 

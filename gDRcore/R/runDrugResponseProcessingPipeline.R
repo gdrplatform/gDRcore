@@ -5,7 +5,6 @@
 #' average data (average_SE), or fit the processed data (fit_SE). See details for more in-depth explanations.
 #'
 #' @param df_ data.frame of raw drug response data containing both treated and untreated values. 
-#' @param data_type string specyfying what type of data represents \code{df_} (either single-agent or combo)
 #' @param readout string of the name containing the cell viability readout values.
 #' @param control_mean_fxn function indicating how to average controls.
 #' Defaults to \code{mean(x, trim = 0.25)}.
@@ -125,7 +124,7 @@ runDrugResponseProcessingPipeline <- function(df_,
   checkmate::assert_data_frame(df_)
   checkmate::assert_string(readout)
   checkmate::assert_function(control_mean_fxn)
-  checkmate::assert_character(nested_identifiers, null.ok = TRUE)
+  checkmate::assert_multi_class(nested_identifiers, c("character", "list"), null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
   checkmate::assert_flag(override_masked)
@@ -140,19 +139,27 @@ runDrugResponseProcessingPipeline <- function(df_,
   df_ <- identify_data_type(df_)
   df_list <- split_raw_data(df_)
   mae <- MultiAssayExperiment::MultiAssayExperiment()
-  
+  if (!is.list(nested_identifiers)) {
+    nested_identifiers <- if (is.null(nested_identifiers)) {
+      list(`matrix` = .get_default_combo_identifiers(),
+           `single-agent` = .get_default_single_agent_identifiers())
+    } else if (length(nested_identifiers) == 1 || names(df_list) == 1) {
+        list(`single-agent` = nested_identifiers)
+    } else {
+      stop("Number of detected data types is greater that 1.
+           Please provide a named list of nested_identifiers")
+    }
+  }
   for (experiment in names(df_list)) {
-    if (is.null(nested_identifiers)) {
-      nested_identifiers <- if (experiment == "matrix") {
-        .get_default_combo_identifiers()
-      } else {
-        .get_default_single_agent_identifiers()
-      }
+    experiment_identifier <- if (experiment %in% names(nested_identifiers)) {
+      nested_identifiers[[experiment]]
+    } else {
+      nested_identifiers[["single-agent"]]
     }
     se <- catchr::catch_expr(create_and_normalize_SE(df_ = df_list[[experiment]],
                                                      readout = readout,
                                                      control_mean_fxn = control_mean_fxn,
-                                                     nested_identifiers = nested_identifiers,
+                                                     nested_identifiers = experiment_identifier,
                                                      nested_confounders = nested_confounders,
                                                      override_untrt_controls = override_untrt_controls,
                                                      control_assay = control_assay, 
@@ -162,7 +169,7 @@ runDrugResponseProcessingPipeline <- function(df_,
                              warning)
     .catch_warnings(se)
     se <- catchr::catch_expr(average_SE(se = se$value, 
-                                        series_identifiers = nested_identifiers,
+                                        series_identifiers = experiment_identifier,
                                         override_masked = override_masked, 
                                         normalized_assay = normalized_assay, 
                                         averaged_assay = averaged_assay),
@@ -170,11 +177,11 @@ runDrugResponseProcessingPipeline <- function(df_,
     .catch_warnings(se)
     se <- catchr::catch_expr(if (experiment == "matrix") {
       fit_SE.combinations(se = se$value,
-                          series_identifiers = nested_identifiers,
+                          series_identifiers = experiment_identifier,
                           averaged_assay = averaged_assay)
     } else {
       fit_SE(se = se$value, 
-             nested_identifiers = nested_identifiers,
+             nested_identifiers = experiment_identifier,
              averaged_assay = averaged_assay, 
              metrics_assay = metrics_assay, 
              n_point_cutoff = n_point_cutoff)

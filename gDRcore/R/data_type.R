@@ -1,10 +1,21 @@
 #' Identify type of data
 #'
-#' @param df
+#' @param df data.frame of raw drug response data containing both treated and untreated values
+#' @param cotreatment_conc integer of maximum number of concentration of co-treatment
+#' to classify as cotreatment data type.
+#' Defaults to \code{4}.
+#' @param codilution_conc integer of maximum number of concentration ratio of co-treatment
+#' to classify as codilution data type.
+#' Defaults to \code{2}.
+#' @param matrix_conc integer of minimum number of concentration pairs of co-treatment
+#' to classify as matrix data type.
+#' Defaults to \code{4}.
 #'
-#' @return
+#' @return data.frame of raw drug response data with additional column `type` with the info of
+#' data type for a given row of data.frame
 #' @export
 #'
+#' @author Bartosz Czech <bartosz.czech@@contractors.roche.com>
 identify_data_type <- function(df,
                                cotreatment_conc = 4,
                                codilution_conc = 2,
@@ -77,12 +88,14 @@ identify_data_type <- function(df,
 
 #' Split raw data into list based on the data types
 #'
-#' @param df data frame with raw data
-#' @param type_col column with identifier of data types in df
+#' @param df data.frame of raw drug response data containing both treated and untreated values with
+#' column specified in `type_col` argument.
+#' @param type_col string with column names in `df` with info about data type.
+#' Defaults to \code{"type"}.
 #'
-#' @return
+#' @return list with split data based on its data type
 #' @export
-#'
+#' @author Bartosz Czech <bartosz.czech@@contractors.roche.com>
 split_raw_data <- function(df,
                            type_col = "type") {
   conc_idx <- intersect(colnames(df), 
@@ -116,5 +129,3 @@ split_raw_data <- function(df,
     x[, names(x) != type_col]
     }, df_list)
 }
-
-
