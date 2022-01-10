@@ -11,7 +11,7 @@ test_synthetic_data <- function(original,
                                 OMITTED_COLUMNS_TO_TEST_AVERAGED = c("rId", "cId"),
                                 OMITTED_COLUMNS_TO_TEST_METRICS = c("rId", "cId")
                                 ) {
-  if (inherits(data, "SummarizedExperiment")) {
+  if (inherits(data, "MultiAssayExperiment")) {
     reprocessed <- data
   } else {
     data_type <- ifelse(combo, "combo", "single-agent")
