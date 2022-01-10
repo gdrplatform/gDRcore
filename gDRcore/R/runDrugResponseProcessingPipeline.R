@@ -106,7 +106,6 @@ create_and_normalize_SE <- function(df_,
 #' @rdname runDrugResponseProcessingPipelineFxns 
 #' @export
 runDrugResponseProcessingPipeline <- function(df_,
-                                              data_type = data_model(df_),
                                               readout = "ReadoutValue",
                                               control_mean_fxn = function(x) {
                                                 mean(x, trim = 0.25)
@@ -124,7 +123,6 @@ runDrugResponseProcessingPipeline <- function(df_,
                                               metrics_assay = "Metrics") {
   
   checkmate::assert_data_frame(df_)
-  checkmate::assert_choice(data_type, c("single-agent", "combo"))
   checkmate::assert_string(readout)
   checkmate::assert_function(control_mean_fxn)
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
@@ -144,10 +142,12 @@ runDrugResponseProcessingPipeline <- function(df_,
   mae <- MultiAssayExperiment::MultiAssayExperiment()
   
   for (experiment in names(df_list)) {
-    nested_identifiers <- if (experiment == "matrix") {
-      .get_default_combo_identifiers()
-    } else {
-      .get_default_single_agent_identifiers()
+    if (is.null(nested_identifier)) {
+      nested_identifiers <- if (experiment == "matrix") {
+        .get_default_combo_identifiers()
+      } else {
+        .get_default_single_agent_identifiers()
+      }
     }
     se <- catchr::catch_expr(create_and_normalize_SE(df_ = df_list[[experiment]],
                                                      readout = readout,
@@ -168,16 +168,16 @@ runDrugResponseProcessingPipeline <- function(df_,
                                         averaged_assay = averaged_assay),
                              warning)
     .catch_warnings(se)
-    se <- catchr::catch_expr(if (experiment == "single-agent") {
+    se <- catchr::catch_expr(if (experiment == "matrix") {
+      fit_SE.combinations(se = se$value,
+                          series_identifiers = nested_identifiers,
+                          averaged_assay = averaged_assay)
+    } else {
       fit_SE(se = se$value, 
              nested_identifiers = nested_identifiers,
              averaged_assay = averaged_assay, 
              metrics_assay = metrics_assay, 
              n_point_cutoff = n_point_cutoff)
-    } else {
-      fit_SE.combinations(se = se$value,
-                          series_identifiers = nested_identifiers,
-                          averaged_assay = averaged_assay)
     }, warning)
     .catch_warnings(se)
     mae <- c(mae, MultiAssayExperiment::MultiAssayExperiment(experiments = list(experiment = se$value)))

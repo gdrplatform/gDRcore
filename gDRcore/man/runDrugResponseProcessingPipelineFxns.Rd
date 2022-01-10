@@ -66,7 +66,6 @@ create_and_normalize_SE(
 
 runDrugResponseProcessingPipeline(
   df_,
-  data_type = data_model(df_),
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
   nested_identifiers = NULL,

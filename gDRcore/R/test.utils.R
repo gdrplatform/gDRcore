@@ -21,7 +21,6 @@ test_synthetic_data <- function(original,
       .get_default_single_agent_identifiers()
       }
     reprocessed <- gDRcore::runDrugResponseProcessingPipeline(data, override_untrt_controls = override_untrt_controls,
-                                                              data_type = data_type,
                                                               nested_identifiers = nested_identifiers)
   }
   
