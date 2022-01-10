@@ -142,7 +142,7 @@ runDrugResponseProcessingPipeline <- function(df_,
   mae <- MultiAssayExperiment::MultiAssayExperiment()
   
   for (experiment in names(df_list)) {
-    if (is.null(nested_identifier)) {
+    if (is.null(nested_identifiers)) {
       nested_identifiers <- if (experiment == "matrix") {
         .get_default_combo_identifiers()
       } else {
