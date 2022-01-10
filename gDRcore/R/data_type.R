@@ -112,7 +112,7 @@ split_raw_data <- function(df,
       rbind(x, merge(cotrt_matching, control))
     })
   }
-  Map(function(x){
+  Map(function(x) {
     x[, names(x) != type_col]
     }, df_list)
 }
