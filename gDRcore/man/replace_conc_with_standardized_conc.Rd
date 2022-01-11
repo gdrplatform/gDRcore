@@ -16,9 +16,11 @@ replace_conc_with_standardized_conc(
 
 \item{conc_map}{data.frame of two columns named \code{original_conc_col} and \code{standardized_conc_col}.}
 
-\item{original_conc_col}{string of the name of the column in \code{conc_map} containing the original concentrations to replace.}
+\item{original_conc_col}{string of the name of the column in \code{conc_map}
+containing the original concentrations to replace.}
 
-\item{standardized_conc_col}{string of the name of the column in \code{conc_map} containing the standardized concentrations to use for replacement.}
+\item{standardized_conc_col}{string of the name of the column in \code{conc_map}
+containing the standardized concentrations to use for replacement.}
 }
 \value{
 numeric vector of standardized concentrations.

@@ -291,7 +291,7 @@ calculate_combo_matrix <- function(se,
         if (length(conc_ratio) != 1 || n_conc_codil < 4) { # check that ratios are respected
           mx_fit[["by_codil"]] <- NA
         } else {
-          for (i in -(nrow(mx_response) - 1):(ncol(mx_response) - 1)) {
+          for (i in - (nrow(mx_response) - 1):(ncol(mx_response) - 1)) {
               # get the data for a given diagonal (offset between the concentration and concentration_2)
               idx <- data.frame(col_idx = seq_len(nrow(mx_response)) - i,
                             row_idx = seq_len(nrow(mx_response)))
@@ -476,7 +476,7 @@ calculate_combo_matrix <- function(se,
 
           # calculate the reference (additive model in the rotated space)
           c2 <- ref_conc_2 / (1 + (ref_conc_2 / ref_conc_1) * (10 ^ (
-                      -(sqrt(2) * df_iso_curve$x1 + min(drug2_axis$pos_x) - min(drug1_axis$pos_y)))))
+                      - (sqrt(2) * df_iso_curve$x1 + min(drug2_axis$pos_x) - min(drug1_axis$pos_y)))))
           df_iso_curve$x2_ref <- (log10(c2) - min(drug2_axis$pos_x) +
                     (log10(ref_conc_1 * (1 - c2 / ref_conc_2)) - min(drug1_axis$pos_y))) / sqrt(2)
 

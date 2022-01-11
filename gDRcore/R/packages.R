@@ -4,5 +4,6 @@
 #' @name gDRcore
 #' @importFrom magrittr %$% %>% %<>%
 #' @import S4Vectors
+#' @importFrom foreach %dopar%
 NULL
 
