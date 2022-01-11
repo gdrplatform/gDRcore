@@ -14,14 +14,7 @@ test_synthetic_data <- function(original,
   if (inherits(data, "MultiAssayExperiment")) {
     reprocessed <- data
   } else {
-    data_type <- ifelse(combo, "combo", "single-agent")
-    nested_identifiers <- if (combo) {
-      .get_default_combo_identifiers()
-    } else {
-      .get_default_single_agent_identifiers()
-      }
-    reprocessed <- gDRcore::runDrugResponseProcessingPipeline(data, override_untrt_controls = override_untrt_controls,
-                                                              nested_identifiers = nested_identifiers)
+    reprocessed <- gDRcore::runDrugResponseProcessingPipeline(data, override_untrt_controls = override_untrt_controls)
   }
   
   if (!is.null(override_untrt_controls)) {
