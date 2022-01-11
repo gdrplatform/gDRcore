@@ -14,7 +14,8 @@ test_synthetic_data <- function(original,
   if (inherits(data, "MultiAssayExperiment")) {
     reprocessed <- data
   } else {
-    reprocessed <- gDRcore::runDrugResponseProcessingPipeline(data, override_untrt_controls = override_untrt_controls)
+    reprocessed <- gDRcore::runDrugResponseProcessingPipeline(data,
+                                                              override_untrt_controls = override_untrt_controls)
   }
   
   if (!is.null(override_untrt_controls)) {
@@ -62,7 +63,7 @@ test_synthetic_data <- function(original,
       expect_equal(new[, ..colsCompare], original[, ..colsCompare])
       })
     }
-  } else if (all(names(reprocessed) %in% c("cotreatment", "single-agent"))) {
+  } else if (all(c("cotreatment", "single-agent") %in% names(reprocessed))) {
     
     normalized_new$Concentration_2[is.na(normalized_new$Concentration_2)] <- 0
     averaged_new$Concentration_2[is.na(averaged_new$Concentration_2)] <- 0

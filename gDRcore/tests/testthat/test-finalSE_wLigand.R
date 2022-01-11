@@ -18,4 +18,5 @@ df_merged_data2$ReadoutValue <- round(df_merged_data2$ReadoutValue, 1)
 df_merged_data2$Barcode <- paste0(df_merged_data2$Barcode, "1")
 df_merged_data <- rbind(df_merged_data, df_merged_data2)
 
-test_synthetic_data(original, df_merged_data, data, additional_columns = 1, c(Ligand = 0.1))
+test_synthetic_data(original, df_merged_data, data, override_untrt_controls = c(Ligand = 0.1))
+
