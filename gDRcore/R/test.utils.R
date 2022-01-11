@@ -36,6 +36,10 @@ test_synthetic_data <- function(original,
   
   if (combo) {
     for (assay in c("normalized", "averaged")) {
+      data.table::setDT(normalized)
+      data.table::setDT(averaged)
+      data.table::setDT(normalized_new)
+      data.table::setDT(averaged_new)
       refColNames <- intersect(unname(unlist(gDRutils::get_env_identifiers())), names(get(assay)))
       concCols <- grep("Concentration", refColNames, value = TRUE)
       original <- unique(get(assay)[get(assay)[, apply(.SD != 0, 1, all), .SDcols = concCols], ])
