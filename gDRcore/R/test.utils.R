@@ -24,14 +24,14 @@ test_synthetic_data <- function(original,
                                          [[names(override_untrt_controls)]]
                                == override_untrt_controls, ]
   }
-  normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
-  averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
-  normalized_new <- gDRutils::convert_mae_assay_to_dt(reprocessed, "Normalized")
-  averaged_new <- gDRutils::convert_mae_assay_to_dt(reprocessed, "Averaged")
+  normalized <- as.data.frame(gDRutils::convert_se_assay_to_dt(original, "Normalized"))
+  averaged <- as.data.frame(gDRutils::convert_se_assay_to_dt(original, "Averaged"))
+  normalized_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Normalized"))
+  averaged_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Averaged"))
 
   if (!combo) {
-    metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
-    metrics_new <- gDRutils::convert_mae_assay_to_dt(reprocessed, "Metrics")
+    metrics <- as.data.frame(gDRutils::convert_se_assay_to_dt(original, "Metrics"))
+    metrics_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Metrics"))
   }
   
   if (combo) {
@@ -58,11 +58,40 @@ test_synthetic_data <- function(original,
       expect_equal(new[, ..colsCompare], original[, ..colsCompare])
       })
     }
+  } else if (all(names(reprocessed) %in% c("cotreatment", "single-agent"))) {
+    
+    normalized_new$Concentration_2[is.na(normalized_new$Concentration_2)] <- 0
+    averaged_new$Concentration_2[is.na(averaged_new$Concentration_2)] <- 0
+    normalized_new$Concentration_2[is.na(normalized_new$Concentration_2)] <- 0
+    metrics_new$Concentration_2[is.na(metrics_new$Concentration_2)] <- 0
+    order_cols <- unlist(gDRutils::get_env_identifiers(c("drug", "cellline",
+                                                         "concentration2", "concentration"), simplify = FALSE))
+    
+    
+    test_that(sprintf("Original data %s and recreated data are identical", dataName), {
+      expect_equal(ncol(normalized), ncol(normalized_new) + additional_columns)
+      expect_equal(ncol(averaged), ncol(averaged_new) + additional_columns)
+      expect_equal(ncol(metrics), ncol(metrics_new) + additional_columns)
+      
+      cotrt_cols <- grep("_2", names(normalized), value = TRUE)
+      expect_equivalent(
+        subset(normalized_new[do.call(order, normalized_new[order_cols]), ],
+               select = which(!colnames(normalized_new) %in% c(OMITTED_COLUMNS_TO_TEST_NORMALIZED, cotrt_cols))),
+        subset(normalized[do.call(order, normalized[order_cols]), ],
+               select = which(!colnames(normalized) %in% c(OMITTED_COLUMNS_TO_TEST_NORMALIZED, cotrt_cols)))
+      )
+      expect_equivalent(
+      subset(averaged_new[do.call(order, averaged_new[order_cols]), ],
+             select = which(!colnames(averaged_new) %in% c(OMITTED_COLUMNS_TO_TEST_AVERAGED, cotrt_cols))),
+      subset(averaged[do.call(order, averaged[order_cols]), ],
+             select = which(!colnames(averaged) %in% c(OMITTED_COLUMNS_TO_TEST_AVERAGED, cotrt_cols)))
+    )
+    })
   } else {
     test_that(sprintf("Original data %s and recreated data are identical", dataName), {
-      expect_equal(ncol(normalized), 14 + additional_columns)
-      expect_equal(ncol(averaged), 15 + additional_columns)
-      expect_equal(ncol(metrics), 26 + additional_columns)
+      expect_equal(ncol(normalized), ncol(normalized_new) + additional_columns)
+      expect_equal(ncol(averaged), ncol(averaged_new) + additional_columns)
+      expect_equal(ncol(metrics), ncol(metrics_new) + additional_columns)
       
       expect_equivalent(
         subset(normalized_new, select = which(!colnames(normalized_new) %in% OMITTED_COLUMNS_TO_TEST_NORMALIZED)),

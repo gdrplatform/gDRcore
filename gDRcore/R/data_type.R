@@ -34,7 +34,7 @@ identify_data_type <- function(df,
   cnt <- seq_len(nrow(df))
   df$type <- NA
   # loop through the pairs to assess the number of individual concentration pairs
-  for (idp in 1:nrow(drug_pairs)) {
+  for (idp in seq_len(nrow(drug_pairs))) {
     # reverse engineer the type of combination experiment
     df_matching <- merge(cbind(df, cnt), drug_pairs[idp, ])
     df_primary_matching <- merge(cbind(df, cnt), drug_pairs[idp, c(drug_ids[["drugname"]], cell)])
@@ -47,7 +47,10 @@ identify_data_type <- function(df,
       "single-agent"
     }
       } else if (all(df_primary_matching[conc_ids[["concentration2"]]] == 0) &
-                               any(df_primary_matching[conc_ids[["concentration"]]] != 0)) {
+                               any(df_primary_matching[conc_ids[["concentration"]]] != 0) |
+                 all(df_matching[[drug_ids[["drugname2"]]]] %in% untreated_tag) &
+                 all(!df_matching[[drug_ids[["drugname"]]]] %in% untreated_tag) &
+                 length(unique(unname(table(df_primary_matching[conc_ids[["concentration2"]]])))) == 1) {
         "single-agent"
       } else if (all(df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag &
                      df[matching_idx, drug_ids[["drugname2"]]] %in% untreated_tag | 
