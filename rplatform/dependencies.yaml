@@ -1,16 +1,4 @@
 pkgs:
-  S4Vectors:
-    source: Bioc
-    ver: "3.13"
-  IRanges:
-    source: Bioc
-    ver: "3.13"
-  SummarizedExperiment:
-    source: Bioc
-    ver: "3.13"
-  MultiAssayExperiment:
-    source: Bioc
-    ver: "3.13"
   BumpyMatrix:
     source: Bioc
     ver: "3.13"
