@@ -23,8 +23,10 @@ identify_data_type <- function(df,
                                ) {
   
   # find the pairs of drugs with relevant metadat
-  drug_ids <- unlist(gDRutils::get_env_identifiers(c("drugname", "drugname2"), simplify = FALSE)) 
-  conc_ids <- unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"), simplify = FALSE))
+  drug_ids <- unlist(gDRutils::get_env_identifiers(c("drugname", "drugname2", "drugname3"), simplify = FALSE)) 
+  conc_ids <- unlist(gDRutils::get_env_identifiers(c("concentration",
+                                                     "concentration2",
+                                                     "concentration3"), simplify = FALSE))
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   cell <- gDRutils::get_env_identifiers("cellline")
   cols_pairs <- intersect(names(df),  c(drug_ids, cell))

@@ -151,6 +151,7 @@ runDrugResponseProcessingPipeline <- function(df_,
     }
   }
   for (experiment in names(df_list)) {
+    message("Processing ", experiment)
     experiment_identifier <- if (experiment %in% names(nested_identifiers)) {
       nested_identifiers[[experiment]]
     } else {
