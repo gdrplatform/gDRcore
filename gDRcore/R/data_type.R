@@ -66,7 +66,6 @@ identify_data_type <- function(df,
       } else {
         NA
       }
-    type
     df[matching_idx, "type"]  <- type
     if (all(!is.na(df[matching_idx, "type"]))) {
       next
@@ -136,7 +135,8 @@ split_raw_data <- function(df,
                                             control[[drug_ids[["drugname"]]]] %in%
                                             untreated_tag, ][, c(cl, drug_ids[["drugname"]])])
       cotrt_matching <- rbind(unique_cotrt, unique_cotrt_ctrl)
-      sa_matching <- if ("single-agent" %in% names(df_list)) {
+      sa_matching <- 
+        if ("single-agent" %in% names(df_list) && sum(grepl("drugname", names(drug_ids))) > 2) {
         merge(unique_cotrt, df_list[["single-agent"]])
       } else {
         NULL
