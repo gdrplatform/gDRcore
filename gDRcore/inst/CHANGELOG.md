@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.22] - 2022-01-24
+#### Update
+- fix wrong type of `NUM_CORES` env variable
+
 #### [1.1.21] - 2022-01-03
 #### Update
 - speed-up functions for mapping treated and untreated cases
