@@ -9,7 +9,7 @@ echo "Working directory contains: `ls | tr '\n' ' '`"
 set -e
 
 echo ">>>>>>>> Running linter"
-Rscript -e "gDRstyle::lintPkgInDir('/mnt/vol/gDRcore')"
+Rscript -e "gDRstyle::lintPkgDirs('/mnt/vol/gDRcore')"
 
 echo ">>>>> RUNNING UNIT TESTS"
 Rscript -e "testthat::test_local(path = '/mnt/vol/gDRcore', stop_on_failure = TRUE)"
@@ -18,10 +18,5 @@ Rscript -e "testthat::test_local(path = '/mnt/vol/gDRcore', stop_on_failure = TR
 #echo ">>>>> RUNNING DEVTOOLS::CHECK()"
 #sudo R CMD check --no-build-vignettes --no-manual --no-tests /mnt/vol/gDRwrapper
 
-
 echo ">>>>>>>> RUNNING CHECK DEPENDENCIES"
-Rscript -e "gDRstyle::checkDependencies('/mnt/vol/gDRcore')"
-
-
-echo ">>>>>>>> RUNNING CHECK DEPENDENCIES"
-Rscript -e "gDRstyle::checkDependencies('/mnt/vol/gDRcore')"
+Rscript -e "gDRstyle::checkDependencies(desc_path='/mnt/vol/gDRcore/DESCRIPTION', dep_path='/mnt/vol/dependencies.yaml')"
