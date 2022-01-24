@@ -34,8 +34,7 @@ add_CellLine_annotation <- function(df_metadata,
     add_clid <- gDRutils::get_header("add_clid")
     
     # Read local cell_lines annotations
-    annotationPackage <- ifelse(requireNamespace("gDRinternal", quietly = TRUE),
-                                "gDRinternal", "gDRtestData")
+    annotationPackage <- "gDRtestData"
     CLs_info <- read.csv(system.file("data", "cell_lines.csv", package = annotationPackage))
     CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate)]
     CLs_info[, "doubling_time"] <- as.numeric(CLs_info[, "doubling_time"])
