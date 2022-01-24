@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.23] - 2022-01-24
+#### Update
+- switch from `cores` variable to `detect_cores()` function
+
 #### [1.1.22] - 2022-01-24
 #### Update
 - fix wrong type of `NUM_CORES` env variable
