@@ -20,7 +20,7 @@ Imports:
     foreach,
     grr,
     doParallel,
-    gDRutils (>= 1.0.17),
+    gDRutils (>= 1.0.19),
     httr,
     magrittr,
     parallel,
@@ -31,13 +31,12 @@ Imports:
 Suggests:
     BumpyMatrix,
     covr,
-    kcloak (>= 0.0.8),
     futile.logger,
     knitr,
     testthat,
     yaml,
     gDRinternal,
-    gDRstyle (>= 0.0.6),
+    gDRstyle (>= 0.0.7),
     gDRtestData (>= 1.0.6),
     gDRwrapper
 VignetteBuilder: knitr

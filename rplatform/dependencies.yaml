@@ -12,7 +12,7 @@ pkgs:
     subdir: gDRtestData
     source: GITHUB
   gDRstyle:
-    ver: '>=0.0.3'
+    ver: '>=0.0.7'
     url: gdrplatform/gDRstyle
     ref: main
     subdir: ~
