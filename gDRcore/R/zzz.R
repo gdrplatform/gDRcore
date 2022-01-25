@@ -4,7 +4,3 @@
 
 # data.table awareness
 .datatable.aware <- TRUE
-cores <- Sys.getenv("NUM_CORES")
-if (cores == "") {
-  cores <- parallel::detectCores() - 1
-  }
