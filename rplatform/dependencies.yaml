@@ -12,8 +12,10 @@ pkgs:
     subdir: gDRtestData
     source: GITHUB
   gDRstyle:
-    ver: '>=0.0.7'
+    ver: '>=0.0.8'
     url: gdrplatform/gDRstyle
     ref: main
     subdir: ~
+    source: GITHUB
+  magrittr:
     source: GITHUB

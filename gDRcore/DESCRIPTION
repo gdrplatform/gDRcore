@@ -22,7 +22,7 @@ Imports:
     doParallel,
     gDRutils (>= 1.0.19),
     httr,
-    magrittr,
+    magrittr (>= 1.0.0),
     parallel,
     reshape2,
     stringr,
@@ -36,7 +36,7 @@ Suggests:
     testthat,
     yaml,
     gDRinternal,
-    gDRstyle (>= 0.0.7),
+    gDRstyle (>= 0.0.8),
     gDRtestData (>= 1.0.6),
     gDRwrapper
 VignetteBuilder: knitr
