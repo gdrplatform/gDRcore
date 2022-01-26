@@ -16,7 +16,7 @@ Rscript -e "testthat::test_local(path = '/mnt/vol/gDRcore', stop_on_failure = TR
 
 # TODO: fix the issue with R CMD CHECK
 #echo ">>>>> RUNNING DEVTOOLS::CHECK()"
-#sudo R CMD check --no-build-vignettes --no-manual --no-tests /mnt/vol/gDRwrapper
+#sudo R CMD check --no-build-vignettes --no-manual --no-tests /mnt/vol/gDRcore
 
 echo ">>>>>>>> RUNNING CHECK DEPENDENCIES"
 Rscript -e "gDRstyle::checkDependencies(desc_path='/mnt/vol/gDRcore/DESCRIPTION', dep_path='/mnt/vol/dependencies.yaml')"
