@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+<<<<<<< HEAD
+#### [1.1.24] - 2022-01-25
+#### Update
+- standardize/improve CI
+
 #### [1.1.23] - 2022-01-24
 #### Update
 - switch from `cores` variable to `detect_cores()` function
