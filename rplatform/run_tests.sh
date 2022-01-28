@@ -1,4 +1,5 @@
 #/bin/sh
+repo_path="$1"
 
 echo "Executing $0"
 echo "Environment: ${rp_env}"
@@ -12,7 +13,7 @@ echo ">>>>>>>> Running linter"
 Rscript -e "gDRstyle::lintPkgDirs('/mnt/vol/gDRcore')"
 
 echo ">>>>> RUNNING UNIT TESTS"
-Rscript -e "testthat::test_local(path = '/mnt/vol/gDRcore', stop_on_failure = TRUE)"
+Rscript -e "testthat::test_local(path = '$repo_path', stop_on_failure = TRUE)"
 
 # TODO: fix the issue with R CMD CHECK
 #echo ">>>>> RUNNING DEVTOOLS::CHECK()"
