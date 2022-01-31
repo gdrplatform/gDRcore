@@ -2,7 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-<<<<<<< HEAD
+#### [1.1.25] - 2022-01-31
+#### Update
+- align version criteria between `dependencies.yaml` and `DESCRIPTION` package versions
+
 #### [1.1.24] - 2022-01-25
 #### Update
 - standardize/improve CI
