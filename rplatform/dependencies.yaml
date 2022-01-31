@@ -17,5 +17,3 @@ pkgs:
     ref: main
     subdir: ~
     source: GITHUB
-  magrittr:
-    source: GITHUB
