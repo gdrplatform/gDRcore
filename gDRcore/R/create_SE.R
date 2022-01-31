@@ -109,7 +109,7 @@ create_SE <- function(df_,
   treated <- treated[rownames(treated) %in% unique(groupings), ]
 
   # Parallel computing
-  clusters <- parallel::makeCluster(cores, type = "FORK")
+  clusters <- parallel::makeCluster(detect_cores(), type = "FORK")
   doParallel::registerDoParallel(clusters)
   
   out <- foreach::foreach(i = seq_len(nrow(treated))) %dopar% {

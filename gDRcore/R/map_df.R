@@ -61,7 +61,7 @@ map_df <- function(trt_md,
   msgs <- NULL
   
   # Parallel computing
-  clusters <- parallel::makeCluster(cores, type = "FORK")
+  clusters <- parallel::makeCluster(detect_cores(), type = "FORK")
   doParallel::registerDoParallel(clusters)
   
   out <- foreach::foreach(i = seq_along(trt_rnames)) %dopar% {
