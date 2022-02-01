@@ -2,9 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [1.1.25] - 2021-01-31
+#### [1.1.26] - 2021-02-01
 #### Update
 - wrap SE into MAE on the level of runDrugResponseProcessingPipeline
+
+#### [1.1.25] - 2022-01-31
+#### Update
+- align version criteria between `dependencies.yaml` and `DESCRIPTION` package versions
 
 #### [1.1.24] - 2022-01-25
 #### Update
