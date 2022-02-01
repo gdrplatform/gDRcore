@@ -47,6 +47,8 @@ identify_data_type <- function(df,
     df_matching <- merge(cbind(df, cnt), drug_pairs[idp, ])
     df_primary_matching <- merge(cbind(df, cnt), drug_pairs[idp, c(drug_ids[["drugname"]], cell)])
     matching_idx <- df_matching$cnt
+    detect_sa <- sum(vapply(lapply(df_matching[, drug_ids], function(x) !x %in% untreated_tag), all, logical(1)))
+    
     type <- if (ncol(df[matching_idx, drugs_cotrt_ids, drop = FALSE]) == 0) {
       if (all(df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag)) {
       "control"
@@ -54,18 +56,35 @@ identify_data_type <- function(df,
     else {
       "single-agent"
     }
-      } else if (all(unlist(df_primary_matching[, conc_cotrt_ids]) == 0) &
-                               any(df_primary_matching[conc_ids[["concentration"]]] != 0) |
-                 all(unlist(df_matching[, drugs_cotrt_ids]) %in% untreated_tag) &
-                 all(!df_matching[[drug_ids[["drugname"]]]] %in% untreated_tag)) {
-        "single-agent"
-      } else if (all(df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag) |
-                     all((df[matching_idx, drugs_cotrt_ids[["drugname2"]]] %in% untreated_tag) &
-                         any(unlist(df_primary_matching[[conc_ids[["concentration2"]]]]) != 0))) {
-        "control"
-      } else {
-        NA
-      }
+    } else if (detect_sa == 1) {
+      "single-agent"
+    } else if (detect_sa == 0 | 
+               all(df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag) |
+               all((df[matching_idx, drugs_cotrt_ids[["drugname2"]]] %in% untreated_tag) &
+                   any(unlist(df_primary_matching[[conc_ids[["concentration2"]]]]) != 0))) {
+      "control" 
+    } else {
+      NA
+    }
+    # type <- if (ncol(df[matching_idx, drugs_cotrt_ids, drop = FALSE]) == 0) {
+    #   if (all(df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag)) {
+    #   "control"
+    # }
+    # else {
+    #   "single-agent"
+    # }
+    #   } else if (all(unlist(df_primary_matching[, conc_cotrt_ids]) == 0) &
+    #                            any(df_primary_matching[conc_ids[["concentration"]]] != 0) |
+    #              all(unlist(df_matching[, drugs_cotrt_ids]) %in% untreated_tag) &
+    #              all(!df_matching[[drug_ids[["drugname"]]]] %in% untreated_tag)) {
+    #     "single-agent"
+    #   } else if (all(df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag) |
+    #                  all((df[matching_idx, drugs_cotrt_ids[["drugname2"]]] %in% untreated_tag) &
+    #                      any(unlist(df_primary_matching[[conc_ids[["concentration2"]]]]) != 0))) {
+    #     "control"
+    #   } else {
+    #     NA
+    #   }
     df[matching_idx, "type"]  <- type
     if (all(!is.na(df[matching_idx, "type"]))) {
       next
@@ -146,6 +165,14 @@ split_raw_data <- function(df,
   }
   
   if ("single-agent" %in% names(df_list)) {
+    sa_idx <- lapply(grep("Gnumber", drug_ids, value = TRUE), function(x)
+           which(!df_list[["single-agent"]][, x] %in% untreated_tag))
+    sa_idx[["drug"]] <- NULL
+    for (codrug in names(sa_idx)) {
+      codrug_cols <- grep(as.numeric(gsub("\\D", "", codrug)), drug_ids, value = TRUE)
+      df_list[["single-agent"]][sa_idx[[codrug]], drug_ids[c("drugname", "drug", "drug_moa", "concentration")]] <- 
+        df_list[["single-agent"]][sa_idx[[codrug]], codrug_cols]
+    }
     df_list[["single-agent"]][, codrug_ids] <- NULL
     df_list[["single-agent"]] <- rbind(df_list[["single-agent"]],
                                        control_sa[, names(df_list[["single-agent"]])])
