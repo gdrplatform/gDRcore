@@ -37,18 +37,15 @@ identify_data_type <- function(df,
   cell <- gDRutils::get_env_identifiers("cellline_name")
   cols_pairs <- intersect(names(df),  c(drug_ids, cell))
   drug_pairs <- unique(df[, cols_pairs])
-  # drug_pairs_list <- split(drug_pairs[, drug_ids], drug_pairs[[cell]]) #nolint
-  
+
   cnt <- seq_len(nrow(df))
   df$type <- NA
   # loop through the pairs to assess the number of individual concentration pairs
   for (idp in seq_len(nrow(drug_pairs))) {
-    # reverse engineer the type of combination experiment
     df_matching <- merge(cbind(df, cnt), drug_pairs[idp, ])
-    df_primary_matching <- merge(cbind(df, cnt), drug_pairs[idp, c(drug_ids[["drugname"]], cell)])
     matching_idx <- df_matching$cnt
-    detect_sa <- sum(vapply(lapply(df_matching[, drugs_ids, drop = FALSE], function(x) !x %in% untreated_tag), all, logical(1)))
-    
+    treated <- vapply(lapply(df_matching[, drugs_ids, drop = FALSE], function(x) !x %in% untreated_tag), all, logical(1))
+    detect_sa <- sum(treated)
     type <- if (ncol(df[matching_idx, drugs_cotrt_ids, drop = FALSE]) == 0) {
       if (all(df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag)) {
       "control"
@@ -59,32 +56,11 @@ identify_data_type <- function(df,
     } else if (detect_sa == 1) {
       "single-agent"
     } else if (detect_sa == 0 | 
-               all(df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag) |
-               all((df[matching_idx, drugs_cotrt_ids[["drugname2"]]] %in% untreated_tag) &
-                   any(unlist(df_primary_matching[[conc_ids[["concentration2"]]]]) != 0))) {
+               (length(treated) == 3 & sum(treated[1:2]) == 1)) {
       "control" 
     } else {
       NA
     }
-    # type <- if (ncol(df[matching_idx, drugs_cotrt_ids, drop = FALSE]) == 0) {
-    #   if (all(df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag)) {
-    #   "control"
-    # }
-    # else {
-    #   "single-agent"
-    # }
-    #   } else if (all(unlist(df_primary_matching[, conc_cotrt_ids]) == 0) &
-    #                            any(df_primary_matching[conc_ids[["concentration"]]] != 0) |
-    #              all(unlist(df_matching[, drugs_cotrt_ids]) %in% untreated_tag) &
-    #              all(!df_matching[[drug_ids[["drugname"]]]] %in% untreated_tag)) {
-    #     "single-agent"
-    #   } else if (all(df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag) |
-    #                  all((df[matching_idx, drugs_cotrt_ids[["drugname2"]]] %in% untreated_tag) &
-    #                      any(unlist(df_primary_matching[[conc_ids[["concentration2"]]]]) != 0))) {
-    #     "control"
-    #   } else {
-    #     NA
-    #   }
     df[matching_idx, "type"]  <- type
     if (all(!is.na(df[matching_idx, "type"]))) {
       next
@@ -107,9 +83,6 @@ identify_data_type <- function(df,
       } else {
         "other"
       }
-    if (type == "co-dilution") {
-      message(idp)
-    }
     df[matching_idx, "type"]  <- ifelse(is.na(df[matching_idx, "type"]), type, df[matching_idx, "type"])
   }
   df
