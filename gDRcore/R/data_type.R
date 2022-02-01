@@ -47,7 +47,7 @@ identify_data_type <- function(df,
     df_matching <- merge(cbind(df, cnt), drug_pairs[idp, ])
     df_primary_matching <- merge(cbind(df, cnt), drug_pairs[idp, c(drug_ids[["drugname"]], cell)])
     matching_idx <- df_matching$cnt
-    detect_sa <- sum(vapply(lapply(df_matching[, drug_ids], function(x) !x %in% untreated_tag), all, logical(1)))
+    detect_sa <- sum(vapply(lapply(df_matching[, drugs_ids, drop = FALSE], function(x) !x %in% untreated_tag), all, logical(1)))
     
     type <- if (ncol(df[matching_idx, drugs_cotrt_ids, drop = FALSE]) == 0) {
       if (all(df[matching_idx, drug_ids[["drugname"]]] %in% untreated_tag)) {
