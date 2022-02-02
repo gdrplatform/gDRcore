@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.26] - 2022-02-02
+#### Update
+- unlist output of intersect as per R 4.2.0
+
 #### [1.1.25] - 2022-01-31
 #### Update
 - align version criteria between `dependencies.yaml` and `DESCRIPTION` package versions
