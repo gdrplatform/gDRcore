@@ -109,8 +109,8 @@ map_df <- function(trt_md,
 #' Using the given rownames, map the treated and reference conditions.
 .map_references <- function(mat_elem) {
   clid <- gDRutils::get_env_identifiers("cellline")
-  valid <- intersect(c(gDRutils::get_env_identifiers(c("drugname", "drugname2"), simplify = FALSE)),
-                     colnames(mat_elem))
+  valid <- unlist(intersect(c(gDRutils::get_env_identifiers(c("drugname", "drugname2"), simplify = FALSE)),
+                     colnames(mat_elem)))
   drug_cols <- mat_elem[valid]
 
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
