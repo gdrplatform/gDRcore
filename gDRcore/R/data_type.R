@@ -23,11 +23,10 @@ identify_data_type <- function(df,
                                ) {
   
   # find the pairs of drugs with relevant metadata
-  drug_ids <- unlist(gDRutils::get_env_identifiers(c("drugname", "drugname2", "drugname3"), simplify = FALSE)) 
+  drug_ids <- unlist(gDRutils::get_env_identifiers(c("drugname", "drugname2"), simplify = FALSE)) 
   drugs_ids <- drug_ids[which(drug_ids %in% names(df))]
   conc_ids <- unlist(gDRutils::get_env_identifiers(c("concentration",
-                                                     "concentration2",
-                                                     "concentration3"), simplify = FALSE))
+                                                     "concentration2"), simplify = FALSE))
   conc_ids <- conc_ids[which(conc_ids %in% names(df))]
   
   drugs_cotrt_ids <- drugs_ids[!names(drugs_ids) %in% "drugname"]
@@ -55,8 +54,7 @@ identify_data_type <- function(df,
     }
     } else if (detect_sa == 1) {
       "single-agent"
-    } else if (detect_sa == 0 | 
-               (length(treated) == 3 & sum(treated[1:2]) == 1)) {
+    } else if (detect_sa == 0) {
       "control" 
     } else {
       NA
@@ -101,11 +99,10 @@ identify_data_type <- function(df,
 split_raw_data <- function(df,
                            type_col = "type") {
   
-  drug_ids <- unlist(gDRutils::get_env_identifiers(c("drugname", "drugname2", "drugname3",
-                                                     "drug", "drug2", "drug3",
-                                                     "drug_moa", "drug_moa2", "drug_moa3",
-                                                     "concentration", "concentration2",
-                                                     "concentration3"), simplify = FALSE)) 
+  drug_ids <- unlist(gDRutils::get_env_identifiers(c("drugname", "drugname2",
+                                                     "drug", "drug2",
+                                                     "drug_moa", "drug_moa2",
+                                                     "concentration", "concentration2"), simplify = FALSE)) 
   drug_ids <- drug_ids[which(drug_ids %in% names(df))]
   codrug_ids <- drug_ids[grep("[0-9]", names(drug_ids))]
   conc_idx <- drug_ids[grep("concentration", names(drug_ids))]
