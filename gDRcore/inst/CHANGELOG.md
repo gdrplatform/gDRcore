@@ -2,9 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [1.1.26] - 2021-02-01
+#### [1.1.27] - 2021-02-03
 #### Update
 - wrap SE into MAE on the level of runDrugResponseProcessingPipeline
+
+#### [1.1.26] - 2022-02-02
+#### Update
+- unlist output of intersect as per R 4.2.0
 
 #### [1.1.25] - 2022-01-31
 #### Update

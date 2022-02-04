@@ -114,9 +114,12 @@ create_SE <- function(df_,
   
   out <- foreach::foreach(i = seq_len(nrow(treated))) %dopar% {
     trt <- rownames(treated)[i]
-    matching_nested_confounders <- unique(dfs[groupings %in% trt, nested_confounders])
-    trt_df <- dfs[groupings %in% c(trt, refs[[trt]]) &
-                    dfs[[nested_confounders]] %in% matching_nested_confounders, , drop = FALSE]
+    if (!is.null(nested_confounders)) {
+      matching_nested_confounders <- unique(dfs[groupings %in% trt, nested_confounders])
+      trt_df <- dfs[groupings %in% c(trt, refs[[trt]]) &
+                      dfs[[nested_confounders]] %in% matching_nested_confounders, , drop = FALSE]
+    }
+    trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
 
     ctl_type <- "untrt_Endpoint"
