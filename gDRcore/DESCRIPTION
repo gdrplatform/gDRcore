@@ -35,7 +35,7 @@ Suggests:
     knitr,
     testthat,
     yaml,
-    gDRinternal,
+    gDRinternalData,
     gDRstyle (>= 0.0.8),
     gDRtestData (>= 1.0.6),
     gDRwrapper
