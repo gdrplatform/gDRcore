@@ -140,7 +140,7 @@ Order_result_df <- function(df_) {
       cols
     )
 
-  df_ <- df_[do.call(order, df_[, row_order_col]), cols]
+  df_ <- df_[do.call(order, df_[, unlist(row_order_col)]), unlist(cols)]
 
   return(df_)
 }

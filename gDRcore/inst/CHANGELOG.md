@@ -2,9 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [1.1.27] - 2021-02-03
+#### [1.1.29] - 2021-02-09
 #### Update
 - wrap SE into MAE on the level of runDrugResponseProcessingPipeline
+
+#### [1.1.28] - 2022-02-09
+#### Fixed
+- switch from `gDRinternal` to `gDRinternalData` for internal annotations
+
+#### [1.1.27] - 2022-02-08
+#### Fixed
+- issue with subsetting by list in R 4.2.0
 
 #### [1.1.26] - 2022-02-02
 #### Update
