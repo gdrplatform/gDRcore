@@ -34,8 +34,8 @@ add_CellLine_annotation <- function(df_metadata,
     add_clid <- gDRutils::get_header("add_clid")
     
     # Read local cell_lines annotations
-    annotationPackage <- ifelse(requireNamespace("gDRinternal", quietly = TRUE),
-                                "gDRinternal", "gDRtestData")
+    annotationPackage <- ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
+                                "gDRinternalData", "gDRtestData")
     CLs_info <- read.csv(system.file("data", "cell_lines.csv", package = annotationPackage))
     CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate)]
     CLs_info[, "doubling_time"] <- as.numeric(CLs_info[, "doubling_time"])
@@ -116,9 +116,9 @@ add_Drug_annotation <- function(df_metadata,
     drugsTreated <- unique(df_metadata[[drug]])
     
     # Read local drugs annotations
-    annotationPackage <- ifelse(requireNamespace("gDRinternal", quietly = TRUE),
-                                "gDRinternal", "gDRtestData")
-    Drug_info <- read.csv(system.file("data/drugs.csv", package = annotationPackage),
+    annotationPackage <- ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
+                                "gDRinternalData", "gDRtestData")
+    Drug_info <- read.csv(system.file("data", "drugs.csv", package = annotationPackage),
                           header = TRUE)
     Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa")]
     data.table::setnames(Drug_info, c("drug", "drug_name", "drug_moa"))

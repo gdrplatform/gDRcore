@@ -1,8 +1,8 @@
 Package: gDRcore
 Type: Package
 Title: Processing functions and interface to process and analyze drug dose-response data
-Version: 1.1.27
-Date: 2022-02-08
+Version: 1.1.28
+Date: 2022-02-09
 Author: c(person("Bartosz", "Czech", role=c("aut", "cre"), email="bartosz.czech@contractors.roche.com"),
              person("Arkadiusz", "Gladki", role=c("aut")),
              person("Marc", "Hafner", role=c("aut")),
@@ -35,7 +35,7 @@ Suggests:
     knitr,
     testthat,
     yaml,
-    gDRinternal,
+    gDRinternalData,
     gDRstyle (>= 0.0.8),
     gDRtestData (>= 1.0.6),
     gDRwrapper
