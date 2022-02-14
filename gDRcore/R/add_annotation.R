@@ -111,7 +111,7 @@ add_Drug_annotation <- function(df_metadata,
     DB_drug_identifier <- c("gnumber", "drug_name", "drug_moa")
     drug <- gDRutils::get_env_identifiers("drug")
     untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
-    drugname <- gDRutils::get_env_identifiers("drugname")
+    drug_name <- gDRutils::get_env_identifiers("drug_name")
     drug_moa <- gDRutils::get_env_identifiers("drug_moa")
     drugsTreated <- unique(df_metadata[[drug]])
     
@@ -135,7 +135,7 @@ add_Drug_annotation <- function(df_metadata,
     
     
     if (nrow(Drug_info) == 0) {
-      df_metadata[, drugname] <- df_metadata[, drug]
+      df_metadata[, drug_name] <- df_metadata[, drug]
       return(df_metadata)
     }
     
@@ -173,7 +173,7 @@ add_Drug_annotation <- function(df_metadata,
                                   paste(DrIDs[!ok_DrID], collapse = " ; "))
       }
     }
-    colnames(Drug_info) <- c("drug", drugname, drug_moa)
+    colnames(Drug_info) <- c("drug", drug_name, drug_moa)
     futile.logger::flog.info("Merge with Drug_info for Drug 1")
     df_metadata[[paste0(drug, "_temp")]] <-
       remove_drug_batch(df_metadata[[drug]])
@@ -185,7 +185,7 @@ add_Drug_annotation <- function(df_metadata,
       df_metadata[is.na(df_metadata[[i]]), i] <- untreated_tag[1] # set missing values to Untreated
       Drug_info_ <- Drug_info
       colnames(Drug_info_)[colnames(Drug_info_)
-                           %in% c(drugname, drug_moa)] <- paste0(c(drugname, drug_moa),
+                           %in% c(drug_name, drug_moa)] <- paste0(c(drug_name, drug_moa),
                                                                  gsub(".*(_\\d)", "\\1",
                                                                       colnames(df_metadata)[i]))
       futile.logger::flog.info("Merge with Drug_info for %s", colnames(df_metadata)[[i]])

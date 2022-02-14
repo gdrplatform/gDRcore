@@ -1,8 +1,8 @@
 test_that(".assign_conditions works", {
   a <- 5
   b <- 2
-  drugnames <- c(paste0("G", seq_len(a)), rep(gDRutils::get_env_identifiers("untreated_tag"), 2))
-  df <- data.frame(DrugName = drugnames, Concentration = c(rep(1, a), rep(0, b * 2)))
+  drug_names <- c(paste0("G", seq_len(a)), rep(gDRutils::get_env_identifiers("untreated_tag"), 2))
+  df <- data.frame(DrugName = drug_names, Concentration = c(rep(1, a), rep(0, b * 2)))
   df <- .assign_conditions(df, nested_identifiers = c("Concentration"))
   expect_true(all(dim(df) == c(9, 3)))
   expect_equal(df$conditions, as.factor(c(rep("treated", 5), rep("untreated", 4))))
