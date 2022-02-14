@@ -21,7 +21,7 @@ Imports:
     foreach,
     grr,
     doParallel,
-    gDRutils (>= 1.0.19),
+    gDRutils (>= 1.0.27),
     httr,
     parallel,
     reshape2,
