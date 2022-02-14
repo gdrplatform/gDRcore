@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.29] - 2022-02-14
+#### Refactored
+- change identifier `drugname` to `drug_name`
+
 #### [1.1.28] - 2022-02-09
 #### Fixed
 - switch from `gDRinternal` to `gDRinternalData` for internal annotations
