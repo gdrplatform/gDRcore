@@ -109,7 +109,7 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
         swap_idx <- df_raw_data$Concentration_2 > 0 &
                       df_raw_data[, drug_id] %in% gDRutils::get_env_identifiers("untreated_tag")
         temp_df <- df_raw_data[swap_idx, ]
-        header_names <- c(drug_id, gDRutils::get_env_identifiers("drugname"), 
+        header_names <- c(drug_id, gDRutils::get_env_identifiers("drug_name"), 
                           gDRutils::get_env_identifiers("drug_moa"), "Concentration")
         temp_df[, c(header_names, paste0(header_names, "_2"))] <-
           temp_df[, c(paste0(header_names, "_2"), header_names)]

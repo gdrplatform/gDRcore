@@ -67,8 +67,8 @@ calculate_combo_matrix <- function(se,
 
         # Secondary drug for some combinations becomes primary drug when viewed as single-agent (conc1=0), so swap. 
         # swap the data into the Gnumber and Gnumber_2 such that it can form a matrix
-        swap_idx <- flat_data[, gDRutils::get_env_identifiers("drugname")] == 
-          combo$condition[[paste0(gDRutils::get_env_identifiers("drugname"), "_2")]] & 
+        swap_idx <- flat_data[, gDRutils::get_env_identifiers("drug_name")] == 
+          combo$condition[[paste0(gDRutils::get_env_identifiers("drug_name"), "_2")]] & 
           flat_data$Gnumber_2 %in% gDRutils::get_env_identifiers("untreated_tag")
         temp_df <- flat_data[swap_idx, ]
         temp_df[, c("Gnumber", "DrugName", "drug_moa", "Concentration",
@@ -756,12 +756,12 @@ calculate_combo_cotrt <- function(se) {
 add_codrug_group_SE <- function(se) {
 
   r_data <- SummarizedExperiment::rowData(se)
-  if (!(paste0(gDRutils::get_SE_identifiers(se, "drugname"), "_2") %in% colnames(r_data)) ||
-     all(r_data[[paste0(gDRutils::get_SE_identifiers(se, "drugname"), "_2")]] %in%
+  if (!(paste0(gDRutils::get_SE_identifiers(se, "drug_name"), "_2") %in% colnames(r_data)) ||
+     all(r_data[[paste0(gDRutils::get_SE_identifiers(se, "drug_name"), "_2")]] %in%
        gDRutils::get_SE_identifiers(se, "untreated_tag"))) return(se)
 
   # find the pairs of drugs with relevant metadata
-  drug_ids <- unlist(gDRutils::get_env_identifiers(c("drugname", "drugname2"), simplify = FALSE))
+  drug_ids <- unlist(gDRutils::get_env_identifiers(c("drug_name", "drug_name2"), simplify = FALSE))
   other_metadata <- c(#paste0(gDRutils::get_identifier("drug"), c("", "_2")),
             setdiff(colnames(r_data), c("Concentration_2", drug_ids,
                 paste0(gDRutils::get_SE_identifiers(se, "drug"), c("", "_2")),
