@@ -125,13 +125,7 @@ split_raw_data <- function(df,
                                             control[[drug_ids[["drugname"]]]] %in%
                                             untreated_tag, ][, c(cl, drug_ids[["drugname"]])])
       cotrt_matching <- rbind(unique_cotrt, unique_cotrt_ctrl)
-      sa_matching <- 
-        if ("single-agent" %in% names(df_list) && sum(grepl("drugname", names(drug_ids))) > 2) {
-        merge(unique_cotrt, df_list[["single-agent"]])
-      } else {
-        NULL
-      }
-      rbind(df_list[[x]], merge(cotrt_matching, control), sa_matching)
+      rbind(df_list[[x]], merge(cotrt_matching, control), df_list[["single-agent"]])
     })
   }
   
