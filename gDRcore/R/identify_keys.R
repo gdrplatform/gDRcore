@@ -45,7 +45,7 @@ identify_keys <- function(df_,
 
   x <- c("Concentration", 
     identifiers$drug, 
-    identifiers$drugname,
+    identifiers$drug_name,
     identifiers$drug_moa)
   pattern <- sprintf("%s|%s|%s|%s", x[1], x[2], x[3], x[4])
   pattern_keys <- grepl(pattern, all_keys)

@@ -127,10 +127,10 @@ Order_result_df <- function(df_) {
   row_order_col <-
     intersect(
       c(
-        gDRutils::get_env_identifiers(c("cellline_name", "duration", "drugname"), simplify = FALSE),
+        gDRutils::get_env_identifiers(c("cellline_name", "duration", "drug_name"), simplify = FALSE),
         "Concentration",
         paste0(c(
-          paste0(gDRutils::get_env_identifiers("drugname"), "_"), "Concentration_"
+          paste0(gDRutils::get_env_identifiers("drug_name"), "_"), "Concentration_"
         ),
         sort(rep(2:10, 2))),
         setdiff(colnames(df_), c(
@@ -154,7 +154,7 @@ Order_result_df <- function(df_) {
 #' @export
 data_model <- function(df_) {
   checkmate::assert_data_frame(df_)
-  drug_ids <- unlist(gDRutils::get_env_identifiers(c("drugname", "drugname2"), simplify = FALSE))
+  drug_ids <- unlist(gDRutils::get_env_identifiers(c("drug_name", "drug_name2"), simplify = FALSE))
   cl_id <- gDRutils::get_env_identifiers("cellline")
   conc2 <- gDRutils::get_env_identifiers("concentration2")
   if (all(.get_default_combo_identifiers() %in% colnames(df_))) {

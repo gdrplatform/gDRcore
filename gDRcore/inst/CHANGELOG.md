@@ -2,9 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [1.1.29] - 2021-02-09
+#### [1.1.30] - 2021-02-17
 #### Update
 - wrap SE into MAE on the level of runDrugResponseProcessingPipeline
+
+#### [1.1.29] - 2022-02-14
+#### Refactored
+- change identifier `drugname` to `drug_name`
 
 #### [1.1.28] - 2022-02-09
 #### Fixed
