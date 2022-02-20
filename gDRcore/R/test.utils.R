@@ -98,24 +98,27 @@ test_synthetic_data <- function(original,
     )
     })
   } else {
+    cotrt_cols_norm <- grep("_2", names(normalized), value = TRUE)
+    cotrt_cols_avg <- grep("_2", names(averaged), value = TRUE)
+    
     test_that(sprintf("Original data %s and recreated data are identical", dataName), {
-      expect_equal(ncol(normalized), ncol(normalized_new) + additional_columns)
-      expect_equal(ncol(averaged), ncol(averaged_new) + additional_columns)
-      expect_equal(ncol(metrics), ncol(metrics_new) + additional_columns)
+      expect_equal(ncol(normalized), ncol(normalized_new) + length(cotrt_cols_norm))
+      expect_equal(ncol(averaged), ncol(averaged_new) + length(cotrt_cols_avg))
+      expect_equal(ncol(metrics), ncol(metrics_new) + length(cotrt_cols_avg))
       
       expect_equivalent(
         subset(normalized_new, select = which(!colnames(normalized_new) %in% OMITTED_COLUMNS_TO_TEST_NORMALIZED)),
-        subset(normalized, select = which(!colnames(normalized) %in% OMITTED_COLUMNS_TO_TEST_NORMALIZED))
+        subset(normalized, select = which(!colnames(normalized) %in% c(OMITTED_COLUMNS_TO_TEST_NORMALIZED, cotrt_cols_norm)))
       )
       
       expect_equivalent(
         subset(averaged_new, select = which(!colnames(averaged_new) %in% OMITTED_COLUMNS_TO_TEST_AVERAGED)),
-        subset(averaged, select = which(!colnames(averaged) %in% OMITTED_COLUMNS_TO_TEST_AVERAGED))
+        subset(averaged, select = which(!colnames(averaged) %in% c(OMITTED_COLUMNS_TO_TEST_AVERAGED, cotrt_cols_avg)))
       )
       
       expect_equivalent(
         subset(metrics_new, select = which(!colnames(metrics_new) %in% OMITTED_COLUMNS_TO_TEST_METRICS)),
-        subset(metrics, select = which(!colnames(metrics) %in% OMITTED_COLUMNS_TO_TEST_METRICS)), 
+        subset(metrics, select = which(!colnames(metrics) %in% c(OMITTED_COLUMNS_TO_TEST_METRICS, cotrt_cols_avg))), 
         tolerance = tolerance
       )
     })
