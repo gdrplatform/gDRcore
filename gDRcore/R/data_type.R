@@ -129,7 +129,7 @@ split_raw_data <- function(df,
       if (x == "matrix") {
         rbind(df_merged, df_list[["single-agent"]])
       } else {
-        df_merged
+        rbind(df_merged, merge(cotrt_matching, df_list[["single-agent"]]))
       }
     })
   }
