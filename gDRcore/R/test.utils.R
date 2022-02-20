@@ -26,8 +26,8 @@ test_synthetic_data <- function(original,
                                == override_untrt_controls, ]
   }
   reprocessed <- reprocessed[["single-agent"]]
-  if (gDRutils::get_env_identifiers("drug_name2") %in% names(rowData(original))) {
-    original <- original[rowData(original)[[gDRutils::get_env_identifiers("drug_name2")]]
+  if (gDRutils::get_env_identifiers("drug_name2") %in% names(SummarizedExperiment::rowData(original))) {
+    original <- original[SummarizedExperiment::rowData(original)[[gDRutils::get_env_identifiers("drug_name2")]]
                          %in% gDRutils::get_env_identifiers("untreated_tag")]
   }
   
