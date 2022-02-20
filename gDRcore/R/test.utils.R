@@ -25,10 +25,15 @@ test_synthetic_data <- function(original,
                                          [[names(override_untrt_controls)]]
                                == override_untrt_controls, ]
   }
+  
+  if (!combo) {
   reprocessed <- reprocessed[["single-agent"]]
   if (gDRutils::get_env_identifiers("drug_name2") %in% names(SummarizedExperiment::rowData(original))) {
     original <- original[SummarizedExperiment::rowData(original)[[gDRutils::get_env_identifiers("drug_name2")]]
                          %in% gDRutils::get_env_identifiers("untreated_tag")]
+  }
+  } else {
+    reprocessed <- reprocessed[["matrix"]]
   }
   
   normalized <- as.data.frame(gDRutils::convert_se_assay_to_dt(original, "Normalized"))
@@ -69,34 +74,6 @@ test_synthetic_data <- function(original,
       expect_equal(new[, ..colsCompare], original[, ..colsCompare])
       })
     }
-  } else if (all(c("cotreatment", "single-agent") %in% names(reprocessed))) {
-    
-    normalized_new$Concentration_2[is.na(normalized_new$Concentration_2)] <- 0
-    averaged_new$Concentration_2[is.na(averaged_new$Concentration_2)] <- 0
-    normalized_new$Concentration_2[is.na(normalized_new$Concentration_2)] <- 0
-    metrics_new$Concentration_2[is.na(metrics_new$Concentration_2)] <- 0
-    order_cols <- unlist(gDRutils::get_env_identifiers(c("drug", "cellline", "concentration"), simplify = FALSE))
-    
-    
-    test_that(sprintf("Original data %s and recreated data are identical", dataName), {
-      expect_equal(ncol(normalized), ncol(normalized_new) + length(cotrt_cols))
-      expect_equal(ncol(averaged), ncol(averaged_new) + length(cotrt_cols))
-      expect_equal(ncol(metrics), ncol(metrics_new) + length(cotrt_cols))
-      
-      cotrt_cols <- grep("_2", names(normalized), value = TRUE)
-      expect_equivalent(
-        subset(normalized_new[do.call(order, normalized_new[order_cols]), ],
-               select = which(!colnames(normalized_new) %in% c(OMITTED_COLUMNS_TO_TEST_NORMALIZED, cotrt_cols))),
-        subset(normalized[do.call(order, normalized[order_cols]), ],
-               select = which(!colnames(normalized) %in% c(OMITTED_COLUMNS_TO_TEST_NORMALIZED, cotrt_cols)))
-      )
-      expect_equivalent(
-      subset(averaged_new[do.call(order, averaged_new[order_cols]), ],
-             select = which(!colnames(averaged_new) %in% c(OMITTED_COLUMNS_TO_TEST_AVERAGED, cotrt_cols))),
-      subset(averaged[do.call(order, averaged[order_cols]), ],
-             select = which(!colnames(averaged) %in% c(OMITTED_COLUMNS_TO_TEST_AVERAGED, cotrt_cols)))
-    )
-    })
   } else {
     cotrt_cols_norm <- grep("_2", names(normalized), value = TRUE)
     cotrt_cols_avg <- grep("_2", names(averaged), value = TRUE)
