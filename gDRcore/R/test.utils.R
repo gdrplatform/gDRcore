@@ -108,7 +108,8 @@ test_synthetic_data <- function(original,
       
       expect_equivalent(
         subset(normalized_new, select = which(!colnames(normalized_new) %in% OMITTED_COLUMNS_TO_TEST_NORMALIZED)),
-        subset(normalized, select = which(!colnames(normalized) %in% c(OMITTED_COLUMNS_TO_TEST_NORMALIZED, cotrt_cols_norm)))
+        subset(normalized, select = which(!colnames(normalized) %in%
+                                            c(OMITTED_COLUMNS_TO_TEST_NORMALIZED, cotrt_cols_norm)))
       )
       
       expect_equivalent(
