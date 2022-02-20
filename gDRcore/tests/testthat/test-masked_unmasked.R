@@ -14,7 +14,7 @@ test_that("masked and unmasked values are processed properly", {
                  "masked"] <- TRUE
   
   
-  finalSE <- gDRcore::runDrugResponseProcessingPipeline(df_merged_data, override_untrt_controls = NULL)
-  testthat::expect_s4_class(finalSE, "SummarizedExperiment")
+  finalMAE <- gDRcore::runDrugResponseProcessingPipeline(df_merged_data, override_untrt_controls = NULL)
+  testthat::expect_s4_class(finalMAE, "MultiAssayExperiment")
 })
 

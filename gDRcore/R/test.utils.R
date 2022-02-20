@@ -7,42 +7,40 @@ test_synthetic_data <- function(original,
                                 override_untrt_controls = NULL,
                                 tolerance = 10e-7,
                                 combo = FALSE,
-                                OMITTED_COLUMNS_TO_TEST_NORMALIZED = NULL,
-                                OMITTED_COLUMNS_TO_TEST_AVERAGED = NULL,
-                                OMITTED_COLUMNS_TO_TEST_METRICS = NULL
+                                OMITTED_COLUMNS_TO_TEST_NORMALIZED = c("rId", "cId"),
+                                OMITTED_COLUMNS_TO_TEST_AVERAGED = c("rId", "cId"),
+                                OMITTED_COLUMNS_TO_TEST_METRICS = c("rId", "cId")
                                 ) {
-  if (inherits(data, "SummarizedExperiment")) {
+  if (inherits(data, "MultiAssayExperiment")) {
     reprocessed <- data
   } else {
-    data_type <- ifelse(combo, "combo", "single-agent")
-    nested_identifiers <- if (combo) {
-      .get_default_combo_identifiers()
-    } else {
-      .get_default_single_agent_identifiers()
-      }
-    reprocessed <- gDRcore::runDrugResponseProcessingPipeline(data, override_untrt_controls = override_untrt_controls,
-                                                              data_type = data_type,
-                                                              nested_identifiers = nested_identifiers)
+    reprocessed <- gDRcore::runDrugResponseProcessingPipeline(data,
+                                                              override_untrt_controls = override_untrt_controls)
   }
   
   if (!is.null(override_untrt_controls)) {
     original <- original[SummarizedExperiment::rowData(original)[[names(override_untrt_controls)]]
                          == override_untrt_controls, ]
-    reprocessed <- reprocessed[SummarizedExperiment::rowData(reprocessed)[[names(override_untrt_controls)]]
+    reprocessed[[1]] <- reprocessed[[1]][SummarizedExperiment::rowData(reprocessed[[1]])
+                                         [[names(override_untrt_controls)]]
                                == override_untrt_controls, ]
   }
-  normalized <- gDRutils::convert_se_assay_to_dt(original, "Normalized")
-  averaged <- gDRutils::convert_se_assay_to_dt(original, "Averaged")
-  normalized_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Normalized")
-  averaged_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Averaged")
+  normalized <- as.data.frame(gDRutils::convert_se_assay_to_dt(original, "Normalized"))
+  averaged <- as.data.frame(gDRutils::convert_se_assay_to_dt(original, "Averaged"))
+  normalized_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Normalized"))
+  averaged_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Averaged"))
 
   if (!combo) {
-    metrics <- gDRutils::convert_se_assay_to_dt(original, "Metrics")
-    metrics_new <- gDRutils::convert_se_assay_to_dt(reprocessed, "Metrics")
+    metrics <- as.data.frame(gDRutils::convert_se_assay_to_dt(original, "Metrics"))
+    metrics_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Metrics"))
   }
   
   if (combo) {
     for (assay in c("normalized", "averaged")) {
+      data.table::setDT(normalized)
+      data.table::setDT(averaged)
+      data.table::setDT(normalized_new)
+      data.table::setDT(averaged_new)
       refColNames <- intersect(unname(unlist(gDRutils::get_env_identifiers())), names(get(assay)))
       concCols <- grep("Concentration", refColNames, value = TRUE)
       original <- unique(get(assay)[get(assay)[, apply(.SD != 0, 1, all), .SDcols = concCols], ])
@@ -65,11 +63,40 @@ test_synthetic_data <- function(original,
       expect_equal(new[, ..colsCompare], original[, ..colsCompare])
       })
     }
+  } else if (all(c("cotreatment", "single-agent") %in% names(reprocessed))) {
+    
+    normalized_new$Concentration_2[is.na(normalized_new$Concentration_2)] <- 0
+    averaged_new$Concentration_2[is.na(averaged_new$Concentration_2)] <- 0
+    normalized_new$Concentration_2[is.na(normalized_new$Concentration_2)] <- 0
+    metrics_new$Concentration_2[is.na(metrics_new$Concentration_2)] <- 0
+    order_cols <- unlist(gDRutils::get_env_identifiers(c("drug", "cellline",
+                                                         "concentration2", "concentration"), simplify = FALSE))
+    
+    
+    test_that(sprintf("Original data %s and recreated data are identical", dataName), {
+      expect_equal(ncol(normalized), ncol(normalized_new) + additional_columns)
+      expect_equal(ncol(averaged), ncol(averaged_new) + additional_columns)
+      expect_equal(ncol(metrics), ncol(metrics_new) + additional_columns)
+      
+      cotrt_cols <- grep("_2", names(normalized), value = TRUE)
+      expect_equivalent(
+        subset(normalized_new[do.call(order, normalized_new[order_cols]), ],
+               select = which(!colnames(normalized_new) %in% c(OMITTED_COLUMNS_TO_TEST_NORMALIZED, cotrt_cols))),
+        subset(normalized[do.call(order, normalized[order_cols]), ],
+               select = which(!colnames(normalized) %in% c(OMITTED_COLUMNS_TO_TEST_NORMALIZED, cotrt_cols)))
+      )
+      expect_equivalent(
+      subset(averaged_new[do.call(order, averaged_new[order_cols]), ],
+             select = which(!colnames(averaged_new) %in% c(OMITTED_COLUMNS_TO_TEST_AVERAGED, cotrt_cols))),
+      subset(averaged[do.call(order, averaged[order_cols]), ],
+             select = which(!colnames(averaged) %in% c(OMITTED_COLUMNS_TO_TEST_AVERAGED, cotrt_cols)))
+    )
+    })
   } else {
     test_that(sprintf("Original data %s and recreated data are identical", dataName), {
-      expect_equal(ncol(normalized), 14 + additional_columns)
-      expect_equal(ncol(averaged), 15 + additional_columns)
-      expect_equal(ncol(metrics), 26 + additional_columns)
+      expect_equal(ncol(normalized), ncol(normalized_new) + additional_columns)
+      expect_equal(ncol(averaged), ncol(averaged_new) + additional_columns)
+      expect_equal(ncol(metrics), ncol(metrics_new) + additional_columns)
       
       expect_equivalent(
         subset(normalized_new, select = which(!colnames(normalized_new) %in% OMITTED_COLUMNS_TO_TEST_NORMALIZED)),

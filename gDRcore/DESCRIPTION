@@ -1,8 +1,8 @@
 Package: gDRcore
 Type: Package
 Title: Processing functions and interface to process and analyze drug dose-response data
-Version: 1.1.29
-Date: 2022-02-14
+Version: 1.1.30
+Date: 2022-02-17
 Author: c(person("Bartosz", "Czech", role=c("aut", "cre"), email="bartosz.czech@contractors.roche.com"),
              person("Arkadiusz", "Gladki", role=c("aut")),
              person("Marc", "Hafner", role=c("aut")),
@@ -23,6 +23,7 @@ Imports:
     doParallel,
     gDRutils (>= 1.0.27),
     httr,
+    MultiAssayExperiment,
     parallel,
     reshape2,
     stringr,
