@@ -125,7 +125,11 @@ split_raw_data <- function(df,
                                             control[[drug_ids[["drug_name"]]]] %in%
                                             untreated_tag, ][, c(cl, drug_ids[["drug_name"]])])
       cotrt_matching <- rbind(unique_cotrt, unique_cotrt_ctrl)
-      rbind(df_list[[x]], merge(cotrt_matching, control), df_list[["single-agent"]])
+      if (x == "matrix") {
+        rbind(df_list[[x]], merge(cotrt_matching, control), df_list[["single-agent"]])
+      } else {
+        rbind(df_list[[x]], merge(cotrt_matching, control), merge(unique_cotrt, df_list[["single-agent"]]))
+      }
     })
   }
   
