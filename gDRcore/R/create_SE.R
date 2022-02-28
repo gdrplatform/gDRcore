@@ -130,7 +130,7 @@ create_SE <- function(df_,
 
     ctl_type <- "untrt_Endpoint"
     untrt_ref <- ctl_maps[[ctl_type]][[trt]]  
-    untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
+    untrt_df <- dfs[groupings %in% untrt_ref, c(md$data_fields, "row_id", "col_id"), drop = FALSE]
     untrt_df <- create_control_df(
       untrt_df, 
       control_cols = Keys[[ctl_type]], 
