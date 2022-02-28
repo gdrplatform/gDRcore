@@ -101,7 +101,6 @@ create_SE <- function(df_,
 
   # Remove all rowdata and coldata. 
   groupings <- dfs$groupings
-  dfs <- dfs[c(md$data_fields, "row_id", "col_id")]
 
   ## The mapping_entries contain all exhaustive combinations of treatments and cells.
   ## Not all conditions will actually exist in the data, so filter out those that 
@@ -125,7 +124,7 @@ create_SE <- function(df_,
     refs_df <- dfs[groupings %in% refs[[trt]], , drop = FALSE]
     
     trt_df <- rbind(trt_df,
-                    refs_df[unique(trt_df$Gnumber) == refs_df$Gnumber, ])
+                    refs_df[unique(trt_df$Gnumber) == refs_df$Gnumber, ])[, c(md$data_fields, "row_id", "col_id")]
     
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
 
