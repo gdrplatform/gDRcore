@@ -135,19 +135,13 @@ map_df <- function(trt_md,
     
     # split data.frames to simple model with clid column and drug column
     trt <- lapply(valid, function(x) trt[, c(clid, x)])
-    trt <- lapply(trt, function(x) do.call(paste, x))
-    #trt <- do.call(paste, do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]])))))
+    trt <- do.call(paste, do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]])))))
     
     ref <- lapply(valid, function(x) ref[, c(clid, x)])
-    ref <- lapply(ref, function(x) do.call(paste, x))
-    
-    #ref <- do.call(paste, do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]])))))
+    ref <- do.call(paste, do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]])))))
     
     # match trt and ref
-    
-    matchTrtRef <- lapply(seq_along(trt), function(x)
-      grr::matches(trt[[x]], ref[[x]], list = FALSE, all.y = FALSE))
-    matchTrtRef <- do.call(rbind, matchTrtRef)
+    matchTrtRef <- grr::matches(trt, ref, list = FALSE, all.y = FALSE)
     matchTrtRef[["x"]] <- trtNames[matchTrtRef[["x"]]]
     matchTrtRef[["y"]] <- refNames[matchTrtRef[["y"]]]
     

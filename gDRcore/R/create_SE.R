@@ -51,13 +51,13 @@ create_SE <- function(df_,
     df_[single_agent_idx, drug2_var] <- gDRutils::get_env_identifiers("untreated_tag")[1]
   }
 
-  ## if combo data with single agent --> duplicate single agent to be also found as Drug_2
+  # if combo data with single agent --> duplicate single agent to be also found as Drug_2
   if (gDRutils::get_env_identifiers("concentration2") %in% nested_keys) {
     df_temp <- df_dupl <- df_[df_[[gDRutils::get_env_identifiers("drug")]]
                               %in% setdiff(unique(df_[[gDRutils::get_env_identifiers("drug2")]]),
-                                           gDRutils::get_env_identifiers("untreated_tag")) & 
+                                           gDRutils::get_env_identifiers("untreated_tag")) &
                       df_[[gDRutils::get_env_identifiers("concentration2")]] == 0, ]
-    
+
     drug_cols <- c("drug", "drug_name", "drug_moa", "concentration")
     swap_var <- unlist(gDRutils::get_env_identifiers(drug_cols, simplify = FALSE))
     drug_cols <- drug_cols[swap_var %in% colnames(df_temp)] # assert columns present in df_
@@ -72,7 +72,7 @@ create_SE <- function(df_,
     df_[[swap_var[["concentration"]]]] <- round_concentration(df_[[swap_var[["concentration"]]]])
     df_[[swap_var2[["concentration2"]]]] <- round_concentration(df_[[swap_var2[["concentration2"]]]])
   }
-  ## Identify treatments, conditions, and experiment metadata.
+  # Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
   coldata <- md$condition_md
   rowdata <- md$treatment_md
@@ -119,7 +119,14 @@ create_SE <- function(df_,
       trt_df <- dfs[groupings %in% c(trt, refs[[trt]]) &
                       dfs[[nested_confounders]] %in% matching_nested_confounders, , drop = FALSE]
     }
-    trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]
+    
+  
+    trt_df <- dfs[groupings %in% trt, , drop = FALSE]
+    refs_df <- dfs[groupings %in% refs[[trt]], , drop = FALSE]
+    
+    trt_df <- rbind(trt_df,
+                    refs_df[unique(trt_df$Gnumber) == refs_df$Gnumber, ])
+    
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
 
     ctl_type <- "untrt_Endpoint"
