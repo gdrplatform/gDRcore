@@ -113,16 +113,12 @@ create_SE <- function(df_,
   
   out <- foreach::foreach(i = seq_len(nrow(treated))) %dopar% {
     trt <- rownames(treated)[i]
-    if (!is.null(nested_confounders)) {
-      matching_nested_confounders <- unique(dfs[groupings %in% trt, nested_confounders])
-      trt_df <- dfs[groupings %in% c(trt, refs[[trt]]) &
-                      dfs[[nested_confounders]] %in% matching_nested_confounders, , drop = FALSE]
-    }
     
-  
     trt_df <- dfs[groupings %in% trt, , drop = FALSE]
     refs_df <- dfs[groupings %in% refs[[trt]], , drop = FALSE]
-    
+    if (!is.null(nested_confounders)) {
+    refs_df <- refs_df[unique(trt_df[[nested_confounders]]) == refs_df[[nested_confounders]], ]
+    }
     trt_df <- rbind(trt_df,
                     refs_df[unique(trt_df$Gnumber) == refs_df$Gnumber, ])[, c(md$data_fields, "row_id", "col_id")]
     
