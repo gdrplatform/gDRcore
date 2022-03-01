@@ -2,7 +2,7 @@ pkgs:
   gDRutils:
     ver: '>=1.0.27'
     url: gdrplatform/gDRutils
-    ref: GDR-1388
+    ref: master
     subdir: gDRutils
     source: GITHUB
   gDRtestData:
