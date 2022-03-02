@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.31] - 2021-03-02
+#### Update
+- fix mapping reference values of inverted treatments
+- remove duplication of single-agent data
+
 #### [1.1.30] - 2021-02-17
 #### Update
 - wrap SE into MAE on the level of runDrugResponseProcessingPipeline
