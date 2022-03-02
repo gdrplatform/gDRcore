@@ -19,7 +19,7 @@ Imports:
     data.table,
     drc,
     foreach,
-    grr,
+    grr (>= 0.9.5),
     doParallel,
     gDRutils (>= 1.0.27),
     httr,
