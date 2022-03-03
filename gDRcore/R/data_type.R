@@ -61,7 +61,8 @@ identify_data_type <- function(df,
       NA
     }
     df[matching_idx, "type"]  <- type
-    df[matching_idx, "type"] <- ifelse(rowSums(df[matching_idx, conc_ids] == 0) == 1, "single-agent", df[matching_idx, "type"])
+    df[matching_idx, "type"] <- ifelse(rowSums(df[matching_idx, conc_ids] == 0) == 1,
+                                       "single-agent", df[matching_idx, "type"])
     
     if (all(!is.na(df[matching_idx, "type"]))) {
       next
