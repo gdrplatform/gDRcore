@@ -61,6 +61,8 @@ identify_data_type <- function(df,
       NA
     }
     df[matching_idx, "type"]  <- type
+    df[matching_idx, "type"] <- ifelse(rowSums(df[matching_idx, conc_ids] == 0) == 1, "single-agent", df[matching_idx, "type"])
+    
     if (all(!is.na(df[matching_idx, "type"]))) {
       next
     }
@@ -135,9 +137,9 @@ split_raw_data <- function(df,
   }
   
   if ("single-agent" %in% names(df_list)) {
-    sa_idx <- lapply(grep("Gnumber", drug_ids, value = TRUE), function(x)
-           which(!df_list[["single-agent"]][, x] %in% untreated_tag))
-    sa_idx[["drug"]] <- NULL
+    sa_idx <- lapply(grep(drug_ids[["concentration"]], drug_ids, value = TRUE), function(x)
+           which(!df_list[["single-agent"]][, x] == 0))
+    sa_idx[["concentration"]] <- NULL
     for (codrug in names(sa_idx)) {
       codrug_cols <- grep(as.numeric(gsub("\\D", "", codrug)), drug_ids, value = TRUE)
       df_list[["single-agent"]][sa_idx[[codrug]], drug_ids[c("drug_name", "drug", "drug_moa", "concentration")]] <- 
