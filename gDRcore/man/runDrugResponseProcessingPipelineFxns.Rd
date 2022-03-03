@@ -78,7 +78,8 @@ runDrugResponseProcessingPipeline(
   raw_treated_assay = "RawTreated",
   normalized_assay = "Normalized",
   averaged_assay = "Averaged",
-  metrics_assay = "Metrics"
+  metrics_assay = "Metrics",
+  add_raw_data = FALSE
 )
 }
 \arguments{
@@ -117,6 +118,8 @@ Defaults to \code{"RawTreated"}.}
 
 \item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
 Defaults to \code{4}.}
+
+\item{add_raw_data}{boolean indicating whether or not to include raw data into experiment metadata.}
 
 \item{nested_keys}{character vector of column names to include in the data.frames
 in the assays of the resulting \code{SummarizedExperiment} object.}
