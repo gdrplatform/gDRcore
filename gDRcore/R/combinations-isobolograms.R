@@ -112,6 +112,9 @@ calculate_Loewe <- function(df_mean,
     # calculate the reference (additive model in the rotated space)
     c2 <- ref_conc_2 / (1 + (ref_conc_2 / ref_conc_1) * (10 ^ (
                 - (sqrt(2) * df_iso_curve$x1 + min(axis_2$pos_x) - min(axis_1$pos_y)))))
+    if (length(c2) == 0) {
+      return(NULL)
+    }
     df_iso_curve$x2_ref <- (log10(c2) - min(axis_2$pos_x) +
               (log10(ref_conc_1 * (1 - c2 / ref_conc_2)) - min(axis_1$pos_y))) / sqrt(2)
 
