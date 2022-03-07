@@ -120,8 +120,8 @@ split_raw_data <- function(df,
   control <- df_list[["control"]]
   df_list[["control"]] <- NULL
   cotrt_types <- setdiff(names(df_list), "single-agent")
-  control_sa_idx <- which(rowSums(control[, conc_idx, drop = FALSE] == 0) == length(conc_idx))
-  control_sa <- control[control_sa_idx, ]
+  control_sa_idx <- which(rowSums(df[, conc_idx, drop = FALSE] == 0) == length(conc_idx))
+  control_sa <- df[control_sa_idx, ]
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   
   if (length(cotrt_types) > 0) {
