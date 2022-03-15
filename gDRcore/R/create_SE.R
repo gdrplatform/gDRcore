@@ -115,7 +115,7 @@ create_SE <- function(df_,
 
     ctl_type <- "Day0"
     day0_ref <- ctl_maps[[ctl_type]][[trt]]
-    day0_df <- dfs[groupings %in% day0_ref, , drop = FALSE]
+    day0_df <- dfs[groupings %in% day0_ref, c(md$data_fields, "row_id", "col_id"), drop = FALSE]
     day0_df <- create_control_df(
       day0_df, 
       control_cols = Keys[[ctl_type]],
