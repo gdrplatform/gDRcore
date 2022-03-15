@@ -95,11 +95,7 @@ create_SE <- function(df_,
     
     trt_df <- dfs[groupings %in% trt, , drop = FALSE]
     refs_df <- dfs[groupings %in% refs[[trt]], , drop = FALSE]
-    if (!is.null(nested_confounders)) {
-    refs_df <- refs_df[unique(trt_df[[nested_confounders]]) == refs_df[[nested_confounders]], ]
-    }
-    trt_df <- rbind(trt_df,
-                    refs_df[unique(trt_df$Gnumber) == refs_df$Gnumber, ])[, c(md$data_fields, "row_id", "col_id")]
+    trt_df <- validate_mapping(trt_df, refs_df, nested_confounders)[, c(md$data_fields, "row_id", "col_id")]
     
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
 
@@ -174,4 +170,13 @@ create_SE <- function(df_,
   se <- gDRutils::set_SE_keys(se, Keys)
 
   se
+}
+
+#' @keywords internal
+validate_mapping <- function(trt_df, refs_df, nested_confounders) {
+  if (!is.null(nested_confounders)) {
+    refs_df <- refs_df[unique(trt_df[[nested_confounders]]) == refs_df[[nested_confounders]], ]
+  }
+  drug_id <- gDRutils::get_env_identifiers("drug")
+  rbind(trt_df, refs_df[unique(trt_df[[drug_id]]) == refs_df[[drug_id]], ])
 }
