@@ -66,7 +66,7 @@ fit_SE.combinations <- function(se,
         bliss_score[, c("row_id", "col_id")] <- hsa_score[, c("row_id", "col_id")] <-
         CIScore_50[, c("row_id", "col_id")] <- CIScore_80[, c("row_id", "col_id")] <-
         data.frame(row_id = i, col_id = j)
-      list(bliss_excess = bliss_excess,
+      return(list(bliss_excess = bliss_excess,
            hsa_excess = hsa_excess,
            metrics = metrics,
            isobolograms = isobolograms,
@@ -74,8 +74,7 @@ fit_SE.combinations <- function(se,
            bliss_score = bliss_score,
            hsa_score = hsa_score,
            CIScore_50 = CIScore_50,
-           CIScore_80 = CIScore_80)
-      next
+           CIScore_80 = CIScore_80))
     }
     
     conc_map <- map_conc_to_standardized_conc(avg_combo[[id]], avg_combo[[id2]])

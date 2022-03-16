@@ -15,7 +15,7 @@ map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
   ridx <- S4Vectors::match(round(log10(match_col), 2), round(log10(fittings[[fitting_id_col]]), 2))
   metrics <- fittings[ridx, c(fitting_id_col, "x_inf", "x_0", "ec50", "h")]
   # Extrapolate fitted values.
-  out <- gDRutils::logistic_4parameters(pred,
+  out <- gDRutils::predict_efficacy_from_conc(pred,
     metrics$x_inf,
     metrics$x_0,
     metrics$ec50,

@@ -11,7 +11,7 @@ fit_combo_cotreatments <- function(measured, series_id, cotrt_id, normalization_
   cotrt_fittings <- vector("list", length(cotrt_concs))
   for (i in seq_along(cotrt_concs)) {
     conc <- cotrt_concs[i]
-    sa <- gDRutils::logistic_4parameters(conc, sa_fit$x_inf, sa_fit$x_0, sa_fit$ec50, sa_fit$h)
+    sa <- gDRutils::predict_efficacy_from_conc(conc, sa_fit$x_inf, sa_fit$x_0, sa_fit$ec50, sa_fit$h)
     cotrt_fittings[[i]] <- fit_cotreatment_series(measured, series_id = series_id, cotrt_id = cotrt_id,
       cotrt_value = conc, normalization_type = normalization_type, e_0 = sa, GR_0 = sa)
   }

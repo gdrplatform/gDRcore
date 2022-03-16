@@ -1,8 +1,8 @@
 pkgs:
   gDRutils:
-    ver: '>=1.0.27'
+    ver: '>=1.0.29'
     url: gdrplatform/gDRutils
-    ref: GDR-1388
+    ref: master
     subdir: gDRutils
     source: GITHUB
   gDRtestData:
@@ -17,3 +17,6 @@ pkgs:
     ref: main
     subdir: ~
     source: GITHUB
+  grr:
+    ver: '>=0.9.5'
+    url: https://github.com/cran/grr.git

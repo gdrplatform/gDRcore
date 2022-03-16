@@ -32,6 +32,7 @@
 #' @param metrics_assay string of the name of the metrics assay to output
 #' in the returned \linkS4class{SummarizedExperiment}
 #' Defaults to \code{"Metrics"}.
+#' @param add_raw_data  boolean indicating whether or not to include raw data into experiment metadata.
 #'
 #' @details
 #' \code{runDrugResponseProcessingPipeline} is made up of 3 separate steps:
@@ -119,7 +120,8 @@ runDrugResponseProcessingPipeline <- function(df_,
                                               raw_treated_assay = "RawTreated",
                                               normalized_assay = "Normalized",
                                               averaged_assay = "Averaged",
-                                              metrics_assay = "Metrics") {
+                                              metrics_assay = "Metrics",
+                                              add_raw_data = FALSE) {
   
   checkmate::assert_data_frame(df_)
   checkmate::assert_string(readout)
@@ -188,6 +190,9 @@ runDrugResponseProcessingPipeline <- function(df_,
              n_point_cutoff = n_point_cutoff)
     }, warning)
     .catch_warnings(se)
+    if (add_raw_data) {
+      se$value <- gDRutils::set_SE_experiment_raw_data(se$value, df_list[[experiment]])
+    }
     mae <- c(mae, MultiAssayExperiment::MultiAssayExperiment(experiments = list(experiment = se$value)))
     names(mae)[length(names(mae))] <- experiment
   }

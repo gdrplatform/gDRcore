@@ -51,28 +51,7 @@ create_SE <- function(df_,
     df_[single_agent_idx, drug2_var] <- gDRutils::get_env_identifiers("untreated_tag")[1]
   }
 
-  ## if combo data with single agent --> duplicate single agent to be also found as Drug_2
-  if (gDRutils::get_env_identifiers("concentration2") %in% nested_keys) {
-    df_temp <- df_dupl <- df_[df_[[gDRutils::get_env_identifiers("drug")]]
-                              %in% setdiff(unique(df_[[gDRutils::get_env_identifiers("drug2")]]),
-                                           gDRutils::get_env_identifiers("untreated_tag")) & 
-                      df_[[gDRutils::get_env_identifiers("concentration2")]] == 0, ]
-    
-    drug_cols <- c("drug", "drug_name", "drug_moa", "concentration")
-    swap_var <- unlist(gDRutils::get_env_identifiers(drug_cols, simplify = FALSE))
-    drug_cols <- drug_cols[swap_var %in% colnames(df_temp)] # assert columns present in df_
-    swap_var <- swap_var[swap_var %in% colnames(df_temp)]
-    swap_var2 <- unlist(gDRutils::get_env_identifiers(paste0(drug_cols, "2"), simplify = FALSE))
-    checkmate::assert_true(all(swap_var2 %in% colnames(df_))) # assert columns present in df_
-    df_dupl[, swap_var2] <- df_dupl[, swap_var]
-    df_dupl[, swap_var] <- df_temp[, swap_var2]
-    df_ <- rbind(df_, df_dupl)
-
-    # also rounding the concentration to avoid small mismatches
-    df_[[swap_var[["concentration"]]]] <- round_concentration(df_[[swap_var[["concentration"]]]])
-    df_[[swap_var2[["concentration2"]]]] <- round_concentration(df_[[swap_var2[["concentration2"]]]])
-  }
-  ## Identify treatments, conditions, and experiment metadata.
+  # Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
   coldata <- md$condition_md
   rowdata <- md$treatment_md
@@ -101,7 +80,6 @@ create_SE <- function(df_,
 
   # Remove all rowdata and coldata. 
   groupings <- dfs$groupings
-  dfs <- dfs[c(md$data_fields, "row_id", "col_id")]
 
   ## The mapping_entries contain all exhaustive combinations of treatments and cells.
   ## Not all conditions will actually exist in the data, so filter out those that 
@@ -114,17 +92,16 @@ create_SE <- function(df_,
   
   out <- foreach::foreach(i = seq_len(nrow(treated))) %dopar% {
     trt <- rownames(treated)[i]
-    if (!is.null(nested_confounders)) {
-      matching_nested_confounders <- unique(dfs[groupings %in% trt, nested_confounders])
-      trt_df <- dfs[groupings %in% c(trt, refs[[trt]]) &
-                      dfs[[nested_confounders]] %in% matching_nested_confounders, , drop = FALSE]
-    }
-    trt_df <- dfs[groupings %in% c(trt, refs[[trt]]), , drop = FALSE]
+    
+    trt_df <- dfs[groupings %in% trt, , drop = FALSE]
+    refs_df <- dfs[groupings %in% refs[[trt]], , drop = FALSE]
+    trt_df <- validate_mapping(trt_df, refs_df, nested_confounders)[, c(md$data_fields, "row_id", "col_id")]
+    
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
 
     ctl_type <- "untrt_Endpoint"
     untrt_ref <- ctl_maps[[ctl_type]][[trt]]  
-    untrt_df <- dfs[groupings %in% untrt_ref, , drop = FALSE]
+    untrt_df <- dfs[groupings %in% untrt_ref, c(md$data_fields, "row_id", "col_id"), drop = FALSE]
     untrt_df <- create_control_df(
       untrt_df, 
       control_cols = Keys[[ctl_type]], 
@@ -134,7 +111,7 @@ create_SE <- function(df_,
 
     ctl_type <- "Day0"
     day0_ref <- ctl_maps[[ctl_type]][[trt]]
-    day0_df <- dfs[groupings %in% day0_ref, , drop = FALSE]
+    day0_df <- dfs[groupings %in% day0_ref, c(md$data_fields, "row_id", "col_id"), drop = FALSE]
     day0_df <- create_control_df(
       day0_df, 
       control_cols = Keys[[ctl_type]],
@@ -193,4 +170,13 @@ create_SE <- function(df_,
   se <- gDRutils::set_SE_keys(se, Keys)
 
   se
+}
+
+#' @keywords internal
+validate_mapping <- function(trt_df, refs_df, nested_confounders) {
+  if (!is.null(nested_confounders)) {
+    refs_df <- refs_df[unique(trt_df[[nested_confounders]]) == refs_df[[nested_confounders]], ]
+  }
+  drug_id <- gDRutils::get_env_identifiers("drug")
+  rbind(trt_df, refs_df[unique(trt_df[[drug_id]]) == refs_df[[drug_id]], ])
 }
