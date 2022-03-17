@@ -159,7 +159,7 @@ runDrugResponseProcessingPipeline <- function(df_,
     } else {
       nested_identifiers[["single-agent"]]
     }
-    se <- catchr::catch_expr(create_and_normalize_SE(df_ = df_list[[experiment]],
+    se <- purrr::quietly(create_and_normalize_SE)(df_ = df_list[[experiment]],
                                                      readout = readout,
                                                      control_mean_fxn = control_mean_fxn,
                                                      nested_identifiers = experiment_identifier,
@@ -168,28 +168,27 @@ runDrugResponseProcessingPipeline <- function(df_,
                                                      control_assay = control_assay, 
                                                      raw_treated_assay = raw_treated_assay, 
                                                      normalized_assay = normalized_assay,
-                                                     ndigit_rounding = ndigit_rounding),
-                             warning)
-    .catch_warnings(se)
-    se <- catchr::catch_expr(average_SE(se = se$value, 
+                                                     ndigit_rounding = ndigit_rounding)
+    
+    paste_warnings(se$warnings)
+    se <- purrr::quietly(average_SE)(se = se$result, 
                                         series_identifiers = experiment_identifier,
                                         override_masked = override_masked, 
                                         normalized_assay = normalized_assay, 
-                                        averaged_assay = averaged_assay),
-                             warning)
-    .catch_warnings(se)
-    se <- catchr::catch_expr(if (experiment == "matrix") {
-      fit_SE.combinations(se = se$value,
+                                        averaged_assay = averaged_assay)
+    paste_warnings(se$warnings)
+    se <- if (experiment == "matrix") {
+      purrr::quietly(fit_SE.combinations)(se = se$value,
                           series_identifiers = experiment_identifier,
                           averaged_assay = averaged_assay)
     } else {
-      fit_SE(se = se$value, 
+      purrr::quietly(fit_SE)(se = se$value, 
              nested_identifiers = experiment_identifier,
              averaged_assay = averaged_assay, 
              metrics_assay = metrics_assay, 
              n_point_cutoff = n_point_cutoff)
-    }, warning)
-    .catch_warnings(se)
+    }
+    paste_warnings(se$warnings)
     if (add_raw_data) {
       se$value <- gDRutils::set_SE_experiment_raw_data(se$value, df_list[[experiment]])
     }
@@ -198,4 +197,8 @@ runDrugResponseProcessingPipeline <- function(df_,
   }
   mae
 }
-  
+
+#' @keywords internal
+paste_warnings <- function(list, sep = "\n") {
+  warning(paste0(list, sep = sep), call. = FALSE)
+}
