@@ -20,3 +20,5 @@ pkgs:
   grr:
     ver: '>=0.9.5'
     url: https://github.com/cran/grr.git
+  purrr:
+    source: CRAN
