@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.32] - 2021-03-17
+#### Update
+- switch from `catchr` to `purrr`
+
 #### [1.1.31] - 2021-03-02
 #### Update
 - fix mapping reference values of inverted treatments
