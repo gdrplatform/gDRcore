@@ -178,11 +178,11 @@ runDrugResponseProcessingPipeline <- function(df_,
                                         averaged_assay = averaged_assay)
     paste_warnings(se$warnings)
     se <- if (experiment == "matrix") {
-      purrr::quietly(fit_SE.combinations)(se = se$value,
+      purrr::quietly(fit_SE.combinations)(se = se$result,
                           series_identifiers = experiment_identifier,
                           averaged_assay = averaged_assay)
     } else {
-      purrr::quietly(fit_SE)(se = se$value, 
+      purrr::quietly(fit_SE)(se = se$result, 
              nested_identifiers = experiment_identifier,
              averaged_assay = averaged_assay, 
              metrics_assay = metrics_assay, 
@@ -190,9 +190,9 @@ runDrugResponseProcessingPipeline <- function(df_,
     }
     paste_warnings(se$warnings)
     if (add_raw_data) {
-      se$value <- gDRutils::set_SE_experiment_raw_data(se$value, df_list[[experiment]])
+      se$result <- gDRutils::set_SE_experiment_raw_data(se$result, df_list[[experiment]])
     }
-    mae <- c(mae, MultiAssayExperiment::MultiAssayExperiment(experiments = list(experiment = se$value)))
+    mae <- c(mae, MultiAssayExperiment::MultiAssayExperiment(experiments = list(experiment = se$result)))
     names(mae)[length(names(mae))] <- experiment
   }
   mae
