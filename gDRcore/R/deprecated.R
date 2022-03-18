@@ -692,14 +692,9 @@ calculate_combo_cotrt <- function(se) {
 }
 
 
-#' Add codrug group
-#'
-#' @param se 
-#'
-#' @return
 #' @export
+#' @noRd
 #'
-# TODO: Utilize the set_SE_metadata functions. 
 add_codrug_group_SE <- function(se) {
 
   r_data <- SummarizedExperiment::rowData(se)

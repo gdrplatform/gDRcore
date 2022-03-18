@@ -10,11 +10,12 @@ Author: c(person("Bartosz", "Czech", role=c("aut", "cre"), email="bartosz.czech@
              person("Natalia", "Potocka", role=c("aut")),
              person("Dariusz", "Scigocki", role=c("aut")),
              person("Allison", "Vuong", role=c("aut")))
-Maintainer: Bartosz Czech <bartosz.czech@contractors.roche.com>
+Maintainer: gDR team <gdr-support-d@gene.com>
 Description: This package contains core functions to process and analyze drug response data.
 License: file GNE_LICENSE
 LazyLoad: yes
 Imports:
+    checkmate,
     data.table,
     drc,
     foreach,
@@ -25,6 +26,7 @@ Imports:
     parallel,
     purrr,
     reshape2,
+    zoo,
     S4Vectors,
     SummarizedExperiment
 Suggests:
