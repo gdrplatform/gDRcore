@@ -11,15 +11,15 @@ calculate_HSA(sa1, series_id1, sa2, series_id2, metric)
 calculate_Bliss(sa1, series_id1, sa2, series_id2, metric)
 }
 \arguments{
-\item{sa1}{data.frame containing single agent data where id1 is \code{0}.
+\item{sa1}{data.frame containing single agent data where entries in \code{series_id2} are all \code{0}.
 Columns of the data.frame include identifiers and the \code{metric} of interest.}
 
 \item{series_id1}{String representing the column within \code{sa1} that represents id1.}
 
-\item{sa2}{data.frame containing single agent data where id2 is \code{0}.
+\item{sa2}{data.frame containing single agent data where entries in \code{series_id1} are all \code{0}.
 Columns of the data.frame include identifiers and the \code{metric} of interest.}
 
-\item{series_id2}{String representing the column within \code{sa1} that represents id2.}
+\item{series_id2}{String representing the column within \code{sa2} that represents id2.}
 
 \item{metric}{String of the column specifying the metric of interest.}
 
