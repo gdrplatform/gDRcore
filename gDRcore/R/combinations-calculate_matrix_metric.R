@@ -2,12 +2,12 @@
 #'
 #' Calculate a metric based off of single-agent values in combination screens.
 #'
-#' @param sa1 data.frame containing single agent data where id1 is \code{0}.
+#' @param sa1 data.frame containing single agent data where entries in \code{series_id2} are all \code{0}.
 #' Columns of the data.frame include identifiers and the \code{metric} of interest.
 #' @param series_id1 String representing the column within \code{sa1} that represents id1.
-#' @param sa2 data.frame containing single agent data where id2 is \code{0}.
+#' @param sa2 data.frame containing single agent data where entries in \code{series_id1} are all \code{0}.
 #' Columns of the data.frame include identifiers and the \code{metric} of interest.
-#' @param series_id2 String representing the column within \code{sa1} that represents id2.
+#' @param series_id2 String representing the column within \code{sa2} that represents id2.
 #' @param metric String of the column specifying the metric of interest. 
 #' @param FXN Function to apply to the single-agent fits to calculate a metric.
 #'
@@ -59,8 +59,10 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
 }
 
 
-#' @keywords internal
 .calculate_matrix_metric <- function(sa1, series_id1, sa2, series_id2, metric, FXN) {
+  checkmate::assert_true(all(sa1[[series_id2]] == 0L))
+  checkmate::assert_true(all(sa2[[series_id1]] == 0L))
+
   colnames(sa1)[colnames(sa1) == metric] <- "metric1"
   colnames(sa2)[colnames(sa2) == metric] <- "metric2"
 

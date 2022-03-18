@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.32] - 2021-03-18
+#### Update
+- fix documentation in calculate_matrix_metric
+
 #### [1.1.32] - 2021-03-17
 #### Update
 - switch from `catchr` to `purrr`
