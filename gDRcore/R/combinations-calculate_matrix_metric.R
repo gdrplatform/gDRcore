@@ -61,8 +61,8 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
 
 #' @keywords internal
 .calculate_matrix_metric <- function(sa1, series_id1, sa2, series_id2, metric, FXN) {
-  checkmate::assert_true(all(sa1[[series_id2]]== 0L))
-  checkmate::assert_true(all(sa2[[series_id1]]== 0L))
+  checkmate::assert_true(all(sa1[[series_id2]] == 0L))
+  checkmate::assert_true(all(sa2[[series_id1]] == 0L))
 
   colnames(sa1)[colnames(sa1) == metric] <- "metric1"
   colnames(sa2)[colnames(sa2) == metric] <- "metric2"
