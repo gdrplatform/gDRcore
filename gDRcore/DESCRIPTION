@@ -21,12 +21,10 @@ Imports:
     grr (>= 0.9.5),
     doParallel,
     gDRutils (>= 1.0.29),
-    httr,
     MultiAssayExperiment,
     parallel,
     purrr,
     reshape2,
-    stringr,
     S4Vectors,
     SummarizedExperiment
 Suggests:
