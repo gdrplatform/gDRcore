@@ -1,4 +1,5 @@
 #' @export
+#' @noRd
 calculate_combo_matrix <- function(se,
                                    series_identifiers,
                                    conc_margin = 10 ^ 0.5,
