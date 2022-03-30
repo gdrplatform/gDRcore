@@ -2,24 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [1.1.34] - 2021-03-30
+#### [1.1.34] - 2022-03-30
 #### Update
 - add support for additional barcode identifiers
 
-#### [1.1.33] - 2021-03-18
+#### [1.1.33] - 2022-03-18
 #### Update
 - fix documentation in calculate_matrix_metric
 
-#### [1.1.32] - 2021-03-17
+#### [1.1.32] - 2022-03-17
 #### Update
 - switch from `catchr` to `purrr`
 
-#### [1.1.31] - 2021-03-02
+#### [1.1.31] - 2022-03-02
 #### Update
 - fix mapping reference values of inverted treatments
 - remove duplication of single-agent data
 
-#### [1.1.30] - 2021-02-17
+#### [1.1.30] - 2022-02-17
 #### Update
 - wrap SE into MAE on the level of runDrugResponseProcessingPipeline
 
