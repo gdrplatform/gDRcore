@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [1.1.32] - 2021-03-18
+#### [1.1.34] - 2021-03-30
+#### Update
+- add support for additional barcode identifiers
+
+#### [1.1.33] - 2021-03-18
 #### Update
 - fix documentation in calculate_matrix_metric
 
