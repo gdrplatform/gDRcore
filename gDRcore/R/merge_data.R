@@ -86,7 +86,8 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
     cleanup_metadata(df_metadata_trimmed)
   stopifnot(nrow(cleanedup_metadata) == nrow(df_metadata_trimmed)) # should not happen
 
-  df_merged <- merge(cleanedup_metadata, data, by = c("Barcode",
+  barcode_identifier <- intersect(names(cleanedup_metadata), gDRutils::get_env_identifiers("barcode"))
+  df_merged <- merge(cleanedup_metadata, data, by = c(barcode_identifier,
                                                       gDRutils::get_env_identifiers("well_position")))
   if (nrow(df_merged) != nrow(data)) {
     # need to identify issue and output relevant warning
