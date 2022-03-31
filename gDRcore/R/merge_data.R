@@ -15,7 +15,7 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
   stopifnot(inherits(manifest, "data.frame"))
   stopifnot(inherits(treatments, "data.frame"))
   stopifnot(inherits(data, "data.frame"))
-
+  
   futile.logger::flog.info("Merging data")
 
   # first unify capitalization in the headers of treatments with manifest
@@ -30,12 +30,13 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
   }
 
   # merge manifest and treatment files first
-  df_metadata <- merge(manifest, treatments, by = "Template")
+  identifiers <- gDRutils::validate_identifiers(manifest, req_ids = "barcode")
+  df_metadata <- merge(manifest, treatments, by = identifiers[["template"]])
   futile.logger::flog.info("Merging the metadata (manifest and treatment files)")
 
   # sort out duplicate metadata columns
   duplicated_col <-
-    setdiff(intersect(colnames(manifest), colnames(treatments)), "Template")
+    setdiff(intersect(colnames(manifest), colnames(treatments)), identifiers[["template"]])
   for (m_col in duplicated_col) {
     df_metadata[, m_col] <-
       df_metadata[, paste0(m_col, ".y")] # parse template values
@@ -62,7 +63,7 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
   }
 
   # check for the expected columns
-  expected_headers <- gDRutils::get_env_identifiers("cellline")
+  expected_headers <- identifiers[["cellline"]]
   headersOK <- expected_headers %in% colnames(df_metadata)
   if (any(!headersOK)) {
     stop(sprintf(
@@ -72,7 +73,7 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
   }
 
   # remove wells not labeled
-  drug_id <- gDRutils::get_env_identifiers("drug")
+  drug_id <- identifiers[["drug"]]
   df_metadata_trimmed <-
     df_metadata[!is.na(df_metadata[, drug_id]), ]
   futile.logger::flog.warn("%i well loaded, %i wells discarded for lack of annotation, %i data point selected\n",
@@ -86,9 +87,8 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
     cleanup_metadata(df_metadata_trimmed)
   stopifnot(nrow(cleanedup_metadata) == nrow(df_metadata_trimmed)) # should not happen
 
-  barcode_identifier <- intersect(names(cleanedup_metadata), gDRutils::get_env_identifiers("barcode"))
-  df_merged <- merge(cleanedup_metadata, data, by = c(barcode_identifier,
-                                                      gDRutils::get_env_identifiers("well_position")))
+  df_merged <- merge(cleanedup_metadata, data, by = c(identifiers[["barcode"]],
+                                                      identifiers[["well_position"]]))
   if (nrow(df_merged) != nrow(data)) {
     # need to identify issue and output relevant warning
     futile.logger::flog.warn("merge_data: Not all results have been matched with treatments;
@@ -108,10 +108,10 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
         # Secondary drug for some combinations can primary drug when viewed as single-agent (conc1 = 0), so swap. 
         # swap the data related to Drug and Drug_2 such that it can considered as a single-agent condition
         swap_idx <- df_raw_data$Concentration_2 > 0 &
-                      df_raw_data[, drug_id] %in% gDRutils::get_env_identifiers("untreated_tag")
+                      df_raw_data[, drug_id] %in% identifiers[["untreated_tag"]]
         temp_df <- df_raw_data[swap_idx, ]
-        header_names <- c(drug_id, gDRutils::get_env_identifiers("drug_name"), 
-                          gDRutils::get_env_identifiers("drug_moa"), "Concentration")
+        header_names <- c(drug_id, identifiers[["drug_name"]], 
+                          identifiers[["drug_moa"]], identifiers[["concentration"]])
         temp_df[, c(header_names, paste0(header_names, "_2"))] <-
           temp_df[, c(paste0(header_names, "_2"), header_names)]
 
