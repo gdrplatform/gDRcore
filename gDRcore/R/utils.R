@@ -22,21 +22,20 @@
 #'
 #' @export
 #'
-cleanup_metadata <- function(df_metadata) {
+cleanup_metadata <- function(df) {
 
   # Assertions:
-  stopifnot(inherits(df_metadata, "data.frame"))
+  stopifnot(inherits(df, "data.frame"))
 
-  data.table::setDT(df_metadata)
+  data.table::setDT(df)
 
-  # clean up numberic fields
-  df_metadata[[gDRutils::get_env_identifiers("duration")]] <-
-    round(as.numeric(df_metadata[[gDRutils::get_env_identifiers("duration")]], 6))
+  ids <- gDRutils::get_env_identifiers()
+  df[[ids$duration]] <- tidy_duration(df)
 
   # identify potential numeric fields and replace NA by 0 - convert strings in factors
-  for (c in setdiff(1:dim(df_metadata)[2], c(
-    agrep(gDRutils::get_env_identifiers("drug"), colnames(df_metadata)),
-    agrep("Concentration", colnames(df_metadata)),
+  for (c in setdiff(seq(ncol(df)), c(
+    agrep(gDRutils::get_env_identifiers("drug"), colnames(df)),
+    agrep("Concentration", colnames(df)),
     grep(paste(
       c(
         gDRutils::get_env_identifiers("cellline"),
@@ -45,48 +44,48 @@ cleanup_metadata <- function(df_metadata) {
         "compoundId"
       ),
       collapse = "|"
-    ), colnames(df_metadata))
+    ), colnames(df))
   ))) {
-    vals <- unique(df_metadata[[c]])
+    vals <- unique(df[[c]])
 
     if (is.character(vals)) {
       num_vals <- as.numeric(vals)
       if (sum(is.na(num_vals)) > 2 || all(is.na(num_vals))) {
-        df_metadata[[c]] <- as.character(df_metadata[[c]])
+        df[[c]] <- as.character(df[[c]])
         futile.logger::flog.warn("Metadata field %s converted to strings",
-                colnames(df_metadata)[c])
+                colnames(df)[c])
       } else {
-        is.na(df_metadata[[c]]) <- 0
-        df_metadata[[c]] <- as.numeric(df_metadata[[c]])
+        is.na(df[[c]]) <- 0
+        df[[c]] <- as.numeric(df[[c]])
         futile.logger::flog.warn("Metadata field %s converted to numeric values",
-                colnames(df_metadata)[c])
+                colnames(df)[c])
       }
     }
   }
     # TODO: specific to GNE database --> need to be replaced by a function
-    df_metadata <- add_CellLine_annotation(df_metadata)
+    df <- add_CellLine_annotation(df)
     # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
 
-    for (i in agrep(gDRutils::get_env_identifiers("drug"), colnames(df_metadata))) { # correct case issues
+    for (i in agrep(gDRutils::get_env_identifiers("drug"), colnames(df))) { # correct case issues
         for (w in gDRutils::get_env_identifiers("untreated_tag")) {
-            df_metadata[grep(w, df_metadata[[i]], ignore.case = TRUE), i] <- w
+            df[grep(w, df[[i]], ignore.case = TRUE), i] <- w
         }
     }
     # -----------------------
 
-    df_metadata <- add_Drug_annotation(df_metadata)
+    df <- add_Drug_annotation(df)
 
-    data.table::setDF(df_metadata)
+    data.table::setDF(df)
     # clean up concentration fields
-    for (i in agrep("Concentration", colnames(df_metadata))) {
-        trt_n <- ifelse(regexpr("_\\d", colnames(df_metadata)[i]) > 0,
-                            substr(colnames(df_metadata)[i], 15, 20), 1)
+    for (i in agrep("Concentration", colnames(df))) {
+        trt_n <- ifelse(regexpr("_\\d", colnames(df)[i]) > 0,
+                            substr(colnames(df)[i], 15, 20), 1)
         DrugID_col <- ifelse(trt_n == 1, gDRutils::get_env_identifiers("drug"),
                              paste0(gDRutils::get_env_identifiers("drug"), "_", trt_n))
-        df_metadata[df_metadata[, DrugID_col] %in%
+        df[df[, DrugID_col] %in%
                       gDRutils::get_env_identifiers("untreated_tag"), i] <- 0 # set all untreated to 0
 
-        DrugID_0 <- setdiff(unique(df_metadata[df_metadata[, i] == 0, DrugID_col]),
+        DrugID_0 <- setdiff(unique(df[df[, i] == 0, DrugID_col]),
                             gDRutils::get_env_identifiers("untreated_tag"))
         DrugID_0 <- DrugID_0[!is.na(DrugID_0)]
         if (length(DrugID_0) > 0) {
@@ -95,10 +94,10 @@ cleanup_metadata <- function(df_metadata) {
                                    paste(DrugID_0, collapse = " ; "))
 
         }
-        df_metadata[, i] <- 10 ^ round(log10(as.numeric(df_metadata[, i])), 6)
-        # df_metadata[,i] <- round(as.numeric(df_metadata[, i]), 10) # avoid mismatch due to string truncation # nolint
+        df[, i] <- 10 ^ round(log10(as.numeric(df[, i])), 6)
+        # df[,i] <- round(as.numeric(df[, i]), 10) # avoid mismatch due to string truncation # nolint
     }
-  return(df_metadata)
+  return(df)
 }
 
 
@@ -260,4 +259,9 @@ detect_cores <- function() {
     x <- parallel::detectCores() - 1
   }
   x
+}
+
+tidy_duration <- function(df) {
+  df[[gDRutils::get_env_identifiers("duration")]] <-
+    round(as.numeric(df[[gDRutils::get_env_identifiers("duration")]], 6))
 }
