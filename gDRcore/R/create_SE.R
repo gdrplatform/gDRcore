@@ -1,6 +1,8 @@
 #' @rdname runDrugResponseProcessingPipelineFxns
 #' @export
 #'
+#' If a column called \code{"BackgroundValue"} exists in \code{df_},
+#' it will be removed from the \code{readout} column.
 create_SE <- function(df_,
                       readout = "ReadoutValue",
                       control_mean_fxn = function(x) {
