@@ -3,6 +3,9 @@
 #' add cellline annotation to a data.frame with metadata
 #'
 #' @param df_metadata a data.frame with metadata
+#' @param DB_cellid_header a string with colnames with cell line identifier in the annotation file
+#' @param DB_cell_annotate a character vector with mandatory colnames used in the annotation file
+#' @param fname a string with file name with annotation
 #' @param fill a string indicating how unknown cell lines should be filled in the DB
 #' @details   The logic of adding celline annotation for df_metadata is based on the function
 #' get_cell_lines from the gDRwrapper
@@ -15,6 +18,10 @@
 #' @export
 #'
 add_CellLine_annotation <- function(df_metadata,
+                                    DB_cellid_header = "cell_line_identifier",
+                                    DB_cell_annotate = c("cell_line_name", "primary_tissue", "doubling_time",
+                                                         "parental_identifier", "subtype"),
+                                    fname = "cell_lines.csv",
                                     fill = "unknown") {
   
   # Assertions:
@@ -22,9 +29,6 @@ add_CellLine_annotation <- function(df_metadata,
   checkmate::assert_string(fill, null.ok = TRUE)
   data.table::setDT(df_metadata)
 
-  DB_cellid_header <- "cell_line_identifier"
-  DB_cell_annotate <- c("cell_line_name", "primary_tissue", "doubling_time",
-                        "parental_identifier", "subtype")
   cellline <- gDRutils::get_env_identifiers("cellline")
   cellline_name <- gDRutils::get_env_identifiers("cellline_name")
   add_clid <- gDRutils::get_header("add_clid")
@@ -32,7 +36,7 @@ add_CellLine_annotation <- function(df_metadata,
   # Read local cell_lines annotations
   annotationPackage <- ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
                               "gDRinternalData", "gDRtestData")
-  CLs_info <- read.csv(system.file("data", "cell_lines.csv", package = annotationPackage))
+  CLs_info <- read.csv(system.file("data", fname, package = annotationPackage))
   CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate)]
   CLs_info[, "doubling_time"] <- as.numeric(CLs_info[, "doubling_time"])
   
@@ -84,13 +88,14 @@ add_CellLine_annotation <- function(df_metadata,
 #' add drug annotation to a data.frame with metadata
 #'
 #' @param df_metadata a data.frame with metadata
+#' @param fname a string with file name with annotation
 #' @param fill a string indicating how unknown cell lines should be filled in the DB
-#'
 #'
 #' @return a data.frame with metadata with annotated drugs
 #' @export
 #'
 add_Drug_annotation <- function(df_metadata,
+                                fname = "drugs.csv",
                                 fill = "unknown") {
   
   # Assertions:
@@ -99,7 +104,6 @@ add_Drug_annotation <- function(df_metadata,
   data.table::setDT(df_metadata)
   nrows_df <- nrow(df_metadata)
   
-  DB_drug_identifier <- c("gnumber", "drug_name", "drug_moa")
   drug <- gDRutils::get_env_identifiers("drug")
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   drug_name <- gDRutils::get_env_identifiers("drug_name")
@@ -109,7 +113,7 @@ add_Drug_annotation <- function(df_metadata,
   # Read local drugs annotations
   annotationPackage <- ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
                               "gDRinternalData", "gDRtestData")
-  Drug_info <- read.csv(system.file("data", "drugs.csv", package = annotationPackage),
+  Drug_info <- read.csv(system.file("data", fname, package = annotationPackage),
                         header = TRUE)
   Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa")]
   data.table::setnames(Drug_info, c("drug", "drug_name", "drug_moa"))
