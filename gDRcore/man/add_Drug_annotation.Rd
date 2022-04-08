@@ -4,10 +4,12 @@
 \alias{add_Drug_annotation}
 \title{add_Drug_annotation}
 \usage{
-add_Drug_annotation(df_metadata, fill = NULL)
+add_Drug_annotation(df_metadata, fname = "drugs.csv", fill = "unknown")
 }
 \arguments{
 \item{df_metadata}{a data.frame with metadata}
+
+\item{fname}{a string with file name with annotation}
 
 \item{fill}{a string indicating how unknown cell lines should be filled in the DB}
 }

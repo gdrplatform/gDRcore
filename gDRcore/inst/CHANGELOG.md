@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.35] - 2022-04-07
+#### Update
+- get rid of gDRwrapper
+
 #### [1.1.34] - 2022-03-30
 #### Update
 - add support for additional barcode identifiers
