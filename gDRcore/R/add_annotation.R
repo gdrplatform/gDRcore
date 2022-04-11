@@ -42,13 +42,13 @@ add_CellLine_annotation <- function(df_metadata,
   
   if (nrow(CLs_info) == 0) return(df_metadata)
   
-  validatedCLs <- all(unique(df_metadata[[cellline]]) %in% CLs_info[[DB_cellid_header]])
+  validatedCLs <- unique(df_metadata[[cellline]]) %in% CLs_info[[DB_cellid_header]]
   missingTblCellLines <- NULL
-  if (!is.null(fill) && !validatedCLs) {
-    missingTblCellLines <- data.table::data.table(parental_identifier = fill,
-                                                  cell_line_name = fill,
-                                                  cell_line_identifier = unlist(
-                                                    unique(df_metadata[, cellline])),
+  if (!is.null(fill) && !all(validatedCLs)) {
+    unValidatedCellLine <- unique(df_metadata[[cellline]])[!validatedCLs]
+    missingTblCellLines <- data.table::data.table(parental_identifier = unValidatedCellLine,
+                                                  cell_line_name = unValidatedCellLine,
+                                                  cell_line_identifier = unValidatedCellLine,
                                                   doubling_time = NA,
                                                   primary_tissue = fill,
                                                   subtype = fill)
