@@ -133,7 +133,7 @@ split_raw_data <- function(df,
       cotrt_matching <- rbind(unique_cotrt, unique_cotrt_ctrl)
       df_merged <- rbind(df_list[[x]], merge(cotrt_matching, control))
       if (x == "matrix") {
-        rbind(df_merged, df_list[["single-agent"]])
+        duplicate_single_agent(rbind(df_merged, df_list[["single-agent"]]))
       } else {
         df_merged
       }
@@ -157,4 +157,39 @@ split_raw_data <- function(df,
   Map(function(x) {
     x[, names(x) != type_col]
     }, df_list)
+}
+
+#' Duplicate single agent data to be visible also as Drug_2 in combo matrix
+#'
+#' @param df data.frame of raw drug response data containing both treated and untreated values
+#'
+#' @return data.frame of raw drug response data with additional duplicated single-agent data
+#' @export
+#'
+#' @author Bartosz Czech <bartosz.czech@@contractors.roche.com>
+duplicate_single_agent <- function(df_) {
+  conc <- gDRutils::get_env_identifiers("concentration")
+  conc2 <- gDRutils::get_env_identifiers("concentration2")
+  df_swap1 <- df_[df_[[conc]] == 0 &
+                    df_[[conc2]] != 0, ]
+  df_swap2 <- df_[df_[[conc2]] == 0 &
+                    df_[[conc]] != 0, ]
+  
+  drug_cols <- intersect(unlist(gDRutils::get_env_identifiers(c("drug", "drug_name", "drug_moa", "concentration"), simplify = FALSE)), names(df_))
+  drug_cols2 <- intersect(unlist(gDRutils::get_env_identifiers(c("drug2", "drug_name2", "drug_moa2", "concentration2"), simplify = FALSE)), names(df_))
+  
+  names(df_swap1)[match(c(drug_cols, drug_cols2), names(df_swap1))] <- c(drug_cols2, drug_cols)
+  names(df_swap2)[match(c(drug_cols, drug_cols2), names(df_swap2))] <- c(drug_cols2, drug_cols)
+  
+  df_swap <- rbind(df_swap1, df_swap2)[, names(df_)]
+  
+  df_swap_rownames <- do.call(paste, df_swap)
+  df_original_rownames <- do.call(paste, df_)
+  
+  df_ <- rbind(df_, df_swap[!df_swap_rownames %in% df_original_rownames, ])
+  
+  # also rounding the concentration to avoid small mismatches
+  df_[[swap_var[["concentration"]]]] <- round_concentration(df_[[swap_var[["concentration"]]]])
+  df_[[swap_var2[["concentration2"]]]] <- round_concentration(df_[[swap_var2[["concentration2"]]]])
+  df_
 }
