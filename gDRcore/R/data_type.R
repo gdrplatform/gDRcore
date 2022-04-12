@@ -175,8 +175,10 @@ duplicate_single_agent <- function(df_) {
   df_swap2 <- df_[df_[[conc2]] == 0 &
                     df_[[conc]] != 0, ]
   
-  drug_cols <- intersect(unlist(gDRutils::get_env_identifiers(c("drug", "drug_name", "drug_moa", "concentration"), simplify = FALSE)), names(df_))
-  drug_cols2 <- intersect(unlist(gDRutils::get_env_identifiers(c("drug2", "drug_name2", "drug_moa2", "concentration2"), simplify = FALSE)), names(df_))
+  drug_cols <- intersect(unlist(gDRutils::get_env_identifiers(c("drug", "drug_name", "drug_moa", "concentration"),
+                                                              simplify = FALSE)), names(df_))
+  drug_cols2 <- intersect(unlist(gDRutils::get_env_identifiers(c("drug2", "drug_name2", "drug_moa2", "concentration2"),
+                                                               simplify = FALSE)), names(df_))
   
   names(df_swap1)[match(c(drug_cols, drug_cols2), names(df_swap1))] <- c(drug_cols2, drug_cols)
   names(df_swap2)[match(c(drug_cols, drug_cols2), names(df_swap2))] <- c(drug_cols2, drug_cols)
