@@ -20,3 +20,10 @@ test_that("identify_data_type and split_raw_data works as expected", {
   expect_true(inherits(df_list, "list"))
   expect_true(all(names(df_list) %in% c("matrix", "single-agent")))
 })
+
+test_that("duplicate_single_agent works as expected", {
+  df_ <- data.frame(Gnumber=c("DrugA", "vehicle"), Concentration=c(0.3, 0), Gnumber_2=c("vehicle", "DrugA"), Concentration_2=c(0, 0.3))
+  expect_equal(duplicate_single_agent2(df_), df_)
+  expect_equal(duplicate_single_agent2(df_[1, ]), df_)
+  expect_equal(duplicate_single_agent(df_[2, ]), df_)
+})
