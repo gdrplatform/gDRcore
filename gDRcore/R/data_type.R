@@ -133,7 +133,7 @@ split_raw_data <- function(df,
       cotrt_matching <- rbind(unique_cotrt, unique_cotrt_ctrl)
       df_merged <- rbind(df_list[[x]], merge(cotrt_matching, control))
       if (x == "matrix") {
-        duplicate_single_agent(rbind(df_merged, df_list[["single-agent"]]))
+        rbind(df_merged, df_list[["single-agent"]])
       } else {
         df_merged
       }
