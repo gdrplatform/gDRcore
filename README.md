@@ -74,7 +74,7 @@ save it as .github_access_token.txt
 5. build local Docker image with latest gDRcore package and its dependencies
 (terminal) 
 docker build -t test_gdrcore .
-6. create new Docker container from the newly created Docker image (please find the env_local file attached)
+6. create new Docker container from the newly created Docker image (please find the env_local file [here](extras/env_local))
 cp env_local gDRcore_github_com/.env
 cd gDRcore_github_com
 docker-compose -f rplatform/docker-compose.yml --project-directory . up -d --force-recreate
@@ -90,7 +90,7 @@ docker-compose -f rplatform/docker-compose.yml --project-directory . up -d --for
 (terminal) git clone git@github.com:gdrplatform/gDRcore.git gDRcore_github_com
 3. pull public gdrplatform image with proper version
 (terminal) docker pull arkadiuszgladki/gdr_shiny:0.08
-4. create Docker container from public gdrplatform image (please find env file attached)
+4. create Docker container from public gdrplatform image (please find env file [here](extras/env))
 (terminal) 
 cp env gDRcore_github_com/.env
 cd gDRcore_github_com
