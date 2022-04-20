@@ -8,7 +8,7 @@ pkgs:
   gDRtestData:
     ver: '>=1.0.12'
     url: gdrplatform/gDRtestData
-    ref: GDR-1457
+    ref: master
     subdir: gDRtestData
     source: GITHUB
   gDRstyle:
