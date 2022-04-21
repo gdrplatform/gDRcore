@@ -58,7 +58,7 @@ add_CellLine_annotation <- function(df_metadata,
   if (any(!df_metadata$clid %in% CLs_info[[DB_cellid_header]]) && !is.null(missingTblCellLines)) {
     CLs_info <- rbind(CLs_info, missingTblCellLines)
   }
-  
+  CLs_info[is.na(CLs_info)] <- fill
   colnames(CLs_info) <- unlist(c(cellline, add_clid, tail(DB_cell_annotate, 2)))
   CLIDs <- unique(df_metadata[[cellline]])
   bad_CL <- CLs_info[cellline %in% CLIDs][[cellline]]
@@ -150,6 +150,7 @@ add_Drug_annotation <- function(df_metadata,
       missingTblDrugs[!(remove_drug_batch(missingTblDrugs$drug) %in% Drug_info$drug), ],
       names(Drug_info)))
   }
+  DrIDs[is.na(DrIDs)] <- fill
   bad_DrID <- !(remove_drug_batch(DrIDs) %in% Drug_info$drug) & !is.na(DrIDs)
   if (any(bad_DrID)) {
     # G number, but not registered
