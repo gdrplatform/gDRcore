@@ -7,12 +7,9 @@
 #' @param DB_cell_annotate a character vector with mandatory colnames used in the annotation file
 #' @param fname a string with file name with annotation
 #' @param fill a string indicating how unknown cell lines should be filled in the DB
-#' @details   The logic of adding celline annotation for df_metadata is based on the function
-#' get_cell_lines from the gDRwrapper
-#' we added additional parameter 'fill' that allows to fill the DB with clid info for these cell lines
-#' that are not present in the DB.
-#' Other fields are set as "UNKNOWN". If the fill is set as FALSE we add unknown cell lines
-#' only to the tibble.
+#' @details   The logic of adding celline annotation for df_metadata based on the annotation file stored
+#' in gDRtestData.
+#' Other fields are set as "unknown".
 #' This approach will be corrected once we will implement final solution for adding cell lines.
 #' @return a data.frame with metadata with annotated cell lines
 #' @export
@@ -90,7 +87,8 @@ add_CellLine_annotation <- function(df_metadata,
 #' @param df_metadata a data.frame with metadata
 #' @param fname a string with file name with annotation
 #' @param fill a string indicating how unknown cell lines should be filled in the DB
-#'
+#' @details The logic of adding drug annotation for df_metadata based on the annotation file stored
+#' in gDRtestData.
 #' @return a data.frame with metadata with annotated drugs
 #' @export
 #'
