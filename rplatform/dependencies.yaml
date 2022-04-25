@@ -17,8 +17,5 @@ pkgs:
     ref: main
     subdir: ~
     source: GITHUB
-  grr:
-    ver: '>=0.9.5'
-    url: https://github.com/cran/grr.git
   purrr:
     source: CRAN
