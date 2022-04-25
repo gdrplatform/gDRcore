@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 #### Update
 - update function for adding unknown cell line annotations
 - update logic for using nested confounders
+- remove `grr` from dependencies
 
 #### [1.1.35] - 2022-04-07
 #### Update
