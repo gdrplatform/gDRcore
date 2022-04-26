@@ -43,7 +43,7 @@ identify_keys <- function(df_,
     override_untrt_controls <- intersect(override_untrt_controls, all_keys)
   }
 
-  x <- c("Concentration", 
+  x <- c(identifiers[["concentration"]], 
     identifiers$drug, 
     identifiers$drug_name,
     identifiers$drug_moa)
@@ -61,7 +61,7 @@ identify_keys <- function(df_,
 
   keys <- lapply(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),
     gDRutils::get_header("normalized_results"), 
-    "Template", 
+    identifiers$template, 
     identifiers$well_position, 
     gDRutils::get_header("averaged_results"),
     gDRutils::get_header("metrics_results"), 

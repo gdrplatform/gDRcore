@@ -35,7 +35,6 @@ add_CellLine_annotation <- function(df_metadata,
                               "gDRinternalData", "gDRtestData")
   CLs_info <- read.csv(system.file("data", fname, package = annotationPackage))
   CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate)]
-  CLs_info[, "doubling_time"] <- as.numeric(CLs_info[, "doubling_time"])
   
   if (nrow(CLs_info) == 0) return(df_metadata)
   
@@ -56,6 +55,8 @@ add_CellLine_annotation <- function(df_metadata,
     CLs_info <- rbind(CLs_info, missingTblCellLines)
   }
   CLs_info[is.na(CLs_info)] <- fill
+  CLs_info[, "doubling_time"] <- as.numeric(CLs_info[, "doubling_time"])
+  
   colnames(CLs_info) <- unlist(c(cellline, add_clid, tail(DB_cell_annotate, 2)))
   CLIDs <- unique(df_metadata[[cellline]])
   bad_CL <- CLs_info[cellline %in% CLIDs][[cellline]]
