@@ -45,3 +45,4 @@ RoxygenNote: 7.1.2
 SwitchrLibrary: gDRcore
 DeploySubPath: gDRcore
 Encoding: UTF-8
+NeedsCompilation: yes
