@@ -1,4 +1,4 @@
-test_that("mathes works as expected", {
+test_that("matches works as expected", {
   # Combination data.
   mat_elem <- data.frame(DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
                          DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
