@@ -51,7 +51,7 @@ add_CellLine_annotation <- function(df_metadata,
     
   }
   
-  if (any(!df_metadata$clid %in% CLs_info[[DB_cellid_header]]) && !is.null(missingTblCellLines)) {
+  if (any(!df_metadata[[cellline]] %in% CLs_info[[DB_cellid_header]]) && !is.null(missingTblCellLines)) {
     CLs_info <- rbind(CLs_info, missingTblCellLines)
   }
   CLs_info[is.na(CLs_info)] <- fill
