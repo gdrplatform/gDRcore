@@ -304,7 +304,8 @@ detect_cores <- function() {
 #' @details Source of the function: https://github.com/cran/grr/blob/master/R/grr.R
 #' @export
 matches <- function(x, y, all.x = TRUE, all.y = TRUE, list = FALSE, indexes = TRUE, nomatch = NA) {
-  result <- .Call("matches", x, y)
+  require(gD)
+  result <- .Call(getNativeSymbolInfo("matches"), x, y)
   result <- data.frame(x = result[[1]], y = result[[2]])
   if (!all.y) {
     result <- result[result$x != length(x) + 1, ]
