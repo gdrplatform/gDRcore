@@ -33,6 +33,7 @@ Suggests:
     covr,
     futile.logger,
     knitr,
+    pkgbuild,
     testthat,
     yaml,
     gDRinternalData,
