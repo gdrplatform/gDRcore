@@ -102,12 +102,24 @@ add_Drug_annotation <- function(df_metadata,
   checkmate::assert_string(fill, null.ok = TRUE)
   data.table::setDT(df_metadata)
   nrows_df <- nrow(df_metadata)
+  intersect(gDRutils::get_env_identifiers(c(
+    "drug", "drug2", "drug3"), simplify = FALSE), names(df_metadata))
   
-  drug <- gDRutils::get_env_identifiers("drug")
+  drug <- unlist(gDRutils::get_env_identifiers(c(
+    "drug", "drug2", "drug3"), simplify = FALSE))
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  drug_name <- gDRutils::get_env_identifiers("drug_name")
-  drug_moa <- gDRutils::get_env_identifiers("drug_moa")
-  drugsTreated <- unique(df_metadata[[drug]])
+  drug_name <- unlist(gDRutils::get_env_identifiers(c(
+    "drug_name", "drug_name2", "drug_name3"), simplify = FALSE))
+  drug_moa <- unlist(gDRutils::get_env_identifiers(c(
+    "drug_moa", "drug_moa2", "drug_moa3"), simplify = FALSE))
+  drug_idx <- which(drug %in% names(df_metadata))
+  drugsTreated <- unique(unlist(subset(df_metadata, select = drug[drug_idx])))
+  
+  drug_full_identifiers <- c(drug[drug_idx], drug_name[drug_idx], drug_moa[drug_idx])
+  drug_ids <- stringr::str_extract(names(drug_full_identifiers), "[0-9]") 
+  drug_ids <- ifelse(is.na(drug_ids), 1, drug_ids)
+  drug_identifiers_list <- split(drug_full_identifiers, drug_ids)
+  names(drug_identifiers_list) <- drug[drug_idx]
   
   # Read local drugs annotations
   annotationPackage <- ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
@@ -133,7 +145,7 @@ add_Drug_annotation <- function(df_metadata,
     return(df_metadata)
   }
   
-  # -----------------------
+
   Drug_info$drug <- remove_drug_batch(Drug_info$drug)
   Drug_info <-
     rbind(data.frame(
@@ -143,52 +155,14 @@ add_Drug_annotation <- function(df_metadata,
     ),
     Drug_info)
   Drug_info <- Drug_info[!duplicated(Drug_info[["drug"]]), ]
-  DrIDs <- unique(unlist(df_metadata[, grep(drug, colnames(df_metadata))]))
   if (any(!remove_drug_batch(drugsTreated) %in% Drug_info$drug) && !is.null(missingTblDrugs)) {
     Drug_info <- rbind(Drug_info, data.table::setnames(
       missingTblDrugs[!(remove_drug_batch(missingTblDrugs$drug) %in% Drug_info$drug), ],
       names(Drug_info)))
   }
-  DrIDs[is.na(DrIDs)] <- fill
-  bad_DrID <- !(remove_drug_batch(DrIDs) %in% Drug_info$drug) & !is.na(DrIDs)
-  if (any(bad_DrID)) {
-    # G number, but not registered
-    ok_DrID <- attr(regexpr("^G\\d*", DrIDs), "match.length") == 9
-    if (any(ok_DrID)) {
-      futile.logger::flog.warn("cleanup_metadata: Drug %s  not found in gCSI database;
-                               use G# as DrugName",
-                               paste(DrIDs[ok_DrID & bad_DrID], collapse = " ; "))
-      default_drug_moa <- ifelse(is.null(fill), "unknown", fill)
-      Drug_info <-
-        rbind(Drug_info, data.frame(drug = remove_drug_batch(DrIDs[ok_DrID & bad_DrID]),
-                                    drug_name = remove_drug_batch(DrIDs[ok_DrID & bad_DrID]),
-                                    drug_moa = default_drug_moa))
-    } else {
-      futile.logger::flog.error("Drug %s not in the correct format for database",
-                                paste(DrIDs[!ok_DrID], collapse = " ; "))
-    }
-  }
-  colnames(Drug_info) <- c("drug", drug_name, drug_moa)
-  futile.logger::flog.info("Merge with Drug_info for Drug 1")
-  df_metadata[[paste0(drug, "_temp")]] <-
-    remove_drug_batch(df_metadata[[drug]])
-  df_metadata <- base::merge(df_metadata, Drug_info, by.x =
-                               paste0(drug, "_temp"), by.y = "drug", all.x = TRUE)
-  df_metadata <- df_metadata[, .SD, .SDcols = !endsWith(names(df_metadata), "temp")]
-  # add info for columns Gnumber_*
-  for (i in grep(paste0(drug, "_\\d"), colnames(df_metadata))) {
-    df_metadata[is.na(df_metadata[[i]]), i] <- untreated_tag[1] # set missing values to Untreated
-    Drug_info_ <- Drug_info
-    colnames(Drug_info_)[colnames(Drug_info_)
-                         %in% c(drug_name, drug_moa)] <- paste0(c(drug_name, drug_moa),
-                                                               gsub(".*(_\\d)", "\\1",
-                                                                    colnames(df_metadata)[i]))
-    futile.logger::flog.info("Merge with Drug_info for %s", colnames(df_metadata)[[i]])
-    df_metadata[[paste0(colnames(df_metadata)[[i]], "_temp")]] <- remove_drug_batch(df_metadata[[i]])
-    df_metadata <- base::merge(df_metadata, Drug_info_, by.x =
-                                 remove_drug_batch(paste0(colnames(df_metadata)[[i]],
-                                                          "_temp")), by.y = "drug", all.x = TRUE)
-    df_metadata <- df_metadata[, .SD, .SDcols = !endsWith(names(df_metadata), "temp")]
+  for (drug in names(drug_identifiers_list)) {
+    colnames(Drug_info) <- drug_identifiers_list[[drug]]
+    df_metadata <- merge(df_metadata, Drug_info, by = drug, all.x = TRUE)
   }
   stopifnot(nrows_df == nrow(df_metadata))
   df_metadata
