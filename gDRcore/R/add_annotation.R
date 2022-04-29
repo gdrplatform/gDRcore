@@ -144,7 +144,7 @@ add_Drug_annotation <- function(df_metadata,
     df_metadata[, drug_name] <- df_metadata[, drug]
     return(df_metadata)
   }
-  
+  Drug_info <- rbind(Drug_info, missingTblDrugs)
 
   Drug_info$drug <- remove_drug_batch(Drug_info$drug)
   Drug_info <-
@@ -162,7 +162,10 @@ add_Drug_annotation <- function(df_metadata,
   }
   for (drug in names(drug_identifiers_list)) {
     colnames(Drug_info) <- drug_identifiers_list[[drug]]
+    drug_with_batch <- df_metadata[[drug]]
+    df_metadata[[drug]] <- remove_drug_batch(df_metadata[[drug]])
     df_metadata <- merge(df_metadata, Drug_info, by = drug, all.x = TRUE)
+    df_metadata[[drug]] <- drug_with_batch
   }
   stopifnot(nrows_df == nrow(df_metadata))
   df_metadata
