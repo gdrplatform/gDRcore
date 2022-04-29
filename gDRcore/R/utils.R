@@ -19,7 +19,7 @@
 #' @param df_metadata a dataframe with metadata
 #'
 #' @return a dataframe with cleaned metadata
-#'
+#' @details Adds annotations and check whether user provided correct input data.
 #' @export
 #'
 cleanup_metadata <- function(df_metadata) {
@@ -29,75 +29,33 @@ cleanup_metadata <- function(df_metadata) {
 
   data.table::setDT(df_metadata)
 
-  # clean up numberic fields
+  # Round duration to 6 values. 
   df_metadata[[gDRutils::get_env_identifiers("duration")]] <-
     round(as.numeric(df_metadata[[gDRutils::get_env_identifiers("duration")]], 6))
 
-  # identify potential numeric fields and replace NA by 0 - convert strings in factors
-  for (c in setdiff(1:dim(df_metadata)[2], c(
-    agrep(gDRutils::get_env_identifiers("drug"), colnames(df_metadata)),
-    agrep("Concentration", colnames(df_metadata)),
-    grep(paste(
-      c(
-        gDRutils::get_env_identifiers("cellline"),
-        gDRutils::get_header("manifest"),
-        gDRutils::get_env_identifiers("well_position"),
-        "compoundId"
-      ),
-      collapse = "|"
-    ), colnames(df_metadata))
-  ))) {
-    vals <- unique(df_metadata[[c]])
-
-    if (is.character(vals)) {
-      num_vals <- as.numeric(vals)
-      if (sum(is.na(num_vals)) > 2 || all(is.na(num_vals))) {
-        df_metadata[[c]] <- as.character(df_metadata[[c]])
-        futile.logger::flog.warn("Metadata field %s converted to strings",
-                colnames(df_metadata)[c])
-      } else {
-        is.na(df_metadata[[c]]) <- 0
-        df_metadata[[c]] <- as.numeric(df_metadata[[c]])
-        futile.logger::flog.warn("Metadata field %s converted to numeric values",
-                colnames(df_metadata)[c])
-      }
-    }
+  df_metadata <- add_CellLine_annotation(df_metadata)
+  
+  drug_conc_cols <- unlist(get_env_identifiers(c("drug", "drug2", "drug3",
+                                                 "concentration", "concentration2", "concentration3"),
+                                                    simplify = FALSE))
+  drug_conc_cols <- drug_conc_cols[drug_conc_cols %in% names(df_metadata)]
+  split_idx <- stringr::str_extract(names(drug_conc_cols), "[0-9]")
+  split_idx[is.na(split_idx)] <- 1
+  drug_conc_cols_list <- split(drug_conc_cols, split_idx)
+  drug_conc_cols_list <- lapply(drug_conc_cols_list, function(x) {
+    names(x) <- gsub("[0-9]", "", names(x))
+    x
+    })
+  
+  # clean up concentration fields
+  for (i in drug_conc_cols_list) {
+    df_metadata[df_metadata[, i[["drug"]]] %in%
+                  gDRutils::get_env_identifiers("untreated_tag"), i[["concentration"]]] <- 0 # set all untreated to 0
+    df_metadata[[i[["concentration"]]]] <- 10 ^ round(log10(as.numeric(df_metadata[[i[["concentration"]]]])), 6)
   }
-    # TODO: specific to GNE database --> need to be replaced by a function
-    df_metadata <- add_CellLine_annotation(df_metadata)
-    # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
-
-    for (i in agrep(gDRutils::get_env_identifiers("drug"), colnames(df_metadata))) { # correct case issues
-        for (w in gDRutils::get_env_identifiers("untreated_tag")) {
-            df_metadata[grep(w, df_metadata[[i]], ignore.case = TRUE), i] <- w
-        }
-    }
-    # -----------------------
-
-    df_metadata <- add_Drug_annotation(df_metadata)
-
-    data.table::setDF(df_metadata)
-    # clean up concentration fields
-    for (i in agrep("Concentration", colnames(df_metadata))) {
-        trt_n <- ifelse(regexpr("_\\d", colnames(df_metadata)[i]) > 0,
-                            substr(colnames(df_metadata)[i], 15, 20), 1)
-        DrugID_col <- ifelse(trt_n == 1, gDRutils::get_env_identifiers("drug"),
-                             paste0(gDRutils::get_env_identifiers("drug"), "_", trt_n))
-        df_metadata[df_metadata[, DrugID_col] %in%
-                      gDRutils::get_env_identifiers("untreated_tag"), i] <- 0 # set all untreated to 0
-
-        DrugID_0 <- setdiff(unique(df_metadata[df_metadata[, i] == 0, DrugID_col]),
-                            gDRutils::get_env_identifiers("untreated_tag"))
-        DrugID_0 <- DrugID_0[!is.na(DrugID_0)]
-        if (length(DrugID_0) > 0) {
-          futile.logger::flog.warn("Some concentration for %s are 0: %s",
-                                   DrugID_col,
-                                   paste(DrugID_0, collapse = " ; "))
-
-        }
-        df_metadata[, i] <- 10 ^ round(log10(as.numeric(df_metadata[, i])), 6)
-        # df_metadata[,i] <- round(as.numeric(df_metadata[, i]), 10) # avoid mismatch due to string truncation # nolint
-    }
+  
+  df_metadata <- add_Drug_annotation(df_metadata)
+  data.table::setDF(df_metadata)
   return(df_metadata)
 }
 
