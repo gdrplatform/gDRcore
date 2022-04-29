@@ -42,18 +42,14 @@ identify_keys <- function(df_,
       paste0(dropped_override_untrt_controls, collapse = ", ")))
     override_untrt_controls <- intersect(override_untrt_controls, all_keys)
   }
-
   
-  x <- identifiers[c("concentration", "concentration2", "concentration3",
-                      "drug", "drug2", "drug3",
-                      "drug_name", "drug_name2", "drug_name3",
-                      "drug_moa", "drug_moa2", "drug_moa3")]
-  pattern_keys <- all_keys %in% x
+  x <- c("concentration", "drug", "drug_name", "drug_moa")
+  pattern_keys <- all_keys %in% identifiers[grep(paste(x, collapse = "|"), names(identifiers))]
   
   duration_col <- identifiers$duration
 
   keys <- list(Trt = setdiff(all_keys, c(nested_keys, override_untrt_controls)),
-    ref_Endpoint = setdiff(all_keys, c(x, override_untrt_controls)),
+    ref_Endpoint = setdiff(all_keys, c(identifiers[x], override_untrt_controls)),
     untrt_Endpoint = setdiff(all_keys[!pattern_keys], override_untrt_controls),
     Day0 = setdiff(all_keys[!pattern_keys], duration_col),
     nested_keys = nested_keys
