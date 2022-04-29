@@ -43,12 +43,12 @@ identify_keys <- function(df_,
     override_untrt_controls <- intersect(override_untrt_controls, all_keys)
   }
 
-  x <- c(identifiers[["concentration"]], 
-    identifiers$drug, 
-    identifiers$drug_name,
-    identifiers$drug_moa)
-  pattern <- sprintf("%s|%s|%s|%s", x[1], x[2], x[3], x[4])
-  pattern_keys <- grepl(pattern, all_keys)
+  
+  x <- identifiers[c("concentration", "concentration2", "concentration3",
+                      "drug", "drug2", "drug3",
+                      "drug_name", "drug_name2", "drug_name3",
+                      "drug_moa", "drug_moa2", "drug_moa3")]
+  pattern_keys <- all_keys %in% x
   
   duration_col <- identifiers$duration
 
