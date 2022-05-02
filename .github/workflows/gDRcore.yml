@@ -13,7 +13,7 @@ on:
 
 jobs:
   build_and_test:
-    runs-on: macos-latest
+    runs-on: ubuntu-18.04
     env:
       GITHUB_TOKEN: ${{ secrets.PRIVATE_ACCESS_TOKEN }}
       TEST_TAG: user/app:latest-${{ github.sha }}
