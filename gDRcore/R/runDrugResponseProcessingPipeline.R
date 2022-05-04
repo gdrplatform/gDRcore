@@ -139,6 +139,15 @@ runDrugResponseProcessingPipeline <- function(df_,
   checkmate::assert_string(averaged_assay)
   checkmate::assert_string(metrics_assay)
   
+  nested_confounders <- if (!is.null(nested_confounders) &&
+                            any(!nested_confounders %in% names(df_))) {
+    warning(sprintf("'%s' nested confounder(s) is/are not present in the data.
+    Switching into '%s' nested confounder(s).", setdiff(nested_confounders, names(df_)),
+                    intersect(nested_confounders, names(df_))))
+    intersect(nested_confounders, names(df_))
+  } else {
+    nested_confounders
+  }
   df_ <- identify_data_type(df_)
   df_list <- split_raw_data(df_)
   mae <- MultiAssayExperiment::MultiAssayExperiment()

@@ -4,10 +4,23 @@
 \alias{add_CellLine_annotation}
 \title{add_CellLine_annotation}
 \usage{
-add_CellLine_annotation(df_metadata, fill = NULL)
+add_CellLine_annotation(
+  df_metadata,
+  DB_cellid_header = "cell_line_identifier",
+  DB_cell_annotate = c("cell_line_name", "primary_tissue", "doubling_time",
+    "parental_identifier", "subtype"),
+  fname = "cell_lines.csv",
+  fill = "unknown"
+)
 }
 \arguments{
 \item{df_metadata}{a data.frame with metadata}
+
+\item{DB_cellid_header}{a string with colnames with cell line identifier in the annotation file}
+
+\item{DB_cell_annotate}{a character vector with mandatory colnames used in the annotation file}
+
+\item{fname}{a string with file name with annotation}
 
 \item{fill}{a string indicating how unknown cell lines should be filled in the DB}
 }
