@@ -2,7 +2,8 @@
 #'
 test_synthetic_data <- function(original,
                                 data,
-                                dataName) {
+                                dataName,
+                                override_untrt_controls = NULL) {
   if (inherits(data, "MultiAssayExperiment")) {
     reprocessed <- data
   } else {
