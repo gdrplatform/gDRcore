@@ -128,7 +128,7 @@ add_Drug_annotation <- function(df_metadata,
   Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa")]
   data.table::setnames(Drug_info, c("drug", "drug_name", "drug_moa"))
   drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
-  validatedDrugs <- drugsTreated %in% Drug_info[["drug"]]
+  validatedDrugs <- remove_drug_batch(drugsTreated) %in% remove_drug_batch(Drug_info[["drug"]])
   #### function should be parallelized
   missingTblDrugs <- NULL
   if (!is.null(fill) && any(!validatedDrugs)) {
