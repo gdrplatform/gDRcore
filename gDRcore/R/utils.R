@@ -27,8 +27,6 @@ cleanup_metadata <- function(df_metadata) {
   # Assertions:
   stopifnot(inherits(df_metadata, "data.frame"))
 
-  data.table::setDT(df_metadata)
-
   # Round duration to 6 values. 
   df_metadata[[gDRutils::get_env_identifiers("duration")]] <-
     round(as.numeric(df_metadata[[gDRutils::get_env_identifiers("duration")]], 6))
@@ -52,7 +50,7 @@ cleanup_metadata <- function(df_metadata) {
     df_metadata[df_metadata[[i[["drug"]]]] %in%
                   gDRutils::get_env_identifiers("untreated_tag"), i[["concentration"]]] <- 0 # set all untreated to 0
     df_metadata[[i[["concentration"]]]] <- 10 ^ round(log10(as.numeric(df_metadata[[i[["concentration"]]]])), 6)
-    df_metadata[[i[["drug"]]]] <- ifelse(is.na(df_metadata[[i[["drug"]]]]) && df_metadata[[i[["concentration"]]]] == 0,
+    df_metadata[[i[["drug"]]]] <- ifelse(is.na(df_metadata[[i[["drug"]]]]) & df_metadata[[i[["concentration"]]]] == 0,
            gDRutils::get_env_identifiers("untreated_tag")[[1]],
            df_metadata[[i[["drug"]]]])
   }

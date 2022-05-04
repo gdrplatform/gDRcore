@@ -77,6 +77,7 @@ add_CellLine_annotation <- function(df_metadata,
   nrows_df <- nrow(df_metadata)
   df_metadata <- base::merge(df_metadata, CLs_info, by = cellline, all.x = TRUE)
   stopifnot(nrows_df == nrow(df_metadata))
+  data.table::setDF(df_metadata)
   df_metadata
 }
 
