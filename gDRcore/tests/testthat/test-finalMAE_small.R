@@ -1,10 +1,6 @@
 data <- "finalMAE_small.RDS"
 original <- get_synthetic_data(data)
 
-df_layout <- merge(cell_lines[2:11, ], drugs[2:11, ], by = NULL)
-df_layout <- gDRtestData::add_data_replicates(df_layout)
-df_layout <- gDRtestData::add_concentration(df_layout)
+mae <- gDRtestData::generateNoiseRawData(cell_lines, drugs, e_inf, ec50, hill_coef)
 
-df_merged_data <- gDRtestData::generate_response_data(df_layout)
-
-test_synthetic_data(original, df_merged_data, data)
+test_synthetic_data(original, mae, data)
