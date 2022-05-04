@@ -1,4 +1,4 @@
-data <- "finalSE_combo_matrix_small.RDS"
+data <- "finalMAE_combo_matrix_small.RDS"
 original <- get_synthetic_data(data)
 
 df_layout <- merge(cell_lines[7:8, ], drugs[c(4:6), ], by = NULL)
@@ -15,4 +15,4 @@ df_layout_2 <- merge(df_layout, df_2)
 
 df_merged_data <- gDRtestData::generate_response_data(df_layout_2, 0)
 
-test_synthetic_data(original, df_merged_data, data, combo = TRUE)
+test_synthetic_data(original, df_merged_data, data)

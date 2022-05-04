@@ -2,13 +2,13 @@ pkgs:
   gDRutils:
     ver: '>=1.0.39'
     url: gdrplatform/gDRutils
-    ref: GDR-1456
+    ref: master
     subdir: gDRutils
     source: GITHUB
   gDRtestData:
     ver: '>=1.0.11'
     url: gdrplatform/gDRtestData
-    ref: master
+    ref: update_data
     subdir: gDRtestData
     source: GITHUB
   gDRstyle:

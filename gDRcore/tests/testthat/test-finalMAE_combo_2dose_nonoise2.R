@@ -1,4 +1,4 @@
-data <- "finalSE_combo_2dose_nonoise2.RDS"
+data <- "finalMAE_combo_2dose_nonoise2.RDS"
 original <- get_synthetic_data(data)
 
 df_layout <- merge(cell_lines[2:4, ], drugs[c(2:4, 26), ], by = NULL)
@@ -13,4 +13,4 @@ df_merged_data <- gDRtestData::generate_response_data(df_layout_2, 0)
 df_merged_data <- df_merged_data[!(df_merged_data$Gnumber %in% c("vehicle", drugs$Gnumber[26]) & 
                                      df_merged_data$Gnumber_2 == drugs$Gnumber[26]), ]
 
-test_synthetic_data(original, df_merged_data, data, combo = TRUE)
+test_synthetic_data(original, df_merged_data, data)

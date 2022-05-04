@@ -1,4 +1,4 @@
-data <- "finalSE_combo_matrix.RDS"
+data <- "finalMAE_combo_matrix.RDS"
 original <- get_synthetic_data(data)
 
 df_layout <- merge(cell_lines[seq(1, 30, 4), ], drugs[c(1, 2, 11, 12, 16, 17), ], by = NULL)
@@ -15,6 +15,6 @@ df_layout_2 <- merge(df_layout, df_2)
 
 df_merged_data <- gDRtestData::generate_response_data(df_layout_2)
 
-finalSE <- gDRcore::runDrugResponseProcessingPipeline(df_merged_data, override_untrt_controls = NULL)
+finalMAE <- gDRcore::runDrugResponseProcessingPipeline(df_merged_data, override_untrt_controls = NULL)
 
-test_synthetic_data(original, finalSE, data, combo = TRUE)
+test_synthetic_data(original, finalMAE, data)

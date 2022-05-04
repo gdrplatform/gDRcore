@@ -1,4 +1,4 @@
-data <- "finalSE_wLigand.RDS"
+data <- "finalMAE_wLigand.RDS"
 original <- get_synthetic_data(data)
 
 df_layout <- merge(cell_lines[2:6, ], drugs[2:5, ], by = NULL)
@@ -18,5 +18,5 @@ df_merged_data2$ReadoutValue <- round(df_merged_data2$ReadoutValue, 1)
 df_merged_data2$Barcode <- paste0(df_merged_data2$Barcode, "1")
 df_merged_data <- rbind(df_merged_data, df_merged_data2)
 
-test_synthetic_data(original, df_merged_data, data, override_untrt_controls = c(Ligand = 0.1))
-
+data <- runDrugResponseProcessingPipeline(df_merged_data, override_untrt_controls = c(Ligand = 0.1))
+test_synthetic_data(original, data_reprocessed, data)

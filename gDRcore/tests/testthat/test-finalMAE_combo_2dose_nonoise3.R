@@ -1,4 +1,4 @@
-data <- "finalSE_combo_2dose_nonoise3.RDS"
+data <- "finalMAE_combo_2dose_nonoise3.RDS"
 original <- get_synthetic_data(data)
 
 df_layout <- merge(cell_lines[2:4, ], drugs[2:4, ], by = NULL)
@@ -12,4 +12,4 @@ df_layout_2 <- df_layout_2[!(df_layout_2$Concentration == 0 & df_layout_2$Concen
 
 df_merged_data <- gDRtestData::generate_response_data(df_layout_2, 0)
 
-test_synthetic_data(original, df_merged_data, data, combo = TRUE)
+test_synthetic_data(original, df_merged_data, data)
