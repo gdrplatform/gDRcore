@@ -103,8 +103,6 @@ add_Drug_annotation <- function(df_metadata,
   checkmate::assert_string(fill, null.ok = TRUE)
   data.table::setDT(df_metadata)
   nrows_df <- nrow(df_metadata)
-  intersect(gDRutils::get_env_identifiers(c(
-    "drug", "drug2", "drug3"), simplify = FALSE), names(df_metadata))
   
   drug <- unlist(gDRutils::get_env_identifiers(c(
     "drug", "drug2", "drug3"), simplify = FALSE))
