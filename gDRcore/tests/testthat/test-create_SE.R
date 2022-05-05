@@ -12,4 +12,3 @@ test_that("validate_mapping works as expected", {
   merged_df2 <- validate_mapping(trt_df, ref_df, nested_confounders = "Barcode")
   expect_equal(dim(merged_df2), c(11, 4))
 })
-  
