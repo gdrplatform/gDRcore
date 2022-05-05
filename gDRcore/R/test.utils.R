@@ -3,7 +3,8 @@
 test_synthetic_data <- function(original,
                                 data,
                                 dataName,
-                                override_untrt_controls = NULL) {
+                                override_untrt_controls = NULL,
+                                tolerance = 10e-5) {
   if (inherits(data, "MultiAssayExperiment")) {
     reprocessed <- data
   } else {
@@ -13,15 +14,15 @@ test_synthetic_data <- function(original,
   
   normalized <- as.data.frame(gDRutils::convert_mae_assay_to_dt(original, "Normalized"))
   averaged <- as.data.frame(gDRutils::convert_mae_assay_to_dt(original, "Averaged"))
+  metrics <- as.data.frame(gDRutils::convert_mae_assay_to_dt(original, "Metrics"))
   normalized_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Normalized"))
   averaged_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Averaged"))
-  metrics <- as.data.frame(gDRutils::convert_mae_assay_to_dt(original, "Metrics"))
   metrics_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Metrics"))
   
   test_that(sprintf("reprocessed data %s is identical to data stored in gDRtestData", dataName), {
-  expect_equal(normalized_new, normalized)
-  expect_equal(averaged_new, averaged)
-  expect_equal(metrics_new, metrics)
+  expect_equal(normalized_new, normalized, tolerance = tolerance)
+  expect_equal(averaged_new, averaged, tolerance = tolerance)
+  expect_equal(metrics_new, metrics, tolerance = tolerance)
   })
 }
 
