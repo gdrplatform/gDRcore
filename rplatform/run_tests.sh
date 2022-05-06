@@ -12,9 +12,6 @@ set -e
 echo ">>>>>>>> Running linter"
 Rscript -e "gDRstyle::lintPkgDirs('/mnt/vol/gDRcore')"
 
-echo ">>>>> RUNNING SMALL UNIT TEST"
-Rscript -e "testthat::test_local(path = '$repo_path', stop_on_failure = TRUE, filter = 'finalSE_wLigand')"
-
 echo ">>>>> RUNNING UNIT TESTS"
 Rscript -e "testthat::test_local(path = '$repo_path', stop_on_failure = TRUE)"
 
