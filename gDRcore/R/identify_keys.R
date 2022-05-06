@@ -42,18 +42,14 @@ identify_keys <- function(df_,
       paste0(dropped_override_untrt_controls, collapse = ", ")))
     override_untrt_controls <- intersect(override_untrt_controls, all_keys)
   }
-
-  x <- c("Concentration", 
-    identifiers$drug, 
-    identifiers$drug_name,
-    identifiers$drug_moa)
-  pattern <- sprintf("%s|%s|%s|%s", x[1], x[2], x[3], x[4])
-  pattern_keys <- grepl(pattern, all_keys)
+  
+  x <- c("concentration", "drug", "drug_name", "drug_moa")
+  pattern_keys <- all_keys %in% identifiers[grep(paste(x, collapse = "|"), names(identifiers))]
   
   duration_col <- identifiers$duration
 
   keys <- list(Trt = setdiff(all_keys, c(nested_keys, override_untrt_controls)),
-    ref_Endpoint = setdiff(all_keys, c(x, override_untrt_controls)),
+    ref_Endpoint = setdiff(all_keys, c(identifiers[x], override_untrt_controls)),
     untrt_Endpoint = setdiff(all_keys[!pattern_keys], override_untrt_controls),
     Day0 = setdiff(all_keys[!pattern_keys], duration_col),
     nested_keys = nested_keys
@@ -61,7 +57,7 @@ identify_keys <- function(df_,
 
   keys <- lapply(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),
     gDRutils::get_header("normalized_results"), 
-    "Template", 
+    identifiers$template, 
     identifiers$well_position, 
     gDRutils::get_header("averaged_results"),
     gDRutils::get_header("metrics_results"), 

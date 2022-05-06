@@ -7,12 +7,9 @@
 #' @param DB_cell_annotate a character vector with mandatory colnames used in the annotation file
 #' @param fname a string with file name with annotation
 #' @param fill a string indicating how unknown cell lines should be filled in the DB
-#' @details   The logic of adding celline annotation for df_metadata is based on the function
-#' get_cell_lines from the gDRwrapper
-#' we added additional parameter 'fill' that allows to fill the DB with clid info for these cell lines
-#' that are not present in the DB.
-#' Other fields are set as "UNKNOWN". If the fill is set as FALSE we add unknown cell lines
-#' only to the tibble.
+#' @details   The logic of adding celline annotation for df_metadata based on the annotation file stored
+#' in gDRtestData.
+#' Other fields are set as "unknown".
 #' This approach will be corrected once we will implement final solution for adding cell lines.
 #' @return a data.frame with metadata with annotated cell lines
 #' @export
@@ -38,26 +35,27 @@ add_CellLine_annotation <- function(df_metadata,
                               "gDRinternalData", "gDRtestData")
   CLs_info <- read.csv(system.file("data", fname, package = annotationPackage))
   CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate)]
-  CLs_info[, "doubling_time"] <- as.numeric(CLs_info[, "doubling_time"])
   
   if (nrow(CLs_info) == 0) return(df_metadata)
   
-  validatedCLs <- all(unique(df_metadata[[cellline]]) %in% CLs_info[[DB_cellid_header]])
+  validatedCLs <- unique(df_metadata[[cellline]]) %in% CLs_info[[DB_cellid_header]]
   missingTblCellLines <- NULL
-  if (!is.null(fill) && !validatedCLs) {
-    missingTblCellLines <- data.table::data.table(parental_identifier = fill,
-                                                  cell_line_name = fill,
-                                                  cell_line_identifier = unlist(
-                                                    unique(df_metadata[, cellline])),
+  if (!is.null(fill) && !all(validatedCLs)) {
+    unValidatedCellLine <- unique(df_metadata[[cellline]])[!validatedCLs]
+    missingTblCellLines <- data.table::data.table(parental_identifier = unValidatedCellLine,
+                                                  cell_line_name = unValidatedCellLine,
+                                                  cell_line_identifier = unValidatedCellLine,
                                                   doubling_time = NA,
                                                   primary_tissue = fill,
                                                   subtype = fill)
     
   }
   
-  if (any(!df_metadata$clid %in% CLs_info[[DB_cellid_header]]) && !is.null(missingTblCellLines)) {
+  if (any(!df_metadata[[cellline]] %in% CLs_info[[DB_cellid_header]]) && !is.null(missingTblCellLines)) {
     CLs_info <- rbind(CLs_info, missingTblCellLines)
   }
+  CLs_info[is.na(CLs_info)] <- fill
+  CLs_info[, "doubling_time"] <- as.numeric(CLs_info[, "doubling_time"])
   
   colnames(CLs_info) <- unlist(c(cellline, add_clid, tail(DB_cell_annotate, 2)))
   CLIDs <- unique(df_metadata[[cellline]])
@@ -79,6 +77,7 @@ add_CellLine_annotation <- function(df_metadata,
   nrows_df <- nrow(df_metadata)
   df_metadata <- base::merge(df_metadata, CLs_info, by = cellline, all.x = TRUE)
   stopifnot(nrows_df == nrow(df_metadata))
+  data.table::setDF(df_metadata)
   df_metadata
 }
 
@@ -90,7 +89,8 @@ add_CellLine_annotation <- function(df_metadata,
 #' @param df_metadata a data.frame with metadata
 #' @param fname a string with file name with annotation
 #' @param fill a string indicating how unknown cell lines should be filled in the DB
-#'
+#' @details The logic of adding drug annotation for df_metadata based on the annotation file stored
+#' in gDRtestData.
 #' @return a data.frame with metadata with annotated drugs
 #' @export
 #'
@@ -104,11 +104,21 @@ add_Drug_annotation <- function(df_metadata,
   data.table::setDT(df_metadata)
   nrows_df <- nrow(df_metadata)
   
-  drug <- gDRutils::get_env_identifiers("drug")
+  drug <- unlist(gDRutils::get_env_identifiers(c(
+    "drug", "drug2", "drug3"), simplify = FALSE))
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  drug_name <- gDRutils::get_env_identifiers("drug_name")
-  drug_moa <- gDRutils::get_env_identifiers("drug_moa")
-  drugsTreated <- unique(df_metadata[[drug]])
+  drug_name <- unlist(gDRutils::get_env_identifiers(c(
+    "drug_name", "drug_name2", "drug_name3"), simplify = FALSE))
+  drug_moa <- unlist(gDRutils::get_env_identifiers(c(
+    "drug_moa", "drug_moa2", "drug_moa3"), simplify = FALSE))
+  drug_idx <- which(drug %in% names(df_metadata))
+  drugsTreated <- unique(unlist(subset(df_metadata, select = drug[drug_idx])))
+  
+  drug_full_identifiers <- c(drug[drug_idx], drug_name[drug_idx], drug_moa[drug_idx])
+  drug_ids <- stringr::str_extract(names(drug_full_identifiers), "[0-9]") 
+  drug_ids <- ifelse(is.na(drug_ids), 1, drug_ids)
+  drug_identifiers_list <- split(drug_full_identifiers, drug_ids)
+  names(drug_identifiers_list) <- drug[drug_idx]
   
   # Read local drugs annotations
   annotationPackage <- ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
@@ -118,7 +128,7 @@ add_Drug_annotation <- function(df_metadata,
   Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa")]
   data.table::setnames(Drug_info, c("drug", "drug_name", "drug_moa"))
   drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
-  validatedDrugs <- drugsTreated %in% Drug_info[["drug"]]
+  validatedDrugs <- remove_drug_batch(drugsTreated) %in% remove_drug_batch(Drug_info[["drug"]])
   #### function should be parallelized
   missingTblDrugs <- NULL
   if (!is.null(fill) && any(!validatedDrugs)) {
@@ -133,8 +143,8 @@ add_Drug_annotation <- function(df_metadata,
     df_metadata[, drug_name] <- df_metadata[, drug]
     return(df_metadata)
   }
-  
-  # -----------------------
+  Drug_info <- rbind(Drug_info, missingTblDrugs)
+
   Drug_info$drug <- remove_drug_batch(Drug_info$drug)
   Drug_info <-
     rbind(data.frame(
@@ -144,51 +154,18 @@ add_Drug_annotation <- function(df_metadata,
     ),
     Drug_info)
   Drug_info <- Drug_info[!duplicated(Drug_info[["drug"]]), ]
-  DrIDs <- unique(unlist(df_metadata[, grep(drug, colnames(df_metadata))]))
   if (any(!remove_drug_batch(drugsTreated) %in% Drug_info$drug) && !is.null(missingTblDrugs)) {
     Drug_info <- rbind(Drug_info, data.table::setnames(
       missingTblDrugs[!(remove_drug_batch(missingTblDrugs$drug) %in% Drug_info$drug), ],
       names(Drug_info)))
   }
-  bad_DrID <- !(remove_drug_batch(DrIDs) %in% Drug_info$drug) & !is.na(DrIDs)
-  if (any(bad_DrID)) {
-    # G number, but not registered
-    ok_DrID <- attr(regexpr("^G\\d*", DrIDs), "match.length") == 9
-    if (any(ok_DrID)) {
-      futile.logger::flog.warn("cleanup_metadata: Drug %s  not found in gCSI database;
-                               use G# as DrugName",
-                               paste(DrIDs[ok_DrID & bad_DrID], collapse = " ; "))
-      default_drug_moa <- ifelse(is.null(fill), "unknown", fill)
-      Drug_info <-
-        rbind(Drug_info, data.frame(drug = remove_drug_batch(DrIDs[ok_DrID & bad_DrID]),
-                                    drug_name = remove_drug_batch(DrIDs[ok_DrID & bad_DrID]),
-                                    drug_moa = default_drug_moa))
-    } else {
-      futile.logger::flog.error("Drug %s not in the correct format for database",
-                                paste(DrIDs[!ok_DrID], collapse = " ; "))
-    }
-  }
-  colnames(Drug_info) <- c("drug", drug_name, drug_moa)
-  futile.logger::flog.info("Merge with Drug_info for Drug 1")
-  df_metadata[[paste0(drug, "_temp")]] <-
-    remove_drug_batch(df_metadata[[drug]])
-  df_metadata <- base::merge(df_metadata, Drug_info, by.x =
-                               paste0(drug, "_temp"), by.y = "drug", all.x = TRUE)
-  df_metadata <- df_metadata[, .SD, .SDcols = !endsWith(names(df_metadata), "temp")]
-  # add info for columns Gnumber_*
-  for (i in grep(paste0(drug, "_\\d"), colnames(df_metadata))) {
-    df_metadata[is.na(df_metadata[[i]]), i] <- untreated_tag[1] # set missing values to Untreated
-    Drug_info_ <- Drug_info
-    colnames(Drug_info_)[colnames(Drug_info_)
-                         %in% c(drug_name, drug_moa)] <- paste0(c(drug_name, drug_moa),
-                                                               gsub(".*(_\\d)", "\\1",
-                                                                    colnames(df_metadata)[i]))
-    futile.logger::flog.info("Merge with Drug_info for %s", colnames(df_metadata)[[i]])
-    df_metadata[[paste0(colnames(df_metadata)[[i]], "_temp")]] <- remove_drug_batch(df_metadata[[i]])
-    df_metadata <- base::merge(df_metadata, Drug_info_, by.x =
-                                 remove_drug_batch(paste0(colnames(df_metadata)[[i]],
-                                                          "_temp")), by.y = "drug", all.x = TRUE)
-    df_metadata <- df_metadata[, .SD, .SDcols = !endsWith(names(df_metadata), "temp")]
+  for (drug_idf in names(drug_identifiers_list)) {
+    colnames(Drug_info) <- drug_identifiers_list[[drug_idf]]
+    df_metadata$batch <- df_metadata[[drug_idf]]
+    df_metadata[[drug_idf]] <- remove_drug_batch(df_metadata[[drug_idf]])
+    df_metadata <- data.table::merge.data.table(df_metadata, Drug_info, by = drug_idf, all.x = TRUE)
+    df_metadata[[drug_idf]] <- df_metadata$batch
+    df_metadata$batch <- NULL
   }
   stopifnot(nrows_df == nrow(df_metadata))
   df_metadata

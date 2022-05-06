@@ -141,7 +141,7 @@ map_df <- function(trt_md,
     ref <- do.call(paste, do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]])))))
     
     # match trt and ref
-    matchTrtRef <- grr::matches(trt, ref, list = FALSE, all.y = FALSE)
+    matchTrtRef <- matches(trt, ref, list = FALSE, all.y = FALSE)
     matchTrtRef[["x"]] <- trtNames[matchTrtRef[["x"]]]
     matchTrtRef[["y"]] <- refNames[matchTrtRef[["y"]]]
     

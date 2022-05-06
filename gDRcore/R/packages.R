@@ -4,4 +4,5 @@
 #' @name gDRcore
 #' @import S4Vectors
 #' @importFrom foreach %dopar%
+#' @useDynLib gDRcore
 NULL
