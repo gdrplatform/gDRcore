@@ -143,7 +143,12 @@ runDrugResponseProcessingPipeline <- function(df_,
     warning(sprintf("'%s' nested confounder(s) is/are not present in the data.
     Switching into '%s' nested confounder(s).", setdiff(nested_confounders, names(df_)),
                     intersect(nested_confounders, names(df_))))
-    intersect(nested_confounders, names(df_))
+    confounders_intersect <- intersect(nested_confounders, names(df_))
+    if (length(confounders_intersect) == 0) {
+      NULL
+    } else {
+      confounders_intersect
+    }
   } else {
     nested_confounders
   }

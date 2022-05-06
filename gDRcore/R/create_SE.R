@@ -178,5 +178,6 @@ validate_mapping <- function(trt_df, refs_df, nested_confounders) {
     refs_df <- refs_df[unique(trt_df[[nested_confounders]]) == refs_df[[nested_confounders]], ]
   }
   drug_id <- gDRutils::get_env_identifiers("drug")
-  rbind(trt_df, refs_df[unique(trt_df[[drug_id]]) == refs_df[[drug_id]], ])
+  untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  rbind(trt_df, refs_df[refs_df[[drug_id]] %in% c(unique(trt_df[[drug_id]]), untrt_tag), ])
 }

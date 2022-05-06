@@ -31,11 +31,8 @@ a data.frame with metadata with annotated cell lines
 add cellline annotation to a data.frame with metadata
 }
 \details{
-The logic of adding celline annotation for df_metadata is based on the function
-get_cell_lines from the gDRwrapper
-we added additional parameter 'fill' that allows to fill the DB with clid info for these cell lines
-that are not present in the DB.
-Other fields are set as "UNKNOWN". If the fill is set as FALSE we add unknown cell lines
-only to the tibble.
+The logic of adding celline annotation for df_metadata based on the annotation file stored
+in gDRtestData.
+Other fields are set as "unknown".
 This approach will be corrected once we will implement final solution for adding cell lines.
 }

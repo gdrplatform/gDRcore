@@ -122,6 +122,11 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
   map <- unique(data.frame(concs = concs, rconcs = mapped_rconcs))
 
   tol <- 1
+  
+  # Check if standardized values are within 5% of the original values
+  round_diff <- which(abs(map$concs - map$rconcs) / map$concs > 0.05)
+  
+  map$rconcs[round_diff] <- map$concs[round_diff]
   mismatched <- which(round_concentration(map$conc, tol) != round_concentration(map$rconc, tol))
   for (i in mismatched) {
     warning(sprintf("mapping original concentration '%s' to '%s'",

@@ -19,3 +19,7 @@ a data.frame with metadata with annotated drugs
 \description{
 add drug annotation to a data.frame with metadata
 }
+\details{
+The logic of adding drug annotation for df_metadata based on the annotation file stored
+in gDRtestData.
+}

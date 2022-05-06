@@ -1,5 +1,5 @@
 test_that("masked and unmasked values are processed properly", {
-  data <- "finalSE_small.RDS"
+  data <- "finalMAE_small.RDS"
   original <- get_synthetic_data(data)
   
   df_layout <- merge(cell_lines[2:11, ], drugs[2:11, ], by = NULL)
