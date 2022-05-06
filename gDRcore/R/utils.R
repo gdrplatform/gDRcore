@@ -56,7 +56,7 @@ cleanup_metadata <- function(df_metadata) {
   }
   
   df_metadata <- add_Drug_annotation(df_metadata)
-  data.table::setDF(df_metadata)
+  df_metadata
   return(df_metadata)
 }
 

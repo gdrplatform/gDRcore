@@ -24,7 +24,6 @@ add_CellLine_annotation <- function(df_metadata,
   # Assertions:
   stopifnot(inherits(df_metadata, "data.frame"))
   checkmate::assert_string(fill, null.ok = TRUE)
-  data.table::setDT(df_metadata)
 
   cellline <- gDRutils::get_env_identifiers("cellline")
   cellline_name <- gDRutils::get_env_identifiers("cellline_name")
@@ -42,7 +41,7 @@ add_CellLine_annotation <- function(df_metadata,
   missingTblCellLines <- NULL
   if (!is.null(fill) && !all(validatedCLs)) {
     unValidatedCellLine <- unique(df_metadata[[cellline]])[!validatedCLs]
-    missingTblCellLines <- data.table::data.table(parental_identifier = unValidatedCellLine,
+    missingTblCellLines <- data.frame(parental_identifier = unValidatedCellLine,
                                                   cell_line_name = unValidatedCellLine,
                                                   cell_line_identifier = unValidatedCellLine,
                                                   doubling_time = NA,
@@ -77,7 +76,6 @@ add_CellLine_annotation <- function(df_metadata,
   nrows_df <- nrow(df_metadata)
   df_metadata <- base::merge(df_metadata, CLs_info, by = cellline, all.x = TRUE)
   stopifnot(nrows_df == nrow(df_metadata))
-  data.table::setDF(df_metadata)
   df_metadata
 }
 
@@ -101,7 +99,6 @@ add_Drug_annotation <- function(df_metadata,
   # Assertions:
   stopifnot(inherits(df_metadata, "data.frame"))
   checkmate::assert_string(fill, null.ok = TRUE)
-  data.table::setDT(df_metadata)
   nrows_df <- nrow(df_metadata)
   
   drug <- unlist(gDRutils::get_env_identifiers(c(
@@ -126,7 +123,7 @@ add_Drug_annotation <- function(df_metadata,
   Drug_info <- read.csv(system.file("data", fname, package = annotationPackage),
                         header = TRUE)
   Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa")]
-  data.table::setnames(Drug_info, c("drug", "drug_name", "drug_moa"))
+  names(Drug_info) <- c("drug", "drug_name", "drug_moa")
   drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
   validatedDrugs <- remove_drug_batch(drugsTreated) %in% remove_drug_batch(Drug_info[["drug"]])
   #### function should be parallelized
@@ -155,7 +152,7 @@ add_Drug_annotation <- function(df_metadata,
     Drug_info)
   Drug_info <- Drug_info[!duplicated(Drug_info[["drug"]]), ]
   if (any(!remove_drug_batch(drugsTreated) %in% Drug_info$drug) && !is.null(missingTblDrugs)) {
-    Drug_info <- rbind(Drug_info, data.table::setnames(
+    Drug_info <- rbind(Drug_info, setNames(
       missingTblDrugs[!(remove_drug_batch(missingTblDrugs$drug) %in% Drug_info$drug), ],
       names(Drug_info)))
   }
@@ -163,7 +160,7 @@ add_Drug_annotation <- function(df_metadata,
     colnames(Drug_info) <- drug_identifiers_list[[drug_idf]]
     df_metadata$batch <- df_metadata[[drug_idf]]
     df_metadata[[drug_idf]] <- remove_drug_batch(df_metadata[[drug_idf]])
-    df_metadata <- data.table::merge.data.table(df_metadata, Drug_info, by = drug_idf, all.x = TRUE)
+    df_metadata <- merge(df_metadata, Drug_info, by = drug_idf, all.x = TRUE)
     df_metadata[[drug_idf]] <- df_metadata$batch
     df_metadata$batch <- NULL
   }
