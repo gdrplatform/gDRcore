@@ -221,11 +221,11 @@ detect_cores <- function() {
   x
 }
 
-<<<<<<< HEAD
 tidy_duration <- function(df) {
   df[[gDRutils::get_env_identifiers("duration")]] <-
     round(as.numeric(df[[gDRutils::get_env_identifiers("duration")]], 6))
-=======
+}
+
 #' Value Matching
 #' 
 #' Returns a lookup table or list of the positions of ALL matches of its first
@@ -287,5 +287,4 @@ matches <- function(x, y, all.x = TRUE, all.y = TRUE, list = FALSE, indexes = TR
     result <- tapply(result$y, result$x, function(z) z[!is.na(z)])
   }
   result
->>>>>>> master
 }
