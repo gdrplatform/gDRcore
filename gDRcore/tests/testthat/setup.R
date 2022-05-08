@@ -24,5 +24,7 @@ data_df <- data.frame(
 test_df <- cbind(md_df, data_df)
 
 cell_lines <- gDRtestData::create_synthetic_cell_lines()
-drugs <-  gDRtestData::create_synthetic_drugs()
-
+drugs <- gDRtestData::create_synthetic_drugs()
+e_inf <- gDRtestData::generate_e_inf(drugs, cell_lines)
+ec50 <- gDRtestData::generate_ec50(drugs, cell_lines)
+hill_coef <- gDRtestData::generate_hill_coef(drugs, cell_lines)

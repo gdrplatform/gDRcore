@@ -5,12 +5,11 @@
 #' @param manifest a data frame with a manifest info
 #' @param treatments a data frame with a treaatments info
 #' @param data a data frame with a raw data info
-#' @param collapse_Drugs mode drug_2 to Drug when Drug == vehicle (default is TRUE)
 #'
 #' @return a dataframe with merged data and metadata.
 #' @export
 #'
-merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
+merge_data <- function(manifest, treatments, data) {
   # Assertions:
   stopifnot(inherits(manifest, "data.frame"))
   stopifnot(inherits(treatments, "data.frame"))
@@ -103,24 +102,6 @@ merge_data <- function(manifest, treatments, data, collapse_Drugs = TRUE) {
   # remove wells not labeled
   df_raw_data <-
     df_merged[!is.na(df_merged[, drug_id]), ]
-
-  if (collapse_Drugs && paste0(drug_id, "_2") %in% colnames(df_raw_data)) {
-        # Secondary drug for some combinations can primary drug when viewed as single-agent (conc1 = 0), so swap. 
-        # swap the data related to Drug and Drug_2 such that it can considered as a single-agent condition
-        swap_idx <- df_raw_data$Concentration_2 > 0 &
-                      df_raw_data[, drug_id] %in% identifiers[["untreated_tag"]]
-        temp_df <- df_raw_data[swap_idx, ]
-        header_names <- c(drug_id, identifiers[["drug_name"]], 
-                          identifiers[["drug_moa"]], identifiers[["concentration"]])
-        temp_df[, c(header_names, paste0(header_names, "_2"))] <-
-          temp_df[, c(paste0(header_names, "_2"), header_names)]
-
-        futile.logger::flog.warn("merge_data: swapping Drug and Drug_2 for %i
-                                 rows because Concentration == 0 and Concentration_2 > 0",
-          sum(swap_idx))
-
-        df_raw_data <- rbind(df_raw_data[!swap_idx, ], temp_df)
-  }
 
   # reorder the columns
   df_raw_data <- Order_result_df(df_raw_data)

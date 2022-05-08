@@ -6,7 +6,7 @@ pkgs:
     subdir: gDRutils
     source: GITHUB
   gDRtestData:
-    ver: '>=1.0.12'
+    ver: '>=1.0.15'
     url: gdrplatform/gDRtestData
     ref: master
     subdir: gDRtestData
@@ -17,8 +17,7 @@ pkgs:
     ref: main
     subdir: ~
     source: GITHUB
-  grr:
-    ver: '>=0.9.5'
-    url: https://github.com/cran/grr.git
   purrr:
+    source: CRAN
+  pkgbuild:
     source: CRAN

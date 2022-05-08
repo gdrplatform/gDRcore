@@ -19,7 +19,7 @@
 #' @param df_metadata a dataframe with metadata
 #'
 #' @return a dataframe with cleaned metadata
-#'
+#' @details Adds annotations and check whether user provided correct input data.
 #' @export
 #'
 cleanup_metadata <- function(df) {
@@ -27,77 +27,37 @@ cleanup_metadata <- function(df) {
   # Assertions:
   stopifnot(inherits(df, "data.frame"))
 
-  data.table::setDT(df)
+  # Round duration to 6 values. 
+  df_metadata[[gDRutils::get_env_identifiers("duration")]] <-
+    round(as.numeric(df_metadata[[gDRutils::get_env_identifiers("duration")]], 6))
 
-  ids <- gDRutils::get_env_identifiers()
-  df[[ids$duration]] <- tidy_duration(df)
-
-  # identify potential numeric fields and replace NA by 0 - convert strings in factors
-  for (c in setdiff(seq(ncol(df)), c(
-    agrep(gDRutils::get_env_identifiers("drug"), colnames(df)),
-    agrep("Concentration", colnames(df)),
-    grep(paste(
-      c(
-        gDRutils::get_env_identifiers("cellline"),
-        gDRutils::get_header("manifest"),
-        gDRutils::get_env_identifiers("well_position"),
-        "compoundId"
-      ),
-      collapse = "|"
-    ), colnames(df))
-  ))) {
-    vals <- unique(df[[c]])
-
-    if (is.character(vals)) {
-      num_vals <- as.numeric(vals)
-      if (sum(is.na(num_vals)) > 2 || all(is.na(num_vals))) {
-        df[[c]] <- as.character(df[[c]])
-        futile.logger::flog.warn("Metadata field %s converted to strings",
-                colnames(df)[c])
-      } else {
-        is.na(df[[c]]) <- 0
-        df[[c]] <- as.numeric(df[[c]])
-        futile.logger::flog.warn("Metadata field %s converted to numeric values",
-                colnames(df)[c])
-      }
-    }
+  df_metadata <- add_CellLine_annotation(df_metadata)
+  
+  drug_conc_cols <- unlist(get_env_identifiers(c("drug", "drug2", "drug3",
+                                                 "concentration", "concentration2", "concentration3"),
+                                                    simplify = FALSE))
+  drug_conc_cols <- drug_conc_cols[drug_conc_cols %in% names(df_metadata)]
+  split_idx <- stringr::str_extract(names(drug_conc_cols), "[0-9]")
+  split_idx[is.na(split_idx)] <- 1
+  drug_conc_cols_list <- split(drug_conc_cols, split_idx)
+  drug_conc_cols_list <- lapply(drug_conc_cols_list, function(x) {
+    names(x) <- gsub("[0-9]", "", names(x))
+    x
+    })
+  
+  # clean up concentration fields
+  for (i in drug_conc_cols_list) {
+    df_metadata[df_metadata[[i[["drug"]]]] %in%
+                  gDRutils::get_env_identifiers("untreated_tag"), i[["concentration"]]] <- 0 # set all untreated to 0
+    df_metadata[[i[["concentration"]]]] <- 10 ^ round(log10(as.numeric(df_metadata[[i[["concentration"]]]])), 6)
+    df_metadata[[i[["drug"]]]] <- ifelse(is.na(df_metadata[[i[["drug"]]]]) & df_metadata[[i[["concentration"]]]] == 0,
+           gDRutils::get_env_identifiers("untreated_tag")[[1]],
+           df_metadata[[i[["drug"]]]])
   }
-    # TODO: specific to GNE database --> need to be replaced by a function
-    df <- add_CellLine_annotation(df)
-    # check that Gnumber_* are in the format 'G####' and add common name (or Vehicle or Untreated)
-
-    for (i in agrep(gDRutils::get_env_identifiers("drug"), colnames(df))) { # correct case issues
-        for (w in gDRutils::get_env_identifiers("untreated_tag")) {
-            df[grep(w, df[[i]], ignore.case = TRUE), i] <- w
-        }
-    }
-    # -----------------------
-
-    df <- add_Drug_annotation(df)
-
-    data.table::setDF(df)
-    # clean up concentration fields
-    for (i in agrep("Concentration", colnames(df))) {
-        trt_n <- ifelse(regexpr("_\\d", colnames(df)[i]) > 0,
-                            substr(colnames(df)[i], 15, 20), 1)
-        DrugID_col <- ifelse(trt_n == 1, gDRutils::get_env_identifiers("drug"),
-                             paste0(gDRutils::get_env_identifiers("drug"), "_", trt_n))
-        df[df[, DrugID_col] %in%
-                      gDRutils::get_env_identifiers("untreated_tag"), i] <- 0 # set all untreated to 0
-
-        DrugID_0 <- setdiff(unique(df[df[, i] == 0, DrugID_col]),
-                            gDRutils::get_env_identifiers("untreated_tag"))
-        DrugID_0 <- DrugID_0[!is.na(DrugID_0)]
-        if (length(DrugID_0) > 0) {
-          futile.logger::flog.warn("Some concentration for %s are 0: %s",
-                                   DrugID_col,
-                                   paste(DrugID_0, collapse = " ; "))
-
-        }
-        df[, i] <- 10 ^ round(log10(as.numeric(df[, i])), 6)
-        # df[,i] <- round(as.numeric(df[, i]), 10) # avoid mismatch due to string truncation # nolint
-    }
-  return(df)
+  
+  df_metadata <- add_Drug_annotation(df_metadata)
+  df_metadata
+  return(df_metadata)
 }
 
 
@@ -261,7 +221,71 @@ detect_cores <- function() {
   x
 }
 
+<<<<<<< HEAD
 tidy_duration <- function(df) {
   df[[gDRutils::get_env_identifiers("duration")]] <-
     round(as.numeric(df[[gDRutils::get_env_identifiers("duration")]], 6))
+=======
+#' Value Matching
+#' 
+#' Returns a lookup table or list of the positions of ALL matches of its first
+#' argument in its second and vice versa. Similar to \code{\link{match}}, though
+#' that function only returns the first match.
+#' 
+#' This behavior can be imitated by using joins to create lookup tables, but
+#' \code{matches} is simpler and faster: usually faster than the best joins in
+#' other packages and thousands of times faster than the built in
+#' \code{\link{merge}}.
+#' 
+#' \code{all.x/all.y} correspond to the four types of database joins in the
+#' following way:
+#' 
+#' \describe{ \item{left}{\code{all.x=TRUE}, \code{all.y=FALSE}} 
+#' \item{right}{\code{all.x=FALSE}, \code{all.y=TRUE}} 
+#' \item{inner}{\code{all.x=FALSE}, \code{all.y=FALSE}} 
+#' \item{full}{\code{all.x=TRUE}, \code{all.y=TRUE}} }
+#' 
+#' Note that \code{NA} values will match other \code{NA} values.
+#' 
+#' @param x vector.  The values to be matched.  Long vectors are not currently
+#'   supported.
+#' @param y vector.  The values to be matched.  Long vectors are not currently
+#'   supported.
+#' @param all.x logical; if \code{TRUE}, then each value in \code{x} will be
+#'   included even if it has no matching values in \code{y}
+#' @param all.y logical; if \code{TRUE}, then each value in \code{y} will be
+#'   included even if it has no matching values in \code{x}
+#' @param list logical.  If \code{TRUE}, the result will be returned as a list
+#'   of vectors, each vector being the matching values in y. If \code{FALSE},
+#'   result is returned as a data frame with repeated values for each match.
+#' @param indexes logical.  Whether to return the indices of the matches or the
+#'   actual values.
+#' @param nomatch the value to be returned in the case when no match is found.
+#'   If not provided and \code{indexes=TRUE}, items with no match will be
+#'   represented as \code{NA}.  If set to \code{NULL}, items with no match will
+#'   be set to an index value of \code{length+1}.  If {indexes=FALSE}, they will
+#'   default to \code{NA}.
+#' @details Source of the function: https://github.com/cran/grr/blob/master/R/grr.R
+#' @export
+matches <- function(x, y, all.x = TRUE, all.y = TRUE, list = FALSE, indexes = TRUE, nomatch = NA) {
+  result <- .Call("matches", x, y)
+  result <- data.frame(x = result[[1]], y = result[[2]])
+  if (!all.y) {
+    result <- result[result$x != length(x) + 1, ]
+  }
+  if (!all.x) {
+    result <- result[result$y != length(y) + 1, ]
+  }
+  if (!indexes) {
+    result$x <- x[result$x]
+    result$y <- y[result$y]
+  } else if (!is.null(nomatch)) {
+    result$x[result$x == length(x) + 1] <- nomatch
+    result$y[result$y == length(y) + 1] <- nomatch
+  }
+  if (list) {
+    result <- tapply(result$y, result$x, function(z) z[!is.na(z)])
+  }
+  result
+>>>>>>> master
 }

@@ -15,3 +15,6 @@ a dataframe with cleaned metadata
 \description{
 Cleanup a dataframe with metadata
 }
+\details{
+Adds annotations and check whether user provided correct input data.
+}

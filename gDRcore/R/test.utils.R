@@ -4,14 +4,8 @@
 test_synthetic_data <- function(original,
                                 data,
                                 dataName,
-                                additional_columns = 0,
                                 override_untrt_controls = NULL,
-                                tolerance = 10e-7,
-                                combo = FALSE,
-                                OMITTED_COLUMNS_TO_TEST_NORMALIZED = c("rId", "cId"),
-                                OMITTED_COLUMNS_TO_TEST_AVERAGED = c("rId", "cId"),
-                                OMITTED_COLUMNS_TO_TEST_METRICS = c("rId", "cId")
-                                ) {
+                                tolerance = 10e-5) {
   if (inherits(data, "MultiAssayExperiment")) {
     reprocessed <- data
   } else {
@@ -19,103 +13,18 @@ test_synthetic_data <- function(original,
                                                               override_untrt_controls = override_untrt_controls)
   }
   
-  if (!is.null(override_untrt_controls)) {
-    original <- original[SummarizedExperiment::rowData(original)[[names(override_untrt_controls)]]
-                         == override_untrt_controls, ]
-    reprocessed[[1]] <- reprocessed[[1]][SummarizedExperiment::rowData(reprocessed[[1]])
-                                         [[names(override_untrt_controls)]]
-                               == override_untrt_controls, ]
-  }
-  normalized <- as.data.frame(gDRutils::convert_se_assay_to_dt(original, "Normalized"))
-  averaged <- as.data.frame(gDRutils::convert_se_assay_to_dt(original, "Averaged"))
+  normalized <- as.data.frame(gDRutils::convert_mae_assay_to_dt(original, "Normalized"))
+  averaged <- as.data.frame(gDRutils::convert_mae_assay_to_dt(original, "Averaged"))
+  metrics <- as.data.frame(gDRutils::convert_mae_assay_to_dt(original, "Metrics"))
   normalized_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Normalized"))
   averaged_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Averaged"))
-
-  if (!combo) {
-    metrics <- as.data.frame(gDRutils::convert_se_assay_to_dt(original, "Metrics"))
-    metrics_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Metrics"))
-  }
+  metrics_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Metrics"))
   
-  if (combo) {
-    for (assay in c("normalized", "averaged")) {
-      data.table::setDT(normalized)
-      data.table::setDT(averaged)
-      data.table::setDT(normalized_new)
-      data.table::setDT(averaged_new)
-      refColNames <- intersect(unname(unlist(gDRutils::get_env_identifiers())), names(get(assay)))
-      concCols <- grep("Concentration", refColNames, value = TRUE)
-      original <- unique(get(assay)[get(assay)[, apply(.SD != 0, 1, all), .SDcols = concCols], ])
-      new <- unique(get(paste0(assay, "_new"))[
-        get(paste0(assay, "_new"))[, apply(.SD != 0, 1, all), .SDcols = concCols], ])
-
-      original$Concentration_2 <- round(original$Concentration_2, 7)
-      new$Concentration_2 <- round(new$Concentration_2, 7)
-      if (assay == "averaged") {
-        original <- data.frame(lapply(original, function(x) if (is.numeric(x)) round(x, 4) else x))
-        new <- data.frame(lapply(new, function(x) if (is.numeric(x)) round(x, 4) else x))
-        data.table::setDT(original)
-        data.table::setDT(new)
-      }
-      colsCompare <- setdiff(colnames(new), c(refColNames, "rId", "cId"))
-      
-      data.table::setorderv(new, colsCompare)
-      data.table::setorderv(original, colsCompare)
-      test_that(sprintf("Original data %s and recreated data are identical", dataName), {
-      expect_equal(new[, ..colsCompare], original[, ..colsCompare])
-      })
-    }
-  } else if (all(c("cotreatment", "single-agent") %in% names(reprocessed))) {
-    
-    normalized_new$Concentration_2[is.na(normalized_new$Concentration_2)] <- 0
-    averaged_new$Concentration_2[is.na(averaged_new$Concentration_2)] <- 0
-    normalized_new$Concentration_2[is.na(normalized_new$Concentration_2)] <- 0
-    metrics_new$Concentration_2[is.na(metrics_new$Concentration_2)] <- 0
-    order_cols <- unlist(gDRutils::get_env_identifiers(c("drug", "cellline",
-                                                         "concentration2", "concentration"), simplify = FALSE))
-    
-    
-    test_that(sprintf("Original data %s and recreated data are identical", dataName), {
-      expect_equal(ncol(normalized), ncol(normalized_new) + additional_columns)
-      expect_equal(ncol(averaged), ncol(averaged_new) + additional_columns)
-      expect_equal(ncol(metrics), ncol(metrics_new) + additional_columns)
-      
-      cotrt_cols <- grep("_2", names(normalized), value = TRUE)
-      expect_equivalent(
-        subset(normalized_new[do.call(order, normalized_new[order_cols]), ],
-               select = which(!colnames(normalized_new) %in% c(OMITTED_COLUMNS_TO_TEST_NORMALIZED, cotrt_cols))),
-        subset(normalized[do.call(order, normalized[order_cols]), ],
-               select = which(!colnames(normalized) %in% c(OMITTED_COLUMNS_TO_TEST_NORMALIZED, cotrt_cols)))
-      )
-      expect_equivalent(
-      subset(averaged_new[do.call(order, averaged_new[order_cols]), ],
-             select = which(!colnames(averaged_new) %in% c(OMITTED_COLUMNS_TO_TEST_AVERAGED, cotrt_cols))),
-      subset(averaged[do.call(order, averaged[order_cols]), ],
-             select = which(!colnames(averaged) %in% c(OMITTED_COLUMNS_TO_TEST_AVERAGED, cotrt_cols)))
-    )
-    })
-  } else {
-    test_that(sprintf("Original data %s and recreated data are identical", dataName), {
-      expect_equal(ncol(normalized), ncol(normalized_new) + additional_columns)
-      expect_equal(ncol(averaged), ncol(averaged_new) + additional_columns)
-      expect_equal(ncol(metrics), ncol(metrics_new) + additional_columns)
-      
-      expect_equivalent(
-        subset(normalized_new, select = which(!colnames(normalized_new) %in% OMITTED_COLUMNS_TO_TEST_NORMALIZED)),
-        subset(normalized, select = which(!colnames(normalized) %in% OMITTED_COLUMNS_TO_TEST_NORMALIZED))
-      )
-      
-      expect_equivalent(
-        subset(averaged_new, select = which(!colnames(averaged_new) %in% OMITTED_COLUMNS_TO_TEST_AVERAGED)),
-        subset(averaged, select = which(!colnames(averaged) %in% OMITTED_COLUMNS_TO_TEST_AVERAGED))
-      )
-      
-      expect_equivalent(
-        subset(metrics_new, select = which(!colnames(metrics_new) %in% OMITTED_COLUMNS_TO_TEST_METRICS)),
-        subset(metrics, select = which(!colnames(metrics) %in% OMITTED_COLUMNS_TO_TEST_METRICS)), 
-        tolerance = tolerance
-      )
-    })
-  }
+  test_that(sprintf("reprocessed data %s is identical to data stored in gDRtestData", dataName), {
+  expect_equal(normalized_new, normalized, tolerance = tolerance)
+  expect_equal(averaged_new, averaged, tolerance = tolerance)
+  expect_equal(metrics_new, metrics, tolerance = tolerance)
+  })
 }
 
 
