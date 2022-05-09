@@ -22,10 +22,10 @@
 #' @details Adds annotations and check whether user provided correct input data.
 #' @export
 #'
-cleanup_metadata <- function(df) {
+cleanup_metadata <- function(df_metadata) {
 
   # Assertions:
-  stopifnot(inherits(df, "data.frame"))
+  stopifnot(inherits(df_metadata, "data.frame"))
 
   # Round duration to 6 values. 
   df_metadata[[gDRutils::get_env_identifiers("duration")]] <-
