@@ -5,7 +5,6 @@
 #' average data (average_SE), or fit the processed data (fit_SE). See details for more in-depth explanations.
 #'
 #' @param df_ data.frame of raw drug response data containing both treated and untreated values. 
-#' @param se \code{SummarizedExperiment} object.
 #' @param readout string of the name containing the cell viability readout values.
 #' @param control_mean_fxn function indicating how to average controls.
 #' Defaults to \code{mean(x, trim = 0.25)}.
