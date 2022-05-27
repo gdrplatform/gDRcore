@@ -47,6 +47,9 @@ cleanup_metadata <- function(df_metadata) {
   
   # clean up concentration fields
   for (i in drug_conc_cols_list) {
+    df_metadata[[i[["concentration"]]]] <- ifelse(is.na(df_metadata[[i[["concentration"]]]]),
+                                                  0,
+                                                  df_metadata[[i[["concentration"]]]])
     df_metadata[df_metadata[[i[["drug"]]]] %in%
                   gDRutils::get_env_identifiers("untreated_tag"), i[["concentration"]]] <- 0 # set all untreated to 0
     df_metadata[[i[["concentration"]]]] <- 10 ^ round(log10(as.numeric(df_metadata[[i[["concentration"]]]])), 6)
