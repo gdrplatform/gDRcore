@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.1.39] - 2022-05-30
+#### Update
+- add missing namespace for get_env_identifiers
+
 #### [1.1.38] - 2022-05-09
 #### Update
 - replace `NA` by 0 in Concentration loaded in manifest file
