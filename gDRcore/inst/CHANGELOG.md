@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.0] - 2022-06-02
+#### Release
+
 #### [1.1.39] - 2022-05-30
 #### Update
 - add missing namespace for get_env_identifiers
