@@ -185,8 +185,8 @@ validate_mapping <- function(trt_df, refs_df, nested_confounders) {
   
   primary_drug <- trt_df[[drug_id]]
   
-  if (drug2_id %in% names(refs_df) && primary_drug %in% refs_df[[drug2_id]]) {
-    reverse_sa <- refs_df[refs_df[[drug_id]] != unique(primary_drug), ]
+  if (drug2_id %in% names(refs_df) && any(refs_df[[drug_id]] %in% unique(trt_df[[drug2_id]]))) {
+    reverse_sa <- refs_df[refs_df[[drug_id]] == unique(trt_df[[drug2_id]]) & refs_df[[drug2_id]] %in% untrt_tag, ]
     reverse_sa[[drug2_id]] <- unique(primary_drug)
     names(reverse_sa)[match(c(drug_id, drug2_id, conc, conc2), names(reverse_sa))] <- c(drug2_id, drug_id, conc2, conc)
     refs_df <- rbind(refs_df, reverse_sa)
