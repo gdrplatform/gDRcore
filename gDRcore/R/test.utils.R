@@ -12,12 +12,18 @@ test_synthetic_data <- function(original,
                                                               override_untrt_controls = override_untrt_controls)
   }
   
-  normalized <- as.data.frame(gDRutils::convert_mae_assay_to_dt(original, "Normalized"))
-  averaged <- as.data.frame(gDRutils::convert_mae_assay_to_dt(original, "Averaged"))
-  metrics <- as.data.frame(gDRutils::convert_mae_assay_to_dt(original, "Metrics"))
-  normalized_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Normalized"))
-  averaged_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Averaged"))
-  metrics_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Metrics"))
+  normalized <- select(as.data.frame(gDRutils::convert_mae_assay_to_dt(original, "Normalized")),
+                       -c("rId", "cId"))
+  averaged <- select(as.data.frame(gDRutils::convert_mae_assay_to_dt(original, "Averaged")),
+                     -c("rId", "cId"))
+  metrics <- select(as.data.frame(gDRutils::convert_mae_assay_to_dt(original, "Metrics")),
+                    -c("rId", "cId"))
+  normalized_new <- select(as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Normalized")),
+                           -c("rId", "cId"))
+  averaged_new <- select(as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Averaged")),
+                         -c("rId", "cId"))
+  metrics_new <- select(as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Metrics")),
+                        -c("rId", "cId"))
   
   test_that(sprintf("reprocessed data %s is identical to data stored in gDRtestData", dataName), {
   expect_equal(normalized_new, normalized, tolerance = tolerance)
