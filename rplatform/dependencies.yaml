@@ -6,9 +6,9 @@ pkgs:
     subdir: gDRutils
     source: GITHUB
   gDRtestData:
-    ver: '>=1.0.15'
+    ver: '>=1.3.1'
     url: gdrplatform/gDRtestData
-    ref: master
+    ref: GDR-1535
     subdir: gDRtestData
     source: GITHUB
   gDRstyle:
