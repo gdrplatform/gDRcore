@@ -96,7 +96,6 @@ create_SE <- function(df_,
     trt_df <- dfs[groupings %in% trt, , drop = FALSE]
     refs_df <- dfs[groupings %in% refs[[trt]], , drop = FALSE]
     trt_df <- validate_mapping(trt_df, refs_df, nested_confounders)[, c(md$data_fields, "row_id", "col_id")]
-    
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
 
     ctl_type <- "untrt_Endpoint"
@@ -179,17 +178,14 @@ validate_mapping <- function(trt_df, refs_df, nested_confounders) {
   }
   drug_id <- gDRutils::get_env_identifiers("drug")
   drug2_id <- gDRutils::get_env_identifiers("drug2")
-  conc <- gDRutils::get_env_identifiers("concentration")
-  conc2 <- gDRutils::get_env_identifiers("concentration2")
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  
-  primary_drug <- trt_df[[drug_id]]
-  
-  if (drug2_id %in% names(refs_df) && any(refs_df[[drug_id]] %in% unique(trt_df[[drug2_id]]))) {
-    reverse_sa <- refs_df[refs_df[[drug_id]] == unique(trt_df[[drug2_id]]) & refs_df[[drug2_id]] %in% untrt_tag, ]
-    reverse_sa[[drug2_id]] <- unique(primary_drug)
-    names(reverse_sa)[match(c(drug_id, drug2_id, conc, conc2), names(reverse_sa))] <- c(drug2_id, drug_id, conc2, conc)
-    refs_df <- rbind(refs_df, reverse_sa)
+  trt_df <- rbind(trt_df, refs_df[refs_df[[drug_id]] %in% c(unique(c(trt_df[[drug_id]],
+                                                                     trt_df[[drug2_id]])), untrt_tag), ])
+  # Swap concentrations for single-agent with drug2
+  if (gDRutils::get_env_identifiers("concentration2") %in% colnames(trt_df)) {
+    trt_df[trt_df[[identifiers[["drug"]]]] %in% trt_df[[identifiers[["drug2"]]]],
+           unlist(identifiers[c("concentration", "concentration2")])] <-
+      trt_df[trt_df[[identifiers[["drug"]]]] %in% trt_df[[identifiers[["drug2"]]]],
+             unlist(identifiers[c("concentration2", "concentration")])]
   }
-  rbind(trt_df, refs_df[refs_df[[drug_id]] %in% c(unique(trt_df[[drug_id]]), untrt_tag), ])
 }
