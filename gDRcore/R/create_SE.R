@@ -179,13 +179,14 @@ validate_mapping <- function(trt_df, refs_df, nested_confounders) {
   drug_id <- gDRutils::get_env_identifiers("drug")
   drug2_id <- gDRutils::get_env_identifiers("drug2")
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  conc <- gDRutils::get_env_identifiers("concentration")
+  conc2 <- gDRutils::get_env_identifiers("concentration2")
   trt_df <- rbind(trt_df, refs_df[refs_df[[drug_id]] %in% c(unique(c(trt_df[[drug_id]],
                                                                      trt_df[[drug2_id]])), untrt_tag), ])
   # Swap concentrations for single-agent with drug2
-  if (gDRutils::get_env_identifiers("concentration2") %in% colnames(trt_df)) {
-    trt_df[trt_df[[identifiers[["drug"]]]] %in% trt_df[[identifiers[["drug2"]]]],
-           unlist(identifiers[c("concentration", "concentration2")])] <-
-      trt_df[trt_df[[identifiers[["drug"]]]] %in% trt_df[[identifiers[["drug2"]]]],
-             unlist(identifiers[c("concentration2", "concentration")])]
+  if (conc2 %in% colnames(trt_df)) {
+    trt_df[trt_df[[drug_id]] %in% trt_df[[drug2_id]], c(conc, conc2)] <-
+      trt_df[trt_df[[drug_id]] %in% trt_df[[drug2_id]], c(conc2, conc)]
   }
+  trt_df
 }
