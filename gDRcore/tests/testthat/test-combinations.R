@@ -26,9 +26,9 @@ test_that("map_ids_to_fits works as expected", {
   fittings[[fitting_id_col]] <- c(1, 2)
 
   obs <- map_ids_to_fits(pred, match_col, fittings, fitting_id_col)
-  exp1 <- gDRutils::logistic_4parameters(pred[1], fit1$x_inf, fit1$x_0, fit1$ec50, fit1$h)
-  exp2 <- gDRutils::logistic_4parameters(pred[2], fit1$x_inf, fit1$x_0, fit1$ec50, fit1$h)
-  exp3 <- gDRutils::logistic_4parameters(pred[3], fit2$x_inf, fit2$x_0, fit2$ec50, fit2$h)
+  exp1 <- gDRutils::predict_efficacy_from_conc(pred[1], fit1$x_inf, fit1$x_0, fit1$ec50, fit1$h)
+  exp2 <- gDRutils::predict_efficacy_from_conc(pred[2], fit1$x_inf, fit1$x_0, fit1$ec50, fit1$h)
+  exp3 <- gDRutils::predict_efficacy_from_conc(pred[3], fit2$x_inf, fit2$x_0, fit2$ec50, fit2$h)
 
   expect_equal(obs, c(exp1, exp2, exp3))
 })

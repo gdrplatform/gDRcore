@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.1] - 2022-07-08
+#### Refactor create_SE to support reverse single-agent data
+
 #### [1.3.0] - 2022-06-02
 #### Release
 
