@@ -24,7 +24,7 @@ create_SE(
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
   nested_identifiers = NULL,
-  nested_confounders = gDRutils::get_env_identifiers("barcode"),
+  nested_confounders = intersect(names(df_), gDRutils::get_env_identifiers("barcode")),
   override_untrt_controls = NULL
 )
 
