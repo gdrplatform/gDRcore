@@ -117,7 +117,7 @@ calculate_combo_matrix <- function(se,
             Concentration = sort(setdiff(conc_combo$Concentration, 
                                          flat_data$Concentration[flat_data$Concentration_2 %in% 0])), 
             val = 0)
-          df_inf$val <- gDRutils::logistic_4parameters(
+          df_inf$val <- gDRutils::predict_efficacy_from_conc(
             df_inf[, 1], 
             fit_drug1$x_inf, 
             fit_drug1$x_0, 
@@ -148,7 +148,7 @@ calculate_combo_matrix <- function(se,
             Concentration_2 = sort(setdiff(conc_combo$Concentration_2, 
                                            flat_data$Concentration_2[flat_data$Concentration %in% 0])),
             val = 0)
-          df_inf$val <- gDRutils::logistic_4parameters(
+          df_inf$val <- gDRutils::predict_efficacy_from_conc(
             df_inf[, 1], 
             fit_drug2$x_inf, 
             fit_drug2$x_0, 
@@ -238,7 +238,7 @@ calculate_combo_matrix <- function(se,
             fit_res[grepl("x_", names(fit_res))] <- 1 - as.matrix(fit_res[grepl("x_", names(fit_res))])
           }
 
-          mx[idx, -1] <- gDRutils::logistic_4parameters(as.numeric(colnames(mx))[-1],
+          mx[idx, -1] <- gDRutils::predict_efficacy_from_conc(as.numeric(colnames(mx))[-1],
             fit_res$x_inf, fit_res$x_0, fit_res$ec50, fit_res$h)
           if (!by_row) {
             mx <- t(mx)
@@ -249,12 +249,12 @@ calculate_combo_matrix <- function(se,
         mx_fit <- mx_full # mx_fit are three matrices with fitted data (row, columns, diagonals) based on mx_full
         
         # get the fits for the first row (single agent) and create empty matrices
-        mx_fit[1, -1] <- gDRutils::logistic_4parameters(as.numeric(colnames(mx_fit))[-1],
+        mx_fit[1, -1] <- gDRutils::predict_efficacy_from_conc(as.numeric(colnames(mx_fit))[-1],
             fit_drug2$x_inf, fit_drug2$x_0, fit_drug2$ec50, fit_drug2$h)
         all_fits <- list(by_row = cbind(data.frame(conc_1 = 0), fit_drug2))
         
         # get the fits for the first column (single agent)
-        mx_fit[-1, 1] <- gDRutils::logistic_4parameters(as.numeric(rownames(mx_fit))[-1],
+        mx_fit[-1, 1] <- gDRutils::predict_efficacy_from_conc(as.numeric(rownames(mx_fit))[-1],
             fit_drug1$x_inf, fit_drug1$x_0, fit_drug1$ec50, fit_drug1$h)
         all_fits[["by_col"]] <- cbind(data.frame(conc_2 = 0), fit_drug1)
         # matrices with first row/column populated
@@ -324,7 +324,7 @@ calculate_combo_matrix <- function(se,
                   force_fit = TRUE
                 )
 
-                fit_resp <- gDRutils::logistic_4parameters(
+                fit_resp <- gDRutils::predict_efficacy_from_conc(
                   as.numeric(rownames(mx_fit[["by_codil"]]))[idx$row_idx] +
                       as.numeric(colnames(mx_fit[["by_codil"]]))[idx$col_idx],
                   fit_res$x_inf, fit_res$x_0, fit_res$ec50, fit_res$h)

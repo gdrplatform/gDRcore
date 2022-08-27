@@ -33,7 +33,7 @@ cleanup_metadata <- function(df_metadata) {
 
   df_metadata <- add_CellLine_annotation(df_metadata)
   
-  drug_conc_cols <- unlist(get_env_identifiers(c("drug", "drug2", "drug3",
+  drug_conc_cols <- unlist(gDRutils::get_env_identifiers(c("drug", "drug2", "drug3",
                                                  "concentration", "concentration2", "concentration3"),
                                                     simplify = FALSE))
   drug_conc_cols <- drug_conc_cols[drug_conc_cols %in% names(df_metadata)]

@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.2] - 2022-08-17
+#### Update the logic for default nested_confounders in `create_SE` function
+
+#### [1.3.1] - 2022-07-08
+#### Refactor create_SE to support reverse single-agent data
+
+#### [1.3.0] - 2022-06-02
+#### Release
+
+#### [1.1.39] - 2022-05-30
+#### Update
+- add missing namespace for get_env_identifiers
+
 #### [1.1.38] - 2022-05-09
 #### Update
 - replace `NA` by 0 in Concentration loaded in manifest file

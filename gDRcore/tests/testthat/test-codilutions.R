@@ -4,7 +4,7 @@ library(testthat)
 test_that("fit_combo_codilutions works as expected", {
   n <- 8
   concs <- 10 * 3 ^ seq(0, -n, -1)
-  start <- gDRutils::logistic_4parameters(concs, Vinf = 0.1, V0 = 1, EC50 = 0.5, h = 2)
+  start <- gDRutils::predict_efficacy_from_conc(concs, x_inf = 0.1, x_0 = 1, ec50 = 0.5, h = 2)
   vals  <- NULL
   for (i in seq(n)) {
     vals <- c(vals, start * start[i])
@@ -24,7 +24,7 @@ test_that("fit_combo_codilutions works as expected", {
 test_that("fit_codilution_series works as expected", {
   n <- 10
   concs <- seq(1, n, 1)
-  start <- gDRutils::logistic_4parameters(concs, Vinf = 0.1, V0 = 1, EC50 = 0.5, h = 2)
+  start <- gDRutils::predict_efficacy_from_conc(concs, x_inf = 0.1, x_0 = 1, ec50 = 0.5, h = 2)
   vals  <- NULL
   ratio <- 0.5
   for (i in seq(n)) {
