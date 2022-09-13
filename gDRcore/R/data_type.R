@@ -13,6 +13,9 @@
 #'
 #' @return data.frame of raw drug response data with additional column `type` with the info of
 #' data type for a given row of data.frame
+#' @details
+#' An integer is specified to indicate the maximum number of concentrations to classify data as
+#' a cotreatment. Any higher concentration series will be considered as combination matrix data.
 #' @export
 #'
 #' @author Bartosz Czech <bartosz.czech@@contractors.roche.com>
@@ -22,40 +25,39 @@ identify_data_type <- function(df,
                                matrix_conc = 4
                                ) {
   
-  # find the pairs of drugs with relevant metadata
+  p_cols <- names(df)
   drug_ids <- unlist(gDRutils::get_env_identifiers(c("drug_name", "drug_name2"), simplify = FALSE)) 
-  drugs_ids <- drug_ids[which(drug_ids %in% names(df))]
+  p_drug_ids <- drug_ids[drug_ids %in% p_cols]
   conc_ids <- unlist(gDRutils::get_env_identifiers(c("concentration",
                                                      "concentration2"), simplify = FALSE))
-  conc_ids <- conc_ids[which(conc_ids %in% names(df))]
+  p_conc_ids <- conc_ids[conc_ids %in% p_cols]
   
-  drugs_cotrt_ids <- drugs_ids[!names(drugs_ids) %in% "drug_name"]
-  conc_cotrt_ids <- conc_ids[!names(conc_ids) %in% "concentration"]
+  drugs_cotrt_ids <- setdiff(p_drug_ids, unlist(gDRutils::get_env_identifiers("drug_name")))
+  conc_cotrt_ids <- setdiff(p_conc_ids, unlist(gDRutils::get_env_idetnifiers("concentration")))
   
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  cell <- gDRutils::get_env_identifiers("cellline_name")
-  cols_pairs <- intersect(names(df),  c(drug_ids, cell))
-  drug_pairs <- unique(df[, cols_pairs])
+  cell <- gDRutils::get_env_identifiers("cellline_name") # TODO: Why do we use cellline_name instead of clid?
+  cols_pairs <- intersect(p_cols, c(drug_ids, cell)) # TODO: Can we use p_drug_ids here?
+  combinations <- unique(df[, cols_pairs])
 
   cnt <- seq_len(nrow(df))
   df$type <- NA
   # loop through the pairs to assess the number of individual concentration pairs
-  for (idp in seq_len(nrow(drug_pairs))) {
-    df_matching <- merge(cbind(df, cnt), drug_pairs[idp, ])
+  for (idp in seq_len(nrow(combinations))) {
+    df_matching <- merge(cbind(df, cnt), combinations[idp, ])
     matching_idx <- df_matching$cnt
-    treated <- vapply(lapply(df_matching[, drugs_ids, drop = FALSE],
+    treated <- vapply(lapply(df_matching[, p_drug_ids, drop = FALSE],
                              function(x) !x %in% untreated_tag), all, logical(1))
     detect_sa <- sum(treated)
     type <- if (ncol(df[matching_idx, drugs_cotrt_ids, drop = FALSE]) == 0) {
       if (all(df[matching_idx, drug_ids[["drug_name"]]] %in% untreated_tag)) {
-      "control"
-    }
-    else {
+        "control"
+      } else {
+        "single-agent"
+      }
+    } else if (detect_sa == 1L) {
       "single-agent"
-    }
-    } else if (detect_sa == 1) {
-      "single-agent"
-    } else if (detect_sa == 0) {
+    } else if (detect_sa == 0L) {
       "control" 
     } else {
       NA
