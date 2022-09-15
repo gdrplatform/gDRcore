@@ -60,11 +60,8 @@ map_df <- function(trt_md,
   out <- list("vector", length(trt_rnames))
   msgs <- NULL
   
-  # Parallel computing
-  clusters <- parallel::makeCluster(detect_cores(), type = "FORK")
-  doParallel::registerDoParallel(clusters)
   
-  out <- foreach::foreach(i = seq_along(trt_rnames)) %dopar% {
+  out <- parallel(seq_along(trt_rnames), function(i) {
     treatment <- trt_rnames[i]
     refs <- lapply(present_ref_cols, function(y) {
       ref_md[, y] == trt_md[treatment, y]
@@ -96,9 +93,8 @@ map_df <- function(trt_md,
       }
     }
     ref_rnames[match_idx] # TODO: Check that this properly handles NAs or NULLs. 
-  }
-  parallel::stopCluster(clusters)
-  
+  })
+
   futile.logger::flog.info(paste0(msgs, collapse = "\n"))
   names(out) <- trt_rnames
   out

@@ -19,6 +19,7 @@ create_SE <- function(df_,
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
+  
 
   if (is.null(nested_identifiers)) {
     nested_identifiers <- get_nested_default_identifiers(df_)
@@ -88,12 +89,7 @@ create_SE <- function(df_,
   ## Not all conditions will actually exist in the data, so filter out those that 
   ## do not exist. 
   treated <- treated[rownames(treated) %in% unique(groupings), ]
-
-  # Parallel computing
-  clusters <- parallel::makeCluster(detect_cores(), type = "FORK")
-  doParallel::registerDoParallel(clusters)
-  
-  out <- foreach::foreach(i = seq_len(nrow(treated))) %dopar% {
+  out <- parallel(seq_len(nrow(treated)), function(i) {
     trt <- rownames(treated)[i]
     
     trt_df <- dfs[groupings %in% trt, , drop = FALSE]
@@ -142,9 +138,8 @@ create_SE <- function(df_,
   
     list(ctl_df = ctl_df,
          trt_df = trt_df)
-  }
-  parallel::stopCluster(clusters)
-  
+  })
+
   trt_out <- do.call(rbind, lapply(out, "[[", "trt_df"))
   ctl_out <- do.call(rbind, lapply(out, "[[", "ctl_df"))
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")

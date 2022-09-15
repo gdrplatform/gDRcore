@@ -54,11 +54,8 @@ normalize_SE <- function(se,
   iterator <- unique(rbind(refs[, c("column", "row")],
                            trt[, c("column", "row")]))
   # Column major order, so go down first.
-  # Parallel computing
-  clusters <- parallel::makeCluster(detect_cores(), type = "FORK")
-  doParallel::registerDoParallel(clusters)
-  
-  out <- foreach::foreach(row = seq_len(nrow(iterator))) %dopar% {
+
+  out <- parallel(seq_len(nrow(iterator)), function(row) {
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
@@ -109,8 +106,7 @@ normalize_SE <- function(se,
     normalized$row_id <- i
     normalized$col_id <- j
     normalized
-  }
-  parallel::stopCluster(clusters)
+  })
   
   if (!is.null(msgs)) {
     futile.logger::flog.warn(paste0(msgs, collapse = "\n"))
