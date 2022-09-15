@@ -217,7 +217,7 @@ rbindParallelList <- function(x, name) {
 #' @return number of available cores
 #' @export
 parallel <- function(x, FUN, ...) {
-  BiocParallel::bplapply(x, FUN, ...)
+  BiocParallel::bplapply(x, FUN, ..., BPPARAM = BiocParallel::bpparam())
 }
 
 
