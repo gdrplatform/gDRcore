@@ -3,7 +3,7 @@
   # set default options for BiocParallel
   options(MulticoreParam = BiocParallel::MulticoreParam(
     workers = max(1,
-                  BiocParallelmulticoreWorkers() - 5)))
+                  BiocParallel::multicoreWorkers() - 5)))
 }
 
 # data.table awareness
