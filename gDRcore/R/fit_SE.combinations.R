@@ -219,8 +219,7 @@ fit_SE.combinations <- function(se,
          CIScore_50 = CIScore_50,
          CIScore_80 = CIScore_80)
   })
-  parallel::stopCluster(clusters)
-  
+
   all_smooth_mx <- rbindParallelList(out, "smooth_mx")
   all_hsa_excess <- rbindParallelList(out, "hsa_excess")
   all_b_excess <- rbindParallelList(out, "bliss_excess")
