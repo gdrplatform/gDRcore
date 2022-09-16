@@ -73,7 +73,7 @@ create_SE <- function(df_,
 
   ## Map controls.
   controls <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
-  ctl_maps <- lapply(controls, function(ctl_type) {
+  ctl_maps <- parallel(controls, function(ctl_type) {
     map_df(treated, untreated, override_untrt_controls = override_untrt_controls,
            ref_cols = Keys[[ctl_type]], ref_type = ctl_type)
   })
