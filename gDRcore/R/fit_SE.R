@@ -37,7 +37,7 @@ fit_SE <- function(se,
   avg_trt <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, averaged_assay))
   iterator <- unique(avg_trt[, c("column", "row")])
   
-  out <- parallel(seq_len(nrow(iterator)), function(row) {
+  out <- parallelize(seq_len(nrow(iterator)), function(row) {
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]

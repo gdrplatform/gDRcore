@@ -212,11 +212,11 @@ rbindParallelList <- function(x, name) {
   S4Vectors::DataFrame(do.call(plyr::rbind.fill, lapply(x, function(x) as.data.frame("[[" (x, name)))))
 }
 
-#' Function for detection of available cores used in parallel computing
+#' Function for detection of available cores used in parallelize computing
 #'
 #' @return number of available cores
 #' @export
-parallel <- function(x, FUN, ...) {
+parallelize <- function(x, FUN, ...) {
   BiocParallel::bplapply(x, FUN, ..., BPPARAM = BiocParallel::bpparam())
 }
 

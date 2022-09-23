@@ -73,7 +73,7 @@ create_SE <- function(df_,
 
   ## Map controls.
   controls <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
-  ctl_maps <- parallel(controls, function(ctl_type) {
+  ctl_maps <- parallelize(controls, function(ctl_type) {
     map_df(treated, untreated, override_untrt_controls = override_untrt_controls,
            ref_cols = Keys[[ctl_type]], ref_type = ctl_type)
   })
@@ -89,7 +89,7 @@ create_SE <- function(df_,
   ## Not all conditions will actually exist in the data, so filter out those that 
   ## do not exist. 
   treated <- treated[rownames(treated) %in% unique(groupings), ]
-  out <- parallel(seq_len(nrow(treated)), function(i) {
+  out <- parallelize(seq_len(nrow(treated)), function(i) {
     trt <- rownames(treated)[i]
     
     trt_df <- dfs[groupings %in% trt, , drop = FALSE]

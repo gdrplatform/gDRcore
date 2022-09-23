@@ -25,10 +25,10 @@ test_that("matches works as expected", {
 })
 
 
-test_that("parallel works as expected", {
+test_that("parallelize works as expected", {
   n <- 10
   listRunif <- lapply(seq_len(n), runif)
-  sumOfList <- parallel(listRunif, sum)
+  sumOfList <- parallelize(listRunif, sum)
   expect_class(sumOfList, "list")
   expect_length(unlist(sumOfList), n)
 })
