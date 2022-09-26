@@ -60,13 +60,10 @@ map_df <- function(trt_md,
   out <- list("vector", length(trt_rnames))
   msgs <- NULL
   
-  # Parallel computing
-  clusters <- parallel::makeCluster(detect_cores(), type = "FORK")
-  doParallel::registerDoParallel(clusters)
   
-  out <- foreach::foreach(i = seq_along(trt_rnames)) %dopar% {
+  out <- parallelize(seq_along(trt_rnames), function(i) {
     treatment <- trt_rnames[i]
-    refs <- lapply(present_ref_cols, function(y) {
+    refs <- parallelize(present_ref_cols, function(y) {
       ref_md[, y] == trt_md[treatment, y]
     })
     
@@ -96,9 +93,8 @@ map_df <- function(trt_md,
       }
     }
     ref_rnames[match_idx] # TODO: Check that this properly handles NAs or NULLs. 
-  }
-  parallel::stopCluster(clusters)
-  
+  })
+
   futile.logger::flog.info(paste0(msgs, collapse = "\n"))
   names(out) <- trt_rnames
   out
@@ -116,7 +112,7 @@ map_df <- function(trt_md,
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
   mat_elem[mat_elem == untrt_tag[[2]]] <- untrt_tag[[1]]
   pattern <- paste0(sprintf("^%s$", untrt_tag), collapse = "|")
-  has_tag <- as.data.frame(lapply(drug_cols, function(x) grepl(pattern, x)))
+  has_tag <- as.data.frame(parallelize(drug_cols, function(x) grepl(pattern, x)))
   ntag <- rowSums(has_tag)
 
   is_untrt <- ntag == length(valid)
@@ -134,11 +130,11 @@ map_df <- function(trt_md,
     refNames <- rep(rownames(ref), length(valid))
     
     # split data.frames to simple model with clid column and drug column
-    trt <- lapply(valid, function(x) trt[, c(clid, x)])
-    trt <- do.call(paste, do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]])))))
+    trt <- parallelize(valid, function(x) trt[, c(clid, x)])
+    trt <- do.call(paste, do.call(rbind, parallelize(trt, function(x) setNames(x, names(trt[[1]])))))
     
-    ref <- lapply(valid, function(x) ref[, c(clid, x)])
-    ref <- do.call(paste, do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]])))))
+    ref <- parallelize(valid, function(x) ref[, c(clid, x)])
+    ref <- do.call(paste, do.call(rbind, parallelize(ref, function(x) setNames(x, names(ref[[1]])))))
     
     # match trt and ref
     matchTrtRef <- matches(trt, ref, list = FALSE, all.y = FALSE)
