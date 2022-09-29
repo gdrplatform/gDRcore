@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.4] - 2022-09-29
+#### Change the logic for using cores in `BiocParallel`
+
 #### [1.3.3] - 2022-09-27
 #### Update the logic for parallel computing
 
