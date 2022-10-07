@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.5] - 2022-10-07
+#### Remove global parameters for `BiocParallel`
+
 #### [1.3.4] - 2022-09-29
 #### Change the logic for using cores in `BiocParallel`
 

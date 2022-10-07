@@ -2,13 +2,10 @@
 % Please edit documentation in R/utils.R
 \name{parallelize}
 \alias{parallelize}
-\title{Function for detection of available cores used in parallelize computing}
+\title{Iterate using parallelization from BiocParallel}
 \usage{
 parallelize(x, FUN, ...)
 }
-\value{
-number of available cores
-}
 \description{
-Function for detection of available cores used in parallelize computing
+Iterate using parallelization from BiocParallel
 }
