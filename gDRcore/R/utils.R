@@ -216,7 +216,7 @@ rbindParallelList <- function(x, name) {
 #'
 #' @export
 parallelize <- function(x, FUN, ...) {
-  BiocParallel::bplapply(x, FUN, ..., BPPARAM = BiocParallel::bpparam())
+  BiocParallel::bplapply(x, FUN, ...)
 }
 
 
