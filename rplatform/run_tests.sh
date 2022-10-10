@@ -10,4 +10,4 @@ echo "Working directory contains: `ls | tr '\n' ' '`"
 set -e
 
 echo ">>>>>>>> RUNNING CHECK"
-Rscript -e "gDRstyle::checkPackage('gDRutils' , '/mnt/vol', TRUE)"
+Rscript -e "gDRstyle::checkPackage('gDRcore' , '/mnt/vol', 'gDRcore')"
