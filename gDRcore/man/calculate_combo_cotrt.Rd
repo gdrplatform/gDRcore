@@ -9,6 +9,9 @@ calculate_combo_cotrt(se)
 \arguments{
 \item{se}{a BumpyMatrix SE with drug response data}
 }
+\value{
+
+}
 \description{
 Calculate combo co-treatment
 }

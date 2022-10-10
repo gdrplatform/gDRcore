@@ -22,9 +22,7 @@ average_SE(
 create_SE(
   df_,
   readout = "ReadoutValue",
-  control_mean_fxn = function(x) {
-     mean(x, trim = 0.25)
- },
+  control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
   nested_identifiers = NULL,
   nested_confounders = intersect(names(df_), gDRutils::get_env_identifiers("barcode")),
   override_untrt_controls = NULL
@@ -56,9 +54,7 @@ normalize_SE(
 create_and_normalize_SE(
   df_,
   readout = "ReadoutValue",
-  control_mean_fxn = function(x) {
-     mean(x, trim = 0.25)
- },
+  control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
   nested_identifiers = NULL,
   nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL,
@@ -71,9 +67,7 @@ create_and_normalize_SE(
 runDrugResponseProcessingPipeline(
   df_,
   readout = "ReadoutValue",
-  control_mean_fxn = function(x) {
-     mean(x, trim = 0.25)
- },
+  control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
   nested_identifiers = NULL,
   nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL,

@@ -30,3 +30,6 @@ data.frame of values aggregated by
 \description{
 Create an aggregated control data.frame based on inferring a given concentration usign a sigmoidal fit.
 }
+\examples{
+
+}

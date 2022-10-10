@@ -1,6 +1,8 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+#### [1.3.7] - 2022-10-10
+#### Clean up
 
 #### [1.3.6] - 2022-10-10
 #### Add support for setting number of cores for `BiocParallel` based on the env variable
