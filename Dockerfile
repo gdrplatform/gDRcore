@@ -19,6 +19,7 @@ COPY rplatform/dependencies.yaml rplatform/.github_access_token.txt* /mnt/vol
 RUN Rscript -e "gDRgenesis::installAllDeps()"
 
 #================= Check & build package
+COPY ./ /tmp/gDRcore/
 RUN Rscript -e "gDRgenesis::installLocalPackage('/tmp/gDRcore')"
 
 #================= Clean up
