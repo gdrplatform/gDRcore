@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.7] - 2022-10-18
+#### Add missing namespacing
+
 #### [1.3.6] - 2022-10-10
 #### Add support for setting number of cores for `BiocParallel` based on the env variable
 
