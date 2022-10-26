@@ -20,7 +20,7 @@ RUN Rscript -e "gDRstyle::installAllDeps()"
 
 #================= Check & build package
 COPY ./ /tmp/gDRcore/
-RUN Rscript -e "gDRstyle::installLocalPackage('/tmp/gDRcore')"
+RUN Rscript -e "gDRstyle::installLocalPackage('/tmp/gDRcore/gDRcore')"
 
 #================= Clean up
 RUN sudo rm -rf /mnt/vol/* /tmp/gDRcore/
