@@ -1,4 +1,4 @@
-FROM arkadiuszgladki/gdr_shiny:0.08
+FROM arkadiuszgladki/gdr_shiny:0.09
 
 # ------ Be aware that any changes in following may cause issue with RPlatform and CBS
 
