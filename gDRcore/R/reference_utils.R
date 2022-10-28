@@ -119,6 +119,7 @@ extrapolate_references <- function(ref_df, ref_conc) {
 
 
 #' @export
+#' @noRd
 #'
 identify_treatment_references <- function(row_maps_cotrt, trt_rdata, ref_rdata) {
   # Reassess the cases without a match to find equivalent drug and concentration (only 2 drugs).

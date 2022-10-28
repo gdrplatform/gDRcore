@@ -35,11 +35,8 @@ average_SE <- function(se,
 
   std_cols <- c("GRvalue", "RelativeViability")
   iterator <- unique(normalized[, c("column", "row")])
-  # Parallel computing
-  clusters <- parallel::makeCluster(detect_cores(), type = "FORK")
-  doParallel::registerDoParallel(clusters)
   
-  out <- foreach::foreach(row = seq_len(nrow(iterator))) %dopar% {
+  out <- parallelize(seq_len(nrow(iterator)), function(row) {
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
@@ -78,9 +75,8 @@ average_SE <- function(se,
       agg_df$col_id <- j
     }
     agg_df
-  }
-  parallel::stopCluster(clusters)
-  
+  })
+
   out <- S4Vectors::DataFrame(do.call("rbind", out))
   
   averaged <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c(masked_tag_key, "row_id", "col_id")], 

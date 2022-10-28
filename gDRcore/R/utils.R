@@ -212,17 +212,13 @@ rbindParallelList <- function(x, name) {
   S4Vectors::DataFrame(do.call(plyr::rbind.fill, lapply(x, function(x) as.data.frame("[[" (x, name)))))
 }
 
-#' Function for detection of available cores used in parallel computing
+#' Iterate using parallelization from BiocParallel
 #'
-#' @return number of available cores
 #' @export
-detect_cores <- function() {
-  x <- as.numeric(Sys.getenv("NUM_CORES"))
-  if (is.na(x)) {
-    x <- parallel::detectCores() - 1
-  }
-  x
+parallelize <- function(x, FUN, ...) {
+  BiocParallel::bplapply(x, FUN, ...)
 }
+
 
 #' Value Matching
 #' 
@@ -286,3 +282,5 @@ matches <- function(x, y, all.x = TRUE, all.y = TRUE, list = FALSE, indexes = TR
   }
   result
 }
+
+

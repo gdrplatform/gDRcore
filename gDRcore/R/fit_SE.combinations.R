@@ -48,11 +48,8 @@ fit_SE.combinations <- function(se,
   id2 <- series_identifiers[2]
 
   iterator <- unique(avg[, c("column", "row")])
-  # Parallel computing
-  clusters <- parallel::makeCluster(detect_cores(), type = "FORK")
-  doParallel::registerDoParallel(clusters)
   
-  out <- foreach::foreach(row = seq_len(nrow(iterator))) %dopar% {
+  out <- parallelize(seq_len(nrow(iterator)), function(row) {
     bliss_excess <- hsa_excess <- metrics <- isobolograms <- smooth_mx <- NULL
     bliss_score <- hsa_score <- CIScore_50 <- CIScore_80 <- S4Vectors::DataFrame(matrix(NA, 1, 0))
     x <- iterator[row, ]
@@ -221,9 +218,8 @@ fit_SE.combinations <- function(se,
          hsa_score = hsa_score,
          CIScore_50 = CIScore_50,
          CIScore_80 = CIScore_80)
-  }
-  parallel::stopCluster(clusters)
-  
+  })
+
   all_smooth_mx <- rbindParallelList(out, "smooth_mx")
   all_hsa_excess <- rbindParallelList(out, "hsa_excess")
   all_b_excess <- rbindParallelList(out, "bliss_excess")

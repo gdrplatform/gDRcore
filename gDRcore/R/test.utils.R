@@ -1,4 +1,5 @@
 #' @export
+#' @noRd
 #'
 test_synthetic_data <- function(original,
                                 data,
@@ -29,6 +30,7 @@ test_synthetic_data <- function(original,
 
 # Test that the data is consistent after moving the RefReadout out of the create_and_normalize_SE logic.
 #' @export
+#' @noRd
 test_synthetic_data2 <- function(original, long_df, dataName, asys = c("Normalized", "Averaged")) {
   nested_ids <- intersect(c("Concentration", "Concentration_2"), colnames(long_df))
   reprocessed <- create_and_normalize_SE(long_df, nested_identifiers = nested_ids, nested_confounders = "Barcode")
@@ -63,6 +65,7 @@ test_synthetic_data2 <- function(original, long_df, dataName, asys = c("Normaliz
 
 
 #' @export
+#' @noRd
 #'
 get_synthetic_data <- function(rds) {
   readRDS(system.file("testdata", rds, package = "gDRtestData"))

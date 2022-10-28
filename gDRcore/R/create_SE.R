@@ -1,13 +1,16 @@
 #' @rdname runDrugResponseProcessingPipelineFxns
 #' @export
 #'
+#' If a column called \code{"BackgroundValue"} exists in \code{df_},
+#' it will be removed from the \code{readout} column.
 create_SE <- function(df_,
                       readout = "ReadoutValue",
                       control_mean_fxn = function(x) {
                         mean(x, trim = 0.25)
                       },
                       nested_identifiers = NULL,
-                      nested_confounders = gDRutils::get_env_identifiers("barcode"),
+                      nested_confounders = intersect(names(df_),
+                                                     gDRutils::get_env_identifiers("barcode")),
                       override_untrt_controls = NULL) {
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
@@ -16,6 +19,7 @@ create_SE <- function(df_,
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
+  
 
   if (is.null(nested_identifiers)) {
     nested_identifiers <- get_nested_default_identifiers(df_)
@@ -69,7 +73,7 @@ create_SE <- function(df_,
 
   ## Map controls.
   controls <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
-  ctl_maps <- lapply(controls, function(ctl_type) {
+  ctl_maps <- parallelize(controls, function(ctl_type) {
     map_df(treated, untreated, override_untrt_controls = override_untrt_controls,
            ref_cols = Keys[[ctl_type]], ref_type = ctl_type)
   })
@@ -85,12 +89,7 @@ create_SE <- function(df_,
   ## Not all conditions will actually exist in the data, so filter out those that 
   ## do not exist. 
   treated <- treated[rownames(treated) %in% unique(groupings), ]
-
-  # Parallel computing
-  clusters <- parallel::makeCluster(detect_cores(), type = "FORK")
-  doParallel::registerDoParallel(clusters)
-  
-  out <- foreach::foreach(i = seq_len(nrow(treated))) %dopar% {
+  out <- parallelize(seq_len(nrow(treated)), function(i) {
     trt <- rownames(treated)[i]
     
     trt_df <- dfs[groupings %in% trt, , drop = FALSE]
@@ -139,9 +138,8 @@ create_SE <- function(df_,
   
     list(ctl_df = ctl_df,
          trt_df = trt_df)
-  }
-  parallel::stopCluster(clusters)
-  
+  })
+
   trt_out <- do.call(rbind, lapply(out, "[[", "trt_df"))
   ctl_out <- do.call(rbind, lapply(out, "[[", "ctl_df"))
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")

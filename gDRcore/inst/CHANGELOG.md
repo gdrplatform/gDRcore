@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.7] - 2022-10-18
+#### Add missing namespacing
+
+#### [1.3.6] - 2022-10-10
+#### Add support for setting number of cores for `BiocParallel` based on the env variable
+
+#### [1.3.5] - 2022-10-07
+#### Remove global parameters for `BiocParallel`
+
+#### [1.3.4] - 2022-09-29
+#### Change the logic for using cores in `BiocParallel`
+
+#### [1.3.3] - 2022-09-27
+#### Update the logic for parallel computing
+
+#### [1.3.2] - 2022-08-17
+#### Update the logic for default nested_confounders in `create_SE` function
+
 #### [1.3.1] - 2022-07-08
 #### Refactor create_SE to support reverse single-agent data
 

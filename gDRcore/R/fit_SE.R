@@ -36,11 +36,8 @@ fit_SE <- function(se,
   metric_cols <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
   avg_trt <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, averaged_assay))
   iterator <- unique(avg_trt[, c("column", "row")])
-  # Parallel computing
-  clusters <- parallel::makeCluster(detect_cores(), type = "FORK")
-  doParallel::registerDoParallel(clusters)
   
-  out <- foreach::foreach(row = seq_len(nrow(iterator))) %dopar% {
+  out <- parallelize(seq_len(nrow(iterator)), function(row) {
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
@@ -74,9 +71,8 @@ fit_SE <- function(se,
       fit_df$col_id <- j
     }
     fit_df
-  }
-  parallel::stopCluster(clusters)
-  
+  })
+
   out <- S4Vectors::DataFrame(do.call("rbind", out))
   metrics <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c("row_id", "col_id")], 
     row = out$row_id, 

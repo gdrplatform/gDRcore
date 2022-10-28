@@ -23,3 +23,13 @@ test_that("matches works as expected", {
   matchTrtRefList <- matches(trt, ref, list = TRUE)
   expect_equal(length(matchTrtRefList), 4)
 })
+
+
+test_that("parallelize works as expected", {
+  n <- 10
+  listRunif <- lapply(seq_len(n), runif)
+  sumOfList <- parallelize(listRunif, sum)
+  expect_class(sumOfList, "list")
+  expect_length(unlist(sumOfList), n)
+})
+
