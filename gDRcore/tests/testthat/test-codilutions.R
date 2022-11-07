@@ -1,6 +1,3 @@
-library(gDRcore)
-library(testthat)
-
 test_that("fit_combo_codilutions works as expected", {
   n <- 8
   concs <- 10 * 3 ^ seq(0, -n, -1)
