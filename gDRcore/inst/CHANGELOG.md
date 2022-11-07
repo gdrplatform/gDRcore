@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.8] - 2022-11-07
+#### Fix invalid encapsulation in tests
+
 #### [1.3.7] - 2022-10-18
 #### Add missing namespacing
 
