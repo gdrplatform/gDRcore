@@ -49,7 +49,7 @@ fit_SE.combinations <- function(se,
 
   iterator <- unique(avg[, c("column", "row")])
   
-  out <- parallelize(seq_len(nrow(iterator)), function(row) {
+  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
     bliss_excess <- hsa_excess <- metrics <- isobolograms <- smooth_mx <- NULL
     bliss_score <- hsa_score <- CIScore_50 <- CIScore_80 <- S4Vectors::DataFrame(matrix(NA, 1, 0))
     x <- iterator[row, ]

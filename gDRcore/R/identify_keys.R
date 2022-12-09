@@ -55,7 +55,7 @@ identify_keys <- function(df_,
     nested_keys = nested_keys
   )
 
-  keys <- parallelize(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),
+  keys <- gDRutils::loop(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),
     gDRutils::get_header("normalized_results"), 
     identifiers$template, 
     identifiers$well_position, 
@@ -74,7 +74,7 @@ identify_keys <- function(df_,
   # TODO: Improve this.
   for (k in keys[["untrt_Endpoint"]]) {
     if (all(is.na(df_[, k]))) {
-      keys <- parallelize(keys, function(x) setdiff(x, k))
+      keys <- gDRutils::loop(keys, function(x) setdiff(x, k))
     }
     if (all(is.na(df_[t0, k]))) {
       keys[["Day0"]] <- setdiff(keys[["Day0"]], k)

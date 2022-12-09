@@ -212,13 +212,6 @@ rbindParallelList <- function(x, name) {
   S4Vectors::DataFrame(do.call(plyr::rbind.fill, lapply(x, function(x) as.data.frame("[[" (x, name)))))
 }
 
-#' Iterate using parallelization from BiocParallel
-#'
-#' @export
-parallelize <- function(x, FUN, ...) {
-  BiocParallel::bplapply(x, FUN, ...)
-}
-
 
 #' Value Matching
 #' 

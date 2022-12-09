@@ -55,7 +55,7 @@ normalize_SE <- function(se,
                            trt[, c("column", "row")]))
   # Column major order, so go down first.
 
-  out <- parallelize(seq_len(nrow(iterator)), function(row) {
+  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
