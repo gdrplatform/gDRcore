@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.9] - 2022-12-13
+#### Add assert for vehicle values in input data in `runDrugResponseProcessingPipeline`
+
 #### [1.3.8] - 2022-11-07
 #### Fix invalid encapsulation in tests
 
