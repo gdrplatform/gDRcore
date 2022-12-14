@@ -23,11 +23,11 @@ average_SE <- function(se,
   trt_keys <- gDRutils::get_SE_keys(se, "Trt")
   masked_tag_key <- gDRutils::get_SE_keys(se, "masked_tag")
 
-  if (!(length(trt_keys) > 0L && trt_keys != "")) {
+  if (!checkmate::test_character(trt_keys, min.len = 1, min.chars = 1)) {
     stop("unexpected treated keys on 'se' object")
   }
 
-  if (!(length(masked_tag_key) > 0L && masked_tag_key != "")) {
+  if (!checkmate::test_character(masked_tag_key, min.len = 1, min.chars = 1)) {
     stop("unexpected masked_tag on 'se' object")
   }
 
