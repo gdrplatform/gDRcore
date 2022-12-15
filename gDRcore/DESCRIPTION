@@ -19,7 +19,7 @@ Imports:
     data.table,
     drc,
     BiocParallel,
-    gDRutils (>= 1.3.10),
+    gDRutils (>= 1.3.11),
     httr,
     MultiAssayExperiment,
     purrr,
