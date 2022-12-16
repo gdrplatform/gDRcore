@@ -2,8 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [1.3.11] - 2022-12-14
+#### [1.3.11] - 2022-12-16
 #### Replace parallelize function with gDRutils::loop
+
+#### [1.3.10] - 2022-12-15
+#### Add assert for vehicle values in input data in `runDrugResponseProcessingPipeline`
 
 #### [1.3.9] - 2022-12-14
 #### Fix error-handling if conditions in average_SE
