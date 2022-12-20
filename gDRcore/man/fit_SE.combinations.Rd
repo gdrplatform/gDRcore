@@ -18,15 +18,14 @@ fit_SE.combinations(
 \item{series_identifiers}{character vector of the column names in the nested \code{DFrame}
 corresponding to nested identifiers.}
 
+\item{normalization_types}{character vector of normalization types used for calculating combo matrix.}
+
+\item{averaged_assay}{string of the name of the averaged assay to use as input.
+in the \code{se}.}
+
 \item{metrics_assay}{string of the name of the metrics assay to output
-in the returned \linkS4class{SummarizedExperiment}
+in the returned \linkS4class{SummarizedExperiment}.
 whose combination represents a unique series for which to fit curves.}
-
-\item{conc_margin}{margin for calculation and plots as fold-change over highest test conc for calculation}
-
-\item{log2_pos_offset}{max offset for conc}
-
-\item{norm_types}{character vector of normalization types used for calculating combo matrix}
 }
 \value{
 A code{SummarizedExperiment} object with an additional assay containing the combination metrics.

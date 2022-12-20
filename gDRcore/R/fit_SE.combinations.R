@@ -4,12 +4,12 @@
 #' @param se \code{SummarizedExperiment} object with a BumpyMatrix assay containing averaged data.
 #' @param series_identifiers character vector of the column names in the nested \code{DFrame}
 #' corresponding to nested identifiers.
+#' @param normalization_types character vector of normalization types used for calculating combo matrix.
+#' @param averaged_assay string of the name of the averaged assay to use as input.
+#' in the \code{se}.
 #' @param metrics_assay string of the name of the metrics assay to output
-#' in the returned \linkS4class{SummarizedExperiment}
+#' in the returned \linkS4class{SummarizedExperiment}.
 #' whose combination represents a unique series for which to fit curves. 
-#' @param conc_margin margin for calculation and plots as fold-change over highest test conc for calculation
-#' @param log2_pos_offset max offset for conc
-#' @param norm_types character vector of normalization types used for calculating combo matrix
 #'
 #' @details
 #' This function assumes that the combination is set up with both concentrations nested in the assay.
@@ -49,7 +49,7 @@ fit_SE.combinations <- function(se,
 
   iterator <- unique(avg[, c("column", "row")])
   
-  out <- parallelize(seq_len(nrow(iterator)), function(row) {
+  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
     bliss_excess <- hsa_excess <- metrics <- isobolograms <- smooth_mx <- NULL
     bliss_score <- hsa_score <- CIScore_50 <- CIScore_80 <- S4Vectors::DataFrame(matrix(NA, 1, 0))
     x <- iterator[row, ]

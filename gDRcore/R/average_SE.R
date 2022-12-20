@@ -39,7 +39,7 @@ average_SE <- function(se,
   std_cols <- c("GRvalue", "RelativeViability")
   iterator <- unique(normalized[, c("column", "row")])
   
-  out <- parallelize(seq_len(nrow(iterator)), function(row) {
+  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
