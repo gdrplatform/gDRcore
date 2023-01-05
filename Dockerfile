@@ -1,4 +1,4 @@
-FROM arkadiuszgladki/gdr_shiny:0.08
+FROM arkadiuszgladki/gdr_shiny:0.09
 
 # ------ Be aware that any changes in following may cause issue with RPlatform and CBS
 
@@ -16,13 +16,11 @@ ARG GITHUB_TOKEN
 #================= Install dependencies
 RUN mkdir -p /mnt/vol
 COPY rplatform/dependencies.yaml rplatform/.github_access_token.txt* /mnt/vol
-COPY rplatform/install_all_deps.R /mnt/vol/install_all_deps.R
-RUN R -f /mnt/vol/install_all_deps.R
+RUN Rscript -e "gDRstyle::installAllDeps()"
 
 #================= Check & build package
-COPY gDRcore/ /tmp/gDRcore/
-COPY rplatform/install_repo.R /mnt/vol
-RUN R -f /mnt/vol/install_repo.R 
+COPY ./ /tmp/gDRcore/
+RUN Rscript -e "gDRstyle::installLocalPackage('/tmp/gDRcore/gDRcore')"
 
 #================= Clean up
 RUN sudo rm -rf /mnt/vol/* /tmp/gDRcore/

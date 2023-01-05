@@ -124,6 +124,8 @@ runDrugResponseProcessingPipeline <- function(df_,
                                               add_raw_data = FALSE) {
   
   checkmate::assert_data_frame(df_)
+  checkmate::assert_true(any(gDRutils::get_env_identifiers("untreated_tag") %in%
+                               df_[[gDRutils::get_env_identifiers("drug")]]))
   checkmate::assert_string(readout)
   checkmate::assert_function(control_mean_fxn)
   checkmate::assert_multi_class(nested_identifiers, c("character", "list"), null.ok = TRUE)

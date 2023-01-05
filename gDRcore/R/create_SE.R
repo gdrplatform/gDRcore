@@ -19,6 +19,7 @@ create_SE <- function(df_,
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
+  
 
   if (is.null(nested_identifiers)) {
     nested_identifiers <- get_nested_default_identifiers(df_)
@@ -72,7 +73,7 @@ create_SE <- function(df_,
 
   ## Map controls.
   controls <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
-  ctl_maps <- lapply(controls, function(ctl_type) {
+  ctl_maps <- gDRutils::loop(controls, function(ctl_type) {
     map_df(treated, untreated, override_untrt_controls = override_untrt_controls,
            ref_cols = Keys[[ctl_type]], ref_type = ctl_type)
   })
@@ -88,12 +89,7 @@ create_SE <- function(df_,
   ## Not all conditions will actually exist in the data, so filter out those that 
   ## do not exist. 
   treated <- treated[rownames(treated) %in% unique(groupings), ]
-
-  # Parallel computing
-  clusters <- parallel::makeCluster(detect_cores(), type = "FORK")
-  doParallel::registerDoParallel(clusters)
-  
-  out <- foreach::foreach(i = seq_len(nrow(treated))) %dopar% {
+  out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
     trt <- rownames(treated)[i]
     
     trt_df <- dfs[groupings %in% trt, , drop = FALSE]
@@ -142,9 +138,8 @@ create_SE <- function(df_,
   
     list(ctl_df = ctl_df,
          trt_df = trt_df)
-  }
-  parallel::stopCluster(clusters)
-  
+  })
+
   trt_out <- do.call(rbind, lapply(out, "[[", "trt_df"))
   ctl_out <- do.call(rbind, lapply(out, "[[", "ctl_df"))
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")

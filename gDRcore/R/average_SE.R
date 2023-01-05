@@ -23,23 +23,23 @@ average_SE <- function(se,
   trt_keys <- gDRutils::get_SE_keys(se, "Trt")
   masked_tag_key <- gDRutils::get_SE_keys(se, "masked_tag")
 
-  if (!(length(trt_keys) > 0L && trt_keys != "")) {
-    stop("unexpected treated keys on 'se' object")
-  }
-
-  if (!(length(masked_tag_key) > 0L && masked_tag_key != "")) {
-    stop("unexpected masked_tag on 'se' object")
-  }
-
+  checkmate::expect_character(trt_keys,
+                              min.len = 1,
+                              min.chars = 1,
+                              info = "unexpected treated keys on 'se' object")
+  checkmate::expect_character(
+    masked_tag_key,
+    min.len = 1,
+    min.chars = 1,
+    info = "unexpected masked_tag_key keys on 'se' object"
+  )
+  
   normalized <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, normalized_assay))
 
   std_cols <- c("GRvalue", "RelativeViability")
   iterator <- unique(normalized[, c("column", "row")])
-  # Parallel computing
-  clusters <- parallel::makeCluster(detect_cores(), type = "FORK")
-  doParallel::registerDoParallel(clusters)
   
-  out <- foreach::foreach(row = seq_len(nrow(iterator))) %dopar% {
+  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
@@ -78,9 +78,8 @@ average_SE <- function(se,
       agg_df$col_id <- j
     }
     agg_df
-  }
-  parallel::stopCluster(clusters)
-  
+  })
+
   out <- S4Vectors::DataFrame(do.call("rbind", out))
   
   averaged <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c(masked_tag_key, "row_id", "col_id")], 

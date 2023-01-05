@@ -126,7 +126,7 @@ add_Drug_annotation <- function(df_metadata,
   names(Drug_info) <- c("drug", "drug_name", "drug_moa")
   drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
   validatedDrugs <- remove_drug_batch(drugsTreated) %in% remove_drug_batch(Drug_info[["drug"]])
-  #### function should be parallelized
+  #### function should be parallelizeized
   missingTblDrugs <- NULL
   if (!is.null(fill) && any(!validatedDrugs)) {
     missingTblDrugs <- tibble::tibble(drug = remove_drug_batch(drugsTreated[!validatedDrugs]),

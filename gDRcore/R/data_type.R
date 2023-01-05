@@ -46,7 +46,7 @@ identify_data_type <- function(df,
   for (idp in seq_len(nrow(combinations))) {
     df_matching <- merge(cbind(df, cnt), combinations[idp, ])
     matching_idx <- df_matching$cnt
-    treated <- vapply(lapply(df_matching[, p_drug_ids, drop = FALSE],
+    treated <- vapply(gDRutils::loop(df_matching[, p_drug_ids, drop = FALSE],
                              function(x) !x %in% untreated_tag), all, logical(1))
     detect_sa <- sum(treated)
     type <- if (ncol(df[matching_idx, drugs_cotrt_ids, drop = FALSE]) == 0) {
@@ -127,7 +127,7 @@ split_raw_data <- function(df,
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   
   if (length(cotrt_types) > 0) {
-    df_list[cotrt_types] <- lapply(cotrt_types, function(x) {
+    df_list[cotrt_types] <- gDRutils::loop(cotrt_types, function(x) {
       unique_cotrt <- unique(df_list[[x]][, c(cl, drug_ids[["drug_name"]])])
       unique_cotrt_ctrl <- unique(control[control[[cl]] %in% unique_cotrt[[cl]] &
                                             control[[drug_ids[["drug_name"]]]] %in%
@@ -143,7 +143,7 @@ split_raw_data <- function(df,
   }
   
   if ("single-agent" %in% names(df_list)) {
-    sa_idx <- lapply(grep(drug_ids[["concentration"]], drug_ids, value = TRUE), function(x)
+    sa_idx <- gDRutils::loop(grep(drug_ids[["concentration"]], drug_ids, value = TRUE), function(x)
            which(!df_list[["single-agent"]][, x] == 0))
     sa_idx[["concentration"]] <- NULL
     for (codrug in names(sa_idx)) {

@@ -23,3 +23,4 @@ test_that("matches works as expected", {
   matchTrtRefList <- matches(trt, ref, list = TRUE)
   expect_equal(length(matchTrtRefList), 4)
 })
+
