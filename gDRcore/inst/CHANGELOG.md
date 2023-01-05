@@ -1,6 +1,8 @@
 <h3 align = "left"><strong>Changelog</strong></h3>
 
 All notable changes to this project will be documented in this file.
+#### [1.3.12] - 2023-01-05
+#### refactor identify_data_type 
 
 #### [1.3.11] - 2022-12-16
 #### Replace parallelize function with gDRutils::loop
