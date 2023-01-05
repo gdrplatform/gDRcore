@@ -33,7 +33,7 @@ identify_data_type <- function(df,
   p_conc_ids <- conc_ids[conc_ids %in% p_cols]
   
   drugs_cotrt_ids <- setdiff(p_drug_ids, unlist(gDRutils::get_env_identifiers("drug_name")))
-  conc_cotrt_ids <- setdiff(p_conc_ids, unlist(gDRutils::get_env_idetnifiers("concentration")))
+  conc_cotrt_ids <- setdiff(p_conc_ids, unlist(gDRutils::get_env_identifiers("concentration")))
   
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   cell <- gDRutils::get_env_identifiers("cellline_name") # TODO: Why do we use cellline_name instead of clid?
