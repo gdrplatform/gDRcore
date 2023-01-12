@@ -145,14 +145,14 @@ data_model <- function(df_) {
 #' @param assayName assay name used for finding nested_identifiers in SummarizedExperiment object
 #' @return vector of nested identifiers
 #' @export
-get_nested_default_identifiers <- function(x, ...) {
+get_nested_default_identifiers <- function(x, assayName = NULL) {
   UseMethod("get_nested_default_identifiers")
 }
 
 
 #' @export
-#' @describeIn get_nested_default_identifiers
-get_nested_default_identifiers.data.frame <- function(x) {
+#' @rdname get_nested_default_identifiers
+get_nested_default_identifiers.data.frame <- function(x, assayName = NULL) {
   checkmate::assert_data_frame(x)
   data_type <- data_model(x)
   if (data_type == "single-agent") {
@@ -163,7 +163,7 @@ get_nested_default_identifiers.data.frame <- function(x) {
 }
 
 #' @export
-#' @describeIn get_nested_default_identifiers
+#' @rdname get_nested_default_identifiers
 get_nested_default_identifiers.SummarizedExperiment <- function(x,
                                                                 assayName =
                                                                   tail(SummarizedExperiment::assayNames(x), 1)) {

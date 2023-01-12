@@ -1,8 +1,8 @@
+#' If a column called \code{"BackgroundValue"} exists in \code{df_},
+#' it will be removed from the \code{readout} column.
 #' @rdname runDrugResponseProcessingPipelineFxns
 #' @export
 #'
-#' If a column called \code{"BackgroundValue"} exists in \code{df_},
-#' it will be removed from the \code{readout} column.
 create_SE <- function(df_,
                       readout = "ReadoutValue",
                       control_mean_fxn = function(x) {
@@ -25,7 +25,7 @@ create_SE <- function(df_,
     nested_identifiers <- get_nested_default_identifiers(df_)
   }
   
-  if (is(df_, "data.table")) {
+  if (methods::is(df_, "data.table")) {
     df_ <- S4Vectors::DataFrame(df_)
   }
 

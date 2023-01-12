@@ -2,8 +2,9 @@ test_that("small: test_synthetic_data", {
   data <- "finalMAE_small.RDS"
   original <- get_synthetic_data(data)
   
-  mae <-
+  mae <- suppressWarnings({ # expected warnings
     gDRtestData::generateNoiseRawData(cell_lines, drugs, e_inf, ec50, hill_coef)
+  })
   
   test_synthetic_data(original, mae, data)
 })

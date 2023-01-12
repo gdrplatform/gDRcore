@@ -15,7 +15,7 @@ test_that("map_conc_to_standardized_conc works as expected", {
   conc2 <- shorter_range + noise
 
   obs <- map_conc_to_standardized_conc(conc1, conc2)
-  expect_true(is(obs, "data.frame"))
+  expect_true(methods::is(obs, "data.frame"))
 })
 
 

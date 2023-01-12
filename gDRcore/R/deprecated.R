@@ -1,5 +1,14 @@
+#' Calculate combo matrix
+#'
+#' @param se a BumpyMatrix SE with drug response data
+#' @param series_identifiers series identifiers
+#' @param conc_margin concentration margin
+#' @param log2_pos_offset logarithm offset
+#' @param norm_types types of normalization
+#' @param averaged_assay name of averaged assay
+#'
+#' @return list with results
 #' @export
-#' @noRd
 calculate_combo_matrix <- function(se,
                                    series_identifiers,
                                    conc_margin = 10 ^ 0.5,
@@ -574,9 +583,9 @@ calculate_combo_matrix <- function(se,
         agg_results$CI_100x_80[idc, iCL] <- ifelse(length(df_CI_100x) == 0, 1,
             ifelse("0.2" %in% df_CI_100x$level, 2 ^ df_CI_100x$log2_CI[df_CI_100x$level == 0.2], 1))
         agg_results$hsa_q10[idc, iCL] <- mean(
-          all_mx$hsa_excess[all_mx$hsa_excess <= quantile(all_mx$hsa_excess, .1, na.rm = TRUE)])
+          all_mx$hsa_excess[all_mx$hsa_excess <= stats::quantile(all_mx$hsa_excess, .1, na.rm = TRUE)])
         agg_results$bliss_q10[idc, iCL] <- mean(
-          all_mx$bliss_excess[all_mx$bliss_excess <= quantile(all_mx$bliss_excess, .1, na.rm = TRUE)])
+          all_mx$bliss_excess[all_mx$bliss_excess <= stats::quantile(all_mx$bliss_excess, .1, na.rm = TRUE)])
 
       }
     }
@@ -593,7 +602,6 @@ calculate_combo_matrix <- function(se,
 #'
 #' @param se a BumpyMatrix SE with drug response data
 #'
-#' @return
 #' @export
 calculate_combo_cotrt <- function(se) {
   .Deprecated("fit_SE.combinations")
@@ -691,9 +699,13 @@ calculate_combo_cotrt <- function(se) {
   }
 }
 
-
+#' Add co-drug group to SE
+#'
+#' @param se a BumpyMatrix SE with drug response data
+#'
+#' @return SE object
+#' 
 #' @export
-#' @noRd
 #'
 add_codrug_group_SE <- function(se) {
 
@@ -771,7 +783,8 @@ add_codrug_group_SE <- function(se) {
   return(se)
 }
 
-
+#' Create combo control
+#' 
 #' @param nested_identifiers Character vector of the nested_identifiers for a given assay.
 #' @return \code{data.frame} to be nested in the assays.
 #' @keywords internal

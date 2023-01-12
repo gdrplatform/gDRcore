@@ -4,14 +4,19 @@
 #' Either: create a SummarizedExperiment and normalize raw treated and control data (create_and_normalize_SE),
 #' average data (average_SE), or fit the processed data (fit_SE). See details for more in-depth explanations.
 #'
-#' @param df_ data.frame of raw drug response data containing both treated and untreated values. 
+#' @param df_ data.frame of raw drug response data containing both treated and untreated values.
+#' @param se \code{SummarizedExperiment} object.
 #' @param readout string of the name containing the cell viability readout values.
 #' @param control_mean_fxn function indicating how to average controls.
 #' Defaults to \code{mean(x, trim = 0.25)}.
-#' @param nested_keys character vector of column names to include in the data.frames
+#' @param nested_identifiers Character vector of the nested_identifiers for a given assay.
+#' @param nested_confounders Character vector of the nested_confounders for a given assay.
+#' nested_keys is character vector of column names to include in the data.frames
 #' in the assays of the resulting \code{SummarizedExperiment} object.
-#' @param Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
+#' Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
 #' \code{create_and_normalize_SE} or \code{runDrugResponseProcessingPipeline}.
+#' @param series_identifiers character vector of identifiers in \code{measured} or \code{metric}
+#' which define a unique data point.
 #' @param override_untrt_controls named list containing defining factors in the treatments.
 #' Defaults to \code{NULL}.
 #' @param override_masked boolean indicating whether or not to override the masked wells
@@ -33,6 +38,11 @@
 #' in the returned \linkS4class{SummarizedExperiment}
 #' Defaults to \code{"Metrics"}.
 #' @param add_raw_data  boolean indicating whether or not to include raw data into experiment metadata.
+#' @param range_conc vector of concetrations range values.
+#' @param force_fit boolean indicating whether or not to force the fit.
+#' @param pcutoff numeric cutoff value.
+#' @param cap numeric value representing the value to cap the highest allowed relative viability at.
+#' @param curve_type vector of curve type values.
 #'
 #' @details
 #' \code{runDrugResponseProcessingPipeline} is made up of 3 separate steps:

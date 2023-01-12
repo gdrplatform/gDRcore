@@ -12,21 +12,20 @@ Author: c(person("Bartosz", "Czech", role=c("aut", "cre"), email="bartosz.czech@
              person("Allison", "Vuong", role=c("aut")))
 Maintainer: gDR team <gdr-support-d@gene.com>
 Description: This package contains core functions to process and analyze drug response data.
-License: file GNE_LICENSE
+License: file LICENSE
 LazyLoad: yes
 Imports:
     checkmate,
-    data.table,
     drc,
     BiocParallel,
     gDRutils (>= 1.3.11),
-    httr,
     MultiAssayExperiment,
     purrr,
     reshape2,
     zoo,
     S4Vectors,
-    SummarizedExperiment
+    SummarizedExperiment,
+    methods
 Suggests:
     BumpyMatrix,
     covr,
@@ -37,7 +36,11 @@ Suggests:
     yaml,
     gDRinternalData,
     gDRstyle (>= 0.0.8),
-    gDRtestData (>= 1.3.1)
+    gDRtestData (>= 1.3.1),
+    IRanges,
+    plyr,
+    stringr,
+    tibble
 VignetteBuilder: knitr
 ByteCompile: TRUE
 RoxygenNote: 7.2.1

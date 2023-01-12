@@ -1,6 +1,12 @@
-#' @export
-#' @noRd
+#' Testing synthetic data form gDRtestData package
 #'
+#' @param original original MAE assay
+#' @param data datase MAE or data frame
+#' @param dataName dataset name
+#' @param override_untrt_controls named list containing defining factors in the treatments
+#' @param tolerance tolerance factor
+#' 
+#' @export
 test_synthetic_data <- function(original,
                                 data,
                                 dataName,
@@ -20,17 +26,22 @@ test_synthetic_data <- function(original,
   averaged_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Averaged"))
   metrics_new <- as.data.frame(gDRutils::convert_mae_assay_to_dt(reprocessed, "Metrics"))
   
-  test_that(sprintf("reprocessed data %s is identical to data stored in gDRtestData", dataName), {
-  expect_equal(normalized_new, normalized, tolerance = tolerance)
-  expect_equal(averaged_new, averaged, tolerance = tolerance)
-  expect_equal(metrics_new, metrics, tolerance = tolerance)
+  testthat::test_that(sprintf("reprocessed data %s is identical to data stored in gDRtestData", dataName), {
+    testthat::expect_equal(normalized_new, normalized, tolerance = tolerance)
+    testthat::expect_equal(averaged_new, averaged, tolerance = tolerance)
+    testthat::expect_equal(metrics_new, metrics, tolerance = tolerance)
   })
 }
 
 
-# Test that the data is consistent after moving the RefReadout out of the create_and_normalize_SE logic.
+#' Test that the data is consistent after moving the RefReadout out of the create_and_normalize_SE logic.
+#'
+#' @param original original MAE assay
+#' @param long_df dataset in data frame format
+#' @param dataName dataset name
+#' @param asys names of assays
+#'
 #' @export
-#' @noRd
 test_synthetic_data2 <- function(original, long_df, dataName, asys = c("Normalized", "Averaged")) {
   nested_ids <- intersect(c("Concentration", "Concentration_2"), colnames(long_df))
   reprocessed <- create_and_normalize_SE(long_df, nested_identifiers = nested_ids, nested_confounders = "Barcode")
@@ -57,16 +68,19 @@ test_synthetic_data2 <- function(original, long_df, dataName, asys = c("Normaliz
 
     tolerance <- 10e-4
 
-    test_that(sprintf("Original data %s and recreated data are identical for assay %s", dataName, asy), {
-      expect_equal(o_df, n_df, tolerance = tolerance)
+    testthat::test_that(sprintf("Original data %s and recreated data are identical for assay %s", dataName, asy), {
+      testthat::expect_equal(o_df, n_df, tolerance = tolerance)
     })
   }
 }
 
-
-#' @export
-#' @noRd
+#' Get synthetic data from gDRtestData package
 #'
+#' @param rds RDS filename
+#'
+#' @return loaded data
+#' 
+#' @export
 get_synthetic_data <- function(rds) {
   readRDS(system.file("testdata", rds, package = "gDRtestData"))
 }

@@ -36,12 +36,15 @@ test_that("fit_codilution_series works as expected", {
   keep <- !is.na(ratios) & ratios == ratio
   codilution <- measured[keep, ]
 
-  obs <- gDRcore:::fit_codilution_series(codilution, 
-    series_1 = "Concentration",
-    series_2 = "Concentration_2",
-    e_0 = 1,
-    GR_0 = 1,
-    normalization_type = "GRvalue")
+  obs <- suppressWarnings(# expected warnings
+    gDRcore:::fit_codilution_series(
+      codilution, 
+      series_1 = "Concentration",
+      series_2 = "Concentration_2",
+      e_0 = 1,
+      GR_0 = 1,
+      normalization_type = "GRvalue"
+  ))
 
   expect_equal(dim(obs), c(1, 17))
   expect_true("ratio" %in% colnames(obs))
