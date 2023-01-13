@@ -102,6 +102,8 @@ map_df <- function(trt_md,
 
 #' Map references
 #' 
+#' @param mat_elem input data frame
+#'
 #' @details
 #' Using the given rownames, map the treated and reference conditions.
 .map_references <- function(mat_elem) {

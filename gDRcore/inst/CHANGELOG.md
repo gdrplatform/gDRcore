@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.12] - 2023-01-12
+#### Clean-up code
+
 #### [1.3.11] - 2022-12-16
 #### Replace parallelize function with gDRutils::loop
 
