@@ -34,9 +34,11 @@ map_df <- function(trt_md,
   ref_type <- match.arg(ref_type)
   
   duration_col <- gDRutils::get_env_identifiers("duration")
+  conc_cols <- unlist(gDRutils::get_env_identifiers(c("concentration",
+                                               "concentration2"), simplify = FALSE))
   
   conc <- cbind(array(0, nrow(ref_md)), # padding to avoid empty df;
-                ref_md[, agrep("Concentration", colnames(ref_md)), drop = FALSE])
+                ref_md[, intersect(names(ref_md), conc_cols), drop = FALSE])
   is_ref_conc <- apply(conc, 1, function(z) {
     all(z == 0)
   })
