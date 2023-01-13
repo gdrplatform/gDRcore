@@ -6,6 +6,9 @@
 \usage{
 .map_references(mat_elem)
 }
+\arguments{
+\item{mat_elem}{input data frame}
+}
 \description{
 Map references
 }

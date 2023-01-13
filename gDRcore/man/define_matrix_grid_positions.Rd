@@ -6,6 +6,11 @@
 \usage{
 define_matrix_grid_positions(conc1, conc2)
 }
+\arguments{
+\item{conc1}{drug_1 concentration}
+
+\item{conc2}{drug_2 concentration}
+}
 \description{
 Define matrix grid positions
 }
