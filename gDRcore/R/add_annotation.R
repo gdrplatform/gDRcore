@@ -54,7 +54,7 @@ add_CellLine_annotation <- function(df_metadata,
     CLs_info <- rbind(CLs_info, missingTblCellLines)
   }
   cols_to_fill <- names(CLs_info)[!names(CLs_info) %in% "doubling_time"]
-  for(col in cols_to_fill) {
+  for (col in cols_to_fill) {
     CLs_info[[col]][is.na(CLs_info[[col]])] <- fill
   }
   CLs_info[, "doubling_time"] <- as.numeric(CLs_info[, "doubling_time"])
