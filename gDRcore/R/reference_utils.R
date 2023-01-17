@@ -121,38 +121,10 @@ extrapolate_references <- function(ref_df, ref_conc) {
   corrected_readout
 }
 
-# nolint start
-# identify_treatment_references <- function(row_maps_cotrt, trt_rdata, ref_rdata) {
-#   # Reassess the cases without a match to find equivalent drug and concentration (only 2 drugs).
-#   # Test if one can use one of the treatment as a reference.
-#   if ("Gnumber_2" %in% colnames(trt_rdata)) {
-#     no_matches <- names(row_maps_cotrt)[sapply(row_maps_cotrt, length) == 0L]
-#     for (rnames in no_matches) {
-#       # loop through the rows without co-treatment matched
-#       ref_metadata_idx <- setdiff(intersect(Keys$ref_Endpoint, names(ref_rdata)),
-#                                   c("Gnumber_2", "DrugName_2", "Concentration_2"))
-#       names(ref_metadata_idx) <- ref_metadata_idx
-#
-#       ref_match <- apply(as.matrix(c((
-#         lapply(ref_metadata_idx, function(y) # matching the metadata
-#           unlist(trt_rdata[, y, drop = FALSE] ==
-#                    (trt_rdata[rnames, y, drop = FALSE]))
-#           )), # matching the drugs with mapping from Gnumber to Gnumber_2
-#         list(Gnumber = trt_rdata$Gnumber ==
-#                trt_rdata[rnames, "Gnumber_2"]),
-#         list(Gnumber_2 = trt_rdata$Gnumber_2 %in%
-#                gDRutils::get_env_identifiers("untreated_tag")))), 2, all)
-#       if (any(ref_match)) {
-#         row_maps_cotrt[rnames] <- rownames(normSE)[ref_match]
-#       }
-#     }
-#   }
-# }
-
-
 ######################################
 # Below has not been evaluated yet
 ######################################
+# nolint start
 #
 # calculate_reference_values_SE_part2 <- function() {
 #   # Match the reference endpoint with the same co-treatment.
