@@ -102,7 +102,10 @@ map_df <- function(trt_md,
   out
 }
 
-
+#' Map references
+#' 
+#' @param mat_elem input data frame
+#'
 #' @details
 #' Using the given rownames, map the treated and reference conditions.
 .map_references <- function(mat_elem) {
@@ -133,10 +136,10 @@ map_df <- function(trt_md,
     
     # split data.frames to simple model with clid column and drug column
     trt <- lapply(valid, function(x) trt[, c(clid, x)])
-    trt <- do.call(paste, do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]])))))
+    trt <- do.call(paste, do.call(rbind, lapply(trt, function(x) stats::setNames(x, names(trt[[1]])))))
     
     ref <- lapply(valid, function(x) ref[, c(clid, x)])
-    ref <- do.call(paste, do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]])))))
+    ref <- do.call(paste, do.call(rbind, lapply(ref, function(x) stats::setNames(x, names(ref[[1]])))))
     
     # match trt and ref
     matchTrtRef <- matches(trt, ref, list = FALSE, all.y = FALSE)

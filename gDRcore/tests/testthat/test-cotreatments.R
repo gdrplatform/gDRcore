@@ -10,10 +10,13 @@ test_that("fit_combo_cotreatments works as expected", {
     Concentration_2 = rep(concs, each = n),
     GRvalue = vals)
 
-  obs <- gDRcore:::fit_combo_cotreatments(measured, 
-    series_id = "Concentration",
-    cotrt_id = "Concentration_2",
-    normalization_type = "GRvalue")
+  obs <- suppressWarnings(# warnings are expected
+    gDRcore:::fit_combo_cotreatments(
+      measured, 
+      series_id = "Concentration",
+      cotrt_id = "Concentration_2",
+      normalization_type = "GRvalue"
+  ))
   expect_equal(dim(obs), c(11, 17))
   expect_true("cotrt_value" %in% colnames(obs))
   expect_equal(class(obs$cotrt_value), "numeric")
@@ -34,13 +37,16 @@ test_that("fit_cotreatment_series works as expected", {
     Concentration_2 = rep(concs, each = n),
     GRvalue = vals)
 
-  obs <- gDRcore:::fit_cotreatment_series(measured, 
-    series_id = "Concentration",
-    cotrt_id = "Concentration_2",
-    e_0 = 1,
-    GR_0 = 1,
-    cotrt_value = 1,
-    normalization_type = "GRvalue")
+  obs <- suppressWarnings(# warnings are expected
+    gDRcore:::fit_cotreatment_series(
+      measured, 
+      series_id = "Concentration",
+      cotrt_id = "Concentration_2",
+      e_0 = 1,
+      GR_0 = 1,
+      cotrt_value = 1,
+      normalization_type = "GRvalue"
+  ))
 
   expect_equal(dim(obs), c(1, 17))
   expect_true("cotrt_value" %in% colnames(obs))

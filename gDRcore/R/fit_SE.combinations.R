@@ -171,10 +171,10 @@ fit_SE.combinations <- function(se,
 
       # average the top 10-percentile excess to get a single value for the excess
       hsa_score[, metric_name] <- ifelse(is.null(h_excess), NA, mean(
-        h_excess$excess[h_excess$excess >= quantile(h_excess$excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
+        h_excess$excess[h_excess$excess >= stats::quantile(h_excess$excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
       )
       bliss_score[, metric_name] <- ifelse(is.null(b_excess), NA, mean(
-        b_excess$excess[b_excess$excess >= quantile(b_excess$excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
+        b_excess$excess[b_excess$excess >= stats::quantile(b_excess$excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
       )
 
       if (all(vapply(isobologram_out, is.null, logical(1)))) {

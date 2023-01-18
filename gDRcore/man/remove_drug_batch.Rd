@@ -6,6 +6,9 @@
 \usage{
 remove_drug_batch(drug)
 }
+\arguments{
+\item{drug}{drug name}
+}
 \value{
 Gnumber without a batch
 }

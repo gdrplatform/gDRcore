@@ -2,9 +2,18 @@
 % Please edit documentation in R/utils.R
 \name{get_nested_default_identifiers}
 \alias{get_nested_default_identifiers}
+\alias{get_nested_default_identifiers.data.frame}
+\alias{get_nested_default_identifiers.SummarizedExperiment}
 \title{Get default nested identifiers}
 \usage{
-get_nested_default_identifiers(x, ...)
+get_nested_default_identifiers(x, assayName = NULL)
+
+\method{get_nested_default_identifiers}{data.frame}(x, assayName = NULL)
+
+\method{get_nested_default_identifiers}{SummarizedExperiment}(
+  x,
+  assayName = tail(SummarizedExperiment::assayNames(x), 1)
+)
 }
 \arguments{
 \item{x}{data.frame with raw data or SummarizedExperiment object with gDR assays}

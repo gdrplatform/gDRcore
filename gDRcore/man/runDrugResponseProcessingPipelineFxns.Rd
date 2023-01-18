@@ -9,7 +9,8 @@
 \alias{runDrugResponseProcessingPipelineFxns}
 \alias{create_and_normalize_SE}
 \alias{runDrugResponseProcessingPipeline}
-\title{Run drug response processing pipeline}
+\title{If a column called \code{"BackgroundValue"} exists in \code{df_},
+it will be removed from the \code{readout} column.}
 \usage{
 average_SE(
   se,
@@ -22,9 +23,7 @@ average_SE(
 create_SE(
   df_,
   readout = "ReadoutValue",
-  control_mean_fxn = function(x) {
-     mean(x, trim = 0.25)
- },
+  control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
   nested_identifiers = NULL,
   nested_confounders = intersect(names(df_), gDRutils::get_env_identifiers("barcode")),
   override_untrt_controls = NULL
@@ -56,9 +55,7 @@ normalize_SE(
 create_and_normalize_SE(
   df_,
   readout = "ReadoutValue",
-  control_mean_fxn = function(x) {
-     mean(x, trim = 0.25)
- },
+  control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
   nested_identifiers = NULL,
   nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL,
@@ -71,9 +68,7 @@ create_and_normalize_SE(
 runDrugResponseProcessingPipeline(
   df_,
   readout = "ReadoutValue",
-  control_mean_fxn = function(x) {
-     mean(x, trim = 0.25)
- },
+  control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
   nested_identifiers = NULL,
   nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL,
@@ -89,6 +84,11 @@ runDrugResponseProcessingPipeline(
 )
 }
 \arguments{
+\item{se}{\code{SummarizedExperiment} object.}
+
+\item{series_identifiers}{character vector of identifiers in \code{measured} or \code{metric}
+which define a unique data point.}
+
 \item{override_masked}{boolean indicating whether or not to override the masked wells
 in the averaging and include all wells. 
 Defaults to \code{FALSE}.}
@@ -106,6 +106,14 @@ Defaults to \code{"Averaged"}.}
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
 
+\item{nested_identifiers}{Character vector of the nested_identifiers for a given assay.}
+
+\item{nested_confounders}{Character vector of the nested_confounders for a given assay.
+nested_keys is character vector of column names to include in the data.frames
+in the assays of the resulting \code{SummarizedExperiment} object.
+Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
+\code{create_and_normalize_SE} or \code{runDrugResponseProcessingPipeline}.}
+
 \item{override_untrt_controls}{named list containing defining factors in the treatments.
 Defaults to \code{NULL}.}
 
@@ -115,6 +123,16 @@ Defaults to \code{"Metrics"}.}
 
 \item{n_point_cutoff}{integer of how many points should be considered the minimum required to try to fit a curve.
 Defaults to \code{4}.}
+
+\item{range_conc}{vector of concetrations range values.}
+
+\item{force_fit}{boolean indicating whether or not to force the fit.}
+
+\item{pcutoff}{numeric cutoff value.}
+
+\item{cap}{numeric value representing the value to cap the highest allowed relative viability at.}
+
+\item{curve_type}{vector of curve type values.}
 
 \item{control_assay}{string containing the name of the assay representing the controls in the \code{se}.
 Defaults to \code{"Controls"}.}
@@ -126,12 +144,6 @@ Defaults to \code{"RawTreated"}.}
 Defaults to \code{4}.}
 
 \item{add_raw_data}{boolean indicating whether or not to include raw data into experiment metadata.}
-
-\item{nested_keys}{character vector of column names to include in the data.frames
-in the assays of the resulting \code{SummarizedExperiment} object.}
-
-\item{Defaults}{to the \code{nested_identifiers} and \code{nested_confounders} if passed through
-\code{create_and_normalize_SE} or \code{runDrugResponseProcessingPipeline}.}
 }
 \description{
 Run different components of the gDR drug response processing pipeline.

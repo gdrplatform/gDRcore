@@ -4,11 +4,14 @@
 \alias{calculate_matrix_metric}
 \alias{calculate_HSA}
 \alias{calculate_Bliss}
+\alias{.calculate_matrix_metric}
 \title{Calculate a metric for combination data.}
 \usage{
 calculate_HSA(sa1, series_id1, sa2, series_id2, metric)
 
 calculate_Bliss(sa1, series_id1, sa2, series_id2, metric)
+
+.calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN)
 }
 \arguments{
 \item{sa1}{data.frame containing single agent data where entries in \code{series_id2} are all \code{0}.

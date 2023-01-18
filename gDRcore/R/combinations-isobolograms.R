@@ -1,3 +1,8 @@
+#' Define matrix grid positions
+#'
+#' @param conc1 drug_1 concentration
+#' @param conc2 drug_2 concentration
+#'
 #' @details
 #' drug_1 is diluted along the rows as the y-axis and
 #' drug_2 is diluted along the columns and will be the x-axis.
