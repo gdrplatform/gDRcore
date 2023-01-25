@@ -20,9 +20,3 @@ pkgs:
     subdir: ~
     host: 'api.github.com'
     source: GITHUB
-  purrr:
-    source: CRAN
-  BiocParallel:
-    source: BIOC
-  pkgbuild:
-    source: CRAN
