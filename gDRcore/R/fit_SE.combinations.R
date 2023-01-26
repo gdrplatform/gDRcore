@@ -50,7 +50,7 @@ fit_SE.combinations <- function(se,
   iterator <- unique(avg[, c("column", "row")])
   
   out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
-    bliss_excess <- hsa_excess <- metrics <- isobolograms <- smooth_mx <- NULL
+    bliss_excess <- hsa_excess <- metrics <- all_iso_points <- isobolograms <- smooth_mx <- NULL
     bliss_score <- hsa_score <- CIScore_50 <- CIScore_80 <- S4Vectors::DataFrame(matrix(NA, 1, 0))
     x <- iterator[row, ]
     i <- x[["row"]]
@@ -59,13 +59,14 @@ fit_SE.combinations <- function(se,
     avg_combo <- avg[avg$row == i & avg$column == j, ]
     
     if (all(is.na(subset(avg_combo, select = -c(row, column))))) { # omit masked values (all NAs)
-      smooth_mx <- hsa_excess <- bliss_excess <- isobolograms <- metrics <- 
+      smooth_mx <- hsa_excess <- bliss_excess <- all_iso_points <- isobolograms <- metrics <- 
         bliss_score[, c("row_id", "col_id")] <- hsa_score[, c("row_id", "col_id")] <-
         CIScore_50[, c("row_id", "col_id")] <- CIScore_80[, c("row_id", "col_id")] <-
         data.frame(row_id = i, col_id = j)
       return(list(bliss_excess = bliss_excess,
            hsa_excess = hsa_excess,
            metrics = metrics,
+           all_iso_points = all_iso_points,
            isobolograms = isobolograms,
            smooth_mx = smooth_mx,
            bliss_score = bliss_score,
@@ -188,13 +189,14 @@ fit_SE.combinations <- function(se,
             min(isobologram_out$df_all_AUC_log2CI$iso_level[isobologram_out$df_all_AUC_log2CI$iso_level >= 0.2])]
       }
       
-      b_excess$row_id <- av_matrix$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_curves$row_id <-
-        col_fittings$row_id <- hsa_score[, "row_id"] <- bliss_score[, "row_id"] <-
+      b_excess$row_id <- av_matrix$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_points$row_id <-
+        isobologram_out$df_all_iso_curves$row_id <- col_fittings$row_id <- hsa_score[, "row_id"] <- bliss_score[, "row_id"] <-
         CIScore_50[, "row_id"] <- CIScore_80[, "row_id"] <- metrics_merged$row_id <- i
-      b_excess$col_id <- av_matrix$col_id <- h_excess$col_id <- isobologram_out$df_all_iso_curves$col_id <- 
-        col_fittings$col_id <- hsa_score[, "col_id"] <- bliss_score[, "col_id"] <-
+      b_excess$col_id <- av_matrix$col_id <- h_excess$col_id <- isobologram_out$df_all_iso_points$col_id <- 
+        isobologram_out$df_all_iso_curves$col_id <- col_fittings$col_id <- hsa_score[, "col_id"] <- bliss_score[, "col_id"] <-
         CIScore_50[, "col_id"] <- CIScore_80[, "col_id"] <- metrics_merged$col_id <- j
       b_excess$normalization_type <- h_excess$normalization_type <- 
+        isobologram_out$df_all_iso_points$normalization_type <-
         isobologram_out$df_all_iso_curves$normalization_type <- metric_name
       
       hsa_excess <- plyr::rbind.fill(hsa_excess, as.data.frame(h_excess))
@@ -205,6 +207,8 @@ fit_SE.combinations <- function(se,
       } else {
         smooth_mx <- as.data.frame(av_matrix)
       }
+      all_iso_points <- plyr::rbind.fill(all_iso_points,
+                                              as.data.frame(isobologram_out$df_all_iso_points))
       isobolograms <- plyr::rbind.fill(isobolograms,
                                               as.data.frame(isobologram_out$df_all_iso_curves))
       metrics <- rbind(metrics, metrics_merged)
@@ -212,6 +216,7 @@ fit_SE.combinations <- function(se,
     list(bliss_excess = bliss_excess,
          hsa_excess = hsa_excess,
          metrics = metrics,
+         all_iso_points = all_iso_points,
          isobolograms = isobolograms,
          smooth_mx = smooth_mx,
          bliss_score = bliss_score,
@@ -223,6 +228,7 @@ fit_SE.combinations <- function(se,
   all_smooth_mx <- rbindParallelList(out, "smooth_mx")
   all_hsa_excess <- rbindParallelList(out, "hsa_excess")
   all_b_excess <- rbindParallelList(out, "bliss_excess")
+  all_iso_points <- rbindParallelList(out, "all_iso_points")
   all_isobolograms <- rbindParallelList(out, "isobolograms")
   all_metrics <- rbindParallelList(out, "metrics")
   
@@ -234,6 +240,7 @@ fit_SE.combinations <- function(se,
   SummarizedExperiment::assays(se)[["SmoothMatrix"]] <- convertDFtoBumpyMatrixUsingIds(all_smooth_mx)
   SummarizedExperiment::assays(se)[["BlissExcess"]] <- convertDFtoBumpyMatrixUsingIds(all_b_excess)
   SummarizedExperiment::assays(se)[["HSAExcess"]] <- convertDFtoBumpyMatrixUsingIds(all_hsa_excess)
+  SummarizedExperiment::assays(se)[["all_iso_points"]] <- convertDFtoBumpyMatrixUsingIds(all_iso_points)
   SummarizedExperiment::assays(se)[["isobolograms"]] <- convertDFtoBumpyMatrixUsingIds(all_isobolograms)
 
   SummarizedExperiment::assays(se)[["BlissScore"]] <- convertDFtoBumpyMatrixUsingIds(bliss_score)
