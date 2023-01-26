@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=arkadiuszgladki/gdr_shiny:0.09
+ARG BASE_IMAGE=marcinkam/gdrshiny:0.11
 FROM ${BASE_IMAGE}
 
 # ------ Be aware that any changes in following may cause issue with RPlatform and CBS
