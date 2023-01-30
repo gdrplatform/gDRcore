@@ -31,7 +31,7 @@ map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
 #' @param metric data.frame often representing readouts derived by calculating some metric.
 #' Examples of this could include hsa or bliss calculations from single-agent data. 
 #' @param measured data.frame often representing measured data from an experiment.
-#' @param series_identifiers character vector of identifiers in \code{measured} or \code{metric}
+#' @param nested_identifiers character vector of identifiers in \code{measured} or \code{metric}
 #' which define a unique data point.
 #' @param metric_col string of the column in \code{metric} to use in the excess calculation.
 #' @param measured_col string of the column in \code{measured} to use in the excess calculation.
@@ -39,15 +39,15 @@ map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
 #' @return DataFrame of \code{measured}, now with an additional column named
 #' \code{excess} (positive values for synergy/benefit).
 #' @export
-calculate_excess <- function(metric, measured, series_identifiers, metric_col, measured_col) {
+calculate_excess <- function(metric, measured, nested_identifiers, metric_col, measured_col) {
   # TODO: Ensure same dims metric, measured
   # TODO: Ensure there is a unique entry for series_id1, series_id2 and no repeats
   # TODO: Check that there are no NAs
-  idx <- S4Vectors::match(DataFrame(measured[, series_identifiers]), DataFrame(metric[, series_identifiers]))
+  idx <- S4Vectors::match(DataFrame(measured[, nested_identifiers]), DataFrame(metric[, nested_identifiers]))
   
-  out <- measured[, series_identifiers]
+  out <- measured[, nested_identifiers]
   excess <- metric[idx, metric_col] - measured[, measured_col]
-  excess[apply(as.matrix(out[, series_identifiers]) == 0, 1, any)] <- NA
+  excess[apply(as.matrix(out[, nested_identifiers]) == 0, 1, any)] <- NA
   out$excess <- excess
   as.data.frame(out)
 }

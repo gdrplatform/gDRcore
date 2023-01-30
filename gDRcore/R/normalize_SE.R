@@ -47,12 +47,14 @@ normalize_SE <- function(se,
                                                names(trt),
                                                names(refs)))
   
-  norm_cols <- c("RelativeViability", "GRvalue")
+  norm_cols <- c("RV", "GR")
   out <- vector("list", nrow(se) * ncol(se))
   ref_rel_viability <- ref_GR_value <- div_time <- matrix(NA, nrow = nrow(se), ncol = ncol(se), dimnames = dimnames(se))
   msgs <- NULL
   iterator <- unique(rbind(refs[, c("column", "row")],
                            trt[, c("column", "row")]))
+  
+  
   # Column major order, so go down first.
 
   out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
@@ -82,11 +84,11 @@ normalize_SE <- function(se,
     colnames(normalized) <- c(norm_cols)
 
     # Normalized treated.
-    normalized$RelativeViability <- round(all_readouts_df$CorrectedReadout /
+    normalized$RV <- round(all_readouts_df$CorrectedReadout /
                                             all_readouts_df$UntrtReadout, ndigit_rounding)
     
     
-    normalized$GRvalue <- calculate_GR_value(rel_viability = normalized$RelativeViability,
+    normalized$GR <- calculate_GR_value(rel_viability = normalized$RV,
                                              corrected_readout = all_readouts_df$CorrectedReadout,
                                              day0_readout = all_readouts_df$Day0Readout,
                                              untrt_readout = all_readouts_df$UntrtReadout,
@@ -102,10 +104,13 @@ normalize_SE <- function(se,
     # Carry over present treated keys.
     keep <- intersect(c(nested_identifiers, trt_keys, masked_key), colnames(all_readouts_df))
     normalized <- cbind(all_readouts_df[keep], normalized) 
-
     normalized$row_id <- i
     normalized$col_id <- j
-    normalized
+    normalized <- reshape2::melt(as.data.frame(normalized),
+                                 measure.vars = norm_cols,
+                                 variable.name = "normalization_type",
+                                 value.name = "x")
+    S4Vectors::DataFrame(normalized)
   })
   
   if (!is.null(msgs)) {

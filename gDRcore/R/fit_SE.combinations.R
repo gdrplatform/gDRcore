@@ -2,7 +2,7 @@
 #'
 #' Perform fittings for combination screens.
 #' @param se \code{SummarizedExperiment} object with a BumpyMatrix assay containing averaged data.
-#' @param series_identifiers character vector of the column names in the nested \code{DFrame}
+#' @param nested_identifiers character vector of the column names in the nested \code{DFrame}
 #' corresponding to nested identifiers.
 #' @param normalization_types character vector of normalization types used for calculating combo matrix.
 #' @param averaged_assay string of the name of the averaged assay to use as input.
@@ -18,24 +18,24 @@
 #' @export
 #'
 fit_SE.combinations <- function(se,
-                                series_identifiers = NULL,
-                                normalization_types = c("GRvalue", "RelativeViability"),
+                                nested_identifiers = NULL,
+                                normalization_types = c("GR", "RV"),
                                 averaged_assay = "Averaged",
                                 metrics_assay = "Metrics"
                                 ) {
 
   checkmate::assert_class(se, "SummarizedExperiment")
-  checkmate::assert_character(series_identifiers, null.ok = TRUE)
+  checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(normalization_types)
   checkmate::assert_string(averaged_assay)
   checkmate::assert_string(metrics_assay)
   
-  if (is.null(series_identifiers)) {
-    series_identifiers <- get_nested_default_identifiers(se, averaged_assay)
+  if (is.null(nested_identifiers)) {
+    nested_identifiers <- get_nested_default_identifiers(se, averaged_assay)
   }
   
-  if (length(series_identifiers) != 2L) {
-    stop("gDR only supports 'series_identifiers' arguments with length '2' for the 'fit_SE.combinations' function")
+  if (length(nested_identifiers) != 2L) {
+    stop("gDR only supports 'nested_identifiers' arguments with length '2' for the 'fit_SE.combinations' function")
   }
   
   avg <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, averaged_assay))
@@ -44,8 +44,8 @@ fit_SE.combinations <- function(se,
   cdata <- SummarizedExperiment::colData(se)
   cl_name <- gDRutils::get_SE_identifiers(se, "cellline_name")
 
-  id <- series_identifiers[1]
-  id2 <- series_identifiers[2]
+  id <- nested_identifiers[1]
+  id2 <- nested_identifiers[2]
 
   iterator <- unique(avg[, c("column", "row")])
   
@@ -79,8 +79,12 @@ fit_SE.combinations <- function(se,
     avg_combo[[id]] <- replace_conc_with_standardized_conc(avg_combo[[id]], conc_map, "concs", "rconcs")
     avg_combo[[id2]] <- replace_conc_with_standardized_conc(avg_combo[[id2]], conc_map, "concs", "rconcs")
     
-    mean_avg_combo <- aggregate(avg_combo[, normalization_types, drop = FALSE], by = as.list(avg_combo[, c(id, id2)]), 
-          FUN = function(x) mean(x, na.rm = TRUE))
+    
+    mean_avg_combo <- stats::aggregate(as.formula(paste("x ~ ",
+                                                        paste(c(id, id2, "normalization_type"),
+                                                              collapse = " + "))),
+                                       function(x) mean(x, na.rm = TRUE),
+                                       data = avg_combo)
     # deal with cases of multiple concentrations mapped to the same value when rounded
     # create a complete matrix with the most frequence combo concentrations
     conc1 <- table(avg_combo[[id]])
@@ -93,21 +97,23 @@ fit_SE.combinations <- function(se,
     complete <- merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2))
 
     for (metric in normalization_types) {
-      metric_name <- switch(metric,
-                            "GRvalue" = "GR",
-                            "RelativeViability" = "RV",
-                            "unknown")
+      metric_name <- gDRutils::extend_normalization_type_name(metric)
 
+      avg_combo_subset <- avg_combo[avg_combo$normalization_type == metric, ]
+      
       # fit by column: the series in the primary identifier, the cotrt is the secondary one
-      col_fittings <- fit_combo_cotreatments(avg_combo, series_id = id, cotrt_id = id2, metric)
+      col_fittings <- fit_combo_cotreatments(avg_combo,
+                                             series_id = id, cotrt_id = id2, metric)
       col_fittings <- col_fittings[!is.na(col_fittings$fit_type), ]
 
       # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
-      row_fittings <- fit_combo_cotreatments(avg_combo, series_id = id2, cotrt_id = id, metric)
+      row_fittings <- fit_combo_cotreatments(avg_combo[avg_combo$normalization_type == metric, ],
+                                             series_id = id2, cotrt_id = id, metric)
       row_fittings <- row_fittings[!is.na(row_fittings$fit_type), ]
 
       # fit by codilution (diagonal)
-      codilution_fittings <- fit_combo_codilutions(avg_combo, series_identifiers, metric)
+      codilution_fittings <- fit_combo_codilutions(avg_combo[avg_combo$normalization_type == metric, ],
+                                                   nested_identifiers, metric)
       codilution_fittings <- codilution_fittings[!is.na(codilution_fittings$fit_type), ]
 
       # apply the fit to get smoothed data: results per column
@@ -148,11 +154,11 @@ fit_SE.combinations <- function(se,
         sa2 <- av_matrix[av_matrix[[id]] == 0, c(id, id2, metric)]
         
         hsa <- calculate_HSA(sa1, id, sa2, id2, metric)
-        h_excess <- calculate_excess(hsa, av_matrix, series_identifiers = c(id, id2), metric_col = "metric",
+        h_excess <- calculate_excess(hsa, av_matrix, nested_identifiers = c(id, id2), metric_col = "metric",
                                     measured_col = metric)
 
         bliss <- calculate_Bliss(sa1, id, sa2, id2, metric)
-        b_excess <- calculate_excess(bliss, av_matrix, series_identifiers = c(id, id2), metric_col = "metric",
+        b_excess <- calculate_excess(bliss, av_matrix, nested_identifiers = c(id, id2), metric_col = "metric",
                                     measured_col = metric)
       }
       # call calculate_Loewe and calculate_isobolograms: 
@@ -163,7 +169,7 @@ fit_SE.combinations <- function(se,
       isobologram_out <- if (sum((av_matrix_dense[[id]] * av_matrix_dense[[id2]]) > 0) > 9 &&
                              min(row_fittings$cotrt_value) == 0) {
         calculate_Loewe(av_matrix, row_fittings, col_fittings, codilution_fittings,
-                        series_identifiers = c(id, id2), normalization_type = metric
+                        nested_identifiers = c(id, id2), normalization_type = metric
                         )
       } else {
         NULL
