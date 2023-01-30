@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.14] - 2023-01-30
+#### Add support for splitting normalization types
+
 #### [1.3.13] - 2023-01-13
 #### Clean-up code
 
