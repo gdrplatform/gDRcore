@@ -98,8 +98,6 @@ fit_SE.combinations <- function(se,
 
     for (metric in normalization_types) {
       metric_name <- gDRutils::extend_normalization_type_name(metric)
-
-      avg_combo_subset <- avg_combo[avg_combo$normalization_type == metric, ]
       
       # fit by column: the series in the primary identifier, the cotrt is the secondary one
       col_fittings <- fit_combo_cotreatments(avg_combo,
@@ -107,7 +105,7 @@ fit_SE.combinations <- function(se,
       col_fittings <- col_fittings[!is.na(col_fittings$fit_type), ]
 
       # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
-      row_fittings <- fit_combo_cotreatments(avg_combo[avg_combo$normalization_type == metric, ],
+      row_fittings <- fit_combo_cotreatments(avg_combo,
                                              series_id = id2, cotrt_id = id, metric)
       row_fittings <- row_fittings[!is.na(row_fittings$fit_type), ]
 
