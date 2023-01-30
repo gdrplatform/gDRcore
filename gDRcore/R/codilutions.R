@@ -43,7 +43,7 @@ fit_codilution_series <- function(measured, series_1, series_2, e_0, GR_0, norma
   keep <- setdiff(colnames(measured), c(series_1, series_2))
   codilution_fit <- gDRutils::fit_curves(
     df_ = measured[, keep, drop = FALSE],
-    series_identifiers = "summed_conc",
+    nested_identifiers = "summed_conc",
     e_0 = e_0,
     GR_0 = GR_0,
     force_fit = TRUE,

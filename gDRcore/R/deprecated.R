@@ -1,7 +1,7 @@
 #' Calculate combo matrix
 #'
 #' @param se a BumpyMatrix SE with drug response data
-#' @param series_identifiers series identifiers
+#' @param nested_identifiers series identifiers
 #' @param conc_margin concentration margin
 #' @param log2_pos_offset logarithm offset
 #' @param norm_types types of normalization
@@ -10,7 +10,7 @@
 #' @return list with results
 #' @export
 calculate_combo_matrix <- function(se,
-                                   series_identifiers,
+                                   nested_identifiers,
                                    conc_margin = 10 ^ 0.5,
                                    log2_pos_offset = log10(3) / 2,
                                    norm_types = c("RelativeViability", "GRvalue"),
@@ -114,7 +114,7 @@ calculate_combo_matrix <- function(se,
         df_ <- flat_data[flat_data$Concentration_2 %in% 0 & flat_data$Concentration > 0, ]
         fit_drug1 <- gDRutils::fit_curves(
           df_ = df_[!is.na(df_[, norm_method]), ],
-          series_identifiers = series_identifiers,
+          nested_identifiers = nested_identifiers,
           force_fit = TRUE,
           cap = 0.2,
           normalization_type = norm_method
@@ -145,7 +145,7 @@ calculate_combo_matrix <- function(se,
         df_$Concentration <- df_$Concentration_2 # necessary for the fit
         fit_drug2 <- gDRutils::fit_curves(
           df_ = df_[!is.na(df_[, norm_method]), ],
-          series_identifiers = series_identifiers,
+          nested_identifiers = nested_identifiers,
           normalization_type = norm_method,
           force_fit = TRUE,
           cap = 0.2
@@ -224,7 +224,7 @@ calculate_combo_matrix <- function(se,
 
           fit_res <- gDRutils::fit_curves(
             df_,
-            series_identifiers = series_identifiers,
+            nested_identifiers = nested_identifiers,
             e_0 = mx[idx, 1], # use single agent fit
             GR_0 = mx[idx, 1], # use single agent fit
             normalization_type = norm_method,
@@ -237,7 +237,7 @@ calculate_combo_matrix <- function(se,
               df_[, norm_method] <- 1 - df_[, norm_method]
             fit_res <- gDRutils::fit_curves(
               df_,
-              series_identifiers = series_identifiers,
+              nested_identifiers = nested_identifiers,
               e_0 = 1 - mx[idx, 1], # use single agent fit
               GR_0 = 1 - mx[idx, 1], # use single agent fit
               normalization_type = norm_method,
@@ -326,7 +326,7 @@ calculate_combo_matrix <- function(se,
 
                 fit_res <- gDRutils::fit_curves(
                   df_,
-                  series_identifiers = series_identifiers,
+                  nested_identifiers = nested_identifiers,
                   e_0 = 1,
                   GR_0 = 1,
                   normalization_type = norm_method,

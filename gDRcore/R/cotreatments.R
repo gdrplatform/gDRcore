@@ -3,7 +3,13 @@ fit_combo_cotreatments <- function(measured, series_id, cotrt_id, normalization_
   series_concs <- setdiff(unique(measured[, series_id]), 0)
   cotrt_concs <- unique(measured[, cotrt_id])   # keep the single agent for the series_id
 
-  measured <- measured[measured$normalization_type == normalization_type, ]
+  if (all(measured$normalization_type != normalization_type)) {
+    measured$x <- NA
+    measured$x_std <- NA
+    measured$normalization_type <- normalization_type
+  } else {
+    measured <- measured[measured$normalization_type == normalization_type, ]
+  }
   
   # Single agent fit for the cotrt (to be used as the reference) --> ids are flipped
   sa_fit <- fit_cotreatment_series(measured, series_id = cotrt_id, cotrt_id = series_id, cotrt_value = 0,
@@ -27,7 +33,7 @@ fit_cotreatment_series <- function(measured, series_id, cotrt_id, cotrt_value, n
   df_ <- measured[measured[[cotrt_id]] == cotrt_value & measured[[series_id]] > 0, , drop = FALSE]
   cotrt_fit <- gDRutils::fit_curves(
     df_ = df_,
-    series_identifiers = series_id,
+    nested_identifiers = series_id,
     e_0 = e_0,
     GR_0 = GR_0,
     force_fit = TRUE,

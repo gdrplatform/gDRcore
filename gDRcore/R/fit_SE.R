@@ -54,7 +54,7 @@ fit_SE <- function(se,
           gDRutils::get_env_identifiers("concentration")]] != 0, ]
       }
       fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
-        series_identifiers = nested_identifiers,
+        nested_identifiers = nested_identifiers,
         e_0 = 1,
         GR_0 = 1,
         n_point_cutoff = n_point_cutoff,
