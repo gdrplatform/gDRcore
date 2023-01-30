@@ -190,11 +190,20 @@ fit_SE.combinations <- function(se,
       }
       
       b_excess$row_id <- av_matrix$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_points$row_id <-
-        isobologram_out$df_all_iso_curves$row_id <- col_fittings$row_id <- hsa_score[, "row_id"] <- bliss_score[, "row_id"] <-
-        CIScore_50[, "row_id"] <- CIScore_80[, "row_id"] <- metrics_merged$row_id <- i
-      b_excess$col_id <- av_matrix$col_id <- h_excess$col_id <- isobologram_out$df_all_iso_points$col_id <- 
-        isobologram_out$df_all_iso_curves$col_id <- col_fittings$col_id <- hsa_score[, "col_id"] <- bliss_score[, "col_id"] <-
-        CIScore_50[, "col_id"] <- CIScore_80[, "col_id"] <- metrics_merged$col_id <- j
+        isobologram_out$df_all_iso_curves$row_id <-
+        col_fittings$row_id <-
+        hsa_score[, "row_id"] <- bliss_score[, "row_id"] <-
+        CIScore_50[, "row_id"] <-
+        CIScore_80[, "row_id"] <- metrics_merged$row_id <- i
+      b_excess$col_id <-
+        av_matrix$col_id <-
+        h_excess$col_id <- isobologram_out$df_all_iso_points$col_id <-
+        isobologram_out$df_all_iso_curves$col_id <-
+        col_fittings$col_id <-
+        hsa_score[, "col_id"] <- bliss_score[, "col_id"] <-
+        CIScore_50[, "col_id"] <-
+        CIScore_80[, "col_id"] <- metrics_merged$col_id <- j
+      
       b_excess$normalization_type <- h_excess$normalization_type <- 
         isobologram_out$df_all_iso_points$normalization_type <-
         isobologram_out$df_all_iso_curves$normalization_type <- metric_name
