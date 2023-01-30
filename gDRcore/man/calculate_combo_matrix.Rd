@@ -6,7 +6,7 @@
 \usage{
 calculate_combo_matrix(
   se,
-  series_identifiers,
+  nested_identifiers,
   conc_margin = 10^0.5,
   log2_pos_offset = log10(3)/2,
   norm_types = c("RelativeViability", "GRvalue"),
@@ -16,7 +16,7 @@ calculate_combo_matrix(
 \arguments{
 \item{se}{a BumpyMatrix SE with drug response data}
 
-\item{series_identifiers}{series identifiers}
+\item{nested_identifiers}{series identifiers}
 
 \item{conc_margin}{concentration margin}
 

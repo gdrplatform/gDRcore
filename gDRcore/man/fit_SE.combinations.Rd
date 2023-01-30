@@ -6,8 +6,8 @@
 \usage{
 fit_SE.combinations(
   se,
-  series_identifiers = NULL,
-  normalization_types = c("GRvalue", "RelativeViability"),
+  nested_identifiers = NULL,
+  normalization_types = c("GR", "RV"),
   averaged_assay = "Averaged",
   metrics_assay = "Metrics"
 )
@@ -15,7 +15,7 @@ fit_SE.combinations(
 \arguments{
 \item{se}{\code{SummarizedExperiment} object with a BumpyMatrix assay containing averaged data.}
 
-\item{series_identifiers}{character vector of the column names in the nested \code{DFrame}
+\item{nested_identifiers}{character vector of the column names in the nested \code{DFrame}
 corresponding to nested identifiers.}
 
 \item{normalization_types}{character vector of normalization types used for calculating combo matrix.}

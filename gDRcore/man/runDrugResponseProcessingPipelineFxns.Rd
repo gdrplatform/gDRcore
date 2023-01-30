@@ -14,7 +14,7 @@ it will be removed from the \code{readout} column.}
 \usage{
 average_SE(
   se,
-  series_identifiers = NULL,
+  nested_identifiers = NULL,
   override_masked = FALSE,
   normalized_assay = "Normalized",
   averaged_assay = "Averaged"
@@ -23,7 +23,9 @@ average_SE(
 create_SE(
   df_,
   readout = "ReadoutValue",
-  control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
+  control_mean_fxn = function(x) {
+     mean(x, trim = 0.25)
+ },
   nested_identifiers = NULL,
   nested_confounders = intersect(names(df_), gDRutils::get_env_identifiers("barcode")),
   override_untrt_controls = NULL
@@ -39,7 +41,7 @@ fit_SE(
   force_fit = FALSE,
   pcutoff = 0.05,
   cap = 0.1,
-  curve_type = c("GRvalue", "RelativeViability")
+  curve_type = c("GR", "RV")
 )
 
 normalize_SE(
@@ -55,7 +57,9 @@ normalize_SE(
 create_and_normalize_SE(
   df_,
   readout = "ReadoutValue",
-  control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
+  control_mean_fxn = function(x) {
+     mean(x, trim = 0.25)
+ },
   nested_identifiers = NULL,
   nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL,
@@ -68,7 +72,9 @@ create_and_normalize_SE(
 runDrugResponseProcessingPipeline(
   df_,
   readout = "ReadoutValue",
-  control_mean_fxn = function(x) {     mean(x, trim = 0.25) },
+  control_mean_fxn = function(x) {
+     mean(x, trim = 0.25)
+ },
   nested_identifiers = NULL,
   nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL,
@@ -86,7 +92,7 @@ runDrugResponseProcessingPipeline(
 \arguments{
 \item{se}{\code{SummarizedExperiment} object.}
 
-\item{series_identifiers}{character vector of identifiers in \code{measured} or \code{metric}
+\item{nested_identifiers}{character vector of identifiers in \code{measured} or \code{metric}
 which define a unique data point.}
 
 \item{override_masked}{boolean indicating whether or not to override the masked wells
@@ -105,8 +111,6 @@ Defaults to \code{"Averaged"}.}
 
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
-
-\item{nested_identifiers}{Character vector of the nested_identifiers for a given assay.}
 
 \item{nested_confounders}{Character vector of the nested_confounders for a given assay.
 nested_keys is character vector of column names to include in the data.frames
