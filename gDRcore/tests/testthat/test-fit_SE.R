@@ -31,6 +31,6 @@ test_that("fit_SE works as expected", {
  expect_length(new_se1$warnings, 57)
   
   aip_df <-
-    BumpyMatrix::unsplitAsDataFrame(assay(new_se1$result, "all_iso_points"))
+    BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(new_se1$result, "all_iso_points"))
   expect_true(all(dim(aip_df) > 0))
 })
