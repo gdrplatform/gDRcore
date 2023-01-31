@@ -73,8 +73,8 @@ calculate_Loewe <- function(df_mean,
     # more restrictive to be sure that it adds fit quality
     codilution_fittings <-
       codilution_fittings[codilution_fittings$N_conc >= min_n_conc &
-                            codilution_fittings$r2 > min_r2,] 
-    }
+                            codilution_fittings$r2 > min_r2, ]
+  }
   futile.logger::flog.debug("codilution fittings after transformation/filtering:")
   futile.logger::flog.debug(knitr::kable(codilution_fittings))
   
