@@ -33,5 +33,4 @@ test_that("fit_SE works as expected", {
   aip_df <-
     BumpyMatrix::unsplitAsDataFrame(assay(new_se1$result, "all_iso_points"))
   expect_true(all(dim(aip_df) > 0))
-  browser()
 })
