@@ -43,7 +43,7 @@ Suggests:
     tibble
 VignetteBuilder: knitr
 ByteCompile: TRUE
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 SwitchrLibrary: gDRcore
 DeploySubPath: gDRcore
 Encoding: UTF-8
