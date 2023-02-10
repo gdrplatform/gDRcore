@@ -21,7 +21,6 @@ Imports:
     gDRutils (>= 1.3.11),
     MultiAssayExperiment,
     purrr,
-    reshape2,
     zoo,
     S4Vectors,
     SummarizedExperiment,
