@@ -78,7 +78,7 @@ create_and_normalize_SE <- function(df_,
                                       mean(x, trim = 0.25)
                                     },
                                     nested_identifiers = NULL,
-                                    nested_confounders = gDRutils::get_env_identifiers("barcode"),
+                                    nested_confounders = intersect(names(df_), gDRutils::get_env_identifiers("barcode")),
                                     override_untrt_controls = NULL,
                                     ndigit_rounding = 4,
                                     control_assay = "Controls",
