@@ -12,8 +12,25 @@ test_that("merge_data works as expected", {
 
   merged <- gDRcore::merge_data(manifest$data, template, rawData)
 
+  # checking readout value from rawData
   expect_equal(
     merged$ReadoutValue[merged$WellRow == "A" & merged$WellColumn == 3],
     rawData$ReadoutValue[rawData$WellRow == "A" & rawData$WellColumn == 3]
+  )
+
+  # checking templates are loaded
+  expect_equal(
+    unique(merged$Template),
+    unique(manifest$data$Template)
+  )
+
+  # checking column names from manifest and rawdata are present
+  expect_true(all(names(merged) %in% c(unlist(unname(manifest$headers)), names(rawData))))
+
+  # testing wrong input
+  expect_error(
+    gDRcore::merge_data("test", template, rawData),
+    "inherits(manifest, \"data.frame\") is not TRUE",
+    fixed = TRUE
   )
 })
