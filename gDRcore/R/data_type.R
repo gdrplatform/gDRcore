@@ -19,7 +19,7 @@
 identify_data_type <- function(df,
                                cotreatment_conc = 4,
                                codilution_conc = 2,
-                               matrix_conc = 4
+                               matrix_conc = 1      # forces any co-treatment as a matrix data model
                                ) {
   
   # find the pairs of drugs with relevant metadata
