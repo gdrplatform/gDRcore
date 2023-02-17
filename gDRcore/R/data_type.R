@@ -2,14 +2,14 @@
 #'
 #' @param df data.frame of raw drug response data containing both treated and untreated values
 #' @param cotreatment_conc integer of maximum number of concentration of co-treatment
-#' to classify as cotreatment data type.
+#' to classify as cotreatment data type (obsolete - all co-treatment are matrix-like).
 #' Defaults to \code{4}.
 #' @param codilution_conc integer of maximum number of concentration ratio of co-treatment
 #' to classify as codilution data type.
 #' Defaults to \code{2}.
 #' @param matrix_conc integer of minimum number of concentration pairs of co-treatment
-#' to classify as matrix data type.
-#' Defaults to \code{4}.
+#' to classify as co-treatment or matrix data type.
+#' Defaults to \code{1}.
 #'
 #' @return data.frame of raw drug response data with additional column `type` with the info of
 #' data type for a given row of data.frame
@@ -17,7 +17,7 @@
 #'
 #' @author Bartosz Czech <bartosz.czech@@contractors.roche.com>
 identify_data_type <- function(df,
-                               cotreatment_conc = 4,
+                               cotreatment_conc = 4, # obsolete with GDR-1848 (all cotreatments are matrix)
                                codilution_conc = 2,
                                matrix_conc = 1      # forces any co-treatment as a matrix data model
                                ) {
@@ -83,7 +83,7 @@ identify_data_type <- function(df,
         "co-dilution"
       } else if (n_conc_pairs == length(conc_1) * length(conc_2) & length(conc_2) >= matrix_conc) {
         "matrix"
-      } else if (length(conc_2) < cotreatment_conc) {
+      } else if (length(conc_2) < cotreatment_conc) { # with the issue GDR-1848, this will become obsolete and cover by the 'matrix' case
         "cotreatment"
       } else {
         "other"

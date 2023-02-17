@@ -17,16 +17,10 @@ fit_combo_cotreatments <- function(measured, series_id, cotrt_id, normalization_
       # if the fit or the prediction fails, tries to get the reference value from the actual data
       sa = measured[measured[, cotrt_id] == conc & measured[, series_id] == 0, normalization_type]
     } # else x_0 will be NA (thus a free parameter)
-    
-    cotrt_fittings[[i]] <- fit_cotreatment_series(measured, series_id = series_id, cotrt_id = cotrt_id,
-      cotrt_value = conc, normalization_type = normalization_type, e_0 = sa, GR_0 = sa)
-    if(series_id == 'Concentration') {
-      print(conc)
-      print(sa)
-      print(cotrt_fittings[[i]])
-    }
-  }
 
+    cotrt_fittings[[i]] <- fit_cotreatment_series(measured, series_id = series_id, cotrt_id = cotrt_id,
+      cotrt_value = conc, normalization_type = normalization_type, e_0 = sa, GR_0 = sa)    
+  }
 
   do.call("rbind", cotrt_fittings)
 }
