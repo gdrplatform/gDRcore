@@ -83,7 +83,8 @@ identify_data_type <- function(df,
         "co-dilution"
       } else if (n_conc_pairs == length(conc_1) * length(conc_2) & length(conc_2) >= matrix_conc) {
         "matrix"
-      } else if (length(conc_2) < cotreatment_conc) { # with the issue GDR-1848, this will become obsolete and cover by the 'matrix' case
+      } else if (length(conc_2) < cotreatment_conc) {
+        # with the issue GDR-1848, this will become obsolete and cover by the 'matrix' case
         "cotreatment"
       } else {
         "other"

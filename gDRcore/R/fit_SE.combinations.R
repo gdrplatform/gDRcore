@@ -130,8 +130,9 @@ fit_SE.combinations <- function(se,
       # we need it to distinguish which rows are col_fittings/row_fittings and codilution_fitting
       metrics_merged$source <- rep(metrics_names, vapply(mget(metrics_names), nrow, numeric(1)))
       # remove degenerated fits
-      metrics_merged <- metrics_merged[!(metrics_merged$fit_type %in% c("DRCInvalidFitResult", "DRCTooFewPointsToFit")), ]
-
+      metrics_merged <-
+        metrics_merged[!(metrics_merged$fit_type %in% c("DRCInvalidFitResult", "DRCTooFewPointsToFit")), ]
+      
       keep <- intersect(colnames(complete), c(metric, "row_values", "col_values", "codil_values"))
       mat <- as.matrix(complete[, keep])
       complete$average <- rowMeans(mat, na.rm = TRUE)
