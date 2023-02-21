@@ -7,7 +7,7 @@
 calculate_excess(
   metric,
   measured,
-  nested_identifiers,
+  series_identifiers,
   metric_col,
   measured_col
 )
@@ -18,7 +18,7 @@ Examples of this could include hsa or bliss calculations from single-agent data.
 
 \item{measured}{data.frame often representing measured data from an experiment.}
 
-\item{nested_identifiers}{character vector of identifiers in \code{measured} or \code{metric}
+\item{series_identifiers}{character vector of identifiers in \code{measured} or \code{metric}
 which define a unique data point.}
 
 \item{metric_col}{string of the column in \code{metric} to use in the excess calculation.}

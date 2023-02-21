@@ -14,7 +14,7 @@ it will be removed from the \code{readout} column.}
 \usage{
 average_SE(
   se,
-  nested_identifiers = NULL,
+  series_identifiers = NULL,
   override_masked = FALSE,
   normalized_assay = "Normalized",
   averaged_assay = "Averaged"
@@ -92,7 +92,7 @@ runDrugResponseProcessingPipeline(
 \arguments{
 \item{se}{\code{SummarizedExperiment} object.}
 
-\item{nested_identifiers}{character vector of identifiers in \code{measured} or \code{metric}
+\item{series_identifiers}{character vector of identifiers in \code{measured} or \code{metric}
 which define a unique data point.}
 
 \item{override_masked}{boolean indicating whether or not to override the masked wells
@@ -111,6 +111,8 @@ Defaults to \code{"Averaged"}.}
 
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
+
+\item{nested_identifiers}{Character vector of the nested_identifiers for a given assay.}
 
 \item{nested_confounders}{Character vector of the nested_confounders for a given assay.
 nested_keys is character vector of column names to include in the data.frames
