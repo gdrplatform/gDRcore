@@ -1,11 +1,11 @@
 #' @keywords internal
 fit_combo_codilutions <- function(measured,
-                                  nested_identifiers,
+                                  series_identifiers,
                                   normalization_type,
                                   e_0 = 1,
                                   GR_0 = 1) {
-  id <- nested_identifiers[1]
-  id2 <- nested_identifiers[2]
+  id <- series_identifiers[1]
+  id2 <- series_identifiers[2]
 
   # Filter out all single-agents.
   single_agents <- measured[[id]] == 0 | measured[[id2]] == 0
@@ -43,7 +43,7 @@ fit_codilution_series <- function(measured, series_1, series_2, e_0, GR_0, norma
   keep <- setdiff(colnames(measured), c(series_1, series_2))
   codilution_fit <- gDRutils::fit_curves(
     df_ = measured[, keep, drop = FALSE],
-    nested_identifiers = "summed_conc",
+    series_identifiers = "summed_conc",
     e_0 = e_0,
     GR_0 = GR_0,
     force_fit = TRUE,

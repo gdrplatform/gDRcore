@@ -45,7 +45,7 @@ test_synthetic_data <- function(original,
 test_synthetic_data2 <- function(original, long_df, dataName, asys = c("Normalized", "Averaged")) {
   nested_ids <- intersect(c("Concentration", "Concentration_2"), colnames(long_df))
   reprocessed <- create_and_normalize_SE(long_df, nested_identifiers = nested_ids, nested_confounders = "Barcode")
-  reprocessed <- average_SE(reprocessed, nested_identifiers = nested_ids)
+  reprocessed <- average_SE(reprocessed, series_identifiers = nested_ids)
   for (asy in asys) {
     o_df <- S4Vectors::DataFrame(gDRutils::convert_se_assay_to_dt(original, asy))
     n_df <- S4Vectors::DataFrame(gDRutils::convert_se_assay_to_dt(reprocessed, asy))

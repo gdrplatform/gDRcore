@@ -38,7 +38,7 @@ calculate_Loewe <- function(df_mean,
                       row_fittings, 
                       col_fittings, 
                       codilution_fittings, 
-                      nested_identifiers,
+                      series_identifiers,
                       normalization_type,
                       conc_margin = 10 ^ 0.5,
                       log2_pos_offset = log10(3) / 2
@@ -47,8 +47,8 @@ calculate_Loewe <- function(df_mean,
   checkmate::assert_number(conc_margin)
   checkmate::assert_number(log2_pos_offset)
   checkmate::assert_character(normalization_type) 
-  if (length(nested_identifiers) != 2L) {
-    stop("only nested_identifiers of length 2 are currently supported")
+  if (length(series_identifiers) != 2L) {
+    stop("only series_identifiers of length 2 are currently supported")
   }
  
   iso_cutoffs <- get_isocutoffs(df_mean, normalization_type)
@@ -56,7 +56,7 @@ calculate_Loewe <- function(df_mean,
   all_iso <- vector("list", length(iso_cutoffs))
   names(all_iso) <- iso_cutoffs
 
-  axes <- define_matrix_grid_positions(df_mean[[nested_identifiers[1]]], df_mean[[nested_identifiers[2]]])
+  axes <- define_matrix_grid_positions(df_mean[[series_identifiers[1]]], df_mean[[series_identifiers[2]]])
   axis_1 <- axes$axis_1
   axis_2 <- axes$axis_2
   

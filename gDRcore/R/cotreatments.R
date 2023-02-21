@@ -33,7 +33,7 @@ fit_cotreatment_series <- function(measured, series_id, cotrt_id, cotrt_value, n
   df_ <- measured[measured[[cotrt_id]] == cotrt_value & measured[[series_id]] > 0, , drop = FALSE]
   cotrt_fit <- gDRutils::fit_curves(
     df_ = df_,
-    nested_identifiers = series_id,
+    series_identifiers = series_id,
     e_0 = e_0,
     GR_0 = GR_0,
     force_fit = TRUE,

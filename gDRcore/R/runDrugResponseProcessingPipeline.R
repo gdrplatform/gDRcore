@@ -15,7 +15,7 @@
 #' in the assays of the resulting \code{SummarizedExperiment} object.
 #' Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
 #' \code{create_and_normalize_SE} or \code{runDrugResponseProcessingPipeline}.
-#' @param nested_identifiers character vector of identifiers in \code{measured} or \code{metric}
+#' @param series_identifiers character vector of identifiers in \code{measured} or \code{metric}
 #' which define a unique data point.
 #' @param override_untrt_controls named list containing defining factors in the treatments.
 #' Defaults to \code{NULL}.
@@ -198,14 +198,14 @@ runDrugResponseProcessingPipeline <- function(df_,
     
     paste_warnings(se$warnings)
     se <- purrr::quietly(average_SE)(se = se$result, 
-                                        nested_identifiers = experiment_identifier,
+                                        series_identifiers = experiment_identifier,
                                         override_masked = override_masked, 
                                         normalized_assay = normalized_assay, 
                                         averaged_assay = averaged_assay)
     paste_warnings(se$warnings)
     se <- if (experiment == "matrix") {
       purrr::quietly(fit_SE.combinations)(se = se$result,
-                          nested_identifiers = experiment_identifier,
+                          series_identifiers = experiment_identifier,
                           averaged_assay = averaged_assay)
     } else {
       purrr::quietly(fit_SE)(se = se$result, 
