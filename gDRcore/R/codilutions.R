@@ -1,11 +1,11 @@
 #' @keywords internal
 fit_combo_codilutions <- function(measured,
-                                  series_identifiers,
+                                  nested_identifiers,
                                   normalization_type,
                                   e_0 = 1,
                                   GR_0 = 1) {
-  id <- series_identifiers[1]
-  id2 <- series_identifiers[2]
+  id <- nested_identifiers[1]
+  id2 <- nested_identifiers[2]
 
   # Filter out all single-agents.
   single_agents <- measured[[id]] == 0 | measured[[id2]] == 0
