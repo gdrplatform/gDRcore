@@ -9,6 +9,7 @@
 \alias{runDrugResponseProcessingPipelineFxns}
 \alias{create_and_normalize_SE}
 \alias{runDrugResponseProcessingPipeline}
+\alias{prepare_input}
 \title{If a column called \code{"BackgroundValue"} exists in \code{df_},
 it will be removed from the \code{readout} column.}
 \usage{
@@ -86,8 +87,14 @@ runDrugResponseProcessingPipeline(
   normalized_assay = "Normalized",
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
-  add_raw_data = FALSE
+  add_raw_data = FALSE,
+  data_dir = NULL,
+  partial_run = FALSE,
+  start_from = get_pipeline_steps()[1],
+  selected_experiments = NULL
 )
+
+prepare_input(df_, nested_confounders, nested_identifiers)
 }
 \arguments{
 \item{se}{\code{SummarizedExperiment} object.}
@@ -150,8 +157,21 @@ Defaults to \code{"RawTreated"}.}
 Defaults to \code{4}.}
 
 \item{add_raw_data}{boolean indicating whether or not to include raw data into experiment metadata.}
+
+\item{data_dir}{string with the path to the directory with intermediate data of experiments (qs files).
+If set to NULL (default) intermediate data is not saved/read in.}
+
+\item{partial_run}{logical flag indicating if the pipeline should be run partially (from the step defined with `start_from`)}
+
+\item{start_from}{string indicating the pipeline step from which partial run should be launched}
+
+\item{selected_experiments}{character vector with experiments for which pipeline should be run.
+This option works only for the pipeline being run partially (i.e. with `partial_run` flag set to `TRUE`)}
 }
 \description{
+If a column called \code{"BackgroundValue"} exists in \code{df_},
+it will be removed from the \code{readout} column.
+
 Run different components of the gDR drug response processing pipeline.
 Either: create a SummarizedExperiment and normalize raw treated and control data (create_and_normalize_SE),
 average data (average_SE), or fit the processed data (fit_SE). See details for more in-depth explanations.
@@ -176,4 +196,12 @@ For average_SE, take the normalized assay and average the nested \code{DataFrame
 
 For fit_SE, take the averaged assay and fit curves to obtain metrics, one set of metrics for each
 normalization type set.
+
+Pipeline can be run partially with `partial_run` flag set to TRUE. The `start_from` string defines the step 
+from which the pipeline will be launched. However, partial run of the pipeline is possible only if the whole
+pipeline was launched at least once with defined `data_dir` and intermediate data was saved as qs files into `data_dir`. 
+
+Pipeline can be run for the selected experiments by changing the default value of `selected_experiments` param`.
+This scenario only works when `partial_run` is enabled.
 }
+\keyword{internal}
