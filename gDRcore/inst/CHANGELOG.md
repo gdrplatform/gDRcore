@@ -2,8 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [1.3.14] - 2023-01-30
+#### [1.3.16] - 2023-02-21
 #### Add support for splitting normalization types
+
+#### [1.3.15] - 2023-02-10
+#### Update path to annotation data
+
+#### [1.3.14] - 2023-02-10
+#### Clean-up code
 
 #### [1.3.13] - 2023-01-13
 #### Clean-up code

@@ -32,7 +32,7 @@ add_CellLine_annotation <- function(df_metadata,
   # Read local cell_lines annotations
   annotationPackage <- ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
                               "gDRinternalData", "gDRtestData")
-  CLs_info <- utils::read.csv(system.file("data", fname, package = annotationPackage))
+  CLs_info <- utils::read.csv(system.file("annotation_data", fname, package = annotationPackage))
   CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate)]
   
   if (nrow(CLs_info) == 0) return(df_metadata)
@@ -123,7 +123,7 @@ add_Drug_annotation <- function(df_metadata,
   # Read local drugs annotations
   annotationPackage <- ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
                               "gDRinternalData", "gDRtestData")
-  Drug_info <- utils::read.csv(system.file("data", fname, package = annotationPackage),
+  Drug_info <- utils::read.csv(system.file("annotation_data", fname, package = annotationPackage),
                         header = TRUE)
   Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa")]
   names(Drug_info) <- c("drug", "drug_name", "drug_moa")
