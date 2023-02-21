@@ -1,4 +1,4 @@
-' Run drug response processing pipeline
+#' Run drug response processing pipeline
 #'
 #' Run different components of the gDR drug response processing pipeline.
 #' Either: create a SummarizedExperiment and normalize raw treated and control data (create_and_normalize_SE),
@@ -45,7 +45,8 @@
 #' @param curve_type vector of curve type values.
 #' @param data_dir string with the path to the directory with intermediate data of experiments (qs files).
 #' If set to NULL (default) intermediate data is not saved/read in.
-#' @param partial_run logical flag indicating if the pipeline should be run partially (from the step defined with `start_from`)
+#' @param partial_run logical flag indicating if the pipeline should be run partially 
+#' (from the step defined with `start_from`)
 #' @param start_from string indicating the pipeline step from which partial run should be launched
 #' @param selected_experiments character vector with experiments for which pipeline should be run.
 #' This option works only for the pipeline being run partially (i.e. with `partial_run` flag set to `TRUE`)
@@ -73,7 +74,8 @@
 #' 
 #' Pipeline can be run partially with `partial_run` flag set to TRUE. The `start_from` string defines the step 
 #' from which the pipeline will be launched. However, partial run of the pipeline is possible only if the whole
-#' pipeline was launched at least once with defined `data_dir` and intermediate data was saved as qs files into `data_dir`. 
+#' pipeline was launched at least once with defined `data_dir` and intermediate data was saved as qs files 
+#' into `data_dir`. 
 #' 
 #' Pipeline can be run for the selected experiments by changing the default value of `selected_experiments` param`.
 #' This scenario only works when `partial_run` is enabled.
@@ -174,7 +176,9 @@ runDrugResponseProcessingPipeline <- function(df_,
   checkmate::assert_string(start_from)
   checkmate::assert_choice(start_from, get_pipeline_steps())
   checkmate::assert_character(selected_experiments, null.ok = TRUE)
-  checkmate::assert_subset(selected_experiments, names(gDRutils::get_experiment_groups()),)
+  checkmate::assert_subset(selected_experiments,
+                           names(gDRutils::get_experiment_groups()),
+  )
   
   if (!is.null(selected_experiments) && !partial_run) {
     stop("Selected experiments are only supported with partial_run enabled")

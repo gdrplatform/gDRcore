@@ -161,7 +161,8 @@ Defaults to \code{4}.}
 \item{data_dir}{string with the path to the directory with intermediate data of experiments (qs files).
 If set to NULL (default) intermediate data is not saved/read in.}
 
-\item{partial_run}{logical flag indicating if the pipeline should be run partially (from the step defined with `start_from`)}
+\item{partial_run}{logical flag indicating if the pipeline should be run partially 
+(from the step defined with `start_from`)}
 
 \item{start_from}{string indicating the pipeline step from which partial run should be launched}
 
@@ -169,9 +170,6 @@ If set to NULL (default) intermediate data is not saved/read in.}
 This option works only for the pipeline being run partially (i.e. with `partial_run` flag set to `TRUE`)}
 }
 \description{
-If a column called \code{"BackgroundValue"} exists in \code{df_},
-it will be removed from the \code{readout} column.
-
 Run different components of the gDR drug response processing pipeline.
 Either: create a SummarizedExperiment and normalize raw treated and control data (create_and_normalize_SE),
 average data (average_SE), or fit the processed data (fit_SE). See details for more in-depth explanations.
@@ -199,7 +197,8 @@ normalization type set.
 
 Pipeline can be run partially with `partial_run` flag set to TRUE. The `start_from` string defines the step 
 from which the pipeline will be launched. However, partial run of the pipeline is possible only if the whole
-pipeline was launched at least once with defined `data_dir` and intermediate data was saved as qs files into `data_dir`. 
+pipeline was launched at least once with defined `data_dir` and intermediate data was saved as qs files 
+into `data_dir`. 
 
 Pipeline can be run for the selected experiments by changing the default value of `selected_experiments` param`.
 This scenario only works when `partial_run` is enabled.

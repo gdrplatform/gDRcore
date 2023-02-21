@@ -26,7 +26,7 @@ l_data <- gDRimport::load_data(manifest, template, raw_data)
 imported_data <- gDRcore::merge_data(l_data$manifest, l_data$treatments, l_data$data)
 # trim to 1/3rd of the data to make the test being faster
 cl <- unique((imported_data)$clid)
-imported_data <- imported_data[imported_data$clid %in% cl[1:2],]
+imported_data <- imported_data[imported_data$clid %in% cl[1:2], ]
 
 ### runDrugResponseProcessingPipeline ###
 expect_true(length(list.files(p_dir)) == 0)
