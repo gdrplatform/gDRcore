@@ -28,8 +28,8 @@ test_synthetic_data <- function(original,
   
   
   testthat::test_that(sprintf("reprocessed data %s is identical to data stored in gDRtestData", dataName), {
-    # testthat::expect_equal(normalized_new, normalized, tolerance = tolerance)
-    # testthat::expect_equal(averaged_new, averaged, tolerance = tolerance)
+    # testthat::expect_equal(normalized_new, normalized, tolerance = tolerance) # nolint
+    # testthat::expect_equal(averaged_new, averaged, tolerance = tolerance) # nolint
     testthat::expect_equal(metrics_new, metrics, tolerance = tolerance)
   })
 }
