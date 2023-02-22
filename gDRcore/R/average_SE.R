@@ -35,7 +35,6 @@ average_SE <- function(se,
   )
   
   normalized <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, normalized_assay))
-  std_cols <- c("GR", "RV")
   iterator <- unique(normalized[, c("column", "row")])
   
   out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
@@ -66,7 +65,8 @@ average_SE <- function(se,
     } else {
       # <= 1L unmasked values
       p_trt_keys <- intersect(trt_keys, colnames(norm_df))
-      all_cols <- unique(c(series_identifiers, std_cols, p_trt_keys, paste0("std_", std_cols), "row_id", "col_id"))
+      all_cols <- unique(c(series_identifiers, p_trt_keys, "x", "x_std",
+                           "normalization_type", "row_id", "col_id"))
       agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
       colnames(agg_df) <- all_cols
     }
