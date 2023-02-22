@@ -197,11 +197,11 @@ runDrugResponseProcessingPipeline <- function(df_,
                                                      ndigit_rounding = ndigit_rounding)
     
     paste_warnings(se$warnings)
-    se <- purrr::quietly(average_SE)(se = se$result, 
-                                        series_identifiers = experiment_identifier,
-                                        override_masked = override_masked, 
-                                        normalized_assay = normalized_assay, 
-                                        averaged_assay = averaged_assay)
+    se <- purrr::quietly(average_SE)(se = se$result,
+                                     series_identifiers = experiment_identifier,
+                                     override_masked = override_masked,
+                                     normalized_assay = normalized_assay,
+                                     averaged_assay = averaged_assay)
     paste_warnings(se$warnings)
     se <- if (experiment == "matrix") {
       purrr::quietly(fit_SE.combinations)(se = se$result,
