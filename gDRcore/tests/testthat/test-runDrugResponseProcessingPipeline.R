@@ -24,9 +24,6 @@ template <- list.files(dataDir, pattern = "Template", full.names = TRUE)
 raw_data <- list.files(dataDir, pattern = "^RawData", full.names = TRUE)
 l_data <- gDRimport::load_data(manifest, template, raw_data)
 imported_data <- gDRcore::merge_data(l_data$manifest, l_data$treatments, l_data$data)
-# trim to 1/3rd of the data to make the test being faster
-cl <- unique((imported_data)$clid)
-imported_data <- imported_data[imported_data$clid %in% cl[1:2], ]
 
 ### runDrugResponseProcessingPipeline ###
 expect_true(length(list.files(p_dir)) == 0)
@@ -35,7 +32,8 @@ mae <- purrr::quietly(gDRtestData::generateNoiseRawData)(
   cell_lines, drugs, e_inf, ec50, hill_coef
 )
 
-mae_v1 <- purrr::quietly(gDRcore:::runDrugResponseProcessingPipeline)(imported_data, data_dir = p_dir)
+mae_v1 <- purrr::quietly(gDRcore:::runDrugResponseProcessingPipeline)(imported_data, data_dir = p_dir, 
+                                                                      add_raw_data = TRUE)
 expect_true(length(list.files(p_dir)) > 0)
 expect_length(mae_v1$warnings, 7)
 
