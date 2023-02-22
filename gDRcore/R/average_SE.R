@@ -51,12 +51,12 @@ average_SE <- function(se,
                                                   paste(c("normalization_type", series_identifiers),
                                                         collapse = " + "))),
                                function(x) mean(x, na.rm = TRUE),
-                               data = unmasked)
+                               data = unmasked, na.action = na.pass)
       std_df <- stats::aggregate(as.formula(paste("x ~ ",
                                                   paste(c("normalization_type", series_identifiers),
                                                         collapse = " + "))),
                                function(x) stats::sd(x, na.rm = TRUE),
-                               data = unmasked)
+                               data = unmasked, na.action = na.pass)
     
       colnames(std_df)[colnames(std_df) == "x"] <- "x_std"
       agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df,

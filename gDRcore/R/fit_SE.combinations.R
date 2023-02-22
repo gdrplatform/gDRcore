@@ -84,7 +84,7 @@ fit_SE.combinations <- function(se,
                                                         paste(c(id, id2, "normalization_type"),
                                                               collapse = " + "))),
                                        function(x) mean(x, na.rm = TRUE),
-                                       data = avg_combo)
+                                       data = avg_combo, na.action = na.pass)
     # deal with cases of multiple concentrations mapped to the same value when rounded
     # create a complete matrix with the most frequence combo concentrations
     conc1 <- table(avg_combo[[id]])

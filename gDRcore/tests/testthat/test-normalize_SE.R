@@ -38,9 +38,9 @@ test_that("normalize_SE works as expected", {
   normalized <- SummarizedExperiment::assays(se)[["Normalized"]][1, 1][[1]]
 
   expect_true(methods::is(normalized, "DataFrame"))
-  expect_equal(dim(normalized), c(6, 4))
-  expect_true(all(colnames(normalized) %in% c("Concentration", "masked", "GRvalue", "RelativeViability")))
-  expect_equal(normalized$Concentration, conc)
+  expect_equal(dim(normalized), c(12, 4))
+  expect_true(all(colnames(normalized) %in% c("Concentration", "masked", "normalization_type", "x")))
+  expect_equal(unique(normalized$Concentration), unique(conc))
   
   se2 <- normalize_SE(se, nested_confounders = 
                         c(gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE), "masked"))
