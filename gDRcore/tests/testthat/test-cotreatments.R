@@ -15,7 +15,7 @@ test_that("fit_combo_cotreatments works as expected", {
       measured, 
       series_id = "Concentration",
       cotrt_id = "Concentration_2",
-      normalization_type = "GRvalue"
+      normalization_type = "GR"
   ))
   expect_equal(dim(obs), c(11, 17))
   expect_true("cotrt_value" %in% colnames(obs))
@@ -35,7 +35,8 @@ test_that("fit_cotreatment_series works as expected", {
   nested_identifiers <- c("Concentration", "Concentration_2")
   measured <- DataFrame(Concentration = rep(concs, n),
     Concentration_2 = rep(concs, each = n),
-    GRvalue = vals)
+    x = vals,
+    normalization_type = "GR")
 
   obs <- suppressWarnings(# warnings are expected
     gDRcore:::fit_cotreatment_series(
@@ -45,7 +46,7 @@ test_that("fit_cotreatment_series works as expected", {
       e_0 = 1,
       GR_0 = 1,
       cotrt_value = 1,
-      normalization_type = "GRvalue"
+      normalization_type = "GR"
   ))
 
   expect_equal(dim(obs), c(1, 17))

@@ -9,9 +9,10 @@ test_that("fit_combo_codilutions works as expected", {
   nested_identifiers <- c("Concentration", "Concentration_2")
   measured <- DataFrame(Concentration = rep(concs, n),
     Concentration_2 = rep(concs, each = n),
-    GRvalue = vals)
+    x = vals,
+    normalization_type = "GR")
 
-  obs <- gDRcore:::fit_combo_codilutions(measured, nested_identifiers, "GRvalue")
+  obs <- gDRcore:::fit_combo_codilutions(measured, nested_identifiers, "GR")
   expect_equal(dim(obs), c(7, 17))
   expect_true("ratio" %in% colnames(obs))
   expect_equal(obs$ratio, c(.04, .1, .3, 1, 3, 10, 30), tolerance = 10e-3)
@@ -30,7 +31,8 @@ test_that("fit_codilution_series works as expected", {
   nested_identifiers <- c("Concentration", "Concentration_2")
   measured <- DataFrame(Concentration = rep(concs, n),
     Concentration_2 = rep(concs, each = n),
-    GRvalue = vals)
+    x = vals,
+    normalization_type = "GR")
 
   ratios <- measured$Concentration_2 / measured$Concentration
   keep <- !is.na(ratios) & ratios == ratio
@@ -42,7 +44,7 @@ test_that("fit_codilution_series works as expected", {
     series_2 = "Concentration_2",
     e_0 = 1,
     GR_0 = 1,
-    normalization_type = "GRvalue"
+    normalization_type = "GR"
   )
   
   expect_length(res$warnings, 4)
