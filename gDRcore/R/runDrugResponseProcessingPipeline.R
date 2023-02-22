@@ -312,7 +312,7 @@ prepare_input <-
       nested_identifiers = NULL
     )
     
-    inl$nested_confounders <- if (!is.null(nested_confounders) &&
+    nested_confounders <- if (!is.null(nested_confounders) &&
                               any(!nested_confounders %in% names(df_))) {
       warning(
         sprintf(
@@ -332,6 +332,10 @@ prepare_input <-
     } else {
       nested_confounders
     }
+    if (!is.null(nested_confounders)) {
+      inl$nested_confounders <- nested_confounders
+    }
+    
     inl$df_ <- identify_data_type(df_)
     inl$df_list <- split_raw_data(inl$df_)
     if (!is.list(nested_identifiers)) {
