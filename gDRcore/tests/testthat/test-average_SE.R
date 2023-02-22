@@ -4,8 +4,9 @@ test_that("average_SE works as expected", {
   v <- rep(seq(0.1, 0.4, 0.1), 9)
   df <- S4Vectors::DataFrame(Concentration = d,
                              masked = rep(c(TRUE, TRUE, TRUE, FALSE), 9),
-                             GRvalue = v,
-                             RelativeViability = v)
+                             normalization_type = rep(c("GR", "RV"),
+                                                      length(v) * 2),
+                             x = rep(v, 2))
   normalized <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = df)
 
   keys <- list(Trt = "Concentration",
