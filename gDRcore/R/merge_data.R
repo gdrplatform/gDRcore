@@ -67,7 +67,7 @@ merge_data <- function(manifest, treatments, data) {
   if (any(!headersOK)) {
     stop(sprintf(
       "df_metadata does not contains all expected headers: %s required",
-      paste(expected_headers[!(expected_headers %in% col_df)], collpase = " ; ")
+      paste(expected_headers[!(headersOK)], collpase = " ; ")
     ))
   }
 
