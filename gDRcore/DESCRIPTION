@@ -24,7 +24,8 @@ Imports:
     zoo,
     S4Vectors,
     SummarizedExperiment,
-    methods
+    methods,
+    reshape2
 Suggests:
     BumpyMatrix,
     covr,
