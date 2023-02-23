@@ -47,16 +47,16 @@ average_SE <- function(se,
     if (sum(!masked) > 0) {
       series_identifiers <- intersect(series_identifiers, colnames(norm_df))
       unmasked <- norm_df[!masked, , drop = FALSE]
-      avg_df <- stats::aggregate(as.formula(paste("x ~ ",
+      avg_df <- stats::aggregate(stats::as.formula(paste("x ~ ",
                                                   paste(c("normalization_type", series_identifiers),
                                                         collapse = " + "))),
                                function(x) mean(x, na.rm = TRUE),
-                               data = unmasked, na.action = na.pass)
-      std_df <- stats::aggregate(as.formula(paste("x ~ ",
+                               data = unmasked, na.action = stats::na.pass)
+      std_df <- stats::aggregate(stats::as.formula(paste("x ~ ",
                                                   paste(c("normalization_type", series_identifiers),
                                                         collapse = " + "))),
                                function(x) stats::sd(x, na.rm = TRUE),
-                               data = unmasked, na.action = na.pass)
+                               data = unmasked, na.action = stats::na.pass)
     
       colnames(std_df)[colnames(std_df) == "x"] <- "x_std"
       agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df,
