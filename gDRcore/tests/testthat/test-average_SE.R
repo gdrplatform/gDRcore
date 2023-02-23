@@ -25,7 +25,7 @@ test_that("average_SE works as expected", {
   # With no masking.
   se2 <- average_SE(se, override_masked = TRUE, normalized_assay = "Normalized", averaged_assay = "Averaged")
   avg2 <- SummarizedExperiment::assays(se2)[["Averaged"]][1, 1][[1]]
-  expect_true(all(avg2$Concentration == seq(0.1, 0.9, 0.1)))
+  expect_true(all(avg2$Concentration == rep(seq(0.1, 0.9, 0.1), each = 2)))
   expect_true(all(avg2$GRvalue == 0.25))
   expect_true(all(avg2$RelativeViability == 0.25))
 })
