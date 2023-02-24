@@ -31,7 +31,7 @@ fit_SE.combinations <- function(se,
   checkmate::assert_string(metrics_assay)
   
   if (is.null(series_identifiers)) {
-    series_identifiers <- get_nested_default_identifiers(se, averaged_assay)
+    series_identifiers <- get_default_nested_identifiers(se, averaged_assay)
   }
   
   if (length(series_identifiers) != 2L) {

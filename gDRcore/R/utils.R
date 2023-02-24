@@ -112,7 +112,7 @@ Order_result_df <- function(df_) {
 #'
 #' @param df_ data.frame of raw drug response data containing both treated and untreated values. 
 #'
-#' @return string with the information of the raw data follows single-agent or combo data model
+#' @return string with the information of the raw data follows single-agent or combination data model
 #' @export
 data_model <- function(df_) {
   checkmate::assert_data_frame(df_)
@@ -124,13 +124,7 @@ data_model <- function(df_) {
             %in% gDRutils::get_env_identifiers("untreated_tag"))) {
       "single-agent"
     } else {
-      df_subset <- unique(subset(df_, select = c(drug_ids, cl_id, conc2)))
-      cotrt <- all(table(subset(df_subset, select = c(drug_ids, cl_id))) < 4) # detect co-trt
-      if (cotrt) {
-        "single-agent"
-      } else {
-        "combo"
-      }
+        "combination"
     }
   } else if (.get_default_single_agent_identifiers() %in% colnames(df_)) {
     "single-agent"
@@ -142,43 +136,60 @@ data_model <- function(df_) {
 #' Get default nested identifiers
 #'
 #' @param x data.frame with raw data or SummarizedExperiment object with gDR assays
-#' @param assayName assay name used for finding nested_identifiers in SummarizedExperiment object
+#' @param data_type single-agent vs combination
 #' @return vector of nested identifiers
 #' @export
-get_nested_default_identifiers <- function(x, assayName = NULL) {
-  UseMethod("get_nested_default_identifiers")
+get_default_nested_identifiers <- function(x, data_type = NULL) {
+  UseMethod("get_default_nested_identifiers")
 }
 
 
 #' @export
-#' @rdname get_nested_default_identifiers
-get_nested_default_identifiers.data.frame <- function(x, assayName = NULL) {
+#' @rdname get_default_nested_identifiers
+get_default_nested_identifiers.data.frame <- function(x, data_type = data(model(x))) {
+  
   checkmate::assert_data_frame(x)
+  
+  if (is.null(data_type)) {
   data_type <- data_model(x)
+  }
+  .get_default_nested_identifiers(se = NULL, data_type)
+  
+}
+
+#' @export
+#' @rdname get_default_nested_identifiers
+get_default_nested_identifiers.SummarizedExperiment <- function(x,
+                                                                data_type = NULL) { 
+  .get_default_nested_identifiers(se, data_type)
+}
+
+.get_default_nested_identifiers <- function(se = NULL, data_type) {
+  
   if (data_type == "single-agent") {
-    .get_default_single_agent_identifiers()
+    .get_default_single_agent_nested_identifiers()
   } else {
-    .get_default_combo_identifiers()
+    .get_default_combination_nested_identifiers()
+  }
+  
+}
+
+.get_default_single_agent_nested_identifiers <- function(se = NULL) {
+  if (is.null(se)) {
+    gDRutils::get_env_identifiers("concentration")
+  } else {
+    gDRutils::get_SE_identifiers(se, "concentration")
   }
 }
 
-#' @export
-#' @rdname get_nested_default_identifiers
-get_nested_default_identifiers.SummarizedExperiment <- function(x,
-                                                                assayName =
-                                                                  tail(SummarizedExperiment::assayNames(x), 1)) {
-  checkmate::assert_class(x, "SummarizedExperiment")
-  intersect(.get_default_combo_identifiers(),
-            names(BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(x, assayName))))
-}
-
-.get_default_single_agent_identifiers <- function() {
-  gDRutils::get_env_identifiers("concentration")
-}
-
-.get_default_combo_identifiers <- function() {
-  unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
-                                       simplify = FALSE))
+.get_default_combination_nested_identifiers <- function(se = NULL) {
+  if (is.null(se)) {
+    unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
+                                         simplify = FALSE))
+  } else {
+    unlist(gDRutils::get_SE_identifiers(c("concentration", "concentration2"),
+                                        simplify = FALSE))
+  }
 }
 
 .catch_warnings <- function(x) {
