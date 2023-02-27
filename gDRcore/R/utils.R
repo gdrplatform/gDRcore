@@ -107,29 +107,86 @@ Order_result_df <- function(df_) {
   return(df_)
 }
 
-
 #' Detect model of data
 #'
-#' @param df_ data.frame of raw drug response data containing both treated and untreated values. 
+#' @param x data.frame with raw data or SummarizedExperiment object with gDR assays
+#' 
+#' @return string with the information of the raw data follows single-agent or combination data model
+#' @export
+data_model <- function(x) {
+  UseMethod("data_model")
+}
+
+
+#' Detect model of data in data.frame
+#'
+#' @param x data.frame of raw drug response data containing both treated and untreated values. 
 #'
 #' @return string with the information of the raw data follows single-agent or combination data model
 #' @export
-data_model <- function(df_) {
-  checkmate::assert_data_frame(df_)
+data_model.data.frame <- function(x) {
+  
+  checkmate::assert_data_frame(x)
   drug_ids <- unlist(gDRutils::get_env_identifiers(c("drug_name", "drug_name2"), simplify = FALSE))
   cl_id <- gDRutils::get_env_identifiers("cellline")
   conc2 <- gDRutils::get_env_identifiers("concentration2")
-  if (all(.get_default_combo_identifiers() %in% colnames(df_))) {
-    if (all(df_[[conc2]]
+  if (all(.get_default_combination_nested_identifiers() %in% colnames(x))) {
+    if (all(x[[conc2]]
             %in% gDRutils::get_env_identifiers("untreated_tag"))) {
       "single-agent"
     } else {
         "combination"
     }
-  } else if (.get_default_single_agent_identifiers() %in% colnames(df_)) {
+  } else if (.get_default_single_agent_nested_identifiers() %in% colnames(x)) {
     "single-agent"
   } else {
     stop("Unknown data model")
+  }
+}
+
+
+#'
+#' 
+get_data_type_to_data_model_mapping <- function() {
+  exp_v <- c(
+    `single-agent` = "single-agent",
+    "cotreatment" = "single-agent",
+    "co-dilution" = "combination",
+    "matrix" = "combination"
+  )
+}
+
+#' Detect model of data from experiment name
+#'
+#' @param x character with experiment name
+#'
+#' @return string with the information of the raw data follows single-agent or combination data model
+#' @export
+data_model.character <- function(x) {
+  # TODO: switch to gDRutils::get_experiment_groups()
+  # once we clean-up single-agent/combination assignemnts
+  exp_v <- get_data_type_to_data_model_mapping()
+  
+  checkmate::assert_subset(x, names(exp_v))
+  
+  exp_v[[x]]
+  
+}
+
+validate_data_models_availability <- function(d_types, s_d_models) {
+  
+  dm_v <- get_data_type_to_data_model_mapping()
+  
+  req_d_models <-
+    unique(as.character(dm_v[names(dm_v) %in% d_types]))
+  f_models <- req_d_models[!req_d_models %in% s_d_models]
+  if (length(f_models)) {
+    msg1 <-
+      sprintf(
+        "'nested_identifiers_l' lacks information for the following data model(s): '%s'",
+        toString(f_models)
+      )
+    stop(msg1)
   }
 }
 
@@ -146,30 +203,32 @@ get_default_nested_identifiers <- function(x, data_type = NULL) {
 
 #' @export
 #' @rdname get_default_nested_identifiers
-get_default_nested_identifiers.data.frame <- function(x, data_type = data(model(x))) {
+get_default_nested_identifiers.data.frame <- function(x, data_type = NULL) {
   
   checkmate::assert_data_frame(x)
+  checkmate::assert_choice(data_type, c("single-agent", "combination"), null.ok = TRUE)
   
-  if (is.null(data_type)) {
-  data_type <- data_model(x)
-  }
-  .get_default_nested_identifiers(se = NULL, data_type)
+  .get_default_nested_identifiers(se = NULL, data_type = NULL)
   
 }
 
 #' @export
 #' @rdname get_default_nested_identifiers
 get_default_nested_identifiers.SummarizedExperiment <- function(x,
-                                                                data_type = NULL) { 
+                                                                data_type = NULL) {
   .get_default_nested_identifiers(se, data_type)
 }
 
-.get_default_nested_identifiers <- function(se = NULL, data_type) {
-  
-  if (data_type == "single-agent") {
-    .get_default_single_agent_nested_identifiers()
+.get_default_nested_identifiers <- function(se = NULL, data_type = NULL) {
+ 
+  checkmate::assert_choice(data_type, c("single-agent", "combination"), null.ok = TRUE)
+ 
+  ml <- list(`single-agent` = .get_default_single_agent_nested_identifiers(),
+             combination = .get_default_combination_nested_identifiers())
+  if (is.null(data_type)) {
+    ml
   } else {
-    .get_default_combination_nested_identifiers()
+    ml[[data_type]]
   }
   
 }
@@ -184,11 +243,11 @@ get_default_nested_identifiers.SummarizedExperiment <- function(x,
 
 .get_default_combination_nested_identifiers <- function(se = NULL) {
   if (is.null(se)) {
-    unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
-                                         simplify = FALSE))
+    as.character(unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
+                                         simplify = FALSE)))
   } else {
-    unlist(gDRutils::get_SE_identifiers(c("concentration", "concentration2"),
-                                        simplify = FALSE))
+    as.character(unlist(gDRutils::get_SE_identifiers(c("concentration", "concentration2"),
+                                        simplify = FALSE)))
   }
 }
 

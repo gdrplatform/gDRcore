@@ -4,6 +4,7 @@
 #' @export
 #'
 create_SE <- function(df_,
+                      data_type,
                       readout = "ReadoutValue",
                       control_mean_fxn = function(x) {
                         mean(x, trim = 0.25)
@@ -21,8 +22,13 @@ create_SE <- function(df_,
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
   
 
+  if (is.null(data_type)) {
+    data_type <- data_model(df_)
+  }
+  
   if (is.null(nested_identifiers)) {
-    nested_identifiers <- get_default_nested_identifiers(df_)
+    nested_identifiers <-
+      get_default_nested_identifiers(df_)[[data_model(data_type)]]
   }
   
   if (methods::is(df_, "data.table")) {

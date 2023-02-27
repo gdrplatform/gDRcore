@@ -2,6 +2,7 @@
 #' @export
 #'
 average_SE <- function(se,
+                       data_type,
                        series_identifiers = NULL,
                        override_masked = FALSE,
                        normalized_assay = "Normalized", 
@@ -17,7 +18,7 @@ average_SE <- function(se,
   gDRutils::validate_se_assay_name(se, normalized_assay)
 
   if (is.null(series_identifiers)) {
-    series_identifiers <- get_default_nested_identifiers(se, normalized_assay)
+    series_identifiers <- get_default_nested_identifiers(se, data_type)
   }
 
   trt_keys <- gDRutils::get_SE_keys(se, "Trt")

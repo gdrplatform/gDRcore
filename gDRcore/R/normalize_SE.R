@@ -2,6 +2,7 @@
 #' @export
 #'
 normalize_SE <- function(se, 
+                         data_type,
                          nested_identifiers = NULL,
                          nested_confounders = gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE),
                          control_assay = "Controls", 
@@ -23,7 +24,7 @@ normalize_SE <- function(se,
 
   
   if (is.null(nested_identifiers)) {
-    nested_identifiers <- get_default_nested_identifiers(se, raw_treated_assay)
+    nested_identifiers <- get_default_nested_identifiers(se, data_type)
   }
   
   # Keys
