@@ -10,11 +10,14 @@
 \alias{create_and_normalize_SE}
 \alias{runDrugResponseProcessingPipeline}
 \alias{prepare_input}
+\alias{prepare_input.data.frame}
+\alias{prepare_input.MultiAssayExperiment}
 \title{If a column called \code{"BackgroundValue"} exists in \code{df_},
 it will be removed from the \code{readout} column.}
 \usage{
 average_SE(
   se,
+  data_type,
   series_identifiers = NULL,
   override_masked = FALSE,
   normalized_assay = "Normalized",
@@ -23,6 +26,7 @@ average_SE(
 
 create_SE(
   df_,
+  data_type,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {
      mean(x, trim = 0.25)
@@ -34,6 +38,7 @@ create_SE(
 
 fit_SE(
   se,
+  data_type = "single-agent",
   nested_identifiers = NULL,
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
@@ -47,6 +52,7 @@ fit_SE(
 
 normalize_SE(
   se,
+  data_type,
   nested_identifiers = NULL,
   nested_confounders = gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE),
   control_assay = "Controls",
@@ -57,6 +63,7 @@ normalize_SE(
 
 create_and_normalize_SE(
   df_,
+  data_type,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {
      mean(x, trim = 0.25)
@@ -71,12 +78,12 @@ create_and_normalize_SE(
 )
 
 runDrugResponseProcessingPipeline(
-  df_,
+  x,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {
      mean(x, trim = 0.25)
  },
-  nested_identifiers = NULL,
+  nested_identifiers_l = .get_default_nested_identifiers(),
   nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL,
   override_masked = FALSE,
@@ -87,14 +94,27 @@ runDrugResponseProcessingPipeline(
   normalized_assay = "Normalized",
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
-  add_raw_data = FALSE,
+  add_raw_data = TRUE,
   data_dir = NULL,
   partial_run = FALSE,
   start_from = get_pipeline_steps()[1],
   selected_experiments = NULL
 )
 
-prepare_input(df_, nested_confounders, nested_identifiers)
+prepare_input(x, nested_confounders, nested_identifiers_l)
+
+\method{prepare_input}{data.frame}(
+  x,
+  nested_confounders = gDRutils::get_env_identifiers("barcode"),
+  nested_identifiers_l = .get_default_nested_identifiers()
+)
+
+\method{prepare_input}{MultiAssayExperiment}(
+  x,
+  nested_confounders = gDRutils::get_SE_identifiers(x[[1]], "barcode"),
+  nested_identifiers_l = .get_default_nested_identifiers(x[[1]]),
+  raw_data_field = "experiment_raw_data"
+)
 }
 \arguments{
 \item{se}{\code{SummarizedExperiment} object.}
@@ -119,7 +139,8 @@ Defaults to \code{"Averaged"}.}
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
 
-\item{nested_identifiers}{Character vector of the nested_identifiers for a given assay.}
+\item{nested_identifiers}{character vector with the nested_identifiers
+for the given SE with a given data_type}
 
 \item{nested_confounders}{Character vector of the nested_confounders for a given assay.
 nested_keys is character vector of column names to include in the data.frames
@@ -155,6 +176,9 @@ Defaults to \code{"RawTreated"}.}
 
 \item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
 Defaults to \code{4}.}
+
+\item{nested_identifiers_l}{list with the nested_identifiers(character vectors) 
+for `single-agent` and (optionally) for `combination` data}
 
 \item{add_raw_data}{boolean indicating whether or not to include raw data into experiment metadata.}
 

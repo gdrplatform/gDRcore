@@ -8,14 +8,14 @@
 \usage{
 get_default_nested_identifiers(x, data_type = NULL)
 
-\method{get_default_nested_identifiers}{data.frame}(x, data_type = data(model(x)))
+\method{get_default_nested_identifiers}{data.frame}(x, data_type = NULL)
 
 \method{get_default_nested_identifiers}{SummarizedExperiment}(x, data_type = NULL)
 }
 \arguments{
 \item{x}{data.frame with raw data or SummarizedExperiment object with gDR assays}
 
-\item{data_type}{single-agent vs combinations}
+\item{data_type}{single-agent vs combination}
 }
 \value{
 vector of nested identifiers
