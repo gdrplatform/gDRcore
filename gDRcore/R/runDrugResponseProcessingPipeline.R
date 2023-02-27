@@ -144,7 +144,6 @@ runDrugResponseProcessingPipeline <- function(x,
                                               control_mean_fxn = function(x) {
                                                 mean(x, trim = 0.25)
                                               },
-                                              #nested_identifiers = NULL,
                                               nested_identifiers_l = .get_default_nested_identifiers(),
                                               nested_confounders = gDRutils::get_env_identifiers("barcode"),
                                               override_untrt_controls = NULL,
