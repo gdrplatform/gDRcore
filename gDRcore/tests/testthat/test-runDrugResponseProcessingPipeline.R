@@ -28,11 +28,11 @@ imported_data <- gDRcore::merge_data(l_data$manifest, l_data$treatments, l_data$
 ### runDrugResponseProcessingPipeline ###
 expect_true(length(list.files(p_dir)) == 0)
 
-mae <- purrr::quietly(gDRtestData::generateNoiseRawData)(
-  cell_lines, drugs, e_inf, ec50, hill_coef
-)
+# mae <- purrr::quietly(gDRtestData::generateNoiseRawData)(
+#   cell_lines, drugs, e_inf, ec50, hill_coef
+# )
 
-mae_v1 <- purrr::quietly(gDRcore:::runDrugResponseProcessingPipeline)(imported_data, data_dir = p_dir, 
+mae_v1 <- purrr::quietly(gDRcore:::runDrugResponseProcessingPipeline)(imported_data, data_dir = p_dir,
                                                                       add_raw_data = TRUE)
 expect_true(length(list.files(p_dir)) > 0)
 expect_length(mae_v1$warnings, 7)
@@ -51,13 +51,21 @@ mae_v3 <-
     imported_data,
     data_dir = p_dir,
     partial_run = TRUE,
-    start_from = "create_and_normalize_SE",
+    start_from = "normalize_SE",
     selected_experiments = c("single-agent")
   )
 expect_length(mae_v3$warnings, 4)
 
+mae_v4 <-
+  purrr::quietly(gDRcore:::runDrugResponseProcessingPipeline)(
+    mae_v1$result
+  )
+expect_length(mae_v4$warnings, 7)
+
 expect_identical(mae_v1$result, mae_v2$result)
 expect_identical(mae_v2$result, mae_v3$result)
+expect_identical(mae_v3$result, mae_v4$result)
+
 
 testthat::expect_error(
   gDRcore:::runDrugResponseProcessingPipeline(imported_data, selected_experiments = "single-agent"),
@@ -71,9 +79,9 @@ testthat::expect_error(
 
 ### prepare_input ###
 nc <- intersect(names(imported_data), gDRutils::get_env_identifiers("barcode"))
-inl <- prepare_input(imported_data, nc, NULL)
+inl <- prepare_input(imported_data, nc, .get_default_nested_identifiers())
 expect_list(inl)
-inl_names <- c("df_", "df_list", "nested_confounders", "nested_identifiers", "exps")
+inl_names <- c("df_", "df_list", "nested_confounders", "nested_identifiers_l", "exps")
 expect_equal(names(inl), inl_names)
 
 expect_error(prepare_input(imported_data, list(), NULL), "nested_confounders")
