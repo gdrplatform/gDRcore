@@ -18,7 +18,7 @@
 #' @export
 #'
 fit_SE.combinations <- function(se,
-                                data_type = "combination",
+                                data_type = "matrix",
                                 series_identifiers = NULL,
                                 normalization_types = c("GRvalue", "RelativeViability"),
                                 averaged_assay = "Averaged",
@@ -32,7 +32,7 @@ fit_SE.combinations <- function(se,
   checkmate::assert_string(metrics_assay)
   
   if (is.null(series_identifiers)) {
-    series_identifiers <- get_default_nested_identifiers(se, data_type)
+    series_identifiers <- get_default_nested_identifiers(se, data_model(data_type))
   }
   
   if (length(series_identifiers) != 2L) {

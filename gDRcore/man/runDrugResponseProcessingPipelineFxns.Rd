@@ -9,9 +9,6 @@
 \alias{runDrugResponseProcessingPipelineFxns}
 \alias{create_and_normalize_SE}
 \alias{runDrugResponseProcessingPipeline}
-\alias{prepare_input}
-\alias{prepare_input.data.frame}
-\alias{prepare_input.MultiAssayExperiment}
 \title{If a column called \code{"BackgroundValue"} exists in \code{df_},
 it will be removed from the \code{readout} column.}
 \usage{
@@ -99,21 +96,6 @@ runDrugResponseProcessingPipeline(
   partial_run = FALSE,
   start_from = get_pipeline_steps()[1],
   selected_experiments = NULL
-)
-
-prepare_input(x, nested_confounders, nested_identifiers_l)
-
-\method{prepare_input}{data.frame}(
-  x,
-  nested_confounders = gDRutils::get_env_identifiers("barcode"),
-  nested_identifiers_l = .get_default_nested_identifiers()
-)
-
-\method{prepare_input}{MultiAssayExperiment}(
-  x,
-  nested_confounders = gDRutils::get_SE_identifiers(x[[1]], "barcode"),
-  nested_identifiers_l = .get_default_nested_identifiers(x[[1]]),
-  raw_data_field = "experiment_raw_data"
 )
 }
 \arguments{
@@ -227,4 +209,3 @@ into `data_dir`.
 Pipeline can be run for the selected experiments by changing the default value of `selected_experiments` param`.
 This scenario only works when `partial_run` is enabled.
 }
-\keyword{internal}

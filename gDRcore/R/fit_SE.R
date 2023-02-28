@@ -30,7 +30,7 @@ fit_SE <- function(se,
 
   
   if (is.null(nested_identifiers)) {
-    nested_identifiers <- get_default_nested_identifiers(se, data_type)
+    nested_identifiers <- get_default_nested_identifiers(se, data_model(data_type))
   }
   
   

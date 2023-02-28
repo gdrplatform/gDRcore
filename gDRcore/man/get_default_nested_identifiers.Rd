@@ -6,16 +6,16 @@
 \alias{get_default_nested_identifiers.SummarizedExperiment}
 \title{Get default nested identifiers}
 \usage{
-get_default_nested_identifiers(x, data_type = NULL)
+get_default_nested_identifiers(x, data_model = NULL)
 
-\method{get_default_nested_identifiers}{data.frame}(x, data_type = NULL)
+\method{get_default_nested_identifiers}{data.frame}(x, data_model = NULL)
 
-\method{get_default_nested_identifiers}{SummarizedExperiment}(x, data_type = NULL)
+\method{get_default_nested_identifiers}{SummarizedExperiment}(x, data_model = NULL)
 }
 \arguments{
 \item{x}{data.frame with raw data or SummarizedExperiment object with gDR assays}
 
-\item{data_type}{single-agent vs combination}
+\item{data_model}{single-agent vs combination}
 }
 \value{
 vector of nested identifiers

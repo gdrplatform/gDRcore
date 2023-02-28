@@ -148,7 +148,7 @@ data_model.data.frame <- function(x) {
 #'
 #' 
 get_data_type_to_data_model_mapping <- function() {
-  exp_v <- c(
+  c(
     `single-agent` = "single-agent",
     "cotreatment" = "single-agent",
     "co-dilution" = "combination",
@@ -193,42 +193,42 @@ validate_data_models_availability <- function(d_types, s_d_models) {
 #' Get default nested identifiers
 #'
 #' @param x data.frame with raw data or SummarizedExperiment object with gDR assays
-#' @param data_type single-agent vs combination
+#' @param data_model single-agent vs combination
 #' @return vector of nested identifiers
 #' @export
-get_default_nested_identifiers <- function(x, data_type = NULL) {
+get_default_nested_identifiers <- function(x, data_model = NULL) {
   UseMethod("get_default_nested_identifiers")
 }
 
 
 #' @export
 #' @rdname get_default_nested_identifiers
-get_default_nested_identifiers.data.frame <- function(x, data_type = NULL) {
+get_default_nested_identifiers.data.frame <- function(x, data_model = NULL) {
   
   checkmate::assert_data_frame(x)
-  checkmate::assert_choice(data_type, c("single-agent", "combination"), null.ok = TRUE)
+  checkmate::assert_choice(data_model, c("single-agent", "combination"), null.ok = TRUE)
   
-  .get_default_nested_identifiers(se = NULL, data_type = NULL)
+  .get_default_nested_identifiers(se = NULL, data_model = NULL)
   
 }
 
 #' @export
 #' @rdname get_default_nested_identifiers
 get_default_nested_identifiers.SummarizedExperiment <- function(x,
-                                                                data_type = NULL) {
-  .get_default_nested_identifiers(se, data_type)
+                                                                data_model = NULL) {
+  .get_default_nested_identifiers(se, data_model)
 }
 
-.get_default_nested_identifiers <- function(se = NULL, data_type = NULL) {
+.get_default_nested_identifiers <- function(se = NULL, data_model = NULL) {
  
-  checkmate::assert_choice(data_type, c("single-agent", "combination"), null.ok = TRUE)
+  checkmate::assert_choice(data_model, c("single-agent", "combination"), null.ok = TRUE)
  
   ml <- list(`single-agent` = .get_default_single_agent_nested_identifiers(),
              combination = .get_default_combination_nested_identifiers())
-  if (is.null(data_type)) {
+  if (is.null(data_model)) {
     ml
   } else {
-    ml[[data_type]]
+    ml[[data_model]]
   }
   
 }
@@ -345,5 +345,4 @@ matches <- function(x, y, all.x = TRUE, all.y = TRUE, list = FALSE, indexes = TR
   }
   result
 }
-
 

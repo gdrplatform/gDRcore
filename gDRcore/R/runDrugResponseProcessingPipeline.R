@@ -105,6 +105,7 @@ create_and_normalize_SE <- function(df_,
                                     normalized_assay = "Normalized") {
   
   checkmate::assert_data_frame(df_)
+  checkmate::assert_string(data_type)
   checkmate::assert_string(readout)
   checkmate::assert_function(control_mean_fxn)
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
@@ -115,9 +116,6 @@ create_and_normalize_SE <- function(df_,
   checkmate::assert_string(raw_treated_assay)
   checkmate::assert_string(normalized_assay)
  
-  if (is.null(data_type)) {
-    data_type <- data_model(df_)
-  }
   se <- create_SE(df_ = df_, 
     data_type = data_type, 
     readout = readout, 
@@ -199,13 +197,7 @@ runDrugResponseProcessingPipeline <- function(x,
     stop("Path for/to the intermediate data is required with partial_run enabled")
   } 
  
-  inl <- if (inherits(x, "data.frame")) {
-    prepare_input(x, nested_confounders, nested_identifiers_l)
-  } else if (inherits(x, "MultiAssayExperiment")) {
-    prepare_input(x, nested_confounders, nested_identifiers_l)
-  } else {
-    stop(sprintf("data type ('%s') not supported"), toString(class(x)))
-  }
+  inl <- prepare_input(x, nested_confounders, nested_identifiers_l)
   
   # sel - list with all experiments data
   # se - list with single experiment data 
@@ -226,8 +218,8 @@ runDrugResponseProcessingPipeline <- function(x,
     } else {
     
     message("Processing ", experiment)
-    data_type <- data_model(experiment)
-    nested_identifiers <- inl$nested_identifiers_l[[data_type]]
+    data_type <- experiment
+    nested_identifiers <- inl$nested_identifiers_l[[data_model(data_type)]]
     
     if (!partial_run || !do_skip_step("create_SE", start_from)) {
       if (is.null(inl$df_list[[experiment]])) {
@@ -301,7 +293,7 @@ runDrugResponseProcessingPipeline <- function(x,
     }
     
     if (!partial_run || !do_skip_step("fit_SE", start_from)) {
-      se <- if (data_type == "combination") {
+      se <- if (data_type == "matrix") {
         purrr::quietly(fit_SE.combinations)(se = se$result,
                             data_type = data_type,
                             series_identifiers = nested_identifiers,
@@ -328,164 +320,6 @@ runDrugResponseProcessingPipeline <- function(x,
   
   MultiAssayExperiment::MultiAssayExperiment(experiments = sel)
 }
-
-# Prepare input data common for all experiments
-#
-# Current steps
-# - refining nested confounders
-# - refining nested identifiers
-# - splitting df_ into (per experiment) df_list
-
-#' @rdname runDrugResponseProcessingPipelineFxns
-#' @keywords internal
-prepare_input <- function(x, nested_confounders, nested_identifiers_l) {
-  UseMethod("prepare_input")
-}
-
-# Prepare input data common for all experiments
-#
-# Current steps
-# - refining nested confounders
-# - refining nested identifiers
-# - splitting df_ into (per experiment) df_list
-
-#' @rdname runDrugResponseProcessingPipelineFxns
-#' @keywords internal
-prepare_input.data.frame <-
-  function(x,
-           nested_confounders = gDRutils::get_env_identifiers("barcode"),
-           nested_identifiers_l = .get_default_nested_identifiers()) {
-    
-    checkmate::assert_data_frame(x, min.rows = 1, min.cols = 1)
-    checkmate::assert_character(nested_confounders, null.ok = TRUE)
-    checkmate::assert_list(nested_identifiers_l, null.ok = TRUE)
-    
-    
-    inl <- list(
-      df_ = NULL,
-      df_list = NULL,
-      nested_confounders = NULL,
-      nested_identifiers_l = nested_identifiers_l
-    )
-    
-    nested_confounders <- if (!is.null(nested_confounders) &&
-                              any(!nested_confounders %in% names(x))) {
-      warning(
-        sprintf(
-          "'%s' nested confounder(s) is/are not present in the data.
-    Switching into '%s' nested confounder(s).",
-          setdiff(nested_confounders, names(x)),
-          intersect(nested_confounders, names(x))
-        )
-      )
-      confounders_intersect <-
-        intersect(nested_confounders, names(x))
-      if (length(confounders_intersect) == 0) {
-        NULL
-      } else {
-        confounders_intersect
-      }
-    } else {
-      nested_confounders
-    }
-    if (!is.null(nested_confounders)) {
-      inl$nested_confounders <- nested_confounders
-    }
-    
-    inl$df_ <- identify_data_type(x)
-    inl$df_list <- split_raw_data(inl$df_)
-    
-    validate_data_models_availability(names(inl$df_list), names(nested_identifiers_l))
-    
-    inl$exps <- lapply(names(inl$df_list), function(x) {
-      NULL
-    })
-    names(inl$exps) <- names(inl$df_list)
-    
-    inl
-  }
-
-# Prepare input data common for all experiments
-#
-# Current steps
-# - refining nested confounders
-# - refining nested identifiers
-# - splitting df_ into (per experiment) df_list
-
-#' @rdname runDrugResponseProcessingPipelineFxns
-#' @keywords internal
-prepare_input.MultiAssayExperiment <-
-  function(x,
-           nested_confounders = gDRutils::get_SE_identifiers(x[[1]], "barcode"),
-           nested_identifiers_l = .get_default_nested_identifiers(x[[1]]),
-           raw_data_field = "experiment_raw_data") {
-    
-    checkmate::assert_true(inherits(x, "MultiAssayExperiment"))
-    checkmate::assert_character(nested_confounders, null.ok = TRUE)
-    checkmate::assert_list(nested_identifiers_l, null.ok = TRUE)
-    
-    inl <- list(
-      df_list = NULL,
-      nested_confounders = NULL,
-      nested_identifiers_l = NULL
-    )
-    
-    inl$df_list <-
-      lapply(names(x), function(y) {
-        md <- metadata(x[[y]])
-        if (is.null(md[[raw_data_field]])) {
-          NULL
-        }
-         md[[raw_data_field]]
-      })
-    names(inl$df_list) <- names(x)
-    
-    nested_confounders <- if (!is.null(nested_confounders) &&
-                              any(!nested_confounders %in% names(inl$df_list[[1]]))) {
-      warning(
-        sprintf(
-          "'%s' nested confounder(s) is/are not present in the data.
-    Switching into '%s' nested confounder(s).",
-          setdiff(nested_confounders, names(inl$df_list[[1]])),
-          intersect(nested_confounders, names(inl$df_list[[1]]))
-        )
-      )
-      confounders_intersect <-
-        intersect(nested_confounders, names(inl$df_list[[1]]))
-      if (length(confounders_intersect) == 0) {
-        NULL
-      } else {
-        confounders_intersect
-      }
-    } else {
-      nested_confounders
-    }
-    if (!is.null(nested_confounders)) {
-      inl$nested_confounders <- nested_confounders
-    }
-    
-    inl$nested_confounders <- if (is.null(nested_confounders)) {
-      gDRutils::get_SE_identifiers(x[[1]], "barcode")
-    } else {
-      nested_confounders
-    }
-    
-    inl$nested_identifiers_l <- if (is.null(nested_identifiers_l)) {
-      .get_default_nested_identifiers(x[[1]])
-    } else {
-      nested_identifiers_l
-    }
-    
-    
-    validate_data_models_availability(names(x), names(nested_identifiers_l))
-    
-    inl$exps <- lapply(names(x), function(y) {
-      NULL
-    })
-    names(inl$exps) <- names(x)
-    
-    inl
-  }
 
 
 #' get pipeline steps
@@ -588,3 +422,163 @@ paste_warnings <- function(list, sep = "\n") {
   warning(paste0(list, sep = sep), call. = FALSE)
 }
 
+
+#' Prepare input data common for all experiments
+#'
+#' Current steps
+#' - refining nested confounders
+#' - refining nested identifiers
+#' - splitting df_ into (per experiment) df_list
+#' 
+#' @param x data.frame with raw data or MAE object with dose-reponse data
+#' 
+#' @export
+prepare_input <-
+  function(x, ...) {
+    UseMethod("prepare_input")
+  }
+
+#' Prepare input data common for all experiments
+#'
+#'  Current steps
+#' - refining nested confounders
+#' - refining nested identifiers
+#' - splitting df_ into (per experiment) df_list
+#' @param x data.frame with raw data
+#' 
+#' @export
+prepare_input.data.frame <-
+  function(x,
+           nested_confounders = gDRutils::get_env_identifiers("barcode"),
+           nested_identifiers_l = .get_default_nested_identifiers()) {
+    
+    checkmate::assert_data_frame(x, min.rows = 1, min.cols = 1)
+    checkmate::assert_character(nested_confounders, null.ok = TRUE)
+    checkmate::assert_list(nested_identifiers_l, null.ok = TRUE)
+    
+    
+    inl <- list(
+      df_ = NULL,
+      df_list = NULL,
+      nested_confounders = NULL,
+      nested_identifiers_l = nested_identifiers_l
+    )
+    
+    nested_confounders <- if (!is.null(nested_confounders) &&
+                              any(!nested_confounders %in% names(x))) {
+      warning(
+        sprintf(
+          "'%s' nested confounder(s) is/are not present in the data.
+    Switching into '%s' nested confounder(s).",
+          setdiff(nested_confounders, names(x)),
+          intersect(nested_confounders, names(x))
+        )
+      )
+      confounders_intersect <-
+        intersect(nested_confounders, names(x))
+      if (length(confounders_intersect) == 0) {
+        NULL
+      } else {
+        confounders_intersect
+      }
+    } else {
+      nested_confounders
+    }
+    if (!is.null(nested_confounders)) {
+      inl$nested_confounders <- nested_confounders
+    }
+    
+    inl$df_ <- identify_data_type(x)
+    inl$df_list <- split_raw_data(inl$df_)
+    
+    validate_data_models_availability(names(inl$df_list), names(nested_identifiers_l))
+    
+    inl$exps <- lapply(names(inl$df_list), function(x) {
+      NULL
+    })
+    names(inl$exps) <- names(inl$df_list)
+    
+    inl
+  }
+
+#' Prepare input data common for all experiments
+#'
+#' Current steps
+#' - refining nested confounders
+#' - refining nested identifiers
+#' - splitting df_ into (per experiment) df_list
+#' @param x MAE object with dose-reponse data
+#' 
+#' @export
+prepare_input.MultiAssayExperiment <-
+  function(x,
+           nested_confounders = gDRutils::get_SE_identifiers(x[[1]], "barcode"),
+           nested_identifiers_l = .get_default_nested_identifiers(x[[1]]),
+           raw_data_field = "experiment_raw_data") {
+    
+    checkmate::assert_true(inherits(x, "MultiAssayExperiment"))
+    checkmate::assert_character(nested_confounders, null.ok = TRUE)
+    checkmate::assert_list(nested_identifiers_l, null.ok = TRUE)
+    
+    inl <- list(
+      df_list = NULL,
+      nested_confounders = NULL,
+      nested_identifiers_l = NULL
+    )
+    
+    inl$df_list <-
+      lapply(names(x), function(y) {
+        md <- metadata(x[[y]])
+        if (is.null(md[[raw_data_field]])) {
+          NULL
+        }
+         md[[raw_data_field]]
+      })
+    names(inl$df_list) <- names(x)
+    
+    nested_confounders <- if (!is.null(nested_confounders) &&
+                              any(!nested_confounders %in% names(inl$df_list[[1]]))) {
+      warning(
+        sprintf(
+          "'%s' nested confounder(s) is/are not present in the data.
+    Switching into '%s' nested confounder(s).",
+          setdiff(nested_confounders, names(inl$df_list[[1]])),
+          intersect(nested_confounders, names(inl$df_list[[1]]))
+        )
+      )
+      confounders_intersect <-
+        intersect(nested_confounders, names(inl$df_list[[1]]))
+      if (length(confounders_intersect) == 0) {
+        NULL
+      } else {
+        confounders_intersect
+      }
+    } else {
+      nested_confounders
+    }
+    if (!is.null(nested_confounders)) {
+      inl$nested_confounders <- nested_confounders
+    }
+    
+    inl$nested_confounders <- if (is.null(nested_confounders)) {
+      gDRutils::get_SE_identifiers(x[[1]], "barcode")
+    } else {
+      nested_confounders
+    }
+    
+    inl$nested_identifiers_l <- if (is.null(nested_identifiers_l)) {
+      .get_default_nested_identifiers(x[[1]])
+    } else {
+      nested_identifiers_l
+    }
+    
+    
+    validate_data_models_availability(names(x), names(nested_identifiers_l))
+    
+    inl$exps <- lapply(names(x), function(y) {
+      NULL
+    })
+    names(inl$exps) <- names(x)
+    
+    inl
+  }

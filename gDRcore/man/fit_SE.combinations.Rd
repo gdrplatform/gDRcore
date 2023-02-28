@@ -6,7 +6,7 @@
 \usage{
 fit_SE.combinations(
   se,
-  data_type = "combination",
+  data_type = "matrix",
   series_identifiers = NULL,
   normalization_types = c("GRvalue", "RelativeViability"),
   averaged_assay = "Averaged",

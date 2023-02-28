@@ -34,7 +34,7 @@ test_that("normalize_SE works as expected", {
                                                    metadata = metadata)
 
 
-  se <- normalize_SE(se,data_type = "single-agent")
+  se <- normalize_SE(se, data_type = "single-agent")
   normalized <- SummarizedExperiment::assays(se)[["Normalized"]][1, 1][[1]]
 
   expect_true(methods::is(normalized, "DataFrame"))

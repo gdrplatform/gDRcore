@@ -15,6 +15,7 @@ create_SE <- function(df_,
                       override_untrt_controls = NULL) {
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
+  checkmate::assert_string(data_type)
   checkmate::assert_string(readout)
   checkmate::assert_function(control_mean_fxn)
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
@@ -22,10 +23,6 @@ create_SE <- function(df_,
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
   
 
-  if (is.null(data_type)) {
-    data_type <- data_model(df_)
-  }
-  
   if (is.null(nested_identifiers)) {
     nested_identifiers <-
       get_default_nested_identifiers(df_)[[data_model(data_type)]]
