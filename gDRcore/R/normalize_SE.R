@@ -112,6 +112,7 @@ normalize_SE <- function(se,
                                  variable.name = "normalization_type",
                                  value.name = "x")
     rownames(normalized) <- paste(normalized$id, normalized$normalization_type, sep = "_")
+    normalized$id <- NULL
     S4Vectors::DataFrame(normalized)
   })
   
