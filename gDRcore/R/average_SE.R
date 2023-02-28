@@ -62,6 +62,8 @@ average_SE <- function(se,
       agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df,
                                          by = c(series_identifiers, "normalization_type"),
                                          sort = FALSE))
+      rownames(agg_df) <- paste(cumsum(!duplicated(agg_df[, series_identifiers])),
+                                agg_df$normalization_type, sep = "_")
     } else {
       # <= 1L unmasked values
       p_trt_keys <- intersect(trt_keys, colnames(norm_df))
@@ -69,6 +71,7 @@ average_SE <- function(se,
                            "normalization_type", "row_id", "col_id"))
       agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
       colnames(agg_df) <- all_cols
+      rownames(agg_df) <- paste(seq_len(nrow(agg_df)), agg_df$normalization_type, sep = "_")
     }
 
     if (nrow(agg_df) != 0L) {

@@ -84,6 +84,7 @@ normalize_SE <- function(se,
     colnames(normalized) <- c(norm_cols)
 
     # Normalized treated.
+    browser()
     normalized$RV <- round(all_readouts_df$CorrectedReadout /
                                             all_readouts_df$UntrtReadout, ndigit_rounding)
     
@@ -106,10 +107,12 @@ normalize_SE <- function(se,
     normalized <- cbind(all_readouts_df[keep], normalized) 
     normalized$row_id <- i
     normalized$col_id <- j
+    normalized$id <- as.character(seq_len(nrow(normalized)))
     normalized <- reshape2::melt(as.data.frame(normalized),
                                  measure.vars = norm_cols,
                                  variable.name = "normalization_type",
                                  value.name = "x")
+    rownames(normalized) <- paste(normalized$id, normalized$normalization_type, sep = "_")
     S4Vectors::DataFrame(normalized)
   })
   
