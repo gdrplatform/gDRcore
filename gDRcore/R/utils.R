@@ -346,3 +346,75 @@ matches <- function(x, y, all.x = TRUE, all.y = TRUE, list = FALSE, indexes = TR
   result
 }
 
+
+#' get info about created/present assays in SE at the given pipeline step
+#' @param step string with pipeline step
+#' @param data_model single-agent vs combination
+#' @param status string return vector of assays created or present at the given step?
+#' 
+get_assays_per_pipeline_step <-
+  function(step,
+           data_model,
+           status = c("created", "present")) {
+    
+    checkmate::assert_choice(step, get_pipeline_steps())
+    checkmate::assert_choice(data_model, c("single-agent", "combination"))
+    checkmate::assert_choice(status, c("created", "present"))
+    
+    fit_se <- if (data_model == "single-agent") {
+      "Metrics"
+    } else {
+      c(
+        "BlissExcess",
+        "BlissScore",
+        "CIScore_50",
+        "CIScore_80",
+        "HSAExcess",
+        "HSAScore",
+        "isobolograms",
+        "Metrics",
+        "SmoothMatrix"
+      )
+    }
+    as_map <- list(
+      "create_SE" = c("RawTreated", "Controls"),
+      "normalize_SE" = "Normalized",
+      "average_SE" = "Averaged",
+      "fit_SE" = fit_se
+    )
+    
+    ass <- if (status == "created") {
+      as_map[[step]]
+    } else {
+      as.character(unlist(as_map[seq_len(which(names(as_map) == step))]))
+    }
+    ass
+  }
+
+#' add intermediate data (qs files) for given ma
+#' @param mae mae with dose-response data
+#' @param data_dir  output directory
+#' @param steps charvec with pipeline steps for which intermediate data should be saved
+#' 
+#' @export
+add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
+  
+  checkmate::assert_class(mae, "MultiAssayExperiment")
+  checkmate::assert_directory(data_dir, access = "rw")
+  checkmate::assert_subset(steps, get_pipeline_steps())
+  
+  for (data_type in names(mae)) {
+    for (step in steps) {
+      as_names <-
+        get_assays_per_pipeline_step(step, data_model(data_type), status = "present")
+      se <- mae[[data_type]]
+      se_subset <- SummarizedExperiment(
+        assays = assays(se)[as_names],
+        rowData = rowData(se),
+        colData = colData(se),
+        metadata = metadata(se)
+      )
+      save_intermediate_data(data_dir, step, data_type, se_subset)
+    }
+  }
+}
