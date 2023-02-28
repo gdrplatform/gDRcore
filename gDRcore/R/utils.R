@@ -151,7 +151,7 @@ get_data_type_to_data_model_mapping <- function() {
   c(
     `single-agent` = "single-agent",
     "cotreatment" = "single-agent",
-    "co-dilution" = "combination",
+    "co-dilution" = "single-agent",
     "matrix" = "combination"
   )
 }
