@@ -84,7 +84,6 @@ normalize_SE <- function(se,
     colnames(normalized) <- c(norm_cols)
 
     # Normalized treated.
-    browser()
     normalized$RV <- round(all_readouts_df$CorrectedReadout /
                                             all_readouts_df$UntrtReadout, ndigit_rounding)
     
