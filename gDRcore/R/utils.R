@@ -418,3 +418,27 @@ add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
     }
   }
 }
+
+#' get mae dataset from intermediate data
+#' 
+#' @param data_dir directory with intermediate data
+#' 
+#' @export
+get_mae_from_intermediate_data <- function(data_dir) {
+  
+  checkmate::assert_directory(data_dir)
+  
+  last_step <- tail(get_pipeline_steps(), n = 1)
+  s_pattern <- paste0("__", last_step, ".qs")
+  
+  fpaths <- list.files(data_dir, pattern = s_pattern, full.names = TRUE)
+  checkmate::assert_true(length(fpaths) > 0)
+  
+  sel <- list()
+  
+  for (fpath in fpaths) {
+    exp_name <- sub(s_pattern, "", basename(fpath))
+    sel[[exp_name]] <- qs::qread(fpath)
+  }
+  MultiAssayExperiment::MultiAssayExperiment(experiments = sel)
+}
