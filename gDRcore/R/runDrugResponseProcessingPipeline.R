@@ -142,7 +142,7 @@ runDrugResponseProcessingPipeline <- function(x,
                                               control_mean_fxn = function(x) {
                                                 mean(x, trim = 0.25)
                                               },
-                                              nested_identifiers_l = .get_default_nested_identifiers(),
+                                              nested_identifiers_l = NULL,
                                               nested_confounders = gDRutils::get_env_identifiers("barcode"),
                                               override_untrt_controls = NULL,
                                               override_masked = FALSE,
@@ -491,7 +491,7 @@ prepare_input.data.frame <-
     inl$df_ <- identify_data_type(x)
     inl$df_list <- split_raw_data(inl$df_)
     
-    validate_data_models_availability(names(inl$df_list), names(nested_identifiers_l))
+    validate_data_models_availability(names(inl$df_list), names(inl$nested_identifiers_l))
     
     inl$exps <- lapply(names(inl$df_list), function(x) {
       NULL
@@ -573,7 +573,7 @@ prepare_input.MultiAssayExperiment <-
     }
     
     
-    validate_data_models_availability(names(x), names(nested_identifiers_l))
+    validate_data_models_availability(names(x), names(inl$nested_identifiers_l))
     
     inl$exps <- lapply(names(x), function(y) {
       NULL
@@ -582,3 +582,4 @@ prepare_input.MultiAssayExperiment <-
     
     inl
   }
+
