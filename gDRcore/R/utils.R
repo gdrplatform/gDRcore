@@ -223,8 +223,8 @@ get_default_nested_identifiers.SummarizedExperiment <- function(x,
  
   checkmate::assert_choice(data_model, c("single-agent", "combination"), null.ok = TRUE)
  
-  ml <- list(`single-agent` = .get_default_single_agent_nested_identifiers(),
-             combination = .get_default_combination_nested_identifiers())
+  ml <- list(`single-agent` = .get_default_single_agent_nested_identifiers(se),
+             combination = .get_default_combination_nested_identifiers(se))
   if (is.null(data_model)) {
     ml
   } else {
@@ -246,7 +246,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(x,
     as.character(unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
                                          simplify = FALSE)))
   } else {
-    as.character(unlist(gDRutils::get_SE_identifiers(c("concentration", "concentration2"),
+    as.character(unlist(gDRutils::get_SE_identifiers(se, c("concentration", "concentration2"),
                                         simplify = FALSE)))
   }
 }
