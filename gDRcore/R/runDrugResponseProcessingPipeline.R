@@ -196,7 +196,15 @@ runDrugResponseProcessingPipeline <- function(x,
   if (is.null(data_dir) && partial_run) {
     stop("Path for/to the intermediate data is required with partial_run enabled")
   } 
- 
+
+  # when running pipeline with x = MAE the identifiers from MAE's metadata should be restored
+  if (inherits(x, "MultiAssayExperiment")) {
+    m_idfs <- S4Vectors::metadata(x[[1]])[["identifiers"]]
+    for (idx in seq_along(m_idfs)) {
+      gDRutils::set_env_identifier(names(m_idfs)[idx], m_idfs[[idx]])
+    }
+  }
+  
   inl <- prepare_input(x, nested_confounders, nested_identifiers_l)
   
   # sel - list with all experiments data
