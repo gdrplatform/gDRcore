@@ -41,7 +41,9 @@ calculate_Loewe <- function(df_mean,
                       series_identifiers,
                       normalization_type,
                       conc_margin = 10 ^ 0.5,
-                      log2_pos_offset = log10(3) / 2
+                      log2_pos_offset = log10(3) / 2,
+                      min_n_conc = 6,
+                      min_r2 = 0.8
                     ) {
 
   checkmate::assert_number(conc_margin)
@@ -68,11 +70,21 @@ calculate_Loewe <- function(df_mean,
   if (!is.null(codilution_fittings)) {
     codilution_fittings <- codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
     codilution_fittings <- codilution_fittings[codilution_fittings$fit_type %in% "DRC3pHillFitModelFixS0", ]
-    }
+    # more restrictive to be sure that it adds fit quality
+    codilution_fittings <-
+      codilution_fittings[codilution_fittings$N_conc >= min_n_conc &
+                            codilution_fittings$r2 > min_r2, ]
+  }
+  futile.logger::flog.debug("codilution fittings after transformation/filtering:")
+  futile.logger::flog.debug(knitr::kable(codilution_fittings))
   
   for (isobol_value in iso_cutoffs) { # run through the different isobolograms
-    df_iso <- calculate_isobolograms(row_fittings, col_fittings, codilution_fittings, isobol_value, max1_cap, max2_cap)
-
+    
+    # avoid getting a fit result that is close to the asymptotic value (and thus less precise)
+    # filtered_cf can be empty (i.e. no rows) - this edge case is handled in calculate_isobolograms
+    filtered_cf <- codilution_fittings[codilution_fittings$x_inf < (isobol_value - .1), ]
+    
+    df_iso <- calculate_isobolograms(row_fittings, col_fittings, filtered_cf, isobol_value, max1_cap, max2_cap)
     ref_conc_1 <- pmin(df_iso$conc_1[df_iso$conc_2 == 0 & df_iso$fit_type == "by_col"], max1_cap)
     ref_conc_2 <- pmin(df_iso$conc_2[df_iso$conc_1 == 0 & df_iso$fit_type == "by_row"], max2_cap)
 
@@ -196,8 +208,6 @@ calculate_Loewe <- function(df_mean,
       df_iso_curve = df_iso_curve,
       ref_conc_1 = ref_conc_1,
       ref_conc_2 = ref_conc_2,
-      # max_log2CI = max(df_iso_curve$log2_CI),
-      # min_log2CI = min(df_iso_curve$log2_CI),
       AUC_log2CI = min(df_100x_AUC$AUC_log2CI)
       )
     }
@@ -279,8 +289,8 @@ calculate_isobolograms <- function(row_fittings, col_fittings, codilution_fittin
         ec50 = codilution_fittings$ec50,
         h = codilution_fittings$h
       ) 
-      codil_iso <- data.frame(conc_1 = conc_mix / (1 + 1 / codilution_fittings$ratio),
-        conc_2 = conc_mix / (1 + codilution_fittings$ratio),
+      codil_iso <- data.frame(conc_1 = conc_mix / (1 + codilution_fittings$ratio),
+        conc_2 = conc_mix / (1 + (1 / codilution_fittings$ratio)),
         fit_type = "by_codil")
 
       # Keep isobologram values within matrix values.

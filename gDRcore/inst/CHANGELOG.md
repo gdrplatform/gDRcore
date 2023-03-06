@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+### [1.3.18] - 2023-03-06
+### improve logic in functions used to generate isobolograms' data
+
 #### [1.3.17] - 2023-03-06
 #### Remove obsolete code
 
