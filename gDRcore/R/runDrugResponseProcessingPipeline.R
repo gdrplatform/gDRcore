@@ -4,7 +4,9 @@
 #' Either: create a SummarizedExperiment and normalize raw treated and control data (create_and_normalize_SE),
 #' average data (average_SE), or fit the processed data (fit_SE). See details for more in-depth explanations.
 #'
+#' @param x data.frame of MAE with drug response data
 #' @param df_ data.frame of raw drug response data containing both treated and untreated values.
+#' @param data_type single-agent vs combination
 #' @param se \code{SummarizedExperiment} object.
 #' @param readout string of the name containing the cell viability readout values.
 #' @param control_mean_fxn function indicating how to average controls.
@@ -439,6 +441,7 @@ paste_warnings <- function(list, sep = "\n") {
 #' - splitting df_ into (per experiment) df_list
 #' 
 #' @param x data.frame with raw data or MAE object with dose-reponse data
+#' @param ... additional parameters
 #' 
 #' @export
 prepare_input <-
@@ -453,10 +456,18 @@ prepare_input <-
 #' - refining nested identifiers
 #' - splitting df_ into (per experiment) df_list
 #' @param x data.frame with raw data
+#' @param ... additional parameters
+#' @param nested_identifiers_l list with the nested_identifiers(character vectors) 
+#' for `single-agent` and (optionally) for `combination` data
+#' @param nested_confounders Character vector of the nested_confounders for a given assay.
+#' nested_keys is character vector of column names to include in the data.frames
+#' in the assays of the resulting \code{SummarizedExperiment} object.
+#' Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
 #' 
 #' @export
 prepare_input.data.frame <-
   function(x,
+           ...,
            nested_confounders = gDRutils::get_env_identifiers("barcode"),
            nested_identifiers_l = .get_default_nested_identifiers()) {
     
@@ -519,10 +530,19 @@ prepare_input.data.frame <-
 #' - refining nested identifiers
 #' - splitting df_ into (per experiment) df_list
 #' @param x MAE object with dose-reponse data
+#' @param ... additional parameters
+#' @param nested_identifiers_l list with the nested_identifiers(character vectors) 
+#' for `single-agent` and (optionally) for `combination` data
+#' @param nested_confounders Character vector of the nested_confounders for a given assay.
+#' nested_keys is character vector of column names to include in the data.frames
+#' in the assays of the resulting \code{SummarizedExperiment} object.
+#' Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
+#' @param raw_data_field metadata field with raw data
 #' 
 #' @export
 prepare_input.MultiAssayExperiment <-
   function(x,
+           ...,
            nested_confounders = gDRutils::get_SE_identifiers(x[[1]], "barcode"),
            nested_identifiers_l = .get_default_nested_identifiers(x[[1]]),
            raw_data_field = "experiment_raw_data") {

@@ -1,4 +1,5 @@
 #' @rdname runDrugResponseProcessingPipelineFxns
+#' 
 #' @export
 #'
 average_SE <- function(se,

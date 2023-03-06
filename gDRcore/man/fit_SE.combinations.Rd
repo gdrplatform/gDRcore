@@ -16,6 +16,8 @@ fit_SE.combinations(
 \arguments{
 \item{se}{\code{SummarizedExperiment} object with a BumpyMatrix assay containing averaged data.}
 
+\item{data_type}{single-agent vs combination}
+
 \item{series_identifiers}{character vector of the column names in the nested \code{DFrame}
 corresponding to nested identifiers.}
 

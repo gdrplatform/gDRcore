@@ -6,12 +6,23 @@
 \usage{
 \method{prepare_input}{data.frame}(
   x,
+  ...,
   nested_confounders = gDRutils::get_env_identifiers("barcode"),
   nested_identifiers_l = .get_default_nested_identifiers()
 )
 }
 \arguments{
 \item{x}{data.frame with raw data}
+
+\item{...}{additional parameters}
+
+\item{nested_confounders}{Character vector of the nested_confounders for a given assay.
+nested_keys is character vector of column names to include in the data.frames
+in the assays of the resulting \code{SummarizedExperiment} object.
+Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through}
+
+\item{nested_identifiers_l}{list with the nested_identifiers(character vectors) 
+for `single-agent` and (optionally) for `combination` data}
 }
 \description{
 Current steps

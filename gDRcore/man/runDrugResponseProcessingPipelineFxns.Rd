@@ -80,7 +80,7 @@ runDrugResponseProcessingPipeline(
   control_mean_fxn = function(x) {
      mean(x, trim = 0.25)
  },
-  nested_identifiers_l = .get_default_nested_identifiers(),
+  nested_identifiers_l = NULL,
   nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL,
   override_masked = FALSE,
@@ -100,6 +100,8 @@ runDrugResponseProcessingPipeline(
 }
 \arguments{
 \item{se}{\code{SummarizedExperiment} object.}
+
+\item{data_type}{single-agent vs combination}
 
 \item{series_identifiers}{character vector of identifiers in \code{measured} or \code{metric}
 which define a unique data point.}
@@ -158,6 +160,8 @@ Defaults to \code{"RawTreated"}.}
 
 \item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
 Defaults to \code{4}.}
+
+\item{x}{data.frame of MAE with drug response data}
 
 \item{nested_identifiers_l}{list with the nested_identifiers(character vectors) 
 for `single-agent` and (optionally) for `combination` data}

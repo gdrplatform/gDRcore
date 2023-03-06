@@ -409,11 +409,11 @@ add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
       as_names <-
         get_assays_per_pipeline_step(step, data_model(data_type), status = "present")
       se <- mae[[data_type]]
-      se_subset <- SummarizedExperiment(
-        assays = assays(se)[as_names],
-        rowData = rowData(se),
-        colData = colData(se),
-        metadata = metadata(se)
+      se_subset <- SummarizedExperiment::SummarizedExperiment(
+        assays = SummarizedExperiment::assays(se)[as_names],
+        rowData = SummarizedExperiment::rowData(se),
+        colData = SummarizedExperiment::colData(se),
+        metadata = S4Vectors::metadata(se)
       )
       save_intermediate_data(data_dir, step, data_type, se_subset)
     }
