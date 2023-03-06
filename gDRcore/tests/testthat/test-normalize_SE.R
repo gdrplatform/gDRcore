@@ -25,7 +25,9 @@ test_that("normalize_SE works as expected", {
                                       "cellline_ref_div_time" = "ReferenceDivisionTime", 
                                       "duration" = "Duration", 
                                       "masked_tag" = "masked",
-                                      "barcode" = "Barcode"),
+                                      "barcode" = "Barcode",
+                                      "concentration" = "Concentration",
+                                      "concentration2" = "Concentration2"),
                    Keys = keys)
   
   se <- SummarizedExperiment::SummarizedExperiment(assays = list("RawTreated" = trted, "Controls" = ctrl), 

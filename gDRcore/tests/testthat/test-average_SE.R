@@ -13,6 +13,7 @@ test_that("average_SE works as expected", {
   assays <- list("Normalized" = normalized)
   se <- SummarizedExperiment::SummarizedExperiment(assays = assays)
   se <- gDRutils::set_SE_keys(se, keys)
+  se <- gDRutils::set_SE_identifiers(se, gDRutils::get_env_identifiers())
 
   # With masking.
   se1 <-
