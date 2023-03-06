@@ -216,7 +216,8 @@ get_default_nested_identifiers.data.frame <- function(x, data_model = NULL) {
 #' @rdname get_default_nested_identifiers
 get_default_nested_identifiers.SummarizedExperiment <- function(x,
                                                                 data_model = NULL) {
-  .get_default_nested_identifiers(se, data_model)
+  
+  .get_default_nested_identifiers(x, data_model)
 }
 
 .get_default_nested_identifiers <- function(se = NULL, data_model = NULL) {
