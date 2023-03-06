@@ -467,9 +467,9 @@ prepare_input <-
 #' @export
 prepare_input.data.frame <-
   function(x,
-           ...,
            nested_confounders = gDRutils::get_env_identifiers("barcode"),
-           nested_identifiers_l = .get_default_nested_identifiers()) {
+           nested_identifiers_l = .get_default_nested_identifiers(),
+           ...) {
     
     checkmate::assert_data_frame(x, min.rows = 1, min.cols = 1)
     checkmate::assert_character(nested_confounders, null.ok = TRUE)
@@ -542,10 +542,10 @@ prepare_input.data.frame <-
 #' @export
 prepare_input.MultiAssayExperiment <-
   function(x,
-           ...,
            nested_confounders = gDRutils::get_SE_identifiers(x[[1]], "barcode"),
            nested_identifiers_l = .get_default_nested_identifiers(x[[1]]),
-           raw_data_field = "experiment_raw_data") {
+           raw_data_field = "experiment_raw_data",
+           ...) {
     
     checkmate::assert_true(inherits(x, "MultiAssayExperiment"))
     checkmate::assert_character(nested_confounders, null.ok = TRUE)
