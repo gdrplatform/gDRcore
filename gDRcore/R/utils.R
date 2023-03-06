@@ -442,3 +442,4 @@ get_mae_from_intermediate_data <- function(data_dir) {
   }
   MultiAssayExperiment::MultiAssayExperiment(experiments = sel)
 }
+
