@@ -2,6 +2,7 @@
 #'
 #' Perform fittings for combination screens.
 #' @param se \code{SummarizedExperiment} object with a BumpyMatrix assay containing averaged data.
+#' @param data_type single-agent vs combination
 #' @param series_identifiers character vector of the column names in the nested \code{DFrame}
 #' corresponding to nested identifiers.
 #' @param normalization_types character vector of normalization types used for calculating combo matrix.
@@ -57,9 +58,10 @@ fit_SE.combinations <- function(se,
     i <- x[["row"]]
     j <- x[["column"]]
 
-    avg_combo <- avg[avg$row == i & avg$column == j, ]
-    
-    if (all(is.na(subset(avg_combo, select = -c(row, column))))) { # omit masked values (all NAs)
+    avg_combo <- avg[avg[["row"]] == i & avg[["column"]] == j, ]
+   
+    omit_c_idx <- which(colnames(avg_combo) %in% c("row", "column"))
+    if (all(is.na(avg_combo[, -omit_c_idx]))) { # omit masked values (all NAs)
       smooth_mx <- hsa_excess <- bliss_excess <- isobolograms <- metrics <- 
         bliss_score[, c("row_id", "col_id")] <- hsa_score[, c("row_id", "col_id")] <-
         CIScore_50[, c("row_id", "col_id")] <- CIScore_80[, c("row_id", "col_id")] <-
