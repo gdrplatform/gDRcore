@@ -10,7 +10,7 @@ test_that("fit_SE works as expected", {
     system.file(package = "gDRtestData", "testdata", "finalMAE_combo_matrix_small.RDS")
   fmae_cms <- readRDS(fmae_cms_path)
   se1 <- fmae_cms[["matrix"]]
-  assays(se1) <- assays(se1)["Averaged"]
+  SummarizedExperiment::assays(se1) <- SummarizedExperiment::assays(se1)["Averaged"]
   
   new_se1 <- purrr::quietly(gDRcore::fit_SE.combinations)(se1[1, 1])
   exp_as <-
