@@ -1,4 +1,5 @@
-FROM arkadiuszgladki/gdr_shiny:0.09
+ARG BASE_IMAGE=marcinkam/gdrshiny:0.11
+FROM ${BASE_IMAGE}
 
 # ------ Be aware that any changes in following may cause issue with RPlatform and CBS
 
@@ -16,6 +17,7 @@ ARG GITHUB_TOKEN
 #================= Install dependencies
 RUN mkdir -p /mnt/vol
 COPY rplatform/dependencies.yaml rplatform/.github_access_token.txt* /mnt/vol
+RUN echo "$GITHUB_TOKEN" >> /mnt/vol/.github_access_token.txt
 RUN Rscript -e "gDRstyle::installAllDeps()"
 
 #================= Check & build package
