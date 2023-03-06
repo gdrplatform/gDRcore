@@ -27,7 +27,7 @@ test_that("fit_SE works as expected", {
       "CIScore_80",
       "Metrics"
     )
-  expect_equal(assayNames(new_se1$result), exp_as)
+  expect_equal(SummarizedExperiment::assayNames(new_se1$result), exp_as)
  expect_length(new_se1$warnings, 57)
   
   aip_df <-
