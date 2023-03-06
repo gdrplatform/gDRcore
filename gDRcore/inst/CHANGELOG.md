@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.17] - 2023-03-06
+#### Remove obsolete code
+
 #### [1.3.16] - 2023-02-21
 ### Add support for partial pipeline runs
 
