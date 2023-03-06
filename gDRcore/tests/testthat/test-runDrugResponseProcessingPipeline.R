@@ -28,10 +28,6 @@ imported_data <- gDRcore::merge_data(l_data$manifest, l_data$treatments, l_data$
 ### runDrugResponseProcessingPipeline ###
 expect_true(length(list.files(p_dir)) == 0)
 
-# mae <- purrr::quietly(gDRtestData::generateNoiseRawData)(
-#   cell_lines, drugs, e_inf, ec50, hill_coef
-# )
-
 mae_v1 <- purrr::quietly(gDRcore:::runDrugResponseProcessingPipeline)(imported_data, data_dir = p_dir,
                                                                       add_raw_data = TRUE)
 expect_true(length(list.files(p_dir)) > 0)

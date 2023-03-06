@@ -463,14 +463,17 @@ prepare_input.data.frame <-
     checkmate::assert_data_frame(x, min.rows = 1, min.cols = 1)
     checkmate::assert_character(nested_confounders, null.ok = TRUE)
     checkmate::assert_list(nested_identifiers_l, null.ok = TRUE)
-    
-    
+   
     inl <- list(
       df_ = NULL,
       df_list = NULL,
-      nested_confounders = NULL,
-      nested_identifiers_l = nested_identifiers_l
+      nested_confounders = NULL
     )
+    inl$nested_identifiers_l <- if (is.null(nested_identifiers_l)) {
+      .get_default_nested_identifiers()
+    } else {
+      nested_identifiers_l
+    }
     
     nested_confounders <- if (!is.null(nested_confounders) &&
                               any(!nested_confounders %in% names(x))) {
@@ -498,7 +501,7 @@ prepare_input.data.frame <-
     
     inl$df_ <- identify_data_type(x)
     inl$df_list <- split_raw_data(inl$df_)
-    
+   
     validate_data_models_availability(names(inl$df_list), names(inl$nested_identifiers_l))
     
     inl$exps <- lapply(names(inl$df_list), function(x) {
