@@ -25,7 +25,9 @@ test_that("normalize_SE works as expected", {
                                       "cellline_ref_div_time" = "ReferenceDivisionTime", 
                                       "duration" = "Duration", 
                                       "masked_tag" = "masked",
-                                      "barcode" = "Barcode"),
+                                      "barcode" = "Barcode",
+                                      "concentration" = "Concentration",
+                                      "concentration2" = "Concentration2"),
                    Keys = keys)
   
   se <- SummarizedExperiment::SummarizedExperiment(assays = list("RawTreated" = trted, "Controls" = ctrl), 
@@ -34,7 +36,7 @@ test_that("normalize_SE works as expected", {
                                                    metadata = metadata)
 
 
-  se <- normalize_SE(se)
+  se <- normalize_SE(se, data_type = "single-agent")
   normalized <- SummarizedExperiment::assays(se)[["Normalized"]][1, 1][[1]]
 
   expect_true(methods::is(normalized, "DataFrame"))
@@ -42,7 +44,7 @@ test_that("normalize_SE works as expected", {
   expect_true(all(colnames(normalized) %in% c("Concentration", "masked", "GRvalue", "RelativeViability")))
   expect_equal(normalized$Concentration, conc)
   
-  se2 <- normalize_SE(se, nested_confounders = 
+  se2 <- normalize_SE(se, "single-agent", nested_confounders = 
                         c(gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE), "masked"))
   expect_s4_class(se2, "SummarizedExperiment")
 })

@@ -2,8 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [1.3.16] - 2023-03-01
+#### [1.3.17] - 2023-03-06
 #### Remove obsolete code
+
+#### [1.3.16] - 2023-02-21
+### Add support for partial pipeline runs
 
 #### [1.3.15] - 2023-02-10
 #### Update path to annotation data
