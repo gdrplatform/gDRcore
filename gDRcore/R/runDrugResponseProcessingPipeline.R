@@ -539,6 +539,7 @@ prepare_input.data.frame <-
 #' in the assays of the resulting \code{SummarizedExperiment} object.
 #' Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
 #' @param raw_data_field metadata field with raw data
+#' @param split_data Boolean indicating need of splitting the data into experiment types
 #' 
 #' @export
 prepare_input.MultiAssayExperiment <-
@@ -546,6 +547,7 @@ prepare_input.MultiAssayExperiment <-
            nested_confounders = gDRutils::get_SE_identifiers(x[[1]], "barcode"),
            nested_identifiers_l = .get_default_nested_identifiers(x[[1]]),
            raw_data_field = "experiment_raw_data",
+           split_data = TRUE,
            ...) {
     
     checkmate::assert_true(inherits(x, "MultiAssayExperiment"))
@@ -566,8 +568,14 @@ prepare_input.MultiAssayExperiment <-
         }
          md[[raw_data_field]]
       })
-    names(inl$df_list) <- names(x)
     
+    if (split_data) {
+      inl$df_ <- plyr::rbind.fill(inl$df_list)
+      inl$df_ <- identify_data_type(x)
+      inl$df_list <- split_raw_data(inl$df_)
+    } else {
+      names(inl$df_list) <- names(x)
+    }
     nested_confounders <- if (!is.null(nested_confounders) &&
                               any(!nested_confounders %in% names(inl$df_list[[1]]))) {
       warning(
