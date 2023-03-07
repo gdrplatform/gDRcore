@@ -570,8 +570,8 @@ prepare_input.MultiAssayExperiment <-
       })
     
     if (split_data) {
-      inl$df_ <- plyr::rbind.fill(inl$df_list)
-      inl$df_ <- identify_data_type(x)
+      inl$df_ <- unique(plyr::rbind.fill(inl$df_list))
+      inl$df_ <- identify_data_type(inl$df_)
       inl$df_list <- split_raw_data(inl$df_)
     } else {
       names(inl$df_list) <- names(x)
