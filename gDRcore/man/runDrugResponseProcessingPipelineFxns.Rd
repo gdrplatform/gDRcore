@@ -14,6 +14,7 @@ it will be removed from the \code{readout} column.}
 \usage{
 average_SE(
   se,
+  data_type,
   series_identifiers = NULL,
   override_masked = FALSE,
   normalized_assay = "Normalized",
@@ -22,6 +23,7 @@ average_SE(
 
 create_SE(
   df_,
+  data_type,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {
      mean(x, trim = 0.25)
@@ -33,6 +35,7 @@ create_SE(
 
 fit_SE(
   se,
+  data_type = "single-agent",
   nested_identifiers = NULL,
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
@@ -46,6 +49,7 @@ fit_SE(
 
 normalize_SE(
   se,
+  data_type,
   nested_identifiers = NULL,
   nested_confounders = gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE),
   control_assay = "Controls",
@@ -56,6 +60,7 @@ normalize_SE(
 
 create_and_normalize_SE(
   df_,
+  data_type,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {
      mean(x, trim = 0.25)
@@ -70,12 +75,12 @@ create_and_normalize_SE(
 )
 
 runDrugResponseProcessingPipeline(
-  df_,
+  x,
   readout = "ReadoutValue",
   control_mean_fxn = function(x) {
      mean(x, trim = 0.25)
  },
-  nested_identifiers = NULL,
+  nested_identifiers_l = NULL,
   nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL,
   override_masked = FALSE,
@@ -86,11 +91,17 @@ runDrugResponseProcessingPipeline(
   normalized_assay = "Normalized",
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
-  add_raw_data = FALSE
+  add_raw_data = TRUE,
+  data_dir = NULL,
+  partial_run = FALSE,
+  start_from = get_pipeline_steps()[1],
+  selected_experiments = NULL
 )
 }
 \arguments{
 \item{se}{\code{SummarizedExperiment} object.}
+
+\item{data_type}{single-agent vs combination}
 
 \item{series_identifiers}{character vector of identifiers in \code{measured} or \code{metric}
 which define a unique data point.}
@@ -112,7 +123,8 @@ Defaults to \code{"Averaged"}.}
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
 
-\item{nested_identifiers}{Character vector of the nested_identifiers for a given assay.}
+\item{nested_identifiers}{character vector with the nested_identifiers
+for the given SE with a given data_type}
 
 \item{nested_confounders}{Character vector of the nested_confounders for a given assay.
 nested_keys is character vector of column names to include in the data.frames
@@ -149,7 +161,23 @@ Defaults to \code{"RawTreated"}.}
 \item{ndigit_rounding}{integer indicating number of digits to round to in calculations.
 Defaults to \code{4}.}
 
+\item{x}{data.frame of MAE with drug response data}
+
+\item{nested_identifiers_l}{list with the nested_identifiers(character vectors) 
+for `single-agent` and (optionally) for `combination` data}
+
 \item{add_raw_data}{boolean indicating whether or not to include raw data into experiment metadata.}
+
+\item{data_dir}{string with the path to the directory with intermediate data of experiments (qs files).
+If set to NULL (default) intermediate data is not saved/read in.}
+
+\item{partial_run}{logical flag indicating if the pipeline should be run partially 
+(from the step defined with `start_from`)}
+
+\item{start_from}{string indicating the pipeline step from which partial run should be launched}
+
+\item{selected_experiments}{character vector with experiments for which pipeline should be run.
+This option works only for the pipeline being run partially (i.e. with `partial_run` flag set to `TRUE`)}
 }
 \description{
 Run different components of the gDR drug response processing pipeline.
@@ -176,4 +204,12 @@ For average_SE, take the normalized assay and average the nested \code{DataFrame
 
 For fit_SE, take the averaged assay and fit curves to obtain metrics, one set of metrics for each
 normalization type set.
+
+Pipeline can be run partially with `partial_run` flag set to TRUE. The `start_from` string defines the step 
+from which the pipeline will be launched. However, partial run of the pipeline is possible only if the whole
+pipeline was launched at least once with defined `data_dir` and intermediate data was saved as qs files 
+into `data_dir`. 
+
+Pipeline can be run for the selected experiments by changing the default value of `selected_experiments` param`.
+This scenario only works when `partial_run` is enabled.
 }

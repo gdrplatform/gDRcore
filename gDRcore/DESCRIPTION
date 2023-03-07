@@ -1,8 +1,8 @@
 Package: gDRcore
 Type: Package
 Title: Processing functions and interface to process and analyze drug dose-response data
-Version: 1.3.16
-Date: 2023-01-21
+Version: 1.3.19
+Date: 2023-03-07
 Author: c(person("Bartosz", "Czech", role=c("aut", "cre"), email="bartosz.czech@contractors.roche.com"),
              person("Arkadiusz", "Gladki", role=c("aut")),
              person("Marc", "Hafner", role=c("aut")),
@@ -16,7 +16,6 @@ License: file LICENSE
 LazyLoad: yes
 Imports:
     checkmate,
-    drc,
     BiocParallel,
     gDRutils (>= 1.3.11),
     MultiAssayExperiment,
@@ -31,6 +30,7 @@ Suggests:
     covr,
     futile.logger,
     knitr,
+    qs,
     pkgbuild,
     testthat,
     yaml,

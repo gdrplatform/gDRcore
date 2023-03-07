@@ -2,6 +2,7 @@
 #' @export
 #'
 normalize_SE <- function(se, 
+                         data_type,
                          nested_identifiers = NULL,
                          nested_confounders = gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE),
                          control_assay = "Controls", 
@@ -11,6 +12,7 @@ normalize_SE <- function(se,
   
   # Assertions
   checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_character(data_type)
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_string(control_assay)
@@ -23,7 +25,7 @@ normalize_SE <- function(se,
 
   
   if (is.null(nested_identifiers)) {
-    nested_identifiers <- get_nested_default_identifiers(se, raw_treated_assay)
+    nested_identifiers <- get_default_nested_identifiers(se, data_model(data_type))
   }
   
   # Keys
