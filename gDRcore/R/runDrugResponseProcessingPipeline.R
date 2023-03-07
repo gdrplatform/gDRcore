@@ -328,7 +328,7 @@ runDrugResponseProcessingPipeline <- function(x,
     se <- list()
     }
   }
-  
+  gDRutils::reset_env_identifiers()
   MultiAssayExperiment::MultiAssayExperiment(experiments = sel)
 }
 
@@ -570,9 +570,9 @@ prepare_input.MultiAssayExperiment <-
       })
     
     if (split_data) {
-      inl$df_ <- unique(plyr::rbind.fill(inl$df_list))
-      inl$df_ <- identify_data_type(inl$df_)
-      inl$df_list <- split_raw_data(inl$df_)
+      inl$df_ <- lapply(inl$df_list, identify_data_type)
+      inl$df_list <- split_raw_data(unique(plyr::rbind.fill(inl$df_[grep("single-agent",
+                                                                         names(x), invert = TRUE)])))
     } else {
       names(inl$df_list) <- names(x)
     }
