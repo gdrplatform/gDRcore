@@ -571,8 +571,11 @@ prepare_input.MultiAssayExperiment <-
     
     if (split_data) {
       inl$df_ <- lapply(inl$df_list, identify_data_type)
-      inl$df_list <- split_raw_data(unique(plyr::rbind.fill(inl$df_[grep("single-agent",
-                                                                         names(x), invert = TRUE)])))
+      if (length(names(x)) > 1) {
+        inl$df_ <- inl$df_[grep("single-agent",
+                     names(x), invert = TRUE)]
+      }
+      inl$df_list <- split_raw_data(unique(plyr::rbind.fill(inl$df_)))
     } else {
       names(inl$df_list) <- names(x)
     }
