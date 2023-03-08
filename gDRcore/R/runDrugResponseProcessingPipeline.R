@@ -579,6 +579,9 @@ prepare_input.MultiAssayExperiment <-
     } else {
       names(inl$df_list) <- names(x)
     }
+    
+    # Some experiment can have nested_confounders = NULL that is appropriate situation for
+    # internal data
     nested_confounders <- if (!is.null(nested_confounders) &&
                               any(!nested_confounders %in% names(inl$df_list[[1]]))) {
       warning(
@@ -603,11 +606,6 @@ prepare_input.MultiAssayExperiment <-
       inl$nested_confounders <- nested_confounders
     }
     
-    inl$nested_confounders <- if (is.null(nested_confounders)) {
-      gDRutils::get_SE_identifiers(x[[1]], "barcode")
-    } else {
-      nested_confounders
-    }
     
     inl$nested_identifiers_l <- if (is.null(nested_identifiers_l)) {
       .get_default_nested_identifiers(x[[1]])
