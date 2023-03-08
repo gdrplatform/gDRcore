@@ -136,7 +136,9 @@ fit_SE.combinations <- function(se,
       # remove degenerated fits
       metrics_merged <-
         metrics_merged[!(metrics_merged$fit_type %in% c("DRCInvalidFitResult", "DRCTooFewPointsToFit")), ]
-      
+      if (nrow(metrics_merged) == 0) {
+        metrics_merged[1, ] <- NA
+      }
       keep <- intersect(colnames(complete), c(metric, "row_values", "col_values", "codil_values"))
       mat <- as.matrix(complete[, keep])
       complete$average <- rowMeans(mat, na.rm = TRUE)
