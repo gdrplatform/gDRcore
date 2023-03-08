@@ -65,6 +65,7 @@ fit_SE.combinations <- function(se,
       smooth_mx <- hsa_excess <- bliss_excess <- isobolograms <- metrics <- 
         bliss_score[, c("row_id", "col_id")] <- hsa_score[, c("row_id", "col_id")] <-
         CIScore_50[, c("row_id", "col_id")] <- CIScore_80[, c("row_id", "col_id")] <-
+        all_iso_points <-
         data.frame(row_id = i, col_id = j)
       return(list(bliss_excess = bliss_excess,
            hsa_excess = hsa_excess,
