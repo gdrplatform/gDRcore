@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.19] - 2023-03-07
+#### Add support for splitting normalization types
+
 ### [1.3.18] - 2023-03-06
 ### improve logic in functions used to generate isobolograms' data
 

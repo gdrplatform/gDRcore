@@ -21,7 +21,7 @@
 fit_SE.combinations <- function(se,
                                 data_type = "matrix",
                                 series_identifiers = NULL,
-                                normalization_types = c("GRvalue", "RelativeViability"),
+                                normalization_types = c("GR", "RV"),
                                 averaged_assay = "Averaged",
                                 metrics_assay = "Metrics"
                                 ) {
@@ -83,8 +83,12 @@ fit_SE.combinations <- function(se,
     avg_combo[[id]] <- replace_conc_with_standardized_conc(avg_combo[[id]], conc_map, "concs", "rconcs")
     avg_combo[[id2]] <- replace_conc_with_standardized_conc(avg_combo[[id2]], conc_map, "concs", "rconcs")
     
-    mean_avg_combo <- aggregate(avg_combo[, normalization_types, drop = FALSE], by = as.list(avg_combo[, c(id, id2)]), 
-          FUN = function(x) mean(x, na.rm = TRUE))
+    
+    mean_avg_combo <- stats::aggregate(stats::as.formula(paste("x ~ ",
+                                                        paste(c(id, id2, "normalization_type"),
+                                                              collapse = " + "))),
+                                       function(x) mean(x, na.rm = TRUE),
+                                       data = avg_combo, na.action = stats::na.pass)
     # deal with cases of multiple concentrations mapped to the same value when rounded
     # create a complete matrix with the most frequence combo concentrations
     conc1 <- table(avg_combo[[id]])
@@ -97,21 +101,21 @@ fit_SE.combinations <- function(se,
     complete <- merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2))
 
     for (metric in normalization_types) {
-      metric_name <- switch(metric,
-                            "GRvalue" = "GR",
-                            "RelativeViability" = "RV",
-                            "unknown")
-
+      metric_name <- gDRutils::extend_normalization_type_name(metric)
+      
       # fit by column: the series in the primary identifier, the cotrt is the secondary one
-      col_fittings <- fit_combo_cotreatments(avg_combo, series_id = id, cotrt_id = id2, metric)
+      col_fittings <- fit_combo_cotreatments(avg_combo,
+                                             series_id = id, cotrt_id = id2, metric)
       col_fittings <- col_fittings[!is.na(col_fittings$fit_type), ]
 
       # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
-      row_fittings <- fit_combo_cotreatments(avg_combo, series_id = id2, cotrt_id = id, metric)
+      row_fittings <- fit_combo_cotreatments(avg_combo,
+                                             series_id = id2, cotrt_id = id, metric)
       row_fittings <- row_fittings[!is.na(row_fittings$fit_type), ]
 
       # fit by codilution (diagonal)
-      codilution_fittings <- fit_combo_codilutions(avg_combo, series_identifiers, metric)
+      codilution_fittings <- fit_combo_codilutions(avg_combo[avg_combo$normalization_type == metric, ],
+                                                   series_identifiers, metric)
       codilution_fittings <- codilution_fittings[!is.na(codilution_fittings$fit_type), ]
 
       # apply the fit to get smoothed data: results per column
