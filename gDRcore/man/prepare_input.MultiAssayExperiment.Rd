@@ -9,6 +9,7 @@
   nested_confounders = gDRutils::get_SE_identifiers(x[[1]], "barcode"),
   nested_identifiers_l = .get_default_nested_identifiers(x[[1]]),
   raw_data_field = "experiment_raw_data",
+  split_data = TRUE,
   ...
 )
 }
@@ -24,6 +25,8 @@ Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passe
 for `single-agent` and (optionally) for `combination` data}
 
 \item{raw_data_field}{metadata field with raw data}
+
+\item{split_data}{Boolean indicating need of splitting the data into experiment types}
 
 \item{...}{additional parameters}
 }

@@ -99,7 +99,8 @@ create_and_normalize_SE <- function(df_,
                                       mean(x, trim = 0.25)
                                     },
                                     nested_identifiers = NULL,
-                                    nested_confounders = gDRutils::get_env_identifiers("barcode"), 
+                                    nested_confounders = intersect(names(df_), 
+                                                                   gDRutils::get_env_identifiers("barcode")), 
                                     override_untrt_controls = NULL,
                                     ndigit_rounding = 4,
                                     control_assay = "Controls",
@@ -327,7 +328,7 @@ runDrugResponseProcessingPipeline <- function(x,
     se <- list()
     }
   }
-  
+  gDRutils::reset_env_identifiers()
   MultiAssayExperiment::MultiAssayExperiment(experiments = sel)
 }
 
@@ -538,6 +539,7 @@ prepare_input.data.frame <-
 #' in the assays of the resulting \code{SummarizedExperiment} object.
 #' Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
 #' @param raw_data_field metadata field with raw data
+#' @param split_data Boolean indicating need of splitting the data into experiment types
 #' 
 #' @export
 prepare_input.MultiAssayExperiment <-
@@ -545,6 +547,7 @@ prepare_input.MultiAssayExperiment <-
            nested_confounders = gDRutils::get_SE_identifiers(x[[1]], "barcode"),
            nested_identifiers_l = .get_default_nested_identifiers(x[[1]]),
            raw_data_field = "experiment_raw_data",
+           split_data = TRUE,
            ...) {
     
     checkmate::assert_true(inherits(x, "MultiAssayExperiment"))
@@ -565,8 +568,20 @@ prepare_input.MultiAssayExperiment <-
         }
          md[[raw_data_field]]
       })
-    names(inl$df_list) <- names(x)
     
+    if (split_data) {
+      inl$df_ <- lapply(inl$df_list, identify_data_type)
+      if ("matrix" %in% names(x)) {
+        inl$df_ <- inl$df_[grep("single-agent",
+                     names(x), invert = TRUE)]
+      }
+      inl$df_list <- split_raw_data(unique(plyr::rbind.fill(inl$df_)))
+    } else {
+      names(inl$df_list) <- names(x)
+    }
+    
+    # Some experiment can have nested_confounders = NULL that is appropriate situation for
+    # internal data
     nested_confounders <- if (!is.null(nested_confounders) &&
                               any(!nested_confounders %in% names(inl$df_list[[1]]))) {
       warning(
@@ -591,11 +606,6 @@ prepare_input.MultiAssayExperiment <-
       inl$nested_confounders <- nested_confounders
     }
     
-    inl$nested_confounders <- if (is.null(nested_confounders)) {
-      gDRutils::get_SE_identifiers(x[[1]], "barcode")
-    } else {
-      nested_confounders
-    }
     
     inl$nested_identifiers_l <- if (is.null(nested_identifiers_l)) {
       .get_default_nested_identifiers(x[[1]])

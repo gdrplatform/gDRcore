@@ -65,6 +65,7 @@ fit_SE.combinations <- function(se,
       smooth_mx <- hsa_excess <- bliss_excess <- isobolograms <- metrics <- 
         bliss_score[, c("row_id", "col_id")] <- hsa_score[, c("row_id", "col_id")] <-
         CIScore_50[, c("row_id", "col_id")] <- CIScore_80[, c("row_id", "col_id")] <-
+        all_iso_points <-
         data.frame(row_id = i, col_id = j)
       return(list(bliss_excess = bliss_excess,
            hsa_excess = hsa_excess,
@@ -138,8 +139,11 @@ fit_SE.combinations <- function(se,
       # we need it to distinguish which rows are col_fittings/row_fittings and codilution_fitting
       metrics_merged$source <- rep(metrics_names, vapply(mget(metrics_names), nrow, numeric(1)))
       # remove degenerated fits
-      metrics_merged <- metrics_merged[metrics_merged$N_conc > 1, ]
-
+      metrics_merged <-
+        metrics_merged[!(metrics_merged$fit_type %in% c("DRCInvalidFitResult", "DRCTooFewPointsToFit")), ]
+      if (nrow(metrics_merged) == 0) {
+        metrics_merged[1, ] <- NA
+      }
       keep <- intersect(colnames(complete), c(metric, "row_values", "col_values", "codil_values"))
       mat <- as.matrix(complete[, keep])
       complete$average <- rowMeans(mat, na.rm = TRUE)
