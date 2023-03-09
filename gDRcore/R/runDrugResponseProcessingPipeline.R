@@ -248,19 +248,6 @@ runDrugResponseProcessingPipeline <- function(x,
                                                      nested_confounders = inl$nested_confounders,
                                                      override_untrt_controls = override_untrt_controls)
     
-<<<<<<< HEAD
-    paste_warnings(se$warnings)
-    se <- purrr::quietly(average_SE)(se = se$result,
-                                     series_identifiers = experiment_identifier,
-                                     override_masked = override_masked,
-                                     normalized_assay = normalized_assay,
-                                     averaged_assay = averaged_assay)
-    paste_warnings(se$warnings)
-    se <- if (experiment == "matrix") {
-      purrr::quietly(fit_SE.combinations)(se = se$result,
-                          series_identifiers = experiment_identifier,
-                          averaged_assay = averaged_assay)
-=======
     if (add_raw_data) {
       se$result <-
         gDRutils::set_SE_experiment_raw_data(se$result, inl$df_list[[experiment]])
@@ -309,7 +296,6 @@ runDrugResponseProcessingPipeline <- function(x,
         save_intermediate_data(data_dir, "average_SE", experiment, se$result)
       }
       paste_warnings(se$warnings)
->>>>>>> master
     } else {
        if (is_preceding_step("average_SE", start_from)) {
         se$result <- read_intermediate_data(data_dir, "average_SE", experiment)
