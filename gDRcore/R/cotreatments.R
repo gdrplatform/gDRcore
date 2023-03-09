@@ -3,6 +3,14 @@ fit_combo_cotreatments <- function(measured, series_id, cotrt_id, normalization_
   series_concs <- setdiff(unique(measured[, series_id]), 0)
   cotrt_concs <- unique(measured[, cotrt_id])   # keep the single agent for the series_id
 
+  if (all(measured$normalization_type != normalization_type)) {
+    measured$x <- NA
+    measured$x_std <- NA
+    measured$normalization_type <- normalization_type
+  } else {
+    measured <- measured[measured$normalization_type == normalization_type, ]
+  }
+  
   # Single agent fit for the cotrt (to be used as the reference) --> ids are flipped
   sa_fit <- fit_cotreatment_series(measured, series_id = cotrt_id, cotrt_id = series_id, cotrt_value = 0,
     normalization_type = normalization_type, e_0 = 1, GR_0 = 1)
@@ -23,7 +31,6 @@ fit_combo_cotreatments <- function(measured, series_id, cotrt_id, normalization_
     cotrt_fittings[[i]] <- fit_cotreatment_series(measured, series_id = series_id, cotrt_id = cotrt_id,
       cotrt_value = conc, normalization_type = normalization_type, e_0 = sa, GR_0 = sa)    
   }
-
   do.call("rbind", cotrt_fittings)
 }
 

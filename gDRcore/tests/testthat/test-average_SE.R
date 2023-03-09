@@ -4,8 +4,9 @@ test_that("average_SE works as expected", {
   v <- rep(seq(0.1, 0.4, 0.1), 9)
   df <- S4Vectors::DataFrame(Concentration = d,
                              masked = rep(c(TRUE, TRUE, TRUE, FALSE), 9),
-                             GRvalue = v,
-                             RelativeViability = v)
+                             normalization_type = rep(c("GR", "RV"),
+                                                      length(v) * 2),
+                             x = rep(v, 2))
   normalized <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = df)
 
   keys <- list(Trt = "Concentration",
@@ -39,7 +40,7 @@ test_that("average_SE works as expected", {
       averaged_assay = "Averaged"
     )
   avg2 <- SummarizedExperiment::assays(se2)[["Averaged"]][1, 1][[1]]
-  expect_true(all(avg2$Concentration == seq(0.1, 0.9, 0.1)))
+  expect_true(all(avg2$Concentration == rep(seq(0.1, 0.9, 0.1), each = 2)))
   expect_true(all(avg2$GRvalue == 0.25))
   expect_true(all(avg2$RelativeViability == 0.25))
 })

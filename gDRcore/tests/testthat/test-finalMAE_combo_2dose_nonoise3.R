@@ -3,7 +3,7 @@ test_that("combo_2dose_nonoise3: test_synthetic_data", {
   original <- get_synthetic_data(data)
   
   mae <- purrr::quietly(gDRtestData::generateComboNoNoiseData3)(
-    cell_lines, drugs, e_inf, ec50, hill_coef
+    cell_lines, drugs, e_inf, ec50, hill_coef, FALSE
   )
   expect_length(mae$warnings, 6)
 

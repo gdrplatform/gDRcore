@@ -44,7 +44,7 @@ fit_SE(
   force_fit = FALSE,
   pcutoff = 0.05,
   cap = 0.1,
-  curve_type = c("GRvalue", "RelativeViability")
+  curve_type = c("GR", "RV")
 )
 
 normalize_SE(
