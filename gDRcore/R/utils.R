@@ -243,13 +243,20 @@ get_default_nested_identifiers.SummarizedExperiment <- function(x,
 }
 
 .get_default_combination_nested_identifiers <- function(se = NULL) {
-  if (is.null(se)) {
-    as.character(unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
-                                         simplify = FALSE)))
+  identifiers <- if (is.null(se)) {
+    gDRutils::get_env_identifiers(
+      k = c("concentration", "concentration2"),
+      simplify = FALSE
+    )
   } else {
-    as.character(unlist(gDRutils::get_SE_identifiers(se, c("concentration", "concentration2"),
-                                        simplify = FALSE)))
+    gDRutils::get_SE_identifiers(
+      se = se, 
+      id_type = c("concentration", "concentration2"),
+      simplify = FALSE
+    )
   }
+  
+  as.character(unlist(identifiers))
 }
 
 .catch_warnings <- function(x) {
