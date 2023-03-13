@@ -76,10 +76,12 @@ average_SE <- function(se,
       rownames(agg_df) <- paste(seq_len(nrow(agg_df)), agg_df$normalization_type, sep = "_")
     }
 
-    if (nrow(agg_df) != 0L) {
-      agg_df$row_id <- i
-      agg_df$col_id <- j
+    if (nrow(agg_df) == 0) {
+      agg_df <- data.frame(NA)
     }
+    
+    agg_df$row_id <- i
+    agg_df$col_id <- j
     agg_df
   })
 

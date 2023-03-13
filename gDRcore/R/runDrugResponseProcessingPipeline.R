@@ -475,6 +475,8 @@ prepare_input.data.frame <-
     checkmate::assert_data_frame(x, min.rows = 1, min.cols = 1)
     checkmate::assert_character(nested_confounders, null.ok = TRUE)
     checkmate::assert_list(nested_identifiers_l, null.ok = TRUE)
+    
+    
    
     inl <- list(
       df_ = NULL,
@@ -498,7 +500,8 @@ prepare_input.data.frame <-
         )
       )
       confounders_intersect <-
-        intersect(nested_confounders, names(x))
+        intersect(c(nested_confounders,
+                    gDRutils::get_env_identifiers("barcode")), names(x))
       if (length(confounders_intersect) == 0) {
         NULL
       } else {
@@ -593,7 +596,8 @@ prepare_input.MultiAssayExperiment <-
         )
       )
       confounders_intersect <-
-        intersect(nested_confounders, names(inl$df_list[[1]]))
+        intersect(c(nested_confounders,
+                    gDRutils::get_env_identifiers("barcode")), names(inl$df_list[[1]]))
       if (length(confounders_intersect) == 0) {
         NULL
       } else {
