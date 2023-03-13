@@ -24,7 +24,10 @@ test_that("normalize_SE works as expected", {
   metadata <- list(identifiers = list("cellline_name" = "CellLineName", 
                                       "cellline_ref_div_time" = "ReferenceDivisionTime", 
                                       "duration" = "Duration", 
-                                      "masked_tag" = "masked"),
+                                      "masked_tag" = "masked",
+                                      "barcode" = "Barcode",
+                                      "concentration" = "Concentration",
+                                      "concentration2" = "Concentration2"),
                    Keys = keys)
   
   se <- SummarizedExperiment::SummarizedExperiment(assays = list("RawTreated" = trted, "Controls" = ctrl), 
@@ -33,15 +36,15 @@ test_that("normalize_SE works as expected", {
                                                    metadata = metadata)
 
 
-  se <- normalize_SE(se)
+  se <- normalize_SE(se, data_type = "single-agent")
   normalized <- SummarizedExperiment::assays(se)[["Normalized"]][1, 1][[1]]
 
-  expect_true(is(normalized, "DataFrame"))
-  expect_equal(dim(normalized), c(6, 4))
-  expect_true(all(colnames(normalized) %in% c("Concentration", "masked", "GRvalue", "RelativeViability")))
-  expect_equal(normalized$Concentration, conc)
+  expect_true(methods::is(normalized, "DataFrame"))
+  expect_equal(dim(normalized), c(12, 4))
+  expect_true(all(colnames(normalized) %in% c("Concentration", "masked", "normalization_type", "x")))
+  expect_equal(unique(normalized$Concentration), unique(conc))
   
-  se2 <- normalize_SE(se, nested_confounders = 
+  se2 <- normalize_SE(se, "single-agent", nested_confounders = 
                         c(gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE), "masked"))
   expect_s4_class(se2, "SummarizedExperiment")
 })
@@ -55,7 +58,7 @@ test_that("fill_NA_ref works as expected", {
                     Day0Readout = rep(NA, n))
 
   obs <- gDRcore:::fill_NA_ref(tst, nested_keys = "Barcode")
-  expect_true(is(obs, "DFrame"))
+  expect_true(methods::is(obs, "DFrame"))
   expect_equal(dim(obs), c(n, ncol(tst))) 
   expect_equal(obs$UntrtReadout, c(100, 75, 50, 75, 75, 75))
   expect_false(any(is.na(obs$RefReadout)))

@@ -107,78 +107,149 @@ Order_result_df <- function(df_) {
   return(df_)
 }
 
-
 #' Detect model of data
 #'
-#' @param df_ data.frame of raw drug response data containing both treated and untreated values. 
-#'
-#' @return string with the information of the raw data follows single-agent or combo data model
+#' @param x data.frame with raw data or SummarizedExperiment object with gDR assays
+#' 
+#' @return string with the information of the raw data follows single-agent or combination data model
 #' @export
-data_model <- function(df_) {
-  checkmate::assert_data_frame(df_)
+data_model <- function(x) {
+  UseMethod("data_model")
+}
+
+
+#' Detect model of data in data.frame
+#'
+#' @param x data.frame of raw drug response data containing both treated and untreated values. 
+#'
+#' @return string with the information of the raw data follows single-agent or combination data model
+#' @export
+data_model.data.frame <- function(x) {
+  
+  checkmate::assert_data_frame(x)
   drug_ids <- unlist(gDRutils::get_env_identifiers(c("drug_name", "drug_name2"), simplify = FALSE))
   cl_id <- gDRutils::get_env_identifiers("cellline")
   conc2 <- gDRutils::get_env_identifiers("concentration2")
-  if (all(.get_default_combo_identifiers() %in% colnames(df_))) {
-    if (all(df_[[conc2]]
+  if (all(.get_default_combination_nested_identifiers() %in% colnames(x))) {
+    if (all(x[[conc2]]
             %in% gDRutils::get_env_identifiers("untreated_tag"))) {
       "single-agent"
     } else {
-      df_subset <- unique(subset(df_, select = c(drug_ids, cl_id, conc2)))
-      cotrt <- all(table(subset(df_subset, select = c(drug_ids, cl_id))) < 4) # detect co-trt
-      if (cotrt) {
-        "single-agent"
-      } else {
-        "combo"
-      }
+        "combination"
     }
-  } else if (.get_default_single_agent_identifiers() %in% colnames(df_)) {
+  } else if (.get_default_single_agent_nested_identifiers() %in% colnames(x)) {
     "single-agent"
   } else {
     stop("Unknown data model")
   }
 }
 
-#' Get default nested identifiers
+
 #'
-#' @param x data.frame with raw data or SummarizedExperiment object with gDR assays
-#' @param assayName assay name used for finding nested_identifiers in SummarizedExperiment object
-#' @return vector of nested identifiers
-#' @export
-get_nested_default_identifiers <- function(x, ...) {
-  UseMethod("get_nested_default_identifiers")
+#' 
+get_data_type_to_data_model_mapping <- function() {
+  c(
+    `single-agent` = "single-agent",
+    "cotreatment" = "single-agent",
+    "co-dilution" = "single-agent",
+    "matrix" = "combination"
+  )
 }
 
-
+#' Detect model of data from experiment name
+#'
+#' @param x character with experiment name
+#'
+#' @return string with the information of the raw data follows single-agent or combination data model
 #' @export
-#' @describeIn get_nested_default_identifiers
-get_nested_default_identifiers.data.frame <- function(x) {
-  checkmate::assert_data_frame(x)
-  data_type <- data_model(x)
-  if (data_type == "single-agent") {
-    .get_default_single_agent_identifiers()
-  } else {
-    .get_default_combo_identifiers()
+data_model.character <- function(x) {
+  # TODO: switch to gDRutils::get_experiment_groups()
+  # once we clean-up single-agent/combination assignemnts
+  exp_v <- get_data_type_to_data_model_mapping()
+  
+  checkmate::assert_subset(x, names(exp_v))
+  
+  exp_v[[x]]
+  
+}
+
+validate_data_models_availability <- function(d_types, s_d_models) {
+  
+  dm_v <- get_data_type_to_data_model_mapping()
+  
+  req_d_models <-
+    unique(as.character(dm_v[names(dm_v) %in% d_types]))
+  f_models <- req_d_models[!req_d_models %in% s_d_models]
+  if (length(f_models)) {
+    msg1 <-
+      sprintf(
+        "'nested_identifiers_l' lacks information for the following data model(s): '%s'",
+        toString(f_models)
+      )
+    stop(msg1)
   }
 }
 
+#' Get default nested identifiers
+#'
+#' @param x data.frame with raw data or SummarizedExperiment object with gDR assays
+#' @param data_model single-agent vs combination
+#' @return vector of nested identifiers
 #' @export
-#' @describeIn get_nested_default_identifiers
-get_nested_default_identifiers.SummarizedExperiment <- function(x,
-                                                                assayName =
-                                                                  tail(SummarizedExperiment::assayNames(x), 1)) {
-  checkmate::assert_class(x, "SummarizedExperiment")
-  intersect(.get_default_combo_identifiers(),
-            names(BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(x, assayName))))
+get_default_nested_identifiers <- function(x, data_model = NULL) {
+  UseMethod("get_default_nested_identifiers")
 }
 
-.get_default_single_agent_identifiers <- function() {
-  gDRutils::get_env_identifiers("concentration")
+
+#' @export
+#' @rdname get_default_nested_identifiers
+get_default_nested_identifiers.data.frame <- function(x, data_model = NULL) {
+  
+  checkmate::assert_data_frame(x)
+  checkmate::assert_choice(data_model, c("single-agent", "combination"), null.ok = TRUE)
+  
+  .get_default_nested_identifiers(se = NULL, data_model = NULL)
+  
 }
 
-.get_default_combo_identifiers <- function() {
-  unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
-                                       simplify = FALSE))
+#' @export
+#' @rdname get_default_nested_identifiers
+get_default_nested_identifiers.SummarizedExperiment <- function(x,
+                                                                data_model = NULL) {
+  
+  .get_default_nested_identifiers(x, data_model)
+}
+
+.get_default_nested_identifiers <- function(se = NULL, data_model = NULL) {
+ 
+  checkmate::assert_choice(data_model, c("single-agent", "combination"), null.ok = TRUE)
+ 
+  ml <- list(`single-agent` = .get_default_single_agent_nested_identifiers(se),
+             combination = .get_default_combination_nested_identifiers(se))
+  if (is.null(data_model)) {
+    ml
+  } else {
+    ml[[data_model]]
+  }
+  
+}
+
+.get_default_single_agent_nested_identifiers <- function(se = NULL) {
+  if (is.null(se)) {
+    gDRutils::get_env_identifiers("concentration")
+  } else {
+    gDRutils::get_SE_identifiers(se, "concentration")
+  }
+}
+
+.get_default_combination_nested_identifiers <- function(se = NULL) {
+  if (is.null(se)) {
+    as.character(unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
+                                         simplify = FALSE)))
+  } else {
+    as.character(unlist(gDRutils::get_SE_identifiers(se, c("concentration", "concentration2"),
+                                        simplify = FALSE)))
+  }
 }
 
 .catch_warnings <- function(x) {
@@ -276,4 +347,100 @@ matches <- function(x, y, all.x = TRUE, all.y = TRUE, list = FALSE, indexes = TR
   result
 }
 
+
+#' get info about created/present assays in SE at the given pipeline step
+#' @param step string with pipeline step
+#' @param data_model single-agent vs combination
+#' @param status string return vector of assays created or present at the given step?
+#' 
+get_assays_per_pipeline_step <-
+  function(step,
+           data_model,
+           status = c("created", "present")) {
+    
+    checkmate::assert_choice(step, get_pipeline_steps())
+    checkmate::assert_choice(data_model, c("single-agent", "combination"))
+    checkmate::assert_choice(status, c("created", "present"))
+    
+    fit_se <- if (data_model == "single-agent") {
+      "Metrics"
+    } else {
+      c(
+        "BlissExcess",
+        "BlissScore",
+        "CIScore_50",
+        "CIScore_80",
+        "HSAExcess",
+        "HSAScore",
+        "isobolograms",
+        "Metrics",
+        "SmoothMatrix"
+      )
+    }
+    as_map <- list(
+      "create_SE" = c("RawTreated", "Controls"),
+      "normalize_SE" = "Normalized",
+      "average_SE" = "Averaged",
+      "fit_SE" = fit_se
+    )
+    
+    ass <- if (status == "created") {
+      as_map[[step]]
+    } else {
+      as.character(unlist(as_map[seq_len(which(names(as_map) == step))]))
+    }
+    ass
+  }
+
+#' add intermediate data (qs files) for given ma
+#' @param mae mae with dose-response data
+#' @param data_dir  output directory
+#' @param steps charvec with pipeline steps for which intermediate data should be saved
+#' 
+#' @export
+add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
+  
+  checkmate::assert_class(mae, "MultiAssayExperiment")
+  checkmate::assert_directory(data_dir, access = "rw")
+  checkmate::assert_subset(steps, get_pipeline_steps())
+  
+  for (data_type in names(mae)) {
+    for (step in steps) {
+      as_names <-
+        get_assays_per_pipeline_step(step, data_model(data_type), status = "present")
+      se <- mae[[data_type]]
+      se_subset <- SummarizedExperiment::SummarizedExperiment(
+        assays = SummarizedExperiment::assays(se)[as_names],
+        rowData = SummarizedExperiment::rowData(se),
+        colData = SummarizedExperiment::colData(se),
+        metadata = S4Vectors::metadata(se)
+      )
+      save_intermediate_data(data_dir, step, data_type, se_subset)
+    }
+  }
+}
+
+#' get mae dataset from intermediate data
+#' 
+#' @param data_dir directory with intermediate data
+#' 
+#' @export
+get_mae_from_intermediate_data <- function(data_dir) {
+  
+  checkmate::assert_directory(data_dir)
+  
+  last_step <- tail(get_pipeline_steps(), n = 1)
+  s_pattern <- paste0("__", last_step, ".qs")
+  
+  fpaths <- list.files(data_dir, pattern = s_pattern, full.names = TRUE)
+  checkmate::assert_true(length(fpaths) > 0)
+  
+  sel <- list()
+  
+  for (fpath in fpaths) {
+    exp_name <- sub(s_pattern, "", basename(fpath))
+    sel[[exp_name]] <- qs::qread(fpath)
+  }
+  MultiAssayExperiment::MultiAssayExperiment(experiments = sel)
+}
 

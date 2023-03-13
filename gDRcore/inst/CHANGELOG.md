@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 #### [1.3.12] - 2023-01-05
 #### refactor identify_data_type 
 
+#### [1.3.19] - 2023-03-07
+#### Add support for splitting normalization types
+
+### [1.3.18] - 2023-03-06
+### improve logic in functions used to generate isobolograms' data
+
+#### [1.3.17] - 2023-03-06
+#### Remove obsolete code
+
+#### [1.3.16] - 2023-02-21
+### Add support for partial pipeline runs
+
+#### [1.3.15] - 2023-02-10
+#### Update path to annotation data
+
+#### [1.3.14] - 2023-02-10
+#### Clean-up code
+
+#### [1.3.13] - 2023-01-13
+#### Clean-up code
+
+#### [1.3.12] - 2023-01-12
+#### Refactor mapping function to properly handle drug3
+
 #### [1.3.11] - 2022-12-16
 #### Replace parallelize function with gDRutils::loop
 

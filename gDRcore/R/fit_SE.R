@@ -2,6 +2,7 @@
 #' @export
 #'
 fit_SE <- function(se, 
+                   data_type = "single-agent",
                    nested_identifiers = NULL,
                    averaged_assay = "Averaged", 
                    metrics_assay = "Metrics", 
@@ -10,7 +11,7 @@ fit_SE <- function(se,
                    force_fit = FALSE,
                    pcutoff = 0.05,
                    cap = 0.1,
-                   curve_type = c("GRvalue", "RelativeViability")) {
+                   curve_type = c("GR", "RV")) {
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
@@ -29,7 +30,7 @@ fit_SE <- function(se,
 
   
   if (is.null(nested_identifiers)) {
-    nested_identifiers <- get_nested_default_identifiers(se, averaged_assay)
+    nested_identifiers <- get_default_nested_identifiers(se, data_model(data_type))
   }
   
   
@@ -48,7 +49,6 @@ fit_SE <- function(se,
     colnames(fit_df) <- metric_cols
     rownames(fit_df) <- c("RV", "GR")
 
-    
     if (!is.null(avg_df) && all(dim(avg_df) > 0)) {
       if (!all(is.na(avg_df[[gDRutils::get_env_identifiers("concentration")]]))) {
         avg_df <- avg_df[avg_df[[

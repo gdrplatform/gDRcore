@@ -32,7 +32,7 @@ add_CellLine_annotation <- function(df_metadata,
   # Read local cell_lines annotations
   annotationPackage <- ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
                               "gDRinternalData", "gDRtestData")
-  CLs_info <- read.csv(system.file("data", fname, package = annotationPackage))
+  CLs_info <- utils::read.csv(system.file("annotation_data", fname, package = annotationPackage))
   CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate)]
   
   if (nrow(CLs_info) == 0) return(df_metadata)
@@ -53,7 +53,10 @@ add_CellLine_annotation <- function(df_metadata,
   if (any(!df_metadata[[cellline]] %in% CLs_info[[DB_cellid_header]]) && !is.null(missingTblCellLines)) {
     CLs_info <- rbind(CLs_info, missingTblCellLines)
   }
-  CLs_info[is.na(CLs_info)] <- fill
+  cols_to_fill <- names(CLs_info)[!names(CLs_info) %in% "doubling_time"]
+  for (col in cols_to_fill) {
+    CLs_info[[col]][is.na(CLs_info[[col]])] <- fill
+  }
   CLs_info[, "doubling_time"] <- as.numeric(CLs_info[, "doubling_time"])
   
   colnames(CLs_info) <- unlist(c(cellline, add_clid, tail(DB_cell_annotate, 2)))
@@ -120,7 +123,7 @@ add_Drug_annotation <- function(df_metadata,
   # Read local drugs annotations
   annotationPackage <- ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
                               "gDRinternalData", "gDRtestData")
-  Drug_info <- read.csv(system.file("data", fname, package = annotationPackage),
+  Drug_info <- utils::read.csv(system.file("annotation_data", fname, package = annotationPackage),
                         header = TRUE)
   Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa")]
   names(Drug_info) <- c("drug", "drug_name", "drug_moa")
@@ -152,7 +155,7 @@ add_Drug_annotation <- function(df_metadata,
     Drug_info)
   Drug_info <- Drug_info[!duplicated(Drug_info[["drug"]]), ]
   if (any(!remove_drug_batch(drugsTreated) %in% Drug_info$drug) && !is.null(missingTblDrugs)) {
-    Drug_info <- rbind(Drug_info, setNames(
+    Drug_info <- rbind(Drug_info, stats::setNames(
       missingTblDrugs[!(remove_drug_batch(missingTblDrugs$drug) %in% Drug_info$drug), ],
       names(Drug_info)))
   }
@@ -169,6 +172,8 @@ add_Drug_annotation <- function(df_metadata,
 }
 
 #' Remove batch from Gnumber
+#' 
+#' @param drug drug name
 #'
 #' @return Gnumber without a batch
 #' @export

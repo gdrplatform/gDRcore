@@ -2,6 +2,7 @@
 #'
 #' Perform fittings for combination screens.
 #' @param se \code{SummarizedExperiment} object with a BumpyMatrix assay containing averaged data.
+#' @param data_type single-agent vs combination
 #' @param series_identifiers character vector of the column names in the nested \code{DFrame}
 #' corresponding to nested identifiers.
 #' @param normalization_types character vector of normalization types used for calculating combo matrix.
@@ -18,8 +19,9 @@
 #' @export
 #'
 fit_SE.combinations <- function(se,
+                                data_type = "matrix",
                                 series_identifiers = NULL,
-                                normalization_types = c("GRvalue", "RelativeViability"),
+                                normalization_types = c("GR", "RV"),
                                 averaged_assay = "Averaged",
                                 metrics_assay = "Metrics"
                                 ) {
@@ -31,7 +33,7 @@ fit_SE.combinations <- function(se,
   checkmate::assert_string(metrics_assay)
   
   if (is.null(series_identifiers)) {
-    series_identifiers <- get_nested_default_identifiers(se, averaged_assay)
+    series_identifiers <- get_default_nested_identifiers(se, data_model(data_type))
   }
   
   if (length(series_identifiers) != 2L) {
@@ -50,15 +52,16 @@ fit_SE.combinations <- function(se,
   iterator <- unique(avg[, c("column", "row")])
   
   out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
-    bliss_excess <- hsa_excess <- metrics <- isobolograms <- smooth_mx <- NULL
+    bliss_excess <- hsa_excess <- metrics <- all_iso_points <- isobolograms <- smooth_mx <- NULL
     bliss_score <- hsa_score <- CIScore_50 <- CIScore_80 <- S4Vectors::DataFrame(matrix(NA, 1, 0))
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
 
-    avg_combo <- avg[avg$row == i & avg$column == j, ]
-    
-    if (all(is.na(subset(avg_combo, select = -c(row, column))))) { # omit masked values (all NAs)
+    avg_combo <- avg[avg[["row"]] == i & avg[["column"]] == j, ]
+   
+    omit_c_idx <- which(colnames(avg_combo) %in% c("row", "column"))
+    if (all(is.na(avg_combo[, -omit_c_idx]))) { # omit masked values (all NAs)
       smooth_mx <- hsa_excess <- bliss_excess <- isobolograms <- metrics <- 
         bliss_score[, c("row_id", "col_id")] <- hsa_score[, c("row_id", "col_id")] <-
         CIScore_50[, c("row_id", "col_id")] <- CIScore_80[, c("row_id", "col_id")] <-
@@ -66,6 +69,7 @@ fit_SE.combinations <- function(se,
       return(list(bliss_excess = bliss_excess,
            hsa_excess = hsa_excess,
            metrics = metrics,
+           all_iso_points = all_iso_points,
            isobolograms = isobolograms,
            smooth_mx = smooth_mx,
            bliss_score = bliss_score,
@@ -79,8 +83,12 @@ fit_SE.combinations <- function(se,
     avg_combo[[id]] <- replace_conc_with_standardized_conc(avg_combo[[id]], conc_map, "concs", "rconcs")
     avg_combo[[id2]] <- replace_conc_with_standardized_conc(avg_combo[[id2]], conc_map, "concs", "rconcs")
     
-    mean_avg_combo <- aggregate(avg_combo[, normalization_types, drop = FALSE], by = as.list(avg_combo[, c(id, id2)]), 
-          FUN = function(x) mean(x, na.rm = TRUE))
+    
+    mean_avg_combo <- stats::aggregate(stats::as.formula(paste("x ~ ",
+                                                        paste(c(id, id2, "normalization_type"),
+                                                              collapse = " + "))),
+                                       function(x) mean(x, na.rm = TRUE),
+                                       data = avg_combo, na.action = stats::na.pass)
     # deal with cases of multiple concentrations mapped to the same value when rounded
     # create a complete matrix with the most frequence combo concentrations
     conc1 <- table(avg_combo[[id]])
@@ -93,21 +101,21 @@ fit_SE.combinations <- function(se,
     complete <- merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2))
 
     for (metric in normalization_types) {
-      metric_name <- switch(metric,
-                            "GRvalue" = "GR",
-                            "RelativeViability" = "RV",
-                            "unknown")
-
+      metric_name <- gDRutils::extend_normalization_type_name(metric)
+      
       # fit by column: the series in the primary identifier, the cotrt is the secondary one
-      col_fittings <- fit_combo_cotreatments(avg_combo, series_id = id, cotrt_id = id2, metric)
+      col_fittings <- fit_combo_cotreatments(avg_combo,
+                                             series_id = id, cotrt_id = id2, metric)
       col_fittings <- col_fittings[!is.na(col_fittings$fit_type), ]
 
       # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
-      row_fittings <- fit_combo_cotreatments(avg_combo, series_id = id2, cotrt_id = id, metric)
+      row_fittings <- fit_combo_cotreatments(avg_combo,
+                                             series_id = id2, cotrt_id = id, metric)
       row_fittings <- row_fittings[!is.na(row_fittings$fit_type), ]
 
       # fit by codilution (diagonal)
-      codilution_fittings <- fit_combo_codilutions(avg_combo, series_identifiers, metric)
+      codilution_fittings <- fit_combo_codilutions(avg_combo[avg_combo$normalization_type == metric, ],
+                                                   series_identifiers, metric)
       codilution_fittings <- codilution_fittings[!is.na(codilution_fittings$fit_type), ]
 
       # apply the fit to get smoothed data: results per column
@@ -171,10 +179,10 @@ fit_SE.combinations <- function(se,
 
       # average the top 10-percentile excess to get a single value for the excess
       hsa_score[, metric_name] <- ifelse(is.null(h_excess), NA, mean(
-        h_excess$excess[h_excess$excess >= quantile(h_excess$excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
+        h_excess$excess[h_excess$excess >= stats::quantile(h_excess$excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
       )
       bliss_score[, metric_name] <- ifelse(is.null(b_excess), NA, mean(
-        b_excess$excess[b_excess$excess >= quantile(b_excess$excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
+        b_excess$excess[b_excess$excess >= stats::quantile(b_excess$excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
       )
 
       if (all(vapply(isobologram_out, is.null, logical(1)))) {
@@ -188,13 +196,23 @@ fit_SE.combinations <- function(se,
             min(isobologram_out$df_all_AUC_log2CI$iso_level[isobologram_out$df_all_AUC_log2CI$iso_level >= 0.2])]
       }
       
-      b_excess$row_id <- av_matrix$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_curves$row_id <-
-        col_fittings$row_id <- hsa_score[, "row_id"] <- bliss_score[, "row_id"] <-
-        CIScore_50[, "row_id"] <- CIScore_80[, "row_id"] <- metrics_merged$row_id <- i
-      b_excess$col_id <- av_matrix$col_id <- h_excess$col_id <- isobologram_out$df_all_iso_curves$col_id <- 
-        col_fittings$col_id <- hsa_score[, "col_id"] <- bliss_score[, "col_id"] <-
-        CIScore_50[, "col_id"] <- CIScore_80[, "col_id"] <- metrics_merged$col_id <- j
+      b_excess$row_id <- av_matrix$row_id <- h_excess$row_id <- isobologram_out$df_all_iso_points$row_id <-
+        isobologram_out$df_all_iso_curves$row_id <-
+        col_fittings$row_id <-
+        hsa_score[, "row_id"] <- bliss_score[, "row_id"] <-
+        CIScore_50[, "row_id"] <-
+        CIScore_80[, "row_id"] <- metrics_merged$row_id <- i
+      b_excess$col_id <-
+        av_matrix$col_id <-
+        h_excess$col_id <- isobologram_out$df_all_iso_points$col_id <-
+        isobologram_out$df_all_iso_curves$col_id <-
+        col_fittings$col_id <-
+        hsa_score[, "col_id"] <- bliss_score[, "col_id"] <-
+        CIScore_50[, "col_id"] <-
+        CIScore_80[, "col_id"] <- metrics_merged$col_id <- j
+      
       b_excess$normalization_type <- h_excess$normalization_type <- 
+        isobologram_out$df_all_iso_points$normalization_type <-
         isobologram_out$df_all_iso_curves$normalization_type <- metric_name
       
       hsa_excess <- plyr::rbind.fill(hsa_excess, as.data.frame(h_excess))
@@ -205,6 +223,8 @@ fit_SE.combinations <- function(se,
       } else {
         smooth_mx <- as.data.frame(av_matrix)
       }
+      all_iso_points <- plyr::rbind.fill(all_iso_points,
+                                              as.data.frame(isobologram_out$df_all_iso_points))
       isobolograms <- plyr::rbind.fill(isobolograms,
                                               as.data.frame(isobologram_out$df_all_iso_curves))
       metrics <- rbind(metrics, metrics_merged)
@@ -212,6 +232,7 @@ fit_SE.combinations <- function(se,
     list(bliss_excess = bliss_excess,
          hsa_excess = hsa_excess,
          metrics = metrics,
+         all_iso_points = all_iso_points,
          isobolograms = isobolograms,
          smooth_mx = smooth_mx,
          bliss_score = bliss_score,
@@ -223,6 +244,7 @@ fit_SE.combinations <- function(se,
   all_smooth_mx <- rbindParallelList(out, "smooth_mx")
   all_hsa_excess <- rbindParallelList(out, "hsa_excess")
   all_b_excess <- rbindParallelList(out, "bliss_excess")
+  all_iso_points <- rbindParallelList(out, "all_iso_points")
   all_isobolograms <- rbindParallelList(out, "isobolograms")
   all_metrics <- rbindParallelList(out, "metrics")
   
@@ -234,6 +256,7 @@ fit_SE.combinations <- function(se,
   SummarizedExperiment::assays(se)[["SmoothMatrix"]] <- convertDFtoBumpyMatrixUsingIds(all_smooth_mx)
   SummarizedExperiment::assays(se)[["BlissExcess"]] <- convertDFtoBumpyMatrixUsingIds(all_b_excess)
   SummarizedExperiment::assays(se)[["HSAExcess"]] <- convertDFtoBumpyMatrixUsingIds(all_hsa_excess)
+  SummarizedExperiment::assays(se)[["all_iso_points"]] <- convertDFtoBumpyMatrixUsingIds(all_iso_points)
   SummarizedExperiment::assays(se)[["isobolograms"]] <- convertDFtoBumpyMatrixUsingIds(all_isobolograms)
 
   SummarizedExperiment::assays(se)[["BlissScore"]] <- convertDFtoBumpyMatrixUsingIds(bliss_score)

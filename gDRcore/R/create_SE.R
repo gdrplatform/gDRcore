@@ -1,9 +1,10 @@
+#' If a column called \code{"BackgroundValue"} exists in \code{df_},
+#' it will be removed from the \code{readout} column.
 #' @rdname runDrugResponseProcessingPipelineFxns
 #' @export
 #'
-#' If a column called \code{"BackgroundValue"} exists in \code{df_},
-#' it will be removed from the \code{readout} column.
 create_SE <- function(df_,
+                      data_type,
                       readout = "ReadoutValue",
                       control_mean_fxn = function(x) {
                         mean(x, trim = 0.25)
@@ -14,6 +15,7 @@ create_SE <- function(df_,
                       override_untrt_controls = NULL) {
   # Assertions:
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
+  checkmate::assert_string(data_type)
   checkmate::assert_string(readout)
   checkmate::assert_function(control_mean_fxn)
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
@@ -22,10 +24,11 @@ create_SE <- function(df_,
   
 
   if (is.null(nested_identifiers)) {
-    nested_identifiers <- get_nested_default_identifiers(df_)
+    nested_identifiers <-
+      get_default_nested_identifiers(df_)[[data_model(data_type)]]
   }
   
-  if (is(df_, "data.table")) {
+  if (methods::is(df_, "data.table")) {
     df_ <- S4Vectors::DataFrame(df_)
   }
 
