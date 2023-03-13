@@ -138,7 +138,10 @@ prepare_input.MultiAssayExperiment <-
   if (!is.null(nested_confounders) &&
       any(!nested_confounders %in% x_names)) {
     
-    confounders_intersect <- intersect(nested_confounders, x_names)
+    confounders_intersect <- intersect(
+      c(nested_confounders, gDRutils::get_env_identifiers("barcode")), 
+      names(x)
+    )
     
     warning(
       sprintf(
