@@ -98,7 +98,7 @@ prepare_input.MultiAssayExperiment <-
     
     inl$df_list <-
       lapply(names(x), function(y) {
-        md <- metadata(x[[y]])
+        md <- S4Vectors::metadata(x[[y]])
         if (is.null(md[[raw_data_field]])) {
           NULL
         }
