@@ -209,6 +209,7 @@ runDrugResponseProcessingPipeline <- function(x,
   }
   
   inl <- prepare_input(x, nested_confounders, nested_identifiers_l)
+  inl$df_list <- .clear_rownames(inl$df_list)
   
   # sel - list with all experiments data
   # se - list with single experiment data 
@@ -241,6 +242,7 @@ runDrugResponseProcessingPipeline <- function(x,
         msg3 <- sprintf("Consider running the pipeline from the second ('%s') step", get_pipeline_steps()[2])
         stop(c(msg1, msg2, msg3))
       }
+    
     se <- purrr::quietly(create_SE)(df_ = inl$df_list[[experiment]],
                                                      data_type = data_type,
                                                      readout = readout,
@@ -565,7 +567,7 @@ prepare_input.MultiAssayExperiment <-
     
     inl$df_list <-
       lapply(names(x), function(y) {
-        md <- metadata(x[[y]])
+        md <- S4Vectors::metadata(x[[y]])
         if (is.null(md[[raw_data_field]])) {
           NULL
         }
@@ -628,3 +630,14 @@ prepare_input.MultiAssayExperiment <-
     inl
   }
 
+
+#' @keywords internal
+.clear_rownames <- function(x) {
+  lapply(x, function(y) {
+    if (inherits(y, c("DFrame", "data.frame"))) {
+      y <- y[do.call(order, y), ]
+    }
+    rownames(y) <- NULL
+    y
+  })
+}
