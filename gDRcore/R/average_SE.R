@@ -68,7 +68,7 @@ average_SE <- function(se,
                                 agg_df$normalization_type, sep = "_")
     }
 
-    if (nrow(agg_df) == 0 || sum(masked) > 0) {
+    if (sum(masked) > 0 || nrow(agg_df) == 0) {
       p_trt_keys <- intersect(trt_keys, colnames(norm_df))
       all_cols <- unique(c(series_identifiers, p_trt_keys, "x", "x_std",
                            "normalization_type", "row_id", "col_id"))
