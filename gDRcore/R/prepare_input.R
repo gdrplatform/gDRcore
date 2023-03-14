@@ -140,7 +140,7 @@ prepare_input.MultiAssayExperiment <-
     
     confounders_intersect <- intersect(
       c(nested_confounders, gDRutils::get_env_identifiers("barcode")), 
-      names(x)
+      x_names
     )
     
     warning(
