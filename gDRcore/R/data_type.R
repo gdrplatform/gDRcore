@@ -105,6 +105,7 @@ split_raw_data <- function(df,
   drug_ids <- drug_ids[which(drug_ids %in% names(df))]
   codrug_ids <- drug_ids[grep("[0-9]", names(drug_ids))]
   conc_idx <- drug_ids[grep("concentration", names(drug_ids))]
+  codrug_drug_id <- setdiff(codrug_ids, conc_idx)
   
   cl <- gDRutils::get_env_identifiers("cellline")
   df_list <- split(df, df[[type_col]])
@@ -125,7 +126,10 @@ split_raw_data <- function(df,
       cotrt_matching <- rbind(unique_cotrt, unique_cotrt_ctrl)
       df_merged <- rbind(df_list[[x]], merge(cotrt_matching, control))
       if (x == "matrix") {
-        rbind(df_merged, df_list[["single-agent"]])
+        matrix_data <- rbind(df_merged, df_list[["single-agent"]])
+        matrix_data[, conc_idx][is.na(matrix_data[, conc_idx])] <- 0
+        matrix_data[, codrug_drug_id][is.na(matrix_data[, codrug_drug_id])] <- untreated_tag[1]
+        matrix_data
       } else {
         df_merged
       }
