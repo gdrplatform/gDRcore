@@ -166,3 +166,14 @@ read_intermediate_data <- function(path, step, experiment) {
 paste_warnings <- function(list, sep = "\n") {
   warning(paste0(list, sep = sep), call. = FALSE)
 }
+
+#' @keywords internal
+.clear_rownames <- function(x) {
+  lapply(x, function(y) {
+    if (inherits(y, c("DFrame", "data.frame"))) {
+      y <- y[do.call(order, y), ]
+    }
+    rownames(y) <- NULL
+    y
+  })
+}
