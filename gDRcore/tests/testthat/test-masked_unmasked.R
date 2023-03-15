@@ -18,7 +18,7 @@ test_that("masked and unmasked values are processed properly", {
     override_untrt_controls = NULL,
     nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
   )
-  expect_length(finalMAE$warnings, 3)
+  expect_length(finalMAE$warnings, 2)
   
   testthat::expect_s4_class(finalMAE$result, "MultiAssayExperiment")
 })
