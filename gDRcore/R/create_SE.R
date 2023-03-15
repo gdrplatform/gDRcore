@@ -127,8 +127,13 @@ create_SE <- function(df_,
     ctl_df <- if (nrow(day0_df) > 0L) {
       merge(untrt_df, day0_df, by = merge_cols, all = TRUE)
     } else {
-      data.frame(Day0Readout = NA,
-                 UntrtReadout = NA)
+      if (nrow(ctl_df) > 0L) {
+        ctl_df$Day0Readout <- NA
+        ctl_df
+      } else {
+        data.frame(Day0Readout = NA,
+                   UntrtReadout = NA)
+      }
     } 
     
     row_id <- unique(trt_df$row_id)
