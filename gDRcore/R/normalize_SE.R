@@ -138,7 +138,7 @@ fill_NA_ref <- function(ref_df, nested_keys) {
   data_columns <- setdiff(colnames(ref_df), c(nested_keys, "row", "column"))
   ref_cols <- data.frame(ref_df[, data_columns, drop = FALSE])
   
-  if (all(!is.na(ref_cols))) {
+  if (any(!is.na(ref_cols))) {
     ref_df_mean <- colMeans(data.frame(ref_df[, data_columns, drop = FALSE]), na.rm = TRUE)
     for (col in data_columns) {
       ref_df[is.na(ref_df[, col]), col] <- ref_df_mean[[col]]
