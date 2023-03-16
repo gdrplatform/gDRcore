@@ -1,12 +1,12 @@
 create_SE_step <- function(inl, 
-													 exp,
-													 data_type, 
-													 readout, 
-													 control_mean_fxn, 
-													 nested_identifiers,
-													 override_untrt_controls, 
-													 add_raw_data) {
-	df <- inl$df_list[[exp]]
+                           exp,
+                           data_type, 
+                           readout, 
+                           control_mean_fxn, 
+                           nested_identifiers,
+                           override_untrt_controls, 
+                           add_raw_data) {
+  df <- inl$df_list[[exp]]
   if (is.null(df)) {
  
     msg1 <- sprintf(
@@ -23,7 +23,7 @@ create_SE_step <- function(inl,
   }
 
   se <- create_SE(
-  	df_ = df,
+    df_ = df,
     data_type = data_type,
     readout = readout,
     control_mean_fxn = control_mean_fxn,
@@ -33,30 +33,30 @@ create_SE_step <- function(inl,
   )
     
   if (add_raw_data) {
-  	se <- gDRutils::set_SE_experiment_raw_data(
-  	  se = se,
-  	  value = df
-  	)
+    se <- gDRutils::set_SE_experiment_raw_data(
+      se = se,
+      value = df
+    )
   }
 
   invisible(se)
 }
 
 run_pipeline_step <- function(run_vars, 
-										 					step, 
-										 					se,
-										 					step_fun, 
-										 					step_args, 
-										 					if_paste_warnings = FALSE,
-										 					if_read_intermediate_data = TRUE) {
-	if (!run_vars$partial_run || !do_skip_step(step, run_vars$start_from)) {
-		se <- purrr::quietly(do.call)(step_fun, step_args)
+                              step, 
+                              se,
+                              step_fun, 
+                              step_args, 
+                              if_paste_warnings = FALSE,
+                              if_read_intermediate_data = TRUE) {
+  if (!run_vars$partial_run || !do_skip_step(step, run_vars$start_from)) {
+    se <- purrr::quietly(do.call)(step_fun, step_args)
 
     if (!is.null(run_vars$data_dir)) {
       save_intermediate_data(run_vars$data_dir, step, run_vars$exp, se$result)
     }
     if (if_paste_warnings) {
-    	paste_warnings(se$warnings)
+      paste_warnings(se$warnings)
     }
   } else {
     if (if_read_intermediate_data && is_preceding_step(step, run_vars$start_from)) {
