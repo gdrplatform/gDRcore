@@ -107,8 +107,14 @@ fit_SE.combinations <- function(se,
       # fit by column: the series in the primary identifier, the cotrt is the secondary one
       col_fittings <- fit_combo_cotreatments(avg_combo,
                                              series_id = id, cotrt_id = id2, metric)
-      col_fittings <- col_fittings[!is.na(col_fittings$fit_type), ]
-
+      col_fittings <- if (all(is.na(col_fittings$fit_type))) {
+        x <- col_fittings[1, ]
+        x[, "cotrt_value"] <- NA
+        x
+      } else {
+        col_fittings[!is.na(col_fittings$fit_type), ]
+      }
+    
       # fit by row (flipped): the series in the secondary identifier, the cotrt is the primary one
       row_fittings <- fit_combo_cotreatments(avg_combo,
                                              series_id = id2, cotrt_id = id, metric)
@@ -178,7 +184,8 @@ fit_SE.combinations <- function(se,
                         series_identifiers = c(id, id2), normalization_type = metric
                         )
       } else {
-        NULL
+        list(df_all_iso_points = data.frame(row_id = NA, col_id = NA),
+             df_all_iso_curves = data.frame(row_id = NA, col_id = NA))
       }
 
       # average the top 10-percentile excess to get a single value for the excess
