@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.20] - 2023-03-20
+#### Improve performance of 'map_df' with vectorized logic for exact matches
+
 #### [1.3.19] - 2023-03-07
 #### Add support for splitting normalization types
 
