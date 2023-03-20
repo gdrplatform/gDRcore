@@ -24,6 +24,7 @@ map_df <- function(trt_md,
                    override_untrt_controls = NULL, 
                    ref_cols, 
                    ref_type = c("Day0", "untrt_Endpoint")) {
+  
   # Assertions:
   checkmate::assert_class(trt_md, "data.frame")
   checkmate::assert_class(ref_md, "data.frame")
@@ -58,28 +59,52 @@ map_df <- function(trt_md,
   # define matrix with matching metadata
   present_ref_cols <- intersect(ref_cols, names(ref_md))
   names(present_ref_cols) <- present_ref_cols
-  
-  out <- list("vector", length(trt_rnames))
   msgs <- NULL
   
-  
+  # 1. there are no matches (present_ref_cols is empty)
+  exact_out <- if (length(present_ref_cols) == 0) {
+    out <- lapply(seq_along(trt_rnames), function(x) {
+      character(0)
+    })
+    names(out) <- trt_rnames
+    out
+  } else {
+    # TODO: add the support for overriden in the vectorized
+    # 2. search for exact matches found in the vectorised way
+    #    cases with non-exact matches will be returned as NAs
+    mtch <-
+      match(do.call("paste", trt_md[, present_ref_cols]), do.call("paste", ref_md[, present_ref_cols]))
+    as.list(structure(ref_rnames[mtch], names = trt_rnames))
+  }
+ 
+  # 3. only exact matches found 
+  out <- if (!anyNA(exact_out)) {
+    exact_out
+    # 4. not all entres are exact matches
+    # search for potential non-exact matches
+    # this logic is pretty slow currently
+  } else {
+    
   out <- lapply(seq_along(trt_rnames), function(i) {
     treatment <- trt_rnames[i]
-    refs <- lapply(present_ref_cols, function(y) {
-      ref_md[, y] == trt_md[treatment, y]
-    })
-    
-    if (!is.null(override_untrt_controls)) {
-      for (overridden in names(override_untrt_controls)) {
-        refs[[overridden]] <- ref_md[, overridden] == override_untrt_controls[[overridden]]
+    if (is.na(exact_out[[treatment]])) {
+     
+      refs <- lapply(present_ref_cols, function(y) {
+        ref_md[, y] == trt_md[treatment, y]
+      })
+      
+      #TODO:add the support for overriden in the vectorized
+      if (!is.null(override_untrt_controls)) {
+        for (overridden in names(override_untrt_controls)) {
+          refs[[overridden]] <-
+            ref_md[, overridden] == override_untrt_controls[[overridden]]
+        }
       }
-    }
-    
-    all_checks <- c(refs, matching_list)
-    match_mx <- do.call("rbind", all_checks)
-    rownames(match_mx) <- names(all_checks)
-    match_idx <- which(apply(match_mx, 2, all)) # test matching conditions
-    if (length(match_idx) == 0) {
+      
+      all_checks <- c(refs, matching_list)
+      match_mx <- do.call("rbind", all_checks)
+      rownames(match_mx) <- names(all_checks)
+      match_idx <- which(apply(match_mx, 2, all)) # test matching conditions
       # No exact match, try to find best match (as many metadata fields as possible).
       # TODO: rowSums?
       idx <- apply(match_mx, 2, function(y) sum(y, na.rm = TRUE)) 
@@ -93,12 +118,15 @@ map_df <- function(trt_md,
       } else { # failed to find any potential match
         msgs <- c(msgs, sprintf("No partial match found for treatment: ('%s')", treatment))
       }
+      ref_rnames[match_idx] # TODO: Check that this properly handles NAs or NULLs.
+    } else {
+      exact_out[[treatment]]
     }
-    ref_rnames[match_idx] # TODO: Check that this properly handles NAs or NULLs. 
   })
-
-  futile.logger::flog.info(paste0(msgs, collapse = "\n"))
   names(out) <- trt_rnames
+  }
+  
+  futile.logger::flog.info(paste0(msgs, collapse = "\n"))
   out
 }
 
@@ -152,3 +180,4 @@ map_df <- function(trt_md,
     out
   }
 }
+
