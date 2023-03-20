@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.21] - 2023-03-15
+#### Refactor pipeline
+
 #### [1.3.20] - 2023-03-09
 #### Address co-treatment fit by using the matrix data type instead
 
