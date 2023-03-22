@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.22] - 2023-03-21
+#### Improve performance of 'map_df' with refactored logic for exact matches
+
 #### [1.3.21] - 2023-03-15
 #### Refactor pipeline
 
