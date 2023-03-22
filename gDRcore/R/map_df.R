@@ -69,20 +69,28 @@ map_df <- function(trt_md,
     names(out) <- trt_rnames
     out
   } else {
-    # TODO: add the support for overriden in the vectorized
     # 2. search for exact matches found in the vectorised way
     #    cases with non-exact matches will be returned as NAs
-    mtch <-
-      match(do.call("paste", trt_md[, present_ref_cols]), do.call("paste", ref_md[, present_ref_cols]))
-    as.list(structure(ref_rnames[mtch], names = trt_rnames))
+    match_l <-
+      matches(
+        do.call("paste", trt_md[, present_ref_cols]),
+        do.call("paste", ref_md[, present_ref_cols]),
+        all.y = FALSE,
+        list = TRUE
+      )
+    names(match_l) <- trt_rnames
+    lapply(match_l, function(x) {
+      as.character(sort(x))
+    })
   }
  
   # 3. only exact matches found 
   out <- if (!anyNA(exact_out)) {
     exact_out
     # 4. not all entres are exact matches
-    # search for potential non-exact matches
-    # this logic is pretty slow currently
+    # 4.1 search for potential non-exact matches
+    # 4.2 support cases with overriden untreated controls
+    # this logic is pretty slow currently 
   } else {
     
   out <- lapply(seq_along(trt_rnames), function(i) {
@@ -93,7 +101,6 @@ map_df <- function(trt_md,
         ref_md[, y] == trt_md[treatment, y]
       })
       
-      #TODO:add the support for overriden in the vectorized
       if (!is.null(override_untrt_controls)) {
         for (overridden in names(override_untrt_controls)) {
           refs[[overridden]] <-
