@@ -85,7 +85,7 @@ map_df <- function(trt_md,
   }
  
   # 3. only exact matches found 
-  out <- if (!anyNA(exact_out)) {
+  out <- if (!anyNA(exact_out) && is.null(override_untrt_controls)) {
     exact_out
     # 4. not all entres are exact matches
     # 4.1 search for potential non-exact matches
@@ -95,7 +95,7 @@ map_df <- function(trt_md,
     
   out <- lapply(seq_along(trt_rnames), function(i) {
     treatment <- trt_rnames[i]
-    if (is.na(exact_out[[treatment]])) {
+    if (is.na(exact_out[[treatment]]) || !is.null(override_untrt_controls)) {
      
       refs <- lapply(present_ref_cols, function(y) {
         ref_md[, y] == trt_md[treatment, y]
@@ -131,6 +131,7 @@ map_df <- function(trt_md,
     }
   })
   names(out) <- trt_rnames
+  out
   }
   
   futile.logger::flog.info(paste0(msgs, collapse = "\n"))
@@ -187,4 +188,3 @@ map_df <- function(trt_md,
     out
   }
 }
-
