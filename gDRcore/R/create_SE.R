@@ -49,12 +49,10 @@ create_SE <- function(df_,
   
   # overwrite "drug", "drug_name", "drug_moa" with "untreated" if "concentration2" == 0
   if (gDRutils::get_env_identifiers("concentration2") %in% colnames(df_)) {
-    single_agent_idx <- df_[[gDRutils::get_env_identifiers("concentration2")]] == 0
-
+    single_agent_idx <- df_[[gDRutils::get_env_identifiers("concentration2")]] %in% 0
     drug_cols <- c("drug", "drug_name", "drug_moa")
     drug2_var <- intersect(unlist(gDRutils::get_env_identifiers(paste0(drug_cols,
 "2"), simplify = FALSE)), colnames(df_))
-
     df_[single_agent_idx, drug2_var] <- gDRutils::get_env_identifiers("untreated_tag")[1]
   }
 
@@ -124,10 +122,18 @@ create_SE <- function(df_,
     # Try to merge by plate, but otherwise just use mean. 
     ctl_df <- untrt_df 
     merge_cols <- intersect(colnames(day0_df), Keys$nested_keys)
-    if (nrow(day0_df) > 0L) {
-      ctl_df <- merge(untrt_df, day0_df, by = merge_cols, all = TRUE)
+    
+    
+    ctl_df <- if (nrow(day0_df) > 0L) {
+      merge(untrt_df, day0_df, by = merge_cols, all = TRUE)
     } else {
-      ctl_df$Day0Readout <- NA
+      if (nrow(ctl_df) > 0L) {
+        ctl_df$Day0Readout <- NA
+        ctl_df
+      } else {
+        data.frame(Day0Readout = NA,
+                   UntrtReadout = NA)
+      }
     } 
     
     row_id <- unique(trt_df$row_id)
@@ -143,8 +149,8 @@ create_SE <- function(df_,
          trt_df = trt_df)
   })
 
-  trt_out <- do.call(rbind, lapply(out, "[[", "trt_df"))
-  ctl_out <- do.call(rbind, lapply(out, "[[", "ctl_df"))
+  trt_out <- rbindParallelList(out, "trt_df")
+  ctl_out <- rbindParallelList(out, "ctl_df")
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
   ctl_keep <- !colnames(ctl_out) %in% c("row_id", "col_id")
 

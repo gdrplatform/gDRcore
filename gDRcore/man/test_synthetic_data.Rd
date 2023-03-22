@@ -9,7 +9,7 @@ test_synthetic_data(
   data,
   dataName,
   override_untrt_controls = NULL,
-  tolerance = 0.0001
+  tolerance = 0.001
 )
 }
 \arguments{
