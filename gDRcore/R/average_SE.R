@@ -66,8 +66,9 @@ average_SE <- function(se,
                                          sort = FALSE))
       rownames(agg_df) <- paste(cumsum(!duplicated(agg_df[, series_identifiers])),
                                 agg_df$normalization_type, sep = "_")
-    } else {
-      # <= 1L unmasked values
+    }
+
+    if (all(masked) || nrow(agg_df) == 0) {
       p_trt_keys <- intersect(trt_keys, colnames(norm_df))
       all_cols <- unique(c(series_identifiers, p_trt_keys, "x", "x_std",
                            "normalization_type", "row_id", "col_id"))
@@ -75,11 +76,8 @@ average_SE <- function(se,
       colnames(agg_df) <- all_cols
       rownames(agg_df) <- paste(seq_len(nrow(agg_df)), agg_df$normalization_type, sep = "_")
     }
-
-    if (nrow(agg_df) != 0L) {
-      agg_df$row_id <- i
-      agg_df$col_id <- j
-    }
+    agg_df$row_id <- i
+    agg_df$col_id <- j
     agg_df
   })
 
