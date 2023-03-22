@@ -80,7 +80,7 @@ map_df <- function(trt_md,
       )
     names(match_l) <- trt_rnames
     lapply(match_l, function(x) {
-      as.character(sort(x))
+      ref_rnames[sort(x)]
     })
   }
  
