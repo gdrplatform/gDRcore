@@ -32,9 +32,7 @@ convert_se_to_raw_data <- function(se) {
   
   # Merge and adjust the data
   merged_df <- data.table::rbindlist(list(trt, unique(ctrl)), fill = TRUE)
-  merged_df$rId <- NULL
-  merged_df$cId <- NULL
-  merged_df$CorrectedReadout <- NULL
+  merged_df$rId <- merged_df$cId <-  merged_df$CorrectedReadout <- NULL
   
   merged_df
 }
