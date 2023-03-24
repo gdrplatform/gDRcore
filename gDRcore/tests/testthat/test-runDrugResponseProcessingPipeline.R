@@ -29,8 +29,7 @@ test_that("main pipeline functions works as expected", {
 
   mae_v1 <- purrr::quietly(gDRcore:::runDrugResponseProcessingPipeline)(
     imported_data, 
-    data_dir = p_dir,
-    add_raw_data = TRUE
+    data_dir = p_dir
   )
   expect_true(length(list.files(p_dir)) > 0)
   expect_length(mae_v1$warnings, 5)
