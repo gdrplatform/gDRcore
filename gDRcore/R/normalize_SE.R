@@ -6,7 +6,7 @@ normalize_SE <- function(se,
                          nested_identifiers = NULL,
                          nested_confounders = gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE),
                          control_mean_fxn = function(x) {
-                           mean(x, trim = 0.25, na.rm = TRUE)
+                           mean(x, trim = 0.25)
                          },
                          control_assay = "Controls", 
                          raw_treated_assay = "RawTreated", 
@@ -75,7 +75,7 @@ normalize_SE <- function(se,
     ref_df <- refs[refs$row == i & refs$column == j, ]
     trt_df <- trt[trt$row == i & trt$column == j, ]
 
-    ref_df <- aggregate_ref(ref_df, nested_keys, control_mean_fxn = control_mean_fxn)
+    ref_df <- aggregate_ref(ref_df, control_mean_fxn = control_mean_fxn)
     
     # Merge to ensure that the proper discard_key values are mapped.
     all_readouts_df <- merge(trt_df, 
@@ -135,18 +135,15 @@ normalize_SE <- function(se,
 
 
 #' @keywords internal
-aggregate_ref <- function(ref_df, nested_keys, control_mean_fxn) {
+aggregate_ref <- function(ref_df, control_mean_fxn) {
   
-  control_type <- list(control_type = ref_df$control_type)
-  data_columns <- setdiff(colnames(ref_df), c(nested_keys, "row", "column",
-                                              "isDay0", "masked", "control_type"))
-  ref_cols <- data.frame(ref_df[, data_columns, drop = FALSE])
+  data_columns <- setdiff(colnames(ref_df), c("row", "column", "masked", "isDay0"))
+  ref_cols <- data.table::as.data.table(ref_df[, data_columns, drop = FALSE])
+  group_cols <- ref_cols[, setdiff(names(ref_cols), "CorrectedReadout")]
   
-  if (any(!is.na(ref_cols))) {
-    ref_df <- stats::aggregate(ref_cols, by = control_type,
-                               FUN = control_mean_fxn)
-  }
-   ref_df_t <- data.frame(t(ref_df)[-1, , drop = FALSE], row.names = NULL)
-   names(ref_df_t) <- ref_df$control_type
-   as.data.frame(lapply(ref_df_t, as.numeric))
+  ref_df_aggregate <- ref_cols[ , .(x = control_mean_fxn(CorrectedReadout)), by = eval(group_cols)]
+  ref_df_dcast <- data.table::dcast(ref_df_aggregate,
+                                    as.formula(paste0(setdiff(group_cols, "control_type"), " ~ control_type")),
+                                    value.var = "x")
+  ref_df_dcast[rowSums(is.na(ref_df_dcast)) != ncol(ref_df_dcast), ]
 }

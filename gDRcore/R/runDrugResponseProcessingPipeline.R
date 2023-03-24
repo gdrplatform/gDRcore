@@ -95,7 +95,7 @@ create_and_normalize_SE <- function(df_,
                                     data_type,
                                     readout = "ReadoutValue",
                                     control_mean_fxn = function(x) {
-                                      mean(x, trim = 0.25, na.rm = TRUE)
+                                      mean(x, trim = 0.25)
                                     },
                                     nested_identifiers = NULL,
                                     nested_confounders = intersect(names(df_), 
@@ -142,7 +142,7 @@ create_and_normalize_SE <- function(df_,
 runDrugResponseProcessingPipeline <- function(x,
                                               readout = "ReadoutValue",
                                               control_mean_fxn = function(x) {
-                                                mean(x, trim = 0.25, na.rm = TRUE)
+                                                mean(x, trim = 0.25)
                                               },
                                               nested_identifiers_l = NULL,
                                               nested_confounders = gDRutils::get_env_identifiers("barcode"),
