@@ -6,9 +6,6 @@
 create_SE <- function(df_,
                       data_type,
                       readout = "ReadoutValue",
-                      control_mean_fxn = function(x) {
-                        mean(x, trim = 0.25)
-                      },
                       nested_identifiers = NULL,
                       nested_confounders = intersect(names(df_),
                                                      gDRutils::get_env_identifiers("barcode")),
@@ -17,7 +14,6 @@ create_SE <- function(df_,
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(data_type)
   checkmate::assert_string(readout)
-  checkmate::assert_function(control_mean_fxn)
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
@@ -93,48 +89,46 @@ create_SE <- function(df_,
   out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
     trt <- rownames(treated)[i]
     
+    keep_cols <- c(md$data_fields, "row_id", "col_id")
+    
     trt_df <- dfs[groupings %in% trt, , drop = FALSE]
     refs_df <- dfs[groupings %in% refs[[trt]], , drop = FALSE]
-    trt_df <- validate_mapping(trt_df, refs_df, nested_confounders)[, c(md$data_fields, "row_id", "col_id")]
+    trt_df <- validate_mapping(trt_df, refs_df, nested_confounders)[, keep_cols]
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"]) # Override the row_id of the references.
 
+    
     ctl_type <- "untrt_Endpoint"
-    untrt_ref <- ctl_maps[[ctl_type]][[trt]]  
-    untrt_df <- dfs[groupings %in% untrt_ref, c(md$data_fields, "row_id", "col_id"), drop = FALSE]
-    untrt_df <- create_control_df(
-      untrt_df, 
-      control_cols = Keys[[ctl_type]], 
-      control_mean_fxn, 
-      out_col_name = "UntrtReadout"
-    )
-
+    untrt_ref <- ctl_maps[[ctl_type]][[trt]]
+    untrt_cols <- intersect(c(Keys[[ctl_type]], "CorrectedReadout", nested_confounders), names(df))
+    untrt_df <- dfs[groupings %in% untrt_ref, untrt_cols, drop = FALSE]
+    untrt_df <- if (nrow(untrt_df) == 0) {
+      data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
+    } else {
+      data.table::as.data.table(untrt_df)
+    }
+    untrt_df$isDay0 <- FALSE
+    
     ctl_type <- "Day0"
     day0_ref <- ctl_maps[[ctl_type]][[trt]]
-    day0_df <- dfs[groupings %in% day0_ref, c(md$data_fields, "row_id", "col_id"), drop = FALSE]
-    day0_df <- create_control_df(
-      day0_df, 
-      control_cols = Keys[[ctl_type]],
-      control_mean_fxn, 
-      out_col_name = "Day0Readout"
-    )
+    untrt_cols <- intersect(c(Keys[[ctl_type]], "CorrectedReadout", nested_confounders), names(df))
+    day0_df <- dfs[groupings %in% day0_ref, ]
+    isDay0 <- day0_df[[get_env_identifiers("duration")]] == 0
+    
+    day0_df <- day0_df[, untrt_cols, drop = FALSE]
+    day0_df <- if (nrow(day0_df) == 0) {
+      data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
+    } else {
+      day0_df$isDay0 <- isDay0
+      data.table::as.data.table(day0_df)
+    }
 
     ## Merge all data.frames together.
     # Try to merge by plate, but otherwise just use mean. 
-    ctl_df <- untrt_df 
-    merge_cols <- intersect(colnames(day0_df), Keys$nested_keys)
-    
-    
-    ctl_df <- if (nrow(day0_df) > 0L) {
-      merge(untrt_df, day0_df, by = merge_cols, all = TRUE)
-    } else {
-      if (nrow(ctl_df) > 0L) {
-        ctl_df$Day0Readout <- NA
-        ctl_df
-      } else {
-        data.frame(Day0Readout = NA,
-                   UntrtReadout = NA)
-      }
-    } 
+    ctl_df <- data.table::rbindlist(list(UntrtReadout = untrt_df,
+                               Day0Readout = day0_df),
+                          fill = TRUE,
+                          idcol = "control_type")
+    ctl_df[is.na(isDay0), isDay0 := FALSE]
     
     row_id <- unique(trt_df$row_id)
     col_id <- unique(trt_df$col_id)
@@ -145,8 +139,8 @@ create_SE <- function(df_,
     ctl_df$row_id <- row_id
     ctl_df$col_id <- col_id
   
-    list(ctl_df = ctl_df,
-         trt_df = trt_df)
+    list(ctl_df = unique(ctl_df),
+         trt_df = unique(trt_df))
   })
 
   trt_out <- rbindParallelList(out, "trt_df")

@@ -42,7 +42,6 @@
 #' @param metrics_assay string of the name of the metrics assay to output
 #' in the returned \linkS4class{SummarizedExperiment}
 #' Defaults to \code{"Metrics"}.
-#' @param add_raw_data  boolean indicating whether or not to include raw data into experiment metadata.
 #' @param range_conc vector of concetrations range values.
 #' @param force_fit boolean indicating whether or not to force the fit.
 #' @param pcutoff numeric cutoff value.
@@ -96,7 +95,7 @@ create_and_normalize_SE <- function(df_,
                                     data_type,
                                     readout = "ReadoutValue",
                                     control_mean_fxn = function(x) {
-                                      mean(x, trim = 0.25)
+                                      mean(x, trim = 0.25, na.rm = TRUE)
                                     },
                                     nested_identifiers = NULL,
                                     nested_confounders = intersect(names(df_), 
@@ -122,7 +121,6 @@ create_and_normalize_SE <- function(df_,
   se <- create_SE(df_ = df_, 
     data_type = data_type, 
     readout = readout, 
-    control_mean_fxn = control_mean_fxn, 
     nested_identifiers = nested_identifiers,
     nested_confounders = nested_confounders,
     override_untrt_controls = override_untrt_controls)
@@ -130,7 +128,8 @@ create_and_normalize_SE <- function(df_,
     data_type = data_type, 
     nested_identifiers = nested_identifiers,
     nested_confounders = nested_confounders,
-    control_assay = control_assay, 
+    control_assay = control_assay,
+    control_mean_fxn = control_mean_fxn,
     raw_treated_assay = raw_treated_assay, 
     normalized_assay = normalized_assay,
     ndigit_rounding = ndigit_rounding)
@@ -143,7 +142,7 @@ create_and_normalize_SE <- function(df_,
 runDrugResponseProcessingPipeline <- function(x,
                                               readout = "ReadoutValue",
                                               control_mean_fxn = function(x) {
-                                                mean(x, trim = 0.25)
+                                                mean(x, trim = 0.25, na.rm = TRUE)
                                               },
                                               nested_identifiers_l = NULL,
                                               nested_confounders = gDRutils::get_env_identifiers("barcode"),
@@ -156,7 +155,6 @@ runDrugResponseProcessingPipeline <- function(x,
                                               normalized_assay = "Normalized",
                                               averaged_assay = "Averaged",
                                               metrics_assay = "Metrics",
-                                              add_raw_data = TRUE,
                                               data_dir = NULL,
                                               partial_run = FALSE,
                                               start_from = get_pipeline_steps()[1],
@@ -180,7 +178,6 @@ runDrugResponseProcessingPipeline <- function(x,
   checkmate::assert_string(normalized_assay)
   checkmate::assert_string(averaged_assay)
   checkmate::assert_string(metrics_assay)
-  checkmate::assert_flag(add_raw_data)
   if (!is.null(data_dir)) {
     checkmate::assert_directory(data_dir)
   } 
@@ -255,10 +252,8 @@ runDrugResponseProcessingPipeline <- function(x,
           exp = experiment,
           data_type = data_type, 
           readout = readout, 
-          control_mean_fxn = control_mean_fxn, 
           nested_identifiers = nested_identifiers,
-          override_untrt_controls = override_untrt_controls, 
-          add_raw_data = add_raw_data
+          override_untrt_controls = override_untrt_controls
         )
       )
 
@@ -273,6 +268,7 @@ runDrugResponseProcessingPipeline <- function(x,
           data_type = data_type,
           nested_identifiers = nested_identifiers,
           nested_confounders = inl$nested_confounders,
+          control_mean_fxn = control_mean_fxn, 
           control_assay = control_assay,
           raw_treated_assay = raw_treated_assay,
           normalized_assay = normalized_assay,

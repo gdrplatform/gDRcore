@@ -5,6 +5,9 @@ normalize_SE <- function(se,
                          data_type,
                          nested_identifiers = NULL,
                          nested_confounders = gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE),
+                         control_mean_fxn = function(x) {
+                           mean(x, trim = 0.25, na.rm = TRUE)
+                         },
                          control_assay = "Controls", 
                          raw_treated_assay = "RawTreated", 
                          normalized_assay = "Normalized",
@@ -15,6 +18,7 @@ normalize_SE <- function(se,
   checkmate::assert_character(data_type)
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
+  checkmate::assert_function(control_mean_fxn)
   checkmate::assert_string(control_assay)
   checkmate::assert_string(raw_treated_assay)
   checkmate::assert_string(normalized_assay)
@@ -71,10 +75,7 @@ normalize_SE <- function(se,
     ref_df <- refs[refs$row == i & refs$column == j, ]
     trt_df <- trt[trt$row == i & trt$column == j, ]
 
-    # pad the ref_df for missing values based on nested_keys (uses mean across all available values)
-    if (!is.null(nested_keys) && length(nested_keys) > 0) {
-      ref_df <- fill_NA_ref(ref_df, nested_keys)
-    }
+    ref_df <- aggregate_ref(ref_df, nested_keys, control_mean_fxn = control_mean_fxn)
     
     # Merge to ensure that the proper discard_key values are mapped.
     all_readouts_df <- merge(trt_df, 
@@ -134,15 +135,18 @@ normalize_SE <- function(se,
 
 
 #' @keywords internal
-fill_NA_ref <- function(ref_df, nested_keys) {
-  data_columns <- setdiff(colnames(ref_df), c(nested_keys, "row", "column"))
+aggregate_ref <- function(ref_df, nested_keys, control_mean_fxn) {
+  
+  control_type <- list(control_type = ref_df$control_type)
+  data_columns <- setdiff(colnames(ref_df), c(nested_keys, "row", "column",
+                                              "isDay0", "masked", "control_type"))
   ref_cols <- data.frame(ref_df[, data_columns, drop = FALSE])
   
   if (any(!is.na(ref_cols))) {
-    ref_df_mean <- colMeans(data.frame(ref_df[, data_columns, drop = FALSE]), na.rm = TRUE)
-    for (col in data_columns) {
-      ref_df[is.na(ref_df[, col]), col] <- ref_df_mean[[col]]
-    }
+    ref_df <- stats::aggregate(ref_cols, by = control_type,
+                               FUN = control_mean_fxn)
   }
-  S4Vectors::DataFrame(ref_df)
+   ref_df_t <- data.frame(t(ref_df)[-1, , drop = FALSE], row.names = NULL)
+   names(ref_df_t) <- ref_df$control_type
+   as.data.frame(lapply(ref_df_t, as.numeric))
 }

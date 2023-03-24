@@ -2,10 +2,8 @@ create_SE_step <- function(inl,
                            exp,
                            data_type, 
                            readout, 
-                           control_mean_fxn, 
                            nested_identifiers,
-                           override_untrt_controls, 
-                           add_raw_data) {
+                           override_untrt_controls) {
   df <- inl$df_list[[exp]]
   if (is.null(df)) {
  
@@ -13,12 +11,11 @@ create_SE_step <- function(inl,
       "It's impossible to run pipeline from the first step ('%s') for experiment: '%s'. ",
       get_pipeline_steps()[1], exp
     )
-    msg2 <- "The pipeline has been run with 'add_raw_data' flag disabled? "
-    msg3 <- sprintf(
+    msg2 <- sprintf(
       "Consider running the pipeline from the second ('%s') step", 
       get_pipeline_steps()[2]
     )
-    stop(c(msg1, msg2, msg3))
+    stop(c(msg1, msg2))
 
   }
 
@@ -26,19 +23,10 @@ create_SE_step <- function(inl,
     df_ = df,
     data_type = data_type,
     readout = readout,
-    control_mean_fxn = control_mean_fxn,
     nested_identifiers = nested_identifiers,
     nested_confounders = inl$nested_confounders,
     override_untrt_controls = override_untrt_controls
   )
-    
-  if (add_raw_data) {
-    se <- gDRutils::set_SE_experiment_raw_data(
-      se = se,
-      value = df
-    )
-  }
-
   invisible(se)
 }
 
