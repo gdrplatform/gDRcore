@@ -2,7 +2,7 @@ test_that("normalize_SE works as expected", {
   # Set up. 
   conc <- rep(seq(0.1, 0.3, 0.1), 2)
   ctrl_df <- S4Vectors::DataFrame(Barcode = c(1, 2),
-                                  CorrectedReadout = rep(c(1,2), 2),
+                                  CorrectedReadout = rep(c(1, 2), 2),
                                   control_type = c("Day0Readout", "UntrtReadout"))
   
   trt_df <- S4Vectors::DataFrame(CorrectedReadout = rep(seq(1, 3, 1), 2),

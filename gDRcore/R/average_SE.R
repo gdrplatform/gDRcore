@@ -57,7 +57,7 @@ average_SE <- function(se,
       std_df <- stats::aggregate(stats::as.formula(paste("x ~ ",
                                                   paste(c("normalization_type", series_identifiers),
                                                         collapse = " + "))),
-                               function(x) stats::sd(x, na.rm = TRUE),
+                               function(x) std(x, na.rm = TRUE),
                                data = unmasked, na.action = stats::na.pass)
     
       colnames(std_df)[colnames(std_df) == "x"] <- "x_std"
@@ -89,4 +89,13 @@ average_SE <- function(se,
 
   SummarizedExperiment::assays(se)[[averaged_assay]] <- averaged
   se
+}
+
+#' @keywords internal
+std <- function(x, ...) {
+  if (length(x) == 1 && !is.na(x)) {
+    0
+  } else {
+    stats::sd(x, ...)
+  }
 }

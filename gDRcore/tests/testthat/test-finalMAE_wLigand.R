@@ -3,7 +3,7 @@ test_that("wLigand: test_synthetic_data", {
   original <- get_synthetic_data(data)
   
   mae <- purrr::quietly(gDRtestData::generateLigandData)(
-    cell_lines, drugs, e_inf, ec50, hill_coef, FALSE
+    cell_lines, drugs, FALSE
   )
   expect_length(mae$warnings, 2)
   

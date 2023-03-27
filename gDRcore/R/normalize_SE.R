@@ -145,5 +145,5 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
   ref_df_dcast <- data.table::dcast(ref_df_aggregate,
                                     as.formula(paste0(setdiff(group_cols, "control_type"), " ~ control_type")),
                                     value.var = "x")
-  ref_df_dcast[rowSums(is.na(ref_df_dcast)) != length(setdiff(names(ref_df_dcast), group_cols)), ]
+  ref_df_dcast[!rowSums(is.na(ref_df_dcast)) >= length(setdiff(names(ref_df_dcast), group_cols)), ]
 }
