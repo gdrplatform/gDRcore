@@ -109,7 +109,7 @@ create_SE <- function(df_,
     
     day0_ref <- ctl_maps[["Day0"]][[trt]]
     day0_df <- dfs[groupings %in% day0_ref, ]
-    isDay0 <- day0_df[[get_env_identifiers("duration")]] == 0
+    isDay0 <- day0_df[[gDRutils::get_env_identifiers("duration")]] == 0
     
     day0_df <- day0_df[, untrt_cols, drop = FALSE]
     day0_df <- if (nrow(day0_df) == 0) {
