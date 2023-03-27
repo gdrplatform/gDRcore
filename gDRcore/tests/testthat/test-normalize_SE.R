@@ -2,9 +2,8 @@ test_that("normalize_SE works as expected", {
   # Set up. 
   conc <- rep(seq(0.1, 0.3, 0.1), 2)
   ctrl_df <- S4Vectors::DataFrame(Barcode = c(1, 2),
-                                  RefReadout = rep(2, 2),
-                                  Day0Readout = rep(1, 2),
-                                  UntrtReadout = rep(6, 2))
+                                  CorrectedReadout = rep(c(1,2), 2),
+                                  control_type = c("Day0Readout", "UntrtReadout"))
   
   trt_df <- S4Vectors::DataFrame(CorrectedReadout = rep(seq(1, 3, 1), 2),
                                  Concentration = conc,
@@ -50,17 +49,16 @@ test_that("normalize_SE works as expected", {
 })
 
 
-test_that("fill_NA_ref works as expected", {
+test_that("aggregate_ref works as expected", {
   n <- 6
   tst <- data.frame(Barcode = paste0("plate_", seq(n)),
-                    UntrtReadout = c(100, NA, 50, NA, 75, NA),
-                    RefReadout = c(NA, 79.3, NA, 79.3, NA, 79.3),
-                    Day0Readout = rep(NA, n))
+                    CorrectedReadout = c(NA, 79.3, NA, 79.3, NA, 79.3),
+                    control_type = rep(c("Day0Readout", "UntrtReadout"), 3))
 
-  obs <- gDRcore:::fill_NA_ref(tst, nested_keys = "Barcode")
-  expect_true(methods::is(obs, "DFrame"))
+  obs <- gDRcore:::aggregate_ref(tst, control_mean_fxn = mean)
+  expect_true(methods::is(obs, "data.table"))
   expect_equal(dim(obs), c(n, ncol(tst))) 
-  expect_equal(obs$UntrtReadout, c(100, 75, 50, 75, 75, 75))
+  expect_equal(obs$UntrtReadout, c(NA, 79.3, NA, 79.3, NA, 79.3))
   expect_false(any(is.na(obs$RefReadout)))
   expect_true(all(is.na(obs$Day0Readout)))
 })
