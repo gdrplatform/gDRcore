@@ -141,7 +141,7 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
   ref_cols <- data.table::as.data.table(ref_df[, data_columns, drop = FALSE])
   group_cols <- ref_cols[, setdiff(names(ref_cols), "CorrectedReadout")]
   
-  ref_df_aggregate <- ref_cols[ , .(x = control_mean_fxn(CorrectedReadout)), by = eval(group_cols)]
+  ref_df_aggregate <- ref_cols[, .(x = control_mean_fxn(CorrectedReadout)), by = eval(group_cols)]
   ref_df_dcast <- data.table::dcast(ref_df_aggregate,
                                     as.formula(paste0(setdiff(group_cols, "control_type"), " ~ control_type")),
                                     value.var = "x")
