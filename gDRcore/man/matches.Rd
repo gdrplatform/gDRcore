@@ -64,5 +64,6 @@ following way:
 
 Note that \code{NA} values will match other \code{NA} values.
 
-Source of the function: https://github.com/cran/grr/blob/master/R/grr.R
+Source of the function: 
+https://github.com/cran/grr/blob/master/R/grr.R
 }

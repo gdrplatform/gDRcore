@@ -14,16 +14,16 @@ identify_keys(
 \arguments{
 \item{df_}{a data.frame to identify keys for.}
 
-\item{nested_keys}{character vector of keys to exclude from the returned list. 
-The keys discarded should be identical to the keys in the third
+\item{nested_keys}{character vector of keys to exclude from the returned 
+list. The keys discarded should be identical to the keys in the third
 dimension of the SummarizedExperiment.
 Defaults to the \code{"Barcode"} and the \code{masked} identifier.}
 
-\item{override_untrt_controls}{named list containing defining factors in the treatments.
-Defaults to \code{NULL}.}
+\item{override_untrt_controls}{named list containing defining factors in the 
+treatments. Defaults to \code{NULL}.}
 
-\item{identifiers}{named list containing all identifiers to use during processing.
-By default, this value will be obtained by the environment.}
+\item{identifiers}{named list containing all identifiers to use during 
+processing. By default, this value will be obtained by the environment.}
 }
 \value{
 named list of key types and their corresponding key values.

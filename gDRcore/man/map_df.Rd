@@ -17,11 +17,11 @@ map_df(
 
 \item{ref_md}{data.frame of untreated metadata.}
 
-\item{override_untrt_controls}{named list indicating what treatment metadata fields should be used as a control.
-Defaults to \code{NULL}.}
+\item{override_untrt_controls}{named list indicating what treatment metadata 
+fields should be used as a control. Defaults to \code{NULL}.}
 
-\item{ref_cols}{character vector of the names of reference columns to include.
-Likely obtained from \code{identify_keys()}.}
+\item{ref_cols}{character vector of the names of reference columns to 
+include. Likely obtained from \code{identify_keys()}.}
 
 \item{ref_type}{string of the reference type to map to.
 Should be one of \code{c("Day0", "untrt_Endpoint", "ref_Endpoint")}.}
@@ -30,7 +30,8 @@ Should be one of \code{c("Day0", "untrt_Endpoint", "ref_Endpoint")}.}
 named list mapping treated metadata to untreated metadata.
 }
 \description{
-Map treated conditions to their respective Day0, untreated, or single-agent references using condition metadata.
+Map treated conditions to their respective Day0, untreated, or single-agent 
+references using condition metadata.
 }
 \details{
 If \code{override_untrt_controls} is specified, 

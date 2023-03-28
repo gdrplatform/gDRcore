@@ -12,15 +12,18 @@ replace_conc_with_standardized_conc(
 )
 }
 \arguments{
-\item{original_concs}{numeric vector of concentrations to replace using the \code{conc_map}.}
+\item{original_concs}{numeric vector of concentrations to replace using 
+the \code{conc_map}.}
 
-\item{conc_map}{data.frame of two columns named \code{original_conc_col} and \code{standardized_conc_col}.}
+\item{conc_map}{data.frame of two columns named \code{original_conc_col} 
+and \code{standardized_conc_col}.}
 
 \item{original_conc_col}{string of the name of the column in \code{conc_map}
 containing the original concentrations to replace.}
 
-\item{standardized_conc_col}{string of the name of the column in \code{conc_map}
-containing the standardized concentrations to use for replacement.}
+\item{standardized_conc_col}{string of the name of the column 
+in \code{conc_map} containing the standardized concentrations to use 
+for replacement.}
 }
 \value{
 numeric vector of standardized concentrations.

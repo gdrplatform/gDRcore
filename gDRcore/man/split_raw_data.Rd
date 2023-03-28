@@ -7,8 +7,8 @@
 split_raw_data(df, type_col = "type")
 }
 \arguments{
-\item{df}{data.frame of raw drug response data containing both treated and untreated values with
-column specified in `type_col` argument.}
+\item{df}{data.frame of raw drug response data containing both treated and 
+untreated values with column specified in `type_col` argument.}
 
 \item{type_col}{string with column names in `df` with info about data type.
 Defaults to \code{"type"}.}

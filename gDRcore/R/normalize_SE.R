@@ -4,7 +4,12 @@
 normalize_SE <- function(se, 
                          data_type,
                          nested_identifiers = NULL,
-                         nested_confounders = gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE),
+                         nested_confounders = 
+                           gDRutils::get_SE_identifiers(
+                             se, 
+                             "barcode", 
+                             simplify = TRUE
+                           ),
                          control_assay = "Controls", 
                          raw_treated_assay = "RawTreated", 
                          normalized_assay = "Normalized",
@@ -25,7 +30,10 @@ normalize_SE <- function(se,
 
   
   if (is.null(nested_identifiers)) {
-    nested_identifiers <- get_default_nested_identifiers(se, data_model(data_type))
+    nested_identifiers <- get_default_nested_identifiers(
+      se, 
+      data_model(data_type)
+    )
   }
   
   # Keys
@@ -37,12 +45,37 @@ normalize_SE <- function(se,
   rdata <- SummarizedExperiment::rowData(se)
 
   
-  cl_names <- cdata[, gDRutils::get_SE_identifiers(se, "cellline_name", simplify = TRUE), drop = FALSE]
-  cl_ref_div_times <- cdata[, gDRutils::get_SE_identifiers(se, "cellline_ref_div_time", simplify = TRUE), drop = FALSE]
-  durations <- rdata[, gDRutils::get_SE_identifiers(se, "duration", simplify = TRUE), drop = FALSE]
+  cl_names <- cdata[, 
+    gDRutils::get_SE_identifiers(
+      se, 
+      "cellline_name", 
+      simplify = TRUE
+    ), 
+    drop = FALSE
+  ]
+  cl_ref_div_times <- cdata[, 
+    gDRutils::get_SE_identifiers(
+      se, 
+      "cellline_ref_div_time", 
+      simplify = TRUE
+    ), 
+    drop = FALSE
+  ]
+  durations <- rdata[, 
+    gDRutils::get_SE_identifiers(
+      se, 
+      "duration", 
+      simplify = TRUE
+    ), 
+    drop = FALSE
+  ]
 
-  refs <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assays(se)[[control_assay]])
-  trt <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assays(se)[[raw_treated_assay]])
+  refs <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assays(se)[[control_assay]]
+  )
+  trt <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assays(se)[[raw_treated_assay]]
+  )
   
   # Extract common nested_confounders shared by trt_df and ref_df
   nested_confounders <- Reduce(intersect, list(nested_confounders,
@@ -51,7 +84,8 @@ normalize_SE <- function(se,
   
   norm_cols <- c("RV", "GR")
   out <- vector("list", nrow(se) * ncol(se))
-  ref_rel_viability <- ref_GR_value <- div_time <- matrix(NA, nrow = nrow(se), ncol = ncol(se), dimnames = dimnames(se))
+  ref_rel_viability <- ref_GR_value <- div_time <- 
+    matrix(NA, nrow = nrow(se), ncol = ncol(se), dimnames = dimnames(se))
   msgs <- NULL
   iterator <- unique(rbind(refs[, c("column", "row")],
                            trt[, c("column", "row")]))
@@ -71,7 +105,8 @@ normalize_SE <- function(se,
     ref_df <- refs[refs$row == i & refs$column == j, ]
     trt_df <- trt[trt$row == i & trt$column == j, ]
 
-    # pad the ref_df for missing values based on nested_keys (uses mean across all available values)
+    # pad the ref_df for missing values based on nested_keys 
+    # (uses mean across all available values)
     if (!is.null(nested_keys) && length(nested_keys) > 0) {
       ref_df <- fill_NA_ref(ref_df, nested_keys)
     }
@@ -82,21 +117,27 @@ normalize_SE <- function(se,
       by = nested_confounders,
       all.x = TRUE)
 
-    normalized <- S4Vectors::DataFrame(matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols)))
+    normalized <- S4Vectors::DataFrame(
+      matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols))
+    )
     colnames(normalized) <- c(norm_cols)
 
     # Normalized treated.
-    normalized$RV <- round(all_readouts_df$CorrectedReadout /
-                                            all_readouts_df$UntrtReadout, ndigit_rounding)
+    normalized$RV <- round(
+      all_readouts_df$CorrectedReadout / all_readouts_df$UntrtReadout, 
+      ndigit_rounding
+    )
     
     
-    normalized$GR <- calculate_GR_value(rel_viability = normalized$RV,
-                                             corrected_readout = all_readouts_df$CorrectedReadout,
-                                             day0_readout = all_readouts_df$Day0Readout,
-                                             untrt_readout = all_readouts_df$UntrtReadout,
-                                             ndigit_rounding = ndigit_rounding,
-                                             duration = duration,
-                                             ref_div_time = ref_div_time)
+    normalized$GR <- calculate_GR_value(
+      rel_viability = normalized$RV,
+      corrected_readout = all_readouts_df$CorrectedReadout,
+      day0_readout = all_readouts_df$Day0Readout,
+      untrt_readout = all_readouts_df$UntrtReadout,
+      ndigit_rounding = ndigit_rounding,
+      duration = duration,
+      ref_div_time = ref_div_time
+    )
 
     if (any(is.na(all_readouts_df$Day0Readout))) {
       msgs <- c(msgs,
@@ -104,7 +145,9 @@ normalize_SE <- function(se,
     }
     
     # Carry over present treated keys.
-    keep <- intersect(c(nested_identifiers, trt_keys, masked_key), colnames(all_readouts_df))
+    keep <- intersect(
+      c(nested_identifiers, trt_keys, masked_key), colnames(all_readouts_df)
+    )
     normalized <- cbind(all_readouts_df[keep], normalized) 
     normalized$row_id <- i
     normalized$col_id <- j
@@ -113,7 +156,11 @@ normalize_SE <- function(se,
                                  measure.vars = norm_cols,
                                  variable.name = "normalization_type",
                                  value.name = "x")
-    rownames(normalized) <- paste(normalized$id, normalized$normalization_type, sep = "_")
+    rownames(normalized) <- paste(
+      normalized$id, 
+      normalized$normalization_type, 
+      sep = "_"
+    )
     normalized$id <- NULL
     S4Vectors::DataFrame(normalized)
   })
@@ -124,9 +171,11 @@ normalize_SE <- function(se,
   
   out <- S4Vectors::DataFrame(do.call("rbind", out))
   
-  norm <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c("row_id", "col_id")], 
+  norm <- BumpyMatrix::splitAsBumpyMatrix(
+    out[!colnames(out) %in% c("row_id", "col_id")], 
     row = out$row_id, 
-    col = out$col_id)
+    col = out$col_id
+  )
 
   SummarizedExperiment::assays(se)[[normalized_assay]] <- norm
   se
@@ -139,7 +188,9 @@ fill_NA_ref <- function(ref_df, nested_keys) {
   ref_cols <- data.frame(ref_df[, data_columns, drop = FALSE])
   
   if (any(!is.na(ref_cols))) {
-    ref_df_mean <- colMeans(data.frame(ref_df[, data_columns, drop = FALSE]), na.rm = TRUE)
+    ref_df_mean <- colMeans(
+      data.frame(ref_df[, data_columns, drop = FALSE]), na.rm = TRUE
+    )
     for (col in data_columns) {
       ref_df[is.na(ref_df[, col]), col] <- ref_df_mean[[col]]
     }

@@ -30,12 +30,21 @@ fit_SE <- function(se,
 
   
   if (is.null(nested_identifiers)) {
-    nested_identifiers <- get_default_nested_identifiers(se, data_model(data_type))
+    nested_identifiers <- get_default_nested_identifiers(
+      se, 
+      data_model(data_type)
+    )
   }
   
   
-  metric_cols <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
-  avg_trt <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, averaged_assay))
+  metric_cols <- c(
+    gDRutils::get_header("response_metrics"), 
+    "maxlog10Concentration", 
+    "N_conc"
+  )
+  avg_trt <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se, averaged_assay)
+  )
   iterator <- unique(avg_trt[, c("column", "row")])
   
   out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
@@ -50,9 +59,9 @@ fit_SE <- function(se,
     rownames(fit_df) <- c("RV", "GR")
 
     if (!is.null(avg_df) && all(dim(avg_df) > 0)) {
-      if (!all(is.na(avg_df[[gDRutils::get_env_identifiers("concentration")]]))) {
-        avg_df <- avg_df[avg_df[[
-          gDRutils::get_env_identifiers("concentration")]] != 0, ]
+      conc <- gDRutils::get_env_identifiers("concentration")
+      if (!all(is.na(avg_df[[conc]]))) {
+        avg_df <- avg_df[avg_df[[conc]] != 0, ]
       }
       fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
         series_identifiers = nested_identifiers,
@@ -74,9 +83,11 @@ fit_SE <- function(se,
   })
 
   out <- S4Vectors::DataFrame(do.call("rbind", out))
-  metrics <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c("row_id", "col_id")], 
+  metrics <- BumpyMatrix::splitAsBumpyMatrix(
+    out[!colnames(out) %in% c("row_id", "col_id")], 
     row = out$row_id, 
-    col = out$col_id)
+    col = out$col_id
+  )
 
   SummarizedExperiment::assay(se, metrics_assay) <- metrics
   se <- gDRutils::set_SE_fit_parameters(se, 
@@ -87,10 +98,13 @@ fit_SE <- function(se,
       pcutoff = pcutoff,
       cap = cap)
   )
-  se <- gDRutils::set_SE_processing_metadata(se,
-                                             value = list(
-                                               date_processed = Sys.Date(),
-                                               session_info = utils::sessionInfo()))
+  se <- gDRutils::set_SE_processing_metadata(
+    se,
+    value = list(
+      date_processed = Sys.Date(),
+      session_info = utils::sessionInfo()
+    )
+  )
   
   se
 }

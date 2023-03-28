@@ -19,7 +19,8 @@ test_synthetic_data(
 
 \item{dataName}{dataset name}
 
-\item{override_untrt_controls}{named list containing defining factors in the treatments}
+\item{override_untrt_controls}{named list containing defining factors in 
+the treatments}
 
 \item{tolerance}{tolerance factor}
 }

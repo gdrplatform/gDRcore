@@ -7,10 +7,12 @@
 \method{data_model}{data.frame}(x)
 }
 \arguments{
-\item{x}{data.frame of raw drug response data containing both treated and untreated values.}
+\item{x}{data.frame of raw drug response data containing both treated and 
+untreated values.}
 }
 \value{
-string with the information of the raw data follows single-agent or combination data model
+string with the information of the raw data follows single-agent or 
+combination data model
 }
 \description{
 Detect model of data in data.frame

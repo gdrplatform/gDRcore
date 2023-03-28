@@ -1,13 +1,14 @@
 #' Map treated conditions to their respective references.
 #'
-#' Map treated conditions to their respective Day0, untreated, or single-agent references using condition metadata.
+#' Map treated conditions to their respective Day0, untreated, or single-agent 
+#' references using condition metadata.
 #'
 #' @param trt_md data.frame of treated metadata. 
 #' @param ref_md data.frame of untreated metadata.
-#' @param override_untrt_controls named list indicating what treatment metadata fields should be used as a control.
-#' Defaults to \code{NULL}.
-#' @param ref_cols character vector of the names of reference columns to include.
-#' Likely obtained from \code{identify_keys()}.
+#' @param override_untrt_controls named list indicating what treatment metadata 
+#' fields should be used as a control. Defaults to \code{NULL}.
+#' @param ref_cols character vector of the names of reference columns to 
+#' include. Likely obtained from \code{identify_keys()}.
 #' @param ref_type string of the reference type to map to.
 #' Should be one of \code{c("Day0", "untrt_Endpoint", "ref_Endpoint")}.
 #'
@@ -35,8 +36,10 @@ map_df <- function(trt_md,
   ref_type <- match.arg(ref_type)
   
   duration_col <- gDRutils::get_env_identifiers("duration")
-  conc_cols <- unlist(gDRutils::get_env_identifiers(c("concentration",
-                                               "concentration2"), simplify = FALSE))
+  conc_cols <- unlist(gDRutils::get_env_identifiers(
+    c("concentration", "concentration2"), 
+    simplify = FALSE
+  ))
   
   conc <- cbind(array(0, nrow(ref_md)), # padding to avoid empty df;
                 ref_md[, intersect(names(ref_md), conc_cols), drop = FALSE])
@@ -112,20 +115,31 @@ map_df <- function(trt_md,
       match_mx <- do.call("rbind", all_checks)
       rownames(match_mx) <- names(all_checks)
       match_idx <- which(apply(match_mx, 2, all)) # test matching conditions
-      # No exact match, try to find best match (as many metadata fields as possible).
+      # No exact match, try to find best match (as many metadata fields as 
+      # possible).
       # TODO: rowSums?
       idx <- apply(match_mx, 2, function(y) sum(y, na.rm = TRUE)) 
-      # TODO: Sort this out so that it also takes the average in case multiple are found.
+      # TODO: Sort this out so that it also takes the average in case multiple 
+      # are found.
       idx <- idx * match_mx[matchFactor, ]
       
       if (any(idx > 0)) {
         match_idx <- which.max(idx)
-        msgs <- c(msgs, sprintf("Found partial match: ('%s') for treatment: ('%s')",
-                                rownames(ref_md)[match_idx], treatment))
+        msgs <- c(
+          msgs, 
+          sprintf(
+            "Found partial match: ('%s') for treatment: ('%s')",
+            rownames(ref_md)[match_idx], treatment
+          )
+        )
       } else { # failed to find any potential match
-        msgs <- c(msgs, sprintf("No partial match found for treatment: ('%s')", treatment))
+        msgs <- c(
+          msgs, 
+          sprintf("No partial match found for treatment: ('%s')", treatment)
+        )
       }
-      ref_rnames[match_idx] # TODO: Check that this properly handles NAs or NULLs.
+      ref_rnames[match_idx] # TODO: Check that this properly handles 
+                            # NAs or NULLs.
     } else {
       exact_out[[treatment]]
     }
@@ -149,8 +163,14 @@ map_df <- function(trt_md,
 #' 
 .map_references <- function(mat_elem) {
   clid <- gDRutils::get_env_identifiers("cellline")
-  valid <- unlist(intersect(c(gDRutils::get_env_identifiers(c("drug_name", "drug_name2"), simplify = FALSE)),
-                     colnames(mat_elem)))
+  valid <- unlist(intersect(
+      c(gDRutils::get_env_identifiers(
+        c("drug_name", "drug_name2"), 
+        simplify = FALSE)
+      ),
+      colnames(mat_elem)
+    )
+  )
   drug_cols <- mat_elem[valid]
 
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
@@ -169,16 +189,29 @@ map_df <- function(trt_md,
   names(out) <- rownames(trt)
   
   if (any(is_ref)) {
-    # store rownames of trt and ref and replicate them based on the length of drug columns
+    # store rownames of trt and ref and replicate them based on the length of 
+    # drug columns
     trtNames <- rep(rownames(trt), length(valid))
     refNames <- rep(rownames(ref), length(valid))
     
     # split data.frames to simple model with clid column and drug column
     trt <- lapply(valid, function(x) trt[, c(clid, x)])
-    trt <- do.call(paste, do.call(rbind, lapply(trt, function(x) stats::setNames(x, names(trt[[1]])))))
+    trt <- do.call(
+      paste, 
+      do.call(
+        rbind, 
+        lapply(trt, function(x) stats::setNames(x, names(trt[[1]])))
+      )
+    )
     
     ref <- lapply(valid, function(x) ref[, c(clid, x)])
-    ref <- do.call(paste, do.call(rbind, lapply(ref, function(x) stats::setNames(x, names(ref[[1]])))))
+    ref <- do.call(
+      paste, 
+      do.call(
+        rbind, 
+        lapply(ref, function(x) stats::setNames(x, names(ref[[1]])))
+      )
+    )
     
     # match trt and ref
     matchTrtRef <- matches(trt, ref, list = FALSE, all.y = FALSE)

@@ -41,30 +41,38 @@ calculate_endpt_GR_value(
 
 \item{untrt_readout}{numeric vector containing the untreated readout.}
 
-\item{ndigit_rounding}{integer specifying the number of digits to use for calculation rounding.}
+\item{ndigit_rounding}{integer specifying the number of digits to use for 
+calculation rounding.}
 
-\item{duration}{numeric value specifying the length of time the cells were treated (in hours).}
+\item{duration}{numeric value specifying the length of time the cells were 
+treated (in hours).}
 
-\item{ref_div_time}{numeric value specifying the reference division time for the cell line in the experiment.}
+\item{ref_div_time}{numeric value specifying the reference division time for 
+the cell line in the experiment.}
 
-\item{cap}{numeric value representing the value to cap the highest allowed relative viability at.}
+\item{cap}{numeric value representing the value to cap the highest allowed 
+relative viability at.}
 }
 \value{
-numeric vector containing GR values, one value for each element of the input vectors.
+numeric vector containing GR values, one value for each element of 
+the input vectors.
 }
 \description{
 Calculate a GR value for a given set of dose response values.
 }
 \details{
-Note that this function expects that all vectorized numeric vectors should be of the same length. 
-\code{calculate_GR_value} will try to greedily calculate a GR value. If no day 0 readouts are available, 
-the \code{duration} and \code{ref_div_time} will be used to try to back-calculate a day 0 value in order 
-to produce a GR value.
+Note that this function expects that all vectorized numeric vectors 
+should be of the same length. \code{calculate_GR_value} will try to greedily 
+calculate a GR value. If no day 0 readouts are available, the \code{duration}
+ and \code{ref_div_time} will be used to try to back-calculate a day 0 value 
+ in order to produce a GR value.
 
-In the case of calculating the reference GR value from multiple reference readout values, the vectorized
-calculation is performed and then the resulting vector should be averaged outside of this function. 
+In the case of calculating the reference GR value from multiple reference 
+readout values, the vectorized calculation is performed and then the 
+resulting vector should be averaged outside of this function. 
 
-Note that it is expected that the \code{ref_div_time} and \code{duration} are reported in the same units.
+Note that it is expected that the \code{ref_div_time} and \code{duration} 
+are reported in the same units.
 }
 \seealso{
 normalize_SE2

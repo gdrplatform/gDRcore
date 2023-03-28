@@ -1,44 +1,49 @@
 #' Run drug response processing pipeline
 #'
 #' Run different components of the gDR drug response processing pipeline.
-#' Either: create a SummarizedExperiment and normalize raw treated and control data (create_and_normalize_SE),
-#' average data (average_SE), or fit the processed data (fit_SE). See details for more in-depth explanations.
+#' Either: create a SummarizedExperiment and normalize raw treated and control 
+#' data (create_and_normalize_SE), average data (average_SE), or fit the 
+#' processed data (fit_SE). See details for more in-depth explanations.
 #'
 #' @param x data.frame of MAE with drug response data
-#' @param df_ data.frame of raw drug response data containing both treated and untreated values.
+#' @param df_ data.frame of raw drug response data containing both treated and 
+#' untreated values.
 #' @param data_type single-agent vs combination
 #' @param se \code{SummarizedExperiment} object.
-#' @param readout string of the name containing the cell viability readout values.
+#' @param readout string of the name containing the cell viability readout 
+#' values.
 #' @param control_mean_fxn function indicating how to average controls.
 #' Defaults to \code{mean(x, trim = 0.25)}.
-#' @param nested_identifiers_l list with the nested_identifiers(character vectors) 
-#' for `single-agent` and (optionally) for `combination` data
+#' @param nested_identifiers_l list with the nested_identifiers(character v
+#' ectors) for `single-agent` and (optionally) for `combination` data
 #' @param nested_identifiers character vector with the nested_identifiers
 #' for the given SE with a given data_type
-#' @param nested_confounders Character vector of the nested_confounders for a given assay.
-#' nested_keys is character vector of column names to include in the data.frames
-#' in the assays of the resulting \code{SummarizedExperiment} object.
-#' Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
-#' \code{create_and_normalize_SE} or \code{runDrugResponseProcessingPipeline}.
-#' @param series_identifiers character vector of identifiers in \code{measured} or \code{metric}
-#' which define a unique data point.
-#' @param override_untrt_controls named list containing defining factors in the treatments.
-#' Defaults to \code{NULL}.
-#' @param override_masked boolean indicating whether or not to override the masked wells
-#' in the averaging and include all wells. 
+#' @param nested_confounders Character vector of the nested_confounders for a 
+#' given assay. nested_keys is character vector of column names to include in 
+#' the data.frames in the assays of the resulting \code{SummarizedExperiment} 
+#' object. Defaults to the \code{nested_identifiers} and 
+#' \code{nested_confounders} if passed through \code{create_and_normalize_SE} 
+#' or \code{runDrugResponseProcessingPipeline}.
+#' @param series_identifiers character vector of identifiers in 
+#' \code{measured} or \code{metric} which define a unique data point.
+#' @param override_untrt_controls named list containing defining factors in 
+#' the treatments. Defaults to \code{NULL}.
+#' @param override_masked boolean indicating whether or not to override 
+#' the masked wells in the averaging and include all wells. 
 #' Defaults to \code{FALSE}.
-#' @param ndigit_rounding integer indicating number of digits to round to in calculations.
-#' Defaults to \code{4}.
-#' @param n_point_cutoff integer of how many points should be considered the minimum required to try to fit a curve.
-#' Defaults to \code{4}.
-#' @param control_assay string containing the name of the assay representing the controls in the \code{se}.
-#' Defaults to \code{"Controls"}.
-#' @param raw_treated_assay string containing the name of the assay representing the raw treated data in the \code{se}.
+#' @param ndigit_rounding integer indicating number of digits to round to 
+#' in calculations. Defaults to \code{4}.
+#' @param n_point_cutoff integer of how many points should be considered the 
+#' minimum required to try to fit a curve. Defaults to \code{4}.
+#' @param control_assay string containing the name of the assay representing 
+#' the controls in the \code{se}. Defaults to \code{"Controls"}.
+#' @param raw_treated_assay string containing the name of the assay 
+#' representing the raw treated data in the \code{se}.
 #' Defaults to \code{"RawTreated"}.
-#' @param normalized_assay string of the assay name containing the normalized data.
-#' Defaults to \code{"Normalized"}.
-#' @param averaged_assay string of the name of the averaged assay in the \linkS4class{SummarizedExperiment}.
-#' Defaults to \code{"Averaged"}.
+#' @param normalized_assay string of the assay name containing the 
+#' normalized data. Defaults to \code{"Normalized"}.
+#' @param averaged_assay string of the name of the averaged assay in the
+#' \linkS4class{SummarizedExperiment}. Defaults to \code{"Averaged"}.
 #' @param metrics_assay string of the name of the metrics assay to output
 #' in the returned \linkS4class{SummarizedExperiment}
 #' Defaults to \code{"Metrics"}.
@@ -159,7 +164,10 @@ runDrugResponseProcessingPipeline <- function(x,
                                                 mean(x, trim = 0.25)
                                               },
                                               nested_identifiers_l = NULL,
-                                              nested_confounders = gDRutils::get_env_identifiers("barcode"),
+                                              nested_confounders = 
+                                                gDRutils::get_env_identifiers(
+                                                  "barcode"
+                                                ),
                                               override_untrt_controls = NULL,
                                               override_masked = FALSE,
                                               ndigit_rounding = 4,

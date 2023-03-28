@@ -3,14 +3,14 @@
 #' Group columns from a data.frame that correspond to different 
 #'
 #' @param df_ a data.frame to identify keys for.
-#' @param nested_keys character vector of keys to exclude from the returned list. 
-#' The keys discarded should be identical to the keys in the third
+#' @param nested_keys character vector of keys to exclude from the returned 
+#' list. The keys discarded should be identical to the keys in the third
 #' dimension of the SummarizedExperiment.
 #' Defaults to the \code{"Barcode"} and the \code{masked} identifier.
-#' @param override_untrt_controls named list containing defining factors in the treatments.
-#' Defaults to \code{NULL}.
-#' @param identifiers named list containing all identifiers to use during processing.
-#' By default, this value will be obtained by the environment.
+#' @param override_untrt_controls named list containing defining factors in the 
+#' treatments. Defaults to \code{NULL}.
+#' @param identifiers named list containing all identifiers to use during 
+#' processing. By default, this value will be obtained by the environment.
 #'
 #' @return named list of key types and their corresponding key values. 
 #'
@@ -31,37 +31,54 @@ identify_keys <- function(df_,
   all_keys <- colnames(df_)
   dropped_nested_keys <- setdiff(nested_keys, all_keys)
   if (length(dropped_nested_keys) != 0L) {
-    warning(sprintf("ignoring nested_keys input: '%s' which are not present in data.frame",
-      paste0(dropped_nested_keys, collapse = ", ")))
+    warning(
+      sprintf(
+        "ignoring nested_keys input: '%s' which are not present in data.frame",
+        paste0(dropped_nested_keys, collapse = ", ")
+      )
+    )
     nested_keys <- intersect(nested_keys, all_keys)
   }
 
-  dropped_override_untrt_controls <- setdiff(names(override_untrt_controls), all_keys)
+  dropped_override_untrt_controls <- 
+    setdiff(names(override_untrt_controls), all_keys)
   if (length(dropped_override_untrt_controls) != 0L) {
-    warning(sprintf("ignoring override_untrt_controls input: '%s' which are not present in data.frame",
-      paste0(dropped_override_untrt_controls, collapse = ", ")))
+    warning(
+      sprintf(
+        "ignoring override_untrt_controls input: '%s' which are 
+        not present in data.frame",
+        paste0(dropped_override_untrt_controls, collapse = ", ")
+      )
+    )
     override_untrt_controls <- intersect(override_untrt_controls, all_keys)
   }
   
   x <- c("concentration", "drug", "drug_name", "drug_moa")
-  pattern_keys <- all_keys %in% identifiers[grep(paste(x, collapse = "|"), names(identifiers))]
+  pattern_keys <- all_keys %in% 
+    identifiers[grep(paste(x, collapse = "|"), names(identifiers))]
   
   duration_col <- identifiers$duration
 
   keys <- list(Trt = setdiff(all_keys, c(nested_keys, override_untrt_controls)),
-    ref_Endpoint = setdiff(all_keys, c(identifiers[x], override_untrt_controls)),
+    ref_Endpoint = setdiff(
+      all_keys, 
+      c(identifiers[x], override_untrt_controls)
+    ),
     untrt_Endpoint = setdiff(all_keys[!pattern_keys], override_untrt_controls),
     Day0 = setdiff(all_keys[!pattern_keys], duration_col),
     nested_keys = nested_keys
   )
 
-  keys <- gDRutils::loop(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),
+  keys <- gDRutils::loop(
+    keys, 
+    function(x) setdiff(x, c(gDRutils::get_header("raw_data"),
     gDRutils::get_header("normalized_results"), 
     identifiers$template, 
     identifiers$well_position, 
     gDRutils::get_header("averaged_results"),
     gDRutils::get_header("metrics_results"), 
-    identifiers$cellline_ref_div_time)))
+    identifiers$cellline_ref_div_time))
+  )
 
   keys$masked_tag <- identifiers$masked_tag
   keys$cellline_name <- identifiers$cellline_name

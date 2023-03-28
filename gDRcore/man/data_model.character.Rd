@@ -10,7 +10,8 @@
 \item{x}{character with experiment name}
 }
 \value{
-string with the information of the raw data follows single-agent or combination data model
+string with the information of the raw data follows single-agent or 
+combination data model
 }
 \description{
 Detect model of data from experiment name

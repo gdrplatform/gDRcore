@@ -14,28 +14,32 @@ fit_SE.combinations(
 )
 }
 \arguments{
-\item{se}{\code{SummarizedExperiment} object with a BumpyMatrix assay containing averaged data.}
+\item{se}{\code{SummarizedExperiment} object with a BumpyMatrix assay 
+containing averaged data.}
 
 \item{data_type}{single-agent vs combination}
 
-\item{series_identifiers}{character vector of the column names in the nested \code{DFrame}
-corresponding to nested identifiers.}
+\item{series_identifiers}{character vector of the column names in the 
+nested \code{DFrame} corresponding to nested identifiers.}
 
-\item{normalization_types}{character vector of normalization types used for calculating combo matrix.}
+\item{normalization_types}{character vector of normalization types used for 
+calculating combo matrix.}
 
-\item{averaged_assay}{string of the name of the averaged assay to use as input.
-in the \code{se}.}
+\item{averaged_assay}{string of the name of the averaged assay to use as 
+input. in the \code{se}.}
 
 \item{metrics_assay}{string of the name of the metrics assay to output
 in the returned \linkS4class{SummarizedExperiment}.
 whose combination represents a unique series for which to fit curves.}
 }
 \value{
-A code{SummarizedExperiment} object with an additional assay containing the combination metrics.
+A code{SummarizedExperiment} object with an additional assay 
+containing the combination metrics.
 }
 \description{
 Perform fittings for combination screens.
 }
 \details{
-This function assumes that the combination is set up with both concentrations nested in the assay.
+This function assumes that the combination is set up with both 
+concentrations nested in the assay.
 }
