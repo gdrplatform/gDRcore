@@ -25,17 +25,24 @@ merge_data <- function(manifest, treatments, data) {
   for (m_col in duplicated_col) {
     colnames(treatments)[colnames(treatments) == m_col] <-
       colnames(manifest)[toupper(m_col) == toupper(colnames(manifest))]
-    futile.logger::flog.trace("Header %s in templates corrected to match case with manifest", m_col)
+    futile.logger::flog.trace(
+      "Header %s in templates corrected to match case with manifest", 
+      m_col
+    )
   }
 
   # merge manifest and treatment files first
   identifiers <- gDRutils::validate_identifiers(manifest, req_ids = "barcode")
   df_metadata <- merge(manifest, treatments, by = identifiers[["template"]])
-  futile.logger::flog.info("Merging the metadata (manifest and treatment files)")
+  futile.logger::flog.info(
+    "Merging the metadata (manifest and treatment files)"
+  )
 
   # sort out duplicate metadata columns
-  duplicated_col <-
-    setdiff(intersect(colnames(manifest), colnames(treatments)), identifiers[["template"]])
+  duplicated_col <- setdiff(
+    intersect(colnames(manifest), colnames(treatments)), 
+    identifiers[["template"]]
+  )
   for (m_col in duplicated_col) {
     df_metadata[, m_col] <-
       df_metadata[, paste0(m_col, ".y")] # parse template values
@@ -51,11 +58,17 @@ merge_data <- function(manifest, treatments, data) {
                       df_metadata[, paste0(m_col, ".x")] %in% c("", "-")) &
       !(is.na(df_metadata[, paste0(m_col, ".y")]) |
           df_metadata[, paste0(m_col, ".y")] %in% c("", "-"))
-    if (any(double_idx) &&
-        any(df_metadata[, paste0(m_col, ".x")] != df_metadata[, paste0(m_col, ".y")], na.rm = TRUE)) {
-      futile.logger::flog.warn("Merge data: metadata field %s found in both the manifest
-                               and some templates with inconsistent values;
-                               values in template supersede the ones in the manifest", m_col)
+    if (any(double_idx) && 
+        any(
+          df_metadata[, paste0(m_col, ".x")] != 
+          df_metadata[, paste0(m_col, ".y")], 
+          na.rm = TRUE
+    )) {
+      futile.logger::flog.warn(
+        "Merge data: metadata field %s found in both the manifest
+        and some templates with inconsistent values;
+        values in template supersede the ones in the manifest", m_col
+      )
     }
     df_metadata[, paste0(m_col, ".x")] <- NULL
     df_metadata[, paste0(m_col, ".y")] <- NULL
@@ -65,38 +78,51 @@ merge_data <- function(manifest, treatments, data) {
   expected_headers <- identifiers[["cellline"]]
   headersOK <- expected_headers %in% colnames(df_metadata)
   if (any(!headersOK)) {
-    stop(sprintf(
-      "df_metadata does not contains all expected headers: %s required",
-      paste(expected_headers[!headersOK], collpase = " ; ")
-    ))
+    headers <- paste(expected_headers[!headersOK], collpase = " ; ")
+    stop(
+      sprintf(
+        "df_metadata does not contains all expected headers: %s required",
+        headers
+      )
+    )
   }
 
   # remove wells not labeled
   drug_id <- identifiers[["drug"]]
   df_metadata_trimmed <-
     df_metadata[!is.na(df_metadata[, drug_id]), ]
-  futile.logger::flog.warn("%i well loaded, %i wells discarded for lack of annotation, %i data point selected\n",
-                           nrow(data),
-                           sum(is.na(df_metadata[, drug_id])),
-                           nrow(df_metadata_trimmed)
-                           )
+  futile.logger::flog.warn(
+    "%i well loaded, %i wells discarded for lack of annotation, 
+    %i data point selected\n",
+    nrow(data),
+    sum(is.na(df_metadata[, drug_id])),
+    nrow(df_metadata_trimmed)
+  )
 
   # clean up the metadata
   cleanedup_metadata <-
     cleanup_metadata(df_metadata_trimmed)
-  stopifnot(nrow(cleanedup_metadata) == nrow(df_metadata_trimmed)) # should not happen
+  # should not happen
+  stopifnot(nrow(cleanedup_metadata) == nrow(df_metadata_trimmed))
 
-  df_merged <- merge(cleanedup_metadata, data, by = c(identifiers[["barcode"]],
-                                                      identifiers[["well_position"]]))
+  df_merged <- merge(
+    cleanedup_metadata, 
+    data, 
+    by = c(identifiers[["barcode"]], identifiers[["well_position"]])
+  )
   if (nrow(df_merged) != nrow(data)) {
     # need to identify issue and output relevant warning
-    futile.logger::flog.warn("merge_data: Not all results have been matched with treatments;
-                             merged table is smaller than data table")
+    futile.logger::flog.warn(
+      "merge_data: Not all results have been matched with treatments;
+      merged table is smaller than data table"
+    )
   }
   if (nrow(df_merged) != nrow(df_metadata)) {
     # need to identify issue and print relevant warning
-    futile.logger::flog.warn("merge_data: Not all treatments have been matched with results;
-                             merged table is smaller than metadata table")
+    futile.logger::flog.warn(
+      "merge_data: Not all treatments have been matched with results;
+      merged table is smaller than metadata table"
+    )
   }
 
   # remove wells not labeled

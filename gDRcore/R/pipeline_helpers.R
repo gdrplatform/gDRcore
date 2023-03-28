@@ -10,7 +10,8 @@ create_SE_step <- function(inl,
   if (is.null(df)) {
  
     msg1 <- sprintf(
-      "It's impossible to run pipeline from the first step ('%s') for experiment: '%s'. ",
+      "It's impossible to run pipeline from the first 
+      step ('%s') for experiment: '%s'. ",
       get_pipeline_steps()[1], exp
     )
     msg2 <- "The pipeline has been run with 'add_raw_data' flag disabled? "
@@ -59,7 +60,8 @@ run_pipeline_step <- function(run_vars,
       paste_warnings(se$warnings)
     }
   } else {
-    if (if_read_intermediate_data && is_preceding_step(step, run_vars$start_from)) {
+    if (if_read_intermediate_data && 
+        is_preceding_step(step, run_vars$start_from)) {
       se$result <- read_intermediate_data(run_vars$data_dir, step, run_vars$exp)
     }
   }
@@ -83,7 +85,8 @@ get_pipeline_steps <-
 #' check if the given step can be skipped if partial run is chosen
 #' 
 #' @param current_step, string with the step to be evaluated
-#' @param start_from string indicating the pipeline step from which partial run should be launched
+#' @param start_from string indicating the pipeline step from which partial 
+#' run should be launched
 #' @param steps charvect with all available steps
 #' 
 #' @keywords internal
@@ -108,7 +111,8 @@ do_skip_step <-
 #' check if the given step is preceding the step chosen in the partial run
 #' 
 #' @param current_step, string with the step to be evaluated
-#' @param start_from string indicating the pipeline step from which partial run should be launched
+#' @param start_from string indicating the pipeline step from which 
+#' partial run should be launched
 #' @param steps charvect with all available steps
 #' 
 #' @keywords internal
@@ -168,7 +172,8 @@ read_intermediate_data <- function(path, step, experiment) {
 
 #' @keywords internal
 paste_warnings <- function(list, sep = "\n") {
-  warning(paste0(list, sep = sep), call. = FALSE)
+  warn <- paste0(list, sep = sep)
+  warning(warn, call. = FALSE)
 }
 
 #' @keywords internal
