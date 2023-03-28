@@ -65,3 +65,9 @@ test_that("calculate_GR_value works as expected", {
   )
   expect_true(all(is.na(gr4)))
 })
+
+test_that("calculate_GR_value throws expected errors", {
+  readouts <- c(rep(10000, 5))
+  df_with_GR <- calculate_time_dep_GR_value(readouts, readouts * 1.32, readouts * 2, 2)
+  expect_equal(df_with_GR, -0.37)
+})

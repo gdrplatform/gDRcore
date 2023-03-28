@@ -36,3 +36,8 @@ in gDRtestData.
 Other fields are set as "unknown".
 This approach will be corrected once we will implement final solution for adding cell lines.
 }
+\examples{
+
+add_CellLine_annotation(data.frame(clid = "123", CellLineName = "name of the cell line"))
+
+}

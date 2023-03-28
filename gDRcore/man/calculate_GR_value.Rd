@@ -66,6 +66,18 @@ calculation is performed and then the resulting vector should be averaged outsid
 
 Note that it is expected that the \code{ref_div_time} and \code{duration} are reported in the same units.
 }
+\examples{
+
+  readouts <- c(rep(10000, 5))
+  duration <- 0
+
+readouts <- c(rep(10000, 5))
+calculate_time_dep_GR_value(readouts, readouts * 1.32, readouts * 2, 2)
+
+readouts <- c(rep(10000, 5))
+calculate_endpt_GR_value(readouts, 72, 1, ndigit_rounding = 2)
+
+}
 \seealso{
 normalize_SE2
 }

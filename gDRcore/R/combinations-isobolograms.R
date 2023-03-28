@@ -43,8 +43,7 @@ calculate_Loewe <- function(df_mean,
                       conc_margin = 10 ^ 0.5,
                       log2_pos_offset = log10(3) / 2,
                       min_n_conc = 6,
-                      min_r2 = 0.8
-                    ) {
+                      min_r2 = 0.8) {
 
   checkmate::assert_number(conc_margin)
   checkmate::assert_number(log2_pos_offset)
@@ -116,9 +115,10 @@ calculate_Loewe <- function(df_mean,
 
     # perform the smoothing
     df_iso_curve <- data.frame(x1 = isobol_x1, x2_off = zoo::rollmean(
-      rowMeans(do.call(cbind, lapply(names(which(table(df_iso$fit_type) > 1)), function(x)
+      rowMeans(do.call(cbind, lapply(names(which(table(df_iso$fit_type) > 1)), function(x) {
         stats::approx(x = df_iso$x1[df_iso$fit_type == x], 
-               y = df_iso$x2_off[df_iso$fit_type == x], xout = isobol_x1)$y)),
+               y = df_iso$x2_off[df_iso$fit_type == x], xout = isobol_x1)$y
+        })),
         na.rm = TRUE), 5, fill = NA))
     df_iso_curve <- df_iso_curve[!is.na(df_iso_curve$x2_off), ]
     df_iso_curve$x2 <- df_iso_curve$x2_off - abs(df_iso_curve$x1) * x2_extra_offset # remove offset
@@ -196,9 +196,11 @@ calculate_Loewe <- function(df_mean,
     }
 
     df_100x_AUC <- data.frame(log10_ratio_conc = df_iso_curve$log10_ratio_conc[ratio_idx],
-      AUC_log2CI <- vapply(ratio_idx, function(x) mean(df_iso_curve$log2_CI[
+      AUC_log2CI <- vapply(ratio_idx, function(x) {
+        mean(df_iso_curve$log2_CI[
         (df_iso_curve$log10_ratio_conc > (df_iso_curve$log10_ratio_conc[x] - range / 2)) &
-        (df_iso_curve$log10_ratio_conc <= (df_iso_curve$log10_ratio_conc[x] + range / 2))]),
+        (df_iso_curve$log10_ratio_conc <= (df_iso_curve$log10_ratio_conc[x] + range / 2))])
+        },
         FUN.VALUE = double(1)
       )
     )
@@ -214,15 +216,21 @@ calculate_Loewe <- function(df_mean,
     all_iso <- all_iso[!vapply(all_iso, is.null, FUN.VALUE = logical(1))]
 
     df_all_iso_points <- do.call(rbind, lapply(names(all_iso), 
-            function(x) cbind(iso_level = x,
-                              all_iso[[x]]$df_iso[, c("conc_1", "conc_2", "pos_x", "pos_y", "fit_type")])))
+            function(x) {
+              cbind(iso_level = x,
+                              all_iso[[x]]$df_iso[, c("conc_1", "conc_2", "pos_x", "pos_y", "fit_type")])
+              }))
     df_all_iso_curves <- do.call(rbind, lapply(names(all_iso), 
-            function(x) cbind(iso_level = x,
+            function(x) {
+              cbind(iso_level = x,
                               all_iso[[x]]$df_iso_curve[, c("pos_x", "pos_y", "pos_x_ref", "pos_y_ref",
-                                                            "log10_ratio_conc", "log2_CI")])))
+                                                            "log10_ratio_conc", "log2_CI")])
+              }))
     df_all_AUC_log2CI <- do.call(rbind, lapply(names(all_iso), 
-            function(x) data.frame(iso_level = x, CI_100x = all_iso[[x]]$AUC_log2CI,
-                                   ref_conc_1 = all_iso[[x]]$ref_conc_1, ref_conc_2 = all_iso[[x]]$ref_conc_2)))
+            function(x) {
+              data.frame(iso_level = x, CI_100x = all_iso[[x]]$AUC_log2CI,
+                                   ref_conc_1 = all_iso[[x]]$ref_conc_1, ref_conc_2 = all_iso[[x]]$ref_conc_2)
+              }))
     
     isobologram_out <- list(
       df_all_iso_points = df_all_iso_points,

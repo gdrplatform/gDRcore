@@ -29,6 +29,19 @@ NULL
 
 
 #' @export
+#' 
+#' @examples
+#' 
+#'   readouts <- c(rep(10000, 5))
+#'   duration <- 0
+#    expect_error(calculate_GR_value(rel_viability = readouts,
+#                                 corrected_readout = readouts,
+#                                 day0_readout = readouts[-1],
+#                                 untrt_readout = readouts,
+#                                 ndigit_rounding = 4,
+#                                 duration = duration,
+#                                 ref_div_time = duration / 2))
+#' 
 #' @rdname calculate_GR_value
 #'
 calculate_GR_value <- function(rel_viability, 
@@ -74,7 +87,14 @@ calculate_GR_value <- function(rel_viability,
 
 
 #' @rdname calculate_GR_value
+#' 
+#' @examples
+#' readouts <- c(rep(10000, 5))
+#' calculate_time_dep_GR_value(readouts, readouts * 1.32, readouts * 2, 2)
+#' 
 #' @export
+#'
+#'
 #'
 calculate_time_dep_GR_value <- function(corrected_readout,
                                         day0_readout,
@@ -85,6 +105,11 @@ calculate_time_dep_GR_value <- function(corrected_readout,
 
 
 #' @rdname calculate_GR_value
+#' 
+#' @examples
+#' readouts <- c(rep(10000, 5))
+#' calculate_endpt_GR_value(readouts, 72, 1, ndigit_rounding = 2)
+#' 
 #' @export
 #'
 calculate_endpt_GR_value <- function(rel_viability, 

@@ -24,3 +24,28 @@ test_that("validate_mapping catches reverse single-agent data", {
   merged_df <- validate_mapping(trt_df, ref_df, nested_confounders = NULL)
   expect_equal(dim(merged_df), c(3, 5))  
 })
+
+
+
+test_that("create_SE works as expected", {
+  conc <- rep(seq(0, 0.3, 0.1), 2)
+  ctrl_df <- S4Vectors::DataFrame(ReadoutValue = c(2, 2, 1, 1, 2, 1),
+                                  Concentration = rep(0, 6),
+                                  masked = FALSE,
+                                  Gnumber = rep(c("DRUG_10", "vehicle", "DRUG_8"), 2),
+                                  clid = "CELL1")
+  
+  trt_df <- S4Vectors::DataFrame(ReadoutValue = rep(seq(1, 4, 1), 2),
+                                 Concentration = conc,
+                                 masked = rep(FALSE, 8),
+                                 Gnumber = c("DRUG_10", "DRUG_8"),
+                                 clid = "CELL1")
+  input_df <- as.data.frame(rbind(ctrl_df, trt_df))
+  input_df$Duration <- 72
+  input_df$CorrectedReadout2 <- input_df$ReadoutValue
+
+  se <- purrr::quietly(create_SE)(input_df, data_type = "single-agent", nested_confounders = NULL)
+  
+  testthat::expect_s4_class(se$result, "SummarizedExperiment")
+  expect_equal(dim(se$result), c(6, 1))
+})

@@ -21,7 +21,7 @@ fit_combo_cotreatments <- function(measured, series_id, cotrt_id, normalization_
     conc <- cotrt_concs[i]
     sa <- gDRutils::predict_efficacy_from_conc(conc, sa_fit$x_inf, sa_fit$x_0, sa_fit$ec50, sa_fit$h)
 
-    if (is.na(sa) &
+    if (is.na(sa) &&
         any(conc == measured[, cotrt_id] & measured[, series_id] == 0)) {
       
       # if the fit or the prediction fails, tries to get the reference value from the actual data

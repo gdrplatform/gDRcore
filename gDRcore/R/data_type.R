@@ -7,6 +7,25 @@
 #' @param matrix_conc integer of minimum number of concentration pairs of co-treatment
 #' to classify as co-treatment or matrix data type.
 #' Defaults to \code{1}.
+#' 
+#' @examples
+#' 
+#'  conc <- rep(seq(0, 0.3, 0.1), 2)
+#'  ctrl_df <- S4Vectors::DataFrame(ReadoutValue = c(2, 2, 1, 1, 2, 1),
+#'                                Concentration = rep(0, 6),
+#'                                masked = FALSE,
+#'                                DrugName = rep(c("DRUG_10", "vehicle", "DRUG_8"), 2),
+#'                                CellLineName = "CELL1")
+#'
+#'   trt_df <- S4Vectors::DataFrame(ReadoutValue = rep(seq(1, 4, 1), 2),
+#'                               Concentration = conc,
+#'                               masked = rep(FALSE, 8),
+#'                               DrugName = c("DRUG_10", "DRUG_8"),
+#'                               CellLineName = "CELL1")
+#'   input_df <- as.data.frame(rbind(ctrl_df, trt_df))
+#'   input_df$Duration <- 72
+#'   input_df$CorrectedReadout2 <- input_df$ReadoutValue 
+#'   identify_data_type(input_df)
 #'
 #' @return data.frame of raw drug response data with additional column `type` with the info of
 #' data type for a given row of data.frame
@@ -45,8 +64,7 @@ identify_data_type <- function(df,
     type <- if (ncol(df[matching_idx, drugs_cotrt_ids, drop = FALSE]) == 0) {
       if (all(df[matching_idx, drug_ids[["drug_name"]]] %in% untreated_tag)) {
       "control"
-    }
-    else {
+    } else {
       "single-agent"
     }
     } else if (detect_sa == 1) {
@@ -91,6 +109,27 @@ identify_data_type <- function(df,
 #' column specified in `type_col` argument.
 #' @param type_col string with column names in `df` with info about data type.
 #' Defaults to \code{"type"}.
+#'
+#'
+#' @examples
+#' 
+#' #'  conc <- rep(seq(0, 0.3, 0.1), 2)
+#'  ctrl_df <- S4Vectors::DataFrame(ReadoutValue = c(2, 2, 1, 1, 2, 1),
+#'                                Concentration = rep(0, 6),
+#'                                masked = FALSE,
+#'                                DrugName = rep(c("DRUG_10", "vehicle", "DRUG_8"), 2),
+#'                                CellLineName = "CELL1")
+#'
+#'   trt_df <- S4Vectors::DataFrame(ReadoutValue = rep(seq(1, 4, 1), 2),
+#'                               Concentration = conc,
+#'                               masked = rep(FALSE, 8),
+#'                               DrugName = c("DRUG_10", "DRUG_8"),
+#'                               CellLineName = "CELL1")
+#'   input_df <- as.data.frame(rbind(ctrl_df, trt_df))
+#'   input_df$Duration <- 72
+#'   input_df$CorrectedReadout2 <- input_df$ReadoutValue 
+#'   split_df <- identify_data_type(input_df)
+#'   split_raw_data(split_df)
 #'
 #' @return list with split data based on its data type
 #' @export
@@ -137,8 +176,9 @@ split_raw_data <- function(df,
   }
   
   if ("single-agent" %in% names(df_list)) {
-    sa_idx <- gDRutils::loop(grep(drug_ids[["concentration"]], drug_ids, value = TRUE), function(x)
-           which(!df_list[["single-agent"]][, x] == 0))
+    sa_idx <- gDRutils::loop(grep(drug_ids[["concentration"]], drug_ids, value = TRUE), function(x) {
+           which(!df_list[["single-agent"]][, x] == 0)
+      })
     sa_idx[["concentration"]] <- NULL
     for (codrug in names(sa_idx)) {
       codrug_cols <- grep(as.numeric(gsub("\\D", "", codrug)), drug_ids, value = TRUE)

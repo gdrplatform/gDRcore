@@ -1,5 +1,33 @@
 #' @rdname runDrugResponseProcessingPipelineFxns
 #' 
+#' @examples
+#' 
+#' d <- rep(seq(0.1, 0.9, 0.1), each = 4)
+#' v <- rep(seq(0.1, 0.4, 0.1), 9)
+#' df <- S4Vectors::DataFrame(Concentration = d,
+#'                            masked = rep(c(TRUE, TRUE, TRUE, FALSE), 9),
+#'                            normalization_type = rep(c("GR", "RV"),
+#'                                                     length(v) * 2),
+#'                            x = rep(v, 2))
+#' normalized <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = df)
+#' 
+#' keys <- list(Trt = "Concentration",
+#'              "masked_tag" = "masked")
+#' assays <- list("Normalized" = normalized)
+#' se <- SummarizedExperiment::SummarizedExperiment(assays = assays)
+#' se <- gDRutils::set_SE_keys(se, keys)
+#' se <- gDRutils::set_SE_identifiers(se, gDRutils::get_env_identifiers())
+#' .
+#' se1 <-
+#'   average_SE(
+#'     se,
+#'     data_type = "single-agent",
+#'     override_masked = FALSE,
+#'     normalized_assay = "Normalized",
+#'     averaged_assay = "Averaged"
+#'   )
+#' 
+#' 
 #' @export
 #'
 average_SE <- function(se,

@@ -23,3 +23,7 @@ add drug annotation to a data.frame with metadata
 The logic of adding drug annotation for df_metadata based on the annotation file stored
 in gDRtestData.
 }
+\examples{
+add_Drug_annotation(data.frame(Gnumber = "drug_id", DrugName = "name of the drug"))
+
+}

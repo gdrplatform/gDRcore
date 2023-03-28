@@ -24,6 +24,26 @@ data type for a given row of data.frame
 \description{
 Identify type of data
 }
+\examples{
+
+ conc <- rep(seq(0, 0.3, 0.1), 2)
+ ctrl_df <- S4Vectors::DataFrame(ReadoutValue = c(2, 2, 1, 1, 2, 1),
+                               Concentration = rep(0, 6),
+                               masked = FALSE,
+                               DrugName = rep(c("DRUG_10", "vehicle", "DRUG_8"), 2),
+                               CellLineName = "CELL1")
+
+  trt_df <- S4Vectors::DataFrame(ReadoutValue = rep(seq(1, 4, 1), 2),
+                              Concentration = conc,
+                              masked = rep(FALSE, 8),
+                              DrugName = c("DRUG_10", "DRUG_8"),
+                              CellLineName = "CELL1")
+  input_df <- as.data.frame(rbind(ctrl_df, trt_df))
+  input_df$Duration <- 72
+  input_df$CorrectedReadout2 <- input_df$ReadoutValue 
+  identify_data_type(input_df)
+
+}
 \author{
 Bartosz Czech <bartosz.czech@contractors.roche.com>
 }

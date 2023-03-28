@@ -55,13 +55,15 @@ identify_keys <- function(df_,
     nested_keys = nested_keys
   )
 
-  keys <- gDRutils::loop(keys, function(x) setdiff(x, c(gDRutils::get_header("raw_data"),
+  keys <- gDRutils::loop(keys, function(x) {
+    setdiff(x, c(gDRutils::get_header("raw_data"),
     gDRutils::get_header("normalized_results"), 
     identifiers$template, 
     identifiers$well_position, 
     gDRutils::get_header("averaged_results"),
     gDRutils::get_header("metrics_results"), 
-    identifiers$cellline_ref_div_time)))
+    identifiers$cellline_ref_div_time))
+    })
 
   keys$masked_tag <- identifiers$masked_tag
   keys$cellline_name <- identifiers$cellline_name

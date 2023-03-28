@@ -11,6 +11,11 @@
 #' in gDRtestData.
 #' Other fields are set as "unknown".
 #' This approach will be corrected once we will implement final solution for adding cell lines.
+#' 
+#' @examples 
+#' 
+#' add_CellLine_annotation(data.frame(clid = "123", CellLineName = "name of the cell line"))
+#' 
 #' @return a data.frame with metadata with annotated cell lines
 #' @export
 #'
@@ -92,6 +97,10 @@ add_CellLine_annotation <- function(df_metadata,
 #' @param fill a string indicating how unknown cell lines should be filled in the DB
 #' @details The logic of adding drug annotation for df_metadata based on the annotation file stored
 #' in gDRtestData.
+#' 
+#' @examples 
+#' add_Drug_annotation(data.frame(Gnumber = "drug_id", DrugName = "name of the drug"))
+#' 
 #' @return a data.frame with metadata with annotated drugs
 #' @export
 #'
@@ -174,6 +183,9 @@ add_Drug_annotation <- function(df_metadata,
 #' Remove batch from Gnumber
 #' 
 #' @param drug drug name
+#'
+#' @examples
+#' remove_drug_batch("DRUG.123")
 #'
 #' @return Gnumber without a batch
 #' @export

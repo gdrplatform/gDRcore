@@ -24,6 +24,18 @@ Create a mapping of concentrations to standardized concentrations.
 The concentrations are standardized in that they will contain regularly spaced dilutions
 and close values will be rounded.
 }
+\examples{
+
+ratio <- 0.5
+conc1 <- c(0, 10 ^ (seq(-3, 1, ratio)))
+
+shorter_range <- conc1[-1]
+noise <- runif(length(shorter_range), 1e-12, 1e-11)
+conc2 <- shorter_range + noise
+
+map_conc_to_standardized_conc(conc1, conc2)
+
+}
 \seealso{
 replace_conc_w_standardized_conc
 }
