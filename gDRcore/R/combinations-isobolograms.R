@@ -6,6 +6,9 @@
 #' @details
 #' drug_1 is diluted along the rows as the y-axis and
 #' drug_2 is diluted along the columns and will be the x-axis.
+#' 
+#' @return list with axis grid positions
+#' 
 define_matrix_grid_positions <- function(conc1, conc2) {
   .generate_gap_for_single_agent <- function(x) {
     2 * x[2] - x[3] - log10(1.5)

@@ -30,6 +30,9 @@ for `single-agent` and (optionally) for `combination` data}
 
 \item{...}{additional parameters}
 }
+\value{
+list of input data
+}
 \description{
 Current steps
 - refining nested confounders

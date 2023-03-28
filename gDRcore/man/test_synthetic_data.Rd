@@ -23,6 +23,9 @@ test_synthetic_data(
 
 \item{tolerance}{tolerance factor}
 }
+\value{
+`NULL`
+}
 \description{
 Testing synthetic data form gDRtestData package
 }

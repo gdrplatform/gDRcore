@@ -8,6 +8,8 @@
 #' @param x data.frame with raw data or MAE object with dose-reponse data
 #' @param ... additional parameters
 #' 
+#' @return list of input data
+#' 
 #' @export
 prepare_input <-
   function(x, ...) {
@@ -28,6 +30,8 @@ prepare_input <-
 #' nested_keys is character vector of column names to include in the data.frames
 #' in the assays of the resulting \code{SummarizedExperiment} object.
 #' Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
+#' 
+#' @return list of input data
 #' 
 #' @export
 prepare_input.data.frame <-
@@ -76,6 +80,8 @@ prepare_input.data.frame <-
 #' Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
 #' @param raw_data_field metadata field with raw data
 #' @param split_data Boolean indicating need of splitting the data into experiment types
+#' 
+#' @return list of input data
 #' 
 #' @export
 prepare_input.MultiAssayExperiment <-

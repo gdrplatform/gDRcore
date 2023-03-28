@@ -11,6 +11,9 @@ define_matrix_grid_positions(conc1, conc2)
 
 \item{conc2}{drug_2 concentration}
 }
+\value{
+list with axis grid positions
+}
 \description{
 Define matrix grid positions
 }

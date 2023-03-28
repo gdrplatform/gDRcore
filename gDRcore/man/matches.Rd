@@ -40,6 +40,9 @@ represented as \code{NA}.  If set to \code{NULL}, items with no match will
 be set to an index value of \code{length+1}.  If {indexes=FALSE}, they will
 default to \code{NA}.}
 }
+\value{
+data.frame
+}
 \description{
 Returns a lookup table or list of the positions of ALL matches of its first
 argument in its second and vice versa. Similar to \code{\link{match}}, though

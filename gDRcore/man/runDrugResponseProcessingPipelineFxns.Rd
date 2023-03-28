@@ -179,6 +179,9 @@ If set to NULL (default) intermediate data is not saved/read in.}
 \item{selected_experiments}{character vector with experiments for which pipeline should be run.
 This option works only for the pipeline being run partially (i.e. with `partial_run` flag set to `TRUE`)}
 }
+\value{
+MAE object
+}
 \description{
 Run different components of the gDR drug response processing pipeline.
 Either: create a SummarizedExperiment and normalize raw treated and control data (create_and_normalize_SE),

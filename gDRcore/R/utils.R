@@ -331,6 +331,9 @@ rbindParallelList <- function(x, name) {
 #'   be set to an index value of \code{length+1}.  If {indexes=FALSE}, they will
 #'   default to \code{NA}.
 #' @details Source of the function: https://github.com/cran/grr/blob/master/R/grr.R
+#' 
+#' @return data.frame
+#' 
 #' @export
 matches <- function(x, y, all.x = TRUE, all.y = TRUE, list = FALSE, indexes = TRUE, nomatch = NA) {
   result <- .Call("matches", x, y)
@@ -359,6 +362,8 @@ matches <- function(x, y, all.x = TRUE, all.y = TRUE, list = FALSE, indexes = TR
 #' @param step string with pipeline step
 #' @param data_model single-agent vs combination
 #' @param status string return vector of assays created or present at the given step?
+#' 
+#' @return assay
 #' 
 get_assays_per_pipeline_step <-
   function(step,
@@ -402,7 +407,10 @@ get_assays_per_pipeline_step <-
 #' add intermediate data (qs files) for given ma
 #' @param mae mae with dose-response data
 #' @param data_dir  output directory
-#' @param steps charvec with pipeline steps for which intermediate data should be saved
+#' @param steps charvec with pipeline steps for which intermediate data 
+#' should be saved
+#' 
+#' @return `NULL`
 #' 
 #' @export
 add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
@@ -414,7 +422,11 @@ add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
   for (data_type in names(mae)) {
     for (step in steps) {
       as_names <-
-        get_assays_per_pipeline_step(step, data_model(data_type), status = "present")
+        get_assays_per_pipeline_step(
+          step, 
+          data_model(data_type), 
+          status = "present"
+        )
       se <- mae[[data_type]]
       se_subset <- SummarizedExperiment::SummarizedExperiment(
         assays = SummarizedExperiment::assays(se)[as_names],
@@ -430,6 +442,8 @@ add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
 #' get mae dataset from intermediate data
 #' 
 #' @param data_dir directory with intermediate data
+#' 
+#' @return MAE object
 #' 
 #' @export
 get_mae_from_intermediate_data <- function(data_dir) {

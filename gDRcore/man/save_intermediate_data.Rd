@@ -15,6 +15,9 @@ save_intermediate_data(path, step, experiment, se)
 
 \item{se}{output se}
 }
+\value{
+`NULL`
+}
 \description{
 save intermediate data for the given experiment and step to qs file
 }

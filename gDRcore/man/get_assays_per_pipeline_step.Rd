@@ -17,6 +17,9 @@ get_assays_per_pipeline_step(
 
 \item{status}{string return vector of assays created or present at the given step?}
 }
+\value{
+assay
+}
 \description{
 get info about created/present assays in SE at the given pipeline step
 }

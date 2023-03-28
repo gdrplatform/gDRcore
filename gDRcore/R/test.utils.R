@@ -6,6 +6,8 @@
 #' @param override_untrt_controls named list containing defining factors in the treatments
 #' @param tolerance tolerance factor
 #' 
+#' @return `NULL`
+#' 
 #' @export
 test_synthetic_data <- function(original,
                                 data,

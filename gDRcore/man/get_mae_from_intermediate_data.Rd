@@ -9,6 +9,9 @@ get_mae_from_intermediate_data(data_dir)
 \arguments{
 \item{data_dir}{directory with intermediate data}
 }
+\value{
+MAE object
+}
 \description{
 get mae dataset from intermediate data
 }

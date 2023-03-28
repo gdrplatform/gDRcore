@@ -6,6 +6,9 @@
 \usage{
 get_pipeline_steps()
 }
+\value{
+vector with steps
+}
 \description{
 get pipeline steps
 }

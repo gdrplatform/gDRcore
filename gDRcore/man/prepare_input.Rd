@@ -11,6 +11,9 @@ prepare_input(x, ...)
 
 \item{...}{additional parameters}
 }
+\value{
+list of input data
+}
 \description{
 Current steps
 - refining nested confounders

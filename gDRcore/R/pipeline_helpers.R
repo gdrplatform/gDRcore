@@ -69,6 +69,8 @@ run_pipeline_step <- function(run_vars,
 
 #' get pipeline steps
 #' 
+#' @return vector with steps
+#' 
 #' @keywords internal
 get_pipeline_steps <-
   function() {
@@ -132,6 +134,8 @@ is_preceding_step <-
 #' @param se output se 
 #' 
 #' @keywords internal
+#' 
+#' @return `NULL`
 #' 
 save_intermediate_data <- function(path, step, experiment, se) {
   

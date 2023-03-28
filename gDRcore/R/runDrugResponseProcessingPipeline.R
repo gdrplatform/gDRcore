@@ -86,6 +86,8 @@
 #' This scenario only works when `partial_run` is enabled.
 #'
 #' @name runDrugResponseProcessingPipelineFxns
+#' 
+#' @return MAE object
 #'
 NULL
 
