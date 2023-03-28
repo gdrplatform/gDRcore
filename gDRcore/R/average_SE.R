@@ -19,7 +19,10 @@ average_SE <- function(se,
   gDRutils::validate_se_assay_name(se, normalized_assay)
 
   if (is.null(series_identifiers)) {
-    series_identifiers <- get_default_nested_identifiers(se, data_model(data_type))
+    series_identifiers <- get_default_nested_identifiers(
+      se, 
+      data_model(data_type)
+    )
   }
 
   trt_keys <- gDRutils::get_SE_keys(se, "Trt")
@@ -36,7 +39,9 @@ average_SE <- function(se,
     info = "unexpected masked_tag_key keys on 'se' object"
   )
   
-  normalized <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, normalized_assay))
+  normalized <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se, normalized_assay)
+  )
   iterator <- unique(normalized[, c("column", "row")])
   
   out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
@@ -49,23 +54,39 @@ average_SE <- function(se,
     if (sum(!masked) > 0) {
       series_identifiers <- intersect(series_identifiers, colnames(norm_df))
       unmasked <- norm_df[!masked, , drop = FALSE]
-      avg_df <- stats::aggregate(stats::as.formula(paste("x ~ ",
-                                                  paste(c("normalization_type", series_identifiers),
-                                                        collapse = " + "))),
-                               function(x) mean(x, na.rm = TRUE),
-                               data = unmasked, na.action = stats::na.pass)
-      std_df <- stats::aggregate(stats::as.formula(paste("x ~ ",
-                                                  paste(c("normalization_type", series_identifiers),
-                                                        collapse = " + "))),
-                               function(x) stats::sd(x, na.rm = TRUE),
-                               data = unmasked, na.action = stats::na.pass)
+      
+      avg_df <- stats::aggregate(
+        stats::as.formula(
+          paste("x ~ ",
+          paste(c("normalization_type", series_identifiers), collapse = " + ")
+        )),
+        function(x) mean(x, na.rm = TRUE),
+        data = unmasked, 
+        na.action = stats::na.pass
+      )
+      
+      std_df <- stats::aggregate(
+        stats::as.formula(
+          paste("x ~ ",
+          paste(c("normalization_type", series_identifiers),collapse = " + ")
+        )),
+        function(x) stats::sd(x, na.rm = TRUE),
+        data = unmasked, 
+        na.action = stats::na.pass
+      )
     
       colnames(std_df)[colnames(std_df) == "x"] <- "x_std"
-      agg_df <- S4Vectors::DataFrame(merge(avg_df, std_df,
-                                         by = c(series_identifiers, "normalization_type"),
-                                         sort = FALSE))
-      rownames(agg_df) <- paste(cumsum(!duplicated(agg_df[, series_identifiers])),
-                                agg_df$normalization_type, sep = "_")
+      agg_df <- S4Vectors::DataFrame(merge(
+        avg_df, 
+        std_df,
+        by = c(series_identifiers, "normalization_type"),
+        sort = FALSE
+      ))
+      rownames(agg_df) <- paste(
+        cumsum(!duplicated(agg_df[, series_identifiers])),
+        agg_df$normalization_type, 
+        sep = "_"
+      )
     }
 
     if (all(masked) || nrow(agg_df) == 0) {
@@ -74,7 +95,11 @@ average_SE <- function(se,
                            "normalization_type", "row_id", "col_id"))
       agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
       colnames(agg_df) <- all_cols
-      rownames(agg_df) <- paste(seq_len(nrow(agg_df)), agg_df$normalization_type, sep = "_")
+      rownames(agg_df) <- paste(
+        seq_len(nrow(agg_df)), 
+        agg_df$normalization_type, 
+        sep = "_"
+      )
     }
     agg_df$row_id <- i
     agg_df$col_id <- j
@@ -83,9 +108,11 @@ average_SE <- function(se,
 
   out <- S4Vectors::DataFrame(do.call("rbind", out))
   
-  averaged <- BumpyMatrix::splitAsBumpyMatrix(out[!colnames(out) %in% c(masked_tag_key, "row_id", "col_id")], 
+  averaged <- BumpyMatrix::splitAsBumpyMatrix(
+    out[!colnames(out) %in% c(masked_tag_key, "row_id", "col_id")], 
     row = out$row_id, 
-    col = out$col_id)
+    col = out$col_id
+  )
 
   SummarizedExperiment::assays(se)[[averaged_assay]] <- averaged
   se

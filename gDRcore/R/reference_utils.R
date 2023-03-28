@@ -3,10 +3,12 @@
 #' Create an aggregated control data.frame.
 #'
 #' @param df_ data.frame
-#' @param control_cols character vector of columns to include in the resulting control data.frame.
+#' @param control_cols character vector of columns to include in the resulting 
+#' control data.frame.
 #' @param control_mean_fxn function indicating how to average controls.
 #' Defaults to \code{mean(x, trim = 0.25)}.
-#' @param out_col_name string of the output readout that will replace \code{CorrectedReadout}.
+#' @param out_col_name string of the output readout that will replace 
+#' \code{CorrectedReadout}.
 #'
 #' @return data.frame of values aggregated by
 #'
@@ -14,7 +16,9 @@
 #'
 create_control_df <- function(df_,
                               control_cols,
-                              control_mean_fxn = function(x) mean(x, trim = 0.25),
+                              control_mean_fxn = function(x) {
+                                mean(x, trim = 0.25)
+                              },
                               out_col_name) {
 
   checkmate::assert_true(inherits(df_, "data.frame"))
@@ -24,7 +28,8 @@ create_control_df <- function(df_,
 
   if (nrow(df_) != 0L) {
     # Rename CorrectedReadout.
-    df_ <- df_[, c("CorrectedReadout", intersect(control_cols, colnames(df_))), drop = FALSE]
+    col_intersect <- intersect(control_cols, colnames(df_))
+    df_ <- df_[, c("CorrectedReadout", col_intersect), drop = FALSE]
     colnames(df_)[grepl("CorrectedReadout", colnames(df_))] <- out_col_name
 
     # Aggregate by all non-readout data (the metadata).

@@ -15,7 +15,10 @@ fit_combo_codilutions <- function(measured,
   }
 
   # Filter only to what diagonals are valid for a fit (>4 points).
-  measured$ratios <- round_concentration(measured[[id2]] / measured[[id]], ndigit = 1)
+  measured$ratios <- round_concentration(
+    measured[[id2]] / measured[[id]], 
+    ndigit = 1
+  )
   ratios <- S4Vectors::split(measured, measured$ratios)
   keep <- unlist(lapply(ratios, function(x) {
     nrow(x) > 4
@@ -24,7 +27,14 @@ fit_combo_codilutions <- function(measured,
 
   fits <- vector("list", length(valid))
   for (i in seq_along(fits)) {
-    fits[[i]] <- fit_codilution_series(valid[[i]], id, id2, e_0 = e_0, GR_0 = GR_0, normalization_type)
+    fits[[i]] <- fit_codilution_series(
+      valid[[i]], 
+      id, 
+      id2, 
+      e_0 = e_0, 
+      GR_0 = GR_0, 
+      normalization_type
+    )
   }
 
   out <- do.call("rbind", fits)
@@ -33,8 +43,18 @@ fit_combo_codilutions <- function(measured,
 
 
 #' @keywords internal
-fit_codilution_series <- function(measured, series_1, series_2, e_0, GR_0, normalization_type) {
-  ratio <- unique(round_concentration(measured[[series_2]] / measured[[series_1]], ndigit = 1))
+fit_codilution_series <- function(measured, 
+                                  series_1, 
+                                  series_2, 
+                                  e_0, 
+                                  GR_0, 
+                                  normalization_type) {
+  ratio <- unique(
+    round_concentration(
+      measured[[series_2]] / measured[[series_1]], 
+      ndigit = 1
+    )
+  )
   if (length(ratio) != 1L) {
     stop("more than one ratio between 'series_2' and 'series_1' detected")
   }

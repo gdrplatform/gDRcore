@@ -1,8 +1,13 @@
 .onLoad <- function(libname, pkgname) {
-  options(scipen = 999) # scientific notation was disabled due to the problem with unit tests
+  # scientific notation was disabled due to the problem with unit tests
+  options(scipen = 999) 
+  
   cores <- Sys.getenv("NUM_CORES")
   if (cores != "") {
-    BiocParallel::register(BiocParallel::MulticoreParam(workers = as.numeric(cores)), default = TRUE)
+    BiocParallel::register(
+      BiocParallel::MulticoreParam(workers = as.numeric(cores)), 
+      default = TRUE
+    )
   }
 }
 

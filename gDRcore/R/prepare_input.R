@@ -24,12 +24,14 @@ prepare_input <-
 #' - splitting df_ into (per experiment) df_list
 #' @param x data.frame with raw data
 #' @param ... additional parameters
-#' @param nested_identifiers_l list with the nested_identifiers(character vectors) 
-#' for `single-agent` and (optionally) for `combination` data
-#' @param nested_confounders Character vector of the nested_confounders for a given assay.
-#' nested_keys is character vector of column names to include in the data.frames
-#' in the assays of the resulting \code{SummarizedExperiment} object.
-#' Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
+#' @param nested_identifiers_l list with the 
+#' nested_identifiers(character vectors) for `single-agent` and (optionally) 
+#' for `combination` data
+#' @param nested_confounders Character vector of the nested_confounders for a 
+#' given assay. nested_keys is character vector of column names to include in 
+#' the data.frames in the assays of the resulting \code{SummarizedExperiment} 
+#' object. Defaults to the \code{nested_identifiers} and 
+#' \code{nested_confounders} if passed through
 #' 
 #' @return list of input data
 #' 
@@ -59,7 +61,10 @@ prepare_input.data.frame <-
     )
     inl$exps <- .set_exps(inl$df_list)
     
-    validate_data_models_availability(names(inl$df_list), names(inl$nested_identifiers_l))
+    validate_data_models_availability(
+      names(inl$df_list), 
+      names(inl$nested_identifiers_l)
+    )
     
     inl
   }
@@ -72,14 +77,17 @@ prepare_input.data.frame <-
 #' - splitting df_ into (per experiment) df_list
 #' @param x MAE object with dose-reponse data
 #' @param ... additional parameters
-#' @param nested_identifiers_l list with the nested_identifiers(character vectors) 
-#' for `single-agent` and (optionally) for `combination` data
-#' @param nested_confounders Character vector of the nested_confounders for a given assay.
-#' nested_keys is character vector of column names to include in the data.frames
-#' in the assays of the resulting \code{SummarizedExperiment} object.
-#' Defaults to the \code{nested_identifiers} and \code{nested_confounders} if passed through
+#' @param nested_identifiers_l list with the 
+#' nested_identifiers(character vectors) for `single-agent` and (optionally) 
+#' for `combination` data
+#' @param nested_confounders Character vector of the nested_confounders for 
+#' a given assay. nested_keys is character vector of column names to include 
+#' in the data.frames in the assays of the resulting 
+#' \code{SummarizedExperiment} object. Defaults to the \code{nested_identifiers}
+#' and \code{nested_confounders} if passed through
 #' @param raw_data_field metadata field with raw data
-#' @param split_data Boolean indicating need of splitting the data into experiment types
+#' @param split_data Boolean indicating need of splitting the data into 
+#' experiment types
 #' 
 #' @return list of input data
 #' 
@@ -139,8 +147,8 @@ prepare_input.MultiAssayExperiment <-
 
 .set_nested_confounders <- function(nested_confounders, df) {
   x_names <- names(df)
-  # Some experiment can have nested_confounders = NULL that is appropriate situation for
-  # internal data
+  # Some experiment can have nested_confounders = NULL that is appropriate 
+  # situation for internal data
   if (!is.null(nested_confounders) &&
       any(!nested_confounders %in% x_names)) {
     

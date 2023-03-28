@@ -42,19 +42,24 @@
 #' @param metrics_assay string of the name of the metrics assay to output
 #' in the returned \linkS4class{SummarizedExperiment}
 #' Defaults to \code{"Metrics"}.
-#' @param add_raw_data  boolean indicating whether or not to include raw data into experiment metadata.
+#' @param add_raw_data  boolean indicating whether or not to include raw data 
+#' into experiment metadata.
 #' @param range_conc vector of concetrations range values.
 #' @param force_fit boolean indicating whether or not to force the fit.
 #' @param pcutoff numeric cutoff value.
-#' @param cap numeric value representing the value to cap the highest allowed relative viability at.
+#' @param cap numeric value representing the value to cap the highest allowed 
+#' relative viability at.
 #' @param curve_type vector of curve type values.
-#' @param data_dir string with the path to the directory with intermediate data of experiments (qs files).
-#' If set to NULL (default) intermediate data is not saved/read in.
-#' @param partial_run logical flag indicating if the pipeline should be run partially 
-#' (from the step defined with `start_from`)
-#' @param start_from string indicating the pipeline step from which partial run should be launched
-#' @param selected_experiments character vector with experiments for which pipeline should be run.
-#' This option works only for the pipeline being run partially (i.e. with `partial_run` flag set to `TRUE`)
+#' @param data_dir string with the path to the directory with intermediate data 
+#' of experiments (qs files). If set to NULL (default) intermediate data is not 
+#' saved/read in.
+#' @param partial_run logical flag indicating if the pipeline should be run 
+#' partially (from the step defined with `start_from`)
+#' @param start_from string indicating the pipeline step from which partial 
+#' run should be launched
+#' @param selected_experiments character vector with experiments for which 
+#' pipeline should be run. This option works only for the pipeline being run 
+#' partially (i.e. with `partial_run` flag set to `TRUE`)
 #'
 #' @details
 #' \code{runDrugResponseProcessingPipeline} is made up of 3 separate steps:
@@ -64,26 +69,30 @@
 #'  \item{"fit_SE"}
 #'}
 #'
-#' For create_and_normalize_SE, this creates a SummarizedExperiment object from a data.frame, 
-#' where the data.frame contains treatments on rows, and conditions on columns. 
-#' A \linkS4class{SummarizedExperiment} object containing two asssays is created:
-#' treated readouts will live in an assay called \code{"RawTreated"},
-#' and reference readouts live in an assay called \code{"Controls"}. Subsequently, the treated
-#' and control elements will be normalized to output two metrics: 
+#' For create_and_normalize_SE, this creates a SummarizedExperiment object 
+#' from a data.frame, where the data.frame contains treatments on rows, and 
+#' conditions on columns. 
+#' A \linkS4class{SummarizedExperiment} object containing two asssays is 
+#' created: treated readouts will live in an assay called \code{"RawTreated"},
+#' and reference readouts live in an assay called \code{"Controls"}. 
+#' Subsequently, the treated and control elements will be normalized to output 
+#' two metrics: 
 #'
-#' For average_SE, take the normalized assay and average the nested \code{DataFrame}s across unique
-#' \code{nested_identifiers}. 
+#' For average_SE, take the normalized assay and average the nested 
+#' \code{DataFrame}s across unique\code{nested_identifiers}. 
 #'
-#' For fit_SE, take the averaged assay and fit curves to obtain metrics, one set of metrics for each
-#' normalization type set.
+#' For fit_SE, take the averaged assay and fit curves to obtain metrics, one 
+#' set of metrics for each normalization type set.
 #' 
-#' Pipeline can be run partially with `partial_run` flag set to TRUE. The `start_from` string defines the step 
-#' from which the pipeline will be launched. However, partial run of the pipeline is possible only if the whole
-#' pipeline was launched at least once with defined `data_dir` and intermediate data was saved as qs files 
-#' into `data_dir`. 
+#' Pipeline can be run partially with `partial_run` flag set to TRUE. The 
+#' `start_from` string defines the step from which the pipeline will be 
+#' launched. However, partial run of the pipeline is possible only if the whole
+#' pipeline was launched at least once with defined `data_dir` and intermediate 
+#' data was saved as qs files into `data_dir`. 
 #' 
-#' Pipeline can be run for the selected experiments by changing the default value of `selected_experiments` param`.
-#' This scenario only works when `partial_run` is enabled.
+#' Pipeline can be run for the selected experiments by changing the default 
+#' value of `selected_experiments` param. This scenario only works when 
+#' `partial_run` is enabled.
 #'
 #' @name runDrugResponseProcessingPipelineFxns
 #' 
@@ -101,8 +110,10 @@ create_and_normalize_SE <- function(df_,
                                       mean(x, trim = 0.25)
                                     },
                                     nested_identifiers = NULL,
-                                    nested_confounders = intersect(names(df_), 
-                                                                   gDRutils::get_env_identifiers("barcode")), 
+                                    nested_confounders = intersect(
+                                      names(df_), 
+                                      gDRutils::get_env_identifiers("barcode")
+                                    ), 
                                     override_untrt_controls = NULL,
                                     ndigit_rounding = 4,
                                     control_assay = "Controls",
@@ -161,13 +172,16 @@ runDrugResponseProcessingPipeline <- function(x,
                                               add_raw_data = TRUE,
                                               data_dir = NULL,
                                               partial_run = FALSE,
-                                              start_from = get_pipeline_steps()[1],
+                                              start_from = 
+                                                get_pipeline_steps()[1],
                                               selected_experiments = NULL) {
   
   checkmate::assert_multi_class(x, c("data.frame", "MultiAssayExperiment"))
   if (inherits(x, "data.frame")) {
-    checkmate::assert_true(any(gDRutils::get_env_identifiers("untreated_tag") %in%
-                                 x[[gDRutils::get_env_identifiers("drug")]]))
+    checkmate::assert_true(any(
+      gDRutils::get_env_identifiers("untreated_tag") %in%
+        x[[gDRutils::get_env_identifiers("drug")]]
+    ))
   }
   checkmate::assert_string(readout)
   checkmate::assert_function(control_mean_fxn)
@@ -199,10 +213,13 @@ runDrugResponseProcessingPipeline <- function(x,
   } 
   
   if (is.null(data_dir) && partial_run) {
-    stop("Path for/to the intermediate data is required with partial_run enabled")
+    stop(
+      "Path for/to the intermediate data is required with partial_run enabled"
+    )
   } 
 
-  # when running pipeline with x = MAE the identifiers from MAE's metadata should be restored
+  # when running pipeline with x = MAE the identifiers from MAE's metadata 
+  # should be restored
   if (inherits(x, "MultiAssayExperiment")) {
     m_idfs <- S4Vectors::metadata(x[[1]])[["identifiers"]]
     for (idx in seq_along(m_idfs)) {
