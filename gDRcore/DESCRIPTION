@@ -15,8 +15,8 @@ Authors@R: c(
     person("Dariusz", "Scigocki", role = "aut"),
     person("Allison", "Vuong", role = "aut")
   )
-Description: This package contains core functions to process and analyze
-    drug response data.
+Description: This package contains core functions to process and analyze drug response data. The package provides tools for normalizing, averaging,
+  and calculation of gDR metrics data. All core functions are wrapped into the pipeline function allowing analyzing the data in a straightforward way.
 License: file LICENSE
 Imports:
     BiocParallel,
@@ -31,9 +31,7 @@ Imports:
     zoo
 Suggests:
     BumpyMatrix,
-    covr,
     futile.logger,
-    gDRinternalData,
     gDRstyle (>= 0.99.0),
     gDRtestData (>= 0.99.0),
     IRanges,
@@ -45,6 +43,8 @@ Suggests:
     testthat,
     tibble,
     yaml
+Enhances:
+    gDRinternalData
 VignetteBuilder: 
     knitr
 biocViews: Software, ShinyApps
