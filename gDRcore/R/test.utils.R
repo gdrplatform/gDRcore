@@ -33,14 +33,3 @@ test_synthetic_data <- function(original,
     testthat::expect_equal(metrics_new, metrics, tolerance = tolerance)
   })
 }
-
-#' Get synthetic data from gDRtestData package
-#'
-#' @param rds RDS filename
-#'
-#' @return loaded data
-#' 
-#' @export
-get_synthetic_data <- function(rds) {
-  readRDS(system.file("testdata", rds, package = "gDRtestData"))
-}
