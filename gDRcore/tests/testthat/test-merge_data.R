@@ -1,5 +1,3 @@
-library(testthat)
-
 test_that("merge_data works as expected", {
 
   manifestFile <- system.file(package = "gDRimport", "extdata", "data1", "manifest.xlsx")

@@ -18,6 +18,14 @@
 #'
 #' @param df_metadata a dataframe with metadata
 #'
+#' @examples
+#'
+#' df <- data.frame(clid = "CELL_LINE",
+#' Gnumber = "DRUG_1",
+#' Concentration = c(0, 1),
+#' Duration = 72)
+#' cleanup_df <- cleanup_metadata(df)
+#'
 #' @return a dataframe with cleaned metadata
 #' @details Adds annotations and check whether user provided correct input data.
 #' @export
@@ -60,7 +68,6 @@ cleanup_metadata <- function(df_metadata) {
   
   df_metadata <- add_Drug_annotation(df_metadata)
   df_metadata
-  return(df_metadata)
 }
 
 
@@ -403,7 +410,7 @@ get_assays_per_pipeline_step <-
 #' @param mae mae with dose-response data
 #' @param data_dir  output directory
 #' @param steps charvec with pipeline steps for which intermediate data should be saved
-#' 
+#' @keywords internal
 #' @export
 add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
   
@@ -430,7 +437,7 @@ add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
 #' get mae dataset from intermediate data
 #' 
 #' @param data_dir directory with intermediate data
-#' 
+#' @keywords internal
 #' @export
 get_mae_from_intermediate_data <- function(data_dir) {
   
