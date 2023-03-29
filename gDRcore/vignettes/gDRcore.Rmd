@@ -96,3 +96,8 @@ mae[["single-agent"]]
 ## Data extraction
 Extraction of the data from either `MultiAssayExperiment` or `SummarizedExperiment` objects into more user-friendly structures as well as other data transformations can be done using `gDRutils`. We encourage to read `gDRutils` vignette to familiarize with these functionalities.
 
+# SessionInfo {-}
+
+```{r sessionInfo}
+sessionInfo()
+```
