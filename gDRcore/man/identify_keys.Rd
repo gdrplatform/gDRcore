@@ -36,6 +36,27 @@ This is most likely to be used for provenance tracking and will
 be placed on the SummarizedExperiment metadata for downstream analyses
 to reference.
 }
+\examples{
+n <- 64
+md_df <- data.frame(
+  Gnumber = rep(c("vehicle", "untreated", paste0("G", seq(2))), each = 16), 
+  DrugName = rep(c("vehicle", "untreated", paste0("GN", seq(2))), each = 16), 
+  clid = paste0("C", rep_len(seq(4), n)),
+  CellLineName = paste0("N", rep_len(seq(4), n)),
+  replicates = rep_len(paste0("R", rep(seq(4), each = 4)), 64),
+  drug_moa = "inhibitor",
+  ReferenceDivisionTime = rep_len(c(120, 60), n),
+  Tissue = "Lung",
+  parental_identifier = "CL12345",
+  Duration = 160
+)
+md_df <- unique(md_df)
+ref <- md_df$Gnumber \%in\% c("vehicle", "untreated")
+ref_df <- md_df[ref, ]
+trt_df <- md_df[!ref, ]
+identify_keys(test_df)
+
+}
 \seealso{
 map_df, create_SE
 }

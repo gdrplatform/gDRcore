@@ -8,6 +8,23 @@
 #' @param x data.frame with raw data or MAE object with dose-reponse data
 #' @param ... additional parameters
 #' 
+#' @examples 
+#' dataDir <- system.file("extdata", "data1", package = "gDRimport")
+#' manifest <- list.files(dataDir, pattern = "manifest", full.names = TRUE)
+#' template <- list.files(dataDir, pattern = "Template", full.names = TRUE)
+#' raw_data <- list.files(dataDir, pattern = "^RawData", full.names = TRUE)
+#' l_data <- gDRimport::load_data(manifest, template, raw_data)
+#' df_ <- gDRcore::merge_data(
+#'   l_data$manifest, 
+#'   l_data$treatments, 
+#'   l_data$data
+#' )
+#' nested_confounders = intersect(
+#'   names(df_), 
+#'   gDRutils::get_env_identifiers("barcode")
+#' )
+#' prepare_input(df_, nested_confounders, NULL)
+#' 
 #' @return list of input data
 #' 
 #' @export

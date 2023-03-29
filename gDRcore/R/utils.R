@@ -100,7 +100,6 @@ cleanup_metadata <- function(df_metadata) {
 #' @param df_ a dataframe with results
 #'
 #' @return a ordered dataframe with results
-#' @export
 #'
 Order_result_df <- function(df_) {
 
@@ -146,6 +145,9 @@ Order_result_df <- function(df_) {
 #'
 #' @param x data.frame with raw data or SummarizedExperiment object with 
 #' gDR assays
+#' 
+#' @examples 
+#' data_model("single-agent")
 #' 
 #' @return string with the information of the raw data follows single-agent or 
 #' combination data model
@@ -239,7 +241,12 @@ validate_data_models_availability <- function(d_types, s_d_models) {
 #' @param x data.frame with raw data or SummarizedExperiment object 
 #' with gDR assays
 #' @param data_model single-agent vs combination
+#' 
+#' @examples 
+#' .get_default_nested_identifiers()
+#' 
 #' @return vector of nested identifiers
+#' 
 #' @export
 get_default_nested_identifiers <- function(x, data_model = NULL) {
   UseMethod("get_default_nested_identifiers")
@@ -263,8 +270,9 @@ get_default_nested_identifiers.data.frame <- function(x, data_model = NULL) {
 
 #' @export
 #' @rdname get_default_nested_identifiers
-get_default_nested_identifiers.SummarizedExperiment <- function(x,
-                                                                data_model = NULL) {
+get_default_nested_identifiers.SummarizedExperiment <- function(
+    x,
+    data_model = NULL) {
   
   .get_default_nested_identifiers(x, data_model)
 }
@@ -322,6 +330,9 @@ get_default_nested_identifiers.SummarizedExperiment <- function(x,
 #'
 #' @param x value to be rounded.
 #' @param ndigit number of significant digits (default = 4).
+#' 
+#' @examples 
+#' round_concentration(x = c(0.00175,0.00324,0.0091), ndigit = 1)
 #'
 #' @return rounded x
 #' @export
@@ -389,6 +400,30 @@ rbindParallelList <- function(x, name) {
 #'   default to \code{NA}.
 #' @details Source of the function: 
 #' https://github.com/cran/grr/blob/master/R/grr.R
+#' 
+#' @examples 
+#' mat_elem <- data.frame(
+#'   DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
+#'   DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
+#'   clid = rep(c("C1", "C2"), each = 4)
+#' )
+#' untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
+#' ref_idx <- which(
+#'   mat_elem$DrugName %in% untreated_tag |
+#'    mat_elem$DrugName_2 %in% untreated_tag
+#' )
+#' ref <- mat_elem[ref_idx, ]
+#' treated <- mat_elem[-ref_idx, ]
+#' valid <- c("DrugName", "DrugName_2")
+#' trt <- lapply(valid, function(x) treated[, c("clid", x)])
+#' trt <- do.call(paste, 
+#'   do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]]))))
+#' )
+#' ref <- lapply(valid, function(x) ref[, c("clid", x)])
+#' ref <- do.call(paste, 
+#'   do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]]))))
+#' )
+#' matches(trt, ref, list = FALSE, all.y = FALSE)
 #' 
 #' @return data.frame
 #' 

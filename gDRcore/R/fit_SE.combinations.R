@@ -17,9 +17,20 @@
 #' @details
 #' This function assumes that the combination is set up with both 
 #' concentrations nested in the assay.
+#' 
+#' @examples 
+#' fmae_cms_path <- system.file(
+#'   package = "gDRtestData", "testdata", "finalMAE_combo_matrix_small.RDS"
+#' )
+#' fmae_cms <- readRDS(fmae_cms_path)
+#' se1 <- fmae_cms[["matrix"]]
+#' SummarizedExperiment::assays(se1) <- 
+#'   SummarizedExperiment::assays(se1)["Averaged"]
+#' fit_SE.combinations(se1[1, 1])
 #'
 #' @return A code{SummarizedExperiment} object with an additional assay 
 #' containing the combination metrics.
+#' 
 #' @export
 #'
 fit_SE.combinations <- function(se,

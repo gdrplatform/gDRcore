@@ -12,8 +12,6 @@
 #'
 #' @return data.frame of values aggregated by
 #'
-#' @export
-#'
 create_control_df <- function(df_,
                               control_cols,
                               control_mean_fxn = function(x) {

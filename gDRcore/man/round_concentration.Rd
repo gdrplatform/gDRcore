@@ -17,3 +17,7 @@ rounded x
 \description{
 Round concentration to ndigit significant digits
 }
+\examples{
+round_concentration(x = c(0.00175,0.00324,0.0091), ndigit = 1)
+
+}

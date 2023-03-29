@@ -5,6 +5,18 @@
 #' @param manifest a data frame with a manifest info
 #' @param treatments a data frame with a treaatments info
 #' @param data a data frame with a raw data info
+#' 
+#' @examples 
+#' dataDir <- system.file("extdata", "data1", package = "gDRimport")
+#' manifest <- list.files(dataDir, pattern = "manifest", full.names = TRUE)
+#' template <- list.files(dataDir, pattern = "Template", full.names = TRUE)
+#' raw_data <- list.files(dataDir, pattern = "^RawData", full.names = TRUE)
+#' l_data <- gDRimport::load_data(manifest, template, raw_data)
+#' gDRcore::merge_data(
+#'   l_data$manifest, 
+#'   l_data$treatments, 
+#'   l_data$data
+#' )
 #'
 #' @return a dataframe with merged data and metadata.
 #' @export
@@ -100,8 +112,7 @@ merge_data <- function(manifest, treatments, data) {
   )
 
   # clean up the metadata
-  cleanedup_metadata <-
-    cleanup_metadata(df_metadata_trimmed)
+  cleanedup_metadata <- cleanup_metadata(df_metadata_trimmed)
   # should not happen
   stopifnot(nrow(cleanedup_metadata) == nrow(df_metadata_trimmed))
 

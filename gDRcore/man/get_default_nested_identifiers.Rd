@@ -24,3 +24,7 @@ vector of nested identifiers
 \description{
 Get default nested identifiers
 }
+\examples{
+.get_default_nested_identifiers()
+
+}

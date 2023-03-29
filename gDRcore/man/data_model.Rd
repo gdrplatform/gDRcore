@@ -17,3 +17,7 @@ combination data model
 \description{
 Detect model of data
 }
+\examples{
+data_model("single-agent")
+
+}

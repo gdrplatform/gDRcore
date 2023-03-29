@@ -230,3 +230,23 @@ Pipeline can be run for the selected experiments by changing the default
 value of `selected_experiments` param. This scenario only works when 
 `partial_run` is enabled.
 }
+\examples{
+p_dir <- file.path(tempdir(), "pcheck")
+dir.create(p_dir) 
+dataDir <- system.file("extdata", "data1", package = "gDRimport")
+manifest <- list.files(dataDir, pattern = "manifest", full.names = TRUE)
+template <- list.files(dataDir, pattern = "Template", full.names = TRUE)
+raw_data <- list.files(dataDir, pattern = "^RawData", full.names = TRUE)
+l_data <- gDRimport::load_data(manifest, template, raw_data)
+imported_data <- gDRcore::merge_data(
+  l_data$manifest, 
+  l_data$treatments, 
+  l_data$data
+)
+gDRcore:::runDrugResponseProcessingPipeline(
+  imported_data, 
+  data_dir = p_dir,
+  add_raw_data = FALSE
+)
+
+}

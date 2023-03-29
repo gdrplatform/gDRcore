@@ -15,3 +15,8 @@ loaded data
 \description{
 Get synthetic data from gDRtestData package
 }
+\examples{
+data <- "finalMAE_small.RDS"
+original <- get_synthetic_data(data)
+
+}
