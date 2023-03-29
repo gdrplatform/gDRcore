@@ -42,15 +42,15 @@ NULL
 #' 
 #' @examples
 #' 
-#'   readouts <- c(rep(10000, 5))
-#'   duration <- 0
-#    expect_error(calculate_GR_value(rel_viability = readouts,
-#                                 corrected_readout = readouts,
-#                                 day0_readout = readouts[-1],
-#                                 untrt_readout = readouts,
-#                                 ndigit_rounding = 4,
-#                                 duration = duration,
-#                                 ref_div_time = duration / 2))
+#' readouts <- c(rep(10000, 5))
+#' duration <- 0
+#' expect_error(calculate_GR_value(rel_viability = readouts,
+#'                                 corrected_readout = readouts,
+#'                                 day0_readout = readouts[-1],
+#'                                 untrt_readout = readouts,
+#'                                 ndigit_rounding = 4,
+#'                                 duration = duration,
+#'                                 ref_div_time = duration / 2))
 #' 
 #' @rdname calculate_GR_value
 #'
