@@ -7,23 +7,26 @@
 add_Drug_annotation(df_metadata, fname = "drugs.csv", fill = "unknown")
 }
 \arguments{
-\item{df_metadata}{a data.frame with metadata}
+\item{df_metadata}{data.frame with metadata}
 
-\item{fname}{a string with file name with annotation}
+\item{fname}{string with file name with annotation}
 
-\item{fill}{a string indicating how unknown cell lines should be filled in the DB}
+\item{fill}{string indicating how unknown cell lines should be filled in the DB}
 }
 \value{
-a data.frame with metadata with annotated drugs
+data.frame with metadata with annotated drugs
 }
 \description{
 add drug annotation to a data.frame with metadata
 }
 \details{
-The logic of adding drug annotation for df_metadata based on the annotation file stored
-in gDRtestData.
+The logic of adding drug annotation for df_metadata 
+based on the annotation file stored in gDRtestData.
 }
 \examples{
-add_Drug_annotation(data.frame(Gnumber = "drug_id", DrugName = "name of the drug"))
-
+add_Drug_annotation(
+  data.frame(
+    Gnumber = "drug_id", 
+    DrugName = "name of the drug")
+)
 }

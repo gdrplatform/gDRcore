@@ -2,29 +2,43 @@
 #'
 #' add cellline annotation to a data.frame with metadata
 #'
-#' @param df_metadata a data.frame with metadata
-#' @param DB_cellid_header a string with colnames with cell line identifier in the annotation file
-#' @param DB_cell_annotate a character vector with mandatory colnames used in the annotation file
-#' @param fname a string with file name with annotation
-#' @param fill a string indicating how unknown cell lines should be filled in the DB
-#' @details   The logic of adding celline annotation for df_metadata based on the annotation file stored
-#' in gDRtestData.
-#' Other fields are set as "unknown".
-#' This approach will be corrected once we will implement final solution for adding cell lines.
+#' @param df_metadata data.frame with metadata
+#' @param DB_cellid_header string with colnames with cell line identifier
+#'                         in the annotation file
+#' @param DB_cell_annotate character vector with mandatory colnames 
+#'                         used in the annotation file
+#' @param fname string with file name with annotation
+#' @param fill string indicating how unknown cell lines should be filled in the DB
+#' @details
+#' The logic of adding celline annotation for df_metadata based on 
+#' the annotation file stored in gDRtestData. Other fields are set as "unknown".
+#' This approach will be corrected once we will implement final solution 
+#' for adding cell lines.
 #' 
 #' @examples 
 #' 
-#' add_CellLine_annotation(data.frame(clid = "123", CellLineName = "name of the cell line"))
-#' 
-#' @return a data.frame with metadata with annotated cell lines
+#' add_CellLine_annotation(
+#'   data.frame(
+#'     clid = "123", 
+#'     CellLineName = "name of the cell line")
+#' )
+#'
+#' @return data.frame with metadata with annotated cell lines
 #' @export
 #'
-add_CellLine_annotation <- function(df_metadata,
-                                    DB_cellid_header = "cell_line_identifier",
-                                    DB_cell_annotate = c("cell_line_name", "primary_tissue", "doubling_time",
-                                                         "parental_identifier", "subtype"),
-                                    fname = "cell_lines.csv",
-                                    fill = "unknown") {
+add_CellLine_annotation <- function(
+    df_metadata,
+    DB_cellid_header = "cell_line_identifier",
+    DB_cell_annotate = c(
+      "cell_line_name", 
+      "primary_tissue", 
+      "doubling_time",
+      "parental_identifier", 
+      "subtype"
+    ),
+    fname = "cell_lines.csv",
+    fill = "unknown"
+) {
   
   # Assertions:
   stopifnot(inherits(df_metadata, "data.frame"))
@@ -37,7 +51,9 @@ add_CellLine_annotation <- function(df_metadata,
   # Read local cell_lines annotations
   annotationPackage <- ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
                               "gDRinternalData", "gDRtestData")
-  CLs_info <- utils::read.csv(system.file("annotation_data", fname, package = annotationPackage))
+  CLs_info <- utils::read.csv(
+    system.file("annotation_data", fname, package = annotationPackage)
+  )
   CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate)]
   
   if (nrow(CLs_info) == 0) return(df_metadata)
@@ -46,16 +62,19 @@ add_CellLine_annotation <- function(df_metadata,
   missingTblCellLines <- NULL
   if (!is.null(fill) && !all(validatedCLs)) {
     unValidatedCellLine <- unique(df_metadata[[cellline]])[!validatedCLs]
-    missingTblCellLines <- data.frame(parental_identifier = unValidatedCellLine,
-                                                  cell_line_name = unValidatedCellLine,
-                                                  cell_line_identifier = unValidatedCellLine,
-                                                  doubling_time = NA,
-                                                  primary_tissue = fill,
-                                                  subtype = fill)
+    missingTblCellLines <- data.frame(
+      parental_identifier = unValidatedCellLine,
+      cell_line_name = unValidatedCellLine,
+      cell_line_identifier = unValidatedCellLine,
+      doubling_time = NA,
+      primary_tissue = fill,
+      subtype = fill
+    )
     
   }
   
-  if (any(!df_metadata[[cellline]] %in% CLs_info[[DB_cellid_header]]) && !is.null(missingTblCellLines)) {
+  if (any(!df_metadata[[cellline]] %in% CLs_info[[DB_cellid_header]]) && 
+      !is.null(missingTblCellLines)) {
     CLs_info <- rbind(CLs_info, missingTblCellLines)
   }
   cols_to_fill <- names(CLs_info)[!names(CLs_info) %in% "doubling_time"]
@@ -92,16 +111,18 @@ add_CellLine_annotation <- function(df_metadata,
 #'
 #' add drug annotation to a data.frame with metadata
 #'
-#' @param df_metadata a data.frame with metadata
-#' @param fname a string with file name with annotation
-#' @param fill a string indicating how unknown cell lines should be filled in the DB
-#' @details The logic of adding drug annotation for df_metadata based on the annotation file stored
-#' in gDRtestData.
-#' 
-#' @examples 
-#' add_Drug_annotation(data.frame(Gnumber = "drug_id", DrugName = "name of the drug"))
-#' 
-#' @return a data.frame with metadata with annotated drugs
+#' @param df_metadata data.frame with metadata
+#' @param fname string with file name with annotation
+#' @param fill string indicating how unknown cell lines should be filled in the DB
+#' @details The logic of adding drug annotation for df_metadata 
+#' based on the annotation file stored in gDRtestData.
+#' @examples
+#' add_Drug_annotation(
+#'   data.frame(
+#'     Gnumber = "drug_id", 
+#'     DrugName = "name of the drug")
+#' )
+#' @return data.frame with metadata with annotated drugs
 #' @export
 #'
 add_Drug_annotation <- function(df_metadata,
@@ -132,18 +153,22 @@ add_Drug_annotation <- function(df_metadata,
   # Read local drugs annotations
   annotationPackage <- ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
                               "gDRinternalData", "gDRtestData")
-  Drug_info <- utils::read.csv(system.file("annotation_data", fname, package = annotationPackage),
-                        header = TRUE)
+  Drug_info <- utils::read.csv(
+    system.file("annotation_data", fname, package = annotationPackage),
+    header = TRUE
+  )
   Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa")]
   names(Drug_info) <- c("drug", "drug_name", "drug_moa")
   drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
-  validatedDrugs <- remove_drug_batch(drugsTreated) %in% remove_drug_batch(Drug_info[["drug"]])
+  validatedDrugs <- 
+    remove_drug_batch(drugsTreated) %in% remove_drug_batch(Drug_info[["drug"]])
   #### function should be parallelizeized
   missingTblDrugs <- NULL
   if (!is.null(fill) && any(!validatedDrugs)) {
-    missingTblDrugs <- tibble::tibble(drug = remove_drug_batch(drugsTreated[!validatedDrugs]),
-                                      drug_name = drugsTreated[!validatedDrugs],
-                                      drug_moa = fill
+    missingTblDrugs <- tibble::tibble(
+      drug = remove_drug_batch(drugsTreated[!validatedDrugs]),
+      drug_name = drugsTreated[!validatedDrugs],
+      drug_moa = fill
     )
   }
   
@@ -163,7 +188,8 @@ add_Drug_annotation <- function(df_metadata,
     ),
     Drug_info)
   Drug_info <- Drug_info[!duplicated(Drug_info[["drug"]]), ]
-  if (any(!remove_drug_batch(drugsTreated) %in% Drug_info$drug) && !is.null(missingTblDrugs)) {
+  if (any(!remove_drug_batch(drugsTreated) %in% Drug_info$drug) && 
+      !is.null(missingTblDrugs)) {
     Drug_info <- rbind(Drug_info, stats::setNames(
       missingTblDrugs[!(remove_drug_batch(missingTblDrugs$drug) %in% Drug_info$drug), ],
       names(Drug_info)))
