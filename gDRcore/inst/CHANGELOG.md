@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [1.3.23] - 2023-03-29
+#### Moved get_synthetic_data to gDRutils
+
 #### [1.3.22] - 2023-03-21
 #### Improve performance of 'map_df' with refactored logic for exact matches
 
