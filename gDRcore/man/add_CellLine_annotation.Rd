@@ -10,7 +10,9 @@ add_CellLine_annotation(
   DB_cell_annotate = c("cell_line_name", "primary_tissue", "doubling_time",
     "parental_identifier", "subtype"),
   fname = "cell_lines.csv",
-  fill = "unknown"
+  fill = "unknown",
+  annotationPackage = ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
+    "gDRinternalData", "gDRtestData")
 )
 }
 \arguments{
@@ -25,6 +27,8 @@ used in the annotation file}
 \item{fname}{string with file name with annotation}
 
 \item{fill}{string indicating how unknown cell lines should be filled in the DB}
+
+\item{annotationPackage}{string indication name of the package containing cellline annotation}
 }
 \value{
 data.frame with metadata with annotated cell lines

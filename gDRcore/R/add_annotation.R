@@ -9,6 +9,7 @@
 #'                         used in the annotation file
 #' @param fname string with file name with annotation
 #' @param fill string indicating how unknown cell lines should be filled in the DB
+#' @param annotationPackage string indication name of the package containing cellline annotation
 #' @details
 #' The logic of adding celline annotation for df_metadata based on 
 #' the annotation file stored in gDRtestData. Other fields are set as "unknown".
@@ -37,7 +38,9 @@ add_CellLine_annotation <- function(
       "subtype"
     ),
     fname = "cell_lines.csv",
-    fill = "unknown"
+    fill = "unknown",
+    annotationPackage = ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
+                               "gDRinternalData", "gDRtestData")
 ) {
   
   # Assertions:
@@ -47,13 +50,6 @@ add_CellLine_annotation <- function(
   cellline <- gDRutils::get_env_identifiers("cellline")
   cellline_name <- gDRutils::get_env_identifiers("cellline_name")
   add_clid <- gDRutils::get_header("add_clid")
-  
-  # Read local cell_lines annotations
-  annotationPackage <- if (requireNamespace("gDRinternalData", quietly = TRUE)) {
-    "gDRinternalData"
-  } else {
-    "gDRtestData"
-  }
   
   CLs_info <- utils::read.csv(
     system.file("annotation_data", fname, package = annotationPackage)
@@ -118,6 +114,7 @@ add_CellLine_annotation <- function(
 #' @param df_metadata data.frame with metadata
 #' @param fname string with file name with annotation
 #' @param fill string indicating how unknown cell lines should be filled in the DB
+#' @param annotationPackage string indication name of the package containing drug annotation
 #' @details The logic of adding drug annotation for df_metadata 
 #' based on the annotation file stored in gDRtestData.
 #' @examples
@@ -132,7 +129,9 @@ add_CellLine_annotation <- function(
 add_Drug_annotation <- function(
     df_metadata,
     fname = "drugs.csv",
-    fill = "unknown"
+    fill = "unknown",
+    annotationPackage = ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
+                               "gDRinternalData", "gDRtestData")
 ) {
   
   # Assertions:
@@ -161,11 +160,6 @@ add_Drug_annotation <- function(
   names(drug_identifiers_list) <- drug[drug_idx]
   
   # Read local drugs annotations
-  annotationPackage <- if (requireNamespace("gDRinternalData", quietly = TRUE)) {
-    "gDRinternalData"
-  } else {
-    "gDRtestData"
-  }
   Drug_info <- utils::read.csv(
     system.file("annotation_data", fname, package = annotationPackage),
     header = TRUE

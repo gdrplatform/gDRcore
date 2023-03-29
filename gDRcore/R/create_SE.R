@@ -72,8 +72,8 @@ create_SE <- function(df_,
     df_$CorrectedReadout <- df_[[readout]]
   }
   
-  # overwrite "drug", "drug_name", "drug_moa" with "untreated" if 
-  # "concentration2" == 0
+  # overwrite "drug", "drug_name", "drug_moa"
+  # with "untreated" if "concentration2" == 0
   if (gDRutils::get_env_identifiers("concentration2") %in% colnames(df_)) {
     single_agent_idx <- 
       df_[[gDRutils::get_env_identifiers("concentration2")]] %in% 0

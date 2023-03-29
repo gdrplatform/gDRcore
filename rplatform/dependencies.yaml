@@ -20,3 +20,10 @@ pkgs:
     subdir: ~
     host: 'api.github.com'
     source: GITHUB
+  gDRimport:
+    ver: '>=0.99.0'
+    url: gdrplatform/gDRstyle
+    ref: main
+    subdir: ~
+    host: 'api.github.com'
+    source: GITHUB

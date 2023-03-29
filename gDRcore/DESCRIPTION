@@ -33,6 +33,7 @@ Suggests:
     BumpyMatrix,
     futile.logger,
     gDRstyle (>= 0.99.0),
+    gDRimport (>= 0.99.0),
     gDRtestData (>= 0.99.0),
     IRanges,
     knitr,
@@ -43,8 +44,6 @@ Suggests:
     testthat,
     tibble,
     yaml
-Enhances:
-    gDRinternalData
 VignetteBuilder: 
     knitr
 biocViews: Software, ShinyApps

@@ -4,7 +4,13 @@
 \alias{add_Drug_annotation}
 \title{add_Drug_annotation}
 \usage{
-add_Drug_annotation(df_metadata, fname = "drugs.csv", fill = "unknown")
+add_Drug_annotation(
+  df_metadata,
+  fname = "drugs.csv",
+  fill = "unknown",
+  annotationPackage = ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
+    "gDRinternalData", "gDRtestData")
+)
 }
 \arguments{
 \item{df_metadata}{data.frame with metadata}
@@ -12,6 +18,8 @@ add_Drug_annotation(df_metadata, fname = "drugs.csv", fill = "unknown")
 \item{fname}{string with file name with annotation}
 
 \item{fill}{string indicating how unknown cell lines should be filled in the DB}
+
+\item{annotationPackage}{string indication name of the package containing drug annotation}
 }
 \value{
 data.frame with metadata with annotated drugs
