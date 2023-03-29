@@ -18,6 +18,6 @@ list with axis grid positions
 Define matrix grid positions
 }
 \details{
-drug_1 is diluted along the rows as the y-axis and
-drug_2 is diluted along the columns and will be the x-axis.
+\code{drug_1} is diluted along the rows as the y-axis and
+\code{drug_2} is diluted along the columns and will be the x-axis.
 }

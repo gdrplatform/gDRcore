@@ -172,8 +172,8 @@ read_intermediate_data <- function(path, step, experiment) {
 
 #' @keywords internal
 paste_warnings <- function(list, sep = "\n") {
-  warn <- paste0(list, sep = sep)
-  warning(warn, call. = FALSE)
+  pasted <- paste0(list, sep = sep)
+  warning(pasted, call. = FALSE)
 }
 
 #' @keywords internal

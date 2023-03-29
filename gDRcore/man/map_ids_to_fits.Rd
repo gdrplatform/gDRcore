@@ -17,10 +17,23 @@ map_ids_to_fits(pred, match_col, fittings, fitting_id_col)
 should be used to match with \code{match_col} .}
 }
 \value{
-numeric vector of predicted values given \code{pred} inputs and 
-\code{fittings} values.
+Numeric vector of predicted values given \code{pred} inputs 
+and \code{fittings} values.
 }
 \description{
-Map fittings to identifiers and compute the predicted values for 
-corresponding fits.
+Map fittings to identifiers and compute the predicted values 
+for corresponding fits.
+}
+\examples{
+pred <- c(1, 5, 5)
+match_col <- c(1, 1, 2)
+fitting_id_col <- "match_on_me"
+
+fit1 <- data.frame(h = 2.09, x_inf = 0.68, x_0 = 1, ec50 = 0.003)
+fit2 <- data.frame(h = 0.906, x_inf = 0.46, x_0 = 1, ec50 = 0.001)
+fittings <- do.call(rbind, list(fit1, fit2))
+fittings[[fitting_id_col]] <- c(1, 2)
+
+map_ids_to_fits(pred, match_col, fittings, fitting_id_col)
+
 }

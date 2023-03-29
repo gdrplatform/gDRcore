@@ -231,6 +231,51 @@ value of `selected_experiments` param. This scenario only works when
 `partial_run` is enabled.
 }
 \examples{
+
+d <- rep(seq(0.1, 0.9, 0.1), each = 4)
+v <- rep(seq(0.1, 0.4, 0.1), 9)
+df <- S4Vectors::DataFrame(
+  Concentration = d,
+  masked = rep(c(TRUE, TRUE, TRUE, FALSE), 9),
+  normalization_type = rep(c("GR", "RV"), length(v) * 2),
+  x = rep(v, 2)
+)
+normalized <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = df)
+
+keys <- list(Trt = "Concentration", "masked_tag" = "masked")
+assays <- list("Normalized" = normalized)
+se <- SummarizedExperiment::SummarizedExperiment(assays = assays)
+se <- gDRutils::set_SE_keys(se, keys)
+se <- gDRutils::set_SE_identifiers(se, gDRutils::get_env_identifiers())
+.
+se1 <- average_SE(
+  se,
+  data_type = "single-agent",
+  override_masked = FALSE,
+  normalized_assay = "Normalized",
+  averaged_assay = "Averaged"
+)
+
+
+ conc <- rep(seq(0, 0.3, 0.1), 2)
+ ctrl_df <- S4Vectors::DataFrame(ReadoutValue = c(2, 2, 1, 1, 2, 1),
+                               Concentration = rep(0, 6),
+                               masked = FALSE,
+                               Gnumber = rep(c("DRUG_10", "vehicle", "DRUG_8"), 2),
+                               clid = "CELL1")
+
+  trt_df <- S4Vectors::DataFrame(ReadoutValue = rep(seq(1, 4, 1), 2),
+                              Concentration = conc,
+                              masked = rep(FALSE, 8),
+                              Gnumber = c("DRUG_10", "DRUG_8"),
+                              clid = "CELL1")
+  input_df <- as.data.frame(rbind(ctrl_df, trt_df))
+  input_df$Duration <- 72
+  input_df$CorrectedReadout2 <- input_df$ReadoutValue
+
+  se <- purrr::quietly(create_SE)(input_df, data_type = "single-agent", nested_confounders = NULL)
+
+
 p_dir <- file.path(tempdir(), "pcheck")
 dir.create(p_dir) 
 dataDir <- system.file("extdata", "data1", package = "gDRimport")

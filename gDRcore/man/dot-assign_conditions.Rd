@@ -14,9 +14,8 @@ that will determine a condition type.}
 }
 \value{
 data.frame containing an additional factor column called 
-\code{"conditions"} specifying
-whether the condition is a \code{"treated"} (drug treated), 
-\code{"untreated"}, or \code{"reference"} entry.
+\code{"conditions"} specifying whether the condition is a \code{"treated"} 
+(drug treated), \code{"untreated"}, or \code{"reference"} entry.
 }
 \description{
 Assign every row in a code{data.frame} to be a \code{"treated"}, 
@@ -24,9 +23,9 @@ Assign every row in a code{data.frame} to be a \code{"treated"},
 }
 \details{
 Conditions are considered \code{"untreated"} when both 
-\code{nested_identifiers} have a value of \code{0}. When nested_identifiers 
-are drugs, this represent entries where all drugs are at \code{0} 
-concentration. Conditions are considered \code{"reference"} when only one
-of the \code{nested_identifiers} is \code{0}. In the context of drugs, this 
-represents a single-agent response.
+\code{nested_identifiers} have a value of \code{0}. 
+When nested_identifiers are drugs, this represent entries where all drugs 
+are at \code{0} concentration. Conditions are considered \code{"reference"} 
+when only one of the \code{nested_identifiers} is \code{0}. 
+In the context of drugs, this represents a single-agent response.
 }

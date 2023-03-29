@@ -11,8 +11,8 @@ add_intermediate_data(mae, data_dir, steps = get_pipeline_steps())
 
 \item{data_dir}{output directory}
 
-\item{steps}{charvec with pipeline steps for which intermediate data 
-should be saved}
+\item{steps}{character vector with pipeline steps for which 
+intermediate data should be saved}
 }
 \value{
 `NULL`
@@ -20,3 +20,4 @@ should be saved}
 \description{
 add intermediate data (qs files) for given ma
 }
+\keyword{internal}

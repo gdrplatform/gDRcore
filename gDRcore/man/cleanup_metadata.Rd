@@ -10,11 +10,22 @@ cleanup_metadata(df_metadata)
 \item{df_metadata}{a dataframe with metadata}
 }
 \value{
-a dataframe with cleaned metadata
+a data.frame with cleaned metadata
 }
 \description{
 Cleanup a dataframe with metadata
 }
 \details{
 Adds annotations and check whether user provided correct input data.
+}
+\examples{
+
+df <- data.frame(
+  clid = "CELL_LINE",
+  Gnumber = "DRUG_1",
+  Concentration = c(0, 1),
+  Duration = 72
+)
+cleanup_df <- cleanup_metadata(df)
+
 }

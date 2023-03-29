@@ -18,3 +18,8 @@ Standardize concentration values.
 \details{
 If no \code{conc} are passed, \code{NULL} is returned.
 }
+\examples{
+concs <- 10 ^ (seq(-1, 1, 0.9))
+.standardize_conc(concs)
+
+}

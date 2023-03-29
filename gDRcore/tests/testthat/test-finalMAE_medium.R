@@ -2,8 +2,9 @@ test_that("medium: test_synthetic_data", {
   data <- "finalMAE_medium.RDS"
   original <- get_synthetic_data(data)
   
+  set.seed(2)
   mae <- purrr::quietly(gDRtestData::generateMediumData)(
-    cell_lines, drugs, e_inf, ec50, hill_coef, FALSE
+    cell_lines, drugs, FALSE
   )
   expect_length(mae$warnings, 2)
   

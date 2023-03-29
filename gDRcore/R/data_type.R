@@ -1,14 +1,39 @@
 #' Identify type of data
 #'
-#' @param df data.frame of raw drug response data containing both treated and 
-#' untreated values
-#' @param codilution_conc integer of maximum number of concentration ratio of 
-#' co-treatment to classify as codilution data type. Defaults to \code{2}.
-#' @param matrix_conc integer of minimum number of concentration pairs of 
-#' co-treatment to classify as co-treatment or matrix data type. Forces any 
-#' co-treatment as a matrix data model. Defaults to \code{1}.
-#'
-#' @return data.frame of raw drug response data with additional column `type` 
+#' @param df data.frame of raw drug response data 
+#'           containing both treated and untreated values
+#' @param codilution_conc integer of maximum number of concentration ratio 
+#'                        of co-treatment to classify as codilution data type;
+#'                        defaults to \code{2}
+#' @param matrix_conc integer of minimum number of concentration pairs 
+#'                    of co-treatment to classify 
+#'                    as co-treatment or matrix data type;
+#'                    defaults to \code{1}
+#' 
+#' @examples
+#' conc <- rep(seq(0, 0.3, 0.1), 2)
+#' ctrl_df <- S4Vectors::DataFrame(
+#'   ReadoutValue = c(2, 2, 1, 1, 2, 1),
+#'   Concentration = rep(0, 6),
+#'   masked = FALSE,
+#'   DrugName = rep(c("DRUG_10", "vehicle", "DRUG_8"), 2),
+#'   CellLineName = "CELL1"
+#' )
+#' 
+#' trt_df <- S4Vectors::DataFrame(
+#'   ReadoutValue = rep(seq(1, 4, 1), 2),
+#'   Concentration = conc,
+#'   masked = rep(FALSE, 8),
+#'   DrugName = c("DRUG_10", "DRUG_8"),
+#'   CellLineName = "CELL1"
+#' )
+#' input_df <- as.data.frame(rbind(ctrl_df, trt_df))
+#' input_df$Duration <- 72
+#' input_df$CorrectedReadout2 <- input_df$ReadoutValue
+#' identify_data_type(input_df)
+
+#' @return 
+#' data.frame of raw drug response data with additional column \code{type} 
 #' with the info of data type for a given row of data.frame
 #' @export
 #'
@@ -52,8 +77,7 @@ identify_data_type <- function(df,
     type <- if (ncol(df[matching_idx, drugs_cotrt_ids, drop = FALSE]) == 0) {
       if (all(df[matching_idx, drug_ids[["drug_name"]]] %in% untreated_tag)) {
       "control"
-    }
-    else {
+    } else {
       "single-agent"
     }
     } else if (detect_sa == 1) {
@@ -112,28 +136,51 @@ identify_data_type <- function(df,
 #' df_layout <- merge(cell_lines[7:8, ], drugs[c(4:6), ], by = NULL)
 #' df_layout <- gDRtestData::add_data_replicates(df_layout)
 #' df_layout <- gDRtestData::add_concentration(
-#'   df_layout, 
+#'   df_layout,
 #'   concentrations = 10 ^ (seq(-3, .5, .5))
 #' )
 #' df_2 <- merge(
-#'   cell_lines[cell_lines$clid %in% df_layout$clid, ], 
-#'   drugs[c(21, 26), ], 
+#'   cell_lines[cell_lines$clid %in% df_layout$clid, ],
+#'   drugs[c(21, 26), ],
 #'   by = NULL
 #' )
 #' df_2 <- gDRtestData::add_data_replicates(df_2)
 #' df_2 <- gDRtestData::add_concentration(
-#'   df_2, 
+#'   df_2,
 #'   concentrations = 10 ^ (seq(-3, .5, .5))
 #' )
-#' colnames(df_2)[colnames(df_2) %in% c(colnames(drugs), "Concentration")] <- 
+#' colnames(df_2)[colnames(df_2) %in% c(colnames(drugs), "Concentration")] <-
 #'   paste0(
-#'     colnames(df_2)[colnames(df_2) %in% c(colnames(drugs), "Concentration")], 
+#'     colnames(df_2)[colnames(df_2) %in% c(colnames(drugs), "Concentration")],
 #'     "_2"
 #'   )
 #' df_layout_2 <- merge(df_layout, df_2)
 #' df_merged_data <- gDRtestData::generate_response_data(df_layout_2, 0)
 #' df <- identify_data_type(df_merged_data)
 #' split_raw_data(df)
+#' 
+#' @examples
+#' conc <- rep(seq(0, 0.3, 0.1), 2)
+#' ctrl_df <- S4Vectors::DataFrame(
+#'   ReadoutValue = c(2, 2, 1, 1, 2, 1),
+#'   Concentration = rep(0, 6),
+#'   masked = FALSE,
+#'   DrugName = rep(c("DRUG_10", "vehicle", "DRUG_8"), 2),
+#'   CellLineName = "CELL1"
+#' )
+#' 
+#' trt_df <- S4Vectors::DataFrame(
+#'   ReadoutValue = rep(seq(1, 4, 1), 2),
+#'   Concentration = conc,
+#'   masked = rep(FALSE, 8),
+#'   DrugName = c("DRUG_10", "DRUG_8"),
+#'   CellLineName = "CELL1"
+#' )
+#' input_df <- as.data.frame(rbind(ctrl_df, trt_df))
+#' input_df$Duration <- 72
+#' input_df$CorrectedReadout2 <- input_df$ReadoutValue
+#' split_df <- identify_data_type(input_df)
+#' split_raw_data(split_df)
 #'
 #' @return list with split data based on its data type
 #' @export
@@ -199,8 +246,8 @@ split_raw_data <- function(df,
       )
       df_list[["single-agent"]][
         sa_idx[[codrug]], 
-        drug_ids[c("drug_name", "drug", "drug_moa", "concentration")
-      ]] <- df_list[["single-agent"]][sa_idx[[codrug]], codrug_cols]
+        drug_ids[c("drug_name", "drug", "drug_moa", "concentration")]] <- 
+        df_list[["single-agent"]][sa_idx[[codrug]], codrug_cols]
     }
     df_list[["single-agent"]][, codrug_ids] <- NULL
     df_list[["single-agent"]] <- rbind(
@@ -211,5 +258,5 @@ split_raw_data <- function(df,
   
   Map(function(x) {
     x[, names(x) != type_col]
-    }, df_list)
+  }, df_list)
 }

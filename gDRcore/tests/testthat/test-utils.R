@@ -24,3 +24,11 @@ test_that("matches works as expected", {
   expect_equal(length(matchTrtRefList), 4)
 })
 
+test_that("cleanup_metadata works as expected", {
+  df <- data.frame(clid = "CELL_LINE",
+                   Gnumber = "DRUG_1",
+                   Concentration = c(0, 1),
+                   Duration = 72)
+  cleanup_df <- cleanup_metadata(df)
+  expect_equal(dim(cleanup_df), c(2, 11))
+})

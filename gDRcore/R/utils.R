@@ -34,26 +34,44 @@
 #'
 #' @param df_metadata a dataframe with metadata
 #'
-#' @return a dataframe with cleaned metadata
+#' @examples
+#'
+#' df <- data.frame(
+#'   clid = "CELL_LINE",
+#'   Gnumber = "DRUG_1",
+#'   Concentration = c(0, 1),
+#'   Duration = 72
+#' )
+#' cleanup_df <- cleanup_metadata(df)
+#'
+#' @return a data.frame with cleaned metadata
 #' @details Adds annotations and check whether user provided correct input data.
 #' @export
 #'
 cleanup_metadata <- function(df_metadata) {
-
+  
   # Assertions:
   stopifnot(inherits(df_metadata, "data.frame"))
-
+  
   # Round duration to 6 values. 
   duration_id <- gDRutils::get_env_identifiers("duration")
   df_metadata[[duration_id]] <- round(as.numeric(df_metadata[[duration_id]], 6))
-
+  
   df_metadata <- add_CellLine_annotation(df_metadata)
   
-  drug_conc_cols <- unlist(gDRutils::get_env_identifiers(
-    c("drug", "drug2", "drug3", 
-      "concentration", "concentration2", "concentration3"),
-    simplify = FALSE
-  ))
+  drug_conc_cols <- unlist(
+    gDRutils::get_env_identifiers(
+      c(
+        "drug", 
+        "drug2", 
+        "drug3", 
+        "concentration", 
+        "concentration2", 
+        "concentration3"
+      ),
+      simplify = FALSE
+    )
+  )
   drug_conc_cols <- drug_conc_cols[drug_conc_cols %in% names(df_metadata)]
   split_idx <- stringr::str_extract(names(drug_conc_cols), "[0-9]")
   split_idx[is.na(split_idx)] <- 1
@@ -80,16 +98,16 @@ cleanup_metadata <- function(df_metadata) {
     
     df_metadata[[conc_id]] <- 
       10 ^ round(log10(as.numeric(df_metadata[[conc_id]])), 6)
-    df_metadata[[drug_id]] <- ifelse(
-      is.na(df_metadata[[drug_id]]) & df_metadata[[conc_id]] == 0,
-      untrt_id[[1]],
-      df_metadata[[drug_id]]
-    )
+    df_metadata[[drug_id]] <- 
+      if (is.na(df_metadata[[drug_id]]) && df_metadata[[conc_id]] == 0) {
+        untrt_id[[1]]  
+      } else {
+        df_metadata[[drug_id]]        
+      }
   }
   
   df_metadata <- add_Drug_annotation(df_metadata)
   df_metadata
-  return(df_metadata)
 }
 
 
@@ -143,8 +161,8 @@ Order_result_df <- function(df_) {
 
 #' Detect model of data
 #'
-#' @param x data.frame with raw data or SummarizedExperiment object with 
-#' gDR assays
+#' @param x data.frame with raw data or SummarizedExperiment object 
+#'          with gDR assays
 #' 
 #' @examples 
 #' data_model("single-agent")
@@ -159,8 +177,8 @@ data_model <- function(x) {
 
 #' Detect model of data in data.frame
 #'
-#' @param x data.frame of raw drug response data containing both treated and 
-#' untreated values. 
+#' @param x data.frame of raw drug response data 
+#'          containing both treated and untreated values. 
 #'
 #' @return string with the information of the raw data follows single-agent or 
 #' combination data model
@@ -168,10 +186,12 @@ data_model <- function(x) {
 data_model.data.frame <- function(x) {
   
   checkmate::assert_data_frame(x)
-  drug_ids <- unlist(gDRutils::get_env_identifiers(
-    c("drug_name", "drug_name2"), 
-    simplify = FALSE
-  ))
+  drug_ids <- unlist(
+    gDRutils::get_env_identifiers(
+      c("drug_name", "drug_name2"), 
+      simplify = FALSE
+    )
+  )
   cl_id <- gDRutils::get_env_identifiers("cellline")
   conc2 <- gDRutils::get_env_identifiers("concentration2")
   if (all(.get_default_combination_nested_identifiers() %in% colnames(x))) {
@@ -189,8 +209,6 @@ data_model.data.frame <- function(x) {
 }
 
 
-#'
-#' 
 get_data_type_to_data_model_mapping <- function() {
   c(
     `single-agent` = "single-agent",
@@ -199,6 +217,7 @@ get_data_type_to_data_model_mapping <- function() {
     "matrix" = "combination"
   )
 }
+
 
 #' Detect model of data from experiment name
 #'
@@ -506,13 +525,14 @@ get_assays_per_pipeline_step <-
 
 #' add intermediate data (qs files) for given ma
 #' @param mae mae with dose-response data
-#' @param data_dir  output directory
-#' @param steps charvec with pipeline steps for which intermediate data 
-#' should be saved
+#' @param data_dir output directory
+#' @param steps character vector with pipeline steps for which 
+#'              intermediate data should be saved
 #' 
 #' @return `NULL`
 #' 
-#' @export
+#' @keywords internal
+#' 
 add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
   
   checkmate::assert_class(mae, "MultiAssayExperiment")
@@ -545,7 +565,8 @@ add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
 #' 
 #' @return MAE object
 #' 
-#' @export
+#' @keywords internal
+#' 
 get_mae_from_intermediate_data <- function(data_dir) {
   
   checkmate::assert_directory(data_dir)

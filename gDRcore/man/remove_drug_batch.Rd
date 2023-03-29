@@ -15,3 +15,7 @@ Gnumber without a batch
 \description{
 Remove batch from Gnumber
 }
+\examples{
+remove_drug_batch("DRUG.123")
+
+}

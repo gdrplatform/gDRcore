@@ -1,6 +1,28 @@
 #' If a column called \code{"BackgroundValue"} exists in \code{df_},
 #' it will be removed from the \code{readout} column.
 #' @rdname runDrugResponseProcessingPipelineFxns
+#' 
+#' @examples
+#' 
+#'  conc <- rep(seq(0, 0.3, 0.1), 2)
+#'  ctrl_df <- S4Vectors::DataFrame(ReadoutValue = c(2, 2, 1, 1, 2, 1),
+#'                                Concentration = rep(0, 6),
+#'                                masked = FALSE,
+#'                                Gnumber = rep(c("DRUG_10", "vehicle", "DRUG_8"), 2),
+#'                                clid = "CELL1")
+#'
+#'   trt_df <- S4Vectors::DataFrame(ReadoutValue = rep(seq(1, 4, 1), 2),
+#'                               Concentration = conc,
+#'                               masked = rep(FALSE, 8),
+#'                               Gnumber = c("DRUG_10", "DRUG_8"),
+#'                               clid = "CELL1")
+#'   input_df <- as.data.frame(rbind(ctrl_df, trt_df))
+#'   input_df$Duration <- 72
+#'   input_df$CorrectedReadout2 <- input_df$ReadoutValue
+#'
+#'   se <- purrr::quietly(create_SE)(input_df, data_type = "single-agent", nested_confounders = NULL)
+#' 
+#' 
 #' @export
 #'
 create_SE <- function(df_,

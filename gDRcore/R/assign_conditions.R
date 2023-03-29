@@ -5,20 +5,20 @@
 #'
 #' @param df_ \code{data.frame} containing the \code{nested_identifiers}.
 #' @param nested_identifiers Character vector of column names in \code{df_}
-#' that will determine a condition type.
+#'                           that will determine a condition type.
 #'
 #' @return data.frame containing an additional factor column called 
-#' \code{"conditions"} specifying
-#' whether the condition is a \code{"treated"} (drug treated), 
-#' \code{"untreated"}, or \code{"reference"} entry.
+#' \code{"conditions"} specifying whether the condition is a \code{"treated"} 
+#' (drug treated), \code{"untreated"}, or \code{"reference"} entry.
 #' 
-#' @details Conditions are considered \code{"untreated"} when both 
-#' \code{nested_identifiers} have a value of \code{0}. When nested_identifiers 
-#' are drugs, this represent entries where all drugs are at \code{0} 
-#' concentration. Conditions are considered \code{"reference"} when only one
-#' of the \code{nested_identifiers} is \code{0}. In the context of drugs, this 
-#' represents a single-agent response.
-#'
+#' @details 
+#' Conditions are considered \code{"untreated"} when both 
+#' \code{nested_identifiers} have a value of \code{0}. 
+#' When nested_identifiers are drugs, this represent entries where all drugs 
+#' are at \code{0} concentration. Conditions are considered \code{"reference"} 
+#' when only one of the \code{nested_identifiers} is \code{0}. 
+#' In the context of drugs, this represents a single-agent response.
+#' 
 #' @export
 #'
 .assign_conditions <- function(df_, nested_identifiers) {
@@ -26,11 +26,10 @@
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   valid <- intersect(nested_identifiers, colnames(df_))
   if (length(valid) == 0L) {
-    identifiers <- paste0(valid, ", ")
     stop(
       sprintf(
         "input 'df_' does not contain nested_identifiers: '%s'", 
-        identifiers
+        toString(valid)
       )
     )
   }
@@ -40,11 +39,10 @@
   treated <- nzero == 0L
 
   if (!any(untreated)) {
-    columns <- paste0(valid, ", ")
     stop(
       sprintf(
-        "no untreated conditions [conc = 0] found in columns: '%s'",
-        columns
+        "no untreated conditions [conc = 0] found in columns: '%s'", 
+        toString(valid)
       )
     )
   }
