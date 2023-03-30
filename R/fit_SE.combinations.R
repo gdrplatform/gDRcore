@@ -357,7 +357,7 @@ fit_SE.combinations <- function(se,
       hsa_excess <- plyr::rbind.fill(hsa_excess, as.data.frame(h_excess))
       bliss_excess <- plyr::rbind.fill(bliss_excess, as.data.frame(b_excess))
       # check if it does not contain only ids
-      if (!is.null(smooth_mx) && ncol(smooth_mx) != 2) { 
+      if (!is.null(smooth_mx) && ncol(smooth_mx) != 2) {
         smooth_mx <- as.data.frame(
           merge(
             smooth_mx, 
