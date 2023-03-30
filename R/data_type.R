@@ -57,7 +57,7 @@ identify_data_type <- function(df,
   drugs_cotrt_ids <- drugs_ids[!names(drugs_ids) %in% "drug_name"]
   conc_cotrt_ids <- conc_ids[!names(conc_ids) %in% "concentration"]
   
-  untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  untreated_tag <- c(gDRutils::get_env_identifiers("untreated_tag"), NA)
   cell <- gDRutils::get_env_identifiers("cellline_name")
   cols_pairs <- intersect(names(df),  c(drug_ids, cell))
   drug_pairs <- unique(df[, cols_pairs])
@@ -206,6 +206,7 @@ split_raw_data <- function(df,
   control <- df_list[["control"]]
   df_list[["control"]] <- NULL
   cotrt_types <- setdiff(names(df_list), "single-agent")
+  
   control_sa_idx <- which(
     rowSums(df[, conc_idx, drop = FALSE] == 0) == length(conc_idx)
   )
