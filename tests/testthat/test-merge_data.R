@@ -10,7 +10,8 @@ test_that("merge_data works as expected", {
   template <- gDRimport::load_templates(templateFiles)
   rawData <- gDRimport::load_results(rawDataFiles, manifest$headers, instrument = "EnVision")
 
-  merged <- merge_data(manifest$data, template, rawData)
+  merged_quietly <- purr::quietly(merge_data)(manifest$data, template, rawData)
+  merged <- merged_quietly$result
 
   # checking readout value from rawData
   expect_equal(
