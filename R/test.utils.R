@@ -8,20 +8,14 @@
 #' @param tolerance tolerance factor
 #' 
 #' @examples
-#' \dontrun{
 #' set.seed(2)
 #' cell_lines <- gDRtestData::create_synthetic_cell_lines()
 #' drugs <- gDRtestData::create_synthetic_drugs()
 #' data <- "finalMAE_small.RDS"
 #' original <- gDRutils::get_synthetic_data(data)
-#' mae <- purrr::quietly(gDRtestData::generateNoiseRawData)(
-#'   cell_lines, drugs, FALSE
-#' )
-#' test_synthetic_data(original[1, 1], mae$result, data)
-#' }
+#' test_synthetic_data(original, original, "test")
 #' 
 #' @return `NULL`
-#' 
 #' @export
 test_synthetic_data <- function(original,
                                 data,

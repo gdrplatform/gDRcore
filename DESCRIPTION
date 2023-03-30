@@ -24,8 +24,6 @@ Imports:
     BiocParallel,
     checkmate,
     futile.logger,
-    gDRimport (>= 0.99.0),
-    gDRtestData (>= 0.99.0),
     gDRutils (>= 0.99.0),
     methods,
     MultiAssayExperiment,
@@ -38,8 +36,9 @@ Imports:
     tibble,
     zoo
 Suggests:
-    futile.logger,
     gDRstyle (>= 0.99.0),
+    gDRimport (>= 0.99.0),
+    gDRtestData (>= 0.99.0),
     IRanges,
     knitr,
     pkgbuild,
