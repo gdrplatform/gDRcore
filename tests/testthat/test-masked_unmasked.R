@@ -13,7 +13,7 @@ test_that("masked and unmasked values are processed properly", {
                    df_merged_data$Gnumber ==  unique(df_merged_data$Gnumber)[[3]],
                  "masked"] <- TRUE
   
-  finalMAE <- purrr::quietly(gDRcore::runDrugResponseProcessingPipeline)(
+  finalMAE <- purrr::quietly(runDrugResponseProcessingPipeline)(
     df_merged_data, 
     override_untrt_controls = NULL,
     nested_confounders = gDRutils::get_env_identifiers("barcode")[1]

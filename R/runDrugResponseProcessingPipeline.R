@@ -106,12 +106,12 @@
 #' dir.create(p_dir) 
 #' td <- gDRimport::get_test_data()
 #' l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
-#' imported_data <- gDRcore::merge_data(
+#' imported_data <- merge_data(
 #'   l_tbl$manifest, 
 #'   l_tbl$treatments, 
 #'   l_tbl$data
 #' )
-#' gDRcore:::runDrugResponseProcessingPipeline(
+#' runDrugResponseProcessingPipeline(
 #'   imported_data, 
 #'   data_dir = p_dir,
 #'   add_raw_data = FALSE

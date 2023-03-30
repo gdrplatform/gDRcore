@@ -35,8 +35,6 @@ define_matrix_grid_positions <- function(conc1, conc2) {
   list(axis_1 = axis_1, axis_2 = axis_2)
 }
 
-
-#' @importFrom zoo rollmean
 calculate_Loewe <- function(
     df_mean, 
     row_fittings, 

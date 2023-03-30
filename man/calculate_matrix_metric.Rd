@@ -49,12 +49,12 @@ See https://www.sciencedirect.com/science/article/pii/S1359644619303460?via%3Dih
 for more details.
 }
 \examples{
-  n <- 10
-  sa1 <- data.frame(conc = seq(n), conc2 = rep(0, n), metric = seq(n))
-  sa2 <- data.frame(conc = rep(0, n), conc2 = seq(n), metric = seq(n))
-  calculate_HSA(sa1, "conc", sa2, "conc2", "metric")
-  n <- 10
-  sa1 <- data.frame(conc = seq(n), conc2 = rep(0, n), metric = seq(n))
-  sa2 <- data.frame(conc = rep(0, n), conc2 = seq(n), metric = seq(n))
-  calculate_Bliss(sa1, "conc", sa2, "conc2", "metric")
+n <- 10
+sa1 <- data.frame(conc = seq(n), conc2 = rep(0, n), metric = seq(n))
+sa2 <- data.frame(conc = rep(0, n), conc2 = seq(n), metric = seq(n))
+calculate_HSA(sa1, "conc", sa2, "conc2", "metric")
+n <- 10
+sa1 <- data.frame(conc = seq(n), conc2 = rep(0, n), metric = seq(n))
+sa2 <- data.frame(conc = rep(0, n), conc2 = seq(n), metric = seq(n))
+calculate_Bliss(sa1, "conc", sa2, "conc2", "metric")
 }

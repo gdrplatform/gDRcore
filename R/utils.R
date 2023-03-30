@@ -119,10 +119,10 @@ cleanup_metadata <- function(df_metadata) {
 #'
 #' @return a ordered dataframe with results
 #'
-Order_result_df <- function(df_) {
+order_result_df <- function(df_) {
 
   # Assertions:
-  stopifnot(inherits(df_, "data.frame"))
+  checkmate::assert_data_frame(df_)
 
   ordered_1 <- gDRutils::get_header("ordered_1")
   ordered_2 <- gDRutils::get_header("ordered_2")
@@ -529,7 +529,7 @@ get_assays_per_pipeline_step <-
 #' @param steps character vector with pipeline steps for which 
 #'              intermediate data should be saved
 #' 
-#' @return `NULL`
+#' @return \code{NULL}
 #' 
 #' @keywords internal
 #' 

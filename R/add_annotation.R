@@ -39,12 +39,15 @@ add_CellLine_annotation <- function(
     ),
     fname = "cell_lines.csv",
     fill = "unknown",
-    annotationPackage = ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
-                               "gDRinternalData", "gDRtestData")
+    annotationPackage = if (requireNamespace("gDRinternalData", quietly = TRUE)) {
+      "gDRinternalData"
+    } else {
+      "gDRtestData"
+    }
 ) {
   
   # Assertions:
-  stopifnot(inherits(df_metadata, "data.frame"))
+  checkmate::assert_data_frame(df_metadata)
   checkmate::assert_string(fill, null.ok = TRUE)
 
   cellline <- gDRutils::get_env_identifiers("cellline")
@@ -130,12 +133,15 @@ add_Drug_annotation <- function(
     df_metadata,
     fname = "drugs.csv",
     fill = "unknown",
-    annotationPackage = ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
-                               "gDRinternalData", "gDRtestData")
+    annotationPackage = if (requireNamespace("gDRinternalData", quietly = TRUE)) {
+      "gDRinternalData"
+    } else {
+      "gDRtestData"
+    }
 ) {
   
   # Assertions:
-  stopifnot(inherits(df_metadata, "data.frame"))
+  checkmate::assert_data_frame(df_metadata)
   checkmate::assert_string(fill, null.ok = TRUE)
   nrows_df <- nrow(df_metadata)
   

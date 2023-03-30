@@ -14,12 +14,10 @@
 #'
 create_control_df <- function(df_,
                               control_cols,
-                              control_mean_fxn = function(x) {
-                                mean(x, trim = 0.25)
-                              },
+                              control_mean_fxn = function(x) mean(x, trim = 0.25),
                               out_col_name) {
 
-  checkmate::assert_true(inherits(df_, "data.frame"))
+  checkmate::assert_data_frame(df_)
   checkmate::assert_character(control_cols)
   checkmate::assert_function(control_mean_fxn)
   checkmate::assert_string(out_col_name)

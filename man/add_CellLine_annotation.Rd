@@ -11,8 +11,12 @@ add_CellLine_annotation(
     "parental_identifier", "subtype"),
   fname = "cell_lines.csv",
   fill = "unknown",
-  annotationPackage = ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
-    "gDRinternalData", "gDRtestData")
+  annotationPackage = if (requireNamespace("gDRinternalData", quietly = TRUE)) {
+    
+    "gDRinternalData"
+ } else {
+     "gDRtestData"
+ }
 )
 }
 \arguments{

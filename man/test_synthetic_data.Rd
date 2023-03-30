@@ -31,6 +31,7 @@ the treatments}
 Testing synthetic data form gDRtestData package
 }
 \examples{
+\dontrun{
 set.seed(2)
 cell_lines <- gDRtestData::create_synthetic_cell_lines()
 drugs <- gDRtestData::create_synthetic_drugs()
@@ -40,5 +41,6 @@ mae <- purrr::quietly(gDRtestData::generateNoiseRawData)(
   cell_lines, drugs, FALSE
 )
 test_synthetic_data(original[1, 1], mae$result, data)
+}
 
 }

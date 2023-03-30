@@ -139,7 +139,7 @@ is_preceding_step <-
 #' 
 #' @keywords internal
 #' 
-#' @return `NULL`
+#' @return \code{NULL}
 #' 
 save_intermediate_data <- function(path, step, experiment, se) {
   

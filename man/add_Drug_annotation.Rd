@@ -8,8 +8,12 @@ add_Drug_annotation(
   df_metadata,
   fname = "drugs.csv",
   fill = "unknown",
-  annotationPackage = ifelse(requireNamespace("gDRinternalData", quietly = TRUE),
-    "gDRinternalData", "gDRtestData")
+  annotationPackage = if (requireNamespace("gDRinternalData", quietly = TRUE)) {
+    
+    "gDRinternalData"
+ } else {
+     "gDRtestData"
+ }
 )
 }
 \arguments{

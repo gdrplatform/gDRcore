@@ -7,9 +7,7 @@
 create_control_df(
   df_,
   control_cols,
-  control_mean_fxn = function(x) {
-     mean(x, trim = 0.25)
- },
+  control_mean_fxn = function(x) mean(x, trim = 0.25),
   out_col_name
 )
 }

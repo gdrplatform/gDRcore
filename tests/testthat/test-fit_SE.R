@@ -12,7 +12,7 @@ test_that("fit_SE works as expected", {
   se1 <- fmae_cms[["matrix"]]
   SummarizedExperiment::assays(se1) <- SummarizedExperiment::assays(se1)["Averaged"]
   
-  new_se1 <- purrr::quietly(gDRcore::fit_SE.combinations)(se1[1, 1])
+  new_se1 <- purrr::quietly(fit_SE.combinations)(se1[1, 1])
   exp_as <-
     c(
       "Averaged",

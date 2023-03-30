@@ -15,7 +15,7 @@ add_intermediate_data(mae, data_dir, steps = get_pipeline_steps())
 intermediate data should be saved}
 }
 \value{
-`NULL`
+\code{NULL}
 }
 \description{
 add intermediate data (qs files) for given ma

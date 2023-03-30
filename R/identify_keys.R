@@ -53,7 +53,7 @@ identify_keys <- function(df_,
     warning(
       sprintf(
         "ignoring nested_keys input: '%s' which are not present in data.frame",
-        paste0(dropped_nested_keys, collapse = ", ")
+        toString(dQuote(dropped_nested_keys, q = FALSE))
       )
     )
     nested_keys <- intersect(nested_keys, all_keys)
@@ -66,7 +66,7 @@ identify_keys <- function(df_,
       sprintf(
         "ignoring override_untrt_controls input: '%s' which are 
         not present in data.frame",
-        paste0(dropped_override_untrt_controls, collapse = ", ")
+        toString(dQuote(dropped_override_untrt_controls, q = FALSE))
       )
     )
     override_untrt_controls <- intersect(override_untrt_controls, all_keys)

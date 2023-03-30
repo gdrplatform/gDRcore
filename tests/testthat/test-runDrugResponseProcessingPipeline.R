@@ -22,12 +22,12 @@ test_that("main pipeline functions works as expected", {
   template <- list.files(dataDir, pattern = "Template", full.names = TRUE)
   raw_data <- list.files(dataDir, pattern = "^RawData", full.names = TRUE)
   l_data <- gDRimport::load_data(manifest, template, raw_data)
-  imported_data <- gDRcore::merge_data(l_data$manifest, l_data$treatments, l_data$data)
+  imported_data <- merge_data(l_data$manifest, l_data$treatments, l_data$data)
 
   ### runDrugResponseProcessingPipeline ###
   expect_true(length(list.files(p_dir)) == 0)
 
-  mae_v1 <- purrr::quietly(gDRcore:::runDrugResponseProcessingPipeline)(
+  mae_v1 <- purrr::quietly(runDrugResponseProcessingPipeline)(
     imported_data, 
     data_dir = p_dir,
     add_raw_data = TRUE
@@ -36,7 +36,7 @@ test_that("main pipeline functions works as expected", {
   expect_length(mae_v1$warnings, 5)
 
   mae_v2 <-
-    purrr::quietly(gDRcore:::runDrugResponseProcessingPipeline)(
+    purrr::quietly(runDrugResponseProcessingPipeline)(
       imported_data,
       data_dir = p_dir,
       partial_run = TRUE,
@@ -45,7 +45,7 @@ test_that("main pipeline functions works as expected", {
   expect_length(mae_v2$warnings, 3)
 
   mae_v3 <-
-    purrr::quietly(gDRcore:::runDrugResponseProcessingPipeline)(
+    purrr::quietly(runDrugResponseProcessingPipeline)(
       imported_data,
       data_dir = p_dir,
       partial_run = TRUE,
@@ -55,7 +55,7 @@ test_that("main pipeline functions works as expected", {
   expect_length(mae_v3$warnings, 3)
 
   mae_v4 <-
-    purrr::quietly(gDRcore:::runDrugResponseProcessingPipeline)(
+    purrr::quietly(runDrugResponseProcessingPipeline)(
       mae_v1$result
     )
   expect_length(mae_v4$warnings, 5)
@@ -66,12 +66,12 @@ test_that("main pipeline functions works as expected", {
 
 
   testthat::expect_error(
-    gDRcore:::runDrugResponseProcessingPipeline(imported_data, selected_experiments = "single-agent"),
+    runDrugResponseProcessingPipeline(imported_data, selected_experiments = "single-agent"),
     "^Selected experiments"
   )
 
   testthat::expect_error(
-    gDRcore:::runDrugResponseProcessingPipeline(imported_data, partial_run = TRUE),
+    runDrugResponseProcessingPipeline(imported_data, partial_run = TRUE),
     "^Path for/to the intermediate data"
   )
 

@@ -23,7 +23,7 @@ Current steps
 \examples{
 td <- gDRimport::get_test_data()
 l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
-df_ <- gDRcore::merge_data(
+df_ <- merge_data(
   l_tbl$manifest, 
   l_tbl$treatments, 
   l_tbl$data

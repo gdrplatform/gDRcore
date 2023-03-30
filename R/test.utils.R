@@ -8,6 +8,7 @@
 #' @param tolerance tolerance factor
 #' 
 #' @examples
+#' \dontrun{
 #' set.seed(2)
 #' cell_lines <- gDRtestData::create_synthetic_cell_lines()
 #' drugs <- gDRtestData::create_synthetic_drugs()
@@ -17,6 +18,7 @@
 #'   cell_lines, drugs, FALSE
 #' )
 #' test_synthetic_data(original[1, 1], mae$result, data)
+#' }
 #' 
 #' @return `NULL`
 #' 
@@ -29,7 +31,7 @@ test_synthetic_data <- function(original,
   if (inherits(data, "MultiAssayExperiment")) {
     reprocessed <- data
   } else {
-    reprocessed <- gDRcore::runDrugResponseProcessingPipeline(
+    reprocessed <- runDrugResponseProcessingPipeline(
       data,
       override_untrt_controls = override_untrt_controls
     )

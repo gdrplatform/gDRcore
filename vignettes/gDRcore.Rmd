@@ -66,7 +66,7 @@ Provided dataset needs to be merged into the one `data.frame` object to be able 
 
 ```{r, nclude=FALSE}
 loaded_data <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
-input_df <- gDRcore::merge_data(loaded_data$manifest, loaded_data$treatments, loaded_data$data)
+input_df <- merge_data(loaded_data$manifest, loaded_data$treatments, loaded_data$data)
 head(input_df)
 ```
 

@@ -20,30 +20,31 @@ Description: This package contains core functions to process and analyze drug re
   and calculation of gDR metrics data. All core functions are wrapped into the pipeline function allowing analyzing the data in a straightforward way.
 License: file LICENSE
 Imports:
+    BumpyMatrix,
     BiocParallel,
     checkmate,
+    futile.logger,
+    gDRimport (>= 0.99.0),
+    gDRtestData (>= 0.99.0),
     gDRutils (>= 0.99.0),
     methods,
     MultiAssayExperiment,
     purrr,
+    plyr,
     reshape2,
+    stringr,
     S4Vectors,
     SummarizedExperiment,
+    tibble,
     zoo
 Suggests:
-    BumpyMatrix,
     futile.logger,
     gDRstyle (>= 0.99.0),
-    gDRimport (>= 0.99.0),
-    gDRtestData (>= 0.99.0),
     IRanges,
     knitr,
     pkgbuild,
-    plyr,
     qs,
-    stringr,
     testthat,
-    tibble,
     yaml
 VignetteBuilder: 
     knitr

@@ -81,27 +81,13 @@ average_SE <- function(se,
       unmasked <- norm_df[!masked, , drop = FALSE]
       
       avg_df <- stats::aggregate(
-        stats::as.formula(
-          paste("x ~ ",
-                paste(
-                  c("normalization_type", series_identifiers),
-                  collapse = " + "
-                )
-          )
-        ),
+        stats::reformulate(c("normalization_type", series_identifiers), "x"),
         function(x) mean(x, na.rm = TRUE),
         data = unmasked, 
         na.action = stats::na.pass
       )
       std_df <- stats::aggregate(
-        stats::as.formula(
-          paste("x ~ ",
-                paste(
-                  c("normalization_type", series_identifiers),
-                  collapse = " + "
-                )
-          )
-        ),
+        stats::reformulate(c("normalization_type", series_identifiers), "x"),
         function(x) stats::sd(x, na.rm = TRUE),
         data = unmasked, 
         na.action = stats::na.pass

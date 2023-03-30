@@ -9,7 +9,7 @@
 #' @examples 
 #' td <- gDRimport::get_test_data()
 #' l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
-#' gDRcore::merge_data(
+#' merge_data(
 #'   l_tbl$manifest, 
 #'   l_tbl$treatments, 
 #'   l_tbl$data
@@ -138,7 +138,7 @@ merge_data <- function(manifest, treatments, data) {
     df_merged[!is.na(df_merged[, drug_id]), ]
 
   # reorder the columns
-  df_raw_data <- Order_result_df(df_raw_data)
+  df_raw_data <- order_result_df(df_raw_data)
 
   return(df_raw_data)
 }

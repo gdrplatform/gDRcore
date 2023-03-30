@@ -22,7 +22,7 @@ Merge all the input data into a single data.frame
 \examples{
 td <- gDRimport::get_test_data()
 l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
-gDRcore::merge_data(
+merge_data(
   l_tbl$manifest, 
   l_tbl$treatments, 
   l_tbl$data

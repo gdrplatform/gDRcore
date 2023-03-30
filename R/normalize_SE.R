@@ -2,7 +2,7 @@
 #' @examples 
 #' td <- gDRimport::get_test_data()
 #' l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
-#' imported_data <- gDRcore::merge_data(
+#' imported_data <- merge_data(
 #'   l_tbl$manifest, 
 #'   l_tbl$treatments, 
 #'   l_tbl$data

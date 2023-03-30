@@ -10,7 +10,7 @@ test_that("merge_data works as expected", {
   template <- gDRimport::load_templates(templateFiles)
   rawData <- gDRimport::load_results(rawDataFiles, manifest$headers, instrument = "EnVision")
 
-  merged <- gDRcore::merge_data(manifest$data, template, rawData)
+  merged <- merge_data(manifest$data, template, rawData)
 
   # checking readout value from rawData
   expect_equal(
@@ -29,7 +29,7 @@ test_that("merge_data works as expected", {
 
   # testing wrong input
   expect_error(
-    gDRcore::merge_data("test", template, rawData),
+    merge_data("test", template, rawData),
     "inherits(manifest, \"data.frame\") is not TRUE",
     fixed = TRUE
   )
