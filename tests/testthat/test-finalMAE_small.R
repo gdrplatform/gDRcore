@@ -1,6 +1,6 @@
 test_that("small: test_synthetic_data", {
   data <- "finalMAE_small.RDS"
-  original <- get_synthetic_data(data)
+  original <- gDRutils::get_synthetic_data(data)
   
   set.seed(2)
   mae <- purrr::quietly(gDRtestData::generateNoiseRawData)(

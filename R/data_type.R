@@ -133,6 +133,8 @@ identify_data_type <- function(df,
 #' Defaults to \code{"type"}.
 #' 
 #' @examples 
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' df_layout <- merge(cell_lines[7:8, ], drugs[c(4:6), ], by = NULL)
 #' df_layout <- gDRtestData::add_data_replicates(df_layout)
 #' df_layout <- gDRtestData::add_concentration(

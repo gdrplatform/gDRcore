@@ -25,6 +25,6 @@ vector of nested identifiers
 Get default nested identifiers
 }
 \examples{
-.get_default_nested_identifiers()
+get_default_nested_identifiers(data.frame())
 
 }

@@ -15,6 +15,8 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
+library(gDRimport)
+library(gDRtestData)
 library(gDRcore)
 ```
 
@@ -56,20 +58,14 @@ documentation.
 
 
 ```{r}
-data_path <- system.file("extdata/data1", package = "gDRimport")
-data_list <- list.files(data_path)
-manifest_data <- list.files(data_path, "^manifest", full.names = TRUE)
-template_data <- list.files(data_path, "^Template", full.names = TRUE)
-raw_data <- list.files(data_path, "^RawData", full.names = TRUE)
-
-basename(c(manifest_data, template_data, raw_data))
+td <- gDRimport::get_test_data()
 ```
 
 Provided dataset needs to be merged into the one `data.frame` object to be able to run gDR pipeline. This process can be done using two functions --
 `gDRimport::load_data` and `gDRcore::merge_data()`.
 
 ```{r, nclude=FALSE}
-loaded_data <- gDRimport::load_data(manifest_data, template_data, raw_data)
+loaded_data <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
 input_df <- gDRcore::merge_data(loaded_data$manifest, loaded_data$treatments, loaded_data$data)
 head(input_df)
 ```

@@ -247,7 +247,6 @@ assays <- list("Normalized" = normalized)
 se <- SummarizedExperiment::SummarizedExperiment(assays = assays)
 se <- gDRutils::set_SE_keys(se, keys)
 se <- gDRutils::set_SE_identifiers(se, gDRutils::get_env_identifiers())
-.
 se1 <- average_SE(
   se,
   data_type = "single-agent",
@@ -257,36 +256,35 @@ se1 <- average_SE(
 )
 
 
- conc <- rep(seq(0, 0.3, 0.1), 2)
- ctrl_df <- S4Vectors::DataFrame(ReadoutValue = c(2, 2, 1, 1, 2, 1),
-                               Concentration = rep(0, 6),
-                               masked = FALSE,
-                               Gnumber = rep(c("DRUG_10", "vehicle", "DRUG_8"), 2),
-                               clid = "CELL1")
+td <- gDRimport::get_test_data()
+l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
+imported_data <- gDRcore::merge_data(
+  l_tbl$manifest, 
+  l_tbl$treatments, 
+  l_tbl$data
+)
 
-  trt_df <- S4Vectors::DataFrame(ReadoutValue = rep(seq(1, 4, 1), 2),
-                              Concentration = conc,
-                              masked = rep(FALSE, 8),
-                              Gnumber = c("DRUG_10", "DRUG_8"),
-                              clid = "CELL1")
-  input_df <- as.data.frame(rbind(ctrl_df, trt_df))
-  input_df$Duration <- 72
-  input_df$CorrectedReadout2 <- input_df$ReadoutValue
-
-  se <- purrr::quietly(create_SE)(input_df, data_type = "single-agent", nested_confounders = NULL)
+se <- purrr::quietly(create_SE)(imported_data, data_type = "single-agent")
 
 
+td <- gDRimport::get_test_data()
+l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
+imported_data <- gDRcore::merge_data(
+  l_tbl$manifest, 
+  l_tbl$treatments, 
+  l_tbl$data
+)
+
+se <- create_SE(imported_data, data_type = "single-agent")
+normalize_SE(se, data_type = "single-agent")
 p_dir <- file.path(tempdir(), "pcheck")
 dir.create(p_dir) 
-dataDir <- system.file("extdata", "data1", package = "gDRimport")
-manifest <- list.files(dataDir, pattern = "manifest", full.names = TRUE)
-template <- list.files(dataDir, pattern = "Template", full.names = TRUE)
-raw_data <- list.files(dataDir, pattern = "^RawData", full.names = TRUE)
-l_data <- gDRimport::load_data(manifest, template, raw_data)
+td <- gDRimport::get_test_data()
+l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
 imported_data <- gDRcore::merge_data(
-  l_data$manifest, 
-  l_data$treatments, 
-  l_data$data
+  l_tbl$manifest, 
+  l_tbl$treatments, 
+  l_tbl$data
 )
 gDRcore:::runDrugResponseProcessingPipeline(
   imported_data, 

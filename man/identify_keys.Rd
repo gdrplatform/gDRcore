@@ -52,9 +52,8 @@ md_df <- data.frame(
 )
 md_df <- unique(md_df)
 ref <- md_df$Gnumber \%in\% c("vehicle", "untreated")
-ref_df <- md_df[ref, ]
 trt_df <- md_df[!ref, ]
-identify_keys(test_df)
+identify_keys(trt_df)
 
 }
 \seealso{

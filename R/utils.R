@@ -262,7 +262,7 @@ validate_data_models_availability <- function(d_types, s_d_models) {
 #' @param data_model single-agent vs combination
 #' 
 #' @examples 
-#' .get_default_nested_identifiers()
+#' get_default_nested_identifiers(data.frame())
 #' 
 #' @return vector of nested identifiers
 #' 

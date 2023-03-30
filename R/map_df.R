@@ -30,7 +30,7 @@
 #' ref <- md_df$Gnumber %in% c("vehicle", "untreated")
 #' ref_df <- md_df[ref, ]
 #' trt_df <- md_df[!ref, ]
-#' Keys <- identify_keys(test_df)
+#' Keys <- identify_keys(trt_df)
 #' ref_type <- "untrt_Endpoint"
 #' map_df(
 #'   trt_df, 

@@ -1,6 +1,6 @@
 test_that("many_drugs: test_synthetic_data", {
   data <- "finalMAE_many_drugs.RDS"
-  original <- get_synthetic_data(data)
+  original <- gDRutils::get_synthetic_data(data)
   
   set.seed(2)
   mae <-

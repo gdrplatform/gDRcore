@@ -1,4 +1,15 @@
 #' @rdname runDrugResponseProcessingPipelineFxns
+#' @examples 
+#' td <- gDRimport::get_test_data()
+#' l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
+#' imported_data <- gDRcore::merge_data(
+#'   l_tbl$manifest, 
+#'   l_tbl$treatments, 
+#'   l_tbl$data
+#' )
+#'
+#' se <- create_SE(imported_data, data_type = "single-agent")
+#' normalize_SE(se, data_type = "single-agent")
 #' @export
 #'
 normalize_SE <- function(se, 

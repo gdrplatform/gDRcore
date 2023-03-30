@@ -31,11 +31,14 @@ the treatments}
 Testing synthetic data form gDRtestData package
 }
 \examples{
+set.seed(2)
+cell_lines <- gDRtestData::create_synthetic_cell_lines()
+drugs <- gDRtestData::create_synthetic_drugs()
 data <- "finalMAE_small.RDS"
-original <- get_synthetic_data(data)
+original <- gDRutils::get_synthetic_data(data)
 mae <- purrr::quietly(gDRtestData::generateNoiseRawData)(
-  cell_lines, drugs, e_inf, ec50, hill_coef, FALSE
+  cell_lines, drugs, FALSE
 )
-test_synthetic_data(original, mae$result, data)
+test_synthetic_data(original[1, 1], mae$result, data)
 
 }

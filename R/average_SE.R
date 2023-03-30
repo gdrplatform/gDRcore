@@ -17,7 +17,6 @@
 #' se <- SummarizedExperiment::SummarizedExperiment(assays = assays)
 #' se <- gDRutils::set_SE_keys(se, keys)
 #' se <- gDRutils::set_SE_identifiers(se, gDRutils::get_env_identifiers())
-#' .
 #' se1 <- average_SE(
 #'   se,
 #'   data_type = "single-agent",

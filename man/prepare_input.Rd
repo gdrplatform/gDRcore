@@ -21,15 +21,12 @@ Current steps
 - splitting df_ into (per experiment) df_list
 }
 \examples{
-dataDir <- system.file("extdata", "data1", package = "gDRimport")
-manifest <- list.files(dataDir, pattern = "manifest", full.names = TRUE)
-template <- list.files(dataDir, pattern = "Template", full.names = TRUE)
-raw_data <- list.files(dataDir, pattern = "^RawData", full.names = TRUE)
-l_data <- gDRimport::load_data(manifest, template, raw_data)
+td <- gDRimport::get_test_data()
+l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
 df_ <- gDRcore::merge_data(
-  l_data$manifest, 
-  l_data$treatments, 
-  l_data$data
+  l_tbl$manifest, 
+  l_tbl$treatments, 
+  l_tbl$data
 )
 nested_confounders = intersect(
   names(df_), 
