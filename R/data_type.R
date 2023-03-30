@@ -252,10 +252,10 @@ split_raw_data <- function(df,
         df_list[["single-agent"]][sa_idx[[codrug]], codrug_cols]
     }
     df_list[["single-agent"]][, codrug_ids] <- NULL
-    df_list[["single-agent"]] <- rbind(
+    df_list[["single-agent"]] <- unique(rbind(
       df_list[["single-agent"]],
       control_sa[, names(df_list[["single-agent"]])]
-    )
+    ))
   }
   
   Map(function(x) {
