@@ -69,18 +69,3 @@ test_synthetic_data <- function(original,
     )
   })
 }
-
-#' Get synthetic data from gDRtestData package
-#'
-#' @param rds RDS filename
-#' 
-#' @examples
-#' data <- "finalMAE_small.RDS"
-#' original <- get_synthetic_data(data)
-#'
-#' @return loaded data
-#' 
-#' @export
-get_synthetic_data <- function(rds) {
-  readRDS(system.file("testdata", rds, package = "gDRtestData"))
-}

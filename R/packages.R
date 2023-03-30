@@ -12,5 +12,6 @@
 #' @name gDRcore
 #' @import S4Vectors
 #' @import checkmate
+#' @importFrom gDRutils get_synthetic_data
 #' @useDynLib gDRcore
 NULL
