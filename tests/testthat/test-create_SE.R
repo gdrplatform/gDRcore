@@ -29,14 +29,14 @@ test_that("validate_mapping catches reverse single-agent data", {
 
 test_that("create_SE works as expected", {
   td <- gDRimport::get_test_data()
-  l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
-  imported_data <- merge_data(
-    l_tbl$manifest,
-    l_tbl$treatments,
-    l_tbl$data
+  l_tbl <- purrr::quietly(gDRimport::load_data)(td$m_file, td$t_files, td$r_files)
+  imported_data <- purrr::quietly(merge_data)(
+    l_tbl$result$manifest,
+    l_tbl$result$treatments,
+    l_tbl$result$data
   )
 
-  se <- purrr::quietly(create_SE)(imported_data, data_type = "single-agent", nested_confounders = NULL)
+  se <- purrr::quietly(create_SE)(imported_data$result, data_type = "single-agent", nested_confounders = NULL)
   
   testthat::expect_s4_class(se$result, "SummarizedExperiment")
   expect_equal(dim(se$result), c(12, 6))
