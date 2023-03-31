@@ -69,7 +69,7 @@ normalize_SE <- function(se,
                                                    "cellline_ref_div_time", 
                                                    simplify = TRUE
                                                    )
-  if (!cell_ref_div_col %in% names(cell_ref_div_col)) {
+  if (!cell_ref_div_col %in% names(cdata)) {
     cdata[[cell_ref_div_col]] <- NA
   }
   
