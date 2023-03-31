@@ -1,0 +1,57 @@
+Type: Package
+Package: gDRcore
+Title: Processing functions and interface to process and analyze drug
+    dose-response data
+Version: 0.99.0
+Date: 2023-03-20
+Authors@R: c(
+    person("Support", "gDR", , "gdr-support-d@gene.com", role = "cre",
+           comment = c(ORCID = "0009-0006-9310-1135")),
+    person("Bartosz", "Czech", , "bartosz.czech@contractors.roche.com", role = "aut"),
+    person("Arkadiusz", "Gladki", role = "aut"),
+    person("Marc", "Hafner", role = "aut"),
+    person("Pawel", "Piatkowski", role = "aut"),
+    person("Natalia", "Potocka", role = "aut"),
+    person("Dariusz", "Scigocki", role = "aut"),
+    person("Sergiu", "Mocanu", role = "aut"),
+    person("Allison", "Vuong", role = "aut")
+  )
+Description: This package contains core functions to process and analyze drug response data. The package provides tools for normalizing, averaging,
+  and calculation of gDR metrics data. All core functions are wrapped into the pipeline function allowing analyzing the data in a straightforward way.
+License: file LICENSE
+Imports:
+    BumpyMatrix,
+    BiocParallel,
+    checkmate,
+    futile.logger,
+    gDRutils (>= 0.99.0),
+    methods,
+    MultiAssayExperiment,
+    purrr,
+    plyr,
+    reshape2,
+    stringr,
+    S4Vectors,
+    SummarizedExperiment,
+    tibble,
+    zoo
+Suggests:
+    gDRstyle (>= 0.99.0),
+    gDRimport (>= 0.99.0),
+    gDRtestData (>= 0.99.0),
+    IRanges,
+    knitr,
+    pkgbuild,
+    qs,
+    testthat,
+    yaml
+VignetteBuilder: 
+    knitr
+biocViews: Software, ShinyApps
+ByteCompile: TRUE
+DeploySubPath: gDRcore
+Encoding: UTF-8
+LazyLoad: yes
+NeedsCompilation: yes
+RoxygenNote: 7.2.3
+SwitchrLibrary: gDRcore

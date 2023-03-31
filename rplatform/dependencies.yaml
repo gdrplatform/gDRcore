@@ -3,17 +3,24 @@ pkgs:
     ver: '>=0.99.0'
     url: gdrplatform/gDRutils
     ref: master
-    subdir: gDRutils
+    subdir: ~
     host: 'api.github.com'
     source: GITHUB
   gDRtestData:
     ver: '>=0.99.0'
     url: gdrplatform/gDRtestData
     ref: master
-    subdir: gDRtestData
+    subdir: ~
     host: 'api.github.com'
     source: GITHUB
   gDRstyle:
+    ver: '>=0.99.0'
+    url: gdrplatform/gDRstyle
+    ref: main
+    subdir: ~
+    host: 'api.github.com'
+    source: GITHUB
+  gDRimport:
     ver: '>=0.99.0'
     url: gdrplatform/gDRstyle
     ref: main

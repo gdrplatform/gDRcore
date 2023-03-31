@@ -1,7 +1,3 @@
-# gDRcore
-Link to the confluence page: https://rochewiki.roche.com/confluence/display/gDR/gDR+suite%3A+a+package+for+drug+response+analysis 
-
-
 ## Architecture
 Processing of drug response data involves merging metadata and raw data into a long DataFrame. 
 This is followed by normalization, averaging, and fitting and ultimately results in drug response
