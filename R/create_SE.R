@@ -30,7 +30,7 @@ create_SE <- function(df_,
                       ),
                       override_untrt_controls = NULL) {
   # Assertions:
-  stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
+  stopifnot(any(inherits(df_, "data.table"), inherits(df_, "DataFrame")))
   checkmate::assert_string(data_type)
   checkmate::assert_string(readout)
   checkmate::assert_function(control_mean_fxn)
@@ -44,10 +44,10 @@ create_SE <- function(df_,
       get_default_nested_identifiers(df_)[[data_model(data_type)]]
   }
   
-  if (methods::is(df_, "data.table")) {
-    df_ <- S4Vectors::DataFrame(df_)
-  }
-
+  # if (methods::is(df_, "data.table")) {
+  #   df_ <- S4Vectors::DataFrame(df_)
+  # }
+  
   nested_keys <- c(nested_identifiers, nested_confounders)
   identifiers <- gDRutils::get_env_identifiers()
   Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
@@ -98,6 +98,7 @@ create_SE <- function(df_,
                                  c(trt_conditions, sa_conditions), ]
 
   ## Map controls.
+  
   controls <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
   ctl_maps <- gDRutils::loop(controls, function(ctl_type) {
     map_df(
@@ -125,19 +126,20 @@ create_SE <- function(df_,
   ## out those that do not exist. 
   treated <- treated[rownames(treated) %in% unique(groupings), ]
   data_fields <- c(md$data_fields, "row_id", "col_id")
+  
   out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
     trt <- rownames(treated)[i]
     
     trt_df <- dfs[groupings %in% trt, , drop = FALSE]
     refs_df <- dfs[groupings %in% refs[[trt]], , drop = FALSE]
     trt_df <- 
-      validate_mapping(trt_df, refs_df, nested_confounders)[, data_fields]
+      validate_mapping(trt_df, refs_df, nested_confounders)[, ..data_fields]
     # Override the row_id of the references.
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"])
 
     ctl_type <- "untrt_Endpoint"
     untrt_ref <- ctl_maps[[ctl_type]][[trt]]  
-    untrt_df <- dfs[groupings %in% untrt_ref, data_fields, drop = FALSE]
+    untrt_df <- dfs[groupings %in% untrt_ref, ..data_fields, drop = FALSE]
     untrt_df <- create_control_df(
       untrt_df, 
       control_cols = Keys[[ctl_type]], 
@@ -147,7 +149,7 @@ create_SE <- function(df_,
 
     ctl_type <- "Day0"
     day0_ref <- ctl_maps[[ctl_type]][[trt]]
-    day0_df <- dfs[groupings %in% day0_ref, data_fields, drop = FALSE]
+    day0_df <- dfs[groupings %in% day0_ref, ..data_fields, drop = FALSE]
     day0_df <- create_control_df(
       day0_df, 
       control_cols = Keys[[ctl_type]],
@@ -185,7 +187,7 @@ create_SE <- function(df_,
     list(ctl_df = ctl_df,
          trt_df = trt_df)
   })
-
+  
   trt_out <- rbindParallelList(out, "trt_df")
   ctl_out <- rbindParallelList(out, "ctl_df")
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
@@ -221,6 +223,7 @@ create_SE <- function(df_,
 
 #' @keywords internal
 validate_mapping <- function(trt_df, refs_df, nested_confounders) {
+  
   if (!is.null(nested_confounders)) {
     refs_df <- refs_df[
       unique(trt_df[[nested_confounders]]) == refs_df[[nested_confounders]], 
@@ -240,8 +243,9 @@ validate_mapping <- function(trt_df, refs_df, nested_confounders) {
   )
   # Swap concentrations for single-agent with drug2
   if (conc2 %in% colnames(trt_df)) {
-    trt_df[trt_df[[drug_id]] %in% trt_df[[drug2_id]], c(conc, conc2)] <-
-      trt_df[trt_df[[drug_id]] %in% trt_df[[drug2_id]], c(conc2, conc)]
+    conc_colnames <- c(conc, conc2)
+    trt_df[which(trt_df[[drug_id]] %in% trt_df[[drug2_id]]), conc_colnames] <-
+      trt_df[which(trt_df[[drug_id]] %in% trt_df[[drug2_id]]), c(..conc2, ..conc)]
   }
   trt_df
 }

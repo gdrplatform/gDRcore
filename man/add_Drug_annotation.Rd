@@ -17,7 +17,7 @@ add_Drug_annotation(
 )
 }
 \arguments{
-\item{df_metadata}{data.frame with metadata}
+\item{df_metadata}{data.table with metadata}
 
 \item{fname}{string with file name with annotation}
 
@@ -26,10 +26,10 @@ add_Drug_annotation(
 \item{annotationPackage}{string indication name of the package containing drug annotation}
 }
 \value{
-data.frame with metadata with annotated drugs
+data.table with metadata with annotated drugs
 }
 \description{
-add drug annotation to a data.frame with metadata
+add drug annotation to a data.table with metadata
 }
 \details{
 The logic of adding drug annotation for df_metadata 
@@ -37,7 +37,7 @@ based on the annotation file stored in gDRtestData.
 }
 \examples{
 add_Drug_annotation(
-  data.frame(
+  data.table::data.table(
     Gnumber = "drug_id", 
     DrugName = "name of the drug")
 )

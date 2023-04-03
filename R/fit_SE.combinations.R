@@ -74,7 +74,8 @@ fit_SE.combinations <- function(se,
 
   iterator <- unique(avg[, c("column", "row")])
   
-  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
+  out <- gDRutils::loop(parallelize = F, seq_len(nrow(iterator)), function(row) {
+    
     bliss_excess <- hsa_excess <- metrics <- all_iso_points <- 
       isobolograms <- smooth_mx <- NULL
     bliss_score <- hsa_score <- CIScore_50 <- CIScore_80 <- 
@@ -153,6 +154,7 @@ fit_SE.combinations <- function(se,
       
       # fit by column: the series in the primary identifier, the cotrt is the 
       # secondary one
+      
       col_fittings <- fit_combo_cotreatments(
         avg_combo,
         series_id = id, 

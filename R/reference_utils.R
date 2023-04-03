@@ -17,15 +17,16 @@ create_control_df <- function(df_,
                               control_mean_fxn = function(x) mean(x, trim = 0.25),
                               out_col_name) {
 
-  checkmate::assert_data_frame(df_)
+  stopifnot(inherits(df_, "data.table"))
   checkmate::assert_character(control_cols)
   checkmate::assert_function(control_mean_fxn)
   checkmate::assert_string(out_col_name)
-
+  
   if (nrow(df_) != 0L) {
+    
     # Rename CorrectedReadout.
     col_intersect <- intersect(control_cols, colnames(df_))
-    df_ <- df_[, c("CorrectedReadout", col_intersect), drop = FALSE]
+    df_ <- df_[, c("CorrectedReadout", ..col_intersect), drop = FALSE]
     colnames(df_)[grepl("CorrectedReadout", colnames(df_))] <- out_col_name
 
     # Aggregate by all non-readout data (the metadata).
@@ -35,7 +36,7 @@ create_control_df <- function(df_,
               function(x) control_mean_fxn(x))
     } else if (ncol(df_) == 1) {
       # only ReadoutValue column exists (i.e. no 'Barcode')
-      df_ <- data.frame(control_mean_fxn(df_[, out_col_name]))
+      df_ <- data.frame(control_mean_fxn(df_[, ..out_col_name]))
       colnames(df_) <- out_col_name
     } else {
       stop(sprintf("unexpected columns in data.frame: '%s'",

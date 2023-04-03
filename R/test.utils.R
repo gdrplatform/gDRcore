@@ -1,7 +1,7 @@
 #' Testing synthetic data form gDRtestData package
 #'
 #' @param original original MAE assay
-#' @param data datase MAE or data frame
+#' @param data datase MAE or data.table
 #' @param dataName dataset name
 #' @param override_untrt_controls named list containing defining factors in 
 #' the treatments
@@ -31,25 +31,19 @@ test_synthetic_data <- function(original,
     )
   }
   
-  normalized <- as.data.frame(
+  normalized <- 
     gDRutils::convert_mae_assay_to_dt(original, "Normalized")
-  )
-  averaged <- as.data.frame(
+  averaged <-
     gDRutils::convert_mae_assay_to_dt(original, "Averaged")
-  )
-  metrics <- as.data.frame(
+  metrics <-
     gDRutils::convert_mae_assay_to_dt(original, "Metrics")
-  )
-  normalized_new <- as.data.frame(
+  normalized_new <-
     gDRutils::convert_mae_assay_to_dt(reprocessed, "Normalized")
-  )
-  averaged_new <- as.data.frame(
+  averaged_new <-
     gDRutils::convert_mae_assay_to_dt(reprocessed, "Averaged")
-  )
-  metrics_new <- as.data.frame(
+  metrics_new <-
     gDRutils::convert_mae_assay_to_dt(reprocessed, "Metrics")
-  )
-  
+
   
   testthat::test_that(
     sprintf(

@@ -1,7 +1,7 @@
 test_that("validate_mapping works as expected", {
-  ref_df <- data.frame(Gnumber = paste0("DRUG_", c(rep(10, 3), rep(11, 7))),
+  ref_df <- data.table::data.table(Gnumber = paste0("DRUG_", c(rep(10, 3), rep(11, 7))),
                        Gnumber2 = "vehicle", value = runif(10))
-  trt_df <- data.frame(Gnumber = paste0("DRUG_", 10),
+  trt_df <- data.table::data.table(Gnumber = paste0("DRUG_", 10),
                        Gnumber2 = paste0("DRUG_", 1:10),
                        value = runif(10))
   merged_df <- validate_mapping(trt_df, ref_df, nested_confounders = NULL)
@@ -14,11 +14,11 @@ test_that("validate_mapping works as expected", {
 })
 
 test_that("validate_mapping catches reverse single-agent data", {
-  trt_df <- data.frame(Gnumber = "DRUG_10",
+  trt_df <- data.table::data.table(Gnumber = "DRUG_10",
                        Gnumber_2 = "DRUG_2", value = runif(1),
                        Concentration = runif(1),
                        Concentration_2 = runif(1))
-  ref_df <- data.frame(Gnumber = c("DRUG_10", "DRUG_2", "DRUG_3"),
+  ref_df <- data.table::data.table(Gnumber = c("DRUG_10", "DRUG_2", "DRUG_3"),
                        Gnumber_2 = rep("vehicle", 3), value = runif(3),
                        Concentration = runif(3), Concentration_2 = rep(0, 3))
   merged_df <- validate_mapping(trt_df, ref_df, nested_confounders = NULL)
@@ -31,9 +31,9 @@ test_that("create_SE works as expected", {
   td <- gDRimport::get_test_data()
   l_tbl <- purrr::quietly(gDRimport::load_data)(td$m_file, td$t_files, td$r_files)
   imported_data <- purrr::quietly(merge_data)(
-    l_tbl$result$manifest,
-    l_tbl$result$treatments,
-    l_tbl$result$data
+    data.table::setDT(l_tbl$result$manifest),
+    data.table::setDT(l_tbl$result$treatments),
+    data.table::setDT(l_tbl$result$data)
   )
 
   se <- purrr::quietly(create_SE)(imported_data$result, data_type = "single-agent", nested_confounders = NULL)

@@ -3,10 +3,11 @@ fit_combo_cotreatments <- function(measured,
                                    series_id, 
                                    cotrt_id, 
                                    normalization_type) {
-  series_concs <- setdiff(unique(measured[, series_id]), 0)
+  
+  series_concs <- setdiff(unlist(unique(measured[, ..series_id])), 0)
   # keep the single agent for the series_id
-  cotrt_concs <- unique(measured[, cotrt_id])
-
+  cotrt_concs <- unlist(unique(measured[, ..cotrt_id]))
+  
   if (all(measured$normalization_type != normalization_type)) {
     measured$x <- NA
     measured$x_std <- NA
@@ -26,11 +27,11 @@ fit_combo_cotreatments <- function(measured,
     e_0 = 1, 
     GR_0 = 1
   )
-    
+  
   # Fit cotreatments in matrix.
   cotrt_fittings <- vector("list", length(cotrt_concs))
   for (i in seq_along(cotrt_concs)) {
-    conc <- cotrt_concs[i]
+    conc <- cotrt_concs[[i, drop = TRUE]]
     sa <- gDRutils::predict_efficacy_from_conc(
       conc, 
       sa_fit$x_inf, 
@@ -38,16 +39,16 @@ fit_combo_cotreatments <- function(measured,
       sa_fit$ec50, 
       sa_fit$h
     )
-
+    
     if (is.na(sa) &&
-        any(conc == measured[, cotrt_id] & measured[, series_id] == 0)) {
+        any(conc == measured[, ..cotrt_id] & measured[, ..series_id] == 0)) {
       
       # if the fit or the prediction fails, tries to get the reference value 
       # from the actual data
-      sa <- measured[measured[, cotrt_id] == conc & 
-                       measured[, series_id] == 0, "x"]
+      sa <- measured[which(measured[, ..cotrt_id] == conc & 
+                             measured[, ..series_id] == 0), "x"]
     } # else x_0 will be NA (thus a free parameter)
-
+    
     cotrt_fittings[[i]] <- fit_cotreatment_series(
       measured, 
       series_id = series_id, 
@@ -83,7 +84,7 @@ fit_cotreatment_series <- function(measured,
     cap = 0.1,
     normalization_type = normalization_type
   )
-
+  
   cotrt_fit$cotrt_value <- cotrt_value
   cotrt_fit
 }

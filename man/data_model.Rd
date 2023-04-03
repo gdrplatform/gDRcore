@@ -7,7 +7,7 @@
 data_model(x)
 }
 \arguments{
-\item{x}{data.frame with raw data or SummarizedExperiment object 
+\item{x}{data.table with raw data or SummarizedExperiment object 
 with gDR assays}
 }
 \value{

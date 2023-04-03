@@ -30,13 +30,13 @@
 
 #' cleanup_metadata
 #'
-#' Cleanup a dataframe with metadata
+#' Cleanup a data.table with metadata
 #'
-#' @param df_metadata a dataframe with metadata
+#' @param df_metadata a data.table with metadata
 #'
 #' @examples
 #'
-#' df <- data.frame(
+#' df <- data.table::data.table(
 #'   clid = "CELL_LINE",
 #'   Gnumber = "DRUG_1",
 #'   Concentration = c(0, 1),
@@ -44,14 +44,14 @@
 #' )
 #' cleanup_df <- cleanup_metadata(df)
 #'
-#' @return a data.frame with cleaned metadata
+#' @return a data.table with cleaned metadata
 #' @details Adds annotations and check whether user provided correct input data.
 #' @export
 #'
 cleanup_metadata <- function(df_metadata) {
   
   # Assertions:
-  stopifnot(inherits(df_metadata, "data.frame"))
+  stopifnot(inherits(df_metadata, "data.table"))
   
   # Round duration to 6 values. 
   duration_id <- gDRutils::get_env_identifiers("duration")
@@ -113,16 +113,16 @@ cleanup_metadata <- function(df_metadata) {
 
 #' Order_result_df
 #'
-#' Order a dataframe with results
+#' Order a data.table with results
 #'
-#' @param df_ a dataframe with results
+#' @param df_ a data.table with results
 #'
-#' @return a ordered dataframe with results
+#' @return a ordered data.table with results
 #'
 order_result_df <- function(df_) {
 
   # Assertions:
-  checkmate::assert_data_frame(df_)
+  stopifnot(inherits(df_, "data.table"))
 
   ordered_1 <- gDRutils::get_header("ordered_1")
   ordered_2 <- gDRutils::get_header("ordered_2")
@@ -135,7 +135,7 @@ order_result_df <- function(df_) {
   cols <- intersect(cols, colnames(df_))
 
   row_order_col <-
-    intersect(
+    unlist(intersect(
       c(
         gDRutils::get_env_identifiers(
           c("cellline_name", "duration", "drug_name"), 
@@ -152,16 +152,17 @@ order_result_df <- function(df_) {
         setdiff(colnames(df_), c(ordered_1, ordered_2))
       ),
       cols
-    )
-
-  df_ <- df_[do.call(order, df_[, unlist(row_order_col)]), unlist(cols)]
+    ))
+  
+  cols <- unlist(cols)
+  df_ <- df_[do.call(order, df_[, ..row_order_col]), ..cols]
 
   return(df_)
 }
 
 #' Detect model of data
 #'
-#' @param x data.frame with raw data or SummarizedExperiment object 
+#' @param x data.table with raw data or SummarizedExperiment object 
 #'          with gDR assays
 #' 
 #' @examples 
@@ -175,17 +176,17 @@ data_model <- function(x) {
 }
 
 
-#' Detect model of data in data.frame
+#' Detect model of data in data.table
 #'
-#' @param x data.frame of raw drug response data 
+#' @param x data.table of raw drug response data 
 #'          containing both treated and untreated values. 
 #'
 #' @return string with the information of the raw data follows single-agent or 
 #' combination data model
 #' @export
-data_model.data.frame <- function(x) {
+data_model.data.table <- function(x) {
   
-  checkmate::assert_data_frame(x)
+  stopifnot(inherits(x, "data.table"))
   drug_ids <- unlist(
     gDRutils::get_env_identifiers(
       c("drug_name", "drug_name2"), 
@@ -257,12 +258,12 @@ validate_data_models_availability <- function(d_types, s_d_models) {
 
 #' Get default nested identifiers
 #'
-#' @param x data.frame with raw data or SummarizedExperiment object 
+#' @param x data.table with raw data or SummarizedExperiment object 
 #' with gDR assays
 #' @param data_model single-agent vs combination
 #' 
 #' @examples 
-#' get_default_nested_identifiers(data.frame())
+#' get_default_nested_identifiers(data.table::data.table())
 #' 
 #' @return vector of nested identifiers
 #' 
@@ -274,9 +275,9 @@ get_default_nested_identifiers <- function(x, data_model = NULL) {
 
 #' @export
 #' @rdname get_default_nested_identifiers
-get_default_nested_identifiers.data.frame <- function(x, data_model = NULL) {
+get_default_nested_identifiers.data.table <- function(x, data_model = NULL) {
   
-  checkmate::assert_data_frame(x)
+  stopifnot(inherits(x, "data.table"))
   checkmate::assert_choice(
     data_model, 
     c("single-agent", "combination"), 
@@ -372,7 +373,7 @@ rbindParallelList <- function(x, name) {
   S4Vectors::DataFrame(
     do.call(
       plyr::rbind.fill, 
-      lapply(x, function(x) as.data.frame("[[" (x, name)))
+      lapply(x, function(x) data.table::setDT(as.data.frame("[[" (x, name))))
     )
   )
 }
@@ -409,7 +410,7 @@ rbindParallelList <- function(x, name) {
 #'   included even if it has no matching values in \code{x}
 #' @param list logical.  If \code{TRUE}, the result will be returned as a list
 #'   of vectors, each vector being the matching values in y. If \code{FALSE},
-#'   result is returned as a data frame with repeated values for each match.
+#'   result is returned as a data.table with repeated values for each match.
 #' @param indexes logical.  Whether to return the indices of the matches or the
 #'   actual values.
 #' @param nomatch the value to be returned in the case when no match is found.
@@ -421,7 +422,7 @@ rbindParallelList <- function(x, name) {
 #' https://github.com/cran/grr/blob/master/R/grr.R
 #' 
 #' @examples 
-#' mat_elem <- data.frame(
+#' mat_elem <- data.table::data.table(
 #'   DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
 #'   DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
 #'   clid = rep(c("C1", "C2"), each = 4)
@@ -444,7 +445,7 @@ rbindParallelList <- function(x, name) {
 #' )
 #' matches(trt, ref, list = FALSE, all.y = FALSE)
 #' 
-#' @return data.frame
+#' @return data.table
 #' 
 #' @export
 matches <- function(x, 
@@ -455,7 +456,7 @@ matches <- function(x,
                     indexes = TRUE, 
                     nomatch = NA) {
   result <- .Call("matches", x, y)
-  result <- data.frame(x = result[[1]], y = result[[2]])
+  result <- data.table::data.table(x = result[[1]], y = result[[2]])
   if (!all.y) {
     result <- result[result$x != length(x) + 1, ]
   }

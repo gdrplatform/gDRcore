@@ -41,7 +41,7 @@ be set to an index value of \code{length+1}.  If {indexes=FALSE}, they will
 default to \code{NA}.}
 }
 \value{
-data.frame
+data.table
 }
 \description{
 Returns a lookup table or list of the positions of ALL matches of its first
@@ -68,7 +68,7 @@ Source of the function:
 https://github.com/cran/grr/blob/master/R/grr.R
 }
 \examples{
-mat_elem <- data.frame(
+mat_elem <- data.table::data.table(
   DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
   DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
   clid = rep(c("C1", "C2"), each = 4)

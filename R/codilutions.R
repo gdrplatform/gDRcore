@@ -58,11 +58,11 @@ fit_codilution_series <- function(measured,
   if (length(ratio) != 1L) {
     stop("more than one ratio between 'series_2' and 'series_1' detected")
   }
-
+  
   measured$summed_conc <- measured[[series_1]] + measured[[series_2]]
   keep <- setdiff(colnames(measured), c(series_1, series_2))
   codilution_fit <- gDRutils::fit_curves(
-    df_ = measured[, keep, drop = FALSE],
+    df_ = measured[, ..keep, drop = FALSE],
     series_identifiers = "summed_conc",
     e_0 = e_0,
     GR_0 = GR_0,

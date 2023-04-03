@@ -45,8 +45,8 @@ identify_keys <- function(df_,
                           override_untrt_controls = NULL,
                           identifiers = gDRutils::get_env_identifiers()) {
   # Assertions:
-  stopifnot(inherits(df_, c("data.frame", "DataFrame")))
-
+  stopifnot(inherits(df_, c("data.table", "DataFrame")))
+  
   all_keys <- colnames(df_)
   dropped_nested_keys <- setdiff(nested_keys, all_keys)
   if (length(dropped_nested_keys) != 0L) {
@@ -106,14 +106,14 @@ identify_keys <- function(df_,
   keys$duration <- duration_col 
   keys$untreated_tag <- identifiers$untreated_tag
 
-  t0 <- df_[, duration_col] == 0
+  t0 <- df_[, ..duration_col] == 0
   # Remove keys where all values are NA.
   # TODO: Improve this.
   for (k in keys[["untrt_Endpoint"]]) {
-    if (all(is.na(df_[, k]))) {
+    if (all(is.na(df_[, ..k]))) {
       keys <- gDRutils::loop(keys, function(x) setdiff(x, k))
     }
-    if (all(is.na(df_[t0, k]))) {
+    if (all(is.na(df_[which(t0), ..k]))) {
       keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
     }
   }

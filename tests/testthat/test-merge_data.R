@@ -9,6 +9,10 @@ test_that("merge_data works as expected", {
   manifest <- gDRimport::load_manifest(manifestFile)
   template <- gDRimport::load_templates(templateFiles)
   rawData <- gDRimport::load_results(rawDataFiles, manifest$headers, instrument = "EnVision")
+  
+  manifest$data <- data.table::setDT(manifest$data)
+  template <- data.table::setDT(template)
+  rawData <- data.table::setDT(rawData)
 
   merged_quietly <- purrr::quietly(merge_data)(manifest$data, template, rawData)
   merged <- merged_quietly$result
@@ -31,7 +35,7 @@ test_that("merge_data works as expected", {
   # testing wrong input
   expect_error(
     merge_data("test", template, rawData),
-    "inherits(manifest, \"data.frame\") is not TRUE",
+    "inherits(manifest, \"data.table\") is not TRUE",
     fixed = TRUE
   )
 })
