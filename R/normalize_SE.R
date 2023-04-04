@@ -21,6 +21,9 @@ normalize_SE <- function(se,
                              "barcode", 
                              simplify = TRUE
                            ),
+                         control_mean_fxn = function(x) {
+                           mean(x, trim = 0.25)
+                         },
                          control_assay = "Controls", 
                          raw_treated_assay = "RawTreated", 
                          normalized_assay = "Normalized",
@@ -31,6 +34,7 @@ normalize_SE <- function(se,
   checkmate::assert_character(data_type)
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
+  checkmate::assert_function(control_mean_fxn)
   checkmate::assert_string(control_assay)
   checkmate::assert_string(raw_treated_assay)
   checkmate::assert_string(normalized_assay)
@@ -88,6 +92,9 @@ normalize_SE <- function(se,
     SummarizedExperiment::assays(se)[[raw_treated_assay]]
   )
   
+  refs$record_id <- trt$record_id <- NULL
+  
+  
   # Extract common nested_confounders shared by trt_df and ref_df
   nested_confounders <- Reduce(intersect, list(nested_confounders,
                                                names(trt),
@@ -118,9 +125,7 @@ normalize_SE <- function(se,
 
     # pad the ref_df for missing values based on nested_keys 
     # (uses mean across all available values)
-    if (!is.null(nested_keys) && length(nested_keys) > 0) {
-      ref_df <- fill_NA_ref(ref_df, nested_keys)
-    }
+    ref_df <- aggregate_ref(ref_df, control_mean_fxn = control_mean_fxn)
     
     # Merge to ensure that the proper discard_key values are mapped.
     all_readouts_df <- merge(trt_df, 
@@ -194,17 +199,18 @@ normalize_SE <- function(se,
 
 
 #' @keywords internal
-fill_NA_ref <- function(ref_df, nested_keys) {
-  data_columns <- setdiff(colnames(ref_df), c(nested_keys, "row", "column"))
-  ref_cols <- data.frame(ref_df[, data_columns, drop = FALSE])
+aggregate_ref <- function(ref_df, control_mean_fxn) {
   
-  if (any(!is.na(ref_cols))) {
-    ref_df_mean <- colMeans(
-      data.frame(ref_df[, data_columns, drop = FALSE]), na.rm = TRUE
-    )
-    for (col in data_columns) {
-      ref_df[is.na(ref_df[, col]), col] <- ref_df_mean[[col]]
-    }
-  }
-  S4Vectors::DataFrame(ref_df)
+  data_columns <- setdiff(colnames(ref_df), c("row", "column", "masked", "isDay0"))
+  ref_cols <- data.table::as.data.table(ref_df[, data_columns, drop = FALSE])
+  group_cols <- c(ref_cols[, setdiff(names(ref_cols), "CorrectedReadout")])
+  additional_cov <- setdiff(group_cols, "control_type")
+  aggregate_formula <- stats::reformulate("control_type",
+                                          ifelse(length(additional_cov) == 0, ".", additional_cov))
+  
+  ref_df_aggregate <- unique(ref_cols[, .(x = control_mean_fxn(CorrectedReadout)), by = eval(group_cols)])
+  ref_df_dcast <- data.table::dcast(ref_df_aggregate,
+                                    aggregate_formula,
+                                    value.var = "x")
+  ref_df_dcast[!rowSums(is.na(ref_df_dcast)) >= length(setdiff(names(ref_df_dcast), group_cols)), ]
 }

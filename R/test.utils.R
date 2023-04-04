@@ -5,6 +5,7 @@
 #' @param dataName dataset name
 #' @param override_untrt_controls named list containing defining factors in 
 #' the treatments
+#' @param assays assays to test
 #' @param tolerance tolerance factor
 #' 
 #' @examples
@@ -21,6 +22,7 @@ test_synthetic_data <- function(original,
                                 data,
                                 dataName,
                                 override_untrt_controls = NULL,
+                                assays = c("Normalized", "Averaged", "Metrics"),
                                 tolerance = 10e-4) {
   if (inherits(data, "MultiAssayExperiment")) {
     reprocessed <- data
@@ -31,39 +33,21 @@ test_synthetic_data <- function(original,
     )
   }
   
-  normalized <- as.data.frame(
-    gDRutils::convert_mae_assay_to_dt(original, "Normalized")
-  )
-  averaged <- as.data.frame(
-    gDRutils::convert_mae_assay_to_dt(original, "Averaged")
-  )
-  metrics <- as.data.frame(
-    gDRutils::convert_mae_assay_to_dt(original, "Metrics")
-  )
-  normalized_new <- as.data.frame(
-    gDRutils::convert_mae_assay_to_dt(reprocessed, "Normalized")
-  )
-  averaged_new <- as.data.frame(
-    gDRutils::convert_mae_assay_to_dt(reprocessed, "Averaged")
-  )
-  metrics_new <- as.data.frame(
-    gDRutils::convert_mae_assay_to_dt(reprocessed, "Metrics")
-  )
-  
-  
-  testthat::test_that(
-    sprintf(
-      "reprocessed data %s is identical to data stored in gDRtestData", 
-      dataName
-    ), {
-    testthat::expect_equal(
-      normalized_new, normalized, tolerance = tolerance
-    ) # nolint
-    testthat::expect_equal(
-      averaged_new, averaged, tolerance = tolerance
-    ) # nolint
-    testthat::expect_equal(
-      metrics_new, metrics, tolerance = tolerance
-    )
+  purrr::walk(assays, function(x) {
+              dt_original <- gDRutils::convert_mae_assay_to_dt(original, x)
+              dt_reprocessed <- gDRutils::convert_mae_assay_to_dt(data, x)
+              
+              data.table::setorder(dt_original)
+              data.table::setorder(dt_reprocessed)
+              
+              testthat::test_that(
+                sprintf(
+                  "reprocessed data %s is identical to data stored in gDRtestData", 
+                  dataName
+                ), {
+                  testthat::expect_equal(
+                    dt_original, dt_reprocessed, tolerance = tolerance
+                  )
+                })
   })
 }

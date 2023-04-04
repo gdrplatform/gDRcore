@@ -20,9 +20,6 @@
 create_SE <- function(df_,
                       data_type,
                       readout = "ReadoutValue",
-                      control_mean_fxn = function(x) {
-                        mean(x, trim = 0.25)
-                      },
                       nested_identifiers = NULL,
                       nested_confounders = intersect(
                         names(df_),
@@ -33,7 +30,6 @@ create_SE <- function(df_,
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(data_type)
   checkmate::assert_string(readout)
-  checkmate::assert_function(control_mean_fxn)
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
@@ -48,7 +44,7 @@ create_SE <- function(df_,
     df_ <- S4Vectors::DataFrame(df_)
   }
 
-  nested_keys <- c(nested_identifiers, nested_confounders)
+  nested_keys <- c(nested_identifiers, nested_confounders, "record_id")
   identifiers <- gDRutils::get_env_identifiers()
   Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
 
@@ -67,16 +63,16 @@ create_SE <- function(df_,
   # overwrite "drug", "drug_name", "drug_moa"
   # with "untreated" if "concentration2" == 0
   if (gDRutils::get_env_identifiers("concentration2") %in% colnames(df_)) {
-    single_agent_idx <- 
+    single_agent_idx <-
       df_[[gDRutils::get_env_identifiers("concentration2")]] %in% 0
     drug_cols <- c("drug", "drug_name", "drug_moa")
     drug2_var <- intersect(
       unlist(gDRutils::get_env_identifiers(
         paste0(drug_cols, "2"), simplify = FALSE)
-      ), 
+      ),
       colnames(df_)
     )
-    df_[single_agent_idx, drug2_var] <- 
+    df_[single_agent_idx, drug2_var] <-
       gDRutils::get_env_identifiers("untreated_tag")[1]
   }
 
@@ -124,6 +120,8 @@ create_SE <- function(df_,
   ## and cells. Not all conditions will actually exist in the data, so filter 
   ## out those that do not exist. 
   treated <- treated[rownames(treated) %in% unique(groupings), ]
+  untreated <- dfs[dfs$groupings %in% unique(unlist(ctl_maps)), ]
+
   data_fields <- c(md$data_fields, "row_id", "col_id")
   out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
     trt <- rownames(treated)[i]
@@ -135,43 +133,32 @@ create_SE <- function(df_,
     # Override the row_id of the references.
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"])
 
-    ctl_type <- "untrt_Endpoint"
-    untrt_ref <- ctl_maps[[ctl_type]][[trt]]  
-    untrt_df <- dfs[groupings %in% untrt_ref, data_fields, drop = FALSE]
-    untrt_df <- create_control_df(
-      untrt_df, 
-      control_cols = Keys[[ctl_type]], 
-      control_mean_fxn, 
-      out_col_name = "UntrtReadout"
-    )
-
-    ctl_type <- "Day0"
-    day0_ref <- ctl_maps[[ctl_type]][[trt]]
-    day0_df <- dfs[groupings %in% day0_ref, data_fields, drop = FALSE]
-    day0_df <- create_control_df(
-      day0_df, 
-      control_cols = Keys[[ctl_type]],
-      control_mean_fxn, 
-      out_col_name = "Day0Readout"
-    )
-
+    untrt_ref <- ctl_maps[["untrt_Endpoint"]][[trt]]
+    untrt_cols <- intersect(c("CorrectedReadout", "record_id", nested_confounders), names(dfs))
+    untrt_df <- untreated[untreated$groupings %in% untrt_ref, untrt_cols, drop = FALSE]
+    untrt_df <- if (nrow(untrt_df) == 0) {
+      data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
+    } else {
+      data.table::as.data.table(untrt_df)
+    }
+    untrt_df$isDay0 <- FALSE
+    
+    day0_ref <- ctl_maps[["Day0"]][[trt]]
+    day0_df <- untreated[untreated$groupings %in% day0_ref, ]
+    isDay0 <- day0_df[[gDRutils::get_env_identifiers("duration")]] == 0
+    
+    day0_df <- day0_df[, untrt_cols, drop = FALSE]
+    day0_df <- if (nrow(day0_df) == 0) {
+      day0_df <- data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
+    }
+    
     ## Merge all data.frames together.
     # Try to merge by plate, but otherwise just use mean. 
-    ctl_df <- untrt_df 
-    merge_cols <- intersect(colnames(day0_df), Keys$nested_keys)
-    
-    
-    ctl_df <- if (nrow(day0_df) > 0L) {
-      merge(untrt_df, day0_df, by = merge_cols, all = TRUE)
-    } else {
-      if (nrow(ctl_df) > 0L) {
-        ctl_df$Day0Readout <- NA
-        ctl_df
-      } else {
-        data.frame(Day0Readout = NA,
-                   UntrtReadout = NA)
-      }
-    } 
+    ctl_df <- data.table::rbindlist(list(UntrtReadout = untrt_df,
+                                         Day0Readout = day0_df),
+                                    fill = TRUE,
+                                    idcol = "control_type")
+    ctl_df[is.na(isDay0), isDay0 := FALSE]
     
     row_id <- unique(trt_df$row_id)
     col_id <- unique(trt_df$col_id)

@@ -66,6 +66,8 @@ prepare_input.data.frame <-
       nested_confounders = NULL
     )
     
+    x$record_id <- seq_len(nrow(x))
+    
     inl$df_ <- identify_data_type(x)
     inl$df_list <- split_raw_data(inl$df_)
     inl$nested_identifiers_l <- .set_nested_identifiers(nested_identifiers_l)
