@@ -14,7 +14,7 @@ pkgs:
     host: 'api.github.com'
     source: GITHUB
   gDRstyle:
-    ver: '>=0.99.0'
+    ver: '>=0.99.1'
     url: gdrplatform/gDRstyle
     ref: main
     subdir: ~
