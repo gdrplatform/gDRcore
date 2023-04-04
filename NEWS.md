@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.1] - 2023-04-04
+#### bugfix for the logic in 'cleanup_metadata'
+
+#### [0.99.0] - 2023-03-24
+#### Make the package Bioc-compatible
+
 #### [1.3.22] - 2023-03-21
 #### Improve performance of 'map_df' with refactored logic for exact matches
 
