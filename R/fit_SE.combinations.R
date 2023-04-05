@@ -94,7 +94,7 @@ fit_SE.combinations <- function(se,
         CIScore_50[, c("row_id", "col_id")] <- 
         CIScore_80[, c("row_id", "col_id")] <-
         all_iso_points <-
-        data.frame(row_id = i, col_id = j)
+        data.table::data.table(row_id = i, col_id = j)
       return(list(bliss_excess = bliss_excess,
            hsa_excess = hsa_excess,
            metrics = metrics,
@@ -143,14 +143,17 @@ fit_SE.combinations <- function(se,
     conc2 <- sort(as.numeric(
       names(conc2)[conc2 > (max(conc2[names(conc2) != "0"]) / 2)]
     ))
-
+    
     # create matrix with single agent
     complete <- merge(unique(c(0, conc1)), unique(c(0, conc2)), by = NULL)
     colnames(complete) <- c(id, id2)
-    complete <- merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2))
+    complete <- data.table::setDT(merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2)))
 
     for (metric in normalization_types) {
+      
       metric_name <- gDRutils::extend_normalization_type_name(metric)
+      avg_combo <- data.table::setDT(data.frame(avg_combo))
+      
       
       # fit by column: the series in the primary identifier, the cotrt is the 
       # secondary one
@@ -235,20 +238,23 @@ fit_SE.combinations <- function(se,
         colnames(complete), 
         c(metric, "row_values", "col_values", "codil_values")
       )
-      mat <- as.matrix(complete[, keep])
+      mat <- as.matrix(complete[, ..keep])
       complete$average <- rowMeans(mat, na.rm = TRUE)
-     
+      
       # just keep the relevant columns and change to the metric name
-      av_matrix <- as.data.frame(complete[, c(id, id2, "average")])
+      cols <- c(id, id2, "average")
+      av_matrix <- complete[, ..cols]
       colnames(av_matrix)[3] <- metric
       av_matrix[(av_matrix[[id]] == 0) & (av_matrix[[id2]] == 0), metric] <- 1
 
       if (NROW(av_matrix) == 0) {
         av_matrix <- h_excess <- b_excess <- NULL
       } else {
-        sa1 <- av_matrix[av_matrix[[id2]] == 0, c(id, id2, metric)]
-        sa2 <- av_matrix[av_matrix[[id]] == 0, c(id, id2, metric)]
         
+        cols <- c(id, id2, metric)
+        sa1 <- av_matrix[av_matrix[[id2]] == 0, ..cols]
+        sa2 <- av_matrix[av_matrix[[id]] == 0, ..cols]
+
         hsa <- calculate_HSA(sa1, id, sa2, id2, metric)
         h_excess <- calculate_excess(
           hsa, 
@@ -267,6 +273,7 @@ fit_SE.combinations <- function(se,
           measured_col = metric
         )
       }
+      
       # call calculate_Loewe and calculate_isobolograms: 
       # remove rows/columns with less than 2 values
       discard_conc_1 <- names(which(
@@ -292,8 +299,8 @@ fit_SE.combinations <- function(se,
             normalization_type = metric
           )
       } else {
-        list(df_all_iso_points = data.frame(row_id = NA, col_id = NA),
-             df_all_iso_curves = data.frame(row_id = NA, col_id = NA))
+        list(df_all_iso_points = data.table::data.table(row_id = NA, col_id = NA),
+             df_all_iso_curves = data.table::data.table(row_id = NA, col_id = NA))
       }
 
       # average the top 10-percentile excess to get a single value 
@@ -369,11 +376,11 @@ fit_SE.combinations <- function(se,
           )
         )
       } else {
-        smooth_mx <- as.data.frame(av_matrix)
+        smooth_mx <- av_matrix
       }
       all_iso_points <- plyr::rbind.fill(
         all_iso_points,
-        as.data.frame(isobologram_out$df_all_iso_points)
+        isobologram_out$df_all_iso_points
       )
       isobolograms <- plyr::rbind.fill(
         isobolograms,

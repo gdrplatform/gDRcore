@@ -1,8 +1,8 @@
 #' identify_keys
 #'
-#' Group columns from a data.frame that correspond to different 
+#' Group columns from a data.table that correspond to different 
 #'
-#' @param df_ a data.frame to identify keys for.
+#' @param df_ a data.table to identify keys for.
 #' @param nested_keys character vector of keys to exclude from the returned 
 #' list. The keys discarded should be identical to the keys in the third
 #' dimension of the SummarizedExperiment.
@@ -14,7 +14,7 @@
 #' 
 #' @examples 
 #' n <- 64
-#' md_df <- data.frame(
+#' md_df <- data.table::data.table(
 #'   Gnumber = rep(c("vehicle", "untreated", paste0("G", seq(2))), each = 16), 
 #'   DrugName = rep(c("vehicle", "untreated", paste0("GN", seq(2))), each = 16), 
 #'   clid = paste0("C", rep_len(seq(4), n)),
@@ -52,7 +52,7 @@ identify_keys <- function(df_,
   if (length(dropped_nested_keys) != 0L) {
     warning(
       sprintf(
-        "ignoring nested_keys input: '%s' which are not present in data.frame",
+        "ignoring nested_keys input: '%s' which are not present in data.table",
         toString(dQuote(dropped_nested_keys, q = FALSE))
       )
     )
@@ -65,7 +65,7 @@ identify_keys <- function(df_,
     warning(
       sprintf(
         "ignoring override_untrt_controls input: '%s' which are 
-        not present in data.frame",
+        not present in data.table",
         toString(dQuote(dropped_override_untrt_controls, q = FALSE))
       )
     )

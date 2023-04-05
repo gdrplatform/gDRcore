@@ -93,13 +93,14 @@ create_SE <- function(df_,
   trt_conditions <- names(refs)
   sa_conditions <- unique(unname(unlist(refs)))
 
-  treated <- mapping_entries[trt_conditions, ]
+  treated <- mapping_entries[as.numeric(trt_conditions), ]
   untreated <- mapping_entries[!rownames(mapping_entries) %in% 
                                  c(trt_conditions, sa_conditions), ]
 
   ## Map controls.
   
   controls <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
+  
   ctl_maps <- gDRutils::loop(controls, function(ctl_type) {
     map_df(
       treated, 
@@ -124,10 +125,10 @@ create_SE <- function(df_,
   ## The mapping_entries contain all exhaustive combinations of treatments 
   ## and cells. Not all conditions will actually exist in the data, so filter 
   ## out those that do not exist. 
-  treated <- treated[rownames(treated) %in% unique(groupings), ]
+  treated <- treated[which(rownames(treated) %in% unique(groupings)), ]
   data_fields <- c(md$data_fields, "row_id", "col_id")
   
-  out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
+  out <- lapply(seq_len(nrow(treated)), function(i) {
     trt <- rownames(treated)[i]
     
     trt_df <- dfs[groupings %in% trt, , drop = FALSE]
@@ -157,7 +158,7 @@ create_SE <- function(df_,
       out_col_name = "Day0Readout"
     )
 
-    ## Merge all data.frames together.
+    ## Merge all data.tables together.
     # Try to merge by plate, but otherwise just use mean. 
     ctl_df <- untrt_df 
     merge_cols <- intersect(colnames(day0_df), Keys$nested_keys)
@@ -170,8 +171,8 @@ create_SE <- function(df_,
         ctl_df$Day0Readout <- NA
         ctl_df
       } else {
-        data.frame(Day0Readout = NA,
-                   UntrtReadout = NA)
+        data.table::data.table(Day0Readout = NA,
+                               UntrtReadout = NA)
       }
     } 
     

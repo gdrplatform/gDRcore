@@ -15,7 +15,7 @@ test_synthetic_data(
 \arguments{
 \item{original}{original MAE assay}
 
-\item{data}{datase MAE or data frame}
+\item{data}{datase MAE or data.table}
 
 \item{dataName}{dataset name}
 

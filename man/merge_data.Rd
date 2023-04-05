@@ -7,11 +7,11 @@
 merge_data(manifest, treatments, data)
 }
 \arguments{
-\item{manifest}{a data frame with a manifest info}
+\item{manifest}{a data.table with a manifest info}
 
-\item{treatments}{a data frame with a treaatments info}
+\item{treatments}{a data.table with a treaatments info}
 
-\item{data}{a data frame with a raw data info}
+\item{data}{a data.table with a raw data info}
 }
 \value{
 a dataframe with merged data and metadata.

@@ -1,6 +1,6 @@
 #' Identify type of data
 #'
-#' @param df data.frame of raw drug response data 
+#' @param df data.table of raw drug response data 
 #'           containing both treated and untreated values
 #' @param codilution_conc integer of maximum number of concentration ratio 
 #'                        of co-treatment to classify as codilution data type;
@@ -27,14 +27,14 @@
 #'   DrugName = c("DRUG_10", "DRUG_8"),
 #'   CellLineName = "CELL1"
 #' )
-#' input_df <- as.data.frame(rbind(ctrl_df, trt_df))
+#' input_df <- data.table::setDT(as.data.frame(rbind(ctrl_df, trt_df)))
 #' input_df$Duration <- 72
 #' input_df$CorrectedReadout2 <- input_df$ReadoutValue
 #' identify_data_type(input_df)
 
 #' @return 
-#' data.frame of raw drug response data with additional column \code{type} 
-#' with the info of data type for a given row of data.frame
+#' data.table of raw drug response data with additional column \code{type} 
+#' with the info of data type for a given row of data.table
 #' @export
 #'
 #' @author Bartosz Czech <bartosz.czech@@contractors.roche.com>
@@ -127,7 +127,7 @@ identify_data_type <- function(df,
 
 #' Split raw data into list based on the data types
 #'
-#' @param df data.frame of raw drug response data containing both treated and 
+#' @param df data.table of raw drug response data containing both treated and 
 #' untreated values with column specified in `type_col` argument.
 #' @param type_col string with column names in `df` with info about data type.
 #' Defaults to \code{"type"}.
@@ -178,7 +178,7 @@ identify_data_type <- function(df,
 #'   DrugName = c("DRUG_10", "DRUG_8"),
 #'   CellLineName = "CELL1"
 #' )
-#' input_df <- as.data.frame(rbind(ctrl_df, trt_df))
+#' input_df <- data.table::setDT(as.data.frame(rbind(ctrl_df, trt_df)))
 #' input_df$Duration <- 72
 #' input_df$CorrectedReadout2 <- input_df$ReadoutValue
 #' split_df <- identify_data_type(input_df)

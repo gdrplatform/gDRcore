@@ -37,7 +37,7 @@ fit_combo_codilutions <- function(measured,
     )
   }
 
-  out <- do.call("rbind", fits)
+  out <- data.table::rbindlist(fits)
   out
 }
 

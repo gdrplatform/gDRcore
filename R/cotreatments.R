@@ -59,7 +59,8 @@ fit_combo_cotreatments <- function(measured,
       GR_0 = sa
     )
   }
-  do.call("rbind", cotrt_fittings)
+  
+  data.table::rbindlist(cotrt_fittings)
 }
 
 

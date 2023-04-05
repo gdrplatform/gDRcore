@@ -105,5 +105,5 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
   u <- base::merge(u, sa2[, c(..series_id2, "metric2")], by = series_id2)
 
   metric <- do.call(FXN, list(u$metric1, u$metric2))
-  cbind(u, metric)
+  data.table::data.table(cbind(u, metric))
 }

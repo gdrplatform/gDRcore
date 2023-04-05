@@ -29,7 +29,7 @@ included even if it has no matching values in \code{x}}
 
 \item{list}{logical.  If \code{TRUE}, the result will be returned as a list
 of vectors, each vector being the matching values in y. If \code{FALSE},
-result is returned as a data frame with repeated values for each match.}
+result is returned as a data.table with repeated values for each match.}
 
 \item{indexes}{logical.  Whether to return the indices of the matches or the
 actual values.}

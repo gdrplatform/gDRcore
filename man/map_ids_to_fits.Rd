@@ -11,7 +11,7 @@ map_ids_to_fits(pred, match_col, fittings, fitting_id_col)
 
 \item{match_col}{vector to match on \code{fittings} to get the correct fit.}
 
-\item{fittings}{data.frame of fit metrics.}
+\item{fittings}{data.table of fit metrics.}
 
 \item{fitting_id_col}{string of the column name in \code{fittings} that 
 should be used to match with \code{match_col} .}
@@ -29,8 +29,8 @@ pred <- c(1, 5, 5)
 match_col <- c(1, 1, 2)
 fitting_id_col <- "match_on_me"
 
-fit1 <- data.frame(h = 2.09, x_inf = 0.68, x_0 = 1, ec50 = 0.003)
-fit2 <- data.frame(h = 0.906, x_inf = 0.46, x_0 = 1, ec50 = 0.001)
+fit1 <- data.table::data.table(h = 2.09, x_inf = 0.68, x_0 = 1, ec50 = 0.003)
+fit2 <- data.table::data.table(h = 0.906, x_inf = 0.46, x_0 = 1, ec50 = 0.001)
 fittings <- do.call(rbind, list(fit1, fit2))
 fittings[[fitting_id_col]] <- c(1, 2)
 

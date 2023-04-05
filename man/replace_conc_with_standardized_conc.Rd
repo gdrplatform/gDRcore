@@ -15,7 +15,7 @@ replace_conc_with_standardized_conc(
 \item{original_concs}{numeric vector of concentrations to replace 
 using \code{conc_map}.}
 
-\item{conc_map}{data.frame of two columns named \code{original_conc_col} 
+\item{conc_map}{data.table of two columns named \code{original_conc_col} 
 and \code{standardized_conc_col}.}
 
 \item{original_conc_col}{string of the name of the column in \code{conc_map}
@@ -32,7 +32,7 @@ numeric vector of standardized concentrations.
 Utilize a map to standardize concentrations.
 }
 \examples{
-conc_map <- data.frame(
+conc_map <- data.table::data.table(
   orig = c(0.99, 0.6, 0.456, 0.4), 
   std = c(1, 0.6, 0.46, 0.4)
 )

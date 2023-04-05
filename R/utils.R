@@ -23,8 +23,8 @@
     by.y = 0, 
     all.x = TRUE
   )
-
-  mapping_entries
+  
+  data.table::setDT(mapping_entries)
 }
 
 
