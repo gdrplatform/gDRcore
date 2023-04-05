@@ -1,16 +1,16 @@
 #' Create a control dataframe for a treatment-cell line combination.
 #'
-#' Create an aggregated control data.frame.
+#' Create an aggregated control data.table.
 #'
-#' @param df_ data.frame
+#' @param df_ data.table
 #' @param control_cols character vector of columns to include in the resulting 
-#' control data.frame.
+#' control data.table.
 #' @param control_mean_fxn function indicating how to average controls.
 #' Defaults to \code{mean(x, trim = 0.25)}.
 #' @param out_col_name string of the output readout that will replace 
 #' \code{CorrectedReadout}.
 #'
-#' @return data.frame of values aggregated by
+#' @return data.table of values aggregated by
 #'
 create_control_df <- function(df_,
                               control_cols,
@@ -36,10 +36,10 @@ create_control_df <- function(df_,
               function(x) control_mean_fxn(x))
     } else if (ncol(df_) == 1) {
       # only ReadoutValue column exists (i.e. no 'Barcode')
-      df_ <- data.frame(control_mean_fxn(df_[, ..out_col_name]))
+      df_ <- data.table::data.table(control_mean_fxn(df_[, ..out_col_name]))
       colnames(df_) <- out_col_name
     } else {
-      stop(sprintf("unexpected columns in data.frame: '%s'",
+      stop(sprintf("unexpected columns in data.table: '%s'",
         paste0(colnames(df_), collapse = ", ")))
     }
   }

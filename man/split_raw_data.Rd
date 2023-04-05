@@ -7,7 +7,7 @@
 split_raw_data(df, type_col = "type")
 }
 \arguments{
-\item{df}{data.frame of raw drug response data containing both treated and 
+\item{df}{data.table of raw drug response data containing both treated and 
 untreated values with column specified in `type_col` argument.}
 
 \item{type_col}{string with column names in `df` with info about data type.
@@ -64,7 +64,7 @@ trt_df <- S4Vectors::DataFrame(
   DrugName = c("DRUG_10", "DRUG_8"),
   CellLineName = "CELL1"
 )
-input_df <- as.data.frame(rbind(ctrl_df, trt_df))
+input_df <- data.table::setDT(as.data.frame(rbind(ctrl_df, trt_df)))
 input_df$Duration <- 72
 input_df$CorrectedReadout2 <- input_df$ReadoutValue
 split_df <- identify_data_type(input_df)

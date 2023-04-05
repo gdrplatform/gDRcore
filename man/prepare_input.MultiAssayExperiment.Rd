@@ -18,7 +18,7 @@
 
 \item{nested_confounders}{Character vector of the nested_confounders for 
 a given assay. nested_keys is character vector of column names to include 
-in the data.frames in the assays of the resulting 
+in the data.tables in the assays of the resulting 
 \code{SummarizedExperiment} object. Defaults to the \code{nested_identifiers}
 and \code{nested_confounders} if passed through}
 

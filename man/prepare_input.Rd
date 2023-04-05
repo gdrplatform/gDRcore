@@ -7,7 +7,7 @@
 prepare_input(x, ...)
 }
 \arguments{
-\item{x}{data.frame with raw data or MAE object with dose-reponse data}
+\item{x}{data.table with raw data or MAE object with dose-reponse data}
 
 \item{...}{additional parameters}
 }

@@ -12,7 +12,7 @@ identify_keys(
 )
 }
 \arguments{
-\item{df_}{a data.frame to identify keys for.}
+\item{df_}{a data.table to identify keys for.}
 
 \item{nested_keys}{character vector of keys to exclude from the returned 
 list. The keys discarded should be identical to the keys in the third
@@ -29,7 +29,7 @@ processing. By default, this value will be obtained by the environment.}
 named list of key types and their corresponding key values.
 }
 \description{
-Group columns from a data.frame that correspond to different
+Group columns from a data.table that correspond to different
 }
 \details{
 This is most likely to be used for provenance tracking and will 

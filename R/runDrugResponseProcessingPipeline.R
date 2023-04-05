@@ -5,8 +5,8 @@
 #' data (create_and_normalize_SE), average data (average_SE), or fit the 
 #' processed data (fit_SE). See details for more in-depth explanations.
 #'
-#' @param x data.frame of MAE with drug response data
-#' @param df_ data.frame of raw drug response data containing both treated and 
+#' @param x data.table of MAE with drug response data
+#' @param df_ data.table of raw drug response data containing both treated and 
 #' untreated values.
 #' @param data_type single-agent vs combination
 #' @param se \code{SummarizedExperiment} object.
@@ -20,7 +20,7 @@
 #' for the given SE with a given data_type
 #' @param nested_confounders Character vector of the nested_confounders for a 
 #' given assay. nested_keys is character vector of column names to include in 
-#' the data.frames in the assays of the resulting \code{SummarizedExperiment} 
+#' the data.tables in the assays of the resulting \code{SummarizedExperiment} 
 #' object. Defaults to the \code{nested_identifiers} and 
 #' \code{nested_confounders} if passed through \code{create_and_normalize_SE} 
 #' or \code{runDrugResponseProcessingPipeline}.
@@ -75,7 +75,7 @@
 #'}
 #'
 #' For create_and_normalize_SE, this creates a SummarizedExperiment object 
-#' from a data.frame, where the data.frame contains treatments on rows, and 
+#' from a data.table, where the data.table contains treatments on rows, and 
 #' conditions on columns. 
 #' A \linkS4class{SummarizedExperiment} object containing two asssays is 
 #' created: treated readouts will live in an assay called \code{"RawTreated"},
@@ -141,7 +141,7 @@ create_and_normalize_SE <- function(df_,
                                     raw_treated_assay = "RawTreated",
                                     normalized_assay = "Normalized") {
   
-  checkmate::assert_data_frame(df_)
+  stopifnot(inherits(df_, "data.table"))
   checkmate::assert_string(data_type)
   checkmate::assert_string(readout)
   checkmate::assert_function(control_mean_fxn)
@@ -200,8 +200,8 @@ runDrugResponseProcessingPipeline <- function(x,
                                                 get_pipeline_steps()[1],
                                               selected_experiments = NULL) {
   
-  checkmate::assert_multi_class(x, c("data.frame", "MultiAssayExperiment"))
-  if (inherits(x, "data.frame")) {
+  checkmate::assert_multi_class(x, c("data.table", "MultiAssayExperiment"))
+  if (inherits(x, "data.table")) {
     checkmate::assert_true(any(
       gDRutils::get_env_identifiers("untreated_tag") %in%
         x[[gDRutils::get_env_identifiers("drug")]]
