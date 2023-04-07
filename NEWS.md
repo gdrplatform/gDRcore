@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.2] - 2023-04-07
+#### update maintainer
+
 #### [0.99.1] - 2023-04-04
 #### bugfix for the logic in 'cleanup_metadata'
 
