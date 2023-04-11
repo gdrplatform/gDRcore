@@ -25,9 +25,6 @@ create_SE(
   df_,
   data_type,
   readout = "ReadoutValue",
-  control_mean_fxn = function(x) {
-     mean(x, trim = 0.25)
- },
   nested_identifiers = NULL,
   nested_confounders = intersect(names(df_), gDRutils::get_env_identifiers("barcode")),
   override_untrt_controls = NULL
@@ -52,6 +49,9 @@ normalize_SE(
   data_type,
   nested_identifiers = NULL,
   nested_confounders = gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE),
+  control_mean_fxn = function(x) {
+     mean(x, trim = 0.25)
+ },
   control_assay = "Controls",
   raw_treated_assay = "RawTreated",
   normalized_assay = "Normalized",
@@ -91,7 +91,6 @@ runDrugResponseProcessingPipeline(
   normalized_assay = "Normalized",
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
-  add_raw_data = TRUE,
   data_dir = NULL,
   partial_run = FALSE,
   start_from = get_pipeline_steps()[1],
@@ -121,9 +120,6 @@ untreated values.}
 
 \item{readout}{string of the name containing the cell viability readout 
 values.}
-
-\item{control_mean_fxn}{function indicating how to average controls.
-Defaults to \code{mean(x, trim = 0.25)}.}
 
 \item{nested_identifiers}{character vector with the nested_identifiers
 for the given SE with a given data_type}
@@ -156,6 +152,9 @@ relative viability at.}
 
 \item{curve_type}{vector of curve type values.}
 
+\item{control_mean_fxn}{function indicating how to average controls.
+Defaults to \code{mean(x, trim = 0.25)}.}
+
 \item{control_assay}{string containing the name of the assay representing 
 the controls in the \code{se}. Defaults to \code{"Controls"}.}
 
@@ -170,9 +169,6 @@ in calculations. Defaults to \code{4}.}
 
 \item{nested_identifiers_l}{list with the nested_identifiers(character v
 ectors) for `single-agent` and (optionally) for `combination` data}
-
-\item{add_raw_data}{boolean indicating whether or not to include raw data 
-into experiment metadata.}
 
 \item{data_dir}{string with the path to the directory with intermediate data 
 of experiments (qs files). If set to NULL (default) intermediate data is not 
