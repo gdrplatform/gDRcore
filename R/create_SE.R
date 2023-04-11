@@ -232,10 +232,5 @@ validate_mapping <- function(trt_df, refs_df, nested_confounders) {
         c(unique(c(trt_df[[drug_id]], trt_df[[drug2_id]])), untrt_tag), 
     ]
   )
-  # Swap concentrations for single-agent with drug2
-  # if (conc2 %in% colnames(trt_df)) {
-  #   trt_df[trt_df[[drug_id]] %in% trt_df[[drug2_id]], c(conc, conc2)] <-
-  #     trt_df[trt_df[[drug_id]] %in% trt_df[[drug2_id]], c(conc2, conc)]
-  # }
   trt_df
 }
