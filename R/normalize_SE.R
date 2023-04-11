@@ -92,6 +92,16 @@ normalize_SE <- function(se,
     SummarizedExperiment::assays(se)[[raw_treated_assay]]
   )
   
+  drug_id <- gDRutils::get_env_identifiers("drug")
+  drug2_id <- gDRutils::get_env_identifiers("drug2")
+  conc <- gDRutils::get_env_identifiers("concentration")
+  conc2 <- gDRutils::get_env_identifiers("concentration2")
+  
+  if (conc2 %in% colnames(trt)) {
+    trt[trt[[drug_id]] %in% trt[[drug2_id]], c(conc, conc2)] <-
+      trt[trt[[drug_id]] %in% trt[[drug2_id]], c(conc2, conc)]
+  }
+  
   refs$record_id <- trt$record_id <- NULL
   
   

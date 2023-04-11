@@ -40,6 +40,9 @@ test_synthetic_data <- function(original,
               data.table::setorder(dt_original)
               data.table::setorder(dt_reprocessed)
               
+              row.names(dt_original) <- NULL
+              row.names(dt_reprocessed) <- NULL
+              
               testthat::test_that(
                 sprintf(
                   "reprocessed data %s is identical to data stored in gDRtestData", 

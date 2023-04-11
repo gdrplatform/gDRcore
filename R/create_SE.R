@@ -44,6 +44,8 @@ create_SE <- function(df_,
     df_ <- S4Vectors::DataFrame(df_)
   }
 
+  untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  
   nested_keys <- c(nested_identifiers, nested_confounders, "record_id")
   identifiers <- gDRutils::get_env_identifiers()
   Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
@@ -72,10 +74,15 @@ create_SE <- function(df_,
       ),
       colnames(df_)
     )
-    df_[single_agent_idx, drug2_var] <-
-      gDRutils::get_env_identifiers("untreated_tag")[1]
+    df_[single_agent_idx, drug2_var] <- untreated_tag[1]
   }
 
+  # unify untreated tags
+  df_ <- as.data.frame(lapply(df_, function(x) ifelse(x %in% untreated_tag,
+                                                      untreated_tag[1],
+                                                      x)))
+  
+  
   # Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
   coldata <- md$condition_md
@@ -210,7 +217,7 @@ create_SE <- function(df_,
 validate_mapping <- function(trt_df, refs_df, nested_confounders) {
   if (!is.null(nested_confounders)) {
     refs_df <- refs_df[
-      unique(trt_df[[nested_confounders]]) == refs_df[[nested_confounders]], 
+      refs_df[[nested_confounders]] %in% unique(trt_df[[nested_confounders]]),
     ]
   }
   drug_id <- gDRutils::get_env_identifiers("drug")
@@ -226,9 +233,9 @@ validate_mapping <- function(trt_df, refs_df, nested_confounders) {
     ]
   )
   # Swap concentrations for single-agent with drug2
-  if (conc2 %in% colnames(trt_df)) {
-    trt_df[trt_df[[drug_id]] %in% trt_df[[drug2_id]], c(conc, conc2)] <-
-      trt_df[trt_df[[drug_id]] %in% trt_df[[drug2_id]], c(conc2, conc)]
-  }
+  # if (conc2 %in% colnames(trt_df)) {
+  #   trt_df[trt_df[[drug_id]] %in% trt_df[[drug2_id]], c(conc, conc2)] <-
+  #     trt_df[trt_df[[drug_id]] %in% trt_df[[drug2_id]], c(conc2, conc)]
+  # }
   trt_df
 }

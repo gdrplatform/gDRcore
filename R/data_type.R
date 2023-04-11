@@ -213,8 +213,6 @@ split_raw_data <- function(df,
   control_sa <- df[control_sa_idx, ]
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   
-  sa_idx <- which(rowSums(df[, conc_idx] == 0) == 1)
-  
   if (length(cotrt_types) > 0) {
     df_list[cotrt_types] <- gDRutils::loop(cotrt_types, function(x) {
       unique_cotrt <- unique(df_list[[x]][, c(cl, drug_ids[["drug_name"]])])
@@ -237,9 +235,28 @@ split_raw_data <- function(df,
     })
   }
   
-
   if ("single-agent" %in% names(df_list)) {
-    df_list[["single-agent"]] <- df[c(unique(c(sa_idx, control_sa_idx))), ]
+    sa_idx <- gDRutils::loop(
+      grep(drug_ids[["concentration"]], drug_ids, value = TRUE), 
+      function(x) which(!df_list[["single-agent"]][, x] == 0)
+    )
+    sa_idx[["concentration"]] <- NULL
+    for (codrug in names(sa_idx)) {
+      codrug_cols <- grep(
+        as.numeric(gsub("\\D", "", codrug)), 
+        drug_ids, 
+        value = TRUE
+      )
+      df_list[["single-agent"]][
+        sa_idx[[codrug]], 
+        drug_ids[c("drug_name", "drug", "drug_moa", "concentration")]] <- 
+        df_list[["single-agent"]][sa_idx[[codrug]], codrug_cols]
+    }
+    df_list[["single-agent"]][, codrug_ids] <- NULL
+    df_list[["single-agent"]] <- rbind(
+      df_list[["single-agent"]],
+      control_sa[, names(df_list[["single-agent"]])]
+    )
   }
   
   Map(function(x) {
