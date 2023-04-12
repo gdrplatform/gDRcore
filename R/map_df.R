@@ -242,7 +242,7 @@ map_df <- function(trt_md,
       )
     )
     
-    ref <- lapply(valid, function(x){
+    ref <- lapply(valid, function(x) {
       colnames <- c(clid, x) 
       ref[, ..colnames] 
     })

@@ -44,10 +44,6 @@ create_SE <- function(df_,
       get_default_nested_identifiers(df_)[[data_model(data_type)]]
   }
   
-  # if (methods::is(df_, "data.table")) {
-  #   df_ <- S4Vectors::DataFrame(df_)
-  # }
-  
   nested_keys <- c(nested_identifiers, nested_confounders)
   identifiers <- gDRutils::get_env_identifiers()
   Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)

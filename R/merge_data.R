@@ -42,7 +42,7 @@ merge_data <- function(manifest, treatments, data) {
 
   # merge manifest and treatment files first
   identifiers <- gDRutils::validate_identifiers(manifest, req_ids = "barcode")
-  df_metadata <- merge(manifest, treatments, by = identifiers[["template"]], allow.cartesian=TRUE)
+  df_metadata <- merge(manifest, treatments, by = identifiers[["template"]], allow.cartesian = TRUE)
   futile.logger::flog.info(
     "Merging the metadata (manifest and treatment files)"
   )
