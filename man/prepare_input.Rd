@@ -16,9 +16,11 @@ list of input data
 }
 \description{
 Current steps
-- refining nested confounders
-- refining nested identifiers
-- splitting df_ into (per experiment) df_list
+\itemize{
+\item refining nested confounders
+\item refining nested identifiers
+\item splitting df_ into (per experiment) df_list
+}
 }
 \examples{
 td <- gDRimport::get_test_data()
