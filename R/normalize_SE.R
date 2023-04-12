@@ -68,14 +68,19 @@ normalize_SE <- function(se,
     ), 
     drop = FALSE
   ]
-  cl_ref_div_times <- cdata[, 
-    gDRutils::get_SE_identifiers(
-      se, 
-      "cellline_ref_div_time", 
-      simplify = TRUE
-    ), 
-    drop = FALSE
-  ]
+  
+  cell_ref_div_col <- gDRutils::get_SE_identifiers(se, 
+                                                   "cellline_ref_div_time", 
+                                                   simplify = TRUE
+                                                   )
+  if (!cell_ref_div_col %in% names(cdata)) {
+    cdata[[cell_ref_div_col]] <- NA
+  }
+  
+  cl_ref_div_times <- cdata[,
+                            cell_ref_div_col,
+                            drop = FALSE
+                            ]
   durations <- rdata[, 
     gDRutils::get_SE_identifiers(
       se, 
