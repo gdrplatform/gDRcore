@@ -367,7 +367,7 @@ runDrugResponseProcessingPipeline <- function(x,
       sel[[experiment]] <- se$result
       se <- list()
     }
-  }
+   }
 
   gDRutils::reset_env_identifiers()
   MultiAssayExperiment::MultiAssayExperiment(experiments = sel)

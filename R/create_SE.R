@@ -156,7 +156,9 @@ create_SE <- function(df_,
     
     day0_df <- day0_df[, untrt_cols, drop = FALSE]
     day0_df <- if (nrow(day0_df) == 0) {
-      day0_df <- data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
+      data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
+    } else {
+      day0_df
     }
     
     ## Merge all data.frames together.
