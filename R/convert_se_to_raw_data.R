@@ -43,7 +43,7 @@ convert_mae_to_raw_data <- function(mae) {
 
   data.table::setorder(data_df)
   
-  as.data.frame(data_df[!duplicated(data_df$record_id), -("record_id")])
+  as.data.frame(data_df[!duplicated(data_df$record_id), - ("record_id")])
 }
 
 
