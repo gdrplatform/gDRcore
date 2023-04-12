@@ -158,7 +158,9 @@ create_SE <- function(df_,
     day0_df <- if (nrow(day0_df) == 0) {
       data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
     } else {
-      day0_df
+      df <- day0_df
+      df$isDay0 <- isDay0
+      df
     }
     
     ## Merge all data.frames together.
@@ -184,6 +186,7 @@ create_SE <- function(df_,
 
   trt_out <- rbindParallelList(out, "trt_df")
   ctl_out <- rbindParallelList(out, "ctl_df")
+  
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
   ctl_keep <- !colnames(ctl_out) %in% c("row_id", "col_id")
 
@@ -210,7 +213,7 @@ create_SE <- function(df_,
   # Capture important values in experiment metadata.
   se <- gDRutils::set_SE_identifiers(se, identifiers)
   se <- gDRutils::set_SE_experiment_metadata(se, exp_md)
-  se <- gDRutils::set_SE_keys(se, Keys)
+  se <- gDRutils::set_SE_keys(se, lapply(Keys, sort))
 
   se
 }
