@@ -15,3 +15,9 @@ data.frame with raw data
 \description{
 Transform se into raw_data
 }
+\examples{
+mae <- get_synthetic_data("finalMAE_small.RDS")
+se <- mae[[1]]
+convert_se_to_raw_data(se)
+
+}

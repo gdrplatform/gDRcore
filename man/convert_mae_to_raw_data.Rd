@@ -2,7 +2,7 @@
 % Please edit documentation in R/convert_se_to_raw_data.R
 \name{convert_mae_to_raw_data}
 \alias{convert_mae_to_raw_data}
-\title{Transform mae into raw_data}
+\title{Transform mae into raw data}
 \usage{
 convert_mae_to_raw_data(mae)
 }
@@ -13,5 +13,10 @@ convert_mae_to_raw_data(mae)
 data.frame with raw data
 }
 \description{
-Transform mae into raw_data
+Transform mae into raw data
+}
+\examples{
+mae <- get_synthetic_data("finalMAE_small.RDS")
+convert_mae_to_raw_data(mae)
+
 }

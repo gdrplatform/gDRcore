@@ -1,7 +1,12 @@
-#' Transform mae into raw_data
+#' Transform mae into raw data
 #'
 #' @param mae MultiAssayExperiment object with SummarizedExperiments containing "RawTreated" and "Controls" assays
 #'
+#'
+#' @examples 
+#' mae <- get_synthetic_data("finalMAE_small.RDS")
+#' convert_mae_to_raw_data(mae)
+#' 
 #' @return data.frame with raw data
 #' @export
 convert_mae_to_raw_data <- function(mae) {
@@ -47,6 +52,12 @@ convert_mae_to_raw_data <- function(mae) {
 #' @param se SummarizedExperiment object with "RawTreated" and "Controls" assays
 #'
 #' @return data.frame with raw data
+#' 
+#' @examples 
+#' mae <- get_synthetic_data("finalMAE_small.RDS")
+#' se <- mae[[1]]
+#' convert_se_to_raw_data(se)
+#' 
 #' @export
 convert_se_to_raw_data <- function(se) {
   checkmate::assert_class(se, "SummarizedExperiment")
