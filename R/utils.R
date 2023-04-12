@@ -98,12 +98,11 @@ cleanup_metadata <- function(df_metadata) {
     
     df_metadata[[conc_id]] <- 
       10 ^ round(log10(as.numeric(df_metadata[[conc_id]])), 6)
-    df_metadata[[drug_id]] <- 
-      if (is.na(df_metadata[[drug_id]]) && df_metadata[[conc_id]] == 0) {
-        untrt_id[[1]]  
-      } else {
-        df_metadata[[drug_id]]        
-      }
+    df_metadata[[drug_id]] <- ifelse(
+      is.na(df_metadata[[drug_id]]) & df_metadata[[conc_id]] == 0,
+      untrt_id[[1]],
+      df_metadata[[drug_id]]
+    )
   }
   
   df_metadata <- add_Drug_annotation(df_metadata)
