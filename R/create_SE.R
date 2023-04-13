@@ -78,9 +78,9 @@ create_SE <- function(df_,
   }
 
   # unify untreated tags
-  df_ <- as.data.frame(lapply(df_, function(x) ifelse(x %in% untreated_tag,
-                                                      untreated_tag[1],
-                                                      x)))
+  df_ <- as.data.frame(lapply(df_, function(x) {
+    ifelse(x %in% untreated_tag, untreated_tag[1], x)
+  }))
   
   
   # Identify treatments, conditions, and experiment metadata.
