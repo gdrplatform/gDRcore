@@ -46,7 +46,7 @@ convert_mae_to_raw_data <- function(mae) {
   
   data_df <- as.data.frame(data_df[!duplicated(data_df$record_id), ])
   data_df[order(data_df$record_id), !names(data_df) %in% c("record_id", "BackgroundValue",
-                                                           "WellColumn", "WellRow", "Template")]
+                                                           "WellColumn", "WellRow", "Template", "swap_sa")]
 }
 
 
@@ -101,6 +101,7 @@ convert_se_to_raw_data <- function(se) {
   
   trt[get(conc_cols1) == 0, (drug_cols1) := untreated_tag]
   
+  
   if (length(conc_cols2) > 0 && length(drug_cols2) > 0) {
     trt[get(conc_cols2) == 0, (drug_cols2) := untreated_tag]
   }
@@ -114,3 +115,4 @@ convert_se_to_raw_data <- function(se) {
   
   cbind(merged_df[!is.na(merged_df$ReadoutValue), ], as.data.frame(exp_metadata))
 }
+
