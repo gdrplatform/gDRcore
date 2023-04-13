@@ -54,7 +54,7 @@ calculate_Loewe <- function(
   if (length(series_identifiers) != 2L) {
     stop("only series_identifiers of length 2 are currently supported")
   }
- 
+  
   iso_cutoffs <- get_isocutoffs(df_mean, normalization_type)
 
   all_iso <- vector("list", length(iso_cutoffs))
@@ -205,12 +205,12 @@ calculate_Loewe <- function(
     df_iso_curve$x2_ref_cap <- df_iso_curve$x2_ref - over_edge * sqrt(2)
     
     # rotate back the reference
-    len <- nrow(df_iso_curve)
+    len <- nrow(df_iso_curve + 2)
     df_iso_curve$pos_x_ref <- 
       (df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) + min(axis_2$pos_x)
     df_iso_curve$pos_y_ref <- 
       (-df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) + min(axis_1$pos_y)
-    df_iso_curve <- rbind(NA, df_iso_curve, NA)
+    df_iso_curve <- rbind(NA, df_iso_curve, NA, fill = TRUE)
     df_iso_curve[1, c("pos_x", "pos_x_ref")] <- min(axis_2$pos_x)
     df_iso_curve[1, c("pos_y", "pos_y_ref")] <- log10(ref_conc_1)
     df_iso_curve[1, "x1"] <-

@@ -83,8 +83,8 @@ map_df <- function(trt_md,
     matchFactor <- duration_col 
   }
   
-  trt_rnames <- rownames(trt_md)
-  ref_rnames <- rownames(ref_md)
+  trt_rnames <- trt_md$rownames
+  ref_rnames <- ref_md$rownames
   
   # define matrix with matching metadata
   present_ref_cols <- intersect(ref_cols, names(ref_md))
@@ -215,18 +215,19 @@ map_df <- function(trt_md,
   is_ref <- ntag != 0L & !is_untrt
   
   #TODO fixme: fix rownames
+  mat_elem$rownames <- as.character(seq_len(nrow(mat_elem)))
 
   trt <- mat_elem[which(!is_ref & !is_untrt)]
   ref <- mat_elem[which(is_ref), ]
 
   out <- vector("list", nrow(trt))
-  names(out) <- rownames(trt)
+  names(out) <- trt$rownames
   
   if (any(is_ref)) {
     # store rownames of trt and ref and replicate them based on the length of 
     # drug columns
-    trtNames <- rep(rownames(trt), length(valid))
-    refNames <- rep(rownames(ref), length(valid))
+    trtNames <- rep(trt$rownames, length(valid))
+    refNames <- rep(ref$rownames, length(valid))
     
     # split data.tables to simple model with clid column and drug column
     

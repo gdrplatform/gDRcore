@@ -74,7 +74,7 @@ fit_SE.combinations <- function(se,
 
   iterator <- unique(avg[, c("column", "row")])
   
-  out <- gDRutils::loop(parallelize = F, seq_len(nrow(iterator)), function(row) {
+  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
     
     bliss_excess <- hsa_excess <- metrics <- all_iso_points <- 
       isobolograms <- smooth_mx <- NULL

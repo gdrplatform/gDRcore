@@ -63,7 +63,8 @@ fit_SE <- function(se,
       if (!all(is.na(avg_df[[conc]]))) {
         avg_df <- avg_df[avg_df[[conc]] != 0, ]
       }
-      fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(avg_df,
+      fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(
+        data.table::setDT(as.data.frame(avg_df)),
         series_identifiers = nested_identifiers,
         e_0 = 1,
         GR_0 = 1,

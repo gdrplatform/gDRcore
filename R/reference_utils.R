@@ -31,12 +31,13 @@ create_control_df <- function(df_,
 
     # Aggregate by all non-readout data (the metadata).
     if (ncol(df_) > 1) {
-      df_ <- stats::aggregate(df_[, out_col_name, drop = FALSE],
-              by = as.list(df_[, colnames(df_) != out_col_name, drop = FALSE]),
+      selected_columns <- (colnames(df_) != out_col_name)
+      df_ <- stats::aggregate(df_[, ..out_col_name, drop = FALSE],
+              by = as.list(df_[, ..selected_columns, drop = FALSE]),
               function(x) control_mean_fxn(x))
     } else if (ncol(df_) == 1) {
       # only ReadoutValue column exists (i.e. no 'Barcode')
-      df_ <- data.table::data.table(control_mean_fxn(df_[, ..out_col_name]))
+      df_ <- data.frame(control_mean_fxn(unlist(df_[, ..out_col_name])))
       colnames(df_) <- out_col_name
     } else {
       stop(sprintf("unexpected columns in data.table: '%s'",

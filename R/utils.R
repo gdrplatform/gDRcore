@@ -457,10 +457,12 @@ matches <- function(x,
   result <- .Call("matches", x, y)
   result <- data.table::data.table(x = result[[1]], y = result[[2]])
   if (!all.y) {
-    result <- result[result$x != length(x) + 1, ]
+    selected_rows <- which(result$x != length(x) + 1)
+    result <- result[selected_rows, ]
   }
   if (!all.x) {
-    result <- result[result$y != length(y) + 1, ]
+    selected_rows <- which(result$y != length(y) + 1)
+    result <- result[selected_rows, ]
   }
   if (!indexes) {
     result$x <- x[result$x]

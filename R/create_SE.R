@@ -38,7 +38,7 @@ create_SE <- function(df_,
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
   
-
+  
   if (is.null(nested_identifiers)) {
     nested_identifiers <-
       get_default_nested_identifiers(df_)[[data_model(data_type)]]
@@ -88,6 +88,9 @@ create_SE <- function(df_,
   refs <- .map_references(mapping_entries)
   trt_conditions <- names(refs)
   sa_conditions <- unique(unname(unlist(refs)))
+  
+  mapping_entries$rownames <- as.character(seq_len(nrow(mapping_entries)))
+
 
   treated <- mapping_entries[as.numeric(trt_conditions), ]
   untreated <- mapping_entries[!rownames(mapping_entries) %in% 
@@ -121,11 +124,13 @@ create_SE <- function(df_,
   ## The mapping_entries contain all exhaustive combinations of treatments 
   ## and cells. Not all conditions will actually exist in the data, so filter 
   ## out those that do not exist. 
-  treated <- treated[which(rownames(treated) %in% unique(groupings)), ]
+  
+  treated_rows <- which(treated$rownames %in% unique(groupings))
+  treated <- treated[treated_rows, ]
   data_fields <- c(md$data_fields, "row_id", "col_id")
   
   out <- lapply(seq_len(nrow(treated)), function(i) {
-    trt <- rownames(treated)[i]
+    trt <- treated$rownames[i]
     
     trt_df <- dfs[groupings %in% trt, , drop = FALSE]
     refs_df <- dfs[groupings %in% refs[[trt]], , drop = FALSE]
