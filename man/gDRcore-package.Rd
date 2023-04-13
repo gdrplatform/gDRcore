@@ -5,6 +5,9 @@
 \alias{gDRcore}
 \alias{gDRcore-package}
 \title{gDRcore: Processing functions and interface to process and analyze drug dose-response data}
+\value{
+package help page
+}
 \description{
 This package contains core functions to process and analyze drug response data. The package provides tools for normalizing, averaging, and calculation of gDR metrics data. All core functions are wrapped into the pipeline function allowing analyzing the data in a straightforward way.
 }

@@ -1,5 +1,6 @@
 #' @note To learn more about functions start with `help(package = "gDRcore")`
 #' @keywords internal
+#' @return package help page
 "_PACKAGE"
 
 ## usethis namespace: start
