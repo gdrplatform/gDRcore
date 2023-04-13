@@ -68,13 +68,13 @@ test_that("main pipeline functions works as expected", {
   expect_identical(mae_v1$result, mae_v2$result)
   expect_identical(mae_v2$result, mae_v3$result)
   
-  mae_v3$result <- MAEpply(mae_v3$result, function(x) {
+  mae_v3$result <- gDRutils::MAEpply(mae_v3$result, function(x) {
     SummarizedExperiment::assay(x, "Controls") <- NULL
     SummarizedExperiment::assay(x, "RawTreated") <- NULL
     x
   })
   
-  mae_v4$result <- MAEpply(mae_v4$result, function(x) {
+  mae_v4$result <- gDRutils::MAEpply(mae_v4$result, function(x) {
     SummarizedExperiment::assay(x, "Controls") <- NULL
     SummarizedExperiment::assay(x, "RawTreated") <- NULL
     x
