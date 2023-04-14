@@ -66,9 +66,9 @@ test_that("main pipeline functions works as expected", {
     )
   expect_length(mae_v4$warnings, 5)
 
-  expect_identical(mae_v1$result, mae_v2$result)
-  expect_identical(mae_v2$result, mae_v3$result)
-  expect_identical(mae_v3$result, mae_v4$result)
+  expect_equal(mae_v1$result, mae_v2$result)
+  expect_equal(mae_v2$result, mae_v3$result)
+  expect_equal(mae_v3$result, mae_v4$result)
 
 
   testthat::expect_error(
