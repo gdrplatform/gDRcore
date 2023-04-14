@@ -2,9 +2,12 @@ test_that("normalize_SE works as expected", {
   # Set up. 
   conc <- rep(seq(0.1, 0.3, 0.1), 2)
   ctrl_df <- S4Vectors::DataFrame(Barcode = c(1, 2),
-                                  RefReadout = rep(2, 2),
-                                  Day0Readout = rep(1, 2),
-                                  UntrtReadout = rep(6, 2))
+                                  CorrectedReadout = c(rep(1, 2),
+                                                       rep(6, 2)),
+                                  control_type = c(rep("UntrtReadout", 2),
+                                                   rep("Day0Readout", 2)),
+                                  isDay0 = c(rep(FALSE, 2),
+                                             rep(TRUE, 2)))
   
   trt_df <- S4Vectors::DataFrame(CorrectedReadout = rep(seq(1, 3, 1), 2),
                                  Concentration = conc,
@@ -47,20 +50,4 @@ test_that("normalize_SE works as expected", {
   se2 <- normalize_SE(se, "single-agent", nested_confounders = 
                         c(gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE), "masked"))
   expect_s4_class(se2, "SummarizedExperiment")
-})
-
-
-test_that("fill_NA_ref works as expected", {
-  n <- 6
-  tst <- data.frame(Barcode = paste0("plate_", seq(n)),
-                    UntrtReadout = c(100, NA, 50, NA, 75, NA),
-                    RefReadout = c(NA, 79.3, NA, 79.3, NA, 79.3),
-                    Day0Readout = rep(NA, n))
-
-  obs <- gDRcore:::fill_NA_ref(tst, nested_keys = "Barcode")
-  expect_true(methods::is(obs, "DFrame"))
-  expect_equal(dim(obs), c(n, ncol(tst))) 
-  expect_equal(obs$UntrtReadout, c(100, 75, 50, 75, 75, 75))
-  expect_false(any(is.na(obs$RefReadout)))
-  expect_true(all(is.na(obs$Day0Readout)))
 })

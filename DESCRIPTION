@@ -2,8 +2,8 @@ Type: Package
 Package: gDRcore
 Title: Processing functions and interface to process and analyze drug
     dose-response data
-Version: 0.99.2
-Date: 2023-04-07
+Version: 0.99.3
+Date: 2023-04-12
 Authors@R: c(
     person("Bartosz", "Czech", , "bartosz.czech@contractors.roche.com", role = "aut"),
     person("Arkadiusz", "Gladki", role=c("cre", "aut"), email="gladki.arkadiusz@gmail.com"),
@@ -32,7 +32,8 @@ Imports:
     S4Vectors,
     SummarizedExperiment,
     tibble,
-    zoo
+    zoo,
+    data.table
 Suggests:
     gDRstyle (>= 0.99.7),
     gDRimport (>= 0.99.1),

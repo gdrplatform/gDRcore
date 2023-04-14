@@ -124,26 +124,37 @@ prepare_input.MultiAssayExperiment <-
       nested_identifiers_l = NULL
     )
     
-    inl$df_list <-
-      lapply(names(x), function(y) {
-        md <- S4Vectors::metadata(x[[y]])
-        if (is.null(md[[raw_data_field]])) {
-          NULL
-        }
-        md[[raw_data_field]]
-      })
+    inl$df_ <- tryCatch({
+      convert_mae_to_raw_data(x)
+    }, error = function(e) {
+      NULL
+    })
     
-    if (split_data) {
-      inl$df_ <- lapply(inl$df_list, identify_data_type)
-      if ("matrix" %in% names(x)) {
-        inl$df_ <- inl$df_[grep("single-agent",
-                                names(x), invert = TRUE)]
-      }
-      inl$df_list <- split_raw_data(unique(plyr::rbind.fill(inl$df_)))
+    if (!is.null(inl$df_)) {
+      inl$df_ <- identify_data_type(inl$df_)
+      inl$df_list <- split_raw_data(unique(plyr::rbind.fill(inl$df_))) 
     } else {
-      names(inl$df_list) <- names(x)
+      inl$df_list <-
+        lapply(names(x), function(y) {
+          md <- S4Vectors::metadata(x[[y]])
+          if (is.null(md[[raw_data_field]])) {
+            NULL
+          }
+          md[[raw_data_field]]
+        })
+      
+      if (split_data) {
+        inl$df_ <- lapply(inl$df_list, identify_data_type)
+        if ("matrix" %in% names(x)) {
+          inl$df_ <- inl$df_[grep("single-agent",
+                                  names(x), invert = TRUE)]
+        }
+        inl$df_list <- split_raw_data(unique(plyr::rbind.fill(inl$df_)))
+      } else {
+        names(inl$df_list) <- names(x)
+      }
     }
-    
+
     inl$nested_confounders <- .set_nested_confounders(
       nested_confounders = nested_confounders,
       df = inl$df_list[[1]]

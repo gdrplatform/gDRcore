@@ -20,9 +20,6 @@
 create_SE <- function(df_,
                       data_type,
                       readout = "ReadoutValue",
-                      control_mean_fxn = function(x) {
-                        mean(x, trim = 0.25)
-                      },
                       nested_identifiers = NULL,
                       nested_confounders = intersect(
                         names(df_),
@@ -33,7 +30,6 @@ create_SE <- function(df_,
   stopifnot(any(inherits(df_, "data.frame"), inherits(df_, "DataFrame")))
   checkmate::assert_string(data_type)
   checkmate::assert_string(readout)
-  checkmate::assert_function(control_mean_fxn)
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
@@ -48,7 +44,9 @@ create_SE <- function(df_,
     df_ <- S4Vectors::DataFrame(df_)
   }
 
-  nested_keys <- c(nested_identifiers, nested_confounders)
+  untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  
+  nested_keys <- c(nested_identifiers, nested_confounders, "record_id")
   identifiers <- gDRutils::get_env_identifiers()
   Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
 
@@ -67,19 +65,24 @@ create_SE <- function(df_,
   # overwrite "drug", "drug_name", "drug_moa"
   # with "untreated" if "concentration2" == 0
   if (gDRutils::get_env_identifiers("concentration2") %in% colnames(df_)) {
-    single_agent_idx <- 
+    single_agent_idx <-
       df_[[gDRutils::get_env_identifiers("concentration2")]] %in% 0
     drug_cols <- c("drug", "drug_name", "drug_moa")
     drug2_var <- intersect(
       unlist(gDRutils::get_env_identifiers(
         paste0(drug_cols, "2"), simplify = FALSE)
-      ), 
+      ),
       colnames(df_)
     )
-    df_[single_agent_idx, drug2_var] <- 
-      gDRutils::get_env_identifiers("untreated_tag")[1]
+    df_[single_agent_idx, drug2_var] <- untreated_tag[1]
   }
 
+  # unify untreated tags
+  df_ <- as.data.frame(lapply(df_, function(x) {
+    ifelse(x %in% untreated_tag, untreated_tag[1], x)
+  }))
+  
+  
   # Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
   coldata <- md$condition_md
@@ -124,54 +127,51 @@ create_SE <- function(df_,
   ## and cells. Not all conditions will actually exist in the data, so filter 
   ## out those that do not exist. 
   treated <- treated[rownames(treated) %in% unique(groupings), ]
-  data_fields <- c(md$data_fields, "row_id", "col_id")
+  untreated <- dfs[dfs$groupings %in% unique(unlist(ctl_maps)), ]
+
+  data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
   out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
     trt <- rownames(treated)[i]
     
     trt_df <- dfs[groupings %in% trt, , drop = FALSE]
     refs_df <- dfs[groupings %in% refs[[trt]], , drop = FALSE]
     trt_df <- 
-      validate_mapping(trt_df, refs_df, nested_confounders)[, data_fields]
+      validate_mapping(trt_df, refs_df, nested_confounders)
+    trt_df <- trt_df[, names(trt_df) %in% data_fields]
+    
     # Override the row_id of the references.
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"])
 
-    ctl_type <- "untrt_Endpoint"
-    untrt_ref <- ctl_maps[[ctl_type]][[trt]]  
-    untrt_df <- dfs[groupings %in% untrt_ref, data_fields, drop = FALSE]
-    untrt_df <- create_control_df(
-      untrt_df, 
-      control_cols = Keys[[ctl_type]], 
-      control_mean_fxn, 
-      out_col_name = "UntrtReadout"
-    )
-
-    ctl_type <- "Day0"
-    day0_ref <- ctl_maps[[ctl_type]][[trt]]
-    day0_df <- dfs[groupings %in% day0_ref, data_fields, drop = FALSE]
-    day0_df <- create_control_df(
-      day0_df, 
-      control_cols = Keys[[ctl_type]],
-      control_mean_fxn, 
-      out_col_name = "Day0Readout"
-    )
-
+    untrt_ref <- ctl_maps[["untrt_Endpoint"]][[trt]]
+    untrt_cols <- intersect(c("CorrectedReadout", "record_id", nested_confounders), names(dfs))
+    untrt_df <- untreated[untreated$groupings %in% untrt_ref, untrt_cols, drop = FALSE]
+    untrt_df <- if (nrow(untrt_df) == 0) {
+      data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
+    } else {
+      data.table::as.data.table(untrt_df)
+    }
+    untrt_df$isDay0 <- FALSE
+    
+    day0_ref <- ctl_maps[["Day0"]][[trt]]
+    day0_df <- untreated[untreated$groupings %in% day0_ref, ]
+    isDay0 <- day0_df[[gDRutils::get_env_identifiers("duration")]] == 0
+    
+    day0_df <- day0_df[, untrt_cols, drop = FALSE]
+    day0_df <- if (nrow(day0_df) == 0) {
+      data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
+    } else {
+      df <- day0_df
+      df$isDay0 <- isDay0
+      df
+    }
+    
     ## Merge all data.frames together.
     # Try to merge by plate, but otherwise just use mean. 
-    ctl_df <- untrt_df 
-    merge_cols <- intersect(colnames(day0_df), Keys$nested_keys)
-    
-    
-    ctl_df <- if (nrow(day0_df) > 0L) {
-      merge(untrt_df, day0_df, by = merge_cols, all = TRUE)
-    } else {
-      if (nrow(ctl_df) > 0L) {
-        ctl_df$Day0Readout <- NA
-        ctl_df
-      } else {
-        data.frame(Day0Readout = NA,
-                   UntrtReadout = NA)
-      }
-    } 
+    ctl_df <- data.table::rbindlist(list(UntrtReadout = untrt_df,
+                                         Day0Readout = day0_df),
+                                    fill = TRUE,
+                                    idcol = "control_type")
+    ctl_df[is.na(isDay0), isDay0 := FALSE]
     
     row_id <- unique(trt_df$row_id)
     col_id <- unique(trt_df$col_id)
@@ -188,6 +188,7 @@ create_SE <- function(df_,
 
   trt_out <- rbindParallelList(out, "trt_df")
   ctl_out <- rbindParallelList(out, "ctl_df")
+  
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
   ctl_keep <- !colnames(ctl_out) %in% c("row_id", "col_id")
 
@@ -214,7 +215,7 @@ create_SE <- function(df_,
   # Capture important values in experiment metadata.
   se <- gDRutils::set_SE_identifiers(se, identifiers)
   se <- gDRutils::set_SE_experiment_metadata(se, exp_md)
-  se <- gDRutils::set_SE_keys(se, Keys)
+  se <- gDRutils::set_SE_keys(se, lapply(Keys, sort))
 
   se
 }
@@ -223,14 +224,13 @@ create_SE <- function(df_,
 validate_mapping <- function(trt_df, refs_df, nested_confounders) {
   if (!is.null(nested_confounders)) {
     refs_df <- refs_df[
-      unique(trt_df[[nested_confounders]]) == refs_df[[nested_confounders]], 
+      refs_df[[nested_confounders]] %in% unique(trt_df[[nested_confounders]]),
     ]
   }
   drug_id <- gDRutils::get_env_identifiers("drug")
   drug2_id <- gDRutils::get_env_identifiers("drug2")
-  untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  conc <- gDRutils::get_env_identifiers("concentration")
   conc2 <- gDRutils::get_env_identifiers("concentration2")
+  untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
   trt_df <- rbind(
     trt_df, 
     refs_df[
@@ -238,10 +238,11 @@ validate_mapping <- function(trt_df, refs_df, nested_confounders) {
         c(unique(c(trt_df[[drug_id]], trt_df[[drug2_id]])), untrt_tag), 
     ]
   )
+  
   # Swap concentrations for single-agent with drug2
   if (conc2 %in% colnames(trt_df)) {
-    trt_df[trt_df[[drug_id]] %in% trt_df[[drug2_id]], c(conc, conc2)] <-
-      trt_df[trt_df[[drug_id]] %in% trt_df[[drug2_id]], c(conc2, conc)]
+    swap_idx <- trt_df[[drug_id]] %in% trt_df[[drug2_id]]
+    trt_df[swap_idx, "swap_sa"] <- TRUE
   }
   trt_df
 }

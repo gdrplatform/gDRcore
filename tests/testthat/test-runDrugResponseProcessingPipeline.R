@@ -35,8 +35,7 @@ test_that("main pipeline functions works as expected", {
 
   mae_v1 <- purrr::quietly(runDrugResponseProcessingPipeline)(
     input_data,
-    data_dir = p_dir,
-    add_raw_data = TRUE
+    data_dir = p_dir
   )
   expect_true(length(list.files(p_dir)) > 0)
   expect_length(mae_v1$warnings, 5)
@@ -68,9 +67,21 @@ test_that("main pipeline functions works as expected", {
 
   expect_identical(mae_v1$result, mae_v2$result)
   expect_identical(mae_v2$result, mae_v3$result)
+  
+  mae_v3$result <- gDRutils::MAEpply(mae_v3$result, function(x) {
+    SummarizedExperiment::assay(x, "Controls") <- NULL
+    SummarizedExperiment::assay(x, "RawTreated") <- NULL
+    x
+  })
+  
+  mae_v4$result <- gDRutils::MAEpply(mae_v4$result, function(x) {
+    SummarizedExperiment::assay(x, "Controls") <- NULL
+    SummarizedExperiment::assay(x, "RawTreated") <- NULL
+    x
+  })
+  
   expect_identical(mae_v3$result, mae_v4$result)
-
-
+  
   testthat::expect_error(
     runDrugResponseProcessingPipeline(input_data, selected_experiments = "single-agent"),
     "^Selected experiments"
