@@ -16,19 +16,19 @@
 \arguments{
 \item{x}{MAE object with dose-reponse data}
 
-\item{nested_confounders}{Character vector of the nested_confounders for 
-a given assay. nested_keys is character vector of column names to include 
-in the data.frames in the assays of the resulting 
+\item{nested_confounders}{Character vector of the nested_confounders for
+a given assay. nested_keys is character vector of column names to include
+in the data.frames in the assays of the resulting
 \code{SummarizedExperiment} object. Defaults to the \code{nested_identifiers}
 and \code{nested_confounders} if passed through}
 
-\item{nested_identifiers_l}{list with the 
-nested_identifiers(character vectors) for `single-agent` and (optionally) 
-for `combination` data}
+\item{nested_identifiers_l}{list with the
+nested_identifiers(character vectors) for \code{single-agent} and (optionally)
+for \code{combination} data}
 
 \item{raw_data_field}{metadata field with raw data}
 
-\item{split_data}{Boolean indicating need of splitting the data into 
+\item{split_data}{Boolean indicating need of splitting the data into
 experiment types}
 
 \item{...}{additional parameters}
@@ -38,7 +38,9 @@ list of input data
 }
 \description{
 Current steps
-- refining nested confounders
-- refining nested identifiers
-- splitting df_ into (per experiment) df_list
+\itemize{
+\item refining nested confounders
+\item refining nested identifiers
+\item splitting df_ into (per experiment) df_list
+}
 }

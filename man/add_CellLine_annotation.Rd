@@ -25,7 +25,7 @@ add_CellLine_annotation(
 \item{DB_cellid_header}{string with colnames with cell line identifier
 in the annotation file}
 
-\item{DB_cell_annotate}{character vector with mandatory colnames 
+\item{DB_cell_annotate}{character vector with mandatory colnames
 used in the annotation file}
 
 \item{fname}{string with file name with annotation}
@@ -41,9 +41,9 @@ data.frame with metadata with annotated cell lines
 add cellline annotation to a data.frame with metadata
 }
 \details{
-The logic of adding celline annotation for df_metadata based on 
+The logic of adding celline annotation for df_metadata based on
 the annotation file stored in gDRtestData. Other fields are set as "unknown".
-This approach will be corrected once we will implement final solution 
+This approach will be corrected once we will implement final solution
 for adding cell lines.
 }
 \examples{

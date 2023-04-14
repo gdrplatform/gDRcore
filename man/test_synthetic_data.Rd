@@ -20,7 +20,7 @@ test_synthetic_data(
 
 \item{dataName}{dataset name}
 
-\item{override_untrt_controls}{named list containing defining factors in 
+\item{override_untrt_controls}{named list containing defining factors in
 the treatments}
 
 \item{assays}{assays to test}
@@ -28,7 +28,7 @@ the treatments}
 \item{tolerance}{tolerance factor}
 }
 \value{
-`NULL`
+\code{NULL}
 }
 \description{
 Testing synthetic data form gDRtestData package

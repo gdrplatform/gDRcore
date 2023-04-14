@@ -14,13 +14,13 @@ create_control_df(
 \arguments{
 \item{df_}{data.frame}
 
-\item{control_cols}{character vector of columns to include in the resulting 
+\item{control_cols}{character vector of columns to include in the resulting
 control data.frame.}
 
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
 
-\item{out_col_name}{string of the output readout that will replace 
+\item{out_col_name}{string of the output readout that will replace
 \code{CorrectedReadout}.}
 }
 \value{

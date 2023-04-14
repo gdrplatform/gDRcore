@@ -102,43 +102,43 @@ runDrugResponseProcessingPipeline(
 
 \item{data_type}{single-agent vs combination}
 
-\item{series_identifiers}{character vector of identifiers in 
+\item{series_identifiers}{character vector of identifiers in
 \code{measured} or \code{metric} which define a unique data point.}
 
-\item{override_masked}{boolean indicating whether or not to override 
-the masked wells in the averaging and include all wells. 
+\item{override_masked}{boolean indicating whether or not to override
+the masked wells in the averaging and include all wells.
 Defaults to \code{FALSE}.}
 
-\item{normalized_assay}{string of the assay name containing the 
+\item{normalized_assay}{string of the assay name containing the
 normalized data. Defaults to \code{"Normalized"}.}
 
 \item{averaged_assay}{string of the name of the averaged assay in the
 \linkS4class{SummarizedExperiment}. Defaults to \code{"Averaged"}.}
 
-\item{df_}{data.frame of raw drug response data containing both treated and 
+\item{df_}{data.frame of raw drug response data containing both treated and
 untreated values.}
 
-\item{readout}{string of the name containing the cell viability readout 
+\item{readout}{string of the name containing the cell viability readout
 values.}
 
 \item{nested_identifiers}{character vector with the nested_identifiers
 for the given SE with a given data_type}
 
-\item{nested_confounders}{Character vector of the nested_confounders for a 
-given assay. nested_keys is character vector of column names to include in 
-the data.frames in the assays of the resulting \code{SummarizedExperiment} 
-object. Defaults to the \code{nested_identifiers} and 
-\code{nested_confounders} if passed through \code{create_and_normalize_SE} 
+\item{nested_confounders}{Character vector of the nested_confounders for a
+given assay. nested_keys is character vector of column names to include in
+the data.frames in the assays of the resulting \code{SummarizedExperiment}
+object. Defaults to the \code{nested_identifiers} and
+\code{nested_confounders} if passed through \code{create_and_normalize_SE}
 or \code{runDrugResponseProcessingPipeline}.}
 
-\item{override_untrt_controls}{named list containing defining factors in 
+\item{override_untrt_controls}{named list containing defining factors in
 the treatments. Defaults to \code{NULL}.}
 
 \item{metrics_assay}{string of the name of the metrics assay to output
 in the returned \linkS4class{SummarizedExperiment}
 Defaults to \code{"Metrics"}.}
 
-\item{n_point_cutoff}{integer of how many points should be considered the 
+\item{n_point_cutoff}{integer of how many points should be considered the
 minimum required to try to fit a curve. Defaults to \code{4}.}
 
 \item{range_conc}{vector of concetrations range values.}
@@ -147,7 +147,7 @@ minimum required to try to fit a curve. Defaults to \code{4}.}
 
 \item{pcutoff}{numeric cutoff value.}
 
-\item{cap}{numeric value representing the value to cap the highest allowed 
+\item{cap}{numeric value representing the value to cap the highest allowed
 relative viability at.}
 
 \item{curve_type}{vector of curve type values.}
@@ -155,76 +155,76 @@ relative viability at.}
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
 
-\item{control_assay}{string containing the name of the assay representing 
+\item{control_assay}{string containing the name of the assay representing
 the controls in the \code{se}. Defaults to \code{"Controls"}.}
 
-\item{raw_treated_assay}{string containing the name of the assay 
+\item{raw_treated_assay}{string containing the name of the assay
 representing the raw treated data in the \code{se}.
 Defaults to \code{"RawTreated"}.}
 
-\item{ndigit_rounding}{integer indicating number of digits to round to 
+\item{ndigit_rounding}{integer indicating number of digits to round to
 in calculations. Defaults to \code{4}.}
 
 \item{x}{data.frame of MAE with drug response data}
 
 \item{nested_identifiers_l}{list with the nested_identifiers(character v
-ectors) for `single-agent` and (optionally) for `combination` data}
+ectors) for \code{single-agent} and (optionally) for \code{combination} data}
 
-\item{data_dir}{string with the path to the directory with intermediate data 
-of experiments (qs files). If set to NULL (default) intermediate data is not 
+\item{data_dir}{string with the path to the directory with intermediate data
+of experiments (qs files). If set to NULL (default) intermediate data is not
 saved/read in.}
 
-\item{partial_run}{logical flag indicating if the pipeline should be run 
-partially (from the step defined with `start_from`)}
+\item{partial_run}{logical flag indicating if the pipeline should be run
+partially (from the step defined with \code{start_from})}
 
-\item{start_from}{string indicating the pipeline step from which partial 
+\item{start_from}{string indicating the pipeline step from which partial
 run should be launched}
 
-\item{selected_experiments}{character vector with experiments for which 
-pipeline should be run. This option works only for the pipeline being run 
-partially (i.e. with `partial_run` flag set to `TRUE`)}
+\item{selected_experiments}{character vector with experiments for which
+pipeline should be run. This option works only for the pipeline being run
+partially (i.e. with \code{partial_run} flag set to \code{TRUE})}
 }
 \value{
 MAE object
 }
 \description{
 Run different components of the gDR drug response processing pipeline.
-Either: create a SummarizedExperiment and normalize raw treated and control 
-data (create_and_normalize_SE), average data (average_SE), or fit the 
+Either: create a SummarizedExperiment and normalize raw treated and control
+data (create_and_normalize_SE), average data (average_SE), or fit the
 processed data (fit_SE). See details for more in-depth explanations.
 }
 \details{
 \code{runDrugResponseProcessingPipeline} is made up of 3 separate steps:
 \itemize{
- \item{"create_and_normalize_SE"}
- \item{"average_SE"}
- \item{"fit_SE"}
+\item{"create_and_normalize_SE"}
+\item{"average_SE"}
+\item{"fit_SE"}
 }
 
-For create_and_normalize_SE, this creates a SummarizedExperiment object 
-from a data.frame, where the data.frame contains treatments on rows, and 
-conditions on columns. 
-A \linkS4class{SummarizedExperiment} object containing two asssays is 
+For create_and_normalize_SE, this creates a SummarizedExperiment object
+from a data.frame, where the data.frame contains treatments on rows, and
+conditions on columns.
+A \linkS4class{SummarizedExperiment} object containing two asssays is
 created: treated readouts will live in an assay called \code{"RawTreated"},
-and reference readouts live in an assay called \code{"Controls"}. 
-Subsequently, the treated and control elements will be normalized to output 
-two metrics: 
+and reference readouts live in an assay called \code{"Controls"}.
+Subsequently, the treated and control elements will be normalized to output
+two metrics:
 
-For average_SE, take the normalized assay and average the nested 
-\code{DataFrame}s across unique\code{nested_identifiers}. 
+For average_SE, take the normalized assay and average the nested
+\code{DataFrame}s across unique\code{nested_identifiers}.
 
-For fit_SE, take the averaged assay and fit curves to obtain metrics, one 
+For fit_SE, take the averaged assay and fit curves to obtain metrics, one
 set of metrics for each normalization type set.
 
-Pipeline can be run partially with `partial_run` flag set to TRUE. The 
-`start_from` string defines the step from which the pipeline will be 
+Pipeline can be run partially with \code{partial_run} flag set to TRUE. The
+\code{start_from} string defines the step from which the pipeline will be
 launched. However, partial run of the pipeline is possible only if the whole
-pipeline was launched at least once with defined `data_dir` and intermediate 
-data was saved as qs files into `data_dir`. 
+pipeline was launched at least once with defined \code{data_dir} and intermediate
+data was saved as qs files into \code{data_dir}.
 
-Pipeline can be run for the selected experiments by changing the default 
-value of `selected_experiments` param. This scenario only works when 
-`partial_run` is enabled.
+Pipeline can be run for the selected experiments by changing the default
+value of \code{selected_experiments} param. This scenario only works when
+\code{partial_run} is enabled.
 }
 \examples{
 
