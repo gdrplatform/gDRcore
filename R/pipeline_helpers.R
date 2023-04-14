@@ -4,8 +4,7 @@ create_SE_step <- function(inl,
                            readout, 
                            control_mean_fxn, 
                            nested_identifiers,
-                           override_untrt_controls, 
-                           add_raw_data) {
+                           override_untrt_controls) {
   df <- inl$df_list[[exp]]
   if (is.null(df)) {
  

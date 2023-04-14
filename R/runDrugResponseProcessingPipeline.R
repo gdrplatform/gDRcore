@@ -111,8 +111,7 @@
 #' )
 #' runDrugResponseProcessingPipeline(
 #'   imported_data, 
-#'   data_dir = p_dir,
-#'   add_raw_data = FALSE
+#'   data_dir = p_dir
 #' )
 #' 
 #' @return MAE object
