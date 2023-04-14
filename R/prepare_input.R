@@ -134,7 +134,7 @@ prepare_input.MultiAssayExperiment <-
       inl$df_ <- identify_data_type(inl$df_)
       inl$df_list <- split_raw_data(unique(plyr::rbind.fill(inl$df_))) 
     } else {
-      inl$df_ <-
+      inl$df_list <-
         lapply(names(x), function(y) {
           md <- S4Vectors::metadata(x[[y]])
           if (is.null(md[[raw_data_field]])) {
