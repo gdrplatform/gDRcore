@@ -214,15 +214,16 @@ normalize_SE <- function(se,
 aggregate_ref <- function(ref_df, control_mean_fxn) {
   
   data_columns <- setdiff(colnames(ref_df), c("row", "column", "masked", "isDay0"))
+  corr_readout <- "CorrectedReadout"
   ref_cols <- data.table::as.data.table(ref_df[, data_columns, drop = FALSE])
-  group_cols <- c(ref_cols[, setdiff(names(ref_cols), "CorrectedReadout")])
+  group_cols <- c(ref_cols[, setdiff(names(ref_cols), corr_readout)])
   additional_cov <- setdiff(group_cols, "control_type")
   aggregate_formula <- stats::reformulate("control_type",
                                           ifelse(length(additional_cov) == 0, ".", additional_cov))
   
-  ref_df_aggregate <- unique(ref_cols[, .(x = control_mean_fxn(CorrectedReadout)), by = eval(group_cols)])
+  ref_df_aggregate <- unique(ref_cols[, (control_mean_fxn(get(corr_readout))), by = eval(group_cols)])
   ref_df_dcast <- data.table::dcast(ref_df_aggregate,
                                     aggregate_formula,
-                                    value.var = "x")
+                                    value.var = "V1")
   ref_df_dcast[!rowSums(is.na(ref_df_dcast)) >= length(setdiff(names(ref_df_dcast), group_cols)), ]
 }

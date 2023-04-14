@@ -12,5 +12,6 @@
 #' @name gDRcore
 #' @import S4Vectors
 #' @import checkmate
+#' @importFrom data.table ":=" ".SD"
 #' @useDynLib gDRcore
 NULL
