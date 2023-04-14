@@ -14,15 +14,15 @@ identify_keys(
 \arguments{
 \item{df_}{a data.frame to identify keys for.}
 
-\item{nested_keys}{character vector of keys to exclude from the returned 
+\item{nested_keys}{character vector of keys to exclude from the returned
 list. The keys discarded should be identical to the keys in the third
 dimension of the SummarizedExperiment.
 Defaults to the \code{"Barcode"} and the \code{masked} identifier.}
 
-\item{override_untrt_controls}{named list containing defining factors in the 
+\item{override_untrt_controls}{named list containing defining factors in the
 treatments. Defaults to \code{NULL}.}
 
-\item{identifiers}{named list containing all identifiers to use during 
+\item{identifiers}{named list containing all identifiers to use during
 processing. By default, this value will be obtained by the environment.}
 }
 \value{
@@ -32,7 +32,7 @@ named list of key types and their corresponding key values.
 Group columns from a data.frame that correspond to different
 }
 \details{
-This is most likely to be used for provenance tracking and will 
+This is most likely to be used for provenance tracking and will
 be placed on the SummarizedExperiment metadata for downstream analyses
 to reference.
 }

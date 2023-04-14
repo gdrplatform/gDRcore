@@ -7,20 +7,20 @@
 identify_data_type(df, codilution_conc = 2, matrix_conc = 1)
 }
 \arguments{
-\item{df}{data.frame of raw drug response data 
+\item{df}{data.frame of raw drug response data
 containing both treated and untreated values}
 
-\item{codilution_conc}{integer of maximum number of concentration ratio 
+\item{codilution_conc}{integer of maximum number of concentration ratio
 of co-treatment to classify as codilution data type;
 defaults to \code{2}}
 
-\item{matrix_conc}{integer of minimum number of concentration pairs 
-of co-treatment to classify 
+\item{matrix_conc}{integer of minimum number of concentration pairs
+of co-treatment to classify
 as co-treatment or matrix data type;
 defaults to \code{1}}
 }
 \value{
-data.frame of raw drug response data with additional column \code{type} 
+data.frame of raw drug response data with additional column \code{type}
 with the info of data type for a given row of data.frame
 }
 \description{
@@ -49,5 +49,5 @@ input_df$CorrectedReadout2 <- input_df$ReadoutValue
 identify_data_type(input_df)
 }
 \author{
-Bartosz Czech <bartosz.czech@contractors.roche.com>
+Bartosz Czech \href{mailto:bartosz.czech@contractors.roche.com}{bartosz.czech@contractors.roche.com}
 }
