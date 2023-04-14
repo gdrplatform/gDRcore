@@ -22,7 +22,7 @@ test_that("validate_mapping catches reverse single-agent data", {
                        Gnumber_2 = rep("vehicle", 3), value = runif(3),
                        Concentration = runif(3), Concentration_2 = rep(0, 3))
   merged_df <- validate_mapping(trt_df, ref_df, nested_confounders = NULL)
-  expect_equal(dim(merged_df), c(3, 5))  
+  expect_equal(dim(merged_df), c(3, 6))  
 })
 
 
