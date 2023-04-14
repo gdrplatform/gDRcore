@@ -424,7 +424,7 @@ calculate_isobolograms <- function(row_fittings,
         max1_cap / codilution_fittings$conc_ratio
       )[capped_idx]
       
-      isobologram_values <- data.table::rbindlist(list(xy_iso, codil_iso), fill = T)
+      isobologram_values <- data.table::rbindlist(list(xy_iso, codil_iso), fill = TRUE)
     } else {
       isobologram_values <- xy_iso
     }
