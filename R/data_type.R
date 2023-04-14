@@ -228,9 +228,9 @@ split_raw_data <- function(df,
       if (x == "matrix") {
         matrix_data <- rbind(df_merged, df_list[["single-agent"]])
         for (j in conc_idx)
-          data.table::set(matrix_data,which(is.na(matrix_data[[j]])),j,0)
-        for (j in codrug_drug_id){
-          data.table::set(matrix_data,which(is.na(matrix_data[[j]])),j,untreated_tag[1])
+          data.table::set(matrix_data, which(is.na(matrix_data[[j]])), j, 0)
+        for (j in codrug_drug_id) {
+          data.table::set(matrix_data, which(is.na(matrix_data[[j]])), j, untreated_tag[1])
         }
         matrix_data
       } else {
