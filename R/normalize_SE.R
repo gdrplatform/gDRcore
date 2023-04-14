@@ -100,8 +100,11 @@ normalize_SE <- function(se,
   if ("swap_sa" %in% names(trt)) {
     conc <- gDRutils::get_env_identifiers("concentration")
     conc2 <- gDRutils::get_env_identifiers("concentration2")
+    swap_idx <- !is.na(trt$swap_sa)
+    if (any(swap_idx)) {
     trt[!is.na(trt$swap_sa), c(conc, conc2)] <-
       trt[!is.na(trt$swap_sa), c(conc2, conc)]
+    }
   }
   
   refs$record_id <- trt$record_id <- trt$swap_sa <- NULL
