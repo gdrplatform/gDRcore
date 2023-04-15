@@ -68,6 +68,7 @@ prepare_input.data.frame <-
     
     inl$df_ <- identify_data_type(x)
     inl$df_list <- split_raw_data(inl$df_)
+    inl$df_list <- .clear_rownames(inl$df_list)
     inl$nested_identifiers_l <- .set_nested_identifiers(nested_identifiers_l)
     inl$nested_confounders <- .set_nested_confounders(
       nested_confounders = nested_confounders,
