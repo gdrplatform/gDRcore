@@ -22,7 +22,7 @@ Imports:
     BiocParallel,
     checkmate,
     futile.logger,
-    gDRutils (>= 0.99.1),
+    gDRutils (>= 0.99.4),
     methods,
     MultiAssayExperiment,
     purrr,
@@ -35,9 +35,9 @@ Imports:
     zoo,
     data.table
 Suggests:
-    gDRstyle (>= 0.99.7),
-    gDRimport (>= 0.99.1),
-    gDRtestData (>= 0.99.1),
+    gDRstyle (>= 0.99.8),
+    gDRimport (>= 0.99.3),
+    gDRtestData (>= 0.99.3),
     IRanges,
     knitr,
     pkgbuild,
