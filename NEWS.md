@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.5] - 2023-04-17
+#### Utilize `gDRutils::apply_bumpy_function` in average_SE
+
 #### [0.99.4] - 2023-04-17
 #### Fix namespacing issue in examples
 #### Add R 4.2 as dependency
