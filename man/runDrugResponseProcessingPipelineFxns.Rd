@@ -272,7 +272,7 @@ imported_data <- merge_data(
 )
 
 inl <- prepare_input(imported_data)
-se <- create_and_normalize_SE(
+se <- create_SE(
  inl$df_list[["single-agent"]],
  data_type = "single-agent",
  nested_confounders = inl$nested_confounders)
