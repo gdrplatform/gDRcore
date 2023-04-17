@@ -13,15 +13,15 @@ map_ids_to_fits(pred, match_col, fittings, fitting_id_col)
 
 \item{fittings}{data.table of fit metrics.}
 
-\item{fitting_id_col}{string of the column name in \code{fittings} that 
+\item{fitting_id_col}{string of the column name in \code{fittings} that
 should be used to match with \code{match_col} .}
 }
 \value{
-Numeric vector of predicted values given \code{pred} inputs 
+Numeric vector of predicted values given \code{pred} inputs
 and \code{fittings} values.
 }
 \description{
-Map fittings to identifiers and compute the predicted values 
+Map fittings to identifiers and compute the predicted values
 for corresponding fits.
 }
 \examples{

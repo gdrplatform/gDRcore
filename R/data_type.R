@@ -62,6 +62,9 @@ identify_data_type <- function(df,
   cols_pairs <- intersect(names(df),  c(drug_ids, cell))
   drug_pairs <- unique(df[, ..cols_pairs])
 
+  df$record_id <- seq_len(nrow(df))
+  
+  
   cnt <- seq_len(nrow(df))
   df$type <- character(0)
   # loop through the pairs to assess the number of individual 

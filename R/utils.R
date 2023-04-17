@@ -371,8 +371,12 @@ rbindList <- function(x) {
 rbindParallelList <- function(x, name) {
   S4Vectors::DataFrame(
     do.call(
-      plyr::rbind.fill, 
-      lapply(x, function(x) data.table::setDT(as.data.frame("[[" (x, name))))
+      rbind, 
+      c(lapply(x, function(x) {
+        dt <- data.table::as.data.table("[[" (x, name))
+        data.table::setorder(dt)
+        dt
+      }), fill = TRUE)
     )
   )
 }

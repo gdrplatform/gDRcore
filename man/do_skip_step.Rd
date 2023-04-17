@@ -9,7 +9,7 @@ do_skip_step(current_step, start_from, steps = get_pipeline_steps())
 \arguments{
 \item{current_step, }{string with the step to be evaluated}
 
-\item{start_from}{string indicating the pipeline step from which partial 
+\item{start_from}{string indicating the pipeline step from which partial
 run should be launched}
 
 \item{steps}{charvect with all available steps}

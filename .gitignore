@@ -1,5 +1,8 @@
 .rplatform.cookie
 .Rproj.user
+.Rhistory
 .DS_Store
 */.DS_Store
 .github_access_token.txt
+src/*.o
+src/*.so

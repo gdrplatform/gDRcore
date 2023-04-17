@@ -15,7 +15,7 @@ get_assays_per_pipeline_step(
 
 \item{data_model}{single-agent vs combination}
 
-\item{status}{string return vector of assays created or present at the 
+\item{status}{string return vector of assays created or present at the
 given step?}
 }
 \value{

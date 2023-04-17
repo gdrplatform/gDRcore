@@ -47,8 +47,6 @@
 #' @param metrics_assay string of the name of the metrics assay to output
 #' in the returned \linkS4class{SummarizedExperiment}
 #' Defaults to \code{"Metrics"}.
-#' @param add_raw_data  boolean indicating whether or not to include raw data 
-#' into experiment metadata.
 #' @param range_conc vector of concetrations range values.
 #' @param force_fit boolean indicating whether or not to force the fit.
 #' @param pcutoff numeric cutoff value.
@@ -113,8 +111,7 @@
 #' )
 #' runDrugResponseProcessingPipeline(
 #'   imported_data, 
-#'   data_dir = p_dir,
-#'   add_raw_data = FALSE
+#'   data_dir = p_dir
 #' )
 #' 
 #' @return MAE object
@@ -156,7 +153,6 @@ create_and_normalize_SE <- function(df_,
   se <- create_SE(df_ = df_, 
     data_type = data_type, 
     readout = readout, 
-    control_mean_fxn = control_mean_fxn, 
     nested_identifiers = nested_identifiers,
     nested_confounders = nested_confounders,
     override_untrt_controls = override_untrt_controls)
@@ -164,6 +160,7 @@ create_and_normalize_SE <- function(df_,
     data_type = data_type, 
     nested_identifiers = nested_identifiers,
     nested_confounders = nested_confounders,
+    control_mean_fxn = control_mean_fxn,
     control_assay = control_assay, 
     raw_treated_assay = raw_treated_assay, 
     normalized_assay = normalized_assay,
@@ -193,7 +190,6 @@ runDrugResponseProcessingPipeline <- function(x,
                                               normalized_assay = "Normalized",
                                               averaged_assay = "Averaged",
                                               metrics_assay = "Metrics",
-                                              add_raw_data = TRUE,
                                               data_dir = NULL,
                                               partial_run = FALSE,
                                               start_from = 
@@ -220,7 +216,6 @@ runDrugResponseProcessingPipeline <- function(x,
   checkmate::assert_string(normalized_assay)
   checkmate::assert_string(averaged_assay)
   checkmate::assert_string(metrics_assay)
-  checkmate::assert_flag(add_raw_data)
   if (!is.null(data_dir)) {
     checkmate::assert_directory(data_dir)
   } 
@@ -252,8 +247,6 @@ runDrugResponseProcessingPipeline <- function(x,
   }
   
   inl <- prepare_input(x, nested_confounders, nested_identifiers_l)
-  inl$df_list <- .clear_rownames(inl$df_list)
-  
   # sel - list with all experiments data
   # se - list with single experiment data 
   se <- list()
@@ -298,11 +291,9 @@ runDrugResponseProcessingPipeline <- function(x,
           exp = experiment,
           data_type = data_type, 
           readout = readout, 
-          control_mean_fxn = control_mean_fxn, 
           nested_identifiers = nested_identifiers,
-          override_untrt_controls = override_untrt_controls, 
-          add_raw_data = add_raw_data
-        )
+          override_untrt_controls = override_untrt_controls
+          )
       )
 
       # 2nd step - Normalize SE
@@ -316,6 +307,7 @@ runDrugResponseProcessingPipeline <- function(x,
           data_type = data_type,
           nested_identifiers = nested_identifiers,
           nested_confounders = inl$nested_confounders,
+          control_mean_fxn = control_mean_fxn,
           control_assay = control_assay,
           raw_treated_assay = raw_treated_assay,
           normalized_assay = normalized_assay,
@@ -372,7 +364,7 @@ runDrugResponseProcessingPipeline <- function(x,
       sel[[experiment]] <- se$result
       se <- list()
     }
-  }
+   }
 
   gDRutils::reset_env_identifiers()
   MultiAssayExperiment::MultiAssayExperiment(experiments = sel)

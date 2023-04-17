@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.4] - 2023-04-17
+#### Fix namespacing issue in examples
+#### Add R 4.2 as dependency
+
+#### [0.99.3] - 2023-04-12
+#### add logic for retrieving raw data from assay data
+
 #### [0.99.2] - 2023-04-07
 #### update maintainer
 

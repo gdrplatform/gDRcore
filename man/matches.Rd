@@ -57,14 +57,14 @@ other packages and thousands of times faster than the built in
 \code{all.x/all.y} correspond to the four types of database joins in the
 following way:
 
-\describe{ \item{left}{\code{all.x=TRUE}, \code{all.y=FALSE}} 
-\item{right}{\code{all.x=FALSE}, \code{all.y=TRUE}} 
-\item{inner}{\code{all.x=FALSE}, \code{all.y=FALSE}} 
+\describe{ \item{left}{\code{all.x=TRUE}, \code{all.y=FALSE}}
+\item{right}{\code{all.x=FALSE}, \code{all.y=TRUE}}
+\item{inner}{\code{all.x=FALSE}, \code{all.y=FALSE}}
 \item{full}{\code{all.x=TRUE}, \code{all.y=TRUE}} }
 
 Note that \code{NA} values will match other \code{NA} values.
 
-Source of the function: 
+Source of the function:
 https://github.com/cran/grr/blob/master/R/grr.R
 }
 \examples{

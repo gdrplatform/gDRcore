@@ -17,12 +17,14 @@ Authors@R: c(
 Description: This package contains core functions to process and analyze drug response data. The package provides tools for normalizing, averaging,
   and calculation of gDR metrics data. All core functions are wrapped into the pipeline function allowing analyzing the data in a straightforward way.
 License: file LICENSE
+Depends:
+    R (>= 4.2)
 Imports:
     BumpyMatrix,
     BiocParallel,
     checkmate,
     futile.logger,
-    gDRutils (>= 0.99.1),
+    gDRutils (>= 0.99.4),
     methods,
     MultiAssayExperiment,
     purrr,
@@ -32,11 +34,12 @@ Imports:
     S4Vectors,
     SummarizedExperiment,
     tibble,
-    zoo
+    zoo,
+    data.table
 Suggests:
-    gDRstyle (>= 0.99.7),
-    gDRimport (>= 0.99.1),
-    gDRtestData (>= 0.99.1),
+    gDRstyle (>= 0.99.8),
+    gDRimport (>= 0.99.3),
+    gDRtestData (>= 0.99.3),
     IRanges,
     knitr,
     pkgbuild,
@@ -52,4 +55,5 @@ Encoding: UTF-8
 LazyLoad: yes
 NeedsCompilation: yes
 RoxygenNote: 7.2.3
+Roxygen: list(markdown = TRUE) 
 SwitchrLibrary: gDRcore
