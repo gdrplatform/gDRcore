@@ -271,7 +271,12 @@ imported_data <- merge_data(
   l_tbl$data
 )
 
-se <- create_SE(imported_data, data_type = "single-agent")
+inl <- prepare_input(imported_data)
+se <- create_SE(
+ inl$df_list[["single-agent"]],
+ data_type = "single-agent",
+ nested_confounders = inl$nested_confounders)
+ 
 normalize_SE(se, data_type = "single-agent")
 p_dir <- file.path(tempdir(), "pcheck")
 dir.create(p_dir) 
