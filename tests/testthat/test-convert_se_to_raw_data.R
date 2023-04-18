@@ -7,7 +7,7 @@ test_that("convert_se_to_raw_data works as expected with sa data", {
   )
   input_df <- convert_mae_to_raw_data(mae$result)
   mae2 <- purrr::quietly(runDrugResponseProcessingPipeline)(
-    as.data.frame(input_df)
+    input_df
   )
   test_synthetic_data(original, mae$result, data)
   test_synthetic_data(mae$result, mae2$result, data)
@@ -22,7 +22,7 @@ test_that("convert_se_to_raw_data works as expected with matrix data", {
   )
   input_df <- convert_mae_to_raw_data(mae$result)
   mae2 <- purrr::quietly(runDrugResponseProcessingPipeline)(
-    as.data.frame(input_df)
+    input_df
   )
   test_synthetic_data(original, mae$result, data)
   test_synthetic_data(mae$result, mae2$result, data)

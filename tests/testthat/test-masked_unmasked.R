@@ -2,7 +2,8 @@ test_that("masked and unmasked values are processed properly", {
   data <- "finalMAE_small.RDS"
   original <- gDRutils::get_synthetic_data(data)
   
-  df_layout <- merge(cell_lines[2:11, ], drugs[2:11, ], by = NULL)
+  df_layout <-
+    data.table::setDT(merge(as.data.frame(cell_lines[2:11,]), as.data.frame(drugs[2:11,]), by = NULL))
   df_layout <- gDRtestData::add_data_replicates(df_layout)
   df_layout <- gDRtestData::add_concentration(df_layout)
   

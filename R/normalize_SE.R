@@ -89,7 +89,7 @@ normalize_SE <- function(se,
     ), 
     drop = FALSE
   ]
-
+  
   refs <- BumpyMatrix::unsplitAsDataFrame(
     SummarizedExperiment::assays(se)[[control_assay]]
   )
@@ -102,8 +102,8 @@ normalize_SE <- function(se,
     conc2 <- gDRutils::get_env_identifiers("concentration2")
     swap_idx <- !is.na(trt$swap_sa)
     if (any(swap_idx)) {
-    trt[!is.na(trt$swap_sa), c(conc, conc2)] <-
-      trt[!is.na(trt$swap_sa), c(conc2, conc)]
+    trt[which(!is.na(trt$swap_sa)), c(conc, conc2)] <-
+      trt[which(!is.na(trt$swap_sa)), c(conc2, conc)]
     }
   }
   
@@ -211,23 +211,6 @@ normalize_SE <- function(se,
 
   SummarizedExperiment::assays(se)[[normalized_assay]] <- norm
   se
-}
-
-
-#' @keywords internal
-fill_NA_ref <- function(ref_df, nested_keys) {
-  data_columns <- setdiff(colnames(ref_df), c(nested_keys, "row", "column"))
-  ref_cols <- data.table::setDT(as.data.frame(ref_df[, data_columns, drop = FALSE]))
-  
-  if (any(!is.na(ref_cols))) {
-    ref_df_mean <- colMeans(
-      data.table::setDT(as.data.frame(ref_df[, data_columns, drop = FALSE])), na.rm = TRUE
-    )
-    for (col in data_columns) {
-      ref_df[is.na(ref_df[, col]), col] <- ref_df_mean[[col]]
-    }
-  }
-  S4Vectors::DataFrame(ref_df)
 }
   
 #' @keywords internal
