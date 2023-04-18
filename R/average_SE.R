@@ -66,8 +66,8 @@ average_FUN <- function(x,
                         series_identifiers = series_identifiers,
                         masked_tag_key = masked_tag_key) {
   
-  trt_keys <- gDRutils::get_SE_keys(se, "Trt")
-  masked_tag_key <- gDRutils::get_SE_keys(se, "masked_tag")
+  trt_keys <- gDRutils::get_SE_keys(x, "Trt")
+  masked_tag_key <- gDRutils::get_SE_keys(x, "masked_tag")
   
   checkmate::expect_character(trt_keys,
                               min.len = 1,
