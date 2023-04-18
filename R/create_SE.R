@@ -77,12 +77,6 @@ create_SE <- function(df_,
     df_[single_agent_idx, drug2_var] <- untreated_tag[1]
   }
 
-  # unify untreated tags
-  df_ <- as.data.frame(lapply(df_, function(x) {
-    ifelse(x %in% untreated_tag, untreated_tag[1], x)
-  }))
-  
-  
   # Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
   coldata <- md$condition_md
