@@ -14,8 +14,8 @@ generateLigandData
 }
 \examples{
 
-cell_lines <- create_synthetic_cell_lines()
-drugs <- create_synthetic_drugs()
+cell_lines <- gDRtestData::create_synthetic_cell_lines()
+drugs <- gDRtestData::create_synthetic_drugs()
 generateLigandData(cell_lines, drugs)
 
 }

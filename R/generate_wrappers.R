@@ -3,8 +3,8 @@
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateNoNoiseRawData(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -39,8 +39,8 @@ generateNoNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateNoiseRawData(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -74,8 +74,8 @@ generateNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateLigandData(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -123,8 +123,8 @@ generateLigandData <- function(cell_lines, drugs, save = TRUE) {
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateMediumData(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -159,8 +159,8 @@ generateMediumData <- function(cell_lines, drugs, save = TRUE) {
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateManyLinesData(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -194,8 +194,8 @@ generateManyLinesData <- function(cell_lines, drugs, save = TRUE) {
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateManyDrugsData(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -229,8 +229,8 @@ generateManyDrugsData <- function(cell_lines, drugs, save = TRUE) {
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateComboNoNoiseData(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -265,8 +265,8 @@ generateComboNoNoiseData <- function(cell_lines, drugs, save = TRUE) {
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateComboNoNoiseData2(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -303,8 +303,8 @@ generateComboNoNoiseData2 <- function(cell_lines, drugs, save = TRUE) {
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateComboNoNoiseData3(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -345,8 +345,8 @@ generateComboNoNoiseData3 <- function(cell_lines, drugs, save = TRUE) {
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateComboManyDrugs(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -386,8 +386,8 @@ generateComboManyDrugs <- function(cell_lines, drugs, save = TRUE) {
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateComboMatrixSmall(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -427,8 +427,8 @@ generateComboMatrixSmall <- function(cell_lines, drugs, save = TRUE) {
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateComboMatrix(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -467,8 +467,8 @@ generateComboMatrix <- function(cell_lines, drugs, save = TRUE) {
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateTripleComboMatrix(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -521,8 +521,8 @@ generateTripleComboMatrix <- function(cell_lines, drugs, save = TRUE) {
 #' @keywords internal
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateCodilutionSmall(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data
@@ -562,8 +562,8 @@ generateCodilutionSmall <- function(cell_lines, drugs, save = TRUE) {
 #' 
 #' @examples
 #' 
-#' cell_lines <- create_synthetic_cell_lines()
-#' drugs <- create_synthetic_drugs()
+#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
+#' drugs <- gDRtestData::create_synthetic_drugs()
 #' generateCodilution(cell_lines, drugs)
 #' 
 #' @return data.frame with raw input data or MAE with processed data

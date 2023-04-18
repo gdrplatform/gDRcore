@@ -228,3 +228,12 @@ changeColNames <- function(df, drugs, suffix) {
   
   df
 }
+
+#' @keywords internal
+save_rds <- function(rdsObj, rdsName) {
+  saveRDS(
+    rdsObj,
+    file.path(system.file("testdata", package = "gDRtestData"), rdsName), 
+    compress = "gzip"
+  )
+}
