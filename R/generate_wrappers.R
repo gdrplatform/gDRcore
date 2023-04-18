@@ -401,7 +401,7 @@ generateComboMatrixSmall <- function(cell_lines, drugs, save = TRUE) {
   df_2 <- changeColNames(df_2, drugs, "_2")
   df_layout_2 <- merge(df_layout, df_2)
   
-  df_merged <- generate_response_data(df_layout_2, 0)
+  df_merged <- gDRtestData::generate_response_data(df_layout_2, 0)
   
   if (requireNamespace("gDRcore", quietly = TRUE)) {
     
@@ -441,7 +441,7 @@ generateComboMatrix <- function(cell_lines, drugs, save = TRUE) {
   df_2 <- changeColNames(df_2, drugs, "_2")
   df_layout_2 <- merge(df_layout, df_2)
   
-  df_merged <- generate_response_data(df_layout_2)
+  df_merged <- gDRtestData::generate_response_data(df_layout_2)
   
   if (requireNamespace("gDRcore", quietly = TRUE)) {
     
@@ -495,7 +495,7 @@ generateTripleComboMatrix <- function(cell_lines, drugs, save = TRUE) {
   df_3 <- changeColNames(df_3, drugs, "_3")
   df_layout_3 <- merge(merge(df_layout, df_2), df_3)
   
-  df_merged <- generate_response_data(df_layout_3, 0)
+  df_merged <- gDRtestData::generate_response_data(df_layout_3, 0)
   
   if (requireNamespace("gDRcore", quietly = TRUE)) {
     
@@ -535,7 +535,7 @@ generateCodilutionSmall <- function(cell_lines, drugs, save = TRUE) {
   df_2 <- cbind(drugs[1, , drop = FALSE], df_layout[, "Concentration", drop = FALSE])
   df_layout_2 <- prepareCodilutionData(df_2, df_layout)
   
-  df_merged <- generate_response_data(df_layout_2, 0)
+  df_merged <- gDRtestData::generate_response_data(df_layout_2, 0)
   
   if (requireNamespace("gDRcore", quietly = TRUE)) {
     
@@ -576,7 +576,7 @@ generateCodilution <- function(cell_lines, drugs, save = TRUE) {
   df_2 <- cbind(drugs[c(1, 1), ], df_layout[, "Concentration", drop = FALSE])
   df_layout_2 <- prepareCodilutionData(df_2, df_layout)
 
-  df_merged <- generate_response_data(df_layout_2)
+  df_merged <- gDRtestData::generate_response_data(df_layout_2)
   mae <- gDRcore::runDrugResponseProcessingPipeline(
     df_merged,
     nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
