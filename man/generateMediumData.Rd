@@ -12,11 +12,4 @@ data.frame with raw input data or MAE with processed data
 \description{
 generateMediumData
 }
-\examples{
-
-cell_lines <- gDRtestData::create_synthetic_cell_lines()
-drugs <- gDRtestData::create_synthetic_drugs()
-generateMediumData(cell_lines, drugs)
-
-}
 \keyword{internal}

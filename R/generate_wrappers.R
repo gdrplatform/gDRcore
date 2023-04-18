@@ -1,15 +1,7 @@
 #' generateNoNoiseRawData
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateNoNoiseRawData(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateNoNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
   #### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # generate the data for the 1st test set: no noise
@@ -37,15 +29,7 @@ generateNoNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
 #' generateNoiseRawData
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateNoiseRawData(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the 1st test set with noise
   df_merged <- prepareMergedData(cell_lines[2:11, ], drugs[2:11, ])
@@ -72,15 +56,7 @@ generateNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
 #' generateLigandData
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateLigandData(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateLigandData <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the 1st test set with ligand as reference
   df_merged <- prepareMergedData(cell_lines[2:6, ], drugs[2:5, ], 0)
@@ -121,15 +97,7 @@ generateLigandData <- function(cell_lines, drugs, save = TRUE) {
 #' generateMediumData
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateMediumData(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateMediumData <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the 2nd (medium size) test set with single agent
   df_merged <- prepareMergedData(cell_lines[seq_len(15), ], drugs[seq_len(40), ])
@@ -157,15 +125,7 @@ generateMediumData <- function(cell_lines, drugs, save = TRUE) {
 #' generateManyLinesData
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateManyLinesData(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateManyLinesData <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the 2nd (medium size) test set with single agent
   df_merged <- prepareMergedData(cell_lines, drugs[seq_len(40), ])
@@ -192,15 +152,7 @@ generateManyLinesData <- function(cell_lines, drugs, save = TRUE) {
 #' generateManyDrugsData
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateManyDrugsData(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateManyDrugsData <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the test set with single agent (many drugs)
   df_merged <- prepareMergedData(cell_lines[seq_len(10), ], drugs[seq_len(40), ])
@@ -227,15 +179,7 @@ generateManyDrugsData <- function(cell_lines, drugs, save = TRUE) {
 #' generateComboNoNoiseData
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateComboNoNoiseData(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateComboNoNoiseData <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the test set with combo (two single dose)
   #   co-treatment drug is only as DrugName_2
@@ -263,15 +207,7 @@ generateComboNoNoiseData <- function(cell_lines, drugs, save = TRUE) {
 #' generateComboNoNoiseData2
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateComboNoNoiseData2(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateComboNoNoiseData2 <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the test set with combo (two single dose)
   #   co-treatment drug is also as single agent as DrugName
@@ -301,15 +237,7 @@ generateComboNoNoiseData2 <- function(cell_lines, drugs, save = TRUE) {
 #' generateComboNoNoiseData3
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateComboNoNoiseData3(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateComboNoNoiseData3 <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the 3rd test set with combo (two single dose)
   #   co-treatment drug does NOT have single agent response
@@ -343,15 +271,7 @@ generateComboNoNoiseData3 <- function(cell_lines, drugs, save = TRUE) {
 #' generateComboManyDrugs
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateComboManyDrugs(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateComboManyDrugs <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the test set with combo (unique dose; many drug)
   df_merged <- prepareComboMergedData(
@@ -384,15 +304,7 @@ generateComboManyDrugs <- function(cell_lines, drugs, save = TRUE) {
 #' generateComboMatrixSmall
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateComboMatrixSmall(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateComboMatrixSmall <- function(cell_lines, drugs, save = TRUE) {
   # generate the data with combo matrix (small, no noise)
   concentration <- 10^ (seq(-3, .5, .5))
@@ -425,21 +337,15 @@ generateComboMatrixSmall <- function(cell_lines, drugs, save = TRUE) {
 #' generateComboMatrix
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateComboMatrix(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateComboMatrix <- function(cell_lines, drugs, save = TRUE) {
   # generate the data with combo matrix (mid-size)
   df_layout <- prepareData(cell_lines[seq(1, 30, 4), ], drugs[c(1, 2, 11), ])
   df_2 <- prepareData(cell_lines[cell_lines$clid %in% df_layout$clid, ], drugs[c(21, 26, 31), ])
   df_2 <- changeColNames(df_2, drugs, "_2")
   df_layout_2 <- merge(df_layout, df_2)
+  
+  browser()
   
   df_merged <- gDRtestData::generate_response_data(df_layout_2)
   
@@ -465,15 +371,7 @@ generateComboMatrix <- function(cell_lines, drugs, save = TRUE) {
 #' generateTripleComboMatrix
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateTripleComboMatrix(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateTripleComboMatrix <- function(cell_lines, drugs, save = TRUE) {
   # generate the data with triple combo  (no noise)
   concentration <- 10^ (seq(-3, .5, .5))
@@ -519,15 +417,7 @@ generateTripleComboMatrix <- function(cell_lines, drugs, save = TRUE) {
 #' generateCodilutionSmall
 #' 
 #' @keywords internal
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateCodilutionSmall(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateCodilutionSmall <- function(cell_lines, drugs, save = TRUE) {
   # generate the data with combo co-dilution (small)
   df_layout <- prepareData(cell_lines[seq_len(2), ], drugs[seq_len(4), ])
@@ -559,16 +449,7 @@ generateCodilutionSmall <- function(cell_lines, drugs, save = TRUE) {
 #' generateCodilution
 #' 
 #' @keywords internal
-#' 
-#' @examples
-#' 
-#' cell_lines <- gDRtestData::create_synthetic_cell_lines()
-#' drugs <- gDRtestData::create_synthetic_drugs()
-#' generateCodilution(cell_lines, drugs)
-#' 
 #' @return data.frame with raw input data or MAE with processed data
-#' 
-#' @export
 generateCodilution <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the test set with combo (co-dilution)
   df_layout <- prepareData(cell_lines[seq(1, 15, 2), ], drugs[seq_len(12), ])
