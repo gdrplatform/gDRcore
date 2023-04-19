@@ -253,7 +253,7 @@ se1 <- average_SE(
 
 
 td <- gDRimport::get_test_data()
-l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
+l_tbl <- load_data(gDRimport::manifest_path(td), gDRimport::template_path(td),gDRimport::result_path(td))
 imported_data <- merge_data(
   l_tbl$manifest, 
   l_tbl$treatments, 
