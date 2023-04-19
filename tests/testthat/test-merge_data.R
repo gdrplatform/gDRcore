@@ -11,10 +11,10 @@ test_that("merge_data works as expected", {
   manifest <- gDRimport::load_manifest(manifestFile)
   template <- gDRimport::load_templates(templateFiles)
   rawData <- gDRimport::load_results(rawDataFiles, manifest$headers, instrument = "EnVision")
-  rawData <- rawData |> data.table::setDF() |> data.table::setorderv(o_cols)
+  rawData <- data.table::setorderv(data.table::setDF(rawData), o_cols)
   
   merged_quietly <- purrr::quietly(merge_data)(manifest$data, template, rawData)
-  merged <- merged_quietly$result |> data.table::setDF() |> data.table::setorderv(o_cols)
+  merged <- data.table::setorderv(data.table::setDF(merged_quietly$result), o_cols)
 
   # checking readout value from rawData
   expect_equal(
