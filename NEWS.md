@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.7] - 2023-04-19
+#### Fix bug with replacing vehicle to untreated values
+
 #### [0.99.6] - 2023-04-19
 #### Moved wrapper fuctions from gDRtestData
 
