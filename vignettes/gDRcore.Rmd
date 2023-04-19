@@ -62,7 +62,7 @@ td <- gDRimport::get_test_data()
 ```
 
 Provided dataset needs to be merged into the one `data.frame` object to be able to run gDR pipeline. This process can be done using two functions --
-`gDRimport::load_data` and `gDRcore::merge_data()`.
+`gDRimport::load_data()` and `gDRcore::merge_data()`.
 
 ```{r, nclude=FALSE}
 loaded_data <- gDRimport::load_data(gDRimport::manifest_path(td), gDRimport::template_path(td), gDRimport::result_path(td))
