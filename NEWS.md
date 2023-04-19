@@ -2,8 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [0.99.5] - 2023-04-18
+#### [0.99.7] - 2023-04-19
 #### Fix bug with replacing vehicle to untreated values
+
+#### [0.99.6] - 2023-04-19
+#### Moved wrapper fuctions from gDRtestData
+
+#### [0.99.5] - 2023-04-18
+#### Update dependencies
+#### Add fix for bioc-devel (correct sorting in merge test)
 
 #### [0.99.4] - 2023-04-17
 #### Fix namespacing issue in examples
