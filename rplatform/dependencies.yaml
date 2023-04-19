@@ -7,7 +7,7 @@ pkgs:
     host: 'api.github.com'
     source: GITHUB
   gDRtestData:
-    ver: '>=0.99.5'
+    ver: '>=0.99.7'
     url: gdrplatform/gDRtestData
     ref: master
     subdir: ~
@@ -21,7 +21,7 @@ pkgs:
     host: 'api.github.com'
     source: GITHUB
   gDRimport:
-    ver: '>=0.99.4'
+    ver: '>=0.99.6'
     url: gdrplatform/gDRstyle
     ref: main
     subdir: ~
