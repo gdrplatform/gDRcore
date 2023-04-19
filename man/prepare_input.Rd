@@ -24,7 +24,7 @@ Current steps
 }
 \examples{
 td <- gDRimport::get_test_data()
-l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
+l_tbl <- gDRimport::load_data(gDRimport::manifest_path(td), gDRimport::template_path(td), gDRimport::result_path(td))
 df_ <- merge_data(
   l_tbl$manifest, 
   l_tbl$treatments, 
