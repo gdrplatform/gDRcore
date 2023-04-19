@@ -3,7 +3,7 @@ test_that("small_no_noise: test_synthetic_data", {
   original <- gDRutils::get_synthetic_data(data)
   
   set.seed(2)
-  mae <- purrr::quietly(gDRtestData::generateNoNoiseRawData)(
+  mae <- purrr::quietly(generateNoNoiseRawData)(
     cell_lines, drugs, FALSE
   )
   expect_length(mae$warnings, 2)

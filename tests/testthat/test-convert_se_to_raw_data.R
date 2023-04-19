@@ -2,7 +2,7 @@ test_that("convert_se_to_raw_data works as expected with sa data", {
   data <- "finalMAE_small.RDS"
   original <- gDRutils::get_synthetic_data(data)
   set.seed(2)
-  mae <- purrr::quietly(gDRtestData::generateNoiseRawData)(
+  mae <- purrr::quietly(generateNoiseRawData)(
     cell_lines, drugs, FALSE
   )
   input_df <- convert_mae_to_raw_data(mae$result)
@@ -14,13 +14,17 @@ test_that("convert_se_to_raw_data works as expected with sa data", {
 })
 
 test_that("convert_se_to_raw_data works as expected with matrix data", {
-  data <- "finalMAE_combo_matrix_small.RDS"
+  data <- "finalMAE_combo_2dose_nonoise.RDS"
   original <- gDRutils::get_synthetic_data(data)
   set.seed(2)
-  mae <- purrr::quietly(gDRtestData::generateComboMatrixSmall)(
+  mae <- purrr::quietly(generateComboNoNoiseData)(
     cell_lines, drugs, FALSE
   )
   input_df <- convert_mae_to_raw_data(mae$result)
+  untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  input_df <- as.data.frame(lapply(input_df, function(x) {
+    ifelse(x %in% untreated_tag, untreated_tag[2], x)
+  }))
   mae2 <- purrr::quietly(runDrugResponseProcessingPipeline)(
     as.data.frame(input_df)
   )

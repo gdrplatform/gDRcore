@@ -49,22 +49,6 @@ average_SE <- function(se,
       data_model(data_type)
     )
   }
-
-  gDRutils::apply_bumpy_function(se = se,
-                                 FUN = average_FUN,
-                                 req_assay_name = normalized_assay,
-                                 out_assay_name = averaged_assay,
-                                 parallelize = FALSE,
-                                 override_masked = override_masked,
-                                 series_identifiers = series_identifiers)
-}
-
-
-#' @keywords internal
-average_FUN <- function(x,
-                        override_masked = override_masked,
-                        series_identifiers = series_identifiers,
-                        masked_tag_key = masked_tag_key) {
   
   trt_keys <- gDRutils::get_SE_keys(x, "Trt")
   masked_tag_key <- gDRutils::get_SE_keys(x, "masked_tag")
@@ -79,6 +63,26 @@ average_FUN <- function(x,
     min.chars = 1,
     info = "unexpected masked_tag_key keys on 'se' object"
   )
+  
+
+  gDRutils::apply_bumpy_function(se = se,
+                                 FUN = average_FUN,
+                                 req_assay_name = normalized_assay,
+                                 out_assay_name = averaged_assay,
+                                 parallelize = FALSE,
+                                 override_masked = override_masked,
+                                 series_identifiers = series_identifiers,
+                                 masked_tag_key = masked_tag_key,
+                                 trt_keys = trt_keys)
+}
+
+
+#' @keywords internal
+average_FUN <- function(x,
+                        override_masked = override_masked,
+                        series_identifiers = series_identifiers,
+                        masked_tag_key = masked_tag_key,
+                        trt_keys = trt_keys) {
   
   # bypass 'masked' filter
   masked <- x[[masked_tag_key]] & !override_masked
