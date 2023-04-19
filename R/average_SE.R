@@ -119,7 +119,7 @@ average_FUN <- function(x,
   if (all(masked) || nrow(agg_df) == 0) {
     p_trt_keys <- intersect(trt_keys, colnames(x))
     all_cols <- unique(c(series_identifiers, p_trt_keys, "x", "x_std",
-                         "normalization_type", "row_id", "col_id"))
+                         "normalization_type"))
     agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
     colnames(agg_df) <- all_cols
     rownames(agg_df) <- paste(
