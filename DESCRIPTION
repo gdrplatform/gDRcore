@@ -39,7 +39,7 @@ Imports:
 Suggests:
     gDRstyle (>= 0.99.11),
     gDRimport (>= 0.99.4),
-    gDRtestData (>= 0.99.5),
+    gDRtestData (>= 0.99.7),
     IRanges,
     knitr,
     pkgbuild,
