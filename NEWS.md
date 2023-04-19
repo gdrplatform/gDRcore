@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.6] - 2023-04-19
+#### Moved wrapper fuctions from gDRtestData
 
 #### [0.99.5] - 2023-04-18
 #### Update dependencies
