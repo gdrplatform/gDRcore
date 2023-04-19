@@ -29,7 +29,7 @@ test_that("validate_mapping catches reverse single-agent data", {
 
 test_that("create_SE works as expected", {
   td <- gDRimport::get_test_data()
-  l_tbl <- purrr::quietly(gDRimport::load_data)(td$m_file, td$t_files, td$r_files)
+  l_tbl <- purrr::quietly(gDRimport::load_data)(manifest_path(td), template_path(td), result_path(td))
   imported_data <- purrr::quietly(merge_data)(
     l_tbl$result$manifest,
     l_tbl$result$treatments,

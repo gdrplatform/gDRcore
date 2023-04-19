@@ -103,7 +103,7 @@
 #' p_dir <- file.path(tempdir(), "pcheck")
 #' dir.create(p_dir) 
 #' td <- gDRimport::get_test_data()
-#' l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
+#' l_tbl <- gDRimport::load_data(manifest_path(td), template_path(td), result_path(td))
 #' imported_data <- merge_data(
 #'   l_tbl$manifest, 
 #'   l_tbl$treatments, 
