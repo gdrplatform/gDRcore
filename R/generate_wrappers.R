@@ -345,8 +345,6 @@ generateComboMatrix <- function(cell_lines, drugs, save = TRUE) {
   df_2 <- changeColNames(df_2, drugs, "_2")
   df_layout_2 <- merge(df_layout, df_2)
   
-  browser()
-  
   df_merged <- gDRtestData::generate_response_data(df_layout_2)
   
   if (requireNamespace("gDRcore", quietly = TRUE)) {
