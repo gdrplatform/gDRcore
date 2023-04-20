@@ -5,7 +5,7 @@
 #' @examples
 #' 
 #' td <- gDRimport::get_test_data()
-#' l_tbl <- gDRimport::load_data(td$m_file, td$t_files, td$r_files)
+#' l_tbl <- gDRimport::load_data(gDRimport::manifest_path(td), gDRimport::template_path(td), gDRimport::result_path(td))
 #' imported_data <- merge_data(
 #'   l_tbl$manifest, 
 #'   l_tbl$treatments, 
@@ -71,12 +71,11 @@ create_SE <- function(df_,
     )
     df_[single_agent_idx, drug2_var] <- untreated_tag[1]
   }
-  
+
   # unify untreated tags
   df_ <- data.table::setDT(as.data.frame(lapply(df_, function(x) {
     ifelse(x %in% untreated_tag, untreated_tag[1], x)
   })))
-  
   
   # Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)

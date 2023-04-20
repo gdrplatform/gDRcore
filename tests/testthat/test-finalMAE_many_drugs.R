@@ -4,7 +4,7 @@ test_that("many_drugs: test_synthetic_data", {
   
   set.seed(2)
   mae <-
-    purrr::quietly(gDRtestData::generateManyDrugsData)(cell_lines, drugs, FALSE)
+    purrr::quietly(generateManyDrugsData)(cell_lines, drugs, FALSE)
   expect_length(mae$warnings, 2)
   
   test_synthetic_data(original, mae$result, data)
