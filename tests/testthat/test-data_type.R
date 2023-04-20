@@ -1,6 +1,6 @@
 test_that("identify_data_type and split_raw_data works as expected", {
   df_layout <-
-    data.table::setDT(merge(as.data.frame(cell_lines[7:8,]), as.data.frame(drugs[c(4:6),]), by = NULL))
+    data.table::setDT(merge(as.data.frame(cell_lines[7:8, ]), as.data.frame(drugs[c(4:6), ]), by = NULL))
   df_layout <- gDRtestData::add_data_replicates(df_layout)
   df_layout <- gDRtestData::add_concentration(df_layout, concentrations = 10 ^ (seq(-3, .5, .5)))
   
