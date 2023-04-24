@@ -49,10 +49,10 @@ average_SE <- function(se,
       data_model(data_type)
     )
   }
-
+  
   trt_keys <- gDRutils::get_SE_keys(se, "Trt")
   masked_tag_key <- gDRutils::get_SE_keys(se, "masked_tag")
-
+  
   checkmate::expect_character(trt_keys,
                               min.len = 1,
                               min.chars = 1,
@@ -64,73 +64,69 @@ average_SE <- function(se,
     info = "unexpected masked_tag_key keys on 'se' object"
   )
   
-  normalized <- BumpyMatrix::unsplitAsDataFrame(
-    SummarizedExperiment::assay(se, normalized_assay)
-  )
-  iterator <- unique(normalized[, c("column", "row")])
+
+  gDRutils::apply_bumpy_function(se = se,
+                                 FUN = average_FUN,
+                                 req_assay_name = normalized_assay,
+                                 out_assay_name = averaged_assay,
+                                 parallelize = FALSE,
+                                 override_masked = override_masked,
+                                 series_identifiers = series_identifiers,
+                                 masked_tag_key = masked_tag_key,
+                                 trt_keys = trt_keys)
+}
+
+
+#' @keywords internal
+average_FUN <- function(x,
+                        override_masked = override_masked,
+                        series_identifiers = series_identifiers,
+                        masked_tag_key = masked_tag_key,
+                        trt_keys = trt_keys) {
   
-  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
-    x <- iterator[row, ]
-    i <- x[["row"]]
-    j <- x[["column"]]
-    norm_df <- normalized[normalized$row == i & normalized$column == j, ]
-    # bypass 'masked' filter
-    masked <- norm_df[[masked_tag_key]] & !override_masked
-    if (sum(!masked) > 0) {
-      series_identifiers <- intersect(series_identifiers, colnames(norm_df))
-      unmasked <- norm_df[!masked, , drop = FALSE]
-      
-      avg_df <- stats::aggregate(
-        stats::reformulate(c("normalization_type", series_identifiers), "x"),
-        function(x) mean(x, na.rm = TRUE),
-        data = unmasked, 
-        na.action = stats::na.pass
-      )
-      std_df <- stats::aggregate(
-        stats::reformulate(c("normalization_type", series_identifiers), "x"),
-        function(x) stats::sd(x, na.rm = TRUE),
-        data = unmasked, 
-        na.action = stats::na.pass
-      )
-      
-      colnames(std_df)[colnames(std_df) == "x"] <- "x_std"
-      agg_df <- S4Vectors::DataFrame(
-        merge(avg_df, std_df,
-              by = c(series_identifiers, "normalization_type"),
-              sort = FALSE)
-      )
-      rownames(agg_df) <- paste(
-        cumsum(!duplicated(agg_df[, series_identifiers])),
-        agg_df$normalization_type, 
-        sep = "_"
-      )
-    }
+  # bypass 'masked' filter
+  masked <- x[[masked_tag_key]] & !override_masked
+  if (sum(!masked) > 0) {
+    series_identifiers <- intersect(series_identifiers, colnames(x))
+    unmasked <- x[!masked, , drop = FALSE]
     
-    if (all(masked) || nrow(agg_df) == 0) {
-      p_trt_keys <- intersect(trt_keys, colnames(norm_df))
-      all_cols <- unique(c(series_identifiers, p_trt_keys, "x", "x_std",
-                           "normalization_type", "row_id", "col_id"))
-      agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
-      colnames(agg_df) <- all_cols
-      rownames(agg_df) <- paste(
-        seq_len(nrow(agg_df)), 
-        agg_df$normalization_type, 
-        sep = "_"
-      )
-    }
-    agg_df$row_id <- i
-    agg_df$col_id <- j
-    agg_df
-  })
-
-  out <- S4Vectors::DataFrame(do.call("rbind", out))
+    avg_df <- stats::aggregate(
+      stats::reformulate(c("normalization_type", series_identifiers), "x"),
+      function(x) mean(x, na.rm = TRUE),
+      data = unmasked, 
+      na.action = stats::na.pass
+    )
+    std_df <- stats::aggregate(
+      stats::reformulate(c("normalization_type", series_identifiers), "x"),
+      function(x) stats::sd(x, na.rm = TRUE),
+      data = unmasked, 
+      na.action = stats::na.pass
+    )
+    
+    colnames(std_df)[colnames(std_df) == "x"] <- "x_std"
+    agg_df <- S4Vectors::DataFrame(
+      merge(avg_df, std_df,
+            by = c(series_identifiers, "normalization_type"),
+            sort = FALSE)
+    )
+    rownames(agg_df) <- paste(
+      cumsum(!duplicated(agg_df[, series_identifiers])),
+      agg_df$normalization_type, 
+      sep = "_"
+    )
+  }
   
-  averaged <- BumpyMatrix::splitAsBumpyMatrix(
-    out[!colnames(out) %in% c(masked_tag_key, "row_id", "col_id")], 
-    row = out$row_id, 
-    col = out$col_id
-  )
-
-  SummarizedExperiment::assays(se)[[averaged_assay]] <- averaged
-  se
+  if (all(masked) || nrow(agg_df) == 0) {
+    p_trt_keys <- intersect(trt_keys, colnames(x))
+    all_cols <- unique(c(series_identifiers, p_trt_keys, "x", "x_std",
+                         "normalization_type"))
+    agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
+    colnames(agg_df) <- all_cols
+    rownames(agg_df) <- paste(
+      seq_len(nrow(agg_df)), 
+      agg_df$normalization_type, 
+      sep = "_"
+    )
+  }
+  agg_df
 }
