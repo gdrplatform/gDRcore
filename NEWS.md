@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.9] - 2023-04-21
+#### Utilize `gDRutils::apply_bumpy_function` in average_SE
+
+#### [0.99.8] - 2023-04-20
+#### switch to OSI license
+
 #### [0.99.7] - 2023-04-19
 #### Fix bug with replacing vehicle to untreated values
 
