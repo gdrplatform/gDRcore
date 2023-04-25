@@ -76,6 +76,10 @@ create_SE <- function(df_,
     )
     df_[single_agent_idx, drug2_var] <- untreated_tag[1]
   }
+  
+  df_ <- as.data.frame(lapply(df_, function(x) {
+    ifelse(x %in% untreated_tag, untreated_tag[1], x)
+  }))
 
   # Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
@@ -235,7 +239,8 @@ validate_mapping <- function(trt_df, refs_df, nested_confounders) {
   
   # Swap concentrations for single-agent with drug2
   if (conc2 %in% colnames(trt_df)) {
-    swap_idx <- trt_df[[drug_id]] %in% trt_df[[drug2_id]]
+    swap_idx <- trt_df[[drug_id]] %in%
+      setdiff(unique(trt_df[[drug2_id]]), untrt_tag)
     trt_df[swap_idx, "swap_sa"] <- TRUE
   }
   trt_df
