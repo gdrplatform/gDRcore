@@ -76,7 +76,7 @@ map_df <- function(trt_md,
   
   if (ref_type == "Day0") {
     # Identifying which of the durations have a value of 0.
-    matching_list <- list(T0 = ref_md[, ..duration_col] == 0, conc = is_ref_conc)
+    matching_list <- list(T0 = ref_md[[duration_col]] == 0, conc = is_ref_conc)
     matchFactor <- "T0"
   } else if (ref_type == "untrt_Endpoint") {
     matching_list <- list(conc = is_ref_conc)
@@ -122,19 +122,19 @@ map_df <- function(trt_md,
     # 4.2 support cases with overriden untreated controls
     # this logic is pretty slow currently 
   } else {
-    
+
   out <- lapply(seq_along(trt_rnames), function(i) {
     treatment <- trt_rnames[i]
     if (is.na(exact_out[[treatment]]) || !is.null(override_untrt_controls)) {
-     
+      
       refs <- lapply(present_ref_cols, function(y) {
-        ref_md[, y] == trt_md[treatment, y]
+        unname(unlist(ref_md[, ..y]) == unlist(trt_md[which(trt_md$rownames == treatment), ..y]))
       })
       
       if (!is.null(override_untrt_controls)) {
         for (overridden in names(override_untrt_controls)) {
           refs[[overridden]] <-
-            ref_md[, overridden] == override_untrt_controls[[overridden]]
+            unname(unlist(ref_md[, ..overridden]) == override_untrt_controls[[overridden]])
         }
       }
       
