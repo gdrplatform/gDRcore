@@ -1,4 +1,4 @@
-test_that("convert_se_to_raw_data works as expected with sa data", {
+test_that("convert_mae_to_raw_data works as expected with sa data", {
   data <- "finalMAE_small.RDS"
   original <- gDRutils::get_synthetic_data(data)
   set.seed(2)
@@ -13,7 +13,7 @@ test_that("convert_se_to_raw_data works as expected with sa data", {
   test_synthetic_data(mae$result, mae2$result, data)
 })
 
-test_that("convert_se_to_raw_data works as expected with matrix data", {
+test_that("convert_mae_to_raw_data works as expected with matrix data", {
   data <- "finalMAE_combo_2dose_nonoise.RDS"
   original <- gDRutils::get_synthetic_data(data)
   set.seed(2)

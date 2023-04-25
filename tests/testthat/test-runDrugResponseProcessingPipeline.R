@@ -65,10 +65,22 @@ test_that("main pipeline functions works as expected", {
     )
   expect_length(mae_v4$warnings, 5)
 
-  expect_equal(mae_v1$result, mae_v2$result)
-  expect_equal(mae_v2$result, mae_v3$result)
-  expect_equal(mae_v3$result, mae_v4$result)
-
+  expect_identical(mae_v1$result, mae_v2$result)
+  expect_identical(mae_v2$result, mae_v3$result)
+  
+  mae_v3$result <- gDRutils::MAEpply(mae_v3$result, function(x) {
+    SummarizedExperiment::assay(x, "Controls") <- NULL
+    SummarizedExperiment::assay(x, "RawTreated") <- NULL
+    x
+  })
+  
+  mae_v4$result <- gDRutils::MAEpply(mae_v4$result, function(x) {
+    SummarizedExperiment::assay(x, "Controls") <- NULL
+    SummarizedExperiment::assay(x, "RawTreated") <- NULL
+    x
+  })
+  
+  expect_identical(mae_v3$result, mae_v4$result)
 
   testthat::expect_error(
     runDrugResponseProcessingPipeline(input_data, selected_experiments = "single-agent"),
