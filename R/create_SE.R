@@ -71,11 +71,6 @@ create_SE <- function(df_,
     )
     df_[single_agent_idx, drug2_var] <- untreated_tag[1]
   }
-
-  # unify untreated tags
-  df_ <- data.table::setDT(as.data.frame(lapply(df_, function(x) {
-    ifelse(x %in% untreated_tag, untreated_tag[1], x)
-  })))
   
   # Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
@@ -131,6 +126,7 @@ create_SE <- function(df_,
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
   
   out <- lapply(seq_len(nrow(treated)), function(i) {
+    
     trt <- treated$rownames[i]
     
     trt_df <- dfs[groupings %in% trt, , drop = FALSE]
@@ -229,6 +225,7 @@ validate_mapping <- function(trt_df, refs_df, nested_confounders) {
       refs_df[[nested_confounders]] %in% unique(trt_df[[nested_confounders]]),
     ]
   }
+  
   drug_id <- gDRutils::get_env_identifiers("drug")
   drug2_id <- gDRutils::get_env_identifiers("drug2")
   conc2 <- gDRutils::get_env_identifiers("concentration2")

@@ -6,7 +6,7 @@ fit_combo_cotreatments <- function(measured,
   
   series_concs <- setdiff(unlist(unique(measured[, ..series_id])), 0)
   # keep the single agent for the series_id
-  cotrt_concs <- unlist(unique(measured[, ..cotrt_id]))
+  cotrt_concs <- unique(unlist(measured[, ..cotrt_id]))
   
   if (all(measured$normalization_type != normalization_type)) {
     measured$x <- NA
@@ -45,8 +45,8 @@ fit_combo_cotreatments <- function(measured,
       
       # if the fit or the prediction fails, tries to get the reference value 
       # from the actual data
-      sa <- measured[which(measured[, ..cotrt_id] == conc & 
-                             measured[, ..series_id] == 0), "x"]
+      sa <- unique(unlist(measured[which(measured[, ..cotrt_id] == conc & 
+                             measured[, ..series_id] == 0), "x"]))
     } # else x_0 will be NA (thus a free parameter)
     
     cotrt_fittings[[i]] <- fit_cotreatment_series(
@@ -73,6 +73,7 @@ fit_cotreatment_series <- function(measured,
                                    e_0, 
                                    GR_0) {
   checkmate::assert_numeric(cotrt_value)
+  
   df_ <- measured[
     measured[[cotrt_id]] == cotrt_value & measured[[series_id]] > 0, , 
     drop = FALSE

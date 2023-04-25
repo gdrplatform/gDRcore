@@ -73,9 +73,9 @@ fit_SE.combinations <- function(se,
   id2 <- series_identifiers[2]
 
   iterator <- unique(avg[, c("column", "row")])
-  
+
   out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
-    
+  
     bliss_excess <- hsa_excess <- metrics <- all_iso_points <- 
       isobolograms <- smooth_mx <- NULL
     bliss_score <- hsa_score <- CIScore_50 <- CIScore_80 <- 
@@ -378,14 +378,25 @@ fit_SE.combinations <- function(se,
       } else {
         smooth_mx <- av_matrix
       }
-      all_iso_points <- plyr::rbind.fill(
-        all_iso_points,
-        isobologram_out$df_all_iso_points
-      )
-      isobolograms <- plyr::rbind.fill(
-        isobolograms,
-        as.data.frame(isobologram_out$df_all_iso_curves)
-      )
+    
+      if (is.null(all_iso_points)) {
+        all_iso_points <- as.data.frame(isobologram_out$df_all_iso_points)
+      } else {
+        all_iso_points <- plyr::rbind.fill(
+          all_iso_points,
+          as.data.frame(isobologram_out$df_all_iso_points)
+        )
+      }
+      
+      if (is.null(isobolograms)) {
+        isobolograms <- as.data.frame(isobologram_out$df_all_iso_curves)
+      } else {
+        isobolograms <- plyr::rbind.fill(
+          isobolograms,
+          as.data.frame(isobologram_out$df_all_iso_curves)
+        )
+      }
+      
       metrics <- rbind(metrics, metrics_merged)
     }
     list(bliss_excess = bliss_excess,
