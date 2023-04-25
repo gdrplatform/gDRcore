@@ -7,11 +7,11 @@
 \method{data_model}{data.table}(x)
 }
 \arguments{
-\item{x}{data.table of raw drug response data 
+\item{x}{data.table of raw drug response data
 containing both treated and untreated values.}
 }
 \value{
-string with the information of the raw data follows single-agent or 
+string with the information of the raw data follows single-agent or
 combination data model
 }
 \description{

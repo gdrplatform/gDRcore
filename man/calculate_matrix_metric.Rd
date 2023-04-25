@@ -14,18 +14,18 @@ calculate_Bliss(sa1, series_id1, sa2, series_id2, metric)
 .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN)
 }
 \arguments{
-\item{sa1}{data.table containing single agent data where entries in 
-\code{series_id2} are all \code{0}. Columns of the data.table include 
+\item{sa1}{data.table containing single agent data where entries in
+\code{series_id2} are all \code{0}. Columns of the data.table include
 identifiers and the \code{metric} of interest.}
 
-\item{series_id1}{String representing the column within \code{sa1} that 
+\item{series_id1}{String representing the column within \code{sa1} that
 represents id1.}
 
-\item{sa2}{data.table containing single agent data where entries in 
-\code{series_id1} are all \code{0}. Columns of the data.table include 
+\item{sa2}{data.table containing single agent data where entries in
+\code{series_id1} are all \code{0}. Columns of the data.table include
 identifiers and the \code{metric} of interest.}
 
-\item{series_id2}{String representing the column within \code{sa2} that 
+\item{series_id2}{String representing the column within \code{sa2} that
 represents id2.}
 
 \item{metric}{String of the column specifying the metric of interest.}
@@ -33,8 +33,8 @@ represents id2.}
 \item{FXN}{Function to apply to the single-agent fits to calculate a metric.}
 }
 \value{
-DataFrame containing a single row for every unique combination of 
-the two series identifiers and the corresponding calculated metric for 
+DataFrame containing a single row for every unique combination of
+the two series identifiers and the corresponding calculated metric for
 each row.
 }
 \description{
@@ -42,10 +42,10 @@ Calculate a metric based off of single-agent values in combination screens.
 }
 \details{
 \code{calculate_HSA} takes the minimum of the two single agents readouts.
-\code{calculate_Bliss} performs Bliss additivity calculation based on the 
-single agent effects, defined as \code{1-x} for the corresponding 
+\code{calculate_Bliss} performs Bliss additivity calculation based on the
+single agent effects, defined as \code{1-x} for the corresponding
 normalization.
-See https://www.sciencedirect.com/science/article/pii/S1359644619303460?via%3Dihub#tb0005
+See https://www.sciencedirect.com/science/article/pii/S1359644619303460?via\%3Dihub#tb0005
 for more details.
 }
 \examples{

@@ -13,22 +13,22 @@ calculate_excess(
 )
 }
 \arguments{
-\item{metric}{data.table often representing 
-readouts derived by calculating some metric. 
-Examples of this could include hsa or bliss calculations 
+\item{metric}{data.table often representing
+readouts derived by calculating some metric.
+Examples of this could include hsa or bliss calculations
 from single-agent data.}
 
-\item{measured}{data.table often representing 
+\item{measured}{data.table often representing
 measured data from an experiment.}
 
-\item{series_identifiers}{character vector of identifiers in 
-\code{measured} or \code{metric} 
+\item{series_identifiers}{character vector of identifiers in
+\code{measured} or \code{metric}
 which define a unique data point.}
 
-\item{metric_col}{string of the column in \code{metric} 
+\item{metric_col}{string of the column in \code{metric}
 to use in excess calculation.}
 
-\item{measured_col}{string of the column in \code{measured} 
+\item{measured_col}{string of the column in \code{measured}
 to use in excess calculation.}
 }
 \value{
@@ -36,7 +36,7 @@ DataFrame of \code{measured}, now with an additional column named
 \code{excess} (positive values for synergy/benefit).
 }
 \description{
-Calculate the difference between values, likely representing 
+Calculate the difference between values, likely representing
 the same metric, from two data.tables.
 }
 \examples{

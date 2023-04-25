@@ -69,8 +69,9 @@ identify_data_type <- function(df,
   df$type <- character(0)
   # loop through the pairs to assess the number of individual 
   # concentration pairs
+
   for (idp in seq_len(nrow(drug_pairs))) {
-    df_matching <- merge(cbind(df, cnt), drug_pairs[idp, ])
+    df_matching <- merge(cbind(df, cnt), drug_pairs[idp, ], by = cols_pairs)
     matching_idx <- df_matching$cnt
     treated <- vapply(
       gDRutils::loop(df_matching[, ..drugs_ids, drop = FALSE],
@@ -139,17 +140,17 @@ identify_data_type <- function(df,
 #' @examples 
 #' cell_lines <- gDRtestData::create_synthetic_cell_lines()
 #' drugs <- gDRtestData::create_synthetic_drugs()
-#' df_layout <- merge(cell_lines[7:8, ], drugs[c(4:6), ], by = NULL)
+#' df_layout <- data.table::setDT(merge.data.frame(cell_lines[7:8, ], drugs[c(4:6), ], by = NULL))
 #' df_layout <- gDRtestData::add_data_replicates(df_layout)
 #' df_layout <- gDRtestData::add_concentration(
 #'   df_layout,
 #'   concentrations = 10 ^ (seq(-3, .5, .5))
 #' )
-#' df_2 <- merge(
+#' df_2 <- data.table::setDT(merge.data.frame(
 #'   cell_lines[cell_lines$clid %in% df_layout$clid, ],
 #'   drugs[c(21, 26), ],
 #'   by = NULL
-#' )
+#' ))
 #' df_2 <- gDRtestData::add_data_replicates(df_2)
 #' df_2 <- gDRtestData::add_concentration(
 #'   df_2,
@@ -160,7 +161,7 @@ identify_data_type <- function(df,
 #'     colnames(df_2)[colnames(df_2) %in% c(colnames(drugs), "Concentration")],
 #'     "_2"
 #'   )
-#' df_layout_2 <- merge(df_layout, df_2)
+#' df_layout_2 <- merge(df_layout, df_2, allow.cartesian = TRUE)
 #' df_merged_data <- gDRtestData::generate_response_data(df_layout_2, 0)
 #' df <- identify_data_type(df_merged_data)
 #' split_raw_data(df)

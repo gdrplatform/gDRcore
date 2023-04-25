@@ -7,11 +7,11 @@
 data_model(x)
 }
 \arguments{
-\item{x}{data.table with raw data or SummarizedExperiment object 
+\item{x}{data.table with raw data or SummarizedExperiment object
 with gDR assays}
 }
 \value{
-string with the information of the raw data follows single-agent or 
+string with the information of the raw data follows single-agent or
 combination data model
 }
 \description{
