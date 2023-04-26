@@ -131,7 +131,7 @@ normalize_SE <- function(se,
   
   # Column major order, so go down first.
 
-  out <- lapply(seq_len(nrow(iterator)), function(row) {
+  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
     
     x <- iterator[row, ]
     i <- x[["row"]]
