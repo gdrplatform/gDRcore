@@ -497,7 +497,8 @@ prepareComboMergedData <- function(cell_lines,
   
   df_2 <- cbind(drugs[drugsIdx2, ], Concentration = concentration)
   colnames(df_2) <- paste0(colnames(df_2), "_2")
-  df_layout_2 <- df_layout[, as.list(df_2), names(df_layout)]
+  
+  df_layout_2 <- data.table::as.data.table(merge.data.frame(df_layout, df_2, by = NULL))
   if (modifyDf2) {
     df_layout_2 <- df_layout_2[!(df_layout_2$Concentration == 0 & df_layout_2$Concentration_2 > 0), ]
   }
