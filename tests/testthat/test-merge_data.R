@@ -38,7 +38,7 @@ test_that("merge_data works as expected", {
   # testing wrong input
   expect_error(
     merge_data("test", template, rawData),
-    "inherits(manifest, \"data.table\") is not TRUE",
+    "Assertion on 'manifest' failed: Must be a data.table",
     fixed = TRUE
   )
 })
