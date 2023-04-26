@@ -47,7 +47,7 @@ add_CellLine_annotation <- function(
 ) {
   
   # Assertions:
-  stopifnot(inherits(df_metadata, "data.table"))
+  checkmate::assert_data_table(df_metadata)
   checkmate::assert_string(fill, null.ok = TRUE)
 
   cellline <- gDRutils::get_env_identifiers("cellline")
@@ -92,9 +92,10 @@ add_CellLine_annotation <- function(
   if (any(bad_CL)) {
     futile.logger::flog.warn("Cell line ID %s not found in cell line database",
                              paste(CLIDs[bad_CL], collapse = " ; "))
-    temp_CLIDs <- data.table::setDT(as.data.frame(matrix(ncol = length(c(cellline,
-                                                                         add_clid)),
-                                                         nrow = length(CLIDs[bad_CL]))))
+    temp_CLIDs <-
+      data.table::data.table(matrix(ncol = length(c(cellline,
+                                                    add_clid)),
+                                    nrow = length(CLIDs[bad_CL])))
     colnames(temp_CLIDs) <- c(cellline, add_clid)
     
     temp_CLIDs[, cellline] <- temp_CLIDs[, cellline_name] <- CLIDs[bad_CL]
@@ -140,7 +141,7 @@ add_Drug_annotation <- function(
 ) {
   
   # Assertions:
-  stopifnot(inherits(df_metadata, "data.table"))
+  checkmate::assert_data_table(df_metadata)
   checkmate::assert_string(fill, null.ok = TRUE)
   nrows_df <- nrow(df_metadata)
   

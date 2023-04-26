@@ -138,7 +138,7 @@ create_and_normalize_SE <- function(df_,
                                     raw_treated_assay = "RawTreated",
                                     normalized_assay = "Normalized") {
   
-  stopifnot(inherits(df_, "data.table"))
+  checkmate::assert_data_table(df_)
   checkmate::assert_string(data_type)
   checkmate::assert_string(readout)
   checkmate::assert_function(control_mean_fxn)

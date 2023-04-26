@@ -51,8 +51,8 @@
 cleanup_metadata <- function(df_metadata) {
   
   # Assertions:
-  stopifnot(inherits(df_metadata, "data.table"))
-  
+  checkmate::assert_data_table(df_metadata)
+
   # Round duration to 6 values. 
   duration_id <- gDRutils::get_env_identifiers("duration")
   df_metadata[[duration_id]] <- round(as.numeric(df_metadata[[duration_id]], 6))
@@ -121,7 +121,8 @@ cleanup_metadata <- function(df_metadata) {
 order_result_df <- function(df_) {
 
   # Assertions:
-  stopifnot(inherits(df_, "data.table"))
+  
+  checkmate::assert_data_table(df_)
 
   ordered_1 <- gDRutils::get_header("ordered_1")
   ordered_2 <- gDRutils::get_header("ordered_2")
@@ -185,7 +186,7 @@ data_model <- function(x) {
 #' @export
 data_model.data.table <- function(x) {
   
-  stopifnot(inherits(x, "data.table"))
+  checkmate::assert_data_table(x)
   drug_ids <- unlist(
     gDRutils::get_env_identifiers(
       c("drug_name", "drug_name2"), 
@@ -276,7 +277,7 @@ get_default_nested_identifiers <- function(x, data_model = NULL) {
 #' @rdname get_default_nested_identifiers
 get_default_nested_identifiers.data.table <- function(x, data_model = NULL) {
   
-  stopifnot(inherits(x, "data.table"))
+  checkmate::assert_data_table(x)
   checkmate::assert_choice(
     data_model, 
     c("single-agent", "combination"), 

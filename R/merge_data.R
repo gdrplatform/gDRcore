@@ -20,9 +20,9 @@
 #'
 merge_data <- function(manifest, treatments, data) {
   # Assertions:
-  stopifnot(inherits(manifest, "data.table"))
-  stopifnot(inherits(treatments, "data.table"))
-  stopifnot(inherits(data, "data.table"))
+  checkmate::assert_data_table(manifest)
+  checkmate::assert_data_table(treatments)
+  checkmate::assert_data_table(data)
   
   futile.logger::flog.info("Merging data")
   

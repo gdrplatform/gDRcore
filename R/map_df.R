@@ -54,8 +54,8 @@ map_df <- function(trt_md,
                    ref_type = c("Day0", "untrt_Endpoint")) {
   
   # Assertions:
-  checkmate::assert_class(trt_md, "data.table")
-  checkmate::assert_class(ref_md, "data.table")
+  checkmate::assert_data_table(trt_md)
+  checkmate::assert_data_table(ref_md)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
   checkmate::assert_character(ref_cols)
   checkmate::assert_character(ref_type)
