@@ -1,6 +1,6 @@
 #' merge_data
 #'
-#' Merge all the input data into a single data.frame
+#' Merge all the input data into a single data.table
 #'
 #' @param manifest a data.table with a manifest info
 #' @param treatments a data.table with a treaatments info
@@ -15,7 +15,7 @@
 #'   l_tbl$data
 #' )
 #'
-#' @return a dataframe with merged data and metadata.
+#' @return a data.table with merged data and metadata.
 #' @export
 #'
 merge_data <- function(manifest, treatments, data) {

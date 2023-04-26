@@ -14,10 +14,10 @@ merge_data(manifest, treatments, data)
 \item{data}{a data.table with a raw data info}
 }
 \value{
-a dataframe with merged data and metadata.
+a data.table with merged data and metadata.
 }
 \description{
-Merge all the input data into a single data.frame
+Merge all the input data into a single data.table
 }
 \examples{
 td <- gDRimport::get_test_data()

@@ -86,7 +86,7 @@ map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
 #'   measured_col
 #' )
 #'
-#' @return DataFrame of \code{measured}, now with an additional column named
+#' @return data.table of \code{measured}, now with an additional column named
 #' \code{excess} (positive values for synergy/benefit).
 #' @export
 calculate_excess <- function(metric, 

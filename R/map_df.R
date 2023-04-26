@@ -212,7 +212,6 @@ map_df <- function(trt_md,
   is_untrt <- ntag == length(valid)
   is_ref <- ntag != 0L & !is_untrt
   
-  #TODO fixme: fix rownames
   mat_elem$rownames <- as.character(seq_len(nrow(mat_elem)))
 
   trt <- mat_elem[which(!is_ref & !is_untrt)]

@@ -205,6 +205,7 @@ calculate_Loewe <- function(
     df_iso_curve$x2_ref_cap <- df_iso_curve$x2_ref - over_edge * sqrt(2)
     
     # rotate back the reference
+    # In next step we will add two NA rows so we need to include them in the length:
     len <- nrow(df_iso_curve + 2)
     df_iso_curve$pos_x_ref <- 
       (df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) + min(axis_2$pos_x)

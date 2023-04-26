@@ -32,7 +32,7 @@ to use in excess calculation.}
 to use in excess calculation.}
 }
 \value{
-DataFrame of \code{measured}, now with an additional column named
+data.table of \code{measured}, now with an additional column named
 \code{excess} (positive values for synergy/benefit).
 }
 \description{

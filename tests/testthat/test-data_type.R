@@ -15,9 +15,9 @@ test_that("identify_data_type and split_raw_data works as expected", {
   colnames(df_2)[colnames(df_2) %in% c(colnames(drugs), "Concentration")] <- 
     paste0(colnames(df_2)[colnames(df_2) %in% c(colnames(drugs), "Concentration")], "_2")
   
-  df_layout_2 <- data.table::setDT(merge(as.data.frame(df_layout), as.data.frame(df_2)))
+  df_layout_2 <- merge(df_layout, df_2, allow.cartesian = TRUE)
   
-  df_merged_data <- data.table::setDT(gDRtestData::generate_response_data(df_layout_2, 0))
+  df_merged_data <- gDRtestData::generate_response_data(df_layout_2, 0)
   df <- identify_data_type(df_merged_data)
   expect_equal(ncol(df_merged_data) + 2, ncol(df))
   expect_true("type" %in% names(df))
