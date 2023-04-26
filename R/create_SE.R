@@ -125,7 +125,7 @@ create_SE <- function(df_,
   
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
   
-  out <- lapply(seq_len(nrow(treated)), function(i) {
+  out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
     
     trt <- treated$rownames[i]
     

@@ -474,7 +474,7 @@ generateCodilution <- function(cell_lines, drugs, save = TRUE) {
 
 #' @keywords internal
 prepareData <- function(cell_lines, drugs, conc = 10 ^ (seq(-3, 1, 0.5))) {
-  df_layout <- data.table::setDT(merge.data.frame(cell_lines, drugs, by = NULL))
+  df_layout <- drugs[, as.list(cell_lines), names(drugs)]
   df_layout <- gDRtestData::add_data_replicates(df_layout)
   gDRtestData::add_concentration(df_layout, conc)
 }
@@ -497,7 +497,7 @@ prepareComboMergedData <- function(cell_lines,
   
   df_2 <- cbind(drugs[drugsIdx2, ], Concentration = concentration)
   colnames(df_2) <- paste0(colnames(df_2), "_2")
-  df_layout_2 <- data.table::setDT(merge.data.frame(df_layout, df_2, by = NULL))
+  df_layout_2 <- df_layout[, as.list(df_2), names(df_layout)]
   if (modifyDf2) {
     df_layout_2 <- df_layout_2[!(df_layout_2$Concentration == 0 & df_layout_2$Concentration_2 > 0), ]
   }

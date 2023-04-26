@@ -13,9 +13,9 @@ test_that("merge_data works as expected", {
   rawData <- gDRimport::load_results(rawDataFiles, manifest$headers, instrument = "EnVision")
   rawData <- data.table::setorderv(data.table::setDF(rawData), o_cols)
 
-  manifest$data <- data.table::setDT(manifest$data)
-  template <- data.table::setDT(template)
-  rawData <- data.table::setDT(rawData)
+  data.table::setDT(manifest$data)
+  data.table::setDT(template)
+  data.table::setDT(rawData)
   
   merged_quietly <- purrr::quietly(merge_data)(manifest$data, template, rawData)
   merged <- data.table::setorderv(data.table::setDF(merged_quietly$result), o_cols)

@@ -147,12 +147,12 @@ fit_SE.combinations <- function(se,
     # create matrix with single agent
     complete <- merge(unique(c(0, conc1)), unique(c(0, conc2)), by = NULL)
     colnames(complete) <- c(id, id2)
-    complete <- data.table::setDT(merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2)))
+    complete <- data.table::as.data.table(merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2)))
 
     for (metric in normalization_types) {
       
       metric_name <- gDRutils::extend_normalization_type_name(metric)
-      avg_combo <- data.table::setDT(data.frame(avg_combo))
+      avg_combo <- data.table::as.data.table(data.frame(avg_combo))
       
       
       # fit by column: the series in the primary identifier, the cotrt is the 

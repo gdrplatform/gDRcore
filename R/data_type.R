@@ -140,17 +140,14 @@ identify_data_type <- function(df,
 #' @examples 
 #' cell_lines <- gDRtestData::create_synthetic_cell_lines()
 #' drugs <- gDRtestData::create_synthetic_drugs()
-#' df_layout <- data.table::setDT(merge.data.frame(cell_lines[7:8, ], drugs[c(4:6), ], by = NULL))
+#' df_layout <- drugs[7:8, as.list(cell_lines[4:6, ]), names(drugs)]
 #' df_layout <- gDRtestData::add_data_replicates(df_layout)
 #' df_layout <- gDRtestData::add_concentration(
 #'   df_layout,
 #'   concentrations = 10 ^ (seq(-3, .5, .5))
 #' )
-#' df_2 <- data.table::setDT(merge.data.frame(
-#'   cell_lines[cell_lines$clid %in% df_layout$clid, ],
-#'   drugs[c(21, 26), ],
-#'   by = NULL
-#' ))
+#' 
+#' df_2 <- drugs[which(cell_lines$clid %in% df_layout$clid), as.list(cell_lines[c(21, 26), ]), names(drugs)]
 #' df_2 <- gDRtestData::add_data_replicates(df_2)
 #' df_2 <- gDRtestData::add_concentration(
 #'   df_2,
@@ -183,7 +180,7 @@ identify_data_type <- function(df,
 #'   DrugName = c("DRUG_10", "DRUG_8"),
 #'   CellLineName = "CELL1"
 #' )
-#' input_df <- data.table::setDT(as.data.frame(rbind(ctrl_df, trt_df)))
+#' input_df <- data.table::data.table(rbind(ctrl_df, trt_df))
 #' input_df$Duration <- 72
 #' input_df$CorrectedReadout2 <- input_df$ReadoutValue
 #' split_df <- identify_data_type(input_df)
@@ -219,7 +216,7 @@ split_raw_data <- function(df,
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   
   if (length(cotrt_types) > 0) {
-    df_list[cotrt_types] <- lapply(cotrt_types, function(x) {
+    df_list[cotrt_types] <- gDRutils::loop(cotrt_types, function(x) {
       colnames <- c(cl, drug_ids[["drug_name"]])
       unique_cotrt <- unique(df_list[[x]][, ..colnames])
       unique_cotrt_ctrl <- unique(

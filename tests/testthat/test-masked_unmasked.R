@@ -13,7 +13,7 @@ test_that("masked and unmasked values are processed properly", {
   df_merged_data[df_merged_data$clid == df_merged_data$clid[[3]] &
                    df_merged_data$Gnumber ==  unique(df_merged_data$Gnumber)[[3]],
                  "masked"] <- TRUE
-  df_merged_data <- data.table::setDT(df_merged_data)
+  data.table::setDT(df_merged_data)
   
   finalMAE <- purrr::quietly(runDrugResponseProcessingPipeline)(
     df_merged_data, 
