@@ -22,14 +22,14 @@ Split raw data into list based on the data types
 \examples{
 cell_lines <- gDRtestData::create_synthetic_cell_lines()
 drugs <- gDRtestData::create_synthetic_drugs()
-df_layout <- drugs[7:8, as.list(cell_lines[4:6, ]), names(drugs)]
+df_layout <- drugs[4:6, as.list(cell_lines[7:8, ]), names(drugs)]
 df_layout <- gDRtestData::add_data_replicates(df_layout)
 df_layout <- gDRtestData::add_concentration(
   df_layout,
   concentrations = 10 ^ (seq(-3, .5, .5))
 )
 
-df_2 <- drugs[which(cell_lines$clid \%in\% df_layout$clid), as.list(cell_lines[c(21, 26), ]), names(drugs)]
+df_2 <- drugs[c(21, 26), as.list(cell_lines[which(cell_lines$clid \%in\% df_layout$clid)]), names(drugs)]
 df_2 <- gDRtestData::add_data_replicates(df_2)
 df_2 <- gDRtestData::add_concentration(
   df_2,
@@ -61,7 +61,7 @@ trt_df <- S4Vectors::DataFrame(
   DrugName = c("DRUG_10", "DRUG_8"),
   CellLineName = "CELL1"
 )
-input_df <- data.table::data.table(rbind(ctrl_df, trt_df))
+input_df <- data.table::as.data.table(rbind(ctrl_df, trt_df))
 input_df$Duration <- 72
 input_df$CorrectedReadout2 <- input_df$ReadoutValue
 split_df <- identify_data_type(input_df)
