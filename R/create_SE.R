@@ -163,7 +163,7 @@ create_SE <- function(df_,
       df
     } 
     
-    ## Merge all data.frames together.
+    ## Merge all data.tables together.
     # Try to merge by plate, but otherwise just use mean. 
     ctl_df <- data.table::rbindlist(list(UntrtReadout = untrt_df,
                                          Day0Readout = day0_df),
