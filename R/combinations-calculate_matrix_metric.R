@@ -2,13 +2,13 @@
 #'
 #' Calculate a metric based off of single-agent values in combination screens.
 #'
-#' @param sa1 data.frame containing single agent data where entries in 
-#' \code{series_id2} are all \code{0}. Columns of the data.frame include 
+#' @param sa1 data.table containing single agent data where entries in 
+#' \code{series_id2} are all \code{0}. Columns of the data.table include 
 #' identifiers and the \code{metric} of interest.
 #' @param series_id1 String representing the column within \code{sa1} that 
 #' represents id1.
-#' @param sa2 data.frame containing single agent data where entries in 
-#' \code{series_id1} are all \code{0}. Columns of the data.frame include 
+#' @param sa2 data.table containing single agent data where entries in 
+#' \code{series_id1} are all \code{0}. Columns of the data.table include 
 #' identifiers and the \code{metric} of interest.
 #' @param series_id2 String representing the column within \code{sa2} that 
 #' represents id2.
@@ -33,8 +33,8 @@ NULL
 #' @rdname calculate_matrix_metric
 #' @examples
 #' n <- 10
-#' sa1 <- data.frame(conc = seq(n), conc2 = rep(0, n), metric = seq(n))
-#' sa2 <- data.frame(conc = rep(0, n), conc2 = seq(n), metric = seq(n))
+#' sa1 <- data.table::data.table(conc = seq(n), conc2 = rep(0, n), metric = seq(n))
+#' sa2 <- data.table::data.table(conc = rep(0, n), conc2 = seq(n), metric = seq(n))
 #' calculate_HSA(sa1, "conc", sa2, "conc2", "metric")
 #' @export
 calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
@@ -45,8 +45,8 @@ calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
 #' @rdname calculate_matrix_metric
 #' @examples
 #' n <- 10
-#' sa1 <- data.frame(conc = seq(n), conc2 = rep(0, n), metric = seq(n))
-#' sa2 <- data.frame(conc = rep(0, n), conc2 = seq(n), metric = seq(n))
+#' sa1 <- data.table::data.table(conc = seq(n), conc2 = rep(0, n), metric = seq(n))
+#' sa2 <- data.table::data.table(conc = rep(0, n), conc2 = seq(n), metric = seq(n))
 #' calculate_Bliss(sa1, "conc", sa2, "conc2", "metric")
 #' @export
 calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
@@ -100,9 +100,10 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
   colnames(u) <- c(series_id1, series_id2)
 
   idx <- match(u[[series_id1]], sa1[[series_id1]])
-  u <- base::merge(u, sa1[, c(series_id1, "metric1")], by = series_id1)
-  u <- base::merge(u, sa2[, c(series_id2, "metric2")], by = series_id2)
+  
+  u <- base::merge(u, sa1[, c(..series_id1, "metric1")], by = series_id1)
+  u <- base::merge(u, sa2[, c(..series_id2, "metric2")], by = series_id2)
 
   metric <- do.call(FXN, list(u$metric1, u$metric2))
-  cbind(u, metric)
+  data.table::data.table(cbind(u, metric))
 }

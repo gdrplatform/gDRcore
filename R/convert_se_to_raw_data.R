@@ -7,7 +7,7 @@
 #' mae <- gDRutils::get_synthetic_data("finalMAE_small.RDS")
 #' convert_mae_to_raw_data(mae)
 #' 
-#' @return data.frame with raw data
+#' @return data.table with raw data
 #' @export
 convert_mae_to_raw_data <- function(mae) {
   
@@ -41,12 +41,13 @@ convert_mae_to_raw_data <- function(mae) {
   
   data_df[, (conc_cols) := lapply(.SD, function(x) replace(x, is.na(x), 0)), .SDcols = conc_cols]
   data_df[, (drug_cols) := lapply(.SD, function(x) replace(x, is.na(x), untreated_tag[[1]])), .SDcols = drug_cols]
-
+  
   data.table::setorder(data_df)
   
-  data_df <- as.data.frame(data_df[!duplicated(data_df$record_id), ])
-  data_df[order(data_df$record_id), !names(data_df) %in% c("record_id", "BackgroundValue",
-                                                           "WellColumn", "WellRow", "Template", "swap_sa")]
+  data_df <- data_df[!duplicated(data_df$record_id), ]
+  selected_columns <- !names(data_df) %in% c("record_id", "BackgroundValue",
+                                          "WellColumn", "WellRow", "Template", "swap_sa")
+  data_df[order(data_df$record_id), ..selected_columns]
 }
 
 
@@ -54,7 +55,7 @@ convert_mae_to_raw_data <- function(mae) {
 #'
 #' @param se SummarizedExperiment object with "RawTreated" and "Controls" assays
 #'
-#' @return data.frame with raw data
+#' @return data.table with raw data
 #' 
 #' @examples 
 #' mae <- gDRutils::get_synthetic_data("finalMAE_small.RDS")

@@ -29,7 +29,7 @@ included even if it has no matching values in \code{x}}
 
 \item{list}{logical.  If \code{TRUE}, the result will be returned as a list
 of vectors, each vector being the matching values in y. If \code{FALSE},
-result is returned as a data frame with repeated values for each match.}
+result is returned as a data.table with repeated values for each match.}
 
 \item{indexes}{logical.  Whether to return the indices of the matches or the
 actual values.}
@@ -41,7 +41,7 @@ be set to an index value of \code{length+1}.  If {indexes=FALSE}, they will
 default to \code{NA}.}
 }
 \value{
-data.frame
+data.table
 }
 \description{
 Returns a lookup table or list of the positions of ALL matches of its first
@@ -68,7 +68,7 @@ Source of the function:
 https://github.com/cran/grr/blob/master/R/grr.R
 }
 \examples{
-mat_elem <- data.frame(
+mat_elem <- data.table::data.table(
   DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
   DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
   clid = rep(c("C1", "C2"), each = 4)
@@ -81,11 +81,17 @@ ref_idx <- which(
 ref <- mat_elem[ref_idx, ]
 treated <- mat_elem[-ref_idx, ]
 valid <- c("DrugName", "DrugName_2")
-trt <- lapply(valid, function(x) treated[, c("clid", x)])
+trt <- lapply(valid, function(x) {
+  colnames <- c("clid", x) 
+  treated[, ..colnames]
+})
 trt <- do.call(paste, 
   do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]]))))
 )
-ref <- lapply(valid, function(x) ref[, c("clid", x)])
+ref <- lapply(valid, function(x) {
+  colnames <- c("clid", x) 
+  ref[, ..colnames]
+})
 ref <- do.call(paste, 
   do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]]))))
 )

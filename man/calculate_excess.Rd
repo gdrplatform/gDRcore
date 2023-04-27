@@ -2,7 +2,7 @@
 % Please edit documentation in R/combinations-helpers.R
 \name{calculate_excess}
 \alias{calculate_excess}
-\title{Calculate the difference between values in two data.frames}
+\title{Calculate the difference between values in two data.tables}
 \usage{
 calculate_excess(
   metric,
@@ -13,12 +13,12 @@ calculate_excess(
 )
 }
 \arguments{
-\item{metric}{data.frame often representing
+\item{metric}{data.table often representing
 readouts derived by calculating some metric.
 Examples of this could include hsa or bliss calculations
 from single-agent data.}
 
-\item{measured}{data.frame often representing
+\item{measured}{data.table often representing
 measured data from an experiment.}
 
 \item{series_identifiers}{character vector of identifiers in
@@ -32,20 +32,20 @@ to use in excess calculation.}
 to use in excess calculation.}
 }
 \value{
-DataFrame of \code{measured}, now with an additional column named
+data.table of \code{measured}, now with an additional column named
 \code{excess} (positive values for synergy/benefit).
 }
 \description{
 Calculate the difference between values, likely representing
-the same metric, from two data.frames.
+the same metric, from two data.tables.
 }
 \examples{
-metric <- data.frame(
+metric <- data.table::data.table(
   Concentration = c(1, 2, 3, 1, 2, 3),
   Concentration_2 = c(1, 1, 1, 2, 2, 2),
   GRvalue = c(100, 200, 300, 400, 500, 600)
 )
-measured <- data.frame(
+measured <- data.table::data.table(
   Concentration = c(3, 1, 2, 2, 1, 3),
   Concentration_2 = c(1, 1, 1, 2, 2, 2),
   testvalue = c(200, 0, 100, 400, 300, 500)

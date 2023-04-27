@@ -6,7 +6,7 @@ fit_combo_codilutions <- function(measured,
                                   GR_0 = 1) {
   id <- nested_identifiers[1]
   id2 <- nested_identifiers[2]
-
+  
   # Filter out all single-agents.
   single_agents <- measured[[id]] == 0 | measured[[id2]] == 0
   measured <- measured[!single_agents, , drop = FALSE]
@@ -37,7 +37,10 @@ fit_combo_codilutions <- function(measured,
     )
   }
 
-  out <- do.call("rbind", fits)
+  out <- data.table::rbindlist(fits)
+  if (nrow(out) == 0) {
+    out <- NULL  
+  }
   out
 }
 
@@ -58,11 +61,11 @@ fit_codilution_series <- function(measured,
   if (length(ratio) != 1L) {
     stop("more than one ratio between 'series_2' and 'series_1' detected")
   }
-
+  
   measured$summed_conc <- measured[[series_1]] + measured[[series_2]]
   keep <- setdiff(colnames(measured), c(series_1, series_2))
   codilution_fit <- gDRutils::fit_curves(
-    df_ = measured[, keep, drop = FALSE],
+    df_ = measured[, ..keep, drop = FALSE],
     series_identifiers = "summed_conc",
     e_0 = e_0,
     GR_0 = GR_0,

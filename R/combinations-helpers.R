@@ -5,7 +5,7 @@
 #'
 #' @param pred numeric vector for which you want predictions.
 #' @param match_col vector to match on \code{fittings} to get the correct fit.
-#' @param fittings data.frame of fit metrics.
+#' @param fittings data.table of fit metrics.
 #' @param fitting_id_col string of the column name in \code{fittings} that 
 #' should be used to match with \code{match_col} .
 #'
@@ -18,8 +18,8 @@
 #' match_col <- c(1, 1, 2)
 #' fitting_id_col <- "match_on_me"
 #' 
-#' fit1 <- data.frame(h = 2.09, x_inf = 0.68, x_0 = 1, ec50 = 0.003)
-#' fit2 <- data.frame(h = 0.906, x_inf = 0.46, x_0 = 1, ec50 = 0.001)
+#' fit1 <- data.table::data.table(h = 2.09, x_inf = 0.68, x_0 = 1, ec50 = 0.003)
+#' fit2 <- data.table::data.table(h = 0.906, x_inf = 0.46, x_0 = 1, ec50 = 0.001)
 #' fittings <- do.call(rbind, list(fit1, fit2))
 #' fittings[[fitting_id_col]] <- c(1, 2)
 #' 
@@ -27,10 +27,12 @@
 #'
 #' @export
 map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
+  
   ridx <- S4Vectors::match(
     round(log10(match_col), 2), round(log10(fittings[[fitting_id_col]]), 2)
   )
-  metrics <- fittings[ridx, c(fitting_id_col, "x_inf", "x_0", "ec50", "h")]
+  colnames <- c(fitting_id_col, "x_inf", "x_0", "ec50", "h")
+  metrics <- fittings[ridx, ..colnames]
   # Extrapolate fitted values.
   out <- gDRutils::predict_efficacy_from_conc(
     pred,
@@ -43,16 +45,16 @@ map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
 }
 
 
-#' Calculate the difference between values in two data.frames
+#' Calculate the difference between values in two data.tables
 #'
 #' Calculate the difference between values, likely representing 
-#' the same metric, from two data.frames.
+#' the same metric, from two data.tables.
 #'
-#' @param metric data.frame often representing 
+#' @param metric data.table often representing 
 #'               readouts derived by calculating some metric. 
 #'               Examples of this could include hsa or bliss calculations 
 #'               from single-agent data. 
-#' @param measured data.frame often representing 
+#' @param measured data.table often representing 
 #'                 measured data from an experiment.
 #' @param series_identifiers character vector of identifiers in 
 #'                           \code{measured} or \code{metric} 
@@ -63,12 +65,12 @@ map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
 #'                     to use in excess calculation.
 #'
 #' @examples
-#' metric <- data.frame(
+#' metric <- data.table::data.table(
 #'   Concentration = c(1, 2, 3, 1, 2, 3),
 #'   Concentration_2 = c(1, 1, 1, 2, 2, 2),
 #'   GRvalue = c(100, 200, 300, 400, 500, 600)
 #' )
-#' measured <- data.frame(
+#' measured <- data.table::data.table(
 #'   Concentration = c(3, 1, 2, 2, 1, 3),
 #'   Concentration_2 = c(1, 1, 1, 2, 2, 2),
 #'   testvalue = c(200, 0, 100, 400, 300, 500)
@@ -84,7 +86,7 @@ map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
 #'   measured_col
 #' )
 #'
-#' @return DataFrame of \code{measured}, now with an additional column named
+#' @return data.table of \code{measured}, now with an additional column named
 #' \code{excess} (positive values for synergy/benefit).
 #' @export
 calculate_excess <- function(metric, 
@@ -97,15 +99,15 @@ calculate_excess <- function(metric,
   # no repeats
   # TODO: Check that there are no NAs
   idx <- S4Vectors::match(
-    DataFrame(measured[, series_identifiers]), 
-    DataFrame(metric[, series_identifiers])
+    DataFrame(measured[, ..series_identifiers]), 
+    DataFrame(metric[, ..series_identifiers])
   )
   
-  out <- measured[, series_identifiers]
-  excess <- metric[idx, metric_col] - measured[, measured_col]
-  excess[apply(as.matrix(out[, series_identifiers]) == 0, 1, any)] <- NA
+  out <- measured[, ..series_identifiers]
+  excess <- unlist(metric[idx, ..metric_col]) - unlist(measured[, ..measured_col])
+  excess[apply(as.matrix(out[, ..series_identifiers]) == 0, 1, any)] <- NA
   out$excess <- excess
-  as.data.frame(out)
+  out
 }
 
 
@@ -126,7 +128,7 @@ convertDFtoBumpyMatrixUsingIds <- function(df,
 #'
 #' @param original_concs numeric vector of concentrations to replace 
 #'                       using \code{conc_map}.
-#' @param conc_map data.frame of two columns named \code{original_conc_col} 
+#' @param conc_map data.table of two columns named \code{original_conc_col} 
 #'                 and \code{standardized_conc_col}.
 #' @param original_conc_col string of the name of the column in \code{conc_map}
 #'                          containing the original concentrations to replace.
@@ -135,7 +137,7 @@ convertDFtoBumpyMatrixUsingIds <- function(df,
 #'                              concentrations to use for replacement.
 #'
 #' @examples
-#' conc_map <- data.frame(
+#' conc_map <- data.table::data.table(
 #'   orig = c(0.99, 0.6, 0.456, 0.4), 
 #'   std = c(1, 0.6, 0.46, 0.4)
 #' )
@@ -155,13 +157,14 @@ replace_conc_with_standardized_conc <- function(original_concs,
                                                 conc_map, 
                                                 original_conc_col, 
                                                 standardized_conc_col) {
-  out <- conc_map[
+  
+  out <- unlist(conc_map[
     match(
       original_concs, 
       conc_map[[original_conc_col]]
     ), 
-    standardized_conc_col
-  ]
+    ..standardized_conc_col
+  ])
   if (length(out) != length(original_concs)) {
     stop("standardized output is not the same length as the input")
   }
@@ -187,7 +190,7 @@ replace_conc_with_standardized_conc <- function(original_concs,
 #' 
 #' map_conc_to_standardized_conc(conc1, conc2)
 #'
-#' @return data.frame of 2 columns named \code{"concs"} and \code{"rconcs"}
+#' @return data.table of 2 columns named \code{"concs"} and \code{"rconcs"}
 #' containing the original concentrations and their closest matched 
 #' standardized concentrations respectively. and their new standardized 
 #' concentrations.
@@ -198,6 +201,7 @@ replace_conc_with_standardized_conc <- function(original_concs,
 #' @export
 map_conc_to_standardized_conc <- function(conc1, conc2) {
   # Remove single-agent.
+  
   conc_1 <- setdiff(conc1, 0)
   conc_2 <- setdiff(conc2, 0)
 
@@ -213,7 +217,7 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
   }
   concs <- unique(c(conc1, conc2))
   mapped_rconcs <- vapply(concs, .find_closest_match, numeric(1))
-  map <- unique(data.frame(concs = concs, rconcs = mapped_rconcs))
+  map <- unique(data.table::data.table(concs = concs, rconcs = mapped_rconcs))
 
   tol <- 1
   

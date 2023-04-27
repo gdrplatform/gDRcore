@@ -13,9 +13,9 @@ map_df(
 )
 }
 \arguments{
-\item{trt_md}{data.frame of treated metadata.}
+\item{trt_md}{data.table of treated metadata.}
 
-\item{ref_md}{data.frame of untreated metadata.}
+\item{ref_md}{data.table of untreated metadata.}
 
 \item{override_untrt_controls}{named list indicating what treatment metadata
 fields should be used as a control. Defaults to \code{NULL}.}
@@ -39,7 +39,7 @@ TODO: FILL ME!
 }
 \examples{
 n <- 64
-md_df <- data.frame(
+md_df <- data.table::data.table(
   Gnumber = rep(c("vehicle", "untreated", paste0("G", seq(2))), each = 16), 
   DrugName = rep(c("vehicle", "untreated", paste0("GN", seq(2))), each = 16), 
   clid = paste0("C", rep_len(seq(4), n)),

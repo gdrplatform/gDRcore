@@ -25,7 +25,6 @@ Imports:
     checkmate,
     futile.logger,
     gDRutils (>= 0.99.5),
-    methods,
     MultiAssayExperiment,
     purrr,
     plyr,

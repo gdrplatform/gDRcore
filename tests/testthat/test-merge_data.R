@@ -12,6 +12,10 @@ test_that("merge_data works as expected", {
   template <- gDRimport::load_templates(templateFiles)
   rawData <- gDRimport::load_results(rawDataFiles, manifest$headers, instrument = "EnVision")
   rawData <- data.table::setorderv(data.table::setDF(rawData), o_cols)
+
+  data.table::setDT(manifest$data)
+  data.table::setDT(template)
+  data.table::setDT(rawData)
   
   merged_quietly <- purrr::quietly(merge_data)(manifest$data, template, rawData)
   merged <- data.table::setorderv(data.table::setDF(merged_quietly$result), o_cols)
@@ -34,7 +38,7 @@ test_that("merge_data works as expected", {
   # testing wrong input
   expect_error(
     merge_data("test", template, rawData),
-    "inherits(manifest, \"data.frame\") is not TRUE",
+    "Assertion on 'manifest' failed: Must be a data.table",
     fixed = TRUE
   )
 })

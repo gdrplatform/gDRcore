@@ -81,7 +81,7 @@ test_that("main pipeline functions works as expected", {
   })
   
   expect_identical(mae_v3$result, mae_v4$result)
-  
+
   testthat::expect_error(
     runDrugResponseProcessingPipeline(input_data, selected_experiments = "single-agent"),
     "^Selected experiments"

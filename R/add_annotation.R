@@ -1,8 +1,8 @@
 #' add_CellLine_annotation
 #'
-#' add cellline annotation to a data.frame with metadata
+#' add cellline annotation to a data.table with metadata
 #'
-#' @param df_metadata data.frame with metadata
+#' @param df_metadata data.table with metadata
 #' @param DB_cellid_header string with colnames with cell line identifier
 #'                         in the annotation file
 #' @param DB_cell_annotate character vector with mandatory colnames 
@@ -19,12 +19,12 @@
 #' @examples 
 #' 
 #' add_CellLine_annotation(
-#'   data.frame(
+#'   data.table::data.table(
 #'     clid = "123", 
 #'     CellLineName = "name of the cell line")
 #' )
 #'
-#' @return data.frame with metadata with annotated cell lines
+#' @return data.table with metadata with annotated cell lines
 #' @export
 #'
 add_CellLine_annotation <- function(
@@ -47,7 +47,7 @@ add_CellLine_annotation <- function(
 ) {
   
   # Assertions:
-  checkmate::assert_data_frame(df_metadata)
+  checkmate::assert_data_table(df_metadata)
   checkmate::assert_string(fill, null.ok = TRUE)
 
   cellline <- gDRutils::get_env_identifiers("cellline")
@@ -66,7 +66,7 @@ add_CellLine_annotation <- function(
   missingTblCellLines <- NULL
   if (!is.null(fill) && !all(validatedCLs)) {
     unValidatedCellLine <- unique(df_metadata[[cellline]])[!validatedCLs]
-    missingTblCellLines <- data.frame(
+    missingTblCellLines <- data.table::data.table(
       parental_identifier = unValidatedCellLine,
       cell_line_name = unValidatedCellLine,
       cell_line_identifier = unValidatedCellLine,
@@ -92,11 +92,11 @@ add_CellLine_annotation <- function(
   if (any(bad_CL)) {
     futile.logger::flog.warn("Cell line ID %s not found in cell line database",
                              paste(CLIDs[bad_CL], collapse = " ; "))
-    temp_CLIDs <- as.data.frame(matrix(ncol = length(c(cellline,
-                                                       add_clid)),
-                                       nrow = length(CLIDs[bad_CL])))
-    colnames(temp_CLIDs) <- c(cellline,
-                              add_clid)
+    temp_CLIDs <-
+      data.table::data.table(matrix(ncol = length(c(cellline,
+                                                    add_clid)),
+                                    nrow = length(CLIDs[bad_CL])))
+    colnames(temp_CLIDs) <- c(cellline, add_clid)
     
     temp_CLIDs[, cellline] <- temp_CLIDs[, cellline_name] <- CLIDs[bad_CL]
     CLs_info <- rbind(CLs_info, temp_CLIDs, fill = TRUE)
@@ -112,9 +112,9 @@ add_CellLine_annotation <- function(
 
 #' add_Drug_annotation
 #'
-#' add drug annotation to a data.frame with metadata
+#' add drug annotation to a data.table with metadata
 #'
-#' @param df_metadata data.frame with metadata
+#' @param df_metadata data.table with metadata
 #' @param fname string with file name with annotation
 #' @param fill string indicating how unknown cell lines should be filled in the DB
 #' @param annotationPackage string indication name of the package containing drug annotation
@@ -122,11 +122,11 @@ add_CellLine_annotation <- function(
 #' based on the annotation file stored in gDRtestData.
 #' @examples
 #' add_Drug_annotation(
-#'   data.frame(
+#'   data.table::data.table(
 #'     Gnumber = "drug_id", 
 #'     DrugName = "name of the drug")
 #' )
-#' @return data.frame with metadata with annotated drugs
+#' @return data.table with metadata with annotated drugs
 #' @export
 #'
 add_Drug_annotation <- function(
@@ -141,7 +141,7 @@ add_Drug_annotation <- function(
 ) {
   
   # Assertions:
-  checkmate::assert_data_frame(df_metadata)
+  checkmate::assert_data_table(df_metadata)
   checkmate::assert_string(fill, null.ok = TRUE)
   nrows_df <- nrow(df_metadata)
   
@@ -194,7 +194,7 @@ add_Drug_annotation <- function(
 
   Drug_info$drug <- remove_drug_batch(Drug_info$drug)
   Drug_info <-
-    rbind(data.frame(
+    rbind(data.table::data.table(
       drug = untreated_tag,
       drug_name = untreated_tag,
       drug_moa = untreated_tag

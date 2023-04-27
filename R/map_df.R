@@ -3,8 +3,8 @@
 #' Map treated conditions to their respective Day0, untreated, or single-agent 
 #' references using condition metadata.
 #'
-#' @param trt_md data.frame of treated metadata. 
-#' @param ref_md data.frame of untreated metadata.
+#' @param trt_md data.table of treated metadata. 
+#' @param ref_md data.table of untreated metadata.
 #' @param override_untrt_controls named list indicating what treatment metadata 
 #' fields should be used as a control. Defaults to \code{NULL}.
 #' @param ref_cols character vector of the names of reference columns to 
@@ -14,7 +14,7 @@
 #' 
 #' @examples 
 #' n <- 64
-#' md_df <- data.frame(
+#' md_df <- data.table::data.table(
 #'   Gnumber = rep(c("vehicle", "untreated", paste0("G", seq(2))), each = 16), 
 #'   DrugName = rep(c("vehicle", "untreated", paste0("GN", seq(2))), each = 16), 
 #'   clid = paste0("C", rep_len(seq(4), n)),
@@ -54,8 +54,8 @@ map_df <- function(trt_md,
                    ref_type = c("Day0", "untrt_Endpoint")) {
   
   # Assertions:
-  checkmate::assert_class(trt_md, "data.frame")
-  checkmate::assert_class(ref_md, "data.frame")
+  checkmate::assert_data_table(trt_md)
+  checkmate::assert_data_table(ref_md)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
   checkmate::assert_character(ref_cols)
   checkmate::assert_character(ref_type)
@@ -76,15 +76,15 @@ map_df <- function(trt_md,
   
   if (ref_type == "Day0") {
     # Identifying which of the durations have a value of 0.
-    matching_list <- list(T0 = ref_md[, duration_col] == 0, conc = is_ref_conc)
+    matching_list <- list(T0 = ref_md[[duration_col]] == 0, conc = is_ref_conc)
     matchFactor <- "T0"
   } else if (ref_type == "untrt_Endpoint") {
     matching_list <- list(conc = is_ref_conc)
     matchFactor <- duration_col 
   }
   
-  trt_rnames <- rownames(trt_md)
-  ref_rnames <- rownames(ref_md)
+  trt_rnames <- trt_md$rownames
+  ref_rnames <- ref_md$rownames
   
   # define matrix with matching metadata
   present_ref_cols <- intersect(ref_cols, names(ref_md))
@@ -103,8 +103,8 @@ map_df <- function(trt_md,
     #    cases with non-exact matches will be returned as NAs
     match_l <-
       matches(
-        do.call("paste", trt_md[, present_ref_cols]),
-        do.call("paste", ref_md[, present_ref_cols]),
+        do.call("paste", trt_md[, ..present_ref_cols]),
+        do.call("paste", ref_md[, ..present_ref_cols]),
         all.y = FALSE,
         list = TRUE
       )
@@ -122,19 +122,19 @@ map_df <- function(trt_md,
     # 4.2 support cases with overriden untreated controls
     # this logic is pretty slow currently 
   } else {
-    
+
   out <- lapply(seq_along(trt_rnames), function(i) {
     treatment <- trt_rnames[i]
     if (is.na(exact_out[[treatment]]) || !is.null(override_untrt_controls)) {
-     
+      
       refs <- lapply(present_ref_cols, function(y) {
-        ref_md[, y] == trt_md[treatment, y]
+        unname(unlist(ref_md[, ..y]) == unlist(trt_md[which(trt_md$rownames == treatment), ..y]))
       })
       
       if (!is.null(override_untrt_controls)) {
         for (overridden in names(override_untrt_controls)) {
           refs[[overridden]] <-
-            ref_md[, overridden] == override_untrt_controls[[overridden]]
+            unname(unlist(ref_md[, ..overridden]) == override_untrt_controls[[overridden]])
         }
       }
       
@@ -189,6 +189,7 @@ map_df <- function(trt_md,
 #' @return list
 #' 
 .map_references <- function(mat_elem) {
+  
   clid <- gDRutils::get_env_identifiers("cellline")
   valid <- unlist(
     intersect(
@@ -201,7 +202,8 @@ map_df <- function(trt_md,
       colnames(mat_elem)
     )
   )
-  drug_cols <- mat_elem[valid]
+  
+  drug_cols <- mat_elem[, ..valid]
 
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
   has_tag <- as.data.frame(lapply(drug_cols, function(x) x %in% untrt_tag))
@@ -209,21 +211,27 @@ map_df <- function(trt_md,
 
   is_untrt <- ntag == length(valid)
   is_ref <- ntag != 0L & !is_untrt
+  
+  mat_elem$rownames <- as.character(seq_len(nrow(mat_elem)))
 
-  trt <- mat_elem[!is_ref & !is_untrt, ]
-  ref <- mat_elem[is_ref, ]
+  trt <- mat_elem[which(!is_ref & !is_untrt)]
+  ref <- mat_elem[which(is_ref), ]
 
   out <- vector("list", nrow(trt))
-  names(out) <- rownames(trt)
+  names(out) <- trt$rownames
   
   if (any(is_ref)) {
     # store rownames of trt and ref and replicate them based on the length of 
     # drug columns
-    trtNames <- rep(rownames(trt), length(valid))
-    refNames <- rep(rownames(ref), length(valid))
+    trtNames <- rep(trt$rownames, length(valid))
+    refNames <- rep(ref$rownames, length(valid))
     
-    # split data.frames to simple model with clid column and drug column
-    trt <- lapply(valid, function(x) trt[, c(clid, x)])
+    # split data.tables to simple model with clid column and drug column
+    
+    trt <- lapply(valid, function(x) {
+      colnames <- c(clid, x) 
+      trt[, ..colnames] 
+    })
     trt <- do.call(
       paste, 
       do.call(
@@ -232,7 +240,10 @@ map_df <- function(trt_md,
       )
     )
     
-    ref <- lapply(valid, function(x) ref[, c(clid, x)])
+    ref <- lapply(valid, function(x) {
+      colnames <- c(clid, x) 
+      ref[, ..colnames] 
+    })
     ref <- do.call(
       paste, 
       do.call(

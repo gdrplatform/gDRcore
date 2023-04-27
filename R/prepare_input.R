@@ -5,7 +5,7 @@
 #' - refining nested identifiers
 #' - splitting df_ into (per experiment) df_list
 #' 
-#' @param x data.frame with raw data or MAE object with dose-reponse data
+#' @param x data.table with raw data or MAE object with dose-reponse data
 #' @param ... additional parameters
 #' 
 #' @examples 
@@ -36,21 +36,21 @@ prepare_input <-
 #' - refining nested confounders
 #' - refining nested identifiers
 #' - splitting df_ into (per experiment) df_list
-#' @param x data.frame with raw data
+#' @param x data.table with raw data
 #' @param ... additional parameters
 #' @param nested_identifiers_l list with the 
 #' nested_identifiers(character vectors) for `single-agent` and (optionally) 
 #' for `combination` data
 #' @param nested_confounders Character vector of the nested_confounders for a 
 #' given assay. nested_keys is character vector of column names to include in 
-#' the data.frames in the assays of the resulting \code{SummarizedExperiment} 
+#' the data.tables in the assays of the resulting \code{SummarizedExperiment} 
 #' object. Defaults to the \code{nested_identifiers} and 
 #' \code{nested_confounders} if passed through
 #' 
 #' @return list of input data
 #' 
 #' @export
-prepare_input.data.frame <-
+prepare_input.data.table <-
   function(x,
            nested_confounders = gDRutils::get_env_identifiers("barcode"),
            nested_identifiers_l = .get_default_nested_identifiers(),
@@ -68,7 +68,6 @@ prepare_input.data.frame <-
     
     inl$df_ <- identify_data_type(x)
     inl$df_list <- split_raw_data(inl$df_)
-    inl$df_list <- .clear_rownames(inl$df_list)
     inl$nested_identifiers_l <- .set_nested_identifiers(nested_identifiers_l)
     inl$nested_confounders <- .set_nested_confounders(
       nested_confounders = nested_confounders,
@@ -97,7 +96,7 @@ prepare_input.data.frame <-
 #' for `combination` data
 #' @param nested_confounders Character vector of the nested_confounders for 
 #' a given assay. nested_keys is character vector of column names to include 
-#' in the data.frames in the assays of the resulting 
+#' in the data.tables in the assays of the resulting 
 #' \code{SummarizedExperiment} object. Defaults to the \code{nested_identifiers}
 #' and \code{nested_confounders} if passed through
 #' @param raw_data_field metadata field with raw data

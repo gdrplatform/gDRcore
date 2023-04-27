@@ -17,7 +17,7 @@ define_matrix_grid_positions <- function(conc1, conc2) {
   conc_1 <- sort(unique(round_concentration(conc1)))
   pos_y <- log10conc_1 <- log10(conc_1)
   pos_y[1] <- .generate_gap_for_single_agent(log10conc_1)
-  axis_1 <- data.frame(conc_1 = conc_1,
+  axis_1 <- data.table::data.table(conc_1 = conc_1,
     log10conc_1 = log10conc_1,
     pos_y = pos_y,
     marks_y = sprintf("%.2g", conc_1)
@@ -26,7 +26,7 @@ define_matrix_grid_positions <- function(conc1, conc2) {
   conc_2 <- sort(unique(round_concentration(conc2)))
   pos_x <- log10conc_2 <- log10(conc_2)
   pos_x[1] <- .generate_gap_for_single_agent(log10conc_2)
-  axis_2 <- data.frame(conc_2 = conc_2,
+  axis_2 <- data.table::data.table(conc_2 = conc_2,
     log10conc_2 = log10conc_2,
     pos_x = pos_x,
     marks_x = sprintf("%.2g", conc_2)
@@ -54,7 +54,7 @@ calculate_Loewe <- function(
   if (length(series_identifiers) != 2L) {
     stop("only series_identifiers of length 2 are currently supported")
   }
- 
+  
   iso_cutoffs <- get_isocutoffs(df_mean, normalization_type)
 
   all_iso <- vector("list", length(iso_cutoffs))
@@ -153,7 +153,7 @@ calculate_Loewe <- function(
     )
 
     # perform the smoothing
-    df_iso_curve <- data.frame(
+    df_iso_curve <- data.table::data.table(
       x1 = isobol_x1, 
       x2_off = zoo::rollmean(
         rowMeans(
@@ -205,12 +205,13 @@ calculate_Loewe <- function(
     df_iso_curve$x2_ref_cap <- df_iso_curve$x2_ref - over_edge * sqrt(2)
     
     # rotate back the reference
-    len <- nrow(df_iso_curve)
+    # In next step we will add two NA rows so we need to include them in the length:
+    len <- nrow(df_iso_curve + 2)
     df_iso_curve$pos_x_ref <- 
       (df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) + min(axis_2$pos_x)
     df_iso_curve$pos_y_ref <- 
       (-df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) + min(axis_1$pos_y)
-    df_iso_curve <- rbind(NA, df_iso_curve, NA)
+    df_iso_curve <- rbind(NA, df_iso_curve, NA, fill = TRUE)
     df_iso_curve[1, c("pos_x", "pos_x_ref")] <- min(axis_2$pos_x)
     df_iso_curve[1, c("pos_y", "pos_y_ref")] <- log10(ref_conc_1)
     df_iso_curve[1, "x1"] <-
@@ -269,7 +270,7 @@ calculate_Loewe <- function(
       ratio_idx <- round(nrow(df_iso_curve) / 2)
     }
 
-    df_100x_AUC <- data.frame(
+    df_100x_AUC <- data.table::data.table(
       log10_ratio_conc = df_iso_curve$log10_ratio_conc[ratio_idx],
       AUC_log2CI <- vapply(ratio_idx, function(x) {
         mean(
@@ -320,7 +321,7 @@ calculate_Loewe <- function(
   df_all_AUC_log2CI <- do.call(
     rbind, 
     lapply(names(all_iso), function(x) {
-      data.frame(
+      data.table::data.table(
         iso_level = x, 
         CI_100x = all_iso[[x]]$AUC_log2CI,
         ref_conc_1 = all_iso[[x]]$ref_conc_1, 
@@ -368,6 +369,7 @@ calculate_isobolograms <- function(row_fittings,
                                    isobol_value,
                                    max1_cap, 
                                    max2_cap) {
+  
     # cutoff point by row
     conc2 <- gDRutils::predict_conc_from_efficacy(
       efficacy = isobol_value,
@@ -376,7 +378,7 @@ calculate_isobolograms <- function(row_fittings,
       ec50 = row_fittings$ec50,
       h = row_fittings$h
     )
-    row_iso <- data.frame(conc_1 = row_fittings[, "cotrt_value"],
+    row_iso <- data.table::data.table(conc_1 = row_fittings[, "cotrt_value"],
       conc_2 = conc2,
       fit_type = "by_row")
 
@@ -388,11 +390,11 @@ calculate_isobolograms <- function(row_fittings,
       ec50 = col_fittings$ec50,
       h = col_fittings$h
     )
-    col_iso <- data.frame(conc_1 = conc1,
+    col_iso <- data.table::data.table(conc_1 = conc1,
       conc_2 = col_fittings[, "cotrt_value"],
       fit_type = "by_col")
 
-    xy_iso <- do.call("rbind", list(row_iso, col_iso))
+    xy_iso <- data.table::rbindlist(list(row_iso, col_iso))
     xy_iso$conc_1 <- pmin(xy_iso$conc_1, max1_cap)
     xy_iso$conc_2 <- pmin(xy_iso$conc_2, max2_cap)
 
@@ -406,7 +408,7 @@ calculate_isobolograms <- function(row_fittings,
         ec50 = codilution_fittings$ec50,
         h = codilution_fittings$h
       ) 
-      codil_iso <- data.frame(
+      codil_iso <- data.table::data.table(
         conc_1 = conc_mix / (1 + codilution_fittings$ratio),
         conc_2 = conc_mix / (1 + (1 / codilution_fittings$ratio)),
         fit_type = "by_codil"
@@ -422,8 +424,8 @@ calculate_isobolograms <- function(row_fittings,
         max2_cap, 
         max1_cap / codilution_fittings$conc_ratio
       )[capped_idx]
-
-      isobologram_values <- do.call("rbind", list(xy_iso, codil_iso))
+      
+      isobologram_values <- data.table::rbindlist(list(xy_iso, codil_iso), fill = TRUE)
     } else {
       isobologram_values <- xy_iso
     }

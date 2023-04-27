@@ -7,7 +7,7 @@ test_that("fit_combo_codilutions works as expected", {
     vals <- c(vals, start * start[i])
   }
   nested_identifiers <- c("Concentration", "Concentration_2")
-  measured <- DataFrame(Concentration = rep(concs, n),
+  measured <- data.table::data.table(Concentration = rep(concs, n),
     Concentration_2 = rep(concs, each = n),
     x = vals,
     normalization_type = "GR")
@@ -29,7 +29,7 @@ test_that("fit_codilution_series works as expected", {
     vals <- c(vals, start * start[i])
   }
   nested_identifiers <- c("Concentration", "Concentration_2")
-  measured <- DataFrame(Concentration = rep(concs, n),
+  measured <- data.table::data.table(Concentration = rep(concs, n),
     Concentration_2 = rep(concs, each = n),
     x = vals,
     normalization_type = "GR")

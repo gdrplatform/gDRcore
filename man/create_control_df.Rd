@@ -2,7 +2,7 @@
 % Please edit documentation in R/reference_utils.R
 \name{create_control_df}
 \alias{create_control_df}
-\title{Create a control dataframe for a treatment-cell line combination.}
+\title{Create a control data.table for a treatment-cell line combination.}
 \usage{
 create_control_df(
   df_,
@@ -12,10 +12,10 @@ create_control_df(
 )
 }
 \arguments{
-\item{df_}{data.frame}
+\item{df_}{data.table}
 
 \item{control_cols}{character vector of columns to include in the resulting
-control data.frame.}
+control data.table.}
 
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
@@ -24,8 +24,8 @@ Defaults to \code{mean(x, trim = 0.25)}.}
 \code{CorrectedReadout}.}
 }
 \value{
-data.frame of values aggregated by
+data.table of values aggregated by
 }
 \description{
-Create an aggregated control data.frame.
+Create an aggregated control data.table.
 }

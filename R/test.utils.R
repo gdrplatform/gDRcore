@@ -1,7 +1,7 @@
 #' Testing synthetic data form gDRtestData package
 #'
 #' @param original original MAE assay
-#' @param data datase MAE or data frame
+#' @param data datase MAE or data.table
 #' @param dataName dataset name
 #' @param override_untrt_controls named list containing defining factors in 
 #' the treatments

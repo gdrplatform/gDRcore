@@ -2,18 +2,18 @@
 % Please edit documentation in R/utils.R
 \name{get_default_nested_identifiers}
 \alias{get_default_nested_identifiers}
-\alias{get_default_nested_identifiers.data.frame}
+\alias{get_default_nested_identifiers.data.table}
 \alias{get_default_nested_identifiers.SummarizedExperiment}
 \title{Get default nested identifiers}
 \usage{
 get_default_nested_identifiers(x, data_model = NULL)
 
-\method{get_default_nested_identifiers}{data.frame}(x, data_model = NULL)
+\method{get_default_nested_identifiers}{data.table}(x, data_model = NULL)
 
 \method{get_default_nested_identifiers}{SummarizedExperiment}(x, data_model = NULL)
 }
 \arguments{
-\item{x}{data.frame with raw data or SummarizedExperiment object
+\item{x}{data.table with raw data or SummarizedExperiment object
 with gDR assays}
 
 \item{data_model}{single-agent vs combination}
@@ -25,6 +25,6 @@ vector of nested identifiers
 Get default nested identifiers
 }
 \examples{
-get_default_nested_identifiers(data.frame())
+get_default_nested_identifiers(data.table::data.table())
 
 }

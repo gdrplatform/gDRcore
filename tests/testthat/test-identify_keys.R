@@ -34,7 +34,7 @@ test_that("identify_keys works", {
     "CorrectedReadout"
   )
 
-  df_ <- data.frame(matrix(0, nrow = 1, ncol = length(cols)))
+  df_ <- data.table::data.table(matrix(0, nrow = 1, ncol = length(cols)))
   colnames(df_) <- cols
   df_$DrugName <- gDRutils::get_env_identifiers("untreated_tag")[1]
 

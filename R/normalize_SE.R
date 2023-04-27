@@ -47,7 +47,7 @@ normalize_SE <- function(se,
   
   gDRutils::validate_se_assay_name(se, control_assay)
   gDRutils::validate_se_assay_name(se, raw_treated_assay)
-
+  
   
   if (is.null(nested_identifiers)) {
     nested_identifiers <- get_default_nested_identifiers(
@@ -94,7 +94,7 @@ normalize_SE <- function(se,
     ), 
     drop = FALSE
   ]
-
+  
   refs <- BumpyMatrix::unsplitAsDataFrame(
     SummarizedExperiment::assays(se)[[control_assay]]
   )
@@ -107,8 +107,8 @@ normalize_SE <- function(se,
     conc2 <- gDRutils::get_env_identifiers("concentration2")
     swap_idx <- !is.na(trt$swap_sa)
     if (any(swap_idx)) {
-    trt[!is.na(trt$swap_sa), c(conc, conc2)] <-
-      trt[!is.na(trt$swap_sa), c(conc2, conc)]
+    trt[which(!is.na(trt$swap_sa)), c(conc, conc2)] <-
+      trt[which(!is.na(trt$swap_sa)), c(conc2, conc)]
     }
   }
   
@@ -132,6 +132,7 @@ normalize_SE <- function(se,
   # Column major order, so go down first.
 
   out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
+    
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
@@ -216,8 +217,7 @@ normalize_SE <- function(se,
   SummarizedExperiment::assays(se)[[normalized_assay]] <- norm
   se
 }
-
-
+  
 #' @keywords internal
 aggregate_ref <- function(ref_df, control_mean_fxn) {
   

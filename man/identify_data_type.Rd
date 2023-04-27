@@ -7,7 +7,7 @@
 identify_data_type(df, codilution_conc = 2, matrix_conc = 1)
 }
 \arguments{
-\item{df}{data.frame of raw drug response data
+\item{df}{data.table of raw drug response data
 containing both treated and untreated values}
 
 \item{codilution_conc}{integer of maximum number of concentration ratio
@@ -20,8 +20,8 @@ as co-treatment or matrix data type;
 defaults to \code{1}}
 }
 \value{
-data.frame of raw drug response data with additional column \code{type}
-with the info of data type for a given row of data.frame
+data.table of raw drug response data with additional column \code{type}
+with the info of data type for a given row of data.table
 }
 \description{
 Identify type of data
@@ -43,7 +43,7 @@ trt_df <- S4Vectors::DataFrame(
   DrugName = c("DRUG_10", "DRUG_8"),
   CellLineName = "CELL1"
 )
-input_df <- as.data.frame(rbind(ctrl_df, trt_df))
+input_df <- data.table::as.data.table(rbind(ctrl_df, trt_df))
 input_df$Duration <- 72
 input_df$CorrectedReadout2 <- input_df$ReadoutValue
 identify_data_type(input_df)
