@@ -45,8 +45,8 @@ fit_combo_cotreatments <- function(measured,
       
       # if the fit or the prediction fails, tries to get the reference value 
       # from the actual data
-      sa <- unique(unlist(measured[which(measured[, ..cotrt_id] == conc & 
-                             measured[, ..series_id] == 0), "x"]))
+      
+      sa <- unique(unlist(measured[get(cotrt_id) == conc & get(series_id) == 0, j = "x"]))
     } # else x_0 will be NA (thus a free parameter)
     
     cotrt_fittings[[i]] <- fit_cotreatment_series(

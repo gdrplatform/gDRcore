@@ -22,9 +22,9 @@ test_that("main pipeline functions works as expected", {
   template <- list.files(dataDir, pattern = "Template", full.names = TRUE)
   raw_data <- list.files(dataDir, pattern = "^RawData", full.names = TRUE)
   l_data <- purrr::quietly(gDRimport::load_data)(manifest, template, raw_data)
-  imported_data <-  purrr::quietly(merge_data)(data.table::setDT(l_data$result$manifest),
-                                               data.table::setDT(l_data$result$treatments),
-                                               data.table::setDT(l_data$result$data))
+  imported_data <-  purrr::quietly(merge_data)(l_data$result$manifest,
+                                               l_data$result$treatments,
+                                               l_data$result$data)
   
   input_data <- imported_data$result
 

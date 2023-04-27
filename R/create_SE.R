@@ -95,7 +95,7 @@ create_SE <- function(df_,
   
   controls <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
   
-  ctl_maps <- gDRutils::loop(controls, function(ctl_type) {
+  ctl_maps <- lapply(controls, function(ctl_type) {
     map_df(
       treated, 
       untreated, 
@@ -119,13 +119,12 @@ create_SE <- function(df_,
   ## The mapping_entries contain all exhaustive combinations of treatments 
   ## and cells. Not all conditions will actually exist in the data, so filter 
   ## out those that do not exist. 
-  treated_rows <- which(treated$rownames %in% unique(groupings))
-  treated <- treated[treated_rows, ]
+  treated <- treated[rownames %in% unique(groupings)]
   untreated <- dfs[dfs$groupings %in% unique(unlist(ctl_maps)), ]
   
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
   
-  out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
+  out <- lapply(seq_len(nrow(treated)), function(i) {
     
     trt <- treated$rownames[i]
     

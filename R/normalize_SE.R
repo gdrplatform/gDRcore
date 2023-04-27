@@ -131,7 +131,7 @@ normalize_SE <- function(se,
   
   # Column major order, so go down first.
 
-  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
+  out <- lapply(seq_len(nrow(iterator)), function(row) {
     
     x <- iterator[row, ]
     i <- x[["row"]]
@@ -219,7 +219,7 @@ normalize_SE <- function(se,
 }
   
 #' @keywords internal
-  aggregate_ref <- function(ref_df, control_mean_fxn) {
+aggregate_ref <- function(ref_df, control_mean_fxn) {
   
   data_columns <- setdiff(colnames(ref_df), c("row", "column", "masked", "isDay0"))
   corr_readout <- "CorrectedReadout"

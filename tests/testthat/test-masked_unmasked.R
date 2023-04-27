@@ -3,7 +3,7 @@ test_that("masked and unmasked values are processed properly", {
   original <- gDRutils::get_synthetic_data(data)
   
   df_layout <-
-    data.table::setDT(merge(as.data.frame(cell_lines[2:11, ]), as.data.frame(drugs[2:11, ]), by = NULL))
+    data.table::as.data.table(merge.data.frame(cell_lines[2:11, ], drugs[2:11, ], by = NULL))
   df_layout <- gDRtestData::add_data_replicates(df_layout)
   df_layout <- gDRtestData::add_concentration(df_layout)
   
@@ -13,8 +13,7 @@ test_that("masked and unmasked values are processed properly", {
   df_merged_data[df_merged_data$clid == df_merged_data$clid[[3]] &
                    df_merged_data$Gnumber ==  unique(df_merged_data$Gnumber)[[3]],
                  "masked"] <- TRUE
-  data.table::setDT(df_merged_data)
-  
+
   finalMAE <- purrr::quietly(runDrugResponseProcessingPipeline)(
     df_merged_data, 
     override_untrt_controls = NULL,

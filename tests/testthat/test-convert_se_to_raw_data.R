@@ -22,9 +22,9 @@ test_that("convert_mae_to_raw_data works as expected with matrix data", {
   )
   input_df <- convert_mae_to_raw_data(mae$result)
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  input_df <- data.table::as.data.table(as.data.frame(lapply(input_df, function(x) {
+  input_df <- data.table::as.data.table(lapply(input_df, function(x) {
     ifelse(x %in% untreated_tag, untreated_tag[2], x)
-  })))
+  }))
   mae2 <- purrr::quietly(runDrugResponseProcessingPipeline)(
     input_df
   )

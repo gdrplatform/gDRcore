@@ -47,7 +47,7 @@ fit_SE <- function(se,
   )
   iterator <- unique(avg_trt[, c("column", "row")])
   
-  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
+  out <- lapply(seq_len(nrow(iterator)), function(row) {
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
@@ -63,8 +63,9 @@ fit_SE <- function(se,
       if (!all(is.na(avg_df[[conc]]))) {
         avg_df <- avg_df[avg_df[[conc]] != 0, ]
       }
+      
       fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(
-        data.table::setDT(as.data.frame(avg_df)),
+        ((avg_df)),
         series_identifiers = nested_identifiers,
         e_0 = 1,
         GR_0 = 1,

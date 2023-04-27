@@ -74,7 +74,7 @@ fit_SE.combinations <- function(se,
 
   iterator <- unique(avg[, c("column", "row")])
 
-  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
+  out <- lapply(seq_len(nrow(iterator)), function(row) {
   
     bliss_excess <- hsa_excess <- metrics <- all_iso_points <- 
       isobolograms <- smooth_mx <- NULL
@@ -152,8 +152,7 @@ fit_SE.combinations <- function(se,
     for (metric in normalization_types) {
       
       metric_name <- gDRutils::extend_normalization_type_name(metric)
-      avg_combo <- data.table::as.data.table(data.frame(avg_combo))
-      
+      avg_combo <- data.table::as.data.table(avg_combo)
       
       # fit by column: the series in the primary identifier, the cotrt is the 
       # secondary one
