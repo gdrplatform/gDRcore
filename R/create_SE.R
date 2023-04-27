@@ -95,7 +95,7 @@ create_SE <- function(df_,
   
   controls <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
   
-  ctl_maps <- lapply(controls, function(ctl_type) {
+  ctl_maps <- gDRutils::loop(controls, function(ctl_type) {
     map_df(
       treated, 
       untreated, 
@@ -124,7 +124,7 @@ create_SE <- function(df_,
   
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
   
-  out <- lapply(seq_len(nrow(treated)), function(i) {
+  out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
     
     trt <- treated$rownames[i]
     

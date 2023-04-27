@@ -47,7 +47,7 @@ fit_SE <- function(se,
   )
   iterator <- unique(avg_trt[, c("column", "row")])
   
-  out <- lapply(seq_len(nrow(iterator)), function(row) {
+  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
