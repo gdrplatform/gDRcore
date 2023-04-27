@@ -119,7 +119,8 @@ create_SE <- function(df_,
   ## The mapping_entries contain all exhaustive combinations of treatments 
   ## and cells. Not all conditions will actually exist in the data, so filter 
   ## out those that do not exist. 
-  treated <- treated[rownames %in% unique(groupings)]
+  treated_rows <- which(treated$rownames %in% unique(groupings))
+  treated <- treated[treated_rows, ]
   untreated <- dfs[dfs$groupings %in% unique(unlist(ctl_maps)), ]
   
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
