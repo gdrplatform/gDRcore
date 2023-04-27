@@ -2,7 +2,7 @@
 % Please edit documentation in R/reference_utils.R
 \name{create_control_df}
 \alias{create_control_df}
-\title{Create a control dataframe for a treatment-cell line combination.}
+\title{Create a control data.table for a treatment-cell line combination.}
 \usage{
 create_control_df(
   df_,

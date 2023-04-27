@@ -10,7 +10,7 @@ convert_mae_to_raw_data(mae)
 \item{mae}{MultiAssayExperiment object with SummarizedExperiments containing "RawTreated" and "Controls" assays}
 }
 \value{
-data.frame with raw data
+data.table with raw data
 }
 \description{
 Transform mae into raw data

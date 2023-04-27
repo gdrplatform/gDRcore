@@ -10,7 +10,7 @@ convert_se_to_raw_data(se)
 \item{se}{SummarizedExperiment object with "RawTreated" and "Controls" assays}
 }
 \value{
-data.frame with raw data
+data.table with raw data
 }
 \description{
 Transform se into raw_data

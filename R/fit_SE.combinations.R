@@ -366,34 +366,32 @@ fit_SE.combinations <- function(se,
       hsa_excess <- plyr::rbind.fill(hsa_excess, as.data.frame(h_excess))
       bliss_excess <- plyr::rbind.fill(bliss_excess, as.data.frame(b_excess))
       # check if it does not contain only ids
+      
       if (!is.null(smooth_mx) && ncol(smooth_mx) != 2) {
-        smooth_mx <- as.data.frame(
-          merge(
-            smooth_mx, 
-            av_matrix, 
-            all = TRUE,
-            by = c(id, id2, "row_id", "col_id")
-          )
-        )
+        smooth_mx <-
+          merge(smooth_mx,
+                av_matrix,
+                all = TRUE,
+                by = c(id, id2, "row_id", "col_id"))
       } else {
         smooth_mx <- av_matrix
       }
     
       if (is.null(all_iso_points)) {
-        all_iso_points <- as.data.frame(isobologram_out$df_all_iso_points)
+        all_iso_points <- data.table::as.data.table(isobologram_out$df_all_iso_points)
       } else {
         all_iso_points <- plyr::rbind.fill(
           all_iso_points,
-          as.data.frame(isobologram_out$df_all_iso_points)
+          data.table::as.data.table(isobologram_out$df_all_iso_points)
         )
       }
       
       if (is.null(isobolograms)) {
-        isobolograms <- as.data.frame(isobologram_out$df_all_iso_curves)
+        isobolograms <- data.table::as.data.table(isobologram_out$df_all_iso_curves)
       } else {
         isobolograms <- plyr::rbind.fill(
           isobolograms,
-          as.data.frame(isobologram_out$df_all_iso_curves)
+          data.table::as.data.table(isobologram_out$df_all_iso_curves)
         )
       }
       
