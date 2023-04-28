@@ -338,11 +338,11 @@ calculate_Loewe <- function(
 }
 
 
-get_isocutoffs <- function(df_mean, normalization_type) {
-  if (min(df_mean[[normalization_type]], na.rm = TRUE) > 0.7) {
+get_isocutoffs <- function(df_mean, normalization_type, data_col = "average") {
+  if (min(df_mean[[data_col]], na.rm = TRUE) > 0.7) {
     iso_cutoffs <- NULL
   } else {
-    if (normalization_type == "GRvalue") {
+    if (normalization_type == "GR") {
       max_val <- -0.25
     } else {
       max_val <- 0.2
@@ -351,7 +351,7 @@ get_isocutoffs <- function(df_mean, normalization_type) {
       max(
         max_val, 
         ceiling(
-          20 * min(df_mean[[normalization_type]] + 0.08, na.rm = TRUE)
+          20 * min(df_mean[[data_col]] + 0.08, na.rm = TRUE)
         ) / 20
       ), 
       0.8,  
@@ -378,7 +378,7 @@ calculate_isobolograms <- function(row_fittings,
       ec50 = row_fittings$ec50,
       h = row_fittings$h
     )
-    row_iso <- data.table::data.table(conc_1 = row_fittings[, "cotrt_value"],
+    row_iso <- data.table::data.table(conc_1 = row_fittings[["cotrt_value"]],
       conc_2 = conc2,
       fit_type = "by_row")
 
@@ -391,7 +391,7 @@ calculate_isobolograms <- function(row_fittings,
       h = col_fittings$h
     )
     col_iso <- data.table::data.table(conc_1 = conc1,
-      conc_2 = col_fittings[, "cotrt_value"],
+      conc_2 = col_fittings[["cotrt_value"]],
       fit_type = "by_col")
 
     xy_iso <- data.table::rbindlist(list(row_iso, col_iso))

@@ -92,18 +92,15 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
   checkmate::assert_true(all(sa1[[series_id2]] == 0L))
   checkmate::assert_true(all(sa2[[series_id1]] == 0L))
 
-  colnames(sa1)[colnames(sa1) == metric] <- "metric1"
-  colnames(sa2)[colnames(sa2) == metric] <- "metric2"
-
   # TODO: ensure they're unique?
   u <- expand.grid(sa1[[series_id1]], sa2[[series_id2]])
   colnames(u) <- c(series_id1, series_id2)
 
   idx <- match(u[[series_id1]], sa1[[series_id1]])
   
-  u <- base::merge(u, sa1[, c(..series_id1, "metric1")], by = series_id1)
-  u <- base::merge(u, sa2[, c(..series_id2, "metric2")], by = series_id2)
+  u <- base::merge(u, sa1[, c(..series_id1, "average")], by = series_id1)
+  u <- base::merge(u, sa2[, c(..series_id2, "average")], by = series_id2)
 
-  metric <- do.call(FXN, list(u$metric1, u$metric2))
+  metric <- do.call(FXN, list(u$average.x, u$average.y))
   data.table::data.table(cbind(u, metric))
 }
