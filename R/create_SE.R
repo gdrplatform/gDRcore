@@ -74,8 +74,12 @@ create_SE <- function(df_,
   
   
   df_ <- df_[, lapply(.SD, function(x) {
-    gsub(paste(untreated_tag, collapse = "|"), untreated_tag[1], x)
-    })]
+    if (is.character(x)) {
+      gsub(paste(untreated_tag, collapse = "|"), untreated_tag[1], x)
+    } else {
+      x
+    }
+  }), .SDcols = names(df_)]
 
   # Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
