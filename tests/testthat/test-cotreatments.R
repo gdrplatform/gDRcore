@@ -6,7 +6,7 @@ test_that("fit_combo_cotreatments works as expected", {
   for (i in seq(n)) {
     vals <- c(vals, start + i * concs)
   }
-  measured <- DataFrame(Concentration = rep(concs, n),
+  measured <- data.table::data.table(Concentration = rep(concs, n),
     Concentration_2 = rep(concs, each = n),
     GRvalue = vals)
 
@@ -33,7 +33,7 @@ test_that("fit_cotreatment_series works as expected", {
     vals <- c(vals, start + i * concs)
   }
   nested_identifiers <- c("Concentration", "Concentration_2")
-  measured <- DataFrame(Concentration = rep(concs, n),
+  measured <- data.table::data.table(Concentration = rep(concs, n),
     Concentration_2 = rep(concs, each = n),
     x = vals,
     normalization_type = "GR")

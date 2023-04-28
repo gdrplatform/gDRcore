@@ -115,7 +115,7 @@ normalized data. Defaults to \code{"Normalized"}.}
 \item{averaged_assay}{string of the name of the averaged assay in the
 \linkS4class{SummarizedExperiment}. Defaults to \code{"Averaged"}.}
 
-\item{df_}{data.frame of raw drug response data containing both treated and
+\item{df_}{data.table of raw drug response data containing both treated and
 untreated values.}
 
 \item{readout}{string of the name containing the cell viability readout
@@ -126,7 +126,7 @@ for the given SE with a given data_type}
 
 \item{nested_confounders}{Character vector of the nested_confounders for a
 given assay. nested_keys is character vector of column names to include in
-the data.frames in the assays of the resulting \code{SummarizedExperiment}
+the data.tables in the assays of the resulting \code{SummarizedExperiment}
 object. Defaults to the \code{nested_identifiers} and
 \code{nested_confounders} if passed through \code{create_and_normalize_SE}
 or \code{runDrugResponseProcessingPipeline}.}
@@ -165,7 +165,7 @@ Defaults to \code{"RawTreated"}.}
 \item{ndigit_rounding}{integer indicating number of digits to round to
 in calculations. Defaults to \code{4}.}
 
-\item{x}{data.frame of MAE with drug response data}
+\item{x}{data.table of MAE with drug response data}
 
 \item{nested_identifiers_l}{list with the nested_identifiers(character v
 ectors) for \code{single-agent} and (optionally) for \code{combination} data}
@@ -202,7 +202,7 @@ processed data (fit_SE). See details for more in-depth explanations.
 }
 
 For create_and_normalize_SE, this creates a SummarizedExperiment object
-from a data.frame, where the data.frame contains treatments on rows, and
+from a data.table, where the data.table contains treatments on rows, and
 conditions on columns.
 A \linkS4class{SummarizedExperiment} object containing two asssays is
 created: treated readouts will live in an assay called \code{"RawTreated"},

@@ -7,11 +7,11 @@
 order_result_df(df_)
 }
 \arguments{
-\item{df_}{a dataframe with results}
+\item{df_}{a data.table with results}
 }
 \value{
-a ordered dataframe with results
+a ordered data.table with results
 }
 \description{
-Order a dataframe with results
+Order a data.table with results
 }

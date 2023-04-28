@@ -6,7 +6,7 @@ test_that("medium: test_synthetic_data", {
   mae <- purrr::quietly(generateMediumData)(
     cell_lines, drugs, FALSE
   )
-  expect_length(mae$warnings, 2)
+  expect_length(mae$warnings, 3)
   
   test_synthetic_data(original, mae$result, data)
 })

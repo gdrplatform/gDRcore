@@ -1,7 +1,7 @@
 #' generateNoNoiseRawData
 #' 
 #' @keywords internal
-#' @return data.frame with raw input data or MAE with processed data
+#' @return data.table with raw input data or MAE with processed data
 generateNoNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
   #### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # generate the data for the 1st test set: no noise
@@ -29,9 +29,10 @@ generateNoNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
 #' generateNoiseRawData
 #' 
 #' @keywords internal
-#' @return data.frame with raw input data or MAE with processed data
+#' @return data.table with raw input data or MAE with processed data
 generateNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the 1st test set with noise
+  
   df_merged <- prepareMergedData(cell_lines[2:11, ], drugs[2:11, ])
 
   
@@ -56,7 +57,7 @@ generateNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
 #' generateLigandData
 #' 
 #' @keywords internal
-#' @return data.frame with raw input data or MAE with processed data
+#' @return data.table with raw input data or MAE with processed data
 generateLigandData <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the 1st test set with ligand as reference
   df_merged <- prepareMergedData(cell_lines[2:6, ], drugs[2:5, ], 0)
@@ -97,7 +98,7 @@ generateLigandData <- function(cell_lines, drugs, save = TRUE) {
 #' generateMediumData
 #' 
 #' @keywords internal
-#' @return data.frame with raw input data or MAE with processed data
+#' @return data.table with raw input data or MAE with processed data
 generateMediumData <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the 2nd (medium size) test set with single agent
   df_merged <- prepareMergedData(cell_lines[seq_len(15), ], drugs[seq_len(40), ])
@@ -121,10 +122,11 @@ generateMediumData <- function(cell_lines, drugs, save = TRUE) {
   }
 }
 
+
 #' generateComboNoNoiseData
 #' 
 #' @keywords internal
-#' @return data.frame with raw input data or MAE with processed data
+#' @return data.table with raw input data or MAE with processed data
 generateComboNoNoiseData <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the test set with combo (two single dose)
   #   co-treatment drug is only as DrugName_2
@@ -152,7 +154,7 @@ generateComboNoNoiseData <- function(cell_lines, drugs, save = TRUE) {
 #' generateComboNoNoiseData2
 #' 
 #' @keywords internal
-#' @return data.frame with raw input data or MAE with processed data
+#' @return data.table with raw input data or MAE with processed data
 generateComboNoNoiseData2 <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the test set with combo (two single dose)
   #   co-treatment drug is also as single agent as DrugName
@@ -182,7 +184,7 @@ generateComboNoNoiseData2 <- function(cell_lines, drugs, save = TRUE) {
 #' generateComboNoNoiseData3
 #' 
 #' @keywords internal
-#' @return data.frame with raw input data or MAE with processed data
+#' @return data.table with raw input data or MAE with processed data
 generateComboNoNoiseData3 <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the 3rd test set with combo (two single dose)
   #   co-treatment drug does NOT have single agent response
@@ -216,7 +218,7 @@ generateComboNoNoiseData3 <- function(cell_lines, drugs, save = TRUE) {
 #' generateComboMatrixSmall
 #' 
 #' @keywords internal
-#' @return data.frame with raw input data or MAE with processed data
+#' @return data.table with raw input data or MAE with processed data
 generateComboMatrixSmall <- function(cell_lines, drugs, save = TRUE) {
   # generate the data with combo matrix (small, no noise)
   concentration <- 10^ (seq(-3, .5, .5))
@@ -249,7 +251,7 @@ generateComboMatrixSmall <- function(cell_lines, drugs, save = TRUE) {
 #' generateComboMatrix
 #' 
 #' @keywords internal
-#' @return data.frame with raw input data or MAE with processed data
+#' @return data.table with raw input data or MAE with processed data
 generateComboMatrix <- function(cell_lines, drugs, save = TRUE) {
   # generate the data with combo matrix (mid-size)
   df_layout <- prepareData(cell_lines[seq(1, 30, 4), ], drugs[c(1, 2, 11), ])
@@ -281,7 +283,7 @@ generateComboMatrix <- function(cell_lines, drugs, save = TRUE) {
 #' generateTripleComboMatrix
 #' 
 #' @keywords internal
-#' @return data.frame with raw input data or MAE with processed data
+#' @return data.table with raw input data or MAE with processed data
 generateTripleComboMatrix <- function(cell_lines, drugs, save = TRUE) {
   # generate the data with triple combo  (no noise)
   concentration <- 10^ (seq(-3, .5, .5))
@@ -327,7 +329,7 @@ generateTripleComboMatrix <- function(cell_lines, drugs, save = TRUE) {
 #' generateCodilutionSmall
 #' 
 #' @keywords internal
-#' @return data.frame with raw input data or MAE with processed data
+#' @return data.table with raw input data or MAE with processed data
 generateCodilutionSmall <- function(cell_lines, drugs, save = TRUE) {
   # generate the data with combo co-dilution (small)
   df_layout <- prepareData(cell_lines[seq_len(2), ], drugs[seq_len(4), ])
@@ -359,7 +361,7 @@ generateCodilutionSmall <- function(cell_lines, drugs, save = TRUE) {
 #' generateCodilution
 #' 
 #' @keywords internal
-#' @return data.frame with raw input data or MAE with processed data
+#' @return data.table with raw input data or MAE with processed data
 generateCodilution <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the test set with combo (co-dilution)
   df_layout <- prepareData(cell_lines[seq(1, 15, 2), ], drugs[seq_len(12), ])
@@ -385,7 +387,7 @@ generateCodilution <- function(cell_lines, drugs, save = TRUE) {
 
 #' @keywords internal
 prepareData <- function(cell_lines, drugs, conc = 10 ^ (seq(-3, 1, 0.5))) {
-  df_layout <- merge(cell_lines, drugs, by = NULL)
+  df_layout <- drugs[, as.list(cell_lines), names(drugs)]
   df_layout <- gDRtestData::add_data_replicates(df_layout)
   gDRtestData::add_concentration(df_layout, conc)
 }
@@ -408,7 +410,8 @@ prepareComboMergedData <- function(cell_lines,
   
   df_2 <- cbind(drugs[drugsIdx2, ], Concentration = concentration)
   colnames(df_2) <- paste0(colnames(df_2), "_2")
-  df_layout_2 <- merge(df_layout, df_2, by = NULL)
+  
+  df_layout_2 <- data.table::as.data.table(merge.data.frame(df_layout, df_2, by = NULL))
   if (modifyDf2) {
     df_layout_2 <- df_layout_2[!(df_layout_2$Concentration == 0 & df_layout_2$Concentration_2 > 0), ]
   }

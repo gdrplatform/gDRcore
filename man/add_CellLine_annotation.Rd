@@ -20,7 +20,7 @@ add_CellLine_annotation(
 )
 }
 \arguments{
-\item{df_metadata}{data.frame with metadata}
+\item{df_metadata}{data.table with metadata}
 
 \item{DB_cellid_header}{string with colnames with cell line identifier
 in the annotation file}
@@ -35,10 +35,10 @@ used in the annotation file}
 \item{annotationPackage}{string indication name of the package containing cellline annotation}
 }
 \value{
-data.frame with metadata with annotated cell lines
+data.table with metadata with annotated cell lines
 }
 \description{
-add cellline annotation to a data.frame with metadata
+add cellline annotation to a data.table with metadata
 }
 \details{
 The logic of adding celline annotation for df_metadata based on
@@ -49,7 +49,7 @@ for adding cell lines.
 \examples{
 
 add_CellLine_annotation(
-  data.frame(
+  data.table::data.table(
     clid = "123", 
     CellLineName = "name of the cell line")
 )

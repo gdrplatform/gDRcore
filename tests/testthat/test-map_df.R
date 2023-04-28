@@ -1,6 +1,8 @@
 test_that("map_df works as expected", {
   md_df <- unique(md_df)
+  md_df$rownames <- as.character(seq_len(nrow(md_df)))
   ref <- md_df$Gnumber %in% c("vehicle", "untreated")
+  
   ref_df <- md_df[ref, ]
   trt_df <- md_df[!ref, ]
   Keys <- identify_keys(test_df)
@@ -11,7 +13,7 @@ test_that("map_df works as expected", {
                     ref_cols = Keys[[ref_type]],
                     ref_type = ref_type)
 
-  expect_equal(names(mapping), rownames(trt_df))
+  expect_equal(names(mapping), trt_df$rownames)
   expect_equal(length(mapping), nrow(trt_df))
 
   out <- lapply(seq(33, 64, 1), function(x) {
@@ -33,7 +35,7 @@ test_that("map_df works as expected", {
 
 test_that(".map_references works as expected", {
   # Combination data.
-  mat_elem <- data.frame(DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
+  mat_elem <- data.table::data.table(DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
     DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
     clid = rep(c("C1", "C2"), each = 4))
   obs <- gDRcore:::.map_references(mat_elem)
@@ -41,7 +43,8 @@ test_that(".map_references works as expected", {
   expect_equal(obs, exp)
 
   # Single-agent data.
-  mat_elem2 <- mat_elem[c("DrugName", "clid")]
+  colname <- c("DrugName", "clid")
+  mat_elem2 <- mat_elem[, ..colname]
   obs2 <- gDRcore:::.map_references(mat_elem2)
   exp2 <- list("2" = NULL, "3" = NULL, "6" = NULL, "7" = NULL)
   expect_equal(obs2, exp2)

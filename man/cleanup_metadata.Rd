@@ -7,20 +7,20 @@
 cleanup_metadata(df_metadata)
 }
 \arguments{
-\item{df_metadata}{a dataframe with metadata}
+\item{df_metadata}{a data.table with metadata}
 }
 \value{
-a data.frame with cleaned metadata
+a data.table with cleaned metadata
 }
 \description{
-Cleanup a dataframe with metadata
+Cleanup a data.table with metadata
 }
 \details{
 Adds annotations and check whether user provided correct input data.
 }
 \examples{
 
-df <- data.frame(
+df <- data.table::data.table(
   clid = "CELL_LINE",
   Gnumber = "DRUG_1",
   Concentration = c(0, 1),

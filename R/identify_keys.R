@@ -1,8 +1,8 @@
 #' identify_keys
 #'
-#' Group columns from a data.frame that correspond to different 
+#' Group columns from a data.table that correspond to different 
 #'
-#' @param df_ a data.frame to identify keys for.
+#' @param df_ a data.table to identify keys for.
 #' @param nested_keys character vector of keys to exclude from the returned 
 #' list. The keys discarded should be identical to the keys in the third
 #' dimension of the SummarizedExperiment.
@@ -14,7 +14,7 @@
 #' 
 #' @examples 
 #' n <- 64
-#' md_df <- data.frame(
+#' md_df <- data.table::data.table(
 #'   Gnumber = rep(c("vehicle", "untreated", paste0("G", seq(2))), each = 16), 
 #'   DrugName = rep(c("vehicle", "untreated", paste0("GN", seq(2))), each = 16), 
 #'   clid = paste0("C", rep_len(seq(4), n)),
@@ -45,14 +45,14 @@ identify_keys <- function(df_,
                           override_untrt_controls = NULL,
                           identifiers = gDRutils::get_env_identifiers()) {
   # Assertions:
-  stopifnot(inherits(df_, c("data.frame", "DataFrame")))
-
+  stopifnot(inherits(df_, c("data.table", "DataFrame")))
+  
   all_keys <- colnames(df_)
   dropped_nested_keys <- setdiff(nested_keys, all_keys)
   if (length(dropped_nested_keys) != 0L) {
     warning(
       sprintf(
-        "ignoring nested_keys input: '%s' which are not present in data.frame",
+        "ignoring nested_keys input: '%s' which are not present in data.table",
         toString(dQuote(dropped_nested_keys, q = FALSE))
       )
     )
@@ -65,7 +65,7 @@ identify_keys <- function(df_,
     warning(
       sprintf(
         "ignoring override_untrt_controls input: '%s' which are 
-        not present in data.frame",
+        not present in data.table",
         toString(dQuote(dropped_override_untrt_controls, q = FALSE))
       )
     )
@@ -106,14 +106,14 @@ identify_keys <- function(df_,
   keys$duration <- duration_col 
   keys$untreated_tag <- identifiers$untreated_tag
 
-  t0 <- df_[, duration_col] == 0
+  t0 <- df_[, ..duration_col] == 0
   # Remove keys where all values are NA.
   # TODO: Improve this.
   for (k in keys[["untrt_Endpoint"]]) {
-    if (all(is.na(df_[, k]))) {
+    if (all(is.na(df_[, ..k]))) {
       keys <- gDRutils::loop(keys, function(x) setdiff(x, k))
     }
-    if (all(is.na(df_[t0, k]))) {
+    if (all(is.na(df_[which(t0), ..k]))) {
       keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
     }
   }

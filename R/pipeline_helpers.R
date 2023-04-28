@@ -164,14 +164,3 @@ paste_warnings <- function(list, sep = "\n") {
   pasted <- paste0(list, sep = sep)
   warning(pasted, call. = FALSE)
 }
-
-#' @keywords internal
-.clear_rownames <- function(x) {
-  lapply(x, function(y) {
-    if (inherits(y, c("DFrame", "data.frame"))) {
-      y <- y[do.call(order, y), ]
-    }
-    rownames(y) <- NULL
-    y
-  })
-}

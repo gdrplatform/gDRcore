@@ -1,10 +1,10 @@
 #' merge_data
 #'
-#' Merge all the input data into a single data.frame
+#' Merge all the input data into a single data.table
 #'
-#' @param manifest a data frame with a manifest info
-#' @param treatments a data frame with a treaatments info
-#' @param data a data frame with a raw data info
+#' @param manifest a data.table with a manifest info
+#' @param treatments a data.table with a treaatments info
+#' @param data a data.table with a raw data info
 #' 
 #' @examples 
 #' td <- gDRimport::get_test_data()
@@ -15,17 +15,17 @@
 #'   l_tbl$data
 #' )
 #'
-#' @return a dataframe with merged data and metadata.
+#' @return a data.table with merged data and metadata.
 #' @export
 #'
 merge_data <- function(manifest, treatments, data) {
   # Assertions:
-  stopifnot(inherits(manifest, "data.frame"))
-  stopifnot(inherits(treatments, "data.frame"))
-  stopifnot(inherits(data, "data.frame"))
+  checkmate::assert_data_table(manifest)
+  checkmate::assert_data_table(treatments)
+  checkmate::assert_data_table(data)
   
   futile.logger::flog.info("Merging data")
-
+  
   # first unify capitalization in the headers of treatments with manifest
   duplicated_col <-
     setdiff(colnames(treatments)[toupper(colnames(treatments)) %in%
@@ -42,7 +42,7 @@ merge_data <- function(manifest, treatments, data) {
 
   # merge manifest and treatment files first
   identifiers <- gDRutils::validate_identifiers(manifest, req_ids = "barcode")
-  df_metadata <- merge(manifest, treatments, by = identifiers[["template"]])
+  df_metadata <- merge(manifest, treatments, by = identifiers[["template"]], allow.cartesian = TRUE)
   futile.logger::flog.info(
     "Merging the metadata (manifest and treatment files)"
   )
@@ -99,19 +99,21 @@ merge_data <- function(manifest, treatments, data) {
   # remove wells not labeled
   drug_id <- identifiers[["drug"]]
   df_metadata_trimmed <-
-    df_metadata[!is.na(df_metadata[, drug_id]), ]
+    df_metadata[which(!is.na(df_metadata[, ..drug_id])), ]
   futile.logger::flog.warn(
     "%i well loaded, %i wells discarded for lack of annotation, 
     %i data point selected\n",
     nrow(data),
-    sum(is.na(df_metadata[, drug_id])),
+    sum(is.na(df_metadata[, ..drug_id])),
     nrow(df_metadata_trimmed)
   )
-
+  
   # clean up the metadata
   cleanedup_metadata <- cleanup_metadata(df_metadata_trimmed)
   # should not happen
   stopifnot(nrow(cleanedup_metadata) == nrow(df_metadata_trimmed))
+  
+  data$WellColumn <- as.character(data$WellColumn)
 
   df_merged <- merge(
     cleanedup_metadata, 
@@ -135,8 +137,8 @@ merge_data <- function(manifest, treatments, data) {
 
   # remove wells not labeled
   df_raw_data <-
-    df_merged[!is.na(df_merged[, drug_id]), ]
-
+    df_merged[which(!is.na(df_merged[, ..drug_id])), ]
+  
   # reorder the columns
   df_raw_data <- order_result_df(df_raw_data)
 

@@ -12,7 +12,7 @@ map_conc_to_standardized_conc(conc1, conc2)
 \item{conc2}{numeric vector of the concentrations for drug 2.}
 }
 \value{
-data.frame of 2 columns named \code{"concs"} and \code{"rconcs"}
+data.table of 2 columns named \code{"concs"} and \code{"rconcs"}
 containing the original concentrations and their closest matched
 standardized concentrations respectively. and their new standardized
 concentrations.

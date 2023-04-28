@@ -7,7 +7,7 @@
 generateCodilution(cell_lines, drugs, save = TRUE)
 }
 \value{
-data.frame with raw input data or MAE with processed data
+data.table with raw input data or MAE with processed data
 }
 \description{
 generateCodilution
