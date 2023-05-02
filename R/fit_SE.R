@@ -42,36 +42,21 @@ fit_SE <- function(se,
     "N_conc"
   )
   
-  # declare fitting function
-  .fit_fun <- function(x, conc = gDRutils::get_env_identifiers("concentration")) {
-    fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
-    colnames(fit_df) <- metric_cols
-    rownames(fit_df) <- c("RV", "GR")
-    
-    if (!is.null(x) && all(dim(x) > 0)) {
-      if (!all(is.na(x[[conc]]))) {
-        x <- x[x[[conc]] != 0, ]
-      }
-      
-      fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(
-        ((x)),
-        series_identifiers = nested_identifiers,
-        e_0 = 1,
-        GR_0 = 1,
-        n_point_cutoff = n_point_cutoff,
-        range_conc = range_conc,
-        force_fit = force_fit,
-        pcutoff = pcutoff,
-        cap = cap,
-        normalization_type = curve_type))
-    }
-    fit_df
-  }
+  conc <- gDRutils::get_env_identifiers("concentration")
   
   se <- gDRutils::apply_bumpy_function(se = se,
-                                       FUN = .fit_fun,
+                                       FUN = fit_FUN,
                                        req_assay_name = averaged_assay, 
-                                       out_assay_name = metrics_assay)
+                                       out_assay_name = metrics_assay,
+                                       metric_cols = metric_cols,
+                                       conc = conc,
+                                       nested_identifiers = nested_identifiers,
+                                       n_point_cutoff = n_point_cutoff,
+                                       range_conc = range_conc,
+                                       force_fit = force_fit,
+                                       pcutoff = pcutoff,
+                                       cap = cap,
+                                       curve_type = curve_type)
   
   se <- gDRutils::set_SE_fit_parameters(se, 
     value = list(
@@ -90,4 +75,42 @@ fit_SE <- function(se,
   )
   
   se
+}
+
+
+#' @keywords internal
+fit_FUN <- function(x, 
+                    metric_cols = c(gDRutils::get_header("response_metrics"), 
+                                    "maxlog10Concentration", 
+                                    "N_conc"),
+                    conc = gDRutils::get_env_identifiers("concentration"),
+                    nested_identifiers,
+                    n_point_cutoff,
+                    range_conc,
+                    force_fit,
+                    pcutoff,
+                    cap,
+                    curve_type) {
+  fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
+  colnames(fit_df) <- metric_cols
+  rownames(fit_df) <- c("RV", "GR")
+  
+  if (!is.null(x) && all(dim(x) > 0)) {
+    if (!all(is.na(x[[conc]]))) {
+      x <- x[x[[conc]] != 0, ]
+    }
+    
+    fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(
+      ((x)),
+      series_identifiers = nested_identifiers,
+      e_0 = 1,
+      GR_0 = 1,
+      n_point_cutoff = n_point_cutoff,
+      range_conc = range_conc,
+      force_fit = force_fit,
+      pcutoff = pcutoff,
+      cap = cap,
+      normalization_type = curve_type))
+  }
+  fit_df
 }
