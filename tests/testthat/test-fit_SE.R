@@ -7,6 +7,8 @@ test_that("fit_SE errors as expected", {
   expect_error(fit_SE(se, averaged_assay = 1), "Assertion on 'averaged_assay' failed: Must be of type 'string', not 'double'")
   expect_error(fit_SE(se, averaged_assay = "dummy"), "'dummy' is not on of the available assays: ''")
   expect_error(fit_SE(se, metrics_assay = 1), "Assertion on 'metrics_assay' failed: Must be of type 'string', not 'double'.")
+  expect_error(fit_SE(se, curve_type = 1), "Assertion on 'curve_type' failed: Must be of type 'character', not 'double'.")
+  expect_error(fit_SE(se, curve_type = c("GR", "dummy")), "Assertion on 'all(curve_type %in% c(\"GR\", \"RV\"))' failed: Must be TRUE.", fixed = TRUE)
 })
 
 test_that("fit_SE works as expected", {
