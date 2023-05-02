@@ -1,6 +1,12 @@
 test_that("fit_SE errors as expected", {
   se <- SummarizedExperiment::SummarizedExperiment()
-  expect_error(fit_SE(se))
+  expect_error(fit_SE(se = 1), "Assertion on 'se' failed: Must inherit from class 'SummarizedExperiment', but has class 'numeric'")
+  expect_error(fit_SE(se = se, data_type = 1), "Assertion on 'data_type' failed: Must be of type 'string', not 'double'")
+  expect_error(fit_SE(se = se, data_type = "dummy"), "Assertion on 'data_type' failed: Must be element of set {'single-agent','combination'}, but is 'dummy'", fixed = TRUE)
+  expect_error(fit_SE(se = se, data_type = "single-agent", nested_identifiers = 1), "Assertion on 'nested_identifiers' failed: Must be of type 'character' (or 'NULL'), not 'double'", fixed = TRUE)
+  expect_error(fit_SE(se, averaged_assay = 1), "Assertion on 'averaged_assay' failed: Must be of type 'string', not 'double'")
+  expect_error(fit_SE(se, averaged_assay = "dummy"), "'dummy' is not on of the available assays: ''")
+  expect_error(fit_SE(se, metrics_assay = 1), "Assertion on 'metrics_assay' failed: Must be of type 'string', not 'double'.")
 })
 
 test_that("fit_SE works as expected", {
