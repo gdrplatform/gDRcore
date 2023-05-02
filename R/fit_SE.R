@@ -43,8 +43,7 @@ fit_SE <- function(se,
   )
   
   # declare fitting function
-  .fit_fun <- function(x, conc = gDRutils::get_env_identifiers("concentration"))
-  {
+  .fit_fun <- function(x, conc = gDRutils::get_env_identifiers("concentration")) {
     fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
     colnames(fit_df) <- metric_cols
     rownames(fit_df) <- c("RV", "GR")

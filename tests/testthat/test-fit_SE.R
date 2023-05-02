@@ -1,14 +1,26 @@
 test_that("fit_SE errors as expected", {
   se <- SummarizedExperiment::SummarizedExperiment()
-  expect_error(fit_SE(se = 1), "Assertion on 'se' failed: Must inherit from class 'SummarizedExperiment', but has class 'numeric'")
-  expect_error(fit_SE(se = se, data_type = 1), "Assertion on 'data_type' failed: Must be of type 'string', not 'double'")
-  expect_error(fit_SE(se = se, data_type = "dummy"), "Assertion on 'data_type' failed: Must be element of set {'single-agent','combination'}, but is 'dummy'", fixed = TRUE)
-  expect_error(fit_SE(se = se, data_type = "single-agent", nested_identifiers = 1), "Assertion on 'nested_identifiers' failed: Must be of type 'character' (or 'NULL'), not 'double'", fixed = TRUE)
-  expect_error(fit_SE(se, averaged_assay = 1), "Assertion on 'averaged_assay' failed: Must be of type 'string', not 'double'")
-  expect_error(fit_SE(se, averaged_assay = "dummy"), "'dummy' is not on of the available assays: ''")
-  expect_error(fit_SE(se, metrics_assay = 1), "Assertion on 'metrics_assay' failed: Must be of type 'string', not 'double'.")
-  expect_error(fit_SE(se, curve_type = 1), "Assertion on 'curve_type' failed: Must be of type 'character', not 'double'.")
-  expect_error(fit_SE(se, curve_type = c("GR", "dummy")), "Assertion on 'all(curve_type %in% c(\"GR\", \"RV\"))' failed: Must be TRUE.", fixed = TRUE)
+  expect_error(fit_SE(se = 1), 
+               "'se' failed: Must inherit from class 'SummarizedExperiment'")
+  expect_error(fit_SE(se = se, data_type = 1), 
+               "'data_type' failed: Must be of type 'string', not 'double'")
+  expect_error(fit_SE(se = se, data_type = "dummy"), 
+               "'data_type' failed: Must be element of set {'single-agent','combination'}, ", 
+               fixed = TRUE)
+  expect_error(fit_SE(se = se, data_type = "single-agent", nested_identifiers = 1), 
+               "'nested_identifiers' failed: Must be of type 'character' (or 'NULL'), not 'double'", 
+               fixed = TRUE)
+  expect_error(fit_SE(se, averaged_assay = 1), 
+               "'averaged_assay' failed: Must be of type 'string', not 'double'")
+  expect_error(fit_SE(se, averaged_assay = "dummy"), 
+               "'dummy' is not on of the available assays: ''")
+  expect_error(fit_SE(se, metrics_assay = 1), 
+               "'metrics_assay' failed: Must be of type 'string', not 'double'.")
+  expect_error(fit_SE(se, curve_type = 1), 
+               "'curve_type' failed: Must be of type 'character', not 'double'.")
+  expect_error(fit_SE(se, curve_type = c("GR", "dummy")), 
+               "'all(curve_type %in% c(\"GR\", \"RV\"))' failed: Must be TRUE.", 
+               fixed = TRUE)
 })
 
 test_that("fit_SE works as expected", {
@@ -16,7 +28,7 @@ test_that("fit_SE works as expected", {
                                  "finalMAE_combo_2dose_nonoise2.RDS", package = "gDRtestData")
   )
   
-  nrm_se <- normalize_SE(se = maeReal[[1]], data_type = 'single-agent')
+  nrm_se <- normalize_SE(se = maeReal[[1]], data_type = "single-agent")
   avg_se <- average_SE(se = nrm_se, data_type = "single-agent")
   fit_se <- fit_SE(avg_se)
   expect_class(fit_se, "SummarizedExperiment")
