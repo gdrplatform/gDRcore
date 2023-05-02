@@ -4,6 +4,20 @@ test_that("fit_SE errors as expected", {
 })
 
 test_that("fit_SE works as expected", {
+  maeReal <-
+    readRDS(
+      system.file("testdata", "finalMAE_combo_2dose_nonoise2.RDS", package = "gDRtestData")
+    )
+  
+  nrm_se <- normalize_SE(se = maeReal[[1]], data_type = 'single-agent')
+  avg_se <- average_SE(se = nrm_se, data_type = "single-agent")
+  fit_se <- fit_SE(se = avg_se)
+  warns <- capture_warnings(fit_SE(fit_se))
+  expect_true(all(warns %in% c("overwriting existing metadata entry: 'fit_parameters'", 
+                               "overwriting existing metadata entry: '.internal'")))
+})
+
+test_that("fit_SE.combinations works as expected", {
  
   # combo data 
   fmae_cms_path <-
