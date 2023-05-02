@@ -68,10 +68,10 @@ fit_SE <- function(se,
     fit_df
   }
   
-  se <- apply_bumpy_function(se = se,
-                             FUN = .fit_fun,
-                             req_assay_name = averaged_assay, 
-                             out_assay_name = metrics_assay)
+  se <- gDRutils::apply_bumpy_function(se = se,
+                                       FUN = .fit_fun,
+                                       req_assay_name = averaged_assay, 
+                                       out_assay_name = metrics_assay)
   
   se <- gDRutils::set_SE_fit_parameters(se, 
     value = list(
