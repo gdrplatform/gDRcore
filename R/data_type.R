@@ -124,7 +124,7 @@ identify_data_type <- function(df,
     df[matching_idx, "type"]  <- ifelse(
       is.na(df[matching_idx, "type"]), 
       type, 
-      df[matching_idx, "type"]
+      unlist(df[matching_idx, "type"])
     )
   }
   df
