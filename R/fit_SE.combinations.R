@@ -172,7 +172,7 @@ fit_SE.combinations <- function(se,
       # fit by row (flipped): the series in the secondary identifier, the 
       # cotrt is the primary one
       row_fittings <- fit_combo_cotreatments(
-        avg_combo,
+        avg_combo[normalization_type == metric],
         series_id = id2, 
         cotrt_id = id, 
         metric
