@@ -91,9 +91,9 @@ fit_FUN <- function(x,
                     pcutoff,
                     cap,
                     curve_type) {
-  fit_df <- S4Vectors::DataFrame(matrix(NA, 2, length(metric_cols)))
+  fit_df <- S4Vectors::DataFrame(matrix(NA, length(curve_type), length(metric_cols)))
   colnames(fit_df) <- metric_cols
-  rownames(fit_df) <- c("RV", "GR")
+  rownames(fit_df) <- c("RV", "GR")[c("RV", "GR") %in% curve_type]
   
   if (!is.null(x) && all(dim(x) > 0)) {
     if (!all(is.na(x[[conc]]))) {
