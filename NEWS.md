@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.10] - 2023-05-04
+#### Refactor normalization types in the combo-specific assays
+
 #### [0.99.9] - 2023-04-21
 #### Utilize `gDRutils::apply_bumpy_function` in average_SE
 
