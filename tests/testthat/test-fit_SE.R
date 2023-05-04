@@ -26,9 +26,11 @@ test_that("fit_SE errors as expected", {
                                  "finalMAE_combo_2dose_nonoise2.RDS", package = "gDRtestData")
   )
   
-  nrm_se <- normalize_SE(se = maeReal[[1]], data_type = "single-agent")
+  nrm_se <- normalize_SE(se = maeReal[[2]], data_type = "single-agent")
   avg_se <- average_SE(se = nrm_se, data_type = "single-agent")
   
+  expect_error(fit_SE(avg_se, averaged_assay = "dummy"), 
+               "'dummy' is not on of the available assays")
   expect_error(fit_SE(avg_se, metrics_assay = "dummy"), 
                "'dummy' is not on of the available assays")
 })
@@ -38,7 +40,7 @@ test_that("fit_SE works as expected", {
                                  "finalMAE_combo_2dose_nonoise2.RDS", package = "gDRtestData")
   )
   
-  nrm_se <- normalize_SE(se = maeReal[[1]], data_type = "single-agent")
+  nrm_se <- normalize_SE(se = maeReal[[2]], data_type = "single-agent")
   avg_se <- average_SE(se = nrm_se, data_type = "single-agent")
   fit_se <- fit_SE(avg_se)
   expect_class(fit_se, "SummarizedExperiment")
