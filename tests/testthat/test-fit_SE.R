@@ -31,8 +31,6 @@ test_that("fit_SE errors as expected", {
   
   expect_error(fit_SE(avg_se, averaged_assay = "dummy"), 
                "'dummy' is not on of the available assays")
-  expect_error(fit_SE(avg_se, metrics_assay = "dummy"), 
-               "'dummy' is not on of the available assays")
 })
 
 test_that("fit_SE works as expected", {

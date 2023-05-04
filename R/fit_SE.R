@@ -28,7 +28,6 @@ fit_SE <- function(se,
   checkmate::assert_character(curve_type)
   checkmate::assert_true(all(curve_type %in% c("GR", "RV")))
   gDRutils::validate_se_assay_name(se, averaged_assay)
-  gDRutils::validate_se_assay_name(se, metrics_assay)
   
   if (is.null(nested_identifiers)) {
     nested_identifiers <- get_default_nested_identifiers(
