@@ -5,7 +5,7 @@ test_that("fit_SE errors as expected", {
   expect_error(fit_SE(se = se, data_type = 1), 
                "'data_type' failed: Must be of type 'string', not 'double'")
   expect_error(fit_SE(se = se, data_type = "dummy"), 
-               "'data_type' failed: Must be element of set {'single-agent','combination'}, ", 
+               "'data_type' failed: Must be element of set {'single-agent','cotreatment','co-dilution'}, ", 
                fixed = TRUE)
   expect_error(fit_SE(se = se, data_type = "single-agent", nested_identifiers = 1), 
                "'nested_identifiers' failed: Must be of type 'character' (or 'NULL'), not 'double'", 
