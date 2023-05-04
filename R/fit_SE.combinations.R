@@ -360,7 +360,7 @@ fit_SE.combinations <- function(se,
       
       b_excess$normalization_type <- h_excess$normalization_type <- 
         isobologram_out$df_all_iso_points$normalization_type <-
-        isobologram_out$df_all_iso_curves$normalization_type <- metric_name
+        isobologram_out$df_all_iso_curves$normalization_type <- metric
       
       hsa_excess <- plyr::rbind.fill(hsa_excess, as.data.frame(h_excess))
       bliss_excess <- plyr::rbind.fill(bliss_excess, as.data.frame(b_excess))
