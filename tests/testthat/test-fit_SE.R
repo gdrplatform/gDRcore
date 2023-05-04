@@ -13,7 +13,7 @@ test_that("fit_SE errors as expected", {
   expect_error(fit_SE(se, averaged_assay = 1), 
                "'averaged_assay' failed: Must be of type 'string', not 'double'")
   expect_error(fit_SE(se, averaged_assay = "dummy"), 
-               "'dummy' is not on of the available assays: ''")
+               "'dummy' is not on of the available assays")
   expect_error(fit_SE(se, metrics_assay = 1), 
                "'metrics_assay' failed: Must be of type 'string', not 'double'.")
   expect_error(fit_SE(se, curve_type = 1), 
@@ -21,6 +21,16 @@ test_that("fit_SE errors as expected", {
   expect_error(fit_SE(se, curve_type = c("GR", "dummy")), 
                "'all(curve_type %in% c(\"GR\", \"RV\"))' failed: Must be TRUE.", 
                fixed = TRUE)
+  
+  maeReal <- readRDS(system.file("testdata", 
+                                 "finalMAE_combo_2dose_nonoise2.RDS", package = "gDRtestData")
+  )
+  
+  nrm_se <- normalize_SE(se = maeReal[[1]], data_type = "single-agent")
+  avg_se <- average_SE(se = nrm_se, data_type = "single-agent")
+  
+  expect_error(fit_SE(avg_se, metrics_assay = "dummy"), 
+               "'dummy' is not on of the available assays")
 })
 
 test_that("fit_SE works as expected", {
