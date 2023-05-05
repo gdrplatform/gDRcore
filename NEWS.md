@@ -2,11 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [0.99.11] - 2023-04-28
+#### [0.99.11] - 2023-05-05
 #### fix bug with swapping untreated/vehicle values
 
-#### [0.99.10] - 2023-04-25
-#### replace data.frame by data.table
+#### [0.99.10] - 2023-05-04
+#### Fix bug with data.table
 
 #### [0.99.9] - 2023-04-21
 #### Utilize `gDRutils::apply_bumpy_function` in average_SE
