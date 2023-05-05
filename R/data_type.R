@@ -121,11 +121,7 @@ identify_data_type <- function(df,
       } else {
         "matrix"
       }
-    df[matching_idx, "type"]  <- ifelse(
-      is.na(df[matching_idx, "type"]), 
-      type, 
-      df[matching_idx, "type"]
-    )
+    df[matching_idx[is.na(df[matching_idx]$type)], "type"] <- type
   }
   df
 }
