@@ -43,7 +43,7 @@ trt_df <- S4Vectors::DataFrame(
   DrugName = c("DRUG_10", "DRUG_8"),
   CellLineName = "CELL1"
 )
-input_df <- data.table::as.data.table(as.data.frame(rbind(ctrl_df, trt_df)))
+input_df <- data.table::as.data.table(rbind(ctrl_df, trt_df))
 input_df$Duration <- 72
 input_df$CorrectedReadout2 <- input_df$ReadoutValue
 identify_data_type(input_df)

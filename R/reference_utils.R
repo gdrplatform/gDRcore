@@ -37,7 +37,7 @@ create_control_df <- function(df_,
               function(x) control_mean_fxn(x))
     } else if (ncol(df_) == 1) {
       # only ReadoutValue column exists (i.e. no 'Barcode')
-      df_ <- data.table(control_mean_fxn(unlist(df_[, ..out_col_name])))
+      df_ <- data.table::data.table(control_mean_fxn(unlist(df_[, ..out_col_name])))
       colnames(df_) <- out_col_name
     } else {
       stop(sprintf("unexpected columns in data.table: '%s'",

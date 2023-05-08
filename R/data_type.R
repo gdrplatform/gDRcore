@@ -121,11 +121,7 @@ identify_data_type <- function(df,
       } else {
         "matrix"
       }
-    df[matching_idx, "type"]  <- ifelse(
-      is.na(df[matching_idx, "type"]), 
-      type, 
-      df[matching_idx, "type"]
-    )
+    df[matching_idx[is.na(df[matching_idx]$type)], "type"] <- type
   }
   df
 }
@@ -228,8 +224,11 @@ split_raw_data <- function(df,
       df_merged <- rbind(df_list[[x]], merge(cotrt_matching, control))
       if (x == "matrix") {
         matrix_data <- rbind(df_merged, df_list[["single-agent"]])
-        matrix_data[is.na(get(conc_idx)), (conc_idx) := 0]
-        matrix_data[is.na(get(codrug_drug_id)), (codrug_drug_id) := untreated_tag[1]]
+        for (j in conc_idx)
+          data.table::set(matrix_data, which(is.na(matrix_data[[j]])), j, 0)
+        for (j in codrug_drug_id) {
+          data.table::set(matrix_data, which(is.na(matrix_data[[j]])), j, untreated_tag[1])
+        }
         matrix_data
       } else {
         df_merged
