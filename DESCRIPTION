@@ -44,8 +44,7 @@ Suggests:
     pkgbuild,
     qs,
     testthat,
-    yaml,
-    gDRinternalData
+    yaml
 VignetteBuilder: 
     knitr
 biocViews: Software, ShinyApps
