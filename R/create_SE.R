@@ -27,7 +27,7 @@ create_SE <- function(df_,
                       ),
                       override_untrt_controls = NULL) {
   # Assertions:
-  stopifnot(any(inherits(df_, "data.table"), inherits(df_, "DataFrame")))
+  checkmate::assert_multi_class(df_, c("data.table", "DataFrame"))
   checkmate::assert_string(data_type)
   checkmate::assert_string(readout)
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
@@ -72,6 +72,15 @@ create_SE <- function(df_,
     df_[single_agent_idx, drug2_var] <- untreated_tag[1]
   }
   
+  
+  df_ <- df_[, lapply(.SD, function(x) {
+    if (is.character(x)) {
+      gsub(paste(untreated_tag, collapse = "|"), untreated_tag[1], x)
+    } else {
+      x
+    }
+  }), .SDcols = names(df_)]
+
   # Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
   coldata <- md$condition_md
@@ -240,7 +249,8 @@ validate_mapping <- function(trt_df, refs_df, nested_confounders) {
   
   # Swap concentrations for single-agent with drug2
   if (conc2 %in% colnames(trt_df)) {
-    swap_idx <- trt_df[[drug_id]] %in% trt_df[[drug2_id]]
+    swap_idx <- trt_df[[drug_id]] %in%
+      setdiff(unique(trt_df[[drug2_id]]), untrt_tag)
     trt_df[swap_idx, "swap_sa"] <- TRUE
   }
   trt_df
