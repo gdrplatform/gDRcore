@@ -58,7 +58,8 @@ if (getRversion() >= "2.15.1") {
       "..untrt_cols",
       "..valid",
       "..x",
-      "..y"
+      "..y",
+      "normalization_type"
     ), 
     utils::packageName())
 }
