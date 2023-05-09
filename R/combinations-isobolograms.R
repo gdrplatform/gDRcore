@@ -338,7 +338,9 @@ calculate_Loewe <- function(
 }
 
 
-get_isocutoffs <- function(df_mean, normalization_type, data_col = "average") {
+get_isocutoffs <- function(df_mean,
+                           normalization_type,
+                           data_col = "x") {
   if (min(df_mean[[data_col]], na.rm = TRUE) > 0.7) {
     iso_cutoffs <- NULL
   } else {
