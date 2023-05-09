@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 #### [0.99.11] - 2023-05-05
-#### Utilize `gDRutils::apply_bumpy_function` in fit_SE
+#### fix bug with swapping untreated/vehicle values
 
 #### [0.99.10] - 2023-05-04
 #### Fix bug with data.table
