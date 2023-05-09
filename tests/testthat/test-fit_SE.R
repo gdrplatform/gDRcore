@@ -42,6 +42,9 @@ test_that("fit_SE works as expected", {
   ll <- names(maeReal@ExperimentList)
   se <- maeReal[[ll[which(ll == "single-agent")[1]]]]
   SummarizedExperiment::assay(se, "Metrics") <- NULL
+  # to avoid warnings about overwriting existing metadata entry
+  S4Vectors::metadata(se)[[".internal"]] <- NULL
+  S4Vectors::metadata(se)[["fit_parameters"]] <- NULL
   ext_ass <- SummarizedExperiment::assayNames(se)
   
   fit_se <- fit_SE(se, metrics_assay = "testing")
