@@ -26,8 +26,7 @@ test_that("fit_SE errors as expected", {
                                  "finalMAE_combo_2dose_nonoise2.RDS", package = "gDRtestData")
   )
   
-  ll <- names(maeReal@ExperimentList)
-  se <- maeReal[[ll[which(ll == "single-agent")[1]]]]
+  se <- MultiAssayExperiment::experiments(maeReal)["single-agent"][[1]]
   SummarizedExperiment::assay(se, "Metrics") <- NULL
   
   expect_error(fit_SE(se, averaged_assay = "dummy"), 
@@ -39,8 +38,7 @@ test_that("fit_SE works as expected", {
                                  "finalMAE_combo_2dose_nonoise2.RDS", package = "gDRtestData")
   )
   
-  ll <- names(maeReal@ExperimentList)
-  se <- maeReal[[ll[which(ll == "single-agent")[1]]]]
+  se <- MultiAssayExperiment::experiments(maeReal)["single-agent"][[1]]
   SummarizedExperiment::assay(se, "Metrics") <- NULL
   # to avoid warnings about overwriting existing metadata entry
   S4Vectors::metadata(se)[[".internal"]] <- NULL
