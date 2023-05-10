@@ -97,7 +97,7 @@ calculate_Loewe <- function(
     # filtered_cf can be empty (i.e. no rows) - this edge case is handled in 
     # calculate_isobolograms
     filtered_cf <- 
-      codilution_fittings[codilution_fittings$x_inf < (isobol_value - .1), ]
+      codilution_fittings[x_inf < (isobol_value - .1)]
     
     df_iso <- calculate_isobolograms(
       row_fittings, 
@@ -173,6 +173,7 @@ calculate_Loewe <- function(
         fill = NA
       )
     )
+    
     df_iso_curve <- df_iso_curve[!is.na(df_iso_curve$x2_off), ]
     # remove offset
     df_iso_curve$x2 <- 
@@ -272,7 +273,7 @@ calculate_Loewe <- function(
 
     df_100x_AUC <- data.table::data.table(
       log10_ratio_conc = df_iso_curve$log10_ratio_conc[ratio_idx],
-      AUC_log2CI <- vapply(ratio_idx, function(x) {
+      AUC_log2CI = vapply(ratio_idx, function(x) {
         mean(
           df_iso_curve$log2_CI[
             (df_iso_curve$log10_ratio_conc > 

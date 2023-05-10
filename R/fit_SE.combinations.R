@@ -302,7 +302,7 @@ fit_SE.combinations <- function(se,
 
       # average the top 10-percentile excess to get a single value 
       # for the excess
-      hsa_score[hsa_score$normalization_type == norm_type, "x"] <- ifelse(
+      hsa_score[normalization_type == norm_type, "x"] <- ifelse(
         is.null(h_excess), 
         NA, 
         mean(
@@ -313,7 +313,7 @@ fit_SE.combinations <- function(se,
           na.rm = TRUE
         )
       )
-      bliss_score[hsa_score$normalization_type == norm_type, "x"] <- ifelse(
+      bliss_score[normalization_type == norm_type, "x"] <- ifelse(
         is.null(b_excess), 
         NA, 
         mean(
@@ -326,16 +326,16 @@ fit_SE.combinations <- function(se,
       )
 
       if (all(vapply(isobologram_out, is.null, logical(1)))) {
-        CIScore_50[CIScore_50$normalization_type == norm_type, "x"] <-
-          CIScore_80[CIScore_80$normalization_type == norm_type, "x"] <- NA
+        CIScore_50[normalization_type == norm_type, "x"] <-
+          CIScore_80[normalization_type == norm_type, "x"] <- NA
       } else {
-        CIScore_50[CIScore_50$normalization_type == norm_type, "x"] <-
+        CIScore_50[normalization_type == norm_type, "x"] <-
           isobologram_out$df_all_AUC_log2CI$CI_100x[
           isobologram_out$df_all_AUC_log2CI$iso_level ==
             min(isobologram_out$df_all_AUC_log2CI$iso_level[
               isobologram_out$df_all_AUC_log2CI$iso_level >= 0.5
             ])]
-        CIScore_80[CIScore_80$normalization_type == norm_type, "x"] <-
+        CIScore_80[normalization_type == norm_type, "x"] <-
           isobologram_out$df_all_AUC_log2CI$CI_100x[
           isobologram_out$df_all_AUC_log2CI$iso_level == 
             min(isobologram_out$df_all_AUC_log2CI$iso_level[
