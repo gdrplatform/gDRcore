@@ -97,7 +97,7 @@ calculate_Loewe <- function(
     # filtered_cf can be empty (i.e. no rows) - this edge case is handled in 
     # calculate_isobolograms
     filtered_cf <- 
-      codilution_fittings[x_inf < (isobol_value - .1)]
+      codilution_fittings[codilution_fittings$x_inf < (isobol_value - .1), ]
     
     df_iso <- calculate_isobolograms(
       row_fittings, 
@@ -173,7 +173,6 @@ calculate_Loewe <- function(
         fill = NA
       )
     )
-    
     df_iso_curve <- df_iso_curve[!is.na(df_iso_curve$x2_off), ]
     # remove offset
     df_iso_curve$x2 <- 
@@ -339,13 +338,11 @@ calculate_Loewe <- function(
 }
 
 
-get_isocutoffs <- function(df_mean,
-                           normalization_type,
-                           data_col = "x") {
-  if (min(df_mean[[data_col]], na.rm = TRUE) > 0.7) {
+get_isocutoffs <- function(df_mean, normalization_type) {
+  if (min(df_mean[normalization_type == normalization_type, x], na.rm = TRUE) > 0.7) {
     iso_cutoffs <- NULL
   } else {
-    if (normalization_type == "GR") {
+    if (normalization_type == "GRvalue") {
       max_val <- -0.25
     } else {
       max_val <- 0.2
@@ -354,7 +351,7 @@ get_isocutoffs <- function(df_mean,
       max(
         max_val, 
         ceiling(
-          20 * min(df_mean[[data_col]] + 0.08, na.rm = TRUE)
+          20 * min(df_mean[normalization_type == normalization_type, x] + 0.08, na.rm = TRUE)
         ) / 20
       ), 
       0.8,  
@@ -381,7 +378,7 @@ calculate_isobolograms <- function(row_fittings,
       ec50 = row_fittings$ec50,
       h = row_fittings$h
     )
-    row_iso <- data.table::data.table(conc_1 = row_fittings[["cotrt_value"]],
+    row_iso <- data.table::data.table(conc_1 = row_fittings[, cotrt_value],
       conc_2 = conc2,
       fit_type = "by_row")
 
@@ -394,7 +391,7 @@ calculate_isobolograms <- function(row_fittings,
       h = col_fittings$h
     )
     col_iso <- data.table::data.table(conc_1 = conc1,
-      conc_2 = col_fittings[["cotrt_value"]],
+      conc_2 = col_fittings[, cotrt_value],
       fit_type = "by_col")
 
     xy_iso <- data.table::rbindlist(list(row_iso, col_iso))

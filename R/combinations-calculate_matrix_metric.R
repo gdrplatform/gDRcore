@@ -37,8 +37,8 @@ NULL
 #' sa2 <- data.table::data.table(conc = rep(0, n), conc2 = seq(n), metric = seq(n))
 #' calculate_HSA(sa1, "conc", sa2, "conc2", "metric")
 #' @export
-calculate_HSA <- function(sa1, series_id1, sa2, series_id2) {
-  .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, FXN = pmin)
+calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
+  .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN = pmin)
 }
 
 
@@ -78,6 +78,7 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
     series_id1, 
     sa2, 
     series_id2, 
+    metric, 
     FXN = lambda
   )
 }
@@ -86,13 +87,13 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
 .calculate_matrix_metric <- function(sa1, 
                                      series_id1, 
                                      sa2, 
-                                     series_id2,
-                                     FXN) {
-  
+                                     series_id2, 
+                                     metric, FXN) {
   checkmate::assert_true(all(sa1[[series_id2]] == 0L))
   checkmate::assert_true(all(sa2[[series_id1]] == 0L))
-  checkmate::assert_subset("x", colnames(sa1))
-  checkmate::assert_subset("x", colnames(sa2))
+
+  data.table::setnames(sa1, "x", "metric1", skip_absent = TRUE)
+  data.table::setnames(sa2, "x", "metric2", skip_absent = TRUE)
 
   # TODO: ensure they're unique?
   u <- expand.grid(sa1[[series_id1]], sa2[[series_id2]])
@@ -100,9 +101,9 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
 
   idx <- match(u[[series_id1]], sa1[[series_id1]])
   
-  u <- base::merge(u, sa1[, c(..series_id1, "x")], by = series_id1)
-  u <- base::merge(u, sa2[, c(..series_id2, "x")], by = series_id2)
+  u <- base::merge(u, sa1[, c(..series_id1, "metric1")], by = series_id1)
+  u <- base::merge(u, sa2[, c(..series_id2, "metric2")], by = series_id2)
 
-  metric <- do.call(FXN, list(u$x.x, u$x.y))
+  metric <- do.call(FXN, list(u$metric1, u$metric2))
   data.table::data.table(cbind(u, metric))
 }

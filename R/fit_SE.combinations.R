@@ -150,12 +150,13 @@ fit_SE.combinations <- function(se,
     complete <- data.table::as.data.table(merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2)))
 
     for (norm_type in normalization_types) {
+      
       avg_combo <- data.table::as.data.table(avg_combo)
       avg_subset <- avg_combo[normalization_type == norm_type]
       
       # fit by column: the series in the primary identifier, the cotrt is the 
       # secondary one
-
+      
       col_fittings <- fit_combo_cotreatments(
         avg_subset,
         series_id = id, 
@@ -167,7 +168,7 @@ fit_SE.combinations <- function(se,
         x[, "cotrt_value"] <- NA
         x
       } else {
-        na.omit(col_fittings, col = "fit_type")
+        col_fittings[!is.na(col_fittings$fit_type), ]
       }
     
       # fit by row (flipped): the series in the secondary identifier, the 
@@ -178,7 +179,7 @@ fit_SE.combinations <- function(se,
         cotrt_id = id, 
         norm_type
       )
-      row_fittings <- na.omit(row_fittings, col = "fit_type")
+      row_fittings <- row_fittings[!is.na(row_fittings$fit_type), ]
 
       # fit by codilution (diagonal)
       codilution_fittings <- fit_combo_codilutions(
@@ -186,7 +187,9 @@ fit_SE.combinations <- function(se,
         series_identifiers, 
         norm_type
       )
-      codilution_fittings <- na.omit(codilution_fittings, col = "fit_type")
+      codilution_fittings <- 
+        codilution_fittings[!is.na(codilution_fittings$fit_type), ]
+
       # apply the fit to get smoothed data: results per column
       # (along primary identifier for each value of the secondary identifier)
       complete$col_values <- map_ids_to_fits(
@@ -234,24 +237,22 @@ fit_SE.combinations <- function(se,
         colnames(complete), 
         c(norm_type, "row_values", "col_values", "codil_values")
       )
-      complete$x <- rowMeans(complete[, keep, with = FALSE], na.rm = TRUE)
+      mat <- as.matrix(complete[, ..keep])
+      complete$x <- rowMeans(mat, na.rm = TRUE)
       
       # just keep the relevant columns and change to the metric name
-
       cols <- c(id, id2, "x")
       av_matrix <- complete[, cols, with = FALSE]
       av_matrix[, "normalization_type" := norm_type]
       av_matrix[get(id) == 0 & get(id2) == 0, x := 1]
-      
+
       if (NROW(av_matrix) == 0) {
         av_matrix <- h_excess <- b_excess <- NULL
       } else {
-        
-        cols <- c(id, id2, "x")
         sa1 <- av_matrix[get(id2) == 0, cols, with = FALSE]
         sa2 <- av_matrix[get(id) == 0, cols, with = FALSE]
 
-        hsa <- calculate_HSA(sa1, id, sa2, id2)
+        hsa <- calculate_HSA(sa1, id, sa2, id2, norm_type)
         h_excess <- calculate_excess(
           hsa, 
           av_matrix, 
@@ -273,16 +274,15 @@ fit_SE.combinations <- function(se,
       # call calculate_Loewe and calculate_isobolograms: 
       # remove rows/columns with less than 2 values
       discard_conc_1 <- names(which(
-        table(av_matrix[!is.na(x), id, with = FALSE]) < 3
+        table(av_matrix[!is.na(x) & normalization_type == norm_type, id, with = FALSE]) < 3
       ))
       discard_conc_2 <- names(which(
-        table(av_matrix[!is.na(x), id2, with = FALSE]) < 3
+        table(av_matrix[!is.na(x) & normalization_type == norm_type, id2, with = FALSE]) < 3
       ))
       av_matrix_dense <- av_matrix[
-        !(id %in% discard_conc_1) & 
-          !(id2 %in% discard_conc_2), 
+        !(av_matrix[[id]] %in% discard_conc_1) & 
+          !(av_matrix[[id2]] %in% discard_conc_2), 
       ]
-      
       isobologram_out <- if (
           sum((av_matrix_dense[[id]] * av_matrix_dense[[id2]]) > 0) > 9 &&
           min(row_fittings$cotrt_value) == 0
@@ -302,7 +302,7 @@ fit_SE.combinations <- function(se,
 
       # average the top 10-percentile excess to get a single value 
       # for the excess
-      hsa_score[normalization_type == norm_type, "x"] <- ifelse(
+      hsa_score[hsa_score$normalization_type == norm_type, "x"] <- ifelse(
         is.null(h_excess), 
         NA, 
         mean(
@@ -313,7 +313,7 @@ fit_SE.combinations <- function(se,
           na.rm = TRUE
         )
       )
-      bliss_score[normalization_type == norm_type, "x"] <- ifelse(
+      bliss_score[bliss_score$normalization_type == norm_type, "x"] <- ifelse(
         is.null(b_excess), 
         NA, 
         mean(
@@ -326,16 +326,16 @@ fit_SE.combinations <- function(se,
       )
 
       if (all(vapply(isobologram_out, is.null, logical(1)))) {
-        CIScore_50[normalization_type == norm_type, "x"] <-
-          CIScore_80[normalization_type == norm_type, "x"] <- NA
+        CIScore_50[CIScore_50$normalization_type == norm_type, "x"] <-
+          CIScore_80[CIScore_80$normalization_type == norm_type, "x"] <- NA
       } else {
-        CIScore_50[normalization_type == norm_type, "x"] <-
+        CIScore_50[CIScore_50$normalization_type == norm_type, "x"] <-
           isobologram_out$df_all_AUC_log2CI$CI_100x[
           isobologram_out$df_all_AUC_log2CI$iso_level ==
             min(isobologram_out$df_all_AUC_log2CI$iso_level[
               isobologram_out$df_all_AUC_log2CI$iso_level >= 0.5
             ])]
-        CIScore_80[normalization_type == norm_type, "x"] <-
+        CIScore_80[CIScore_80$normalization_type == norm_type, "x"] <-
           isobologram_out$df_all_AUC_log2CI$CI_100x[
           isobologram_out$df_all_AUC_log2CI$iso_level == 
             min(isobologram_out$df_all_AUC_log2CI$iso_level[
@@ -363,37 +363,37 @@ fit_SE.combinations <- function(se,
         isobologram_out$df_all_iso_points$normalization_type <-
         isobologram_out$df_all_iso_curves$normalization_type <- norm_type
       
-      hsa_excess <- plyr::rbind.fill(hsa_excess, as.data.frame(h_excess))
-      bliss_excess <- plyr::rbind.fill(bliss_excess, as.data.frame(b_excess))
+      hsa_excess <- data.table::rbindlist(list(hsa_excess,
+                                               h_excess), fill = TRUE)
+      bliss_excess <- data.table::rbindlist(list(bliss_excess,
+                                                 b_excess), fill = TRUE)
       # check if it does not contain only ids
       
       if (!is.null(smooth_mx) && ncol(smooth_mx) != 2) {
-        smooth_mx <-
-          rbind(smooth_mx,
-                av_matrix)
+        smooth_mx <- data.table::rbindlist(list(smooth_mx, av_matrix), fill = TRUE)
       } else {
         smooth_mx <- av_matrix
       }
     
       if (is.null(all_iso_points)) {
-        all_iso_points <- data.table::as.data.table(isobologram_out$df_all_iso_points)
+        all_iso_points <- isobologram_out$df_all_iso_points
       } else {
-        all_iso_points <- plyr::rbind.fill(
+        all_iso_points <- data.table::rbindlist(list(
           all_iso_points,
-          data.table::as.data.table(isobologram_out$df_all_iso_points)
-        )
+          isobologram_out$df_all_iso_points
+        ), fill = TRUE)
       }
       
       if (is.null(isobolograms)) {
-        isobolograms <- data.table::as.data.table(isobologram_out$df_all_iso_curves)
+        isobolograms <- isobologram_out$df_all_iso_curves
       } else {
-        isobolograms <- plyr::rbind.fill(
+        isobolograms <- data.table::rbindlist(list(
           isobolograms,
-          data.table::as.data.table(isobologram_out$df_all_iso_curves)
-        )
+          isobologram_out$df_all_iso_curves
+        ), fill = TRUE)
       }
       
-      metrics <- rbind(metrics, metrics_merged)
+      metrics <- data.table::rbindlist(list(metrics, metrics_merged), fill = TRUE)
     }
     list(bliss_excess = bliss_excess,
          hsa_excess = hsa_excess,
