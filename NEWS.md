@@ -2,8 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [0.99.12] - 2023-05-08
+#### [0.99.13] - 2023-05-10
 #### Refactor normalization types in the combo-specific assays
+
+#### [0.99.12] - 2023-05-09
+#### Utilize `gDRutils::apply_bumpy_function` in fit_SE
 
 #### [0.99.11] - 2023-05-05
 #### fix bug with swapping untreated/vehicle values
