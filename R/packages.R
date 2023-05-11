@@ -59,7 +59,9 @@ if (getRversion() >= "2.15.1") {
       "..valid",
       "..x",
       "..y",
-      "normalization_type"
+      "normalization_type",
+      "cotrt_value",
+      "x"
     ), 
     utils::packageName())
 }

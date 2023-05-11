@@ -99,13 +99,13 @@ calculate_excess <- function(metric,
   # no repeats
   # TODO: Check that there are no NAs
   idx <- S4Vectors::match(
-    DataFrame(measured[, ..series_identifiers]), 
-    DataFrame(metric[, ..series_identifiers])
+    DataFrame(measured[, series_identifiers, with = FALSE]), 
+    DataFrame(metric[, series_identifiers, with = FALSE])
   )
   
-  out <- measured[, ..series_identifiers]
-  excess <- unlist(metric[idx, ..metric_col]) - unlist(measured[, ..measured_col])
-  excess[apply(as.matrix(out[, ..series_identifiers]) == 0, 1, any)] <- NA
+  out <- measured[, series_identifiers, with = FALSE]
+  excess <- metric[idx, metric_col, with = FALSE] - measured[, measured_col, with = FALSE]
+  excess[apply(as.matrix(out[, series_identifiers, with = FALSE]) == 0, 1, any)] <- NA
   out$excess <- excess
   out
 }
