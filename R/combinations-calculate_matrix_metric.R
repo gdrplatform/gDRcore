@@ -45,9 +45,9 @@ calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
 #' @rdname calculate_matrix_metric
 #' @examples
 #' n <- 10
-#' sa1 <- data.table::data.table(conc = seq(n), conc2 = rep(0, n), metric = seq(n))
-#' sa2 <- data.table::data.table(conc = rep(0, n), conc2 = seq(n), metric = seq(n))
-#' calculate_Bliss(sa1, "conc", sa2, "conc2", "metric")
+#' sa1 <- data.table::data.table(conc = seq(n), conc2 = rep(0, n), x = seq(n))
+#' sa2 <- data.table::data.table(conc = rep(0, n), conc2 = seq(n), x = seq(n))
+#' calculate_Bliss(sa1, "conc", sa2, "conc2", "x")
 #' @export
 calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
   if (metric %in% c("GRvalue", "GR")) {

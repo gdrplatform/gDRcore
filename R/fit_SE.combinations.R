@@ -325,7 +325,7 @@ fit_SE.combinations <- function(se,
         )
       )
 
-      if (all(vapply(isobologram_out, is.null, logical(1)))) {
+      if (all(vapply(isobologram_out, function(x) is.null(x) || all(is.na(x)), logical(1)))) {
         CIScore_50[CIScore_50$normalization_type == norm_type, "x"] <-
           CIScore_80[CIScore_80$normalization_type == norm_type, "x"] <- NA
       } else {
