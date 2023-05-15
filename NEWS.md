@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.14] - 2023-05-15
+#### rename `excess` to `x` to unify colnames in assay data
+
 #### [0.99.13] - 2023-05-10
 #### refactor normalization_types in combo-specific assays
 
