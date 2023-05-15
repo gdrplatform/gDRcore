@@ -8,22 +8,18 @@ generateNoNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
   #   only for testing purpuses not displayed as example
   df_merged <- prepareMergedData(cell_lines[2:11, ], drugs[2:11, ], 0)
   
-  if (requireNamespace("gDRcore", quietly = TRUE)) {
-    mae <- gDRcore::runDrugResponseProcessingPipeline(
-      df_merged,
-      nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  mae <- runDrugResponseProcessingPipeline(
+    df_merged,
+    nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  )
+  
+  if (save) {
+    save_rds(
+      rdsObj = mae,
+      rdsName = "finalMAE_small_no_noise.RDS"
     )
-    
-    if (save) {
-      save_rds(
-        rdsObj = mae,
-        rdsName = "finalMAE_small_no_noise.RDS"
-      )
-    }
-    invisible(mae)
-  } else {
-    df_merged
   }
+  invisible(mae)
 }
 
 #' generateNoiseRawData
@@ -35,23 +31,18 @@ generateNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
   
   df_merged <- prepareMergedData(cell_lines[2:11, ], drugs[2:11, ])
 
+  mae <- runDrugResponseProcessingPipeline(
+    df_merged,
+    nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  )
   
-  if (requireNamespace("gDRcore", quietly = TRUE)) {
-    mae <- gDRcore::runDrugResponseProcessingPipeline(
-      df_merged,
-      nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  if (save) {
+    save_rds(
+      rdsObj = mae,
+      rdsName = "finalMAE_small.RDS"
     )
-    
-    if (save) {
-      save_rds(
-        rdsObj = mae,
-        rdsName = "finalMAE_small.RDS"
-      )
-    }
-    invisible(mae)
-  } else {
-    df_merged
   }
+  invisible(mae)
 }
 
 #' generateLigandData
@@ -75,24 +66,19 @@ generateLigandData <- function(cell_lines, drugs, save = TRUE) {
   df_merged2$Barcode <- paste0(df_merged2$Barcode, "1")
   df_merged <- rbind(df_merged, df_merged2)
   
-  if (requireNamespace("gDRcore", quietly = TRUE)) {
-    
-    mae <- gDRcore::runDrugResponseProcessingPipeline(
-      df_merged, 
-      override_untrt_controls = c(Ligand = 0.1),
-      nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  mae <- runDrugResponseProcessingPipeline(
+    df_merged, 
+    override_untrt_controls = c(Ligand = 0.1),
+    nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  )
+  
+  if (save) {
+    save_rds(
+      rdsObj = mae,
+      rdsName = "finalMAE_wLigand.RDS"
     )
-    
-    if (save) {
-      save_rds(
-        rdsObj = mae,
-        rdsName = "finalMAE_wLigand.RDS"
-      )
-    }
-    invisible(mae)
-  } else {
-    df_merged
   }
+  invisible(mae)
 }
 
 #' generateMediumData
@@ -102,24 +88,19 @@ generateLigandData <- function(cell_lines, drugs, save = TRUE) {
 generateMediumData <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the 2nd (medium size) test set with single agent
   df_merged <- prepareMergedData(cell_lines[seq_len(15), ], drugs[seq_len(40), ])
+    
+  mae <- runDrugResponseProcessingPipeline(
+    df_merged,
+    nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  )
   
-  if (requireNamespace("gDRcore", quietly = TRUE)) {
-    
-    mae <- gDRcore::runDrugResponseProcessingPipeline(
-      df_merged,
-      nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  if (save) {
+    save_rds(
+      rdsObj = mae,
+      rdsName = "finalMAE_medium.RDS"
     )
-    
-    if (save) {
-      save_rds(
-        rdsObj = mae,
-        rdsName = "finalMAE_medium.RDS"
-      )
-    }
-    invisible(mae)
-  } else {
-    df_merged
   }
+  invisible(mae)
 }
 
 
@@ -131,24 +112,19 @@ generateComboNoNoiseData <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the test set with combo (two single dose)
   #   co-treatment drug is only as DrugName_2
   df_merged <- prepareComboMergedData(cell_lines[2:4, ], drugs, noise = 0)
+    
+  mae <- runDrugResponseProcessingPipeline(
+    df_merged,
+    nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  )
   
-  if (requireNamespace("gDRcore", quietly = TRUE)) {
-    
-    mae <- gDRcore::runDrugResponseProcessingPipeline(
-      df_merged,
-      nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  if (save) {
+    save_rds(
+      rdsObj = mae,
+      rdsName = "finalMAE_combo_2dose_nonoise.RDS"
     )
-    
-    if (save) {
-      save_rds(
-        rdsObj = mae,
-        rdsName = "finalMAE_combo_2dose_nonoise.RDS"
-      )
-    }
-    invisible(mae)
-  } else {
-    df_merged
   }
+  invisible(mae)
 }
 
 #' generateComboNoNoiseData2
@@ -161,24 +137,19 @@ generateComboNoNoiseData2 <- function(cell_lines, drugs, save = TRUE) {
   df_merged <- prepareComboMergedData(cell_lines[2:4, ], drugs, drugsIdx1 = c(2:4, 26), noise = 0)
   df_merged <- df_merged[!(df_merged$Gnumber %in% c("vehicle", drugs$Gnumber[26]) &
     df_merged$Gnumber_2 == drugs$Gnumber[26]), ]
+    
+  mae <- runDrugResponseProcessingPipeline(
+    df_merged,
+    nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  )
   
-  if (requireNamespace("gDRcore", quietly = TRUE)) {
-    
-    mae <- gDRcore::runDrugResponseProcessingPipeline(
-      df_merged,
-      nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  if (save) {
+    save_rds(
+      rdsObj = mae,
+      rdsName = "finalMAE_combo_2dose_nonoise2.RDS"
     )
-    
-    if (save) {
-      save_rds(
-        rdsObj = mae,
-        rdsName = "finalMAE_combo_2dose_nonoise2.RDS"
-      )
-    }
-    invisible(mae)
-  } else {
-    df_merged
   }
+  invisible(mae)
 }
 
 #' generateComboNoNoiseData3
@@ -195,24 +166,19 @@ generateComboNoNoiseData3 <- function(cell_lines, drugs, save = TRUE) {
     noise = 0, 
     modifyDf2 = TRUE
   )
+
+  mae <- runDrugResponseProcessingPipeline(
+    df_merged,
+    nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  )
   
-  if (requireNamespace("gDRcore", quietly = TRUE)) {
-    
-    mae <- gDRcore::runDrugResponseProcessingPipeline(
-      df_merged,
-      nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  if (save) {
+    save_rds(
+      rdsObj = mae,
+      rdsName = "finalMAE_combo_2dose_nonoise3.RDS"
     )
-    
-    if (save) {
-      save_rds(
-        rdsObj = mae,
-        rdsName = "finalMAE_combo_2dose_nonoise3.RDS"
-      )
-    }
-    invisible(mae)
-  } else {
-    df_merged
   }
+  invisible(mae)
 }
 
 #' generateComboMatrixSmall
@@ -228,24 +194,19 @@ generateComboMatrixSmall <- function(cell_lines, drugs, save = TRUE) {
   df_layout_2 <- merge(df_layout, df_2, allow.cartesian = TRUE)
   
   df_merged <- gDRtestData::generate_response_data(df_layout_2, 0)
+
+  mae <- runDrugResponseProcessingPipeline(
+    df_merged,
+    nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  )
   
-  if (requireNamespace("gDRcore", quietly = TRUE)) {
-    
-    mae <- gDRcore::runDrugResponseProcessingPipeline(
-      df_merged,
-      nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  if (save) {
+    save_rds(
+      rdsObj = mae,
+      rdsName = "finalMAE_combo_matrix_small.RDS"
     )
-    
-    if (save) {
-      save_rds(
-        rdsObj = mae,
-        rdsName = "finalMAE_combo_matrix_small.RDS"
-      )
-    }
-    invisible(mae)
-  } else {
-    df_merged
   }
+  invisible(mae)
 }
   
 #' generateComboMatrix
@@ -260,24 +221,19 @@ generateComboMatrix <- function(cell_lines, drugs, save = TRUE) {
   df_layout_2 <- merge(df_layout, df_2, allow.cartesian = TRUE)
   
   df_merged <- gDRtestData::generate_response_data(df_layout_2)
+
+  mae <- runDrugResponseProcessingPipeline(
+    df_merged,
+    nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  )
   
-  if (requireNamespace("gDRcore", quietly = TRUE)) {
-    
-    mae <- gDRcore::runDrugResponseProcessingPipeline(
-      df_merged,
-      nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  if (save) {
+    save_rds(
+      rdsObj = mae,
+      rdsName = "finalMAE_combo_matrix.RDS"
     )
-    
-    if (save) {
-      save_rds(
-        rdsObj = mae,
-        rdsName = "finalMAE_combo_matrix.RDS"
-      )
-    }
-    invisible(mae)
-  } else {
-    df_merged
   }
+  invisible(mae)
 }
 
 #' generateTripleComboMatrix
@@ -307,24 +263,19 @@ generateTripleComboMatrix <- function(cell_lines, drugs, save = TRUE) {
                        df_3, allow.cartesian = TRUE)
   
   df_merged <- gDRtestData::generate_response_data(df_layout_3, 0)
+
+  mae <- runDrugResponseProcessingPipeline(
+    df_merged,
+    nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  )
   
-  if (requireNamespace("gDRcore", quietly = TRUE)) {
-    
-    mae <- gDRcore::runDrugResponseProcessingPipeline(
-      df_merged,
-      nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  if (save) {
+    save_rds(
+      rdsObj = mae,
+      rdsName = "finalMAE_combo_triple.RDS"
     )
-    
-    if (save) {
-      save_rds(
-        rdsObj = mae,
-        rdsName = "finalMAE_combo_triple.RDS"
-      )
-    }
-    invisible(mae)
-  } else {
-    df_merged
   }
+  invisible(mae)
 }
 
 #' generateCodilutionSmall
@@ -340,23 +291,18 @@ generateCodilutionSmall <- function(cell_lines, drugs, save = TRUE) {
   
   df_merged <- gDRtestData::generate_response_data(df_layout_2, 0)
   
-  if (requireNamespace("gDRcore", quietly = TRUE)) {
-    
-    mae <- gDRcore::runDrugResponseProcessingPipeline(
-      df_merged,
-      nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  mae <- runDrugResponseProcessingPipeline(
+    df_merged,
+    nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
+  )
+  
+  if (save) {
+    save_rds(
+      rdsObj = mae,
+      rdsName = "finalMAE_combo_codilution_small.RDS"
     )
-    
-    if (save) {
-      save_rds(
-        rdsObj = mae,
-        rdsName = "finalMAE_combo_codilution_small.RDS"
-      )
-    }
-    invisible(mae)
-  } else {
-    df_merged
   }
+  invisible(mae)
 }
 
 #' generateCodilution
@@ -371,7 +317,7 @@ generateCodilution <- function(cell_lines, drugs, save = TRUE) {
   df_layout_2 <- prepareCodilutionData(df_2, df_layout)
 
   df_merged <- gDRtestData::generate_response_data(df_layout_2)
-  mae <- gDRcore::runDrugResponseProcessingPipeline(
+  mae <- runDrugResponseProcessingPipeline(
     df_merged,
     nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
   )
@@ -425,10 +371,9 @@ prepareCodilutionData <- function(df, df_layout) {
   colnames(df) <- paste0(colnames(df), "_2")
   df_2 <- cbind(df_layout, df)
   df_2 <- df_2[df_2$DrugName != df_2$DrugName_2, ]
-  rows <- df_2$Concentration_2 > 0
+  rows <- which(df_2$Concentration_2 > 0)
   cols <- c("Concentration", "Concentration_2")
-  df_2[rows, cols] <- df_2[rows, cols] / 2
-  
+  df_2[rows, (cols) := lapply(.SD, function(x) x / 2), .SDcols = cols]
   df_2
 }
 

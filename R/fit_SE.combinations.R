@@ -306,9 +306,9 @@ fit_SE.combinations <- function(se,
         is.null(h_excess), 
         NA, 
         mean(
-          h_excess$excess[
-            h_excess$excess >= 
-              stats::quantile(h_excess$excess, 0.9, na.rm = TRUE)
+          h_excess$x[
+            h_excess$x >= 
+              stats::quantile(h_excess$x, 0.9, na.rm = TRUE)
           ], 
           na.rm = TRUE
         )
@@ -317,9 +317,9 @@ fit_SE.combinations <- function(se,
         is.null(b_excess), 
         NA, 
         mean(
-          b_excess$excess[
-            b_excess$excess >= 
-              stats::quantile(b_excess$excess, 0.9, na.rm = TRUE)
+          b_excess$x[
+            b_excess$x >= 
+              stats::quantile(b_excess$x, 0.9, na.rm = TRUE)
           ], 
           na.rm = TRUE
         )
