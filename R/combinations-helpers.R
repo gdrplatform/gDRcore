@@ -106,7 +106,7 @@ calculate_excess <- function(metric,
   out <- measured[, series_identifiers, with = FALSE]
   excess <- metric[idx, metric_col, with = FALSE] - measured[, measured_col, with = FALSE]
   excess[apply(as.matrix(out[, series_identifiers, with = FALSE]) == 0, 1, any)] <- NA
-  out$excess <- excess
+  out$x <- excess
   out
 }
 
