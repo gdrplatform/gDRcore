@@ -89,8 +89,6 @@ convert_se_to_raw_data <- function(se) {
   background_val <- "BackgroundValue"
   duration <- gDRutils::get_SE_identifiers(se, "duration")
   
-  
-  
   # Add required cols and correct the data
   ctrl[, (drug_cols) := NULL]
   
@@ -113,7 +111,6 @@ convert_se_to_raw_data <- function(se) {
   data.table::setnames(merged_df, "CorrectedReadout", "ReadoutValue")
   
   exp_metadata <- gDRutils::get_SE_experiment_metadata(se)
-  
-  cbind(merged_df[!is.na(merged_df$ReadoutValue), ], as.data.frame(exp_metadata))
-}
 
+  cbind(merged_df[!is.na(merged_df$ReadoutValue), ], data.table::as.data.table(exp_metadata))
+}

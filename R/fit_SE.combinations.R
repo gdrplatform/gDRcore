@@ -217,7 +217,8 @@ fit_SE.combinations <- function(se,
         )
         metrics_names <- c(metrics_names, "codilution_fittings")
       } 
-      metrics_merged <- do.call(plyr::rbind.fill, mget(metrics_names))
+
+      metrics_merged <- data.table::rbindlist(mget(metrics_names), fill = TRUE)
       # we need it to distinguish which rows are col_fittings/row_fittings 
       # and codilution_fitting
       metrics_merged$source <- rep(

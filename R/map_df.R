@@ -206,7 +206,7 @@ map_df <- function(trt_md,
   drug_cols <- mat_elem[, ..valid]
 
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  has_tag <- as.data.frame(lapply(drug_cols, function(x) x %in% untrt_tag))
+  has_tag <- data.table::as.data.table(lapply(drug_cols, function(x) x %in% untrt_tag))
   ntag <- rowSums(has_tag)
 
   is_untrt <- ntag == length(valid)

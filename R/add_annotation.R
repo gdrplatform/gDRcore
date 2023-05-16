@@ -49,20 +49,19 @@ add_CellLine_annotation <- function(
   # Assertions:
   checkmate::assert_data_table(df_metadata)
   checkmate::assert_string(fill, null.ok = TRUE)
-
+  
   cellline <- gDRutils::get_env_identifiers("cellline")
   cellline_name <- gDRutils::get_env_identifiers("cellline_name")
   add_clid <- gDRutils::get_header("add_clid")
   
-  CLs_info <- utils::read.csv(
-    system.file("annotation_data", fname, package = annotationPackage)
+  CLs_info <- data.table::fread(
+    system.file("annotation_data", fname, package = annotationPackage), header = TRUE
   )
-  CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate)]
+  CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate), with = FALSE]
   
   if (nrow(CLs_info) == 0) return(df_metadata)
   
-  validatedCLs <- unique(df_metadata[[cellline]]) %in% 
-    CLs_info[[DB_cellid_header]]
+  validatedCLs <- unique(df_metadata[[cellline]]) %in% CLs_info[[DB_cellid_header]]
   missingTblCellLines <- NULL
   if (!is.null(fill) && !all(validatedCLs)) {
     unValidatedCellLine <- unique(df_metadata[[cellline]])[!validatedCLs]
@@ -84,23 +83,9 @@ add_CellLine_annotation <- function(
   for (col in cols_to_fill) {
     CLs_info[[col]][is.na(CLs_info[[col]])] <- fill
   }
-  CLs_info[, "doubling_time"] <- as.numeric(CLs_info[, "doubling_time"])
+  CLs_info[, doubling_time := as.numeric(doubling_time)]
   
   colnames(CLs_info) <- unlist(c(cellline, add_clid, tail(DB_cell_annotate, 2)))
-  CLIDs <- unique(df_metadata[[cellline]])
-  bad_CL <- CLs_info[cellline %in% CLIDs][[cellline]]
-  if (any(bad_CL)) {
-    futile.logger::flog.warn("Cell line ID %s not found in cell line database",
-                             paste(CLIDs[bad_CL], collapse = " ; "))
-    temp_CLIDs <-
-      data.table::data.table(matrix(ncol = length(c(cellline,
-                                                    add_clid)),
-                                    nrow = length(CLIDs[bad_CL])))
-    colnames(temp_CLIDs) <- c(cellline, add_clid)
-    
-    temp_CLIDs[, cellline] <- temp_CLIDs[, cellline_name] <- CLIDs[bad_CL]
-    CLs_info <- rbind(CLs_info, temp_CLIDs, fill = TRUE)
-  }
   
   futile.logger::flog.info("Merge with Cell line info")
   nrows_df <- nrow(df_metadata)
@@ -166,32 +151,34 @@ add_Drug_annotation <- function(
   names(drug_identifiers_list) <- drug[drug_idx]
   
   # Read local drugs annotations
-  Drug_info <- utils::read.csv(
-    system.file("annotation_data", fname, package = annotationPackage),
-    header = TRUE
+  Drug_info <- data.table::fread(
+    system.file("annotation_data", fname, package = annotationPackage), header = TRUE
   )
-  Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa")]
-  names(Drug_info) <- c("drug", "drug_name", "drug_moa")
+  Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa"), with = FALSE]
+  data.table::setnames(Drug_info, c("gnumber", "drug_name", "drug_moa"),
+                       c("drug", "drug_name", "drug_moa"))
   drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
   validatedDrugs <- 
     remove_drug_batch(drugsTreated) %in% remove_drug_batch(Drug_info[["drug"]])
   #### function should be parallelizeized
   missingTblDrugs <- NULL
   if (!is.null(fill) && any(!validatedDrugs)) {
-    missingTblDrugs <- tibble::tibble(
+    missingTblDrugs <- data.table::data.table(
       drug = remove_drug_batch(drugsTreated[!validatedDrugs]),
       drug_name = drugsTreated[!validatedDrugs],
       drug_moa = fill
     )
   }
   
-  
   if (nrow(Drug_info) == 0) {
-    df_metadata[, drug_name] <- df_metadata[, drug]
+    drug_name <- intersect(drug_name, colnames(df_metadata))
+    drug <- intersect(drug, colnames(df_metadata))
+    df_metadata[, (drug_name) := get(drug)]
     return(df_metadata)
   }
+  
   Drug_info <- rbind(Drug_info, missingTblDrugs)
-
+  
   Drug_info$drug <- remove_drug_batch(Drug_info$drug)
   Drug_info <-
     rbind(data.table::data.table(
@@ -213,7 +200,8 @@ add_Drug_annotation <- function(
     colnames(Drug_info) <- drug_identifiers_list[[drug_idf]]
     df_metadata$batch <- df_metadata[[drug_idf]]
     df_metadata[[drug_idf]] <- remove_drug_batch(df_metadata[[drug_idf]])
-    df_metadata <- merge(df_metadata, Drug_info, by = drug_idf, all.x = TRUE)
+    req_col <- c(drug_idf, setdiff(colnames(df_metadata), colnames(Drug_info)))
+    df_metadata <- merge(df_metadata[, req_col, with = FALSE], Drug_info, by = drug_idf, all.x = TRUE)
     df_metadata[[drug_idf]] <- df_metadata$batch
     df_metadata$batch <- NULL
   }
