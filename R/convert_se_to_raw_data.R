@@ -112,5 +112,5 @@ convert_se_to_raw_data <- function(se) {
   
   exp_metadata <- gDRutils::get_SE_experiment_metadata(se)
 
-  cbind(merged_df[!is.na(merged_df$ReadoutValue), ], data.table::as.data.table(exp_metadata))
+  cbind(na.omit(merged_df, col = "ReadoutValue"), data.table::as.data.table(exp_metadata))
 }

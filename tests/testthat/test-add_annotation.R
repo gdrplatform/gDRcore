@@ -10,7 +10,7 @@ test_that("add_CellLine_annotation works", {
   CLs_info <- data.table::fread(
     system.file("annotation_data", "cell_lines.csv", package = "gDRtestData")
   )[cell_line_identifier %in% dt$clid]
-  dt_annotated <- add_CellLine_annotation(dt)
+  dt_annotated <- add_CellLine_annotation(dt, annotationPackage = "gDRtestData")
   
   expect_equal(dt_annotated$CellLineName, CLs_info$cell_line_name)
   expect_equal(dt_annotated$Tissue, CLs_info$primary_tissue)
@@ -30,7 +30,7 @@ test_that("add_Drug_annotation works", {
     col.names = c("drug", "drug_name", "drug_moa"))[drug %in% dt$Gnumber]
   dt_result <- data.table::setnames(Drug_info, c("drug", "drug_name"), c("Gnumber", "DrugName"))
   data.table::setkey(dt_result, "Gnumber")
-  dt_annotated <- add_Drug_annotation(dt)
+  dt_annotated <- add_Drug_annotation(dt, annotationPackage = "gDRtestData")
   
   expect_identical(dt_annotated, dt_result)
 })
