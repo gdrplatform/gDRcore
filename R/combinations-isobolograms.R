@@ -206,12 +206,11 @@ calculate_Loewe <- function(
     
     # rotate back the reference
     # In next step we will add two NA rows so we need to include them in the length:
-    len <- nrow(df_iso_curve + 2)
+    len <- nrow(df_iso_curve)
     df_iso_curve$pos_x_ref <- 
       (df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) + min(axis_2$pos_x)
     df_iso_curve$pos_y_ref <- 
       (-df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) + min(axis_1$pos_y)
-    df_iso_curve <- rbind(NA, df_iso_curve, NA, fill = TRUE)
     df_iso_curve[1, c("pos_x", "pos_x_ref")] <- min(axis_2$pos_x)
     df_iso_curve[1, c("pos_y", "pos_y_ref")] <- log10(ref_conc_1)
     df_iso_curve[1, "x1"] <-
@@ -278,7 +277,8 @@ calculate_Loewe <- function(
             (df_iso_curve$log10_ratio_conc > 
                (df_iso_curve$log10_ratio_conc[x] - range / 2)) &
               (df_iso_curve$log10_ratio_conc <= 
-                 (df_iso_curve$log10_ratio_conc[x] + range / 2))]
+                 (df_iso_curve$log10_ratio_conc[x] + range / 2))],
+          na.rm = TRUE
         )
       },
       FUN.VALUE = double(1)
@@ -330,7 +330,7 @@ calculate_Loewe <- function(
     })
   )
   
-  isobologram_out <- list(
+  list(
     df_all_iso_points = df_all_iso_points,
     df_all_iso_curves = df_all_iso_curves,
     df_all_AUC_log2CI = df_all_AUC_log2CI
@@ -342,7 +342,7 @@ get_isocutoffs <- function(df_mean, normalization_type) {
   if (min(df_mean[normalization_type == normalization_type, x], na.rm = TRUE) > 0.7) {
     iso_cutoffs <- NULL
   } else {
-    if (normalization_type == "GRvalue") {
+    if (normalization_type == "GR") {
       max_val <- -0.25
     } else {
       max_val <- 0.2
