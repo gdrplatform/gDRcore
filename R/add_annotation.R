@@ -79,11 +79,13 @@ add_CellLine_annotation <- function(
       !is.null(missingTblCellLines)) {
     CLs_info <- rbind(CLs_info, missingTblCellLines)
   }
-  cols_to_fill <- names(CLs_info)[!names(CLs_info) %in% "doubling_time"]
+  cols_to_fill <- names(CLs_info)[!names(CLs_info) %in% c("doubling_time")]
   for (col in cols_to_fill) {
     CLs_info[[col]][is.na(CLs_info[[col]])] <- fill
   }
-  CLs_info[, doubling_time := as.numeric(doubling_time)]
+  cols_num <- "doubling_time"
+  CLs_info[, (cols_num) := as.numeric(get(cols_num))]
+  
   
   colnames(CLs_info) <- unlist(c(cellline, add_clid, tail(DB_cell_annotate, 2)))
   
