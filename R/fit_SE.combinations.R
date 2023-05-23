@@ -172,7 +172,7 @@ fit_SE.combinations <- function(se,
         x[, "cotrt_value"] <- NA
         x
       } else {
-        col_fittings[!is.na(col_fittings$fit_type), ]
+        na.omit(col_fittings, col = "fit_type")
       }
     
       # fit by row (flipped): the series in the secondary identifier, the 
@@ -183,7 +183,7 @@ fit_SE.combinations <- function(se,
         cotrt_id = id, 
         norm_type
       )
-      row_fittings <- row_fittings[!is.na(row_fittings$fit_type), ]
+      row_fittings <- na.omit(row_fittings, col = "fit_type")
 
       # fit by codilution (diagonal)
       codilution_fittings <- fit_combo_codilutions(
@@ -191,8 +191,7 @@ fit_SE.combinations <- function(se,
         series_identifiers, 
         norm_type
       )
-      codilution_fittings <- 
-        codilution_fittings[!is.na(codilution_fittings$fit_type), ]
+      codilution_fittings <- na.omit(codilution_fittings, col = "fit_type")
 
       # apply the fit to get smoothed data: results per column
       # (along primary identifier for each value of the secondary identifier)
