@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.15] - 2023-05-23
+#### fix bug with subsetting data for calculating isobologram
+
 #### [0.99.14] - 2023-05-15
 #### rename `excess` to `x` to unify colnames in assay data
 
