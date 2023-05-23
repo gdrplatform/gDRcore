@@ -1,7 +1,11 @@
 #' @rdname runDrugResponseProcessingPipelineFxns
 #' @examples 
 #' td <- gDRimport::get_test_data()
-#' l_tbl <- gDRimport::load_data(gDRimport::manifest_path(td), gDRimport::template_path(td), gDRimport::result_path(td))
+#' l_tbl <- gDRimport::load_data(
+#'   manifest_file = gDRimport::manifest_path(td), 
+#'   df_template_files = gDRimport::template_path(td), 
+#'   results_file = gDRimport::result_path(td)
+#' )
 #' imported_data <- merge_data(
 #'   l_tbl$manifest, 
 #'   l_tbl$treatments, 
@@ -189,7 +193,7 @@ normalize_SE <- function(se,
     normalized$row_id <- i
     normalized$col_id <- j
     normalized$id <- as.character(seq_len(nrow(normalized)))
-    normalized <- reshape2::melt(as.data.frame(normalized),
+    normalized <- reshape2::melt(data.table::as.data.table(normalized),
                                  measure.vars = norm_cols,
                                  variable.name = "normalization_type",
                                  value.name = "x")

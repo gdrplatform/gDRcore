@@ -360,13 +360,6 @@ round_concentration <- function(x, ndigit = 3) {
   round(10 ^ (round(log10(x), ndigit)), ndigit - 1 - floor(log10(x)))
 }
 
-
-#' @keywords internal
-#' @noRd
-rbindList <- function(x) {
-  S4Vectors::DataFrame(do.call(plyr::rbind.fill, x))
-}
-
 #' @keywords internal
 #' @noRd
 rbindParallelList <- function(x, name) {
