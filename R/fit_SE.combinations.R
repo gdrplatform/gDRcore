@@ -155,8 +155,8 @@ fit_SE.combinations <- function(se,
     for (norm_type in normalization_types) {
       
       avg_combo <- data.table::as.data.table(avg_combo)
-      avg_subset <- avg_combo
-      complete_subset <- complete
+      avg_subset <- avg_combo[normalization_type == norm_type]
+      complete_subset <- complete[normalization_type == norm_type]
       
       # fit by column: the series in the primary identifier, the cotrt is the 
       # secondary one
