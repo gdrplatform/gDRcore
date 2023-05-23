@@ -84,7 +84,7 @@ fit_SE.combinations <- function(se,
     i <- x[["row"]]
     j <- x[["column"]]
 
-    avg_combo <- avg[avg[["row"]] == i & avg[["column"]] == j, ]
+    avg_combo <- data.table::as.data.table(avg[avg[["row"]] == i & avg[["column"]] == j, ])
    
     omit_c_idx <- which(colnames(avg_combo) %in% c("row", "column"))
     if (all(is.na(avg_combo[, -omit_c_idx]))) { # omit masked values (all NAs)
@@ -122,16 +122,7 @@ fit_SE.combinations <- function(se,
       "rconcs"
     )
     
-    mean_avg_combo <- stats::aggregate(stats::as.formula(
-        paste(
-          "x ~ ",
-          paste(c(id, id2, "normalization_type"), collapse = " + ")
-        )
-      ),
-      function(x) mean(x, na.rm = TRUE),
-      data = avg_combo, 
-      na.action = stats::na.pass
-    )
+    mean_avg_combo <-  avg_combo[, lapply(.SD, mean), by = c(id, id2, "normalization_type"), .SDcols = "x"]
     # deal with cases of multiple concentrations mapped to the same value 
     # when rounded create a complete matrix with the most frequence combo 
     # concentrations
@@ -145,18 +136,17 @@ fit_SE.combinations <- function(se,
     ))
     
     # create matrix with single agent
-    sa_data <- data.table::data.table(matrix(0,
-                      nrow = length(normalization_types),
-                      ncol = length(series_identifiers)))
-    data.table::setnames(sa_data, new = series_identifiers)
-    sa_data[, normalization_type := normalization_types]
-    complete <- data.table::rbindlist(list(data.table::as.data.table(avg_combo),
-                                           sa_data), fill = TRUE)
+    complete <- merge(unique(c(0, conc1)), unique(c(0, conc2)), by = NULL)
+    colnames(complete) <- c(id, id2)
+    complete <- data.table::as.data.table(merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2)))
+    
+  
     for (norm_type in normalization_types) {
       
       avg_combo <- data.table::as.data.table(avg_combo)
       avg_subset <- avg_combo[normalization_type == norm_type]
-      complete_subset <- complete[normalization_type == norm_type]
+      complete_subset <- complete[normalization_type == norm_type | is.na(normalization_type)]
+      complete_subset[is.na(normalization_type), normalization_type := norm_type]
       
       # fit by column: the series in the primary identifier, the cotrt is the 
       # secondary one

@@ -211,6 +211,7 @@ calculate_Loewe <- function(
       (df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) + min(axis_2$pos_x)
     df_iso_curve$pos_y_ref <- 
       (-df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) + min(axis_1$pos_y)
+    
     df_iso_curve[1, c("pos_x", "pos_x_ref")] <- min(axis_2$pos_x)
     df_iso_curve[1, c("pos_y", "pos_y_ref")] <- log10(ref_conc_1)
     df_iso_curve[1, "x1"] <-
@@ -240,7 +241,6 @@ calculate_Loewe <- function(
       4,
       fill = c(0, 0, 0)
     )
-    
     # cap position for plotting the isobolograms
     df_iso$pos_y <- pmin(df_iso$pos_y, max(axis_1$pos_y) + log2_pos_offset)
     df_iso$pos_x <- pmin(df_iso$pos_x, max(axis_2$pos_x) + log2_pos_offset)
