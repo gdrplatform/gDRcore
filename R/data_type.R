@@ -143,7 +143,8 @@ identify_data_type <- function(df,
 #'   concentrations = 10 ^ (seq(-3, .5, .5))
 #' )
 #' 
-#' df_2 <- drugs[c(21, 26), as.list(cell_lines[which(cell_lines$clid %in% df_layout$clid)]), names(drugs)]
+#' df_2 <- 
+#'   drugs[c(21, 26), as.list(cell_lines[which(cell_lines$clid %in% df_layout$clid)]), names(drugs)]
 #' df_2 <- gDRtestData::add_data_replicates(df_2)
 #' df_2 <- gDRtestData::add_concentration(
 #'   df_2,

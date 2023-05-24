@@ -2,8 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [0.99.15] - 2023-05-22
+#### [0.99.16] - 2023-05-22
 #### format the vignette with BiocStyle
+
+#### [0.99.15] - 2023-05-16
+#### fix related with data.table
 
 #### [0.99.14] - 2023-05-15
 #### rename `excess` to `x` to unify colnames in assay data
