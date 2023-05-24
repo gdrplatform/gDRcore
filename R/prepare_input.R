@@ -10,7 +10,11 @@
 #' 
 #' @examples 
 #' td <- gDRimport::get_test_data()
-#' l_tbl <- gDRimport::load_data(gDRimport::manifest_path(td), gDRimport::template_path(td), gDRimport::result_path(td))
+#' l_tbl <- gDRimport::load_data(
+#'   manifest_file = gDRimport::manifest_path(td), 
+#'   df_template_files = gDRimport::template_path(td), 
+#'   results_file = gDRimport::result_path(td)
+#' )
 #' df_ <- merge_data(
 #'   l_tbl$manifest, 
 #'   l_tbl$treatments, 
@@ -56,7 +60,7 @@ prepare_input.data.table <-
            nested_identifiers_l = .get_default_nested_identifiers(),
            ...) {
     
-    checkmate::assert_data_frame(x, min.rows = 1, min.cols = 1)
+    checkmate::assert_data_table(x, min.rows = 1, min.cols = 1)
     checkmate::assert_character(nested_confounders, null.ok = TRUE)
     checkmate::assert_list(nested_identifiers_l, null.ok = TRUE)
     
@@ -132,7 +136,7 @@ prepare_input.MultiAssayExperiment <-
     
     if (!is.null(inl$df_)) {
       inl$df_ <- identify_data_type(inl$df_)
-      inl$df_list <- split_raw_data(unique(plyr::rbind.fill(inl$df_))) 
+      inl$df_list <- split_raw_data(unique(data.table::rbindlist(list(inl$df_), fill = TRUE))) 
     } else {
       inl$df_list <-
         lapply(names(x), function(y) {
@@ -149,7 +153,7 @@ prepare_input.MultiAssayExperiment <-
           inl$df_ <- inl$df_[grep("single-agent",
                                   names(x), invert = TRUE)]
         }
-        inl$df_list <- split_raw_data(unique(plyr::rbind.fill(inl$df_)))
+        inl$df_list <- split_raw_data(unique(data.table::rbindlist(list(inl$df_), fill = TRUE)))
       } else {
         names(inl$df_list) <- names(x)
       }
