@@ -163,8 +163,7 @@ replace_conc_with_standardized_conc <- function(original_concs,
       original_concs, 
       conc_map[[original_conc_col]]
     ), 
-    ..standardized_conc_col
-  ])
+    standardized_conc_col, with = FALSE])
   if (length(out) != length(original_concs)) {
     stop("standardized output is not the same length as the input")
   }

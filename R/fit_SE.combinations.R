@@ -84,7 +84,7 @@ fit_SE.combinations <- function(se,
     i <- x[["row"]]
     j <- x[["column"]]
 
-    avg_combo <- avg[avg[["row"]] == i & avg[["column"]] == j, ]
+    avg_combo <- data.table::as.data.table(avg[avg[["row"]] == i & avg[["column"]] == j, ])
    
     omit_c_idx <- which(colnames(avg_combo) %in% c("row", "column"))
     if (all(is.na(avg_combo[, -omit_c_idx]))) { # omit masked values (all NAs)
@@ -122,16 +122,7 @@ fit_SE.combinations <- function(se,
       "rconcs"
     )
     
-    mean_avg_combo <- stats::aggregate(stats::as.formula(
-        paste(
-          "x ~ ",
-          paste(c(id, id2, "normalization_type"), collapse = " + ")
-        )
-      ),
-      function(x) mean(x, na.rm = TRUE),
-      data = avg_combo, 
-      na.action = stats::na.pass
-    )
+    mean_avg_combo <-  avg_combo[, lapply(.SD, mean), by = c(id, id2, "normalization_type"), .SDcols = "x"]
     # deal with cases of multiple concentrations mapped to the same value 
     # when rounded create a complete matrix with the most frequence combo 
     # concentrations
@@ -148,11 +139,14 @@ fit_SE.combinations <- function(se,
     complete <- merge(unique(c(0, conc1)), unique(c(0, conc2)), by = NULL)
     colnames(complete) <- c(id, id2)
     complete <- data.table::as.data.table(merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2)))
-
+    
+  
     for (norm_type in normalization_types) {
       
       avg_combo <- data.table::as.data.table(avg_combo)
       avg_subset <- avg_combo[normalization_type == norm_type]
+      complete_subset <- complete[normalization_type == norm_type | is.na(normalization_type)]
+      complete_subset[is.na(normalization_type), normalization_type := norm_type]
       
       # fit by column: the series in the primary identifier, the cotrt is the 
       # secondary one
@@ -168,7 +162,7 @@ fit_SE.combinations <- function(se,
         x[, "cotrt_value"] <- NA
         x
       } else {
-        col_fittings[!is.na(col_fittings$fit_type), ]
+        na.omit(col_fittings, col = "fit_type")
       }
     
       # fit by row (flipped): the series in the secondary identifier, the 
@@ -179,7 +173,7 @@ fit_SE.combinations <- function(se,
         cotrt_id = id, 
         norm_type
       )
-      row_fittings <- row_fittings[!is.na(row_fittings$fit_type), ]
+      row_fittings <- na.omit(row_fittings, col = "fit_type")
 
       # fit by codilution (diagonal)
       codilution_fittings <- fit_combo_codilutions(
@@ -187,31 +181,30 @@ fit_SE.combinations <- function(se,
         series_identifiers, 
         norm_type
       )
-      codilution_fittings <- 
-        codilution_fittings[!is.na(codilution_fittings$fit_type), ]
+      codilution_fittings <- na.omit(codilution_fittings, col = "fit_type")
 
       # apply the fit to get smoothed data: results per column
       # (along primary identifier for each value of the secondary identifier)
-      complete$col_values <- map_ids_to_fits(
-        pred = complete[[id]],
-        match_col = complete[[id2]], 
+      complete_subset$col_values <- map_ids_to_fits(
+        pred = complete_subset[[id]],
+        match_col = complete_subset[[id2]], 
         col_fittings, 
         "cotrt_value"
       )
       # apply the fit the get smoothed data: results per row
       # (along secondary identifier for each value of the primary identifier)
-      complete$row_values <- map_ids_to_fits(
-        pred = complete[[id2]],
-        match_col = complete[[id]], 
+      complete_subset$row_values <- map_ids_to_fits(
+        pred = complete_subset[[id2]],
+        match_col = complete_subset[[id]], 
         row_fittings, "cotrt_value"
       )
       metrics_names <- c("col_fittings", "row_fittings")
       if (!is.null(codilution_fittings)) {
         # apply the fit the get smoothed data: codilution results (along sum 
         # of identifiers for each ratio)
-        complete$codil_values <- map_ids_to_fits(
-          pred = complete[[id2]] + complete[[id]],
-          match_col = round_concentration(complete[[id2]] / complete[[id]], 1),
+        complete_subset$codil_values <- map_ids_to_fits(
+          pred = complete_subset[[id2]] + complete_subset[[id]],
+          match_col = round_concentration(complete_subset[[id2]] / complete_subset[[id]], 1),
           codilution_fittings, 
           "ratio"
         )
@@ -235,15 +228,15 @@ fit_SE.combinations <- function(se,
         metrics_merged[1, ] <- NA
       }
       keep <- intersect(
-        colnames(complete), 
+        colnames(complete_subset), 
         c(norm_type, "row_values", "col_values", "codil_values")
       )
-      mat <- as.matrix(complete[, ..keep])
-      complete$x <- rowMeans(mat, na.rm = TRUE)
+      mat <- as.matrix(complete_subset[, ..keep])
+      complete_subset$x <- rowMeans(mat, na.rm = TRUE)
       
       # just keep the relevant columns and change to the metric name
       cols <- c(id, id2, "x")
-      av_matrix <- complete[, cols, with = FALSE]
+      av_matrix <- complete_subset[, cols, with = FALSE]
       av_matrix[, "normalization_type" := norm_type]
       av_matrix[get(id) == 0 & get(id2) == 0, x := 1]
 
