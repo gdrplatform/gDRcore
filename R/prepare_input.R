@@ -153,7 +153,7 @@ prepare_input.MultiAssayExperiment <-
           inl$df_ <- inl$df_[grep("single-agent",
                                   names(x), invert = TRUE)]
         }
-        inl$df_list <- split_raw_data(unique(data.table::rbindlist(list(inl$df_), fill = TRUE)))
+        inl$df_list <- split_raw_data(unique(data.table::rbindlist(inl$df_, fill = TRUE)))
       } else {
         names(inl$df_list) <- names(x)
       }
