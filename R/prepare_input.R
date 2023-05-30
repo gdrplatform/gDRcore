@@ -148,7 +148,7 @@ prepare_input.MultiAssayExperiment <-
         })
       
       if (split_data) {
-        inl$df_ <- lapply(inl$df_list, identify_data_type)
+        inl$df_ <- lapply(inl$df_list, function(x) identify_data_type(data.table::as.data.table(x)))
         if ("matrix" %in% names(x)) {
           inl$df_ <- inl$df_[grep("single-agent",
                                   names(x), invert = TRUE)]
