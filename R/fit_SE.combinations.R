@@ -231,7 +231,7 @@ fit_SE.combinations <- function(se,
         colnames(complete_subset), 
         c(norm_type, "row_values", "col_values", "codil_values")
       )
-      mat <- as.matrix(complete_subset[, ..keep])
+      mat <- as.matrix(complete_subset[, keep, with = FALSE])
       complete_subset$x <- rowMeans(mat, na.rm = TRUE)
       
       # just keep the relevant columns and change to the metric name
