@@ -91,8 +91,7 @@ convert_se_to_raw_data <- function(se) {
   
   # Add required cols and correct the data
   ctrl[, (drug_cols) := NULL]
-  
-  ctrl$Duration <- ifelse(!is.na(ctrl$isDay0) & ctrl$isDay0, 0, ctrl$Duration)
+  ctrl[, Duration := ifelse(!is.na(isDay0) & isDay0, 0, Duration)]
   ctrl[, c("control_type", "isDay0") := NULL]
   ctrl[, c(eval(conc_cols), "BackgroundValue") := 0]
   ctrl[, eval(drug_cols) := untreated_tag]

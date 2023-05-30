@@ -134,7 +134,7 @@ prepare_input.MultiAssayExperiment <-
       NULL
     })
     
-    if (!is.null(inl$df_)) {
+    if (length(inl$df_) > 0) {
       inl$df_ <- identify_data_type(inl$df_)
       inl$df_list <- split_raw_data(unique(data.table::rbindlist(list(inl$df_), fill = TRUE))) 
     } else {
