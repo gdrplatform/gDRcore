@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.18] - 2023-05-31
+#### fix managing of mixed types of raw data
+
 #### [0.99.17] - 2023-05-29
 #### fix bug with subsetting data for calculating isobologram
 
