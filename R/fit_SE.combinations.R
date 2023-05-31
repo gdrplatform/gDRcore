@@ -86,8 +86,7 @@ fit_SE.combinations <- function(se,
 
     avg_combo <- data.table::as.data.table(avg[avg[["row"]] == i & avg[["column"]] == j, ])
    
-    omit_c_idx <- which(colnames(avg_combo) %in% c("row", "column"))
-    if (all(is.na(avg_combo[, -omit_c_idx]))) { # omit masked values (all NAs)
+    if (all(is.na(avg_combo[, -c("row", "column")]))) { # omit masked values (all NAs)
       smooth_mx <- hsa_excess <- bliss_excess <- isobolograms <- metrics <- 
         bliss_score[, c("row_id", "col_id")] <- 
         hsa_score[, c("row_id", "col_id")] <-
@@ -173,6 +172,7 @@ fit_SE.combinations <- function(se,
         cotrt_id = id, 
         norm_type
       )
+      
       row_fittings <- na.omit(row_fittings, col = "fit_type")
 
       # fit by codilution (diagonal)
@@ -225,7 +225,8 @@ fit_SE.combinations <- function(se,
               c("DRCInvalidFitResult", "DRCTooFewPointsToFit")), 
         ]
       if (nrow(metrics_merged) == 0) {
-        metrics_merged[1, ] <- NA
+        metrics_merged <- rbind(metrics_merged, NA, fill = TRUE)
+        metrics_merged[, normalization_type := norm_type]
       }
       keep <- intersect(
         colnames(complete_subset), 
