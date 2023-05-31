@@ -434,14 +434,14 @@ rbindParallelList <- function(x, name) {
 #' valid <- c("DrugName", "DrugName_2")
 #' trt <- lapply(valid, function(x) {
 #'   colnames <- c("clid", x) 
-#'   treated[, ..colnames]
+#'   treated[, colnames, with = FALSE]
 #' })
 #' trt <- do.call(paste, 
 #'   do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]]))))
 #' )
 #' ref <- lapply(valid, function(x) {
 #'   colnames <- c("clid", x) 
-#'   ref[, ..colnames]
+#'   ref[, colnames, with = FALSE]
 #' })
 #' ref <- do.call(paste, 
 #'   do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]]))))
