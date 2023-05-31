@@ -61,7 +61,9 @@ if (getRversion() >= "2.15.1") {
       "..y",
       "normalization_type",
       "cotrt_value",
-      "x"
+      "x",
+      "Duration",
+      "isDay0"
     ), 
     utils::packageName())
 }
