@@ -32,7 +32,7 @@ map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
     round(log10(match_col), 2), round(log10(fittings[[fitting_id_col]]), 2)
   )
   colnames <- c(fitting_id_col, "x_inf", "x_0", "ec50", "h")
-  metrics <- fittings[ridx, ..colnames]
+  metrics <- fittings[ridx, colnames, with = FALSE]
   # Extrapolate fitted values.
   out <- gDRutils::predict_efficacy_from_conc(
     pred,

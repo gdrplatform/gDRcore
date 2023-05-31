@@ -103,12 +103,12 @@ merge_data <- function(manifest, treatments, data) {
   # remove wells not labeled
   drug_id <- identifiers[["drug"]]
   df_metadata_trimmed <-
-    df_metadata[which(!is.na(df_metadata[, ..drug_id])), ]
+    df_metadata[which(!is.na(df_metadata[, drug_id, with = FALSE])), ]
   futile.logger::flog.warn(
     "%i well loaded, %i wells discarded for lack of annotation, 
     %i data point selected\n",
     nrow(data),
-    sum(is.na(df_metadata[, ..drug_id])),
+    sum(is.na(df_metadata[, drug_id, with = FALSE])),
     nrow(df_metadata_trimmed)
   )
   
@@ -141,7 +141,7 @@ merge_data <- function(manifest, treatments, data) {
 
   # remove wells not labeled
   df_raw_data <-
-    df_merged[which(!is.na(df_merged[, ..drug_id])), ]
+    df_merged[which(!is.na(df_merged[, drug_id, with = FALSE])), ]
   
   # reorder the columns
   df_raw_data <- order_result_df(df_raw_data)

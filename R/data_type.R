@@ -60,7 +60,7 @@ identify_data_type <- function(df,
   untreated_tag <- c(gDRutils::get_env_identifiers("untreated_tag"), NA)
   cell <- gDRutils::get_env_identifiers("cellline_name")
   cols_pairs <- intersect(names(df),  c(drug_ids, cell))
-  drug_pairs <- unique(df[, ..cols_pairs])
+  drug_pairs <- unique(df[, cols_pairs, with = FALSE])
 
   df$record_id <- seq_len(nrow(df))
   
@@ -74,12 +74,12 @@ identify_data_type <- function(df,
     df_matching <- merge(cbind(df, cnt), drug_pairs[idp, ], by = cols_pairs)
     matching_idx <- df_matching$cnt
     treated <- vapply(
-      gDRutils::loop(df_matching[, ..drugs_ids, drop = FALSE],
+      gDRutils::loop(df_matching[, drugs_ids, with = FALSE],
       function(x) !x %in% untreated_tag), all, logical(1)
     )
     
     detect_sa <- sum(treated)
-    type <- if (ncol(df[matching_idx, ..drugs_cotrt_ids, drop = FALSE]) == 0) {
+    type <- if (ncol(df[matching_idx, drugs_cotrt_ids, with = FALSE]) == 0) {
       if (all(df[matching_idx, drug_ids[["drug_name"]]] %in% untreated_tag)) {
       "control"
     } else {
@@ -96,7 +96,7 @@ identify_data_type <- function(df,
     
     if (length(conc_ids) > 1) {
       df[matching_idx, "type"] <- ifelse(
-        rowSums(df[matching_idx, ..conc_ids, drop = FALSE] == 0) == 1,
+        rowSums(df[matching_idx, conc_ids, with = FALSE] == 0) == 1,
         "single-agent", 
         unlist(df[matching_idx, "type"])
       )
@@ -108,7 +108,7 @@ identify_data_type <- function(df,
     flat_data <- df_matching[df_matching[[conc_ids[["concentration2"]]]] > 0, ]
     conc_1 <- table(flat_data[[conc_ids[["concentration"]]]])
     conc_2 <- table(flat_data[[conc_ids[["concentration2"]]]])
-    n_conc_pairs <- nrow(unique(flat_data[, ..conc_ids]))
+    n_conc_pairs <- nrow(unique(flat_data[, conc_ids, with = FALSE]))
     conc_ratio <- table(
       round(log10(flat_data[[conc_ids[["concentration"]]]] /
             flat_data[[conc_ids[["concentration2"]]]]), 2)
@@ -207,7 +207,7 @@ split_raw_data <- function(df,
   cotrt_types <- setdiff(names(df_list), "single-agent")
   
   control_sa_idx <- which(
-    rowSums(df[, ..conc_idx, drop = FALSE] == 0) == length(conc_idx)
+    rowSums(df[, conc_idx, with = FALSE] == 0) == length(conc_idx)
   )
   control_sa <- df[control_sa_idx, ]
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
@@ -215,12 +215,12 @@ split_raw_data <- function(df,
   if (length(cotrt_types) > 0) {
     df_list[cotrt_types] <- gDRutils::loop(cotrt_types, function(x) {
       colnames <- c(cl, drug_ids[["drug_name"]])
-      unique_cotrt <- unique(df_list[[x]][, ..colnames])
+      unique_cotrt <- unique(df_list[[x]][, colnames, with = FALSE])
       unique_cotrt_ctrl <- unique(
         control[
           control[[cl]] %in% unique_cotrt[[cl]] &
             control[[drug_ids[["drug_name"]]]] %in% untreated_tag, 
-        ][, ..colnames])
+        ][, colnames, with = FALSE])
       cotrt_matching <- rbind(unique_cotrt, unique_cotrt_ctrl)
       df_merged <- rbind(df_list[[x]], merge(cotrt_matching, control))
       if (x == "matrix") {
@@ -240,7 +240,7 @@ split_raw_data <- function(df,
   if ("single-agent" %in% names(df_list)) {
     sa_idx <- gDRutils::loop(
       grep(drug_ids[["concentration"]], drug_ids, value = TRUE), 
-      function(x) which(!df_list[["single-agent"]][, ..x] == 0)
+      function(x) which(!df_list[["single-agent"]][, x, with = FALSE] == 0)
     )
     sa_idx[["concentration"]] <- NULL
     
@@ -252,7 +252,7 @@ split_raw_data <- function(df,
       )
       selected_columns <- unname(drug_ids[c("drug_name", "drug", "drug_moa", "concentration")])
       df_list[["single-agent"]][sa_idx[[codrug]], selected_columns] <- 
-        df_list[["single-agent"]][sa_idx[[codrug]], ..codrug_cols]
+        df_list[["single-agent"]][sa_idx[[codrug]], codrug_cols, with = FALSE]
     }
     df_list[["single-agent"]][, codrug_ids] <- NULL
     
@@ -260,12 +260,12 @@ split_raw_data <- function(df,
     
     df_list[["single-agent"]] <- rbind(
       df_list[["single-agent"]],
-      control_sa[, ..selected_columns]
+      control_sa[, selected_columns, with = FALSE]
     )
   }
   
   Map(function(x) {
     selected_columns <- which(names(x) != type_col)
-    x[, ..selected_columns]
+    x[, selected_columns, with = FALSE]
   }, df_list)
 }

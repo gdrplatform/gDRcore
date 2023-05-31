@@ -4,9 +4,9 @@ fit_combo_cotreatments <- function(measured,
                                    cotrt_id, 
                                    normalization_type) {
   
-  series_concs <- setdiff(unlist(unique(measured[, ..series_id])), 0)
+  series_concs <- setdiff(unlist(unique(measured[, series_id, with = FALSE])), 0)
   # keep the single agent for the series_id
-  cotrt_concs <- unique(unlist(measured[, ..cotrt_id]))
+  cotrt_concs <- unique(unlist(measured[, cotrt_id, with = FALSE]))
   
   if (all(measured$normalization_type != normalization_type)) {
     measured$x <- NA
@@ -41,7 +41,7 @@ fit_combo_cotreatments <- function(measured,
     )
     
     if (is.na(sa) &&
-        any(conc == measured[, ..cotrt_id] & measured[, ..series_id] == 0)) {
+        any(conc == measured[, cotrt_id, with = FALSE] & measured[, series_id, with = FALSE] == 0)) {
       
       # if the fit or the prediction fails, tries to get the reference value 
       # from the actual data

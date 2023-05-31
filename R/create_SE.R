@@ -148,14 +148,14 @@ create_SE <- function(df_,
     trt_df <- 
       validate_mapping(trt_df, refs_df, nested_confounders)
     selected_columns <- names(trt_df) %in% data_fields
-    trt_df <- trt_df[, ..selected_columns]
+    trt_df <- trt_df[, selected_columns, with = FALSE]
 
     # Override the row_id of the references.
     trt_df$row_id <- unique(dfs[groupings == trt, "row_id"])
     
     untrt_ref <- ctl_maps[["untrt_Endpoint"]][[trt]]
     untrt_cols <- intersect(c("CorrectedReadout", "record_id", nested_confounders), names(dfs))
-    untrt_df <- untreated[untreated$groupings %in% untrt_ref, ..untrt_cols, drop = FALSE]
+    untrt_df <- untreated[untreated$groupings %in% untrt_ref, untrt_cols, with = FALSE]
     untrt_df <- if (nrow(untrt_df) == 0) {
       data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
     } else {
@@ -167,7 +167,7 @@ create_SE <- function(df_,
     day0_df <- untreated[untreated$groupings %in% day0_ref, ]
     isDay0 <- day0_df[[gDRutils::get_env_identifiers("duration")]] == 0
     
-    day0_df <- day0_df[, ..untrt_cols, drop = FALSE]
+    day0_df <- day0_df[, untrt_cols, with = FALSE]
     day0_df <- if (nrow(day0_df) == 0) {
       data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
     } else {

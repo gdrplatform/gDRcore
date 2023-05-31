@@ -134,7 +134,7 @@ prepare_input.MultiAssayExperiment <-
       NULL
     })
     
-    if (!is.null(inl$df_)) {
+    if (length(inl$df_)) {
       inl$df_ <- identify_data_type(inl$df_)
       inl$df_list <- split_raw_data(unique(data.table::rbindlist(list(inl$df_), fill = TRUE))) 
     } else {
@@ -148,12 +148,12 @@ prepare_input.MultiAssayExperiment <-
         })
       
       if (split_data) {
-        inl$df_ <- lapply(inl$df_list, identify_data_type)
+        inl$df_ <- lapply(inl$df_list, function(x) identify_data_type(data.table::as.data.table(x)))
         if ("matrix" %in% names(x)) {
           inl$df_ <- inl$df_[grep("single-agent",
                                   names(x), invert = TRUE)]
         }
-        inl$df_list <- split_raw_data(unique(data.table::rbindlist(list(inl$df_), fill = TRUE)))
+        inl$df_list <- split_raw_data(unique(data.table::rbindlist(inl$df_, fill = TRUE)))
       } else {
         names(inl$df_list) <- names(x)
       }

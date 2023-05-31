@@ -10,10 +10,10 @@ test_that("matches works as expected", {
   valid <- c("DrugName", "DrugName_2")
   clid <- "clid"
   # split data.tables to simple model with clid column and drug column
-  trt <- lapply(valid, function(x) treated[, c(..clid, ..x)])
+  trt <- lapply(valid, function(x) treated[, c(clid, x), with = FALSE])
   trt <- do.call(paste, do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]])))))
   
-  ref <- lapply(valid, function(x) ref[, c(..clid, ..x)])
+  ref <- lapply(valid, function(x) ref[, c(clid, x), with = FALSE])
   ref <- do.call(paste, do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]])))))
   
   matchTrtRef <- matches(trt, ref, list = FALSE, all.y = FALSE)

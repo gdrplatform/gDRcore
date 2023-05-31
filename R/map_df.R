@@ -103,8 +103,8 @@ map_df <- function(trt_md,
     #    cases with non-exact matches will be returned as NAs
     match_l <-
       matches(
-        do.call("paste", trt_md[, ..present_ref_cols]),
-        do.call("paste", ref_md[, ..present_ref_cols]),
+        do.call("paste", trt_md[, present_ref_cols, with = FALSE]),
+        do.call("paste", ref_md[, present_ref_cols, with = FALSE]),
         all.y = FALSE,
         list = TRUE
       )
@@ -128,13 +128,14 @@ map_df <- function(trt_md,
     if (is.na(exact_out[[treatment]]) || !is.null(override_untrt_controls)) {
       
       refs <- lapply(present_ref_cols, function(y) {
-        unname(unlist(ref_md[, ..y]) == unlist(trt_md[which(trt_md$rownames == treatment), ..y]))
+        unname(unlist(ref_md[, y, with = FALSE]) == unlist(trt_md[which(trt_md$rownames == treatment),
+                                                                  y, with = FALSE]))
       })
       
       if (!is.null(override_untrt_controls)) {
         for (overridden in names(override_untrt_controls)) {
           refs[[overridden]] <-
-            unname(unlist(ref_md[, ..overridden]) == override_untrt_controls[[overridden]])
+            unname(unlist(ref_md[, overridden, with = FALSE]) == override_untrt_controls[[overridden]])
         }
       }
       
@@ -203,7 +204,7 @@ map_df <- function(trt_md,
     )
   )
   
-  drug_cols <- mat_elem[, ..valid]
+  drug_cols <- mat_elem[, valid, with = FALSE]
 
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
   has_tag <- lapply(drug_cols, function(x) x %in% untrt_tag)
@@ -231,7 +232,7 @@ map_df <- function(trt_md,
     
     trt <- lapply(valid, function(x) {
       colnames <- c(clid, x) 
-      trt[, ..colnames] 
+      trt[, colnames, with = FALSE] 
     })
     trt <- do.call(
       paste, 
@@ -243,7 +244,7 @@ map_df <- function(trt_md,
     
     ref <- lapply(valid, function(x) {
       colnames <- c(clid, x) 
-      ref[, ..colnames] 
+      ref[, colnames, with = FALSE] 
     })
     ref <- do.call(
       paste, 
