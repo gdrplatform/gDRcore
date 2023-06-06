@@ -85,30 +85,18 @@ average_FUN <- function(x,
                         trt_keys = trt_keys) {
   
   # bypass 'masked' filter
+  x <- data.table::as.data.table(x)
   masked <- x[[masked_tag_key]] & !override_masked
   if (sum(!masked) > 0) {
     series_identifiers <- intersect(series_identifiers, colnames(x))
     unmasked <- x[!masked, , drop = FALSE]
+    agg_df <- unmasked[, list(mean(x, na.rm = TRUE),
+                    sd(x, na.rm = TRUE)),
+             by = c("normalization_type", series_identifiers)]
+    data.table::setorderv(agg_df, c(series_identifiers, "normalization_type"))
+    data.table::setnames(agg_df, c("V1", "V2"), c("x", "x_std"))
+    agg_df <- S4Vectors::DataFrame(agg_df)
     
-    avg_df <- stats::aggregate(
-      stats::reformulate(c("normalization_type", series_identifiers), "x"),
-      function(x) mean(x, na.rm = TRUE),
-      data = unmasked, 
-      na.action = stats::na.pass
-    )
-    std_df <- stats::aggregate(
-      stats::reformulate(c("normalization_type", series_identifiers), "x"),
-      function(x) stats::sd(x, na.rm = TRUE),
-      data = unmasked, 
-      na.action = stats::na.pass
-    )
-    
-    colnames(std_df)[colnames(std_df) == "x"] <- "x_std"
-    agg_df <- S4Vectors::DataFrame(
-      merge(avg_df, std_df,
-            by = c(series_identifiers, "normalization_type"),
-            sort = FALSE)
-    )
     rownames(agg_df) <- paste(
       cumsum(!duplicated(agg_df[, series_identifiers])),
       agg_df$normalization_type, 
