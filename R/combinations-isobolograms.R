@@ -155,7 +155,7 @@ calculate_Loewe <- function(
     # perform the smoothing
     df_iso_curve <- data.table::data.table(
       x1 = isobol_x1, 
-      x2_off = zoo::rollmean(
+      x2_off = data.table::frollmean(
         rowMeans(
           do.call(
             cbind, 
@@ -170,7 +170,8 @@ calculate_Loewe <- function(
           na.rm = TRUE
         ), 
         5, 
-        fill = NA
+        fill = NA,
+        align = "center"
       )
     )
     df_iso_curve <- df_iso_curve[!is.na(df_iso_curve$x2_off), ]
