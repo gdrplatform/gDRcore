@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.19] - 2023-06-06
+#### replace `order` with `data.table::setorder`
+
 #### [0.99.18] - 2023-05-31
 #### fix managing of mixed types of raw data
 
