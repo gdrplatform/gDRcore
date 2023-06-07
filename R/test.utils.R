@@ -38,7 +38,9 @@ test_synthetic_data <- function(original,
               dt_reprocessed <- gDRutils::convert_mae_assay_to_dt(data, x)
               
               data.table::setorder(dt_original)
+              data.table::setcolorder(dt_original)
               data.table::setorder(dt_reprocessed)
+              data.table::setcolorder(dt_reprocessed)
               
               row.names(dt_original) <- NULL
               row.names(dt_reprocessed) <- NULL
