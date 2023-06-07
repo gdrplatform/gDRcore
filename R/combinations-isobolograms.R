@@ -237,10 +237,11 @@ calculate_Loewe <- function(
     # log10 space)
     df_iso_curve$log10_ratio_conc <- df_iso_curve$x1
     # delta in the log10 space is the ratio of 
-    df_iso_curve$log2_CI <- zoo::rollmean(
+    df_iso_curve$log2_CI <- data.table::frollmean(
       log2(10) * (df_iso_curve$x2 - df_iso_curve$x2_ref) / sqrt(2),
       4,
-      fill = c(0, 0, 0)
+      fill = 0,
+      align = "center"
     )
     # cap position for plotting the isobolograms
     df_iso$pos_y <- pmin(df_iso$pos_y, max(axis_1$pos_y) + log2_pos_offset)
