@@ -193,10 +193,10 @@ normalize_SE <- function(se,
     normalized$row_id <- i
     normalized$col_id <- j
     normalized$id <- as.character(seq_len(nrow(normalized)))
-    normalized <- reshape2::melt(data.table::as.data.table(normalized),
-                                 measure.vars = norm_cols,
-                                 variable.name = "normalization_type",
-                                 value.name = "x")
+    normalized <- data.table::melt(data.table::as.data.table(normalized),
+                                   measure.vars = norm_cols,
+                                   variable.name = "normalization_type",
+                                   value.name = "x")
     rownames(normalized) <- paste(
       normalized$id, 
       normalized$normalization_type, 

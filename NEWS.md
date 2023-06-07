@@ -2,11 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-#### [0.99.20] - 2023-06-06
+#### [0.99.21] - 2023-06-06
 #### switch from `aggregate` to `data.table`
 
-#### [0.99.19] - 2023-06-06
+#### [0.99.20] - 2023-06-06
 #### switch from `zoo::rollmean` to `data.table::frollmean`
+
+#### [0.99.19] - 2023-06-06
+#### replaced reshape2 functions by functions from data.table
 
 #### [0.99.18] - 2023-05-31
 #### fix managing of mixed types of raw data
