@@ -29,7 +29,6 @@ test_that("add_Drug_annotation works", {
     system.file("annotation_data", "drugs.csv", package = "gDRtestData"), header = TRUE,
     col.names = c("drug", "drug_name", "drug_moa"))[drug %in% dt$Gnumber]
   dt_result <- data.table::setnames(Drug_info, c("drug", "drug_name"), c("Gnumber", "DrugName"))
-  data.table::setkey(dt_result, "Gnumber")
   dt_annotated <- add_Drug_annotation(dt, annotationPackage = "gDRtestData")
   
   expect_identical(dt_annotated, dt_result)
