@@ -96,7 +96,7 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
   data.table::setnames(sa2, "x", "metric2", skip_absent = TRUE)
 
   # TODO: ensure they're unique?
-  u <- expand.grid(sa1[[series_id1]], sa2[[series_id2]])
+  u <- data.table::CJ(sa1[[series_id1]], sa2[[series_id2]])
   colnames(u) <- c(series_id1, series_id2)
 
   idx <- match(u[[series_id1]], sa1[[series_id1]])

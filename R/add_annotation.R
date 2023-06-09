@@ -203,7 +203,7 @@ add_Drug_annotation <- function(
     df_metadata$batch <- df_metadata[[drug_idf]]
     df_metadata[[drug_idf]] <- remove_drug_batch(df_metadata[[drug_idf]])
     req_col <- c(drug_idf, setdiff(colnames(df_metadata), colnames(Drug_info)))
-    df_metadata <- Drug_info[df_metadata[, req_col, with = FALSE, on = drug_idf]]
+    df_metadata <- Drug_info[df_metadata[, req_col, with = FALSE],  on = drug_idf]
     df_metadata[[drug_idf]] <- df_metadata$batch
     df_metadata$batch <- NULL
   }
