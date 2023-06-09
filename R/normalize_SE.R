@@ -156,7 +156,7 @@ normalize_SE <- function(se,
     # Merge to ensure that the proper discard_key values are mapped.
     all_readouts_df <- ref_df[trt_df, on = nested_confounders]
 
-    normalized <- S4Vectors::DataFrame(
+    normalized <- data.table::data.table(
       matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols))
     )
     colnames(normalized) <- c(norm_cols)
@@ -187,7 +187,7 @@ normalize_SE <- function(se,
     keep <- intersect(
       c(nested_identifiers, trt_keys, masked_key), colnames(all_readouts_df)
     )
-    normalized <- cbind(all_readouts_df[keep], normalized) 
+    normalized <- cbind(all_readouts_df[, keep, with = FALSE], normalized) 
     normalized$row_id <- i
     normalized$col_id <- j
     normalized$id <- as.character(seq_len(nrow(normalized)))
