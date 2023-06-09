@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.22] - 2023-06-09
+#### switch from `merge` to `[[` for `data.table` objects
+
 #### [0.99.21] - 2023-06-06
 #### switch from `aggregate` to `data.table`
 
