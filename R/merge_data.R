@@ -46,7 +46,8 @@ merge_data <- function(manifest, treatments, data) {
 
   # merge manifest and treatment files first
   identifiers <- gDRutils::validate_identifiers(manifest, req_ids = "barcode")
-  df_metadata <- merge(manifest, treatments, by = identifiers[["template"]], allow.cartesian = TRUE)
+  df_metadata <- manifest[treatments, on = identifiers[["template"]], allow.cartesian = TRUE]
+  
   futile.logger::flog.info(
     "Merging the metadata (manifest and treatment files)"
   )
@@ -119,11 +120,8 @@ merge_data <- function(manifest, treatments, data) {
   
   data$WellColumn <- as.character(data$WellColumn)
 
-  df_merged <- merge(
-    cleanedup_metadata, 
-    data, 
-    by = c(identifiers[["barcode"]], identifiers[["well_position"]])
-  )
+  df_merged <- cleanedup_metadata[data, on = c(identifiers[["barcode"]],
+                                               identifiers[["well_position"]])]
   if (nrow(df_merged) != nrow(data)) {
     # need to identify issue and output relevant warning
     futile.logger::flog.warn(

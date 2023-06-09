@@ -71,7 +71,7 @@ identify_data_type <- function(df,
   # concentration pairs
 
   for (idp in seq_len(nrow(drug_pairs))) {
-    df_matching <- merge(cbind(df, cnt), drug_pairs[idp, ], by = cols_pairs)
+    df_matching <- cbind(df, cnt)[drug_pairs[idp, ], on = cols_pairs]
     matching_idx <- df_matching$cnt
     treated <- vapply(
       gDRutils::loop(df_matching[, drugs_ids, with = FALSE],
@@ -155,7 +155,8 @@ identify_data_type <- function(df,
 #'     colnames(df_2)[colnames(df_2) %in% c(colnames(drugs), "Concentration")],
 #'     "_2"
 #'   )
-#' df_layout_2 <- merge(df_layout, df_2, allow.cartesian = TRUE)
+#' df_layout_2 <- df_layout[df_2, on = intersect(names(df_layout),
+#'                 names(df_2)), allow.cartesian = TRUE]
 #' df_merged_data <- gDRtestData::generate_response_data(df_layout_2, 0)
 #' df <- identify_data_type(df_merged_data)
 #' split_raw_data(df)
@@ -222,7 +223,8 @@ split_raw_data <- function(df,
             control[[drug_ids[["drug_name"]]]] %in% untreated_tag, 
         ][, colnames, with = FALSE])
       cotrt_matching <- rbind(unique_cotrt, unique_cotrt_ctrl)
-      df_merged <- rbind(df_list[[x]], merge(cotrt_matching, control))
+      df_merged <- rbind(df_list[[x]], cotrt_matching[control, on = intersect(names(cotrt_matching),
+                                                                              names(control))])
       if (x == "matrix") {
         matrix_data <- rbind(df_merged, df_list[["single-agent"]])
         for (j in conc_idx)

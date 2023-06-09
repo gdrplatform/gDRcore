@@ -191,7 +191,8 @@ generateComboMatrixSmall <- function(cell_lines, drugs, save = TRUE) {
   df_layout <- prepareData(cell_lines[7:8, ], drugs[c(4:6), ], concentration)
   df_2 <- prepareData(cell_lines[cell_lines$clid %in% df_layout$clid, ], drugs[c(21, 26), ], concentration)
   df_2 <- changeColNames(df_2, drugs, "_2")
-  df_layout_2 <- merge(df_layout, df_2, allow.cartesian = TRUE)
+  df_layout_2 <- df_layout[df_2, on = intersect(names(df_layout), names(df_2)),
+                           allow.cartesian = TRUE]
   
   df_merged <- gDRtestData::generate_response_data(df_layout_2, 0)
 
@@ -218,7 +219,8 @@ generateComboMatrix <- function(cell_lines, drugs, save = TRUE) {
   df_layout <- prepareData(cell_lines[seq(1, 30, 4), ], drugs[c(1, 2, 11), ])
   df_2 <- prepareData(cell_lines[cell_lines$clid %in% df_layout$clid, ], drugs[c(21, 26, 31), ])
   df_2 <- changeColNames(df_2, drugs, "_2")
-  df_layout_2 <- merge(df_layout, df_2, allow.cartesian = TRUE)
+  df_layout_2 <- df_layout[df_2, on = intersect(names(df_layout), names(df_2)),
+                          allow.cartesian = TRUE]
   
   df_merged <- gDRtestData::generate_response_data(df_layout_2)
 
@@ -251,7 +253,8 @@ generateTripleComboMatrix <- function(cell_lines, drugs, save = TRUE) {
     c(0, concentration)
   )
   df_2 <- changeColNames(df_2, drugs, "_2")
-  df_layout_2 <- merge(df_layout, df_2, allow.cartesian = TRUE)
+  df_layout_2 <- df_layout[df_2, on = intersect(names(df_layout), names(df_2)),
+                           allow.cartesian = TRUE]
   
   df_3 <- prepareData(
     cell_lines[cell_lines$clid %in% df_layout$clid, ], 
@@ -259,8 +262,10 @@ generateTripleComboMatrix <- function(cell_lines, drugs, save = TRUE) {
     c(0, .1, 1)
   )
   df_3 <- changeColNames(df_3, drugs, "_3")
-  df_layout_3 <- merge(merge(df_layout, df_2, allow.cartesian = TRUE),
-                       df_3, allow.cartesian = TRUE)
+  df_layout_3 <- df_layout[df_2, on = intersect(names(df_layout), names(df_2)),
+                           allow.cartesian = TRUE][df_3, on = intersect(names(df_layout),
+                                                                        names(df_3)),
+                                                   allow.cartesian = TRUE]
   
   df_merged <- gDRtestData::generate_response_data(df_layout_3, 0)
 

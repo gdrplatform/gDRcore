@@ -151,12 +151,10 @@ normalize_SE <- function(se,
     # pad the ref_df for missing values based on nested_keys 
     # (uses mean across all available values)
     ref_df <- aggregate_ref(ref_df, control_mean_fxn = control_mean_fxn)
+    trt_df <- data.table::as.data.table(trt_df)
     
     # Merge to ensure that the proper discard_key values are mapped.
-    all_readouts_df <- merge(trt_df, 
-      ref_df, 
-      by = nested_confounders,
-      all.x = TRUE)
+    all_readouts_df <- ref_df[trt_df, on = nested_confounders]
 
     normalized <- S4Vectors::DataFrame(
       matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols))
