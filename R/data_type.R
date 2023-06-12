@@ -48,6 +48,7 @@ identify_data_type <- function(df,
     simplify = FALSE
   )) 
   drugs_ids <- drug_ids[which(drug_ids %in% names(df))]
+  
   conc_ids <- unlist(gDRutils::get_env_identifiers(
     c("concentration", "concentration2"), 
     simplify = FALSE
@@ -62,17 +63,14 @@ identify_data_type <- function(df,
   cols_pairs <- intersect(names(df),  c(drug_ids, cell))
   drug_pairs <- unique(df[, cols_pairs, with = FALSE])
 
-  df$record_id <- seq_len(nrow(df))
-  
-  
-  cnt <- seq_len(nrow(df))
+  df[ , record_id := .I]
   df$type <- character(0)
   # loop through the pairs to assess the number of individual 
   # concentration pairs
 
   for (idp in seq_len(nrow(drug_pairs))) {
-    df_matching <- cbind(df, cnt)[drug_pairs[idp, ], on = cols_pairs]
-    matching_idx <- df_matching$cnt
+    df_matching <- df[drug_pairs[idp, ], on = cols_pairs]
+    matching_idx <- df_matching$record_id
     treated <- vapply(
       gDRutils::loop(df_matching[, drugs_ids, with = FALSE],
       function(x) !x %in% untreated_tag), all, logical(1)
