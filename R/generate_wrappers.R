@@ -262,10 +262,10 @@ generateTripleComboMatrix <- function(cell_lines, drugs, save = TRUE) {
     c(0, .1, 1)
   )
   df_3 <- changeColNames(df_3, drugs, "_3")
-  df_layout_3 <- df_layout[df_2, on = intersect(names(df_layout), names(df_2)),
-                           allow.cartesian = TRUE][df_3, on = intersect(names(df_layout),
-                                                                        names(df_3)),
-                                                   allow.cartesian = TRUE]
+df_layout_3 <- df_layout[df_2, on = intersect(names(df_layout), names(df_2)), 
+                         allow.cartesian = TRUE][
+                           df_3, on = intersect(names(df_layout), names(df_3)), 
+                           allow.cartesian = TRUE]
   
   df_merged <- gDRtestData::generate_response_data(df_layout_3, 0)
 
