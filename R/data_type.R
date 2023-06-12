@@ -221,8 +221,9 @@ split_raw_data <- function(df,
             control[[drug_ids[["drug_name"]]]] %in% untreated_tag, 
         ][, colnames, with = FALSE])
       cotrt_matching <- rbind(unique_cotrt, unique_cotrt_ctrl)
-      df_merged <- rbind(df_list[[x]], cotrt_matching[control, on = intersect(names(cotrt_matching),
-                                                                              names(control))])
+    df_merged <- rbind(
+        df_list[[x]], 
+        cotrt_matching[control, on = intersect(names(cotrt_matching), names(control))])
       if (x == "matrix") {
         matrix_data <- rbind(df_merged, df_list[["single-agent"]])
         for (j in conc_idx)
