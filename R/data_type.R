@@ -48,6 +48,7 @@ identify_data_type <- function(df,
     simplify = FALSE
   )) 
   drugs_ids <- drug_ids[which(drug_ids %in% names(df))]
+  
   conc_ids <- unlist(gDRutils::get_env_identifiers(
     c("concentration", "concentration2"), 
     simplify = FALSE
@@ -62,17 +63,14 @@ identify_data_type <- function(df,
   cols_pairs <- intersect(names(df),  c(drug_ids, cell))
   drug_pairs <- unique(df[, cols_pairs, with = FALSE])
 
-  df$record_id <- seq_len(nrow(df))
-  
-  
-  cnt <- seq_len(nrow(df))
-  df$type <- character(0)
+  df[, record_id := .I]
+  df[, type := NA_character_]
   # loop through the pairs to assess the number of individual 
   # concentration pairs
 
   for (idp in seq_len(nrow(drug_pairs))) {
-    df_matching <- merge(cbind(df, cnt), drug_pairs[idp, ], by = cols_pairs)
-    matching_idx <- df_matching$cnt
+    df_matching <- df[drug_pairs[idp, ], on = cols_pairs]
+    matching_idx <- df_matching$record_id
     treated <- vapply(
       gDRutils::loop(df_matching[, drugs_ids, with = FALSE],
       function(x) !x %in% untreated_tag), all, logical(1)
@@ -155,7 +153,8 @@ identify_data_type <- function(df,
 #'     colnames(df_2)[colnames(df_2) %in% c(colnames(drugs), "Concentration")],
 #'     "_2"
 #'   )
-#' df_layout_2 <- merge(df_layout, df_2, allow.cartesian = TRUE)
+#' df_layout_2 <- df_layout[df_2, on = intersect(names(df_layout), names(df_2)), 
+#'                         allow.cartesian = TRUE]
 #' df_merged_data <- gDRtestData::generate_response_data(df_layout_2, 0)
 #' df <- identify_data_type(df_merged_data)
 #' split_raw_data(df)
@@ -222,7 +221,9 @@ split_raw_data <- function(df,
             control[[drug_ids[["drug_name"]]]] %in% untreated_tag, 
         ][, colnames, with = FALSE])
       cotrt_matching <- rbind(unique_cotrt, unique_cotrt_ctrl)
-      df_merged <- rbind(df_list[[x]], merge(cotrt_matching, control))
+    df_merged <- rbind(
+        df_list[[x]], 
+        cotrt_matching[control, on = intersect(names(cotrt_matching), names(control))])
       if (x == "matrix") {
         matrix_data <- rbind(df_merged, df_list[["single-agent"]])
         for (j in conc_idx)

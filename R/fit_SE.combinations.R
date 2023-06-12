@@ -135,9 +135,9 @@ fit_SE.combinations <- function(se,
     ))
     
     # create matrix with single agent
-    complete <- merge(unique(c(0, conc1)), unique(c(0, conc2)), by = NULL)
+    complete <- data.table::CJ(unique(c(0, conc1)), unique(c(0, conc2)))
     colnames(complete) <- c(id, id2)
-    complete <- data.table::as.data.table(merge(complete, mean_avg_combo, all.x = TRUE, by = c(id, id2)))
+    complete <- mean_avg_combo[complete, on = c(id, id2)]
     
   
     for (norm_type in normalization_types) {

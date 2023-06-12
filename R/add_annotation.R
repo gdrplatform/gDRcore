@@ -91,7 +91,7 @@ add_CellLine_annotation <- function(
   
   futile.logger::flog.info("Merge with Cell line info")
   nrows_df <- nrow(df_metadata)
-  df_metadata <- base::merge(df_metadata, CLs_info, by = cellline, all.x = TRUE)
+  df_metadata <- CLs_info[df_metadata, on = cellline]
   stopifnot(nrows_df == nrow(df_metadata))
   df_metadata
 }
@@ -203,7 +203,7 @@ add_Drug_annotation <- function(
     df_metadata$batch <- df_metadata[[drug_idf]]
     df_metadata[[drug_idf]] <- remove_drug_batch(df_metadata[[drug_idf]])
     req_col <- c(drug_idf, setdiff(colnames(df_metadata), colnames(Drug_info)))
-    df_metadata <- merge(df_metadata[, req_col, with = FALSE], Drug_info, by = drug_idf, all.x = TRUE)
+    df_metadata <- Drug_info[df_metadata[, req_col, with = FALSE],  on = drug_idf]
     df_metadata[[drug_idf]] <- df_metadata$batch
     df_metadata$batch <- NULL
   }
