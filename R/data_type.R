@@ -155,8 +155,8 @@ identify_data_type <- function(df,
 #'     colnames(df_2)[colnames(df_2) %in% c(colnames(drugs), "Concentration")],
 #'     "_2"
 #'   )
-#' df_layout_2 <- df_layout[df_2, on = intersect(names(df_layout),
-#'                 names(df_2)), allow.cartesian = TRUE]
+#' df_layout_2 <- df_layout[df_2, on = intersect(names(df_layout), names(df_2)), 
+#'                         allow.cartesian = TRUE]
 #' df_merged_data <- gDRtestData::generate_response_data(df_layout_2, 0)
 #' df <- identify_data_type(df_merged_data)
 #' split_raw_data(df)
