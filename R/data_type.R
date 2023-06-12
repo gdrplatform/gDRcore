@@ -64,7 +64,7 @@ identify_data_type <- function(df,
   drug_pairs <- unique(df[, cols_pairs, with = FALSE])
 
   df[, record_id := .I]
-  df$type <- character(0)
+  df[, type := NA_character_]
   # loop through the pairs to assess the number of individual 
   # concentration pairs
 
