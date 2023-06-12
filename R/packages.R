@@ -33,7 +33,9 @@ if (getRversion() >= "2.15.1") {
       "cotrt_value",
       "x",
       "Duration",
-      "isDay0"
+      "isDay0",
+      "record_id",
+      "ratio"
     ), 
     utils::packageName())
 }
