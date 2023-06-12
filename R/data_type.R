@@ -63,7 +63,7 @@ identify_data_type <- function(df,
   cols_pairs <- intersect(names(df),  c(drug_ids, cell))
   drug_pairs <- unique(df[, cols_pairs, with = FALSE])
 
-  df[ , record_id := .I]
+  df[, record_id := .I]
   df$type <- character(0)
   # loop through the pairs to assess the number of individual 
   # concentration pairs
