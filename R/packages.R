@@ -1,6 +1,6 @@
 #' @import S4Vectors
 #' @import checkmate
-#' @importFrom data.table ":=" ".SD"
+#' @importFrom data.table ":=" ".SD" ".I"
 #' @useDynLib gDRcore
 
 # data.table awareness
@@ -33,7 +33,8 @@ if (getRversion() >= "2.15.1") {
       "cotrt_value",
       "x",
       "Duration",
-      "isDay0"
+      "isDay0",
+      "record_id"
     ), 
     utils::packageName())
 }
