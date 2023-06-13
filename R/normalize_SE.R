@@ -151,14 +151,12 @@ normalize_SE <- function(se,
     # pad the ref_df for missing values based on nested_keys 
     # (uses mean across all available values)
     ref_df <- aggregate_ref(ref_df, control_mean_fxn = control_mean_fxn)
+    trt_df <- data.table::as.data.table(trt_df)
     
     # Merge to ensure that the proper discard_key values are mapped.
-    all_readouts_df <- merge(trt_df, 
-      ref_df, 
-      by = nested_confounders,
-      all.x = TRUE)
+    all_readouts_df <- ref_df[trt_df, on = nested_confounders]
 
-    normalized <- S4Vectors::DataFrame(
+    normalized <- data.table::data.table(
       matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols))
     )
     colnames(normalized) <- c(norm_cols)
@@ -189,14 +187,14 @@ normalize_SE <- function(se,
     keep <- intersect(
       c(nested_identifiers, trt_keys, masked_key), colnames(all_readouts_df)
     )
-    normalized <- cbind(all_readouts_df[keep], normalized) 
+    normalized <- cbind(all_readouts_df[, keep, with = FALSE], normalized) 
     normalized$row_id <- i
     normalized$col_id <- j
     normalized$id <- as.character(seq_len(nrow(normalized)))
-    normalized <- reshape2::melt(data.table::as.data.table(normalized),
-                                 measure.vars = norm_cols,
-                                 variable.name = "normalization_type",
-                                 value.name = "x")
+    normalized <- data.table::melt(data.table::as.data.table(normalized),
+                                   measure.vars = norm_cols,
+                                   variable.name = "normalization_type",
+                                   value.name = "x")
     rownames(normalized) <- paste(
       normalized$id, 
       normalized$normalization_type, 
