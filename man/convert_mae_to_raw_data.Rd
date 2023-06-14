@@ -16,7 +16,7 @@ data.table with raw data
 Transform mae into raw data
 }
 \examples{
-mae <- gDRutils::get_synthetic_data("finalMAE_small.RDS")
+mae <- gDRutils::get_synthetic_data("finalMAE_small")
 convert_mae_to_raw_data(mae)
 
 }
