@@ -70,13 +70,10 @@ calculate_Loewe <- function(
   max1_cap <- round_concentration(max(axis_1$conc_1) * conc_margin)
   max2_cap <- round_concentration(max(axis_2$conc_2) * conc_margin)
 
-  row_fittings <- 
-    row_fittings[order(row_fittings$cotrt_value, decreasing = TRUE), ]
-  col_fittings <- 
-    col_fittings[order(col_fittings$cotrt_value, decreasing = FALSE), ]
+  data.table::setorder(row_fittings, -cotrt_value)
+  data.table::setorder(col_fittings, cotrt_value)
   if (!is.null(codilution_fittings)) {
-    codilution_fittings <- 
-      codilution_fittings[order(codilution_fittings$ratio, decreasing = TRUE), ]
+    data.table::setorder(codilution_fittings, -ratio)
     codilution_fittings <- 
       codilution_fittings[codilution_fittings$fit_type %in% 
                           "DRC3pHillFitModelFixS0", ]

@@ -155,7 +155,8 @@ order_result_df <- function(df_) {
     ))
   
   cols <- unlist(cols)
-  df_ <- df_[do.call(order, df_[, row_order_col, with = FALSE]), cols, with = FALSE]
+  data.table::setorderv(df_, row_order_col)
+  df_ <- df_[, cols, with = FALSE]
 
   return(df_)
 }

@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.23] - 2023-06-13
+#### replace `order` with `data.table::setorder`
+
 #### [0.99.22] - 2023-06-09
 #### switch from `merge` to `[[` for `data.table` objects
 

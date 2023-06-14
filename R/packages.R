@@ -34,7 +34,8 @@ if (getRversion() >= "2.15.1") {
       "x",
       "Duration",
       "isDay0",
-      "record_id"
+      "record_id",
+      "ratio"
     ), 
     utils::packageName())
 }

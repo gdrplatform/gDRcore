@@ -47,7 +47,8 @@ convert_mae_to_raw_data <- function(mae) {
   data_df <- data_df[!duplicated(data_df$record_id), ]
   selected_columns <- !names(data_df) %in% c("record_id", "BackgroundValue",
                                           "WellColumn", "WellRow", "Template", "swap_sa")
-  data_df[order(data_df$record_id), selected_columns, with = FALSE]
+  data.table::setorder(data_df, record_id)
+  data_df[, selected_columns, with = FALSE]
 }
 
 
