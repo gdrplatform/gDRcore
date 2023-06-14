@@ -1,5 +1,5 @@
 test_that("small_no_noise: test_synthetic_data", {
-  data <- "finalMAE_small_no_noise.RDS"
+  data <- "finalMAE_small_no_noise"
   original <- gDRutils::get_synthetic_data(data)
   
   set.seed(2)

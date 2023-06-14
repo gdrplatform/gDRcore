@@ -1,5 +1,5 @@
 test_that("wLigand: test_synthetic_data", {
-  data <- "finalMAE_wLigand.RDS"
+  data <- "finalMAE_wLigand"
   original <- gDRutils::get_synthetic_data(data)
   
   set.seed(2)
