@@ -267,6 +267,7 @@ split_raw_data <- function(df,
   
   Map(function(x) {
     selected_columns <- which(names(x) != type_col)
+    data.table::setorderv(x, "record_id")
     x[, selected_columns, with = FALSE]
   }, df_list)
 }
