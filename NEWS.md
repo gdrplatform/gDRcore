@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.24] - 2023-06-16
+#### add sorting for record ids
+
 #### [0.99.23] - 2023-06-13
 #### replace `order` with `data.table::setorder`
 
