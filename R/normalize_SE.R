@@ -154,7 +154,11 @@ normalize_SE <- function(se,
     trt_df <- data.table::as.data.table(trt_df)
     
     # Merge to ensure that the proper discard_key values are mapped.
-    all_readouts_df <- ref_df[trt_df, on = nested_confounders]
+    all_readouts_df <- if (is.null(nested_confounders)) {
+      ref_df[trt_df, ]
+    } else {
+      ref_df[trt_df, on = nested_confounders]
+    }
 
     normalized <- data.table::data.table(
       matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols))

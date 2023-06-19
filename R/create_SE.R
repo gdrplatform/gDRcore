@@ -120,8 +120,7 @@ create_SE <- function(df_,
   
   ## Combine all controls with respective treatments.
   # Merge raw data back with groupings.
-  dfs <- df_[mapping_entries, on = c(colnames(rowdata), colnames(coldata))]
-
+  dfs <- mapping_entries[df_, on = c(colnames(rowdata), colnames(coldata))]
   # Remove all rowdata and coldata. 
   groupings <- dfs$groupings
 
