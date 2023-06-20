@@ -47,6 +47,8 @@
 #' @param metrics_assay string of the name of the metrics assay to output
 #' in the returned \linkS4class{SummarizedExperiment}
 #' Defaults to \code{"Metrics"}.
+#' @param split_data boolean indicating whether data provided as the
+#' MultiAssayExperiment should be split again into appropriate data types
 #' @param range_conc vector of concetrations range values.
 #' @param force_fit boolean indicating whether or not to force the fit.
 #' @param pcutoff numeric cutoff value.
@@ -194,6 +196,7 @@ runDrugResponseProcessingPipeline <- function(x,
                                               normalized_assay = "Normalized",
                                               averaged_assay = "Averaged",
                                               metrics_assay = "Metrics",
+                                              split_data = TRUE,
                                               data_dir = NULL,
                                               partial_run = FALSE,
                                               start_from = 
@@ -250,7 +253,10 @@ runDrugResponseProcessingPipeline <- function(x,
     }
   }
   
-  inl <- prepare_input(x, nested_confounders, nested_identifiers_l)
+  inl <- prepare_input(x,
+                       nested_confounders,
+                       nested_identifiers_l,
+                       split_data)
   # sel - list with all experiments data
   # se - list with single experiment data 
   se <- list()

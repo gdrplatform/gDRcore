@@ -147,6 +147,7 @@ prepare_input.MultiAssayExperiment <-
           md[[raw_data_field]]
         })
       
+      
       if (split_data) {
         inl$df_ <- lapply(inl$df_list, function(x) identify_data_type(data.table::as.data.table(x)))
         if ("matrix" %in% names(x)) {
