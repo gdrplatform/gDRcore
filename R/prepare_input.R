@@ -67,7 +67,7 @@ prepare_input.data.table <-
     inl <- list(
       df_ = NULL,
       df_list = NULL,
-      nested_confounders = NULL
+      nested_confounders = nested_confounders
     )
     
     inl$df_ <- identify_data_type(x)
@@ -180,7 +180,8 @@ prepare_input.MultiAssayExperiment <-
   # Some experiment can have nested_confounders = NULL that is appropriate 
   # situation for internal data
   if (!is.null(nested_confounders) &&
-      any(!nested_confounders %in% x_names)) {
+      any(!nested_confounders %in% x_names) &&
+      length(df)) {
     
     confounders_intersect <- intersect(
       c(nested_confounders, gDRutils::get_env_identifiers("barcode")), 
