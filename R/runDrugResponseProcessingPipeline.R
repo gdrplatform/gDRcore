@@ -256,7 +256,7 @@ runDrugResponseProcessingPipeline <- function(x,
   inl <- prepare_input(x,
                        nested_confounders,
                        nested_identifiers_l,
-                       split_data)
+                       split_data = split_data)
   # sel - list with all experiments data
   # se - list with single experiment data 
   se <- list()
