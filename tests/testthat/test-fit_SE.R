@@ -22,9 +22,7 @@ test_that("fit_SE errors as expected", {
                "'all(curve_type %in% c(\"GR\", \"RV\"))' failed: Must be TRUE.", 
                fixed = TRUE)
   
-  maeReal <- readRDS(system.file("testdata", 
-                                 "finalMAE_combo_2dose_nonoise2.RDS", package = "gDRtestData")
-  )
+  maeReal <- gDRutils::get_synthetic_data("finalMAE_combo_2dose_nonoise2")
   
   se <- MultiAssayExperiment::experiments(maeReal)["single-agent"][[1]]
   SummarizedExperiment::assay(se, "Metrics") <- NULL
@@ -34,9 +32,7 @@ test_that("fit_SE errors as expected", {
 })
 
 test_that("fit_SE works as expected", {
-  maeReal <- readRDS(system.file("testdata", 
-                                 "finalMAE_combo_2dose_nonoise2.RDS", package = "gDRtestData")
-  )
+  maeReal <- gDRutils::get_synthetic_data("finalMAE_combo_2dose_nonoise2")
   
   se <- MultiAssayExperiment::experiments(maeReal)["single-agent"][[1]]
   SummarizedExperiment::assay(se, "Metrics") <- NULL
@@ -53,9 +49,7 @@ test_that("fit_SE works as expected", {
 test_that("fit_SE.combinations works as expected", {
  
   # combo data 
-  fmae_cms_path <-
-    system.file(package = "gDRtestData", "testdata", "finalMAE_combo_matrix_small.RDS")
-  fmae_cms <- readRDS(fmae_cms_path)
+  fmae_cms <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
   se1 <- fmae_cms[["matrix"]]
   SummarizedExperiment::assays(se1) <- SummarizedExperiment::assays(se1)["Averaged"]
   

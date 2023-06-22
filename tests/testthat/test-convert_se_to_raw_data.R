@@ -1,5 +1,5 @@
 test_that("convert_mae_to_raw_data works as expected with sa data", {
-  data <- "finalMAE_small.RDS"
+  data <- "finalMAE_small"
   original <- gDRutils::get_synthetic_data(data)
   set.seed(2)
   mae <- purrr::quietly(generateNoiseRawData)(
@@ -14,7 +14,7 @@ test_that("convert_mae_to_raw_data works as expected with sa data", {
 })
 
 test_that("convert_mae_to_raw_data works as expected with matrix data", {
-  data <- "finalMAE_combo_2dose_nonoise.RDS"
+  data <- "finalMAE_combo_2dose_nonoise"
   original <- gDRutils::get_synthetic_data(data)
   set.seed(2)
   mae <- purrr::quietly(generateComboNoNoiseData)(

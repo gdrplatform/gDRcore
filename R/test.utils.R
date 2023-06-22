@@ -12,7 +12,7 @@
 #' set.seed(2)
 #' cell_lines <- gDRtestData::create_synthetic_cell_lines()
 #' drugs <- gDRtestData::create_synthetic_drugs()
-#' data <- "finalMAE_small.RDS"
+#' data <- "finalMAE_small"
 #' original <- gDRutils::get_synthetic_data(data)
 #' test_synthetic_data(original, original, "test")
 #' 

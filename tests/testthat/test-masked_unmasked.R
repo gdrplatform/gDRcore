@@ -1,5 +1,5 @@
 test_that("masked and unmasked values are processed properly", {
-  data <- "finalMAE_small.RDS"
+  data <- "finalMAE_small"
   original <- gDRutils::get_synthetic_data(data)
   
   df_layout <-

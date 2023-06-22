@@ -4,7 +4,7 @@
 #'
 #'
 #' @examples 
-#' mae <- gDRutils::get_synthetic_data("finalMAE_small.RDS")
+#' mae <- gDRutils::get_synthetic_data("finalMAE_small")
 #' convert_mae_to_raw_data(mae)
 #' 
 #' @return data.table with raw data
@@ -59,7 +59,7 @@ convert_mae_to_raw_data <- function(mae) {
 #' @return data.table with raw data
 #' 
 #' @examples 
-#' mae <- gDRutils::get_synthetic_data("finalMAE_small.RDS")
+#' mae <- gDRutils::get_synthetic_data("finalMAE_small")
 #' se <- mae[[1]]
 #' convert_se_to_raw_data(se)
 #' 
