@@ -91,6 +91,7 @@ runDrugResponseProcessingPipeline(
   normalized_assay = "Normalized",
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
+  split_data = TRUE,
   data_dir = NULL,
   partial_run = FALSE,
   start_from = get_pipeline_steps()[1],
@@ -169,6 +170,9 @@ in calculations. Defaults to \code{4}.}
 
 \item{nested_identifiers_l}{list with the nested_identifiers(character v
 ectors) for \code{single-agent} and (optionally) for \code{combination} data}
+
+\item{split_data}{boolean indicating whether data provided as the
+MultiAssayExperiment should be split again into appropriate data types}
 
 \item{data_dir}{string with the path to the directory with intermediate data
 of experiments (qs files). If set to NULL (default) intermediate data is not

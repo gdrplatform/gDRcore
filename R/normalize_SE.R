@@ -150,11 +150,25 @@ normalize_SE <- function(se,
 
     # pad the ref_df for missing values based on nested_keys 
     # (uses mean across all available values)
+    
+    # Add backward compatibility for data without raw_data in metadata
+    if (all(c("UntrtReadout", "Day0Readout") %in% names(ref_df))) {
+      ref_df <- data.table::as.data.table(ref_df)
+      ref_df <- S4Vectors::DataFrame(data.table::melt(ref_df,
+                                 measure = c("UntrtReadout", "Day0Readout"),
+                                 value.name = "CorrectedReadout",
+                                 variable.name = "control_type"))
+    }
+    
     ref_df <- aggregate_ref(ref_df, control_mean_fxn = control_mean_fxn)
     trt_df <- data.table::as.data.table(trt_df)
     
     # Merge to ensure that the proper discard_key values are mapped.
-    all_readouts_df <- ref_df[trt_df, on = nested_confounders]
+    all_readouts_df <- if (is.null(nested_confounders)) {
+      ref_df[trt_df, ]
+    } else {
+      ref_df[trt_df, on = nested_confounders]
+    }
 
     normalized <- data.table::data.table(
       matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols))
