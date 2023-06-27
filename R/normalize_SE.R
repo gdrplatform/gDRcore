@@ -209,13 +209,13 @@ normalize_SE <- function(se,
                                    measure.vars = norm_cols,
                                    variable.name = "normalization_type",
                                    value.name = "x")
-    rownames(normalized) <- paste(
+    rownames <- paste(
       normalized$id, 
       normalized$normalization_type, 
       sep = "_"
     )
     normalized$id <- NULL
-    S4Vectors::DataFrame(normalized)
+    S4Vectors::DataFrame(normalized, row.names = rownames)
   })
   
   if (!is.null(msgs)) {
