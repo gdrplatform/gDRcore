@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.25] - 2023-06-27
+#### fix bug with missing rownames in normalized assay
+
 #### [0.99.24] - 2023-06-19
 #### update logic for merging data.table objects
 
