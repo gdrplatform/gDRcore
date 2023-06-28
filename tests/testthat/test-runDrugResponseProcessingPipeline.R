@@ -28,9 +28,9 @@ test_that("main pipeline functions works as expected", {
   
   input_data <- imported_data$result
 
-  input_data <- input_data[CellLineName %in% unique(CellLineName)[1] &
-                             DrugName_2 %in% gDRutils::get_env_identifiers("untreated_tag") &
-                             DrugName %in% c(gDRutils::get_env_identifiers("untreated_tag"),
+  input_data <- input_data[input_data$CellLineName %in% unique(CellLineName)[1] &
+                           input_data$DrugName_2 %in% gDRutils::get_env_identifiers("untreated_tag") &
+                           input_data$DrugName %in% c(gDRutils::get_env_identifiers("untreated_tag"),
                                              "drug_002"), ]
   
   ### runDrugResponseProcessingPipeline ###
