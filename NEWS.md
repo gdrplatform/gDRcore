@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [0.99.26] - 2023-06-29
+#### remove backward compatibility for old data model
+
 #### [0.99.25] - 2023-06-27
 #### fix bug with missing rownames in normalized assay
 
