@@ -164,10 +164,10 @@ normalize_SE <- function(se,
     trt_df <- data.table::as.data.table(trt_df)
     
     # Merge to ensure that the proper discard_key values are mapped.
-    all_readouts_df <- if (is.null(nested_confounders)) {
-      ref_df[trt_df, ]
-    } else {
+    all_readouts_df <- if (length(nested_confounders)) {
       ref_df[trt_df, on = nested_confounders]
+    } else {
+      ref_df[trt_df, ]
     }
 
     normalized <- data.table::data.table(
@@ -209,13 +209,13 @@ normalize_SE <- function(se,
                                    measure.vars = norm_cols,
                                    variable.name = "normalization_type",
                                    value.name = "x")
-    rownames(normalized) <- paste(
+    rownames <- paste(
       normalized$id, 
       normalized$normalization_type, 
       sep = "_"
     )
     normalized$id <- NULL
-    S4Vectors::DataFrame(normalized)
+    S4Vectors::DataFrame(normalized, row.names = rownames)
   })
   
   if (!is.null(msgs)) {

@@ -50,4 +50,17 @@ test_that("normalize_SE works as expected", {
   se2 <- normalize_SE(se, "single-agent", nested_confounders = 
                         c(gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE), "masked"))
   expect_s4_class(se2, "SummarizedExperiment")
+  
+  
+  ctrl_df$Barcode <- NULL
+  trt_df$Barcode <- NULL
+  ctrl2 <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = ctrl_df)
+  trted2 <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = trt_df)
+  se3 <- SummarizedExperiment::SummarizedExperiment(assays = list("RawTreated" = trted2, "Controls" = ctrl2), 
+                                                   colData = coldata, 
+                                                   rowData = rowdata,
+                                                   metadata = metadata)
+  
+  se3 <- normalize_SE(se3, "single-agent", nested_confounders = NULL, "masked")
+  expect_s4_class(se3, "SummarizedExperiment")
 })
