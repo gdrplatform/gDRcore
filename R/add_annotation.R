@@ -39,7 +39,7 @@ add_CellLine_annotation <- function(
     ),
     fname = "cell_lines.csv",
     fill = "unknown",
-    annotationPackage = if (requireNamespace("gDRinternalData", quietly = TRUE)) {
+    annotationPackage = if ("gDRinternalData" %in% .packages(all.available = TRUE)) {
       "gDRinternalData"
     } else {
       "gDRtestData"
@@ -120,7 +120,7 @@ add_Drug_annotation <- function(
     df_metadata,
     fname = "drugs.csv",
     fill = "unknown",
-    annotationPackage = if (requireNamespace("gDRinternalData", quietly = TRUE)) {
+    annotationPackage = if ("gDRinternalData" %in% .packages(all.available = TRUE)) {
       "gDRinternalData"
     } else {
       "gDRtestData"
