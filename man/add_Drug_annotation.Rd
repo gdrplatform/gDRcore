@@ -8,9 +8,9 @@ add_Drug_annotation(
   df_metadata,
   fname = "drugs.csv",
   fill = "unknown",
-  annotationPackage = if (requireNamespace("gDRinternalData", quietly = TRUE)) {
-    
-    "gDRinternalData"
+  annotationPackage = if ("gDRinternalData" \%in\% .packages(all.available = TRUE)) {
+   
+     "gDRinternalData"
  } else {
      "gDRtestData"
  }

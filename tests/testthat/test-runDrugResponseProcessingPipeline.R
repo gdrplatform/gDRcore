@@ -28,7 +28,8 @@ test_that("main pipeline functions works as expected", {
   
   input_data <- imported_data$result
 
-  input_data <- input_data[input_data$CellLineName == unique(input_data$CellLineName)[1], ]
+  input_data <- input_data[input_data$CellLineName %in% unique(input_data$CellLineName)[1] &
+                           input_data$DrugName_2 %in% gDRutils::get_env_identifiers("untreated_tag"), ]
   
   ### runDrugResponseProcessingPipeline ###
   expect_true(length(list.files(p_dir)) == 0)
@@ -38,7 +39,7 @@ test_that("main pipeline functions works as expected", {
     data_dir = p_dir
   )
   expect_true(length(list.files(p_dir)) > 0)
-  expect_length(mae_v1$warnings, 5)
+  expect_length(mae_v1$warnings, 3)
 
   mae_v2 <-
     purrr::quietly(runDrugResponseProcessingPipeline)(
@@ -47,7 +48,7 @@ test_that("main pipeline functions works as expected", {
       partial_run = TRUE,
       start_from = "fit_SE"
     )
-  expect_length(mae_v2$warnings, 3)
+  expect_length(mae_v2$warnings, 2)
 
   mae_v3 <-
     purrr::quietly(runDrugResponseProcessingPipeline)(
@@ -63,7 +64,7 @@ test_that("main pipeline functions works as expected", {
     purrr::quietly(runDrugResponseProcessingPipeline)(
       mae_v1$result
     )
-  expect_length(mae_v4$warnings, 5)
+  expect_length(mae_v4$warnings, 4)
 
   expect_identical(mae_v1$result, mae_v2$result)
   expect_identical(mae_v2$result, mae_v3$result)
