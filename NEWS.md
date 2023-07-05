@@ -1,3 +1,6 @@
+# Change to v.0.99.28 - 2023-07-05
+- update logic for parallel computing
+
 # Change to v.0.99.27 - 2023-06-29
 - optimize unit tests
 
