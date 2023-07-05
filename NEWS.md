@@ -1,3 +1,6 @@
+# Change to v.0.99.28 - 2023-07-05
+- add information about source type for cases without metric data
+
 # Change to v.0.99.27 - 2023-06-29
 - optimize unit tests
 
