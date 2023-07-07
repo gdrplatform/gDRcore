@@ -21,26 +21,7 @@ convert_mae_to_raw_data <- function(mae) {
   
   data_df <- data.table::rbindlist(data, fill = TRUE)
   
-  
-  # Identifiers
-  conc_cols <- intersect(unlist(gDRutils::get_SE_identifiers(mae[[1]], c("concentration", "concentration2"),
-                                                   simplify = FALSE)), names(data_df))
-  conc_cols_rev <- intersect(unlist(gDRutils::get_SE_identifiers(mae[[1]], c("concentration2", "concentration"),
-                                                   simplify = FALSE)), names(data_df))
-  
-  drug_cols <- intersect(unlist(gDRutils::get_SE_identifiers(mae[[1]], c("drug", "drug_name", "drug_moa",
-                                                         "drug2", "drug_name2", "drug_moa2"),
-                                                   simplify = FALSE)), names(data_df))
-  
-  drug_cols_rev <- intersect(unlist(gDRutils::get_SE_identifiers(mae[[1]], c("drug2", "drug_name2", "drug_moa2",
-                                                               "drug", "drug_name", "drug_moa"),
-                                                   simplify = FALSE)), names(data_df))
-  
-  untreated_tag <- gDRutils::get_SE_identifiers(mae[[1]], "untreated_tag")
-  masked_tag <- gDRutils::get_SE_identifiers(mae[[1]], "masked_tag")[1]
-  
-  data_df[, (conc_cols) := lapply(.SD, function(x) replace(x, is.na(x), 0)), .SDcols = conc_cols]
-  data_df[, (drug_cols) := lapply(.SD, function(x) replace(x, is.na(x), untreated_tag[[1]])), .SDcols = drug_cols]
+  data_df <- replace_NA_in_raw_data(data_df)
   
   data.table::setorder(data_df)
   
@@ -113,4 +94,23 @@ convert_se_to_raw_data <- function(se) {
   exp_metadata <- gDRutils::get_SE_experiment_metadata(se)
 
   cbind(na.omit(merged_df, col = "ReadoutValue"), data.table::as.data.table(exp_metadata))
+}
+
+
+#' @keywords internal
+replace_NA_in_raw_data <- function(df, mae) {
+  df_ <- data.table::copy(df)
+  # Identifiers
+  conc_cols <- intersect(unlist(gDRutils::get_SE_identifiers(mae[[1]], c("concentration", "concentration2"),
+                                                             simplify = FALSE)), names(df_))
+  
+  drug_cols <- intersect(unlist(gDRutils::get_SE_identifiers(mae[[1]], c("drug", "drug_name", "drug_moa",
+                                                                         "drug2", "drug_name2", "drug_moa2"),
+                                                             simplify = FALSE)), names(df_))
+  
+  untreated_tag <- gDRutils::get_SE_identifiers(mae[[1]], "untreated_tag")
+  
+  df_[, (conc_cols) := lapply(.SD, function(x) replace(x, is.na(x), 0)), .SDcols = conc_cols]
+  df_[, (drug_cols) := lapply(.SD, function(x) replace(x, is.na(x), untreated_tag[[1]])), .SDcols = drug_cols]
+  df_
 }
