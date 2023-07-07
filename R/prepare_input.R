@@ -143,8 +143,9 @@ prepare_input.MultiAssayExperiment <-
           md <- S4Vectors::metadata(x[[y]])
           if (is.null(md[[raw_data_field]])) {
             NULL
+          } else {
+            data.table::setDT(md[[raw_data_field]])
           }
-         data.table::setDT(md[[raw_data_field]])
         })
       if (split_data) {
         inl$df_ <- replace_NA_in_raw_data(data.table::rbindlist(inl$df_list, fill = TRUE), x)
