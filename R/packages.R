@@ -16,12 +16,18 @@
   options(scipen = 999) 
   
   cores <- Sys.getenv("NUM_CORES")
-  if (cores != "") {
+  # based on https://github.com/Bioconductor/BiocParallel/issues/98
+  if (.Platform$OS.type != "windows" && cores != "") {
     BiocParallel::register(
       BiocParallel::MulticoreParam(workers = as.numeric(cores)), 
       default = TRUE
     )
-  }
+  } else { 
+    BiocParallel::register(
+      BiocParallel::SerialParam(), 
+      default = TRUE
+    )
+  } 
 }
 
 # Prevent R CMD check from complaining about the use of pipe expressions

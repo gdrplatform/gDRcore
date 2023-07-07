@@ -21,7 +21,7 @@ convert_mae_to_raw_data <- function(mae) {
   
   data_df <- data.table::rbindlist(data, fill = TRUE)
   
-  data_df <- replace_NA_in_raw_data(data_df)
+  data_df <- replace_NA_in_raw_data(data_df, mae)
   
   data.table::setorder(data_df)
   
