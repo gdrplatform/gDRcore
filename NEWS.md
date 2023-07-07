@@ -1,5 +1,9 @@
-# Change to v.0.99.28 - 2023-07-05
+# Change to v.0.99.29 - 2023-07-07
 - add information about source type for cases without metric data
+- refactor the logic for splitting raw data from metadata (get rid of iterative approach)
+
+# Change to v.0.99.28 - 2023-07-05
+- update logic for parallel computing
 
 # Change to v.0.99.27 - 2023-06-29
 - optimize unit tests
