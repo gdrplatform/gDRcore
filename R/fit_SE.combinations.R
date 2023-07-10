@@ -84,7 +84,7 @@ fit_SE.combinations <- function(se,
 
     avg_combo <- data.table::as.data.table(avg[avg[["row"]] == i & avg[["column"]] == j, ])
    
-    if (all(is.na(avg_combo[, -c("row", "column")]))) { # omit masked values (all NAs)
+    if (all(is.na(avg_combo[, -c("row", "column", "normalization_type")]))) { # omit masked values (all NAs)
       smooth_mx <- hsa_excess <- bliss_excess <- isobolograms <- metrics <- 
         bliss_score[, c("row_id", "col_id")] <- 
         hsa_score[, c("row_id", "col_id")] <-
