@@ -108,8 +108,10 @@ average_FUN <- function(x,
     p_trt_keys <- intersect(trt_keys, colnames(x))
     all_cols <- unique(c(series_identifiers, p_trt_keys, "x", "x_std",
                          "normalization_type"))
-    agg_df <- S4Vectors::DataFrame(matrix(NA, 1, length(all_cols)))
+    norm_types <- unique(x$normalization_type)
+    agg_df <- S4Vectors::DataFrame(matrix(NA, length(norm_types), length(all_cols)))
     colnames(agg_df) <- all_cols
+    agg_df$normalization_type <- norm_types
     rownames(agg_df) <- paste(
       seq_len(nrow(agg_df)), 
       agg_df$normalization_type, 
