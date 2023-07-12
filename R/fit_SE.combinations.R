@@ -84,7 +84,7 @@ fit_SE.combinations <- function(se,
 
     avg_combo <- data.table::as.data.table(avg[avg[["row"]] == i & avg[["column"]] == j, ])
    
-    if (all(is.na(avg_combo[, -c("row", "column")]))) { # omit masked values (all NAs)
+    if (all(is.na(avg_combo[, -c("row", "column", "normalization_type")]))) { # omit masked values (all NAs)
       smooth_mx <- hsa_excess <- bliss_excess <- isobolograms <- metrics <- 
         bliss_score[, c("row_id", "col_id")] <- 
         hsa_score[, c("row_id", "col_id")] <-
@@ -139,7 +139,7 @@ fit_SE.combinations <- function(se,
     
   
     for (norm_type in normalization_types) {
-      
+
       avg_combo <- data.table::as.data.table(avg_combo)
       avg_subset <- avg_combo[normalization_type == norm_type]
       complete_subset <- complete[normalization_type == norm_type | is.na(normalization_type)]
@@ -223,8 +223,9 @@ fit_SE.combinations <- function(se,
               c("DRCInvalidFitResult", "DRCTooFewPointsToFit")), 
         ]
       if (nrow(metrics_merged) == 0) {
-        metrics_merged <- rbind(metrics_merged, NA, fill = TRUE)
-        metrics_merged[, normalization_type := norm_type]
+        metrics_merged <- metrics_merged[, lapply(.SD, function(x) NA)]
+        metrics_merged[, `:=`(normalization_type = norm_type, fit_source = "gDR")]
+        metrics_merged
       }
       keep <- intersect(
         colnames(complete_subset), 

@@ -143,18 +143,14 @@ prepare_input.MultiAssayExperiment <-
           md <- S4Vectors::metadata(x[[y]])
           if (is.null(md[[raw_data_field]])) {
             NULL
+          } else {
+            data.table::setDT(md[[raw_data_field]])
           }
-          md[[raw_data_field]]
         })
-      
-      
       if (split_data) {
-        inl$df_ <- lapply(inl$df_list, function(x) identify_data_type(data.table::as.data.table(x)))
-        if ("matrix" %in% names(x)) {
-          inl$df_ <- inl$df_[grep("single-agent",
-                                  names(x), invert = TRUE)]
-        }
-        inl$df_list <- split_raw_data(unique(data.table::rbindlist(inl$df_, fill = TRUE)))
+        inl$df_ <- replace_NA_in_raw_data(data.table::rbindlist(inl$df_list, fill = TRUE), x)
+        inl$df_ <- identify_data_type(inl$df_)
+        inl$df_list <- split_raw_data(unique(inl$df_))
       } else {
         names(inl$df_list) <- names(x)
       }
