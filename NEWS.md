@@ -1,3 +1,6 @@
+# Change to v.0.99.30 - 2023-07-13
+- fix issue with wrong merging of data.tables without nested confounders
+
 # Change to v.0.99.29 - 2023-07-07
 - add information about source type for cases without metric data
 - refactor the logic for splitting raw data from metadata (get rid of iterative approach)
