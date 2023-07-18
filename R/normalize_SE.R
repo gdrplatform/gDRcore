@@ -158,7 +158,7 @@ normalize_SE <- function(se,
     all_readouts_df <- if (length(nested_confounders)) {
       ref_df[trt_df, on = nested_confounders]
     } else {
-      ref_df[trt_df, ]
+      cbind(trt_df, ref_df)
     }
 
     normalized <- data.table::data.table(
