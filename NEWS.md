@@ -1,3 +1,6 @@
+# Change to v.0.99.31 - 2023-07-19
+- update the logic for handling warnings in the pipeline
+
 # Change to v.0.99.30 - 2023-07-13
 - fix issue with wrong merging of data.tables without nested confounders
 
