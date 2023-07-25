@@ -1,3 +1,6 @@
+# Change to v.0.99.32 - 2023-07-25
+- extended logic for supporting cols with dash, e.g. additional perturbations with "-"
+
 # Change to v.0.99.31 - 2023-07-19
 - update the logic for handling warnings in the pipeline
 
