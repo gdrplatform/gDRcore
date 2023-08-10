@@ -1,3 +1,6 @@
+# Change to v.0.99.33 - 2023-08-10
+- update annotation column names for cell line annotation as per changes in the gDRutils
+
 # Change to v.0.99.32 - 2023-07-25
 - extended logic for supporting cols with dash, e.g. additional perturbations with "-"
 
