@@ -87,7 +87,11 @@ add_CellLine_annotation <- function(
   CLs_info[, (cols_num) := as.numeric(get(cols_num))]
   
   
-  colnames(CLs_info) <- unlist(c(cellline, add_clid, tail(DB_cell_annotate, 2)))
+  colnames(CLs_info) <- unlist(c(cellline, add_clid[c("cellline_name",
+                                                      "cellline_tissue",
+                                                      "cellline_ref_div_time",
+                                                      "cellline_parental_identifier",
+                                                      "cellline_subtype")]))
   
   futile.logger::flog.info("Merge with Cell line info")
   nrows_df <- nrow(df_metadata)
