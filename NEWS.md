@@ -1,3 +1,6 @@
+# Change to v.0.99.34 - 2023-08-16
+- update logic for supporting manifest and template files sharing the same column
+
 # Change to v.0.99.33 - 2023-08-10
 - update annotation column names for cell line annotation as per changes in the gDRutils
 
