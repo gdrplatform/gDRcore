@@ -58,34 +58,12 @@ merge_data <- function(manifest, treatments, data) {
     identifiers[["template"]]
   )
   for (m_col in duplicated_col) {
-    df_metadata[, m_col] <-
-      df_metadata[, paste0(m_col, ".y")] # parse template values
-    missing_idx <-
-      is.na(df_metadata[, m_col]) | df_metadata[, m_col] %in% c("", "-")
-
-    # add manifest values when missing in template
-    df_metadata[missing_idx, m_col] <-
-      df_metadata[missing_idx, paste0(m_col, ".x")]
-
-    # check for conflicts
-    double_idx <- !(is.na(df_metadata[, paste0(m_col, ".x")]) |
-                      df_metadata[, paste0(m_col, ".x")] %in% c("", "-")) &
-      !(is.na(df_metadata[, paste0(m_col, ".y")]) |
-          df_metadata[, paste0(m_col, ".y")] %in% c("", "-"))
-    if (any(double_idx) && 
-        any(
-          df_metadata[, paste0(m_col, ".x")] != 
-          df_metadata[, paste0(m_col, ".y")], 
-          na.rm = TRUE
-    )) {
-      futile.logger::flog.warn(
-        "Merge data: metadata field %s found in both the manifest
-        and some templates with inconsistent values;
-        values in template supersede the ones in the manifest", m_col
-      )
-    }
-    df_metadata[, paste0(m_col, ".x")] <- NULL
-    df_metadata[, paste0(m_col, ".y")] <- NULL
+    alt_col <- setdiff(grep(m_col, names(df_metadata), value = TRUE), m_col)
+    df_metadata[[m_col]] <-
+      ifelse(is.na(df_metadata[[m_col]]) |
+      df_metadata[[m_col]] %in% c("", "-"), df_metadata[[alt_col]],
+      df_metadata[[m_col]])
+    df_metadata[, (alt_col) := NULL]
   }
 
   # check for the expected columns
