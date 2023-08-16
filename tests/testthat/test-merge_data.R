@@ -42,3 +42,33 @@ test_that("merge_data works as expected", {
     fixed = TRUE
   )
 })
+
+
+test_that("merge_data works as expected with duplicated cols", {
+  
+  o_cols <- c("WellRow", "WellColumn", "Barcode")
+  
+  manifestFile <- system.file(package = "gDRimport", "extdata", "data1", "manifest.xlsx")
+  templateFiles <- list.files(system.file(package = "gDRimport", "extdata", "data1"),
+                              pattern = "^Template", full.names = TRUE)
+  rawDataFiles <- list.files(system.file(package = "gDRimport", "extdata", "data1"),
+                             pattern = "^RawData", full.names = TRUE)
+  
+  manifest <- gDRimport::load_manifest(manifestFile)
+  template <- gDRimport::load_templates(templateFiles)
+  rawData <- gDRimport::load_results(rawDataFiles, manifest$headers, instrument = "EnVision")
+  rawData <- data.table::setorderv(data.table::setDF(rawData), o_cols)
+  
+  data.table::setDT(manifest$data)
+  data.table::setDT(template)
+  data.table::setDT(rawData)
+  
+  
+  template$clid <- "CL00018"
+  
+  merged_quietly <- purrr::quietly(merge_data)(manifest$data, template, rawData)
+  expect_equal(merged_quietly$warnings,
+               "Merge data: metadata field clid found in both the manifest
+        and some templates with inconsistent values;
+        values in template supersede the ones in the manifest")
+})
