@@ -59,14 +59,18 @@ merge_data <- function(manifest, treatments, data) {
   )
   for (m_col in duplicated_col) {
     alt_col <- setdiff(grep(m_col, names(df_metadata), value = TRUE), m_col)
+    
+    is_empty_col <- function(col) {
+      is.na(col) | col %in% c("", "-")
+    }
+    
+    
     df_metadata[[m_col]] <-
-      ifelse(is.na(df_metadata[[m_col]]) |
-      df_metadata[[m_col]] %in% c("", "-"), df_metadata[[alt_col]],
+      ifelse(is_empty_col(df_metadata[[m_col]]), df_metadata[[alt_col]],
       df_metadata[[m_col]])
     
     df_metadata[[alt_col]] <-
-      ifelse(is.na(df_metadata[[alt_col]]) |
-               df_metadata[[alt_col]] %in% c("", "-"), df_metadata[[m_col]],
+      ifelse(is_empty_col(df_metadata[[alt_col]]), df_metadata[[m_col]],
              df_metadata[[alt_col]])
     
     if (!identical(df_metadata[[m_col]], df_metadata[[alt_col]])) {
