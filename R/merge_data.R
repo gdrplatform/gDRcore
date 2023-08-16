@@ -70,11 +70,11 @@ merge_data <- function(manifest, treatments, data) {
              df_metadata[[alt_col]])
     
     if (!identical(df_metadata[[m_col]], df_metadata[[alt_col]])) {
-      futile.logger::flog.warn(
+      warning(sprintf(
         "Merge data: metadata field %s found in both the manifest
         and some templates with inconsistent values;
         values in template supersede the ones in the manifest", m_col
-      )
+      ))
     }
     
     df_metadata[, (alt_col) := NULL]
