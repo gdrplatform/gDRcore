@@ -45,7 +45,7 @@ test_that("create_SE works as expected", {
   expect_equal(dim(se$result), c(12, 6))
   
   # Check Day0 data
-  controls <- BumpyMatrix::unsplitAsDataFrame(assay(se[[1]], "Controls"))
+  controls <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se[[1]], "Controls"))
   expect_true(all(is.na(controls$CorrectedReadout[
     controls$control_type == "Day0Readout"])))
 })
