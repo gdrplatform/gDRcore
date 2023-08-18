@@ -162,12 +162,12 @@ create_SE <- function(df_,
     day0_df <- untreated[untreated$groupings %in% day0_ref, ]
     isDay0 <- day0_df[[gDRutils::get_env_identifiers("duration")]] == 0
     
-    day0_df <- day0_df[, untrt_cols, with = FALSE]
+    day0_df <- day0_df[isDay0, untrt_cols, with = FALSE]
     day0_df <- if (nrow(day0_df) == 0) {
       data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
     } else {
       df <- day0_df
-      df$isDay0 <- isDay0
+      df$isDay0 <- TRUE
       df
     } 
     

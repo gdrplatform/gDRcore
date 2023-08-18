@@ -1,3 +1,6 @@
+# Change to v.0.99.35 - 2023-08-17
+- fix issue with missing subsetting Day0 data
+
 # Change to v.0.99.34 - 2023-08-16
 - update logic for supporting manifest and template files sharing the same column
 
