@@ -1,3 +1,6 @@
+# Change to v.0.99.36 - 2023-08-24
+- add support for adding custom annotations inside input files
+
 # Change to v.0.99.35 - 2023-08-17
 - fix issue with missing subsetting Day0 data
 
