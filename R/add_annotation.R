@@ -54,50 +54,54 @@ add_CellLine_annotation <- function(
   cellline_name <- gDRutils::get_env_identifiers("cellline_name")
   add_clid <- gDRutils::get_header("add_clid")
   
-  CLs_info <- data.table::fread(
-    system.file("annotation_data", fname, package = annotationPackage), header = TRUE
-  )
-  CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate), with = FALSE]
-  
-  if (nrow(CLs_info) == 0) return(df_metadata)
-  
-  validatedCLs <- unique(df_metadata[[cellline]]) %in% CLs_info[[DB_cellid_header]]
-  missingTblCellLines <- NULL
-  if (!is.null(fill) && !all(validatedCLs)) {
-    unValidatedCellLine <- unique(df_metadata[[cellline]])[!validatedCLs]
-    missingTblCellLines <- data.table::data.table(
-      parental_identifier = unValidatedCellLine,
-      cell_line_name = unValidatedCellLine,
-      cell_line_identifier = unValidatedCellLine,
-      doubling_time = NA,
-      primary_tissue = fill,
-      subtype = fill
+  if (all(c(cellline, cellline_name, add_clid) %in% names(df_metadata))) {
+    return(df_metadata)
+  } else {
+    CLs_info <- data.table::fread(
+      system.file("annotation_data", fname, package = annotationPackage), header = TRUE
     )
+    CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate), with = FALSE]
+    
+    if (nrow(CLs_info) == 0) return(df_metadata)
+    
+    validatedCLs <- unique(df_metadata[[cellline]]) %in% CLs_info[[DB_cellid_header]]
+    missingTblCellLines <- NULL
+    if (!is.null(fill) && !all(validatedCLs)) {
+      unValidatedCellLine <- unique(df_metadata[[cellline]])[!validatedCLs]
+      missingTblCellLines <- data.table::data.table(
+        parental_identifier = unValidatedCellLine,
+        cell_line_name = unValidatedCellLine,
+        cell_line_identifier = unValidatedCellLine,
+        doubling_time = NA,
+        primary_tissue = fill,
+        subtype = fill
+      )
+    }
+    
+    if (any(!df_metadata[[cellline]] %in% CLs_info[[DB_cellid_header]]) && 
+        !is.null(missingTblCellLines)) {
+      CLs_info <- rbind(CLs_info, missingTblCellLines)
+    }
+    cols_to_fill <- names(CLs_info)[!names(CLs_info) %in% c("doubling_time")]
+    for (col in cols_to_fill) {
+      CLs_info[[col]][is.na(CLs_info[[col]])] <- fill
+    }
+    cols_num <- "doubling_time"
+    CLs_info[, (cols_num) := as.numeric(get(cols_num))]
+    
+    
+    colnames(CLs_info) <- unlist(c(cellline, add_clid[c("cellline_name",
+                                                        "cellline_tissue",
+                                                        "cellline_ref_div_time",
+                                                        "cellline_parental_identifier",
+                                                        "cellline_subtype")]))
+    
+    futile.logger::flog.info("Merge with Cell line info")
+    nrows_df <- nrow(df_metadata)
+    df_metadata <- CLs_info[df_metadata, on = cellline]
+    stopifnot(nrows_df == nrow(df_metadata))
+    df_metadata
   }
-  
-  if (any(!df_metadata[[cellline]] %in% CLs_info[[DB_cellid_header]]) && 
-      !is.null(missingTblCellLines)) {
-    CLs_info <- rbind(CLs_info, missingTblCellLines)
-  }
-  cols_to_fill <- names(CLs_info)[!names(CLs_info) %in% c("doubling_time")]
-  for (col in cols_to_fill) {
-    CLs_info[[col]][is.na(CLs_info[[col]])] <- fill
-  }
-  cols_num <- "doubling_time"
-  CLs_info[, (cols_num) := as.numeric(get(cols_num))]
-  
-  
-  colnames(CLs_info) <- unlist(c(cellline, add_clid[c("cellline_name",
-                                                      "cellline_tissue",
-                                                      "cellline_ref_div_time",
-                                                      "cellline_parental_identifier",
-                                                      "cellline_subtype")]))
-  
-  futile.logger::flog.info("Merge with Cell line info")
-  nrows_df <- nrow(df_metadata)
-  df_metadata <- CLs_info[df_metadata, on = cellline]
-  stopifnot(nrows_df == nrow(df_metadata))
-  df_metadata
 }
 
 
@@ -146,73 +150,79 @@ add_Drug_annotation <- function(
   drug_idx <- which(drug %in% names(df_metadata))
   drugsTreated <- unique(unlist(subset(df_metadata, select = drug[drug_idx])))
   
-  drug_full_identifiers <- c(
-    drug[drug_idx], 
-    drug_name[drug_idx], 
-    drug_moa[drug_idx]
-  )
-  drug_ids <- stringr::str_extract(names(drug_full_identifiers), "[0-9]") 
-  drug_ids <- ifelse(is.na(drug_ids), 1, drug_ids)
-  drug_identifiers_list <- split(drug_full_identifiers, drug_ids)
-  names(drug_identifiers_list) <- drug[drug_idx]
-  
-  # Read local drugs annotations
-  Drug_info <- data.table::fread(
-    system.file("annotation_data", fname, package = annotationPackage), header = TRUE
-  )
-  Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa"), with = FALSE]
-  data.table::setnames(Drug_info, c("gnumber", "drug_name", "drug_moa"),
-                       c("drug", "drug_name", "drug_moa"))
-  drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
-  validatedDrugs <- 
-    remove_drug_batch(drugsTreated) %in% remove_drug_batch(Drug_info[["drug"]])
-  #### function should be parallelizeized
-  missingTblDrugs <- NULL
-  if (!is.null(fill) && any(!validatedDrugs)) {
-    missingTblDrugs <- data.table::data.table(
-      drug = remove_drug_batch(drugsTreated[!validatedDrugs]),
-      drug_name = drugsTreated[!validatedDrugs],
-      drug_moa = fill
-    )
-  }
-  
-  if (nrow(Drug_info) == 0) {
-    drug_name <- intersect(drug_name, colnames(df_metadata))
-    drug <- intersect(drug, colnames(df_metadata))
-    df_metadata[, (drug_name) := get(drug)]
+  if (all(c(drug[["drug"]],
+            drug_name[["drug_name"]],
+            drug_moa[["drug_moa"]]) %in% names(df_metadata))) {
     return(df_metadata)
+  } else {
+    drug_full_identifiers <- c(
+      drug[drug_idx], 
+      drug_name[drug_idx], 
+      drug_moa[drug_idx]
+    )
+    drug_ids <- stringr::str_extract(names(drug_full_identifiers), "[0-9]") 
+    drug_ids <- ifelse(is.na(drug_ids), 1, drug_ids)
+    drug_identifiers_list <- split(drug_full_identifiers, drug_ids)
+    names(drug_identifiers_list) <- drug[drug_idx]
+    
+    # Read local drugs annotations
+    Drug_info <- data.table::fread(
+      system.file("annotation_data", fname, package = annotationPackage), header = TRUE
+    )
+    Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa"), with = FALSE]
+    data.table::setnames(Drug_info, c("gnumber", "drug_name", "drug_moa"),
+                         c("drug", "drug_name", "drug_moa"))
+    drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
+    validatedDrugs <- 
+      remove_drug_batch(drugsTreated) %in% remove_drug_batch(Drug_info[["drug"]])
+    #### function should be parallelizeized
+    missingTblDrugs <- NULL
+    if (!is.null(fill) && any(!validatedDrugs)) {
+      missingTblDrugs <- data.table::data.table(
+        drug = remove_drug_batch(drugsTreated[!validatedDrugs]),
+        drug_name = drugsTreated[!validatedDrugs],
+        drug_moa = fill
+      )
+    }
+    
+    if (nrow(Drug_info) == 0) {
+      drug_name <- intersect(drug_name, colnames(df_metadata))
+      drug <- intersect(drug, colnames(df_metadata))
+      df_metadata[, (drug_name) := get(drug)]
+      return(df_metadata)
+    }
+    
+    Drug_info <- rbind(Drug_info, missingTblDrugs)
+    
+    Drug_info$drug <- remove_drug_batch(Drug_info$drug)
+    Drug_info <-
+      rbind(data.table::data.table(
+        drug = untreated_tag,
+        drug_name = untreated_tag,
+        drug_moa = untreated_tag
+      ),
+      Drug_info)
+    Drug_info <- Drug_info[!duplicated(Drug_info[["drug"]]), ]
+    if (any(!remove_drug_batch(drugsTreated) %in% Drug_info$drug) && 
+        !is.null(missingTblDrugs)) {
+      Drug_info <- rbind(Drug_info, stats::setNames(
+        missingTblDrugs[!(remove_drug_batch(missingTblDrugs$drug) %in% 
+                            Drug_info$drug), ],
+        names(Drug_info)
+      ))
+    }
+    for (drug_idf in names(drug_identifiers_list)) {
+      colnames(Drug_info) <- drug_identifiers_list[[drug_idf]]
+      df_metadata$batch <- df_metadata[[drug_idf]]
+      df_metadata[[drug_idf]] <- remove_drug_batch(df_metadata[[drug_idf]])
+      req_col <- c(drug_idf, setdiff(colnames(df_metadata), colnames(Drug_info)))
+      df_metadata <- Drug_info[df_metadata[, req_col, with = FALSE],  on = drug_idf]
+      df_metadata[[drug_idf]] <- df_metadata$batch
+      df_metadata$batch <- NULL
+    }
+    stopifnot(nrows_df == nrow(df_metadata))
+    df_metadata
   }
-  
-  Drug_info <- rbind(Drug_info, missingTblDrugs)
-  
-  Drug_info$drug <- remove_drug_batch(Drug_info$drug)
-  Drug_info <-
-    rbind(data.table::data.table(
-      drug = untreated_tag,
-      drug_name = untreated_tag,
-      drug_moa = untreated_tag
-    ),
-    Drug_info)
-  Drug_info <- Drug_info[!duplicated(Drug_info[["drug"]]), ]
-  if (any(!remove_drug_batch(drugsTreated) %in% Drug_info$drug) && 
-      !is.null(missingTblDrugs)) {
-    Drug_info <- rbind(Drug_info, stats::setNames(
-      missingTblDrugs[!(remove_drug_batch(missingTblDrugs$drug) %in% 
-                          Drug_info$drug), ],
-      names(Drug_info)
-    ))
-  }
-  for (drug_idf in names(drug_identifiers_list)) {
-    colnames(Drug_info) <- drug_identifiers_list[[drug_idf]]
-    df_metadata$batch <- df_metadata[[drug_idf]]
-    df_metadata[[drug_idf]] <- remove_drug_batch(df_metadata[[drug_idf]])
-    req_col <- c(drug_idf, setdiff(colnames(df_metadata), colnames(Drug_info)))
-    df_metadata <- Drug_info[df_metadata[, req_col, with = FALSE],  on = drug_idf]
-    df_metadata[[drug_idf]] <- df_metadata$batch
-    df_metadata$batch <- NULL
-  }
-  stopifnot(nrows_df == nrow(df_metadata))
-  df_metadata
 }
 
 #' Remove batch from Gnumber
