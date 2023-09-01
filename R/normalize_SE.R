@@ -233,18 +233,17 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
                                     value.var = "V1")
   cleaned_df <- ref_df_dcast[!rowSums(is.na(ref_df_dcast)) >=
                                length(setdiff(names(ref_df_dcast), group_cols)), ]
-  fill_NA_by_mean(cleaned_df, unique(ref_df$control_type))
+  fill_NA_by_mean(cleaned_df, cleaned_df, unique(ref_df$control_type))
 }
 
 #' @keywords internal
-fill_NA_by_mean <- function(dt, cols) {
-  dt2 <- data.table::copy(dt)
-  dt2[, (cols) :=
-       lapply(.SD, function(x) {
-         ifelse(is.na(x), mean(x, na.rm = TRUE), x)
-         }),
-     .SDcols = cols]
-  dt2
+fill_NA_by_mean <- function(dt, ref_df, cols) {
+  df <- as.data.frame(dt)
+  # TODO: replace with DataTable functionality to avoid conversions
+  for (cl in cols) {
+    df[is.na(df[, cl]), cl] <- mean(as.data.frame(ref_df)[, cl], na.rm = T)
+  }
+  data.table::as.data.table(df)
 }
 
 #' @keywords internal
@@ -268,6 +267,6 @@ merge_trt_with_ref <- function(ref_df,
   
   # Backfill missing values when the `nested_keys` are not matching with an average. 
   # This is necessary if a control is only present on another plate
-  all_readouts_df <- fill_NA_by_mean(all_readouts_df, control_types)
+  all_readouts_df <- fill_NA_by_mean(all_readouts_df, ref_df, control_types)
   all_readouts_df
 }
