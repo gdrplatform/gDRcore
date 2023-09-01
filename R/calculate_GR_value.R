@@ -110,7 +110,6 @@ calculate_GR_value <- function(rel_viability,
       untrt_readout, 
       ndigit_rounding)
   }
-  
   GRvalue
 }
 

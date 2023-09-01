@@ -158,7 +158,6 @@ normalize_SE <- function(se,
     ref_df$Day0Readout[is.na(ref_df$Day0Readout)] <- mean(ref_df$Day0Readout[!is.na(ref_df$Day0Readout)])
     ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] <- mean(ref_df$UntrtReadout[!is.na(ref_df$UntrtReadout)])
     
-    print(ref_df)
     trt_df <- data.table::as.data.table(trt_df)
     
     # Merge to ensure that the proper discard_key values are mapped.
@@ -172,7 +171,7 @@ normalize_SE <- function(se,
     # This is necessary if a control is only present on another plate
     all_readouts_df$Day0Readout[is.na(all_readouts_df$Day0Readout)] <- mean(ref_df$Day0Readout[!is.na(ref_df$Day0Readout)])
     all_readouts_df$UntrtReadout[is.na(all_readouts_df$UntrtReadout)] <- mean(ref_df$UntrtReadout[!is.na(ref_df$UntrtReadout)])
-    print(all_readouts_df)
+    
     normalized <- data.table::data.table(
       matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols))
     )
