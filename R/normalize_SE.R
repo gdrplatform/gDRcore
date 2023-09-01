@@ -240,8 +240,9 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
 fill_NA_by_mean <- function(dt, cols) {
   dt2 <- data.table::copy(dt)
   dt2[, (cols) :=
-       lapply(.SD, function(x) ifelse(is.na(x),
-                                      mean(x, na.rm = TRUE), x)),
+       lapply(.SD, function(x) {
+         ifelse(is.na(x), mean(x, na.rm = TRUE), x)
+         }),
      .SDcols = cols]
   dt2
 }
