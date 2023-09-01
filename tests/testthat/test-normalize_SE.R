@@ -64,3 +64,27 @@ test_that("normalize_SE works as expected", {
   se3 <- normalize_SE(se3, "single-agent", nested_confounders = NULL, "masked")
   expect_s4_class(se3, "SummarizedExperiment")
 })
+
+
+test_that("normalize_SE works as expected with Day0data", {
+  
+  td <- gDRimport::get_test_data()
+  l_tbl <- purrr::quietly(gDRimport::load_data)(gDRimport::manifest_path(td), 
+                                                gDRimport::template_path(td), 
+                                                gDRimport::result_path(td))
+  imported_data <- purrr::quietly(merge_data)(
+    data.table::setDT(l_tbl$result$manifest),
+    data.table::setDT(l_tbl$result$treatments),
+    data.table::setDT(l_tbl$result$data)
+  )
+  
+  data_type <- "single-agent"
+  se <- purrr::quietly(create_SE)(imported_data$result, data_type = data_type, nested_confounders = NULL)
+  se <- purrr::quietly(normalize_SE)(se$result, data_type = data_type)
+  
+  
+  # Check Day0 data
+  norm <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se[[1]], "Normalized"))
+  expect_true(all(is.na(controls$CorrectedReadout[
+    controls$control_type == "Day0Readout"])))
+})
