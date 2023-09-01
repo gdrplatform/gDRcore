@@ -238,12 +238,11 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
 
 #' @keywords internal
 fill_NA_by_mean <- function(dt, ref_df, cols) {
-  df <- as.data.frame(dt)
-  # TODO: replace with DataTable functionality to avoid conversions
-  for (cl in cols) {
-    df[is.na(df[, cl]), cl] <- mean(as.data.frame(ref_df)[, cl], na.rm = T)
+  dt2 <- data.table::copy(dt)
+  for (col in cols) {
+    dt2[is.na(dt2[[col]]), (col) := mean(ref_df[[col]], na.rm = TRUE)]
   }
-  data.table::as.data.table(df)
+  dt2
 }
 
 #' @keywords internal
