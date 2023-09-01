@@ -64,3 +64,25 @@ test_that("normalize_SE works as expected", {
   se3 <- normalize_SE(se3, "single-agent", nested_confounders = NULL, "masked")
   expect_s4_class(se3, "SummarizedExperiment")
 })
+
+
+test_that("merge_trt_with_ref and aggregate_ref works as expected with Day0data", {
+  ref_df <- data.table::data.table(control_type = c("Day0Readout", "UntrtReadout"),
+                                   CorrectedReadout = c(215102, 655570),
+                                   Barcode = c("230815_1", "230815_3"),
+                                   isDay0 = c(TRUE, FALSE))
+  trt_df <- data.table::data.table(Concentration = 0.00457247142398638,
+                                   Barcode = "230815_3",
+                                   ReadoutValue = 601116,
+                                   BackgroundValue = 0,
+                                   masked = FALSE,
+                                   CorrectedReadout = 601116)
+  agg_ref <- aggregate_ref(ref_df, mean)
+  merged_trt_ref <- merge_trt_with_ref(ref_df, trt_df, "Barcode", mean)
+  
+  expect_true(all(!is.na(agg_ref$Day0Readout)))
+  expect_true(all(!is.na(agg_ref$UntrtReadout)))
+  
+  expect_true(all(!is.na(merged_trt_ref$Day0Readout)))
+  expect_true(all(!is.na(merged_trt_ref$UntrtReadout)))
+})
