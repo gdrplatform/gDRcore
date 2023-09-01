@@ -152,6 +152,12 @@ normalize_SE <- function(se,
     # (uses mean across all available values)
     
     ref_df <- aggregate_ref(ref_df, control_mean_fxn = control_mean_fxn)
+    
+    # Backfill missing values when the `nested_keys` are not matching. 
+    # This is necessary for Day0 data that are collected on another plate
+    ref_df$Day0Readout[is.na(ref_df$Day0Readout)] = mean(ref_df$Day0Readout[!is.na(ref_df$Day0Readout)])
+    ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] = mean(ref_df$UntrtReadout[!is.na(ref_df$UntrtReadout)])
+    
     trt_df <- data.table::as.data.table(trt_df)
     
     # Merge to ensure that the proper discard_key values are mapped.

@@ -87,7 +87,7 @@ calculate_GR_value <- function(rel_viability,
   }
 
   # TODO: Is it correct to put the 'any' here?
-  if (any(is.na(day0_readout))) {
+  if (any(!is.na(day0_readout))) {
     ## Back-calculate the day0_readout using the reference doubling time 
     ## and the duration of treatment.
     GRvalue <- if (is.null(ref_div_time) || is.na(ref_div_time)) {
