@@ -152,12 +152,6 @@ normalize_SE <- function(se,
     # (uses mean across all available values)
     
     ref_df <- aggregate_ref(ref_df, control_mean_fxn = control_mean_fxn)
-
-    # Backfill missing values with an average of the other plates
-    # This is necessary for Day0 data that are collected on another plate
-    ref_df$Day0Readout[is.na(ref_df$Day0Readout)] <- mean(ref_df$Day0Readout[!is.na(ref_df$Day0Readout)])
-    ref_df$UntrtReadout[is.na(ref_df$UntrtReadout)] <- mean(ref_df$UntrtReadout[!is.na(ref_df$UntrtReadout)])
-    
     trt_df <- data.table::as.data.table(trt_df)
     
     # Merge to ensure that the proper discard_key values are mapped.
@@ -251,5 +245,17 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
   ref_df_dcast <- data.table::dcast(ref_df_aggregate,
                                     aggregate_formula,
                                     value.var = "V1")
-  ref_df_dcast[!rowSums(is.na(ref_df_dcast)) >= length(setdiff(names(ref_df_dcast), group_cols)), ]
+  cleaned_df <- ref_df_dcast[!rowSums(is.na(ref_df_dcast)) >=
+                               length(setdiff(names(ref_df_dcast), group_cols)), ]
+  fill_NA_by_mean(cleaned_df, unique(ref_df$control_type))
+}
+
+#' @keywords internal
+fill_NA_by_mean <- function(dt, cols) {
+  dt2 <- data.table::copy(dt)
+  dt2[, (cols) :=
+       lapply(.SD, function(x) ifelse(is.na(x),
+                                      mean(x, na.rm = TRUE), x)),
+     .SDcols = cols]
+  dt2
 }
