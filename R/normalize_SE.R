@@ -150,7 +150,7 @@ normalize_SE <- function(se,
 
     # pad the ref_df for missing values based on nested_keys 
     # (uses mean across all available values)
-    
+    control_types <- unique(ref_df$control_type)
     ref_df <- aggregate_ref(ref_df, control_mean_fxn = control_mean_fxn)
     trt_df <- data.table::as.data.table(trt_df)
     
@@ -163,9 +163,7 @@ normalize_SE <- function(se,
 
     # Backfill missing values when the `nested_keys` are not matching with an average. 
     # This is necessary if a control is only present on another plate
-    all_readouts_df$Day0Readout[is.na(all_readouts_df$Day0Readout)] <- mean(ref_df$Day0Readout[!is.na(ref_df$Day0Readout)])
-    all_readouts_df$UntrtReadout[is.na(all_readouts_df$UntrtReadout)] <- mean(ref_df$UntrtReadout[!is.na(ref_df$UntrtReadout)])
-    
+    all_readouts_df <- fill_NA_by_mean(all_readouts_df, control_types)
     normalized <- data.table::data.table(
       matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols))
     )
