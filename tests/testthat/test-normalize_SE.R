@@ -109,3 +109,9 @@ test_that("merge_trt_with_ref and aggregate_ref works as expected with Day0data"
   expect_true(all(!is.na(merged_trt_ref$Day0Readout)))
   expect_true(all(!is.na(merged_trt_ref$UntrtReadout)))
 })
+
+test_that("fill_NA_by_mean works as expected", {
+  data <- data.table::data.table(a = c(1, 2, 3, 4, 5, NA))
+  data_filled <- fill_NA_by_mean(data, data, "a")
+  expect_equal(data_filled$a, c(1:5, 3))
+})

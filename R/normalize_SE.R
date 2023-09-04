@@ -219,6 +219,7 @@ normalize_SE <- function(se,
 #' @keywords internal
 aggregate_ref <- function(ref_df, control_mean_fxn) {
   
+  checkmate::assert_class(ref_df, "DFrame")
   data_columns <- setdiff(colnames(ref_df), c("row", "column", "masked", "isDay0"))
   corr_readout <- "CorrectedReadout"
   ref_cols <- data.table::as.data.table(ref_df[, data_columns, drop = FALSE])
