@@ -219,9 +219,10 @@ normalize_SE <- function(se,
 #' @keywords internal
 aggregate_ref <- function(ref_df, control_mean_fxn) {
   
+  checkmate::assert_class(ref_df, "DFrame")
   data_columns <- setdiff(colnames(ref_df), c("row", "column", "masked", "isDay0"))
   corr_readout <- "CorrectedReadout"
-  ref_cols <- data.table::as.data.table(ref_df[, data_columns, with = FALSE])
+  ref_cols <- data.table::as.data.table(ref_df[, data_columns, drop = FALSE])
   group_cols <- c(ref_cols[, setdiff(names(ref_cols), corr_readout)])
   additional_cov <- setdiff(group_cols, "control_type")
   aggregate_formula <- stats::reformulate("control_type",
@@ -233,17 +234,15 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
                                     value.var = "V1")
   cleaned_df <- ref_df_dcast[!rowSums(is.na(ref_df_dcast)) >=
                                length(setdiff(names(ref_df_dcast), group_cols)), ]
-  fill_NA_by_mean(cleaned_df, unique(ref_df$control_type))
+  fill_NA_by_mean(cleaned_df, cleaned_df, unique(ref_df$control_type))
 }
 
 #' @keywords internal
-fill_NA_by_mean <- function(dt, cols) {
+fill_NA_by_mean <- function(dt, ref_df, cols) {
   dt2 <- data.table::copy(dt)
-  dt2[, (cols) :=
-       lapply(.SD, function(x) {
-         ifelse(is.na(x), mean(x, na.rm = TRUE), x)
-         }),
-     .SDcols = cols]
+  for (col in cols) {
+    dt2[is.na(dt2[[col]]), (col) := mean(ref_df[[col]], na.rm = TRUE)]
+  }
   dt2
 }
 
@@ -268,6 +267,6 @@ merge_trt_with_ref <- function(ref_df,
   
   # Backfill missing values when the `nested_keys` are not matching with an average. 
   # This is necessary if a control is only present on another plate
-  all_readouts_df <- fill_NA_by_mean(all_readouts_df, control_types)
+  all_readouts_df <- fill_NA_by_mean(all_readouts_df, ref_df, control_types)
   all_readouts_df
 }
