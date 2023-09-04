@@ -9,6 +9,14 @@ test_that("normalize_SE works as expected", {
                                   isDay0 = c(rep(FALSE, 2),
                                              rep(TRUE, 2)))
   
+  ctrl_df2 <- S4Vectors::DataFrame(Barcode = c(rep(1, 2), rep(3, 2)),
+                                  CorrectedReadout = c(rep(1, 2),
+                                                       rep(6, 2)),
+                                  control_type = c(rep("UntrtReadout", 2),
+                                                   rep("Day0Readout", 2)),
+                                  isDay0 = c(rep(FALSE, 2),
+                                             rep(TRUE, 2)))
+  
   trt_df <- S4Vectors::DataFrame(CorrectedReadout = rep(seq(1, 3, 1), 2),
                                  Concentration = conc,
                                  Barcode = rep(c(1, 2), each = 3),
@@ -20,6 +28,8 @@ test_that("normalize_SE works as expected", {
 
   ctrl <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = ctrl_df)
   trted <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = trt_df)
+  ctrl2 <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = ctrl_df2)
+  
   
   keys <- list("nested_keys" = "Barcode", 
                "Trt" = "Concentration")
@@ -40,8 +50,21 @@ test_that("normalize_SE works as expected", {
 
 
   se <- normalize_SE(se, data_type = "single-agent")
+  
+  
+  se2 <- SummarizedExperiment::SummarizedExperiment(assays = list("RawTreated" = trted, "Controls" = ctrl2), 
+                                                   colData = coldata, 
+                                                   rowData = rowdata,
+                                                   metadata = metadata)
+  
+  
+  se2 <- normalize_SE(se2, data_type = "single-agent")
+  
   normalized <- SummarizedExperiment::assays(se)[["Normalized"]][1, 1][[1]]
-
+  normalized2 <- SummarizedExperiment::assays(se2)[["Normalized"]][1, 1][[1]]
+  
+  expect_equal(normalized, normalized2)
+  
   expect_true(methods::is(normalized, "DataFrame"))
   expect_equal(dim(normalized), c(12, 4))
   expect_true(all(colnames(normalized) %in% c("Concentration", "masked", "normalization_type", "x")))
