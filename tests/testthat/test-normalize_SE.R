@@ -90,7 +90,7 @@ test_that("normalize_SE works as expected", {
 
 
 test_that("merge_trt_with_ref and aggregate_ref works as expected with Day0data", {
-  ref_df <- data.table::data.table(control_type = c("Day0Readout", "UntrtReadout"),
+  ref_df <- S4Vectors::DataFrame(control_type = c("Day0Readout", "UntrtReadout"),
                                    CorrectedReadout = c(215102, 655570),
                                    Barcode = c("230815_1", "230815_3"),
                                    isDay0 = c(TRUE, FALSE))
