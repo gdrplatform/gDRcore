@@ -221,7 +221,7 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
   
   data_columns <- setdiff(colnames(ref_df), c("row", "column", "masked", "isDay0"))
   corr_readout <- "CorrectedReadout"
-  ref_cols <- data.table::as.data.table(ref_df[, data_columns, with = FALSE])
+  ref_cols <- data.table::as.data.table(ref_df[, data_columns, drop = FALSE])
   group_cols <- c(ref_cols[, setdiff(names(ref_cols), corr_readout)])
   additional_cov <- setdiff(group_cols, "control_type")
   aggregate_formula <- stats::reformulate("control_type",
