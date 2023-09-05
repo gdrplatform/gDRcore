@@ -319,22 +319,29 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
 
 .get_default_single_agent_nested_identifiers <- function(se = NULL) {
   if (is.null(se)) {
-    gDRutils::get_env_identifiers("concentration")
+    gDRutils::get_env_identifiers(
+      k = c("concentration", "replicate"),
+      simplify = FALSE
+    )
   } else {
-    gDRutils::get_SE_identifiers(se, "concentration")
+    gDRutils::get_SE_identifiers(
+      se = se, 
+      id_type = c("concentration", "replicate"),
+      simplify = FALSE
+    )
   }
 }
 
 .get_default_combination_nested_identifiers <- function(se = NULL) {
   identifiers <- if (is.null(se)) {
     gDRutils::get_env_identifiers(
-      k = c("concentration", "concentration2"),
+      k = c("concentration", "concentration2", "replicate"),
       simplify = FALSE
     )
   } else {
     gDRutils::get_SE_identifiers(
       se = se, 
-      id_type = c("concentration", "concentration2"),
+      id_type = c("concentration", "concentration2", "replicate"),
       simplify = FALSE
     )
   }
