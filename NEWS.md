@@ -1,3 +1,6 @@
+# Change to v.0.99.38 - 2023-09-05
+- extend the list of default nested identifiers
+
 # Change to v.0.99.37 - 2023-09-04
 - fill NA by average values when there is no match with plate
 
