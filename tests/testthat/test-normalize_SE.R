@@ -9,6 +9,14 @@ test_that("normalize_SE works as expected", {
                                   isDay0 = c(rep(FALSE, 2),
                                              rep(TRUE, 2)))
   
+  ctrl_df2 <- S4Vectors::DataFrame(Barcode = c(rep(1, 2), rep(3, 2)),
+                                  CorrectedReadout = c(rep(1, 2),
+                                                       rep(6, 2)),
+                                  control_type = c(rep("UntrtReadout", 2),
+                                                   rep("Day0Readout", 2)),
+                                  isDay0 = c(rep(FALSE, 2),
+                                             rep(TRUE, 2)))
+  
   trt_df <- S4Vectors::DataFrame(CorrectedReadout = rep(seq(1, 3, 1), 2),
                                  Concentration = conc,
                                  Barcode = rep(c(1, 2), each = 3),
@@ -20,6 +28,8 @@ test_that("normalize_SE works as expected", {
 
   ctrl <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = ctrl_df)
   trted <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = trt_df)
+  ctrl2 <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = ctrl_df2)
+  
   
   keys <- list("nested_keys" = "Barcode", 
                "Trt" = "Concentration")
@@ -40,8 +50,21 @@ test_that("normalize_SE works as expected", {
 
 
   se <- normalize_SE(se, data_type = "single-agent")
+  
+  
+  se2 <- SummarizedExperiment::SummarizedExperiment(assays = list("RawTreated" = trted, "Controls" = ctrl2), 
+                                                   colData = coldata, 
+                                                   rowData = rowdata,
+                                                   metadata = metadata)
+  
+  
+  se2 <- normalize_SE(se2, data_type = "single-agent")
+  
   normalized <- SummarizedExperiment::assays(se)[["Normalized"]][1, 1][[1]]
-
+  normalized2 <- SummarizedExperiment::assays(se2)[["Normalized"]][1, 1][[1]]
+  
+  expect_equal(normalized, normalized2)
+  
   expect_true(methods::is(normalized, "DataFrame"))
   expect_equal(dim(normalized), c(12, 4))
   expect_true(all(colnames(normalized) %in% c("Concentration", "masked", "normalization_type", "x")))
@@ -87,4 +110,31 @@ test_that("normalize_SE works as expected with Day0data", {
   norm <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se[[1]], "Normalized"))
   expect_true(all(is.na(controls$CorrectedReadout[
     controls$control_type == "Day0Readout"])))
+})
+
+test_that("merge_trt_with_ref and aggregate_ref works as expected with Day0data", {
+  ref_df <- S4Vectors::DataFrame(control_type = c("Day0Readout", "UntrtReadout"),
+                                   CorrectedReadout = c(215102, 655570),
+                                   Barcode = c("230815_1", "230815_3"),
+                                   isDay0 = c(TRUE, FALSE))
+  trt_df <- data.table::data.table(Concentration = 0.00457247142398638,
+                                   Barcode = "230815_3",
+                                   ReadoutValue = 601116,
+                                   BackgroundValue = 0,
+                                   masked = FALSE,
+                                   CorrectedReadout = 601116)
+  agg_ref <- aggregate_ref(ref_df, mean)
+  merged_trt_ref <- merge_trt_with_ref(ref_df, trt_df, "Barcode", mean)
+  
+  expect_true(all(!is.na(agg_ref$Day0Readout)))
+  expect_true(all(!is.na(agg_ref$UntrtReadout)))
+  
+  expect_true(all(!is.na(merged_trt_ref$Day0Readout)))
+  expect_true(all(!is.na(merged_trt_ref$UntrtReadout)))
+})
+
+test_that("fill_NA_by_mean works as expected", {
+  data <- data.table::data.table(a = c(1, 2, 3, 4, 5, NA))
+  data_filled <- fill_NA_by_mean(data, data, "a")
+  expect_equal(data_filled$a, c(1:5, 3))
 })

@@ -1,3 +1,9 @@
+# Change to v.0.99.37 - 2023-09-04
+- fill NA by average values when there is no match with plate
+
+# Change to v.0.99.36 - 2023-09-01
+- fill NA during aggregation of ref and trt data with mean
+
 # Change to v.0.99.35 - 2023-08-17
 - fix issue with missing subsetting Day0 data
 
