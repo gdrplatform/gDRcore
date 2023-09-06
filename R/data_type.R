@@ -71,38 +71,22 @@ identify_data_type <- function(df,
   for (idp in seq_len(nrow(drug_pairs))) {
     df_matching <- df[drug_pairs[idp, ], on = cols_pairs]
     matching_idx <- df_matching$record_id
-    treated <- vapply(
-      gDRutils::loop(df_matching[, drugs_ids, with = FALSE],
-      function(x) !x %in% untreated_tag), all, logical(1)
-    )
+    conc_data <- df[matching_idx, conc_ids, with = FALSE]
+    conc_len <- length(conc_ids)
     
-    detect_sa <- sum(treated)
-    type <- if (ncol(df[matching_idx, drugs_cotrt_ids, with = FALSE]) == 0) {
-      if (all(df[matching_idx, drug_ids[["drug_name"]]] %in% untreated_tag)) {
+    type <- if (all(rowSums(conc_data == 0) == conc_len)) {
       "control"
-    } else {
+    } else if (all(rowSums(conc_data == 0) == 1)) {
       "single-agent"
-    }
-    } else if (detect_sa == 1) {
-      "single-agent"
-    } else if (detect_sa == 0) {
-      "control" 
     } else {
       NA
     }
+    
     df[matching_idx, "type"]  <- type
-    
-    if (length(conc_ids) > 1) {
-      df[matching_idx, "type"] <- ifelse(
-        rowSums(df[matching_idx, conc_ids, with = FALSE] == 0) == 1,
-        "single-agent", 
-        unlist(df[matching_idx, "type"])
-      )
-    }
-    
     if (all(!is.na(df[matching_idx, "type"]))) {
       next
     }
+    
     flat_data <- df_matching[df_matching[[conc_ids[["concentration2"]]]] > 0, ]
     conc_1 <- table(flat_data[[conc_ids[["concentration"]]]])
     conc_2 <- table(flat_data[[conc_ids[["concentration2"]]]])
