@@ -68,10 +68,10 @@ identify_data_type <- function(df,
   # loop through the pairs to assess the number of individual 
   # concentration pairs
   # Vectorized operations for calculating 'type'
-  zero_concentration <- rowSums(df[, conc_ids, with = FALSE] == 0) == length(conc_ids)
-  one_nonzero_concentration <- rowSums(df[, conc_ids, with = FALSE] != 0) == 1
+  controls <- rowSums(df[, conc_ids, with = FALSE] == 0) == length(conc_ids)
+  single_agent <- rowSums(df[, conc_ids, with = FALSE] != 0) == 1
   df$type <- ifelse(zero_concentration, "control",
-                    ifelse(one_nonzero_concentration, "single-agent", NA))
+                    ifelse(single_agent, "single-agent", NA))
   
 
   # Vectorized operations for calculating 'type' for missing rows
