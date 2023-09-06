@@ -85,8 +85,9 @@ calculate_GR_value <- function(rel_viability,
       corrected_readout, day0_readout, untrt_readout"
     )
   }
-
+  
   # TODO: Is it correct to put the 'any' here?
+  # Note: we should back-calculate only if we cannot use the day0_readout (i.e. line by line)
   if (any(is.na(day0_readout))) {
     ## Back-calculate the day0_readout using the reference doubling time 
     ## and the duration of treatment.

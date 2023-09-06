@@ -148,19 +148,10 @@ normalize_SE <- function(se,
     ref_df <- refs[refs$row == i & refs$column == j, ]
     trt_df <- trt[trt$row == i & trt$column == j, ]
 
-    # pad the ref_df for missing values based on nested_keys 
-    # (uses mean across all available values)
-    
-    ref_df <- aggregate_ref(ref_df, control_mean_fxn = control_mean_fxn)
-    trt_df <- data.table::as.data.table(trt_df)
-    
-    # Merge to ensure that the proper discard_key values are mapped.
-    all_readouts_df <- if (length(nested_confounders)) {
-      ref_df[trt_df, on = nested_confounders]
-    } else {
-      cbind(trt_df, ref_df)
-    }
-
+    all_readouts_df <- merge_trt_with_ref(ref_df,
+                                          trt_df,
+                                          nested_confounders,
+                                          control_mean_fxn)
     normalized <- data.table::data.table(
       matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols))
     )
@@ -182,7 +173,7 @@ normalize_SE <- function(se,
       duration = duration,
       ref_div_time = ref_div_time
     )
-
+    
     if (any(is.na(all_readouts_df$Day0Readout))) {
       msgs <- c(msgs,
                 sprintf("could not calculate GR values for '%s'", cl_name))
@@ -228,6 +219,7 @@ normalize_SE <- function(se,
 #' @keywords internal
 aggregate_ref <- function(ref_df, control_mean_fxn) {
   
+  checkmate::assert_class(ref_df, "DFrame")
   data_columns <- setdiff(colnames(ref_df), c("row", "column", "masked", "isDay0"))
   corr_readout <- "CorrectedReadout"
   ref_cols <- data.table::as.data.table(ref_df[, data_columns, drop = FALSE])
@@ -240,5 +232,41 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
   ref_df_dcast <- data.table::dcast(ref_df_aggregate,
                                     aggregate_formula,
                                     value.var = "V1")
-  ref_df_dcast[!rowSums(is.na(ref_df_dcast)) >= length(setdiff(names(ref_df_dcast), group_cols)), ]
+  cleaned_df <- ref_df_dcast[!rowSums(is.na(ref_df_dcast)) >=
+                               length(setdiff(names(ref_df_dcast), group_cols)), ]
+  fill_NA_by_mean(cleaned_df, cleaned_df, unique(ref_df$control_type))
+}
+
+#' @keywords internal
+fill_NA_by_mean <- function(dt, ref_df, cols) {
+  dt2 <- data.table::copy(dt)
+  for (col in cols) {
+    dt2[is.na(dt2[[col]]), (col) := mean(ref_df[[col]], na.rm = TRUE)]
+  }
+  dt2
+}
+
+#' @keywords internal
+merge_trt_with_ref <- function(ref_df,
+                               trt_df,
+                               nested_confounders,
+                               control_mean_fxn) {
+  
+  # pad the ref_df for missing values based on nested_keys 
+  # (uses mean across all available values)
+  control_types <- unique(ref_df$control_type)
+  ref_df <- aggregate_ref(ref_df, control_mean_fxn = control_mean_fxn)
+  trt_df <- data.table::as.data.table(trt_df)
+  
+  # Merge to ensure that the proper discard_key values are mapped.
+  all_readouts_df <- if (length(nested_confounders)) {
+    ref_df[trt_df, on = nested_confounders]
+  } else {
+    cbind(trt_df, ref_df)
+  }
+  
+  # Backfill missing values when the `nested_keys` are not matching with an average. 
+  # This is necessary if a control is only present on another plate
+  all_readouts_df <- fill_NA_by_mean(all_readouts_df, ref_df, control_types)
+  all_readouts_df
 }

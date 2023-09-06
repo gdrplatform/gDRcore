@@ -1,5 +1,12 @@
-# Change to v.0.99.36 - 2023-08-24
+# Change to v.0.99.38 - 2023-09-06
 - add support for adding custom annotations inside input files
+- improve the performance
+
+# Change to v.0.99.37 - 2023-09-04
+- fill NA by average values when there is no match with plate
+
+# Change to v.0.99.36 - 2023-09-01
+- fill NA during aggregation of ref and trt data with mean
 
 # Change to v.0.99.35 - 2023-08-17
 - fix issue with missing subsetting Day0 data
