@@ -60,50 +60,37 @@ identify_data_type <- function(df,
   
   untreated_tag <- c(gDRutils::get_env_identifiers("untreated_tag"), NA)
   cell <- gDRutils::get_env_identifiers("cellline_name")
-  cols_pairs <- intersect(names(df),  c(drug_ids, cell))
+  cols_pairs <- intersect(names(df),  c(drug_ids, cell, conc_ids))
   drug_pairs <- unique(df[, cols_pairs, with = FALSE])
 
   df[, record_id := .I]
   df[, type := NA_character_]
   # loop through the pairs to assess the number of individual 
   # concentration pairs
+  # Vectorized operations for calculating 'type'
+  zero_concentration <- rowSums(df[, conc_ids, with = FALSE] == 0) == length(conc_ids)
+  one_nonzero_concentration <- rowSums(df[, conc_ids, with = FALSE] != 0) == 1
+  df$type <- ifelse(zero_concentration, "control",
+                    ifelse(one_nonzero_concentration, "single-agent", NA))
+  
 
-  for (idp in seq_len(nrow(drug_pairs))) {
-    df_matching <- df[drug_pairs[idp, ], on = cols_pairs]
-    matching_idx <- df_matching$record_id
-    conc_data <- df[matching_idx, conc_ids, with = FALSE]
-    conc_len <- length(conc_ids)
-    
-    type <- if (all(rowSums(conc_data == 0) == conc_len)) {
-      "control"
-    } else if (all(rowSums(conc_data == 0) == 1)) {
-      "single-agent"
-    } else {
-      NA
-    }
-    
-    df[matching_idx, "type"]  <- type
-    if (all(!is.na(df[matching_idx, "type"]))) {
-      next
-    }
-    
-    flat_data <- df_matching[df_matching[[conc_ids[["concentration2"]]]] > 0, ]
+  # Vectorized operations for calculating 'type' for missing rows
+  if (length(conc_ids) > 1) {
+    # Identify rows with missing 'type'
+    missing_type_rows <- is.na(df$type)
+    flat_data <- df[missing_type_rows, cols_pairs, with = FALSE]
+    non_zero_concentration2 <- flat_data[[conc_ids[["concentration2"]]]] > 0
     conc_1 <- table(flat_data[[conc_ids[["concentration"]]]])
     conc_2 <- table(flat_data[[conc_ids[["concentration2"]]]])
     n_conc_pairs <- nrow(unique(flat_data[, conc_ids, with = FALSE]))
     conc_ratio <- table(
       round(log10(flat_data[[conc_ids[["concentration"]]]] /
-            flat_data[[conc_ids[["concentration2"]]]]), 2)
+                    flat_data[[conc_ids[["concentration2"]]]]), 2)
     )
     conc_ratio <- conc_ratio[!names(conc_ratio) %in% c("Inf", "-Inf")]
     
-    type <- 
-      if (length(conc_ratio) <= codilution_conc) {
-        "co-dilution"
-      } else {
-        "matrix"
-      }
-    df[matching_idx[is.na(df[matching_idx]$type)], "type"] <- type
+    type <- ifelse(length(conc_ratio) <= codilution_conc, "co-dilution", "matrix")
+    df$type[missing_type_rows] <- type
   }
   df
 }
