@@ -65,24 +65,16 @@ identify_data_type <- function(df,
 
   df[, record_id := .I]
   df[, type := NA_character_]
-  # loop through the pairs to assess the number of individual 
-  # concentration pairs
-  # Vectorized operations for calculating 'type'
+
   controls <- rowSums(df[, conc_ids, with = FALSE] == 0) == length(conc_ids)
   single_agent <- rowSums(df[, conc_ids, with = FALSE] != 0) == 1
-  df$type <- ifelse(zero_concentration, "control",
+  df$type <- ifelse(controls, "control",
                     ifelse(single_agent, "single-agent", NA))
   
 
-  # Vectorized operations for calculating 'type' for missing rows
   if (length(conc_ids) > 1) {
-    # Identify rows with missing 'type'
     missing_type_rows <- is.na(df$type)
     flat_data <- df[missing_type_rows, cols_pairs, with = FALSE]
-    non_zero_concentration2 <- flat_data[[conc_ids[["concentration2"]]]] > 0
-    conc_1 <- table(flat_data[[conc_ids[["concentration"]]]])
-    conc_2 <- table(flat_data[[conc_ids[["concentration2"]]]])
-    n_conc_pairs <- nrow(unique(flat_data[, conc_ids, with = FALSE]))
     conc_ratio <- table(
       round(log10(flat_data[[conc_ids[["concentration"]]]] /
                     flat_data[[conc_ids[["concentration2"]]]]), 2)
