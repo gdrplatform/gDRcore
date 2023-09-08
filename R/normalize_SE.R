@@ -82,7 +82,7 @@ normalize_SE <- function(se,
                                                    "cellline_ref_div_time", 
                                                    simplify = TRUE
                                                    )
-  if (!cell_ref_div_col %in% names(cdata)) {
+  if (!any(cell_ref_div_col == names(cdata))) {
     cdata[[cell_ref_div_col]] <- NA
   }
   
@@ -106,7 +106,7 @@ normalize_SE <- function(se,
     SummarizedExperiment::assays(se)[[raw_treated_assay]]
   )
   
-  if ("swap_sa" %in% names(trt)) {
+  if (any("swap_sa" == names(trt))) {
     conc <- gDRutils::get_env_identifiers("concentration")
     conc2 <- gDRutils::get_env_identifiers("concentration2")
     swap_idx <- !is.na(trt$swap_sa)

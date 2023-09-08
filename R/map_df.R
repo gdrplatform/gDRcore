@@ -70,9 +70,8 @@ map_df <- function(trt_md,
   
   conc <- cbind(array(0, nrow(ref_md)), # padding to avoid empty df;
                 ref_md[, intersect(names(ref_md), conc_cols), drop = FALSE])
-  is_ref_conc <- apply(conc, 1, function(z) {
-    all(z == 0)
-  })
+  is_ref_conc <- rowSums(conc == 0) == ncol(conc)
+  
   
   if (ref_type == "Day0") {
     # Identifying which of the durations have a value of 0.
@@ -93,9 +92,7 @@ map_df <- function(trt_md,
   
   # 1. there are no matches (present_ref_cols is empty)
   exact_out <- if (length(present_ref_cols) == 0) {
-    out <- lapply(seq_along(trt_rnames), function(x) {
-      character(0)
-    })
+    out <- setNames(replicate(length(trt_rnames), character(0), simplify = FALSE), trt_rnames)
     names(out) <- trt_rnames
     out
   } else {
@@ -142,11 +139,11 @@ map_df <- function(trt_md,
       all_checks <- c(refs, matching_list)
       match_mx <- do.call("rbind", all_checks)
       rownames(match_mx) <- names(all_checks)
-      match_idx <- which(apply(match_mx, 2, all)) # test matching conditions
+      match_idx <- which(colSums(match_mx) == ncol(match_mx))
       # No exact match, try to find best match (as many metadata fields as 
       # possible).
       # TODO: rowSums?
-      idx <- apply(match_mx, 2, function(y) sum(y, na.rm = TRUE)) 
+      idx <- colSums(match_mx)
       # TODO: Sort this out so that it also takes the average in case multiple 
       # are found.
       idx <- idx * match_mx[matchFactor, ]

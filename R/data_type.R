@@ -201,7 +201,7 @@ split_raw_data <- function(df,
     })
   }
   
-  if ("single-agent" %in% names(df_list)) {
+  if (any("single-agent" == names(df_list))) {
     sa_idx <- gDRutils::loop(
       grep(drug_ids[["concentration"]], drug_ids, value = TRUE), 
       function(x) which(!df_list[["single-agent"]][, x, with = FALSE] == 0)

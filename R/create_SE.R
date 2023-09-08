@@ -49,21 +49,21 @@ create_SE <- function(df_,
   identifiers <- gDRutils::get_env_identifiers()
   Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
 
-  if (!(identifiers$masked_tag %in% colnames(df_))) {
+  if (!(any(identifiers$masked_tag == colnames(df_)))) {
     df_[, identifiers$masked_tag] <- FALSE
   }
 
   # Remove background value from readout (at least 1e-10 to avoid artefactual 
   # normalized values).
-  if ("BackgroundValue" %in% colnames(df_)) {
-    df_$CorrectedReadout <- pmax(df_[[readout]] - df_$BackgroundValue, 1e-10)
+  if (any("BackgroundValue" == colnames(df_))) {
+    df_[, CorrectedReadout := pmax(.SD[[readout]] - df_$BackgroundValue, 1e-10)]
   } else {
-    df_$CorrectedReadout <- df_[[readout]]
+    df_[, CorrectedReadout := .SD[[readout]]]
   }
   
   # overwrite "drug", "drug_name", "drug_moa"
   # with "untreated" if "concentration2" == 0
-  if (gDRutils::get_env_identifiers("concentration2") %in% colnames(df_)) {
+  if (any(gDRutils::get_env_identifiers("concentration2") == colnames(df_))) {
     single_agent_idx <-
       df_[[gDRutils::get_env_identifiers("concentration2")]] %in% 0
     drug_cols <- c("drug", "drug_name", "drug_moa")
@@ -73,11 +73,11 @@ create_SE <- function(df_,
       ),
       colnames(df_)
     )
-    df_[single_agent_idx, drug2_var] <- untreated_tag[1]
+    df_[single_agent_idx, (drug2_var) := untreated_tag[1]]
   }
   
   
-  df_ <- df_[, lapply(.SD, function(x) {
+  df_[, (names(df_)) := lapply(.SD, function(x) {
     if (is.character(x)) {
       gsub(paste(untreated_tag, collapse = "|"), untreated_tag[1], x)
     } else {
@@ -117,6 +117,7 @@ create_SE <- function(df_,
       ref_type = ctl_type
     )
   })
+
   
   ## Combine all controls with respective treatments.
   # Merge raw data back with groupings.
@@ -247,7 +248,7 @@ validate_mapping <- function(trt_df, refs_df, nested_confounders) {
   )
   
   # Swap concentrations for single-agent with drug2
-  if (conc2 %in% colnames(trt_df)) {
+  if (any(conc2 == colnames(trt_df))) {
     swap_idx <- trt_df[[drug_id]] %in%
       setdiff(unique(trt_df[[drug2_id]]), untrt_tag)
     trt_df[swap_idx, "swap_sa"] <- TRUE
