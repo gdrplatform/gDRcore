@@ -44,13 +44,13 @@ identify_data_type <- function(df,
   
   # find the pairs of drugs with relevant metadata
   drug_ids <- unlist(gDRutils::get_env_identifiers(
-    c("drug_name", "drug_name2"), 
+    c("drug_name", "drug_name2", "drug_name3"), 
     simplify = FALSE
   )) 
   drugs_ids <- drug_ids[which(drug_ids %in% names(df))]
   
   conc_ids <- unlist(gDRutils::get_env_identifiers(
-    c("concentration", "concentration2"), 
+    c("concentration", "concentration2", "concentration3"), 
     simplify = FALSE
   ))
   conc_ids <- conc_ids[which(conc_ids %in% names(df))]
@@ -189,8 +189,9 @@ split_raw_data <- function(df,
                            type_col = "type") {
   
   drug_ids <- unlist(gDRutils::get_env_identifiers(
-    c("drug_name", "drug_name2", "drug", "drug2",
-      "drug_moa", "drug_moa2", "concentration", "concentration2"), 
+    c("drug_name", "drug_name2", "drug_name3", "drug", "drug2", "drug3",
+      "drug_moa", "drug_moa2", "drug_moa3", "concentration", "concentration2",
+      "concentration3"), 
     simplify = FALSE)
   ) 
   drug_ids <- drug_ids[which(drug_ids %in% names(df))]

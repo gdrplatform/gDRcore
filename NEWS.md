@@ -1,3 +1,6 @@
+# Change to v.0.99.38 - 2023-09-12
+- set Drug3 as an official tertiary drug in the experiment
+
 # Change to v.0.99.37 - 2023-09-04
 - fill NA by average values when there is no match with plate
 
