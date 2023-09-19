@@ -1,3 +1,6 @@
+# Change to v.0.99.39 - 2023-09-19
+- extend the logic for matching missing controls
+
 # Change to v.0.99.38 - 2023-09-12
 - set Drug3 as an official tertiary drug in the experiment
 
