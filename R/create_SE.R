@@ -230,9 +230,10 @@ create_SE <- function(df_,
 validate_mapping <- function(trt_df, refs_df, nested_confounders) {
   
   if (!is.null(nested_confounders)) {
-    refs_df <- refs_df[
-      refs_df[[nested_confounders]] %in% unique(trt_df[[nested_confounders]]),
-    ]
+    matching_confounders <- refs_df[[nested_confounders]] %in% unique(trt_df[[nested_confounders]])
+    if (any(refs_df[[nested_confounders]] %in% unique(trt_df[[nested_confounders]]))) {
+      refs_df <- refs_df[matching_confounders, ]
+    }
   }
   
   drug_id <- gDRutils::get_env_identifiers("drug")
