@@ -87,6 +87,7 @@ create_SE <- function(df_,
 
   # Identify treatments, conditions, and experiment metadata.
   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
+  
   coldata <- md$condition_md
   rowdata <- md$treatment_md
   exp_md <- md$experiment_md
@@ -95,6 +96,7 @@ create_SE <- function(df_,
   mapping_entries$groupings <- rownames(mapping_entries)
 
   refs <- .map_references(mapping_entries)
+  emptyRefs <- all(is.null(unlist(refs)))
   trt_conditions <- names(refs)
   sa_conditions <- unique(unname(unlist(refs)))
   
@@ -133,14 +135,18 @@ create_SE <- function(df_,
   untreated <- dfs[dfs$groupings %in% unique(unlist(ctl_maps)), ]
   
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
-  
+
   out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
     
     trt <- treated$rownames[i]
     
     trt_df <- dfs[groupings == trt]
-    refs_df <- dfs[groupings %chin% refs[[trt]]]
     
+    refs_df <- if (emptyRefs) {
+      dfs[0]
+    } else {
+      dfs[groupings %chin% refs[[trt]]]
+    }
     trt_df <- 
       validate_mapping(trt_df, refs_df, nested_confounders)
     selected_columns <- names(trt_df) %in% data_fields
