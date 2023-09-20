@@ -2,31 +2,16 @@
 #' @keywords internal
 #'
 .create_mapping_factors <- function(rowdata, coldata) {
-  mapping_grid <- expand.grid(
+  mapping_grid <- data.table::CJ(
     row_id = rownames(rowdata), 
-    col_id = rownames(coldata), 
-    stringsAsFactors = FALSE
+    col_id = rownames(coldata)
   )
   rowdataCols <- names(rowdata)
   coldataCols <- names(coldata)
   
-  mapping_entries <- base::merge(
-    mapping_grid, 
-    rowdata, 
-    by.x = "row_id", 
-    by.y = 0, 
-    all.x = TRUE
-  )
-  mapping_entries <- base::merge(
-    mapping_entries, 
-    coldata, 
-    by.x = "col_id", 
-    by.y = 0, 
-    all.x = TRUE
-  )
-  names(mapping_entries)[3:length(mapping_entries)] <- c(rowdataCols, coldataCols)
-  data.table::setDT(mapping_entries)
-  mapping_entries
+  cbind(mapping_grid,
+        rowdata,
+        coldata)
 }
 
 
