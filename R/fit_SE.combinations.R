@@ -119,9 +119,9 @@ fit_SE.combinations <- function(se,
       "rconcs"
     )
     
-    mean_avg_combo <-  avg_combo[, lapply(.SD, mean), by = c(id, id2, "normalization_type"), .SDcols = "x"]
+    mean_avg_combo <- avg_combo[, lapply(.SD, mean), by = c(id, id2, "normalization_type"), .SDcols = "x"]
     # deal with cases of multiple concentrations mapped to the same value 
-    # when rounded create a complete matrix with the most frequence combo 
+    # when rounded create a complete matrix with the most frequent combo 
     # concentrations
     conc1 <- table(avg_combo[[id]])
     conc1 <- sort(as.numeric(
@@ -401,17 +401,17 @@ fit_SE.combinations <- function(se,
          CIScore_80 = CIScore_80)
   })
 
-  all_smooth_mx <- rbindParallelList(out, "smooth_mx")
-  all_hsa_excess <- rbindParallelList(out, "hsa_excess")
-  all_b_excess <- rbindParallelList(out, "bliss_excess")
-  all_iso_points <- rbindParallelList(out, "all_iso_points")
-  all_isobolograms <- rbindParallelList(out, "isobolograms")
-  all_metrics <- rbindParallelList(out, "metrics")
+  all_smooth_mx <- rbindParallelList(out, "smooth_mx", with_rownames = TRUE)
+  all_hsa_excess <- rbindParallelList(out, "hsa_excess", with_rownames = TRUE)
+  all_b_excess <- rbindParallelList(out, "bliss_excess", with_rownames = TRUE)
+  all_iso_points <- rbindParallelList(out, "all_iso_points", with_rownames = TRUE)
+  all_isobolograms <- rbindParallelList(out, "isobolograms", with_rownames = TRUE)
+  all_metrics <- rbindParallelList(out, "metrics", with_rownames = TRUE)
   
-  bliss_score <- rbindParallelList(out, "bliss_score")
-  hsa_score <- rbindParallelList(out, "hsa_score")
-  CIScore_50 <- rbindParallelList(out, "CIScore_50")
-  CIScore_80 <- rbindParallelList(out, "CIScore_80")
+  bliss_score <- rbindParallelList(out, "bliss_score", with_rownames = TRUE)
+  hsa_score <- rbindParallelList(out, "hsa_score", with_rownames = TRUE)
+  CIScore_50 <- rbindParallelList(out, "CIScore_50", with_rownames = TRUE)
+  CIScore_80 <- rbindParallelList(out, "CIScore_80", with_rownames = TRUE)
   
   SummarizedExperiment::assays(se)[["SmoothMatrix"]] <- 
     convertDFtoBumpyMatrixUsingIds(all_smooth_mx)

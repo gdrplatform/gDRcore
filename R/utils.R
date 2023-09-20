@@ -365,8 +365,8 @@ round_concentration <- function(x, ndigit = 3) {
 
 #' @keywords internal
 #' @noRd
-rbindParallelList <- function(x, name) {
-  S4Vectors::DataFrame(
+rbindParallelList <- function(x, name, with_rownames = FALSE) {
+  out <- S4Vectors::DataFrame(
     do.call(
       rbind, 
       c(lapply(x, function(x) {
@@ -376,6 +376,14 @@ rbindParallelList <- function(x, name) {
       }), fill = TRUE)
     )
   )
+  if (with_rownames && "normalization_type" %in% colnames(out)) {
+    rownames(out) <- paste(
+      seq_len(nrow(out)), 
+      out$normalization_type, 
+      sep = "_"
+    )
+  }
+  out
 }
 
 

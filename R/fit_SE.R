@@ -12,7 +12,7 @@ fit_SE <- function(se,
                    pcutoff = 0.05,
                    cap = 0.1,
                    curve_type = c("GR", "RV")) {
-
+  
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_string(data_type)
@@ -59,12 +59,12 @@ fit_SE <- function(se,
                                        curve_type = curve_type)
   
   se <- gDRutils::set_SE_fit_parameters(se, 
-    value = list(
-      n_point_cutoff = n_point_cutoff,
-      range_conc = range_conc,
-      force_fit = force_fit,
-      pcutoff = pcutoff,
-      cap = cap)
+                                        value = list(
+                                          n_point_cutoff = n_point_cutoff,
+                                          range_conc = range_conc,
+                                          force_fit = force_fit,
+                                          pcutoff = pcutoff,
+                                          cap = cap)
   )
   se <- gDRutils::set_SE_processing_metadata(
     se,
@@ -91,6 +91,7 @@ fit_FUN <- function(x,
                     pcutoff,
                     cap,
                     curve_type) {
+
   fit_df <- S4Vectors::DataFrame(matrix(NA, length(curve_type), length(metric_cols)))
   colnames(fit_df) <- metric_cols
   rownames(fit_df) <- c("RV", "GR")[c("RV", "GR") %in% curve_type]
@@ -100,17 +101,27 @@ fit_FUN <- function(x,
       x <- x[x[[conc]] != 0, ]
     }
     
-    fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(
-      data.table::as.data.table(x),
-      series_identifiers = nested_identifiers,
-      e_0 = 1,
-      GR_0 = 1,
-      n_point_cutoff = n_point_cutoff,
-      range_conc = range_conc,
-      force_fit = force_fit,
-      pcutoff = pcutoff,
-      cap = cap,
-      normalization_type = curve_type))
+    fit_df <- S4Vectors::DataFrame(
+      gDRutils::fit_curves(
+        data.table::as.data.table(x),
+        series_identifiers = nested_identifiers,
+        e_0 = 1,
+        GR_0 = 1,
+        n_point_cutoff = n_point_cutoff,
+        range_conc = range_conc,
+        force_fit = force_fit,
+        pcutoff = pcutoff,
+        cap = cap,
+        normalization_type = curve_type)
+    )
+    
+    if (is.null(fit_df$fit_source)) {
+      rownames(fit_df) <- fit[["normalization_type"]]
+    } else {
+      rownames(fit_df) <- paste(fit_df$normalization_type, 
+                                fit_df$fit_source,
+                                sep = "_")
+    }
   }
   fit_df
 }
