@@ -2,7 +2,7 @@
 #'
 #' add cellline annotation to a data.table with metadata
 #'
-#' @param df_metadata data.table with metadata
+#' @param dt_metadata data.table with metadata
 #' @param DB_cellid_header string with colnames with cell line identifier
 #'                         in the annotation file
 #' @param DB_cell_annotate character vector with mandatory colnames 
@@ -11,7 +11,7 @@
 #' @param fill string indicating how unknown cell lines should be filled in the DB
 #' @param annotationPackage string indication name of the package containing cellline annotation
 #' @details
-#' The logic of adding celline annotation for df_metadata based on 
+#' The logic of adding celline annotation for dt_metadata based on 
 #' the annotation file stored in gDRtestData. Other fields are set as "unknown".
 #' This approach will be corrected once we will implement final solution 
 #' for adding cell lines.
@@ -28,7 +28,7 @@
 #' @export
 #'
 add_CellLine_annotation <- function(
-    df_metadata,
+    dt_metadata,
     DB_cellid_header = "cell_line_identifier",
     DB_cell_annotate = c(
       "cell_line_name", 
@@ -47,27 +47,27 @@ add_CellLine_annotation <- function(
 ) {
   
   # Assertions:
-  checkmate::assert_data_table(df_metadata)
+  checkmate::assert_data_table(dt_metadata)
   checkmate::assert_string(fill, null.ok = TRUE)
   
   cellline <- gDRutils::get_env_identifiers("cellline")
   cellline_name <- gDRutils::get_env_identifiers("cellline_name")
   add_clid <- gDRutils::get_header("add_clid")
   
-  if (all(c(cellline, cellline_name, add_clid) %in% names(df_metadata))) {
-    return(df_metadata)
+  if (all(c(cellline, cellline_name, add_clid) %in% names(dt_metadata))) {
+    return(dt_metadata)
   } else {
     CLs_info <- data.table::fread(
       system.file("annotation_data", fname, package = annotationPackage), header = TRUE
     )
     CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate), with = FALSE]
     
-    if (nrow(CLs_info) == 0) return(df_metadata)
+    if (nrow(CLs_info) == 0) return(dt_metadata)
     
-    validatedCLs <- unique(df_metadata[[cellline]]) %in% CLs_info[[DB_cellid_header]]
+    validatedCLs <- unique(dt_metadata[[cellline]]) %in% CLs_info[[DB_cellid_header]]
     missingTblCellLines <- NULL
     if (!is.null(fill) && !all(validatedCLs)) {
-      unValidatedCellLine <- unique(df_metadata[[cellline]])[!validatedCLs]
+      unValidatedCellLine <- unique(dt_metadata[[cellline]])[!validatedCLs]
       missingTblCellLines <- data.table::data.table(
         parental_identifier = unValidatedCellLine,
         cell_line_name = unValidatedCellLine,
@@ -78,7 +78,7 @@ add_CellLine_annotation <- function(
       )
     }
     
-    if (any(!df_metadata[[cellline]] %in% CLs_info[[DB_cellid_header]]) && 
+    if (any(!dt_metadata[[cellline]] %in% CLs_info[[DB_cellid_header]]) && 
         !is.null(missingTblCellLines)) {
       CLs_info <- rbind(CLs_info, missingTblCellLines)
     }
@@ -97,10 +97,10 @@ add_CellLine_annotation <- function(
                                                         "cellline_subtype")]))
     
     futile.logger::flog.info("Merge with Cell line info")
-    nrows_df <- nrow(df_metadata)
-    df_metadata <- CLs_info[df_metadata, on = cellline]
-    stopifnot(nrows_df == nrow(df_metadata))
-    df_metadata
+    nrows_df <- nrow(dt_metadata)
+    dt_metadata <- CLs_info[dt_metadata, on = cellline]
+    stopifnot(nrows_df == nrow(dt_metadata))
+    dt_metadata
   }
 }
 
@@ -109,11 +109,11 @@ add_CellLine_annotation <- function(
 #'
 #' add drug annotation to a data.table with metadata
 #'
-#' @param df_metadata data.table with metadata
+#' @param dt_metadata data.table with metadata
 #' @param fname string with file name with annotation
 #' @param fill string indicating how unknown cell lines should be filled in the DB
 #' @param annotationPackage string indication name of the package containing drug annotation
-#' @details The logic of adding drug annotation for df_metadata 
+#' @details The logic of adding drug annotation for dt_metadata 
 #' based on the annotation file stored in gDRtestData.
 #' @examples
 #' add_Drug_annotation(
@@ -125,7 +125,7 @@ add_CellLine_annotation <- function(
 #' @export
 #'
 add_Drug_annotation <- function(
-    df_metadata,
+    dt_metadata,
     fname = "drugs.csv",
     fill = "unknown",
     annotationPackage = if ("gDRinternalData" %in% .packages(all.available = TRUE)) {
@@ -136,9 +136,9 @@ add_Drug_annotation <- function(
 ) {
   
   # Assertions:
-  checkmate::assert_data_table(df_metadata)
+  checkmate::assert_data_table(dt_metadata)
   checkmate::assert_string(fill, null.ok = TRUE)
-  nrows_df <- nrow(df_metadata)
+  nrows_df <- nrow(dt_metadata)
   
   drug <- unlist(gDRutils::get_env_identifiers(c(
     "drug", "drug2", "drug3"), simplify = FALSE))
@@ -147,13 +147,13 @@ add_Drug_annotation <- function(
     "drug_name", "drug_name2", "drug_name3"), simplify = FALSE))
   drug_moa <- unlist(gDRutils::get_env_identifiers(c(
     "drug_moa", "drug_moa2", "drug_moa3"), simplify = FALSE))
-  drug_idx <- which(drug %in% names(df_metadata))
-  drugsTreated <- unique(unlist(subset(df_metadata, select = drug[drug_idx])))
+  drug_idx <- which(drug %in% names(dt_metadata))
+  drugsTreated <- unique(unlist(subset(dt_metadata, select = drug[drug_idx])))
   
   if (all(c(drug[["drug"]],
             drug_name[["drug_name"]],
-            drug_moa[["drug_moa"]]) %in% names(df_metadata))) {
-    return(df_metadata)
+            drug_moa[["drug_moa"]]) %in% names(dt_metadata))) {
+    return(dt_metadata)
   } else {
     drug_full_identifiers <- c(
       drug[drug_idx], 
@@ -186,10 +186,10 @@ add_Drug_annotation <- function(
     }
     
     if (nrow(Drug_info) == 0) {
-      drug_name <- intersect(drug_name, colnames(df_metadata))
-      drug <- intersect(drug, colnames(df_metadata))
-      df_metadata[, (drug_name) := get(drug)]
-      return(df_metadata)
+      drug_name <- intersect(drug_name, colnames(dt_metadata))
+      drug <- intersect(drug, colnames(dt_metadata))
+      dt_metadata[, (drug_name) := get(drug)]
+      return(dt_metadata)
     }
     
     Drug_info <- rbind(Drug_info, missingTblDrugs)
@@ -213,15 +213,15 @@ add_Drug_annotation <- function(
     }
     for (drug_idf in names(drug_identifiers_list)) {
       colnames(Drug_info) <- drug_identifiers_list[[drug_idf]]
-      df_metadata$batch <- df_metadata[[drug_idf]]
-      df_metadata[[drug_idf]] <- remove_drug_batch(df_metadata[[drug_idf]])
-      req_col <- c(drug_idf, setdiff(colnames(df_metadata), colnames(Drug_info)))
-      df_metadata <- Drug_info[df_metadata[, req_col, with = FALSE],  on = drug_idf]
-      df_metadata[[drug_idf]] <- df_metadata$batch
-      df_metadata$batch <- NULL
+      dt_metadata$batch <- dt_metadata[[drug_idf]]
+      dt_metadata[[drug_idf]] <- remove_drug_batch(dt_metadata[[drug_idf]])
+      req_col <- c(drug_idf, setdiff(colnames(dt_metadata), colnames(Drug_info)))
+      dt_metadata <- Drug_info[dt_metadata[, req_col, with = FALSE],  on = drug_idf]
+      dt_metadata[[drug_idf]] <- dt_metadata$batch
+      dt_metadata$batch <- NULL
     }
-    stopifnot(nrows_df == nrow(df_metadata))
-    df_metadata
+    stopifnot(nrows_df == nrow(dt_metadata))
+    dt_metadata
   }
 }
 
