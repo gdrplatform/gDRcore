@@ -44,10 +44,50 @@ test_that("fit_SE works as expected", {
   fit_se <- fit_SE(se, metrics_assay = "testing")
   expect_class(fit_se, "SummarizedExperiment")
   expect_identical(SummarizedExperiment::assayNames(fit_se), c(ext_ass, "testing"))
+  expect_true(all(vapply(
+    SummarizedExperiment::assayNames(fit_se), 
+    function(x) is.character(rownames(SummarizedExperiment::assays(fit_se)[[x]][1])[[1]]),
+    logical(1)
+  )))
+})
+
+test_that("fit_FUN works as expected", {
+  elem <- S4Vectors::DataFrame(
+    normalization_type = factor(rep(c("RV", "GR"), each = 9)),
+    Concentration = rep(c(10 ^ (seq(-3, 1, 0.5))), 2),
+    x = c(0.9999964, 0.9999640, 0.9996401, 0.9964143, 0.9653846, 0.7428571, 0.2800000, 
+          0.1219512, 0.1022444, 0.9999944, 0.9999440, 0.9994402, 0.9944223, 0.9461538, 
+          0.6000000, -0.1200000, -0.3658537, -0.3965087
+    ),
+    x_std = rep(0.1, 18)
+  )
+  metric_cols <- c(gDRutils::get_header("response_metrics"), "maxlog10Concentration", "N_conc")
+  
+  res <- fit_FUN(elem, 
+                 nested_identifiers = "Concentration",
+                 n_point_cutoff = 4,
+                 range_conc = c(5e-3, 5),
+                 force_fit = FALSE,
+                 pcutoff = 0.05,
+                 cap = 0.1,
+                 curve_type = c("GR", "RV"))
+  expect_true(all(rownames(res) %in% c("GR_gDR", "RV_gDR")))
+  expect_true(all(metric_cols %in% colnames(res)))
+  
+  res_null <- fit_FUN(NULL, 
+                      nested_identifiers = "Concentration",
+                      n_point_cutoff = 4,
+                      range_conc = c(5e-3, 5),
+                      force_fit = FALSE,
+                      pcutoff = 0.05,
+                      cap = 0.1,
+                      curve_type = c("GR", "RV"))
+  expect_true(all(rownames(res_null) %in% c("GR", "RV")))
+  expect_true(all(metric_cols %in% colnames(res_null)))
 })
 
 test_that("fit_SE.combinations works as expected", {
- 
+  
   # combo data 
   fmae_cms <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
   se1 <- fmae_cms[["matrix"]]
@@ -69,7 +109,12 @@ test_that("fit_SE.combinations works as expected", {
       "Metrics"
     )
   expect_equal(SummarizedExperiment::assayNames(new_se1$result), exp_as)
-
+  expect_true(all(vapply(
+    exp_as, 
+    function(x) is.character(rownames(SummarizedExperiment::assays(new_se1$result)[[x]][1])[[1]]),
+    logical(1)
+  )))
+  
   aip_df <-
     BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(new_se1$result, "all_iso_points"))
   expect_true(all(dim(aip_df) > 0))
