@@ -5,7 +5,7 @@
 \title{add_CellLine_annotation}
 \usage{
 add_CellLine_annotation(
-  df_metadata,
+  dt_metadata,
   DB_cellid_header = "cell_line_identifier",
   DB_cell_annotate = c("cell_line_name", "primary_tissue", "doubling_time",
     "parental_identifier", "subtype"),
@@ -20,7 +20,7 @@ add_CellLine_annotation(
 )
 }
 \arguments{
-\item{df_metadata}{data.table with metadata}
+\item{dt_metadata}{data.table with metadata}
 
 \item{DB_cellid_header}{string with colnames with cell line identifier
 in the annotation file}
@@ -41,7 +41,7 @@ data.table with metadata with annotated cell lines
 add cellline annotation to a data.table with metadata
 }
 \details{
-The logic of adding celline annotation for df_metadata based on
+The logic of adding celline annotation for dt_metadata based on
 the annotation file stored in gDRtestData. Other fields are set as "unknown".
 This approach will be corrected once we will implement final solution
 for adding cell lines.

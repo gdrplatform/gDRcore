@@ -5,7 +5,7 @@
 \title{add_Drug_annotation}
 \usage{
 add_Drug_annotation(
-  df_metadata,
+  dt_metadata,
   fname = "drugs.csv",
   fill = "unknown",
   annotationPackage = if ("gDRinternalData" \%in\% .packages(all.available = TRUE)) {
@@ -17,7 +17,7 @@ add_Drug_annotation(
 )
 }
 \arguments{
-\item{df_metadata}{data.table with metadata}
+\item{dt_metadata}{data.table with metadata}
 
 \item{fname}{string with file name with annotation}
 
@@ -32,7 +32,7 @@ data.table with metadata with annotated drugs
 add drug annotation to a data.table with metadata
 }
 \details{
-The logic of adding drug annotation for df_metadata
+The logic of adding drug annotation for dt_metadata
 based on the annotation file stored in gDRtestData.
 }
 \examples{
