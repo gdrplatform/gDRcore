@@ -135,8 +135,15 @@ fit_SE.combinations <- function(se,
     # create matrix with single agent
     complete <- data.table::CJ(unique(c(0, conc1)), unique(c(0, conc2)))
     colnames(complete) <- c(id, id2)
-    complete <- mean_avg_combo[complete, on = c(id, id2)]
     
+    ### because the function below expect an exact match, some values are not passed
+    ### from mean_avg_combo to complete if there is a numerical error. This leads to unnecessary NAs in compete
+    ### This should never be the case, but I found it in one example with Conc = 0.7407403 -->
+    ### mean_avg_combo[,Concentration] - complete_subset[,Concentration] =
+    ###   0.00000000000000361 --> FALSE for the match --> NA
+    
+    complete <- mean_avg_combo[complete, on = c(id, id2)]
+  
   
     for (norm_type in normalization_types) {
 
@@ -229,9 +236,12 @@ fit_SE.combinations <- function(se,
       }
       keep <- intersect(
         colnames(complete_subset), 
-        c(norm_type, "row_values", "col_values", "codil_values")
+        c("x", "row_values", "col_values", "codil_values") # norm_type doesn't exit anymore ; it is 'x' now
       )
       mat <- as.matrix(complete_subset[, keep, with = FALSE])
+      # store the values from the Averaged assay for reference
+      complete_subset$av_value <- complete_subset$x
+      # and replace by the Smoothed values
       complete_subset$x <- rowMeans(mat, na.rm = TRUE)
       
       # just keep the relevant columns and change to the metric name
