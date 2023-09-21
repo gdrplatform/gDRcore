@@ -124,6 +124,7 @@ create_SE <- function(df_,
   ## Combine all controls with respective treatments.
   # Merge raw data back with groupings.
   dfs <- mapping_entries[df_, on = c(colnames(rowdata), colnames(coldata))]
+  data.table::setkey(dfs, groupings)
   # Remove all rowdata and coldata. 
   groupings <- dfs$groupings
 
@@ -136,24 +137,22 @@ create_SE <- function(df_,
   
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
 
-  out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
-    
+  
+  out <- vector("list", length = nrow(treated))
+  out <- lapply(seq_len(nrow(treated)), function(i) {
+    print(i)
     trt <- treated$rownames[i]
     
-    trt_df <- dfs[groupings == trt]
+    trt_df <- dfs[trt]
+    refs_df <- dfs[refs[[trt]]]
     
-    refs_df <- if (emptyRefs) {
-      dfs[0]
-    } else {
-      dfs[groupings %chin% refs[[trt]]]
-    }
     trt_df <- 
       validate_mapping(trt_df, refs_df, nested_confounders)
     selected_columns <- names(trt_df) %in% data_fields
     trt_df <- trt_df[, selected_columns, with = FALSE]
 
     # Override the row_id of the references.
-    trt_df$row_id <- unique(dfs[groupings == trt, "row_id"])
+    trt_df$row_id <- unique(trt_df[["row_id"]])
     
     untrt_ref <- ctl_maps[["untrt_Endpoint"]][[trt]]
     untrt_cols <- intersect(c("CorrectedReadout", "record_id", nested_confounders), names(dfs))
@@ -161,12 +160,12 @@ create_SE <- function(df_,
     untrt_df <- if (nrow(untrt_df) == 0) {
       data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
     } else {
-      data.table::as.data.table(untrt_df)
+      untrt_df
     }
     untrt_df$isDay0 <- FALSE
     
     day0_ref <- ctl_maps[["Day0"]][[trt]]
-    day0_df <- untreated[untreated$groupings %in% day0_ref]
+    day0_df <- untreated[untreated$groupings %chin% day0_ref]
     isDay0 <- day0_df[[gDRutils::get_env_identifiers("duration")]] == 0
     
     day0_df <- day0_df[isDay0, untrt_cols, with = FALSE]
@@ -178,8 +177,6 @@ create_SE <- function(df_,
       df
     } 
     
-    ## Merge all data.tables together.
-    # Try to merge by plate, but otherwise just use mean. 
     ctl_df <- data.table::rbindlist(list(UntrtReadout = untrt_df,
                                          Day0Readout = day0_df),
                                     fill = TRUE,
@@ -194,6 +191,10 @@ create_SE <- function(df_,
     }
     ctl_df$row_id <- row_id
     ctl_df$col_id <- col_id
+    
+    if (i %% 100000 == 0) {
+      gc()
+    }
     
     list(ctl_df = ctl_df,
          trt_df = trt_df)
