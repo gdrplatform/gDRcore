@@ -240,7 +240,7 @@ fit_SE.combinations <- function(se,
       )
       mat <- as.matrix(complete_subset[, keep, with = FALSE])
       # store the values from the Averaged assay for reference
-      complete_subset$av_value <- complete_subset$x
+      complete_subset$av_values <- complete_subset$x
       # and replace by the Smoothed values
       complete_subset$x <- rowMeans(mat, na.rm = TRUE)
       
