@@ -236,7 +236,7 @@ fit_SE.combinations <- function(se,
       }
       keep <- intersect(
         colnames(complete_subset), 
-        c("x", "row_values", "col_values", "codil_values") # norm_type doesn't exit anymore ; it is 'x' now
+        c("x", "row_values", "col_values", "codil_values")
       )
       mat <- as.matrix(complete_subset[, keep, with = FALSE])
       # store the values from the Averaged assay for reference
