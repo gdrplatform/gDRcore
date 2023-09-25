@@ -1,3 +1,6 @@
+# Change to v.0.99.40 - 2023-09-25
+- fix bug with subsetting wrong combo matrix value
+
 # Change to v.0.99.39 - 2023-09-19
 - extend the logic for matching missing controls
 
