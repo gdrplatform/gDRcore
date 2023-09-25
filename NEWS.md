@@ -1,6 +1,9 @@
-# Change to v.0.99.40 - 2023-09-19
+# Change to v.0.99.41 - 2023-09-25
 - add support for adding custom annotations inside input files
 - improve the performance
+
+# Change to v.0.99.40 - 2023-09-25
+- fix bug with subsetting wrong combo matrix value
 
 # Change to v.0.99.39 - 2023-09-19
 - extend the logic for matching missing controls
