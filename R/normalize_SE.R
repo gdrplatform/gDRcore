@@ -192,19 +192,32 @@ normalize_SE <- function(se,
     normalized$row_id <- i
     normalized$col_id <- j
     normalized$id <- as.character(seq_len(nrow(normalized)))
-    data.table::melt(normalized,
-                     measure.vars = norm_cols,
-                     variable.name = "normalization_type",
-                     value.name = "x")
+    normalized <- data.table::melt(normalized,
+                                   measure.vars = norm_cols,
+                                   variable.name = "normalization_type",
+                                   value.name = "x")
+    rownames <- paste(
+      normalized$id, 
+      normalized$normalization_type, 
+      sep = "_"
+    )
+    normalized$id <- NULL
+    S4Vectors::DataFrame(normalized, row.names = rownames)
   })
   
   if (!is.null(msgs)) {
     futile.logger::flog.warn(paste0(msgs, collapse = "\n"))
   }
   
-  out <- data.table::rbindlist(out)
+  out <- S4Vectors::DataFrame(do.call("rbind", out))
   
-  S4Vectors::metadata(se) <- c(S4Vectors::metadata(se), Normalized = list(out))
+  norm <- BumpyMatrix::splitAsBumpyMatrix(
+    out[!colnames(out) %in% c("row_id", "col_id")], 
+    row = out$row_id, 
+    col = out$col_id
+  )
+  
+  SummarizedExperiment::assays(se)[[normalized_assay]] <- norm
   se
 }
   
