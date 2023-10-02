@@ -119,8 +119,18 @@ normalize_SE <- function(se,
     }
   }
   
-  refs$record_id <- trt$record_id <- trt$swap_sa <- NULL
+  cols_to_remove <- c("record_id", "swap_sa")
+  refs_remove <- intersect(cols_to_remove, names(refs))
+  trt_remove <- intersect(cols_to_remove, names(trt))
   
+  if (length(refs_remove)) {
+    data.table::set(refs, , refs_remove, NULL)
+  }
+  
+  if (length(trt_remove)) {
+    data.table::set(trt, , trt_remove, NULL)
+  }
+
   # Extract common nested_confounders shared by trt_df and ref_df
   nested_confounders <- Reduce(intersect, list(nested_confounders,
                                                names(trt),
