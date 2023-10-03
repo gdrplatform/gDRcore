@@ -82,8 +82,8 @@ map_df <- function(trt_md,
     matchFactor <- duration_col 
   }
   
-  trt_rnames <- trt_md$rownames
-  ref_rnames <- ref_md$rownames
+  trt_rnames <- trt_md$rn
+  ref_rnames <- ref_md$rn
   
   # define matrix with matching metadata
   present_ref_cols <- intersect(ref_cols, names(ref_md))
@@ -125,7 +125,7 @@ map_df <- function(trt_md,
     if (is.na(exact_out[[treatment]]) || !is.null(override_untrt_controls)) {
       
       refs <- lapply(present_ref_cols, function(y) {
-        unname(unlist(ref_md[, y, with = FALSE]) == unlist(trt_md[which(trt_md$rownames == treatment),
+        unname(unlist(ref_md[, y, with = FALSE]) == unlist(trt_md[which(trt_md$rn == treatment),
                                                                   y, with = FALSE]))
       })
       
