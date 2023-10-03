@@ -92,7 +92,7 @@ map_df <- function(trt_md,
   
   # 1. there are no matches (present_ref_cols is empty)
   exact_out <- if (length(present_ref_cols) == 0) {
-    out <- setNames(replicate(length(trt_rnames), character(0), simplify = FALSE), trt_rnames)
+    out <- stats::setNames(replicate(length(trt_rnames), character(0), simplify = FALSE), trt_rnames)
     names(out) <- trt_rnames
     out
   } else {

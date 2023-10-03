@@ -36,6 +36,10 @@ if (getRversion() >= "2.15.1") {
   utils::globalVariables(
     c(
       "normalization_type",
+      ".",
+      "rn",
+      "column",
+      "CorrectedReadout",
       "cotrt_value",
       "x",
       "Duration",
