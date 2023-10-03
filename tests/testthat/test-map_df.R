@@ -1,6 +1,6 @@
 test_that("map_df works as expected", {
   md_df <- unique(md_df)
-  md_df$rownames <- as.character(seq_len(nrow(md_df)))
+  md_df$rn <- as.character(seq_len(nrow(md_df)))
   ref <- md_df$Gnumber %in% c("vehicle", "untreated")
   
   ref_df <- md_df[ref, ]
@@ -13,7 +13,7 @@ test_that("map_df works as expected", {
                     ref_cols = Keys[[ref_type]],
                     ref_type = ref_type)
 
-  expect_equal(names(mapping), trt_df$rownames)
+  expect_equal(names(mapping), trt_df$rn)
   expect_equal(length(mapping), nrow(trt_df))
 
   out <- lapply(seq(33, 64, 1), function(x) {
