@@ -45,7 +45,8 @@ create_SE <- function(df_,
   
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   
-  nested_keys <- c(nested_identifiers, nested_confounders, "record_id")
+  nested_keys <- intersect(c(nested_identifiers, nested_confounders, "record_id"),
+                           names(df_))
   identifiers <- gDRutils::get_env_identifiers()
   Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
 
@@ -93,15 +94,12 @@ create_SE <- function(df_,
   exp_md <- md$experiment_md
 
   mapping_entries <- .create_mapping_factors(rowdata, coldata)
-  mapping_entries$groupings <- rownames(mapping_entries)
 
   refs <- .map_references(mapping_entries)
   emptyRefs <- all(is.null(unlist(refs)))
   trt_conditions <- names(refs)
   sa_conditions <- unique(unname(unlist(refs)))
   
-  mapping_entries$rownames <- as.character(seq_len(nrow(mapping_entries)))
-
   treated <- mapping_entries[as.numeric(trt_conditions), ]
   untreated <- mapping_entries[!rownames(mapping_entries) %in% 
                                  c(trt_conditions, sa_conditions), ]
@@ -123,26 +121,25 @@ create_SE <- function(df_,
   
   ## Combine all controls with respective treatments.
   # Merge raw data back with groupings.
-  dfs <- mapping_entries[df_, on = c(colnames(rowdata), colnames(coldata))]
-  data.table::setkey(dfs, groupings)
-  # Remove all rowdata and coldata. 
-  groupings <- dfs$groupings
+  dfs <- mapping_entries[df_, on = c(colnames(rowdata), colnames(coldata)), allow.cartesian = TRUE]
+  data.table::setkey(dfs, rn)
 
   ## The mapping_entries contain all exhaustive combinations of treatments 
   ## and cells. Not all conditions will actually exist in the data, so filter 
   ## out those that do not exist. 
-  treated_rows <- which(treated$rownames %in% unique(groupings))
+  treated_rows <- which(treated$rn %in% dfs$rn)
   treated <- treated[treated_rows, ]
-  untreated <- dfs[dfs$groupings %in% unique(unlist(ctl_maps)), ]
+  untreated <- dfs[dfs$rn %in% unique(unlist(ctl_maps)), ]
   
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
 
   
   out <- vector("list", length = nrow(treated))
   out <- lapply(seq_len(nrow(treated)), function(i) {
-    trt <- treated$rownames[i]
+    trt <- treated$rn[i]
     
     trt_df <- dfs[trt]
+    row_id <- unique(trt_df[["row_id"]])
     refs_df <- dfs[refs[[trt]]]
     
     trt_df <- 
@@ -151,7 +148,7 @@ create_SE <- function(df_,
     trt_df <- trt_df[, selected_columns, with = FALSE]
 
     # Override the row_id of the references.
-    trt_df$row_id <- unique(trt_df[["row_id"]])
+    trt_df$row_id <- row_id
     
     untrt_ref <- ctl_maps[["untrt_Endpoint"]][[trt]]
     untrt_cols <- intersect(c("CorrectedReadout", "record_id", nested_confounders), names(dfs))
@@ -190,14 +187,11 @@ create_SE <- function(df_,
     }
     ctl_df$row_id <- row_id
     ctl_df$col_id <- col_id
-    
-    if (i %% 100000 == 0) {
-      gc()
-    }
-    
+
     list(ctl_df = ctl_df,
          trt_df = trt_df)
   })
+  
   trt_out <- rbindParallelList(out, "trt_df")
   ctl_out <- rbindParallelList(out, "ctl_df")
   
