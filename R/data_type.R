@@ -60,66 +60,29 @@ identify_data_type <- function(df,
   
   untreated_tag <- c(gDRutils::get_env_identifiers("untreated_tag"), NA)
   cell <- gDRutils::get_env_identifiers("cellline_name")
-  cols_pairs <- intersect(names(df),  c(drug_ids, cell))
+  cols_pairs <- intersect(names(df),  c(drug_ids, cell, conc_ids))
   drug_pairs <- unique(df[, cols_pairs, with = FALSE])
 
   df[, record_id := .I]
   df[, type := NA_character_]
-  # loop through the pairs to assess the number of individual 
-  # concentration pairs
 
-  for (idp in seq_len(nrow(drug_pairs))) {
-    df_matching <- df[drug_pairs[idp, ], on = cols_pairs]
-    matching_idx <- df_matching$record_id
-    treated <- vapply(
-      gDRutils::loop(df_matching[, drugs_ids, with = FALSE],
-      function(x) !x %in% untreated_tag), all, logical(1)
-    )
-    
-    detect_sa <- sum(treated)
-    type <- if (ncol(df[matching_idx, drugs_cotrt_ids, with = FALSE]) == 0) {
-      if (all(df[matching_idx, drug_ids[["drug_name"]]] %in% untreated_tag)) {
-      "control"
-    } else {
-      "single-agent"
-    }
-    } else if (detect_sa == 1) {
-      "single-agent"
-    } else if (detect_sa == 0) {
-      "control" 
-    } else {
-      NA
-    }
-    df[matching_idx, "type"]  <- type
-    
-    if (length(conc_ids) > 1) {
-      df[matching_idx, "type"] <- ifelse(
-        rowSums(df[matching_idx, conc_ids, with = FALSE] == 0) == 1,
-        "single-agent", 
-        unlist(df[matching_idx, "type"])
-      )
-    }
-    
-    if (all(!is.na(df[matching_idx, "type"]))) {
-      next
-    }
-    flat_data <- df_matching[df_matching[[conc_ids[["concentration2"]]]] > 0, ]
-    conc_1 <- table(flat_data[[conc_ids[["concentration"]]]])
-    conc_2 <- table(flat_data[[conc_ids[["concentration2"]]]])
-    n_conc_pairs <- nrow(unique(flat_data[, conc_ids, with = FALSE]))
+  controls <- rowSums(df[, conc_ids, with = FALSE] == 0) == length(conc_ids)
+  single_agent <- rowSums(df[, conc_ids, with = FALSE] != 0) == 1
+  df$type <- ifelse(controls, "control",
+                    ifelse(single_agent, "single-agent", NA))
+  
+
+  if (length(conc_ids) > 1) {
+    missing_type_rows <- is.na(df$type)
+    flat_data <- df[missing_type_rows, cols_pairs, with = FALSE]
     conc_ratio <- table(
       round(log10(flat_data[[conc_ids[["concentration"]]]] /
-            flat_data[[conc_ids[["concentration2"]]]]), 2)
+                    flat_data[[conc_ids[["concentration2"]]]]), 2)
     )
     conc_ratio <- conc_ratio[!names(conc_ratio) %in% c("Inf", "-Inf")]
     
-    type <- 
-      if (length(conc_ratio) <= codilution_conc) {
-        "co-dilution"
-      } else {
-        "matrix"
-      }
-    df[matching_idx[is.na(df[matching_idx]$type)], "type"] <- type
+    type <- ifelse(length(conc_ratio) <= codilution_conc, "co-dilution", "matrix")
+    df$type[missing_type_rows] <- type
   }
   df
 }
@@ -239,7 +202,7 @@ split_raw_data <- function(df,
     })
   }
   
-  if ("single-agent" %in% names(df_list)) {
+  if (any("single-agent" == names(df_list))) {
     sa_idx <- gDRutils::loop(
       grep(drug_ids[["concentration"]], drug_ids, value = TRUE), 
       function(x) which(!df_list[["single-agent"]][, x, with = FALSE] == 0)

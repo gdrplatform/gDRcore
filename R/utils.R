@@ -2,31 +2,23 @@
 #' @keywords internal
 #'
 .create_mapping_factors <- function(rowdata, coldata) {
-  mapping_grid <- expand.grid(
-    row_id = rownames(rowdata), 
-    col_id = rownames(coldata), 
-    stringsAsFactors = FALSE
-  )
-  rowdataCols <- names(rowdata)
-  coldataCols <- names(coldata)
   
-  mapping_entries <- base::merge(
-    mapping_grid, 
-    rowdata, 
-    by.x = "row_id", 
-    by.y = 0, 
-    all.x = TRUE
+  col_id <- rownames(coldata)
+  row_id <- rownames(rowdata)
+  
+  mapping_grid <- data.table::CJ(
+    col_id = col_id,
+    row_id = row_id
   )
-  mapping_entries <- base::merge(
-    mapping_entries, 
-    coldata, 
-    by.x = "col_id", 
-    by.y = 0, 
-    all.x = TRUE
-  )
-  names(mapping_entries)[3:length(mapping_entries)] <- c(rowdataCols, coldataCols)
-  data.table::setDT(mapping_entries)
-  mapping_entries
+  
+  rowdata_dt <- data.table::as.data.table(rowdata)
+  coldata_dt <- data.table::as.data.table(coldata)
+  
+  rowdata_dt[, row_id := row_id]
+  coldata_dt[, col_id := col_id]
+  
+  dt <- coldata_dt[rowdata_dt[mapping_grid, on = "row_id"], on = "col_id"]
+  dt[, rn := as.character(.I)]
 }
 
 

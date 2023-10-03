@@ -39,3 +39,23 @@ test_that("remove_drug_batch works", {
   gnumber_without_batch <- remove_drug_batch(dt$Gnumber)
   expect_equal(gnumber_without_batch, "DRUG")
 })
+
+test_that("add_CellLine_annotation works with custom annotations", {
+  dt_unknown <- data.table::data.table(ReadoutValue = runif(5),
+                                       clid = paste0("CL", 1:5),
+                                       CellLineName = paste0("RandomName", 1:5),
+                                       Tissue =  paste0("Tissue", 1:5),
+                                       ReferenceDivisionTime = 1:5,
+                                       parental_identifier = 1:5,
+                                       subtype = "subtype")
+  dt_unknown_annotated <- add_CellLine_annotation(dt_unknown)
+  expect_identical(dt_unknown, dt_unknown_annotated)
+})
+
+test_that("add_Drug_annotation works with custom annotations", {
+  dt_unknown <- data.table::data.table(Gnumber = "drug_id",
+                                       DrugName = "DrugName",
+                                       drug_moa = "drug_moa")
+  dt_unknown_annotated <- add_Drug_annotation(dt_unknown)
+  expect_identical(dt_unknown, dt_unknown_annotated)
+})

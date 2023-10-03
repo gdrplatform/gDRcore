@@ -67,58 +67,70 @@ normalize_SE <- function(se,
   
   cdata <- SummarizedExperiment::colData(se)
   rdata <- SummarizedExperiment::rowData(se)
-
   
-  cl_names <- cdata[, 
-    gDRutils::get_SE_identifiers(
-      se, 
-      "cellline_name", 
-      simplify = TRUE
-    ), 
-    drop = FALSE
-  ]
+  rn_cdata <- rownames(cdata)
+  rn_rdata <- rownames(rdata)
+  
+  cdata <- data.table::as.data.table(cdata)
+  rdata <- data.table::as.data.table(rdata)
+  
+  cdata[, rn := rn_cdata]
+  rdata[, rn := rn_rdata]
+  
+  data.table::setkey(cdata, rn)
+  data.table::setkey(rdata, rn)
+  
+  cl_names <- gDRutils::get_SE_identifiers(
+    se, 
+    "cellline_name", 
+    simplify = TRUE
+  )
   
   cell_ref_div_col <- gDRutils::get_SE_identifiers(se, 
                                                    "cellline_ref_div_time", 
                                                    simplify = TRUE
                                                    )
-  if (!cell_ref_div_col %in% names(cdata)) {
+  if (!any(cell_ref_div_col == names(cdata))) {
     cdata[[cell_ref_div_col]] <- NA
   }
+
+  duration_name <- gDRutils::get_SE_identifiers(
+    se, 
+    "duration", 
+    simplify = TRUE
+  )
   
-  cl_ref_div_times <- cdata[,
-                            cell_ref_div_col,
-                            drop = FALSE
-                            ]
-  durations <- rdata[, 
-    gDRutils::get_SE_identifiers(
-      se, 
-      "duration", 
-      simplify = TRUE
-    ), 
-    drop = FALSE
-  ]
-  
-  refs <- BumpyMatrix::unsplitAsDataFrame(
+  refs <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
     SummarizedExperiment::assays(se)[[control_assay]]
-  )
-  trt <- BumpyMatrix::unsplitAsDataFrame(
-    SummarizedExperiment::assays(se)[[raw_treated_assay]]
-  )
+  ))
+  data.table::setkey(refs, row, column)
   
-  if ("swap_sa" %in% names(trt)) {
+  trt <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assays(se)[[raw_treated_assay]]
+  ))
+  data.table::setkey(trt, row, column)
+  
+  if (any("swap_sa" == names(trt))) {
     conc <- gDRutils::get_env_identifiers("concentration")
     conc2 <- gDRutils::get_env_identifiers("concentration2")
     swap_idx <- !is.na(trt$swap_sa)
     if (any(swap_idx)) {
-    trt[which(!is.na(trt$swap_sa)), c(conc, conc2)] <-
-      trt[which(!is.na(trt$swap_sa)), c(conc2, conc)]
+    trt[swap_idx, c(conc, conc2) := .(get(conc2), get(conc))]
     }
   }
   
-  refs$record_id <- trt$record_id <- trt$swap_sa <- NULL
+  cols_to_remove <- c("record_id", "swap_sa")
+  refs_remove <- intersect(cols_to_remove, names(refs))
+  trt_remove <- intersect(cols_to_remove, names(trt))
   
+  if (length(refs_remove)) {
+    data.table::set(refs, , refs_remove, NULL)
+  }
   
+  if (length(trt_remove)) {
+    data.table::set(trt, , trt_remove, NULL)
+  }
+
   # Extract common nested_confounders shared by trt_df and ref_df
   nested_confounders <- Reduce(intersect, list(nested_confounders,
                                                names(trt),
@@ -140,13 +152,16 @@ normalize_SE <- function(se,
     x <- iterator[row, ]
     i <- x[["row"]]
     j <- x[["column"]]
-    cl_name <- cl_names[j, ]
-    ref_div_time <- cl_ref_div_times[j, ]
+    cdata_subset <- cdata[j]
+    rdata_subset <- rdata[i]
+    
+    cl_name <- cdata_subset[[cl_names]]
+    ref_div_time <- cdata_subset[[cell_ref_div_col]]
 
-    duration <- durations[i, ]
+    duration <- rdata_subset[[duration_name]]
 
-    ref_df <- refs[refs$row == i & refs$column == j, ]
-    trt_df <- trt[trt$row == i & trt$column == j, ]
+    ref_df <- refs[.(i, j)]
+    trt_df <- trt[.(i, j)]
 
     all_readouts_df <- merge_trt_with_ref(ref_df,
                                           trt_df,
@@ -187,7 +202,7 @@ normalize_SE <- function(se,
     normalized$row_id <- i
     normalized$col_id <- j
     normalized$id <- as.character(seq_len(nrow(normalized)))
-    normalized <- data.table::melt(data.table::as.data.table(normalized),
+    normalized <- data.table::melt(normalized,
                                    measure.vars = norm_cols,
                                    variable.name = "normalization_type",
                                    value.name = "x")
@@ -211,7 +226,7 @@ normalize_SE <- function(se,
     row = out$row_id, 
     col = out$col_id
   )
-
+  
   SummarizedExperiment::assays(se)[[normalized_assay]] <- norm
   se
 }
@@ -219,11 +234,11 @@ normalize_SE <- function(se,
 #' @keywords internal
 aggregate_ref <- function(ref_df, control_mean_fxn) {
   
-  checkmate::assert_class(ref_df, "DFrame")
+  checkmate::assert_data_table(ref_df)
   data_columns <- setdiff(colnames(ref_df), c("row", "column", "masked", "isDay0"))
   corr_readout <- "CorrectedReadout"
-  ref_cols <- data.table::as.data.table(ref_df[, data_columns, drop = FALSE])
-  group_cols <- c(ref_cols[, setdiff(names(ref_cols), corr_readout)])
+  ref_cols <- ref_df[, data_columns, with = FALSE]
+  group_cols <- setdiff(names(ref_cols), corr_readout)
   additional_cov <- setdiff(group_cols, "control_type")
   aggregate_formula <- stats::reformulate("control_type",
                                           ifelse(length(additional_cov) == 0, ".", additional_cov))
@@ -256,8 +271,7 @@ merge_trt_with_ref <- function(ref_df,
   # (uses mean across all available values)
   control_types <- unique(ref_df$control_type)
   ref_df <- aggregate_ref(ref_df, control_mean_fxn = control_mean_fxn)
-  trt_df <- data.table::as.data.table(trt_df)
-  
+
   # Merge to ensure that the proper discard_key values are mapped.
   all_readouts_df <- if (length(nested_confounders)) {
     ref_df[trt_df, on = nested_confounders]
@@ -267,6 +281,5 @@ merge_trt_with_ref <- function(ref_df,
   
   # Backfill missing values when the `nested_keys` are not matching with an average. 
   # This is necessary if a control is only present on another plate
-  all_readouts_df <- fill_NA_by_mean(all_readouts_df, ref_df, control_types)
-  all_readouts_df
+  fill_NA_by_mean(all_readouts_df, ref_df, control_types)
 }

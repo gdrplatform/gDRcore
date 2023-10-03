@@ -12,8 +12,8 @@
 convert_mae_to_raw_data <- function(mae) {
   
   checkmate::assert_class(mae, "MultiAssayExperiment")
-  lapply(gDRutils::MAEpply(mae, SummarizedExperiment::assayNames),
-         function(x) all(c("RawTreated", "Controls") %in% x))
+  checkmate::assert_true(all(vapply(gDRutils::MAEpply(mae, SummarizedExperiment::assayNames),
+         function(x) all(c("RawTreated", "Controls") %in% x), FUN.VALUE = logical(1))))
   
   # Get the data from se
   
