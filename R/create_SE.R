@@ -101,7 +101,7 @@ create_SE <- function(df_,
   sa_conditions <- unique(unname(unlist(refs)))
   
   treated <- mapping_entries[as.numeric(trt_conditions), ]
-  untreated <- mapping_entries[!rownames(mapping_entries) %in% 
+  untreated <- mapping_entries[!mapping_entries$rn %in% 
                                  c(trt_conditions, sa_conditions), ]
 
   ## Map controls.
