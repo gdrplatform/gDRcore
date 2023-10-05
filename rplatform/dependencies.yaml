@@ -7,7 +7,7 @@ pkgs:
     host: 'api.github.com'
     source: GITHUB
   gDRtestData:
-    ver: '>=0.99.13'
+    ver: '>=0.99.20'
     url: gdrplatform/gDRtestData
     ref: master
     subdir: ~
