@@ -184,7 +184,7 @@ split_raw_data <- function(df,
           control[[cl]] %in% unique_cotrt[[cl]] &
             control[[drug_ids[["drug_name"]]]] %in% untreated_tag, 
         ][, colnames, with = FALSE])
-      cotrt_matching <- rbind(unique_cotrt, unique_cotrt_ctrl)
+      cotrt_matching <- unique(rbind(unique_cotrt, unique_cotrt_ctrl))
     df_merged <- rbind(
         df_list[[x]], 
         cotrt_matching[control, on = intersect(names(cotrt_matching), names(control))])

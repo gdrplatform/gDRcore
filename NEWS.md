@@ -1,3 +1,7 @@
+# Change to v.0.99.42 - 2023-10-05
+- bump version of gDRtestData
+- fix bug with merging controls in triple combo with additional perturbations
+
 # Change to v.0.99.41 - 2023-09-25
 - add support for adding custom annotations inside input files
 - improve the performance
