@@ -1,3 +1,6 @@
+## 0.99.44 (2023-10-20)
+- add support for unifying duplicates in combo matrix data
+
 ## 0.99.43 (2023-10-17)
 - adjust NEWS to Bioc format
 
