@@ -16,24 +16,25 @@ calculate_Bliss(sa1, series_id1, sa2, series_id2, metric)
 \arguments{
 \item{sa1}{data.table containing single agent data where entries in
 \code{series_id2} are all \code{0}. Columns of the data.table include
-identifiers and the \code{metric} of interest.}
+identifiers and the \code{metric} of interest. Metric is stored in the 'x' column.}
 
 \item{series_id1}{String representing the column within \code{sa1} that
 represents id1.}
 
 \item{sa2}{data.table containing single agent data where entries in
 \code{series_id1} are all \code{0}. Columns of the data.table include
-identifiers and the \code{metric} of interest.}
+identifiers and the \code{metric} of interest.n Metric is stored in the 'x' column.}
 
 \item{series_id2}{String representing the column within \code{sa2} that
 represents id2.}
 
-\item{metric}{String of the column specifying the metric of interest.}
+\item{metric}{String specifying the metric of interest. Usually either 'GRvalue'
+or 'RelativeViability'.}
 
 \item{FXN}{Function to apply to the single-agent fits to calculate a metric.}
 }
 \value{
-DataFrame containing a single row for every unique combination of
+data.table containing a single row for every unique combination of
 the two series identifiers and the corresponding calculated metric for
 each row.
 }
