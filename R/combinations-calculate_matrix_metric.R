@@ -91,10 +91,8 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
                                      series_id2, 
                                      metric, FXN) {
   checkmate::assert_data_table(sa1)
-  checkmate::assert_names(names(sa1), must.include = "x")
   checkmate::assert_data_table(sa2)
-  checkmate::assert_names(names(sa2), must.include = "x")
-  
+
   checkmate::assert_true(all(sa1[[series_id2]] == 0L))
   checkmate::assert_true(all(sa2[[series_id1]] == 0L))
 
