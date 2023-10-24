@@ -1,3 +1,6 @@
+## 0.99.44 (2023-10-24)
+- add "Treatment" as template identifier
+
 ## 0.99.43 (2023-10-17)
 - adjust NEWS to Bioc format
 
