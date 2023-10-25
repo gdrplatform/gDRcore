@@ -29,7 +29,7 @@ merge_data <- function(manifest, treatments, data) {
   checkmate::assert_data_table(data)
   
   futile.logger::flog.info("Merging data")
-  
+
   # first unify capitalization in the headers of treatments with manifest
   duplicated_col <-
     setdiff(colnames(treatments)[toupper(colnames(treatments)) %in%
@@ -46,7 +46,13 @@ merge_data <- function(manifest, treatments, data) {
 
   # merge manifest and treatment files first
   identifiers <- gDRutils::validate_identifiers(manifest, req_ids = "barcode")
-  df_metadata <- manifest[treatments, on = identifiers[["template"]], allow.cartesian = TRUE]
+  m_ids <- identifiers[["template"]]
+  t_ids <- gDRutils::validate_identifiers(treatments, req_ids = "drug")[["template"]]
+  
+  manifest_cp <- data.table::setkeyv(data.table::copy(manifest), m_ids)
+  treatments_cp <- data.table::setkeyv(data.table::copy(treatments), t_ids)
+  
+  df_metadata <- manifest_cp[treatments_cp, allow.cartesian = TRUE]
   
   futile.logger::flog.info(
     "Merging the metadata (manifest and treatment files)"
@@ -55,7 +61,7 @@ merge_data <- function(manifest, treatments, data) {
   # sort out duplicate metadata columns
   duplicated_col <- setdiff(
     intersect(colnames(manifest), colnames(treatments)), 
-    identifiers[["template"]]
+    c(m_ids, t_ids)
   )
   for (m_col in duplicated_col) {
     alt_col <- setdiff(grep(m_col, names(df_metadata), value = TRUE), m_col)
