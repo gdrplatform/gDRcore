@@ -26,4 +26,18 @@ test_that("identify_data_type and split_raw_data works as expected", {
   df_list <- split_raw_data(df)
   expect_true(inherits(df_list, "list"))
   expect_true(all(names(df_list) %in% c("matrix", "single-agent")))
+  
+  
+  df2 <- data.table::data.table(Gnumber = c(rep("DrugA", 9), "DrugB"),
+                                DrugName = c(rep("DrugA", 9), "DrugB"),
+                                drug_moa = "unknown",
+                                drug_moa_2 = "unknown",
+                                Gnumber_2 = c(rep("DrugB", 9), "DrugA"),
+                                DrugName_2 = c(rep("DrugB", 9), "DrugA"),
+                                Concentration = runif(10) + 0.01,
+                                Concentration_2 = runif(10) + 0.01,
+                                clid = "CL1")
+  df2 <- identify_data_type(df2)
+  split_df2 <- split_raw_data(df2)
+  expect_true(all(split_df2[["Gnumber"]] == "DrugA"))
 })

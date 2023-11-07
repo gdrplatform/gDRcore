@@ -1,3 +1,6 @@
+## 0.99.45 (2023-11-07)
+- add support for unifying duplicates in combo matrix data
+
 ## 0.99.44 (2023-10-24)
 - add "Treatment" as template identifier
 
