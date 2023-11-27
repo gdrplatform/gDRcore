@@ -178,14 +178,19 @@ split_raw_data <- function(df,
   if (length(cotrt_types) > 0) {
     df_list[cotrt_types] <- gDRutils::loop(cotrt_types, function(x) {
       colnames <- c(cl, drug_ids[["drug_name"]])
+      
+      df_list[[x]] <- unify_combination_data(df_list[[x]], cl, drug_ids)
       unique_cotrt <- unique(df_list[[x]][, colnames, with = FALSE])
       unique_cotrt_ctrl <- unique(
         control[
           control[[cl]] %in% unique_cotrt[[cl]] &
             control[[drug_ids[["drug_name"]]]] %in% untreated_tag, 
         ][, colnames, with = FALSE])
+      
+      
+      
       cotrt_matching <- unique(rbind(unique_cotrt, unique_cotrt_ctrl))
-    df_merged <- rbind(
+      df_merged <- rbind(
         df_list[[x]], 
         cotrt_matching[control, on = intersect(names(cotrt_matching), names(control))])
       if (x == "matrix") {
@@ -233,4 +238,36 @@ split_raw_data <- function(df,
     selected_columns <- which(names(x) != type_col)
     x[, selected_columns, with = FALSE]
   }, df_list)
+}
+
+#' @keywords internal
+#'
+unify_combination_data <- function(df, cl, drug_ids) {
+  cotrt_data <- split(df, df[[cl]])
+  data.table::rbindlist(lapply(cotrt_data, function(x) {
+    duplicated_full_idx <- which(x[[drug_ids[["drug_name"]]]] %chin% x[[drug_ids[["drug_name2"]]]] &
+                                   x[[drug_ids[["drug_name2"]]]] %chin% x[[drug_ids[["drug_name"]]]])
+    if (length(duplicated_full_idx)) {
+      duplicated_data <- x[duplicated_full_idx, ]
+      drug_data <- duplicated_data[, drug_ids[c("drug_name", "drug_name2")], with = FALSE]
+      unique_rows <- drug_data[!duplicated(t(apply(drug_data, 1, sort))), ]
+      idx_duplicated <- duplicated_full_idx[which(is.na(matches(do.call(paste, unique_rows),
+                                                                do.call(paste, drug_data))$x))]
+      
+      primary_drug_idfs <- drug_ids[c("drug", "drug_name", "drug_moa", "concentration")]
+      secondary_drug_idfs <- drug_ids[c("drug2", "drug_name2", "drug_moa2", "concentration2")]
+      
+      x[idx_duplicated,
+        c(primary_drug_idfs, secondary_drug_idfs) := .(get(drug_ids[["drug2"]]),
+                                                       get(drug_ids[["drug_name2"]]),
+                                                       get(drug_ids[["drug_moa2"]]),
+                                                       get(drug_ids[["concentration2"]]),
+                                                       get(drug_ids[["drug"]]),
+                                                       get(drug_ids[["drug_name"]]),
+                                                       get(drug_ids[["drug_moa"]]),
+                                                       get(drug_ids[["concentration"]])
+        )] 
+    }
+    x
+  }))
 }
