@@ -274,20 +274,20 @@ map_df <- function(trt_md,
     out <- split(matchTrtRef[["y"]], matchTrtRef[["x"]])
     
     # match the additional variables in the treatment
-    if (length(ref_cotrt)) {
-      for (i in names(out)) {
-        # matching the ref_elem to the trt_elem for the cotrt_var
-        trt_elem[rn == i, cotrt_var, with = FALSE]
-        ref_elem[rn %in% out[[i]], cotrt_var, with = FALSE]
-        
-        out[[i]] <- out[[i]][
-          apply(
-            sapply(out[[i]], function(x) ref_elem[rn == x, cotrt_var, with = FALSE] ==
-              trt_elem[rn == i, cotrt_var, with = FALSE]),
-            2, all)
-          ]
-      }
-    }
+    # if (length(ref_cotrt)) {
+    #   for (i in names(out)) {
+    #     # matching the ref_elem to the trt_elem for the cotrt_var
+    #     trt_elem[rn == i, cotrt_var, with = FALSE]
+    #     ref_elem[rn %in% out[[i]], cotrt_var, with = FALSE]
+    #     
+    #     out[[i]] <- out[[i]][
+    #       apply(
+    #         sapply(out[[i]], function(x) ref_elem[rn == x, cotrt_var, with = FALSE] ==
+    #           trt_elem[rn == i, cotrt_var, with = FALSE]),
+    #         2, all)
+    #       ]
+    #   }
+    # }
     out
     
   } else {
