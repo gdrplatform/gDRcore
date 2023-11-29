@@ -70,6 +70,7 @@ prepare_input.data.table <-
       nested_confounders = nested_confounders
     )
     
+    x = collapse_drugs(x)
     inl$df_ <- identify_data_type(x)
     inl$df_list <- split_raw_data(inl$df_)
     inl$nested_identifiers_l <- .set_nested_identifiers(nested_identifiers_l)
@@ -215,4 +216,47 @@ prepare_input.MultiAssayExperiment <-
   names(exps) <- df_names
   
   exps
+}
+
+
+#' avoid `vehicle` in drug columns with low ordinality. 
+#' For example, if `drug = vehicle` and `drug_2 = drugA`, change to `drug = drugA` and `drug_2 = vehicle`.
+#' propagate to the other columns accordingly (concentration, drug_moa, drug_name)
+#'
+#' @export
+#' 
+#'
+collapse_drugs <- function(df) {
+  
+  drug_ids <- unlist(gDRutils::get_env_identifiers(
+    c("drug_name", "drug_name2", "drug_name3", "drug", "drug2", "drug3",
+      "drug_moa", "drug_moa2", "drug_moa3", "concentration", "concentration2",
+      "concentration3"), 
+    simplify = FALSE)
+  )
+  # add '1' to the names for more efficient loop lower
+  names(drug_ids)[!grepl('[0-9]', names(drug_ids))] <- paste0(names(drug_ids)[!grepl('[0-9]', names(drug_ids))], '1')
+  drug_ids <- drug_ids[which(drug_ids %in% names(df))]
+  max_drug <- max(as.numeric(sapply(names(drug_ids), function(x) substr(x, nchar(x), nchar(x)))), na.rm = T)
+  
+  if (max_drug > 1) { # collapse treatment iteratively
+    for (i in 2:max_drug) {
+      for (j in 1:(max_drug-1)) {
+        idx <- df[[drug_ids[paste0('drug_name', j)]]] %in% gDRutils::get_env_identifiers("untreated_tag") & 
+          !(df[[drug_ids[paste0('drug_name', j+1)]]] %in% gDRutils::get_env_identifiers("untreated_tag"))
+
+        col_idx1 <- drug_ids[grepl(j, names(drug_ids))]
+        col_idx2 <- drug_ids[gsub(as.character(j), as.character(j+1), names(col_idx1))]
+        
+        # TODO : use data.table format
+        # df[idx, c(col_idx1, col_idx2) := as.list(df[, c(col_idx2, col_idx1)])]
+
+        df <- as.data.frame(df)
+        df[idx, c(col_idx1, col_idx2)] = df[idx, c(col_idx2, col_idx1)]
+        df <- data.table(df)
+
+      }
+    }
+  }
+  df  
 }
