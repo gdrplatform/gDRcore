@@ -1,3 +1,14 @@
+## 1.1.1 (2023-11-22)
+- sync master with devel branch
+- add support for unifying duplicates in combo matrix data
+- add "Treatment" as template identifier
+
+## 1.1.0 (2023-10-24)
+- release Bioc 3.18
+
+## 1.0.0 (2023-10-24)
+- prerelease Bioc 3.18
+
 ## 0.99.43 (2023-10-17)
 - adjust NEWS to Bioc format
 

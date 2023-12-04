@@ -151,6 +151,8 @@ identify_data_type <- function(df,
 split_raw_data <- function(df,
                            type_col = "type") {
   
+  df = collapse_drugs(df)
+
   drug_ids <- unlist(gDRutils::get_env_identifiers(
     c("drug_name", "drug_name2", "drug_name3", "drug", "drug2", "drug3",
       "drug_moa", "drug_moa2", "drug_moa3", "concentration", "concentration2",
@@ -161,8 +163,8 @@ split_raw_data <- function(df,
   codrug_ids <- drug_ids[grep("[0-9]", names(drug_ids))]
   conc_idx <- drug_ids[grep("concentration", names(drug_ids))]
   codrug_drug_id <- setdiff(codrug_ids, conc_idx)
-  
-  cl <- gDRutils::get_env_identifiers("cellline")
+    cl <- gDRutils::get_env_identifiers("cellline")
+
   df_list <- split(df, df[[type_col]])
   types <- setdiff(names(df_list), "control")
   control <- df_list[["control"]]
@@ -178,14 +180,19 @@ split_raw_data <- function(df,
   if (length(cotrt_types) > 0) {
     df_list[cotrt_types] <- gDRutils::loop(cotrt_types, function(x) {
       colnames <- c(cl, drug_ids[["drug_name"]])
+      
+      df_list[[x]] <- unify_combination_data(df_list[[x]], cl, drug_ids)
       unique_cotrt <- unique(df_list[[x]][, colnames, with = FALSE])
       unique_cotrt_ctrl <- unique(
         control[
           control[[cl]] %in% unique_cotrt[[cl]] &
             control[[drug_ids[["drug_name"]]]] %in% untreated_tag, 
         ][, colnames, with = FALSE])
+      
+      
+      
       cotrt_matching <- unique(rbind(unique_cotrt, unique_cotrt_ctrl))
-    df_merged <- rbind(
+      df_merged <- rbind(
         df_list[[x]], 
         cotrt_matching[control, on = intersect(names(cotrt_matching), names(control))])
       if (x == "matrix") {
@@ -233,4 +240,82 @@ split_raw_data <- function(df,
     selected_columns <- which(names(x) != type_col)
     x[, selected_columns, with = FALSE]
   }, df_list)
+}
+
+#' @keywords internal
+#'
+#' ensure that the pair of drugs are matching such that there are not data with
+#' `drug = drugA` and `drug_2 = drugB`, and `drug = drugB` and `drug_2 = drugA` at the same time
+#'
+unify_combination_data <- function(df, cl, drug_ids) {
+  cotrt_data <- split(df, df[[cl]])
+  data.table::rbindlist(lapply(cotrt_data, function(x) {
+    duplicated_full_idx <- which(x[[drug_ids[["drug_name"]]]] %chin% x[[drug_ids[["drug_name2"]]]] &
+                                   x[[drug_ids[["drug_name2"]]]] %chin% x[[drug_ids[["drug_name"]]]])
+    if (length(duplicated_full_idx)) {
+      duplicated_data <- x[duplicated_full_idx, ]
+      drug_data <- duplicated_data[, drug_ids[c("drug_name", "drug_name2")], with = FALSE]
+      unique_rows <- drug_data[!duplicated(t(apply(drug_data, 1, sort))), ]
+      idx_duplicated <- duplicated_full_idx[which(is.na(matches(do.call(paste, unique_rows),
+                                                                do.call(paste, drug_data))$x))]
+      
+      primary_drug_idfs <- drug_ids[c("drug", "drug_name", "drug_moa", "concentration")]
+      secondary_drug_idfs <- drug_ids[c("drug2", "drug_name2", "drug_moa2", "concentration2")]
+      
+      x[idx_duplicated,
+        c(primary_drug_idfs, secondary_drug_idfs) := .(get(drug_ids[["drug2"]]),
+                                                       get(drug_ids[["drug_name2"]]),
+                                                       get(drug_ids[["drug_moa2"]]),
+                                                       get(drug_ids[["concentration2"]]),
+                                                       get(drug_ids[["drug"]]),
+                                                       get(drug_ids[["drug_name"]]),
+                                                       get(drug_ids[["drug_moa"]]),
+                                                       get(drug_ids[["concentration"]])
+        )] 
+    }
+    x
+  }))
+}
+
+
+#' avoid `vehicle` in drug columns with low ordinality. 
+#' For example, if `drug = vehicle` and `drug_2 = drugA`, change to `drug = drugA` and `drug_2 = vehicle`.
+#' propagate to the other columns accordingly (concentration, drug_moa, drug_name)
+#'
+#' @export
+#' 
+#'
+collapse_drugs <- function(df) {
+  
+  drug_ids <- unlist(gDRutils::get_env_identifiers(
+    c("drug_name", "drug_name2", "drug_name3", "drug", "drug2", "drug3",
+      "drug_moa", "drug_moa2", "drug_moa3", "concentration", "concentration2",
+      "concentration3"), 
+    simplify = FALSE)
+  )
+  # add '1' to the names for more efficient loop lower
+  names(drug_ids)[!grepl('[0-9]', names(drug_ids))] <- paste0(names(drug_ids)[!grepl('[0-9]', names(drug_ids))], '1')
+  drug_ids <- drug_ids[which(drug_ids %in% names(df))]
+  max_drug <- max(as.numeric(sapply(names(drug_ids), function(x) substr(x, nchar(x), nchar(x)))), na.rm = T)
+  
+  if (max_drug > 1) { # collapse treatment iteratively
+    for (i in 2:max_drug) {
+      for (j in 1:(max_drug-1)) {
+        idx <- df[[drug_ids[paste0('drug_name', j)]]] %in% gDRutils::get_env_identifiers("untreated_tag") & 
+          !(df[[drug_ids[paste0('drug_name', j+1)]]] %in% gDRutils::get_env_identifiers("untreated_tag"))
+
+        col_idx1 <- drug_ids[grepl(j, names(drug_ids))]
+        col_idx2 <- drug_ids[gsub(as.character(j), as.character(j+1), names(col_idx1))]
+        
+        # TODO : use data.table format
+        # df[idx, c(col_idx1, col_idx2) := as.list(df[, c(col_idx2, col_idx1)])]
+
+        df <- as.data.frame(df)
+        df[idx, c(col_idx1, col_idx2)] = df[idx, c(col_idx2, col_idx1)]
+        df <- data.table(df)
+
+      }
+    }
+  }
+  df  
 }

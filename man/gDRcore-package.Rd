@@ -24,6 +24,7 @@ Authors:
   \item Pawel Piatkowski
   \item Natalia Potocka
   \item Dariusz Scigocki
+  \item Janina Smola
   \item Sergiu Mocanu
   \item Allison Vuong
 }

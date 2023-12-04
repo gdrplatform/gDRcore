@@ -4,18 +4,19 @@
 #'
 #' @param sa1 data.table containing single agent data where entries in 
 #' \code{series_id2} are all \code{0}. Columns of the data.table include 
-#' identifiers and the \code{metric} of interest.
+#' identifiers and the \code{metric} of interest. Metric is stored in the 'x' column.
 #' @param series_id1 String representing the column within \code{sa1} that 
 #' represents id1.
 #' @param sa2 data.table containing single agent data where entries in 
 #' \code{series_id1} are all \code{0}. Columns of the data.table include 
-#' identifiers and the \code{metric} of interest.
+#' identifiers and the \code{metric} of interest.n Metric is stored in the 'x' column.
 #' @param series_id2 String representing the column within \code{sa2} that 
 #' represents id2.
-#' @param metric String of the column specifying the metric of interest. 
+#' @param metric String specifying the metric of interest. Usually either 'GRvalue'
+#' or 'RelativeViability'.
 #' @param FXN Function to apply to the single-agent fits to calculate a metric.
 #'
-#' @return DataFrame containing a single row for every unique combination of 
+#' @return data.table containing a single row for every unique combination of 
 #' the two series identifiers and the corresponding calculated metric for 
 #' each row.
 #'
@@ -89,6 +90,9 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
                                      sa2, 
                                      series_id2, 
                                      metric, FXN) {
+  checkmate::assert_data_table(sa1)
+  checkmate::assert_data_table(sa2)
+
   checkmate::assert_true(all(sa1[[series_id2]] == 0L))
   checkmate::assert_true(all(sa2[[series_id1]] == 0L))
 
