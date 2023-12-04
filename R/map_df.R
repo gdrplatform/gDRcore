@@ -225,16 +225,16 @@ map_df <- function(trt_md,
 
   # columns with the primary data for the treatment and reference
   trt_elem <- mat_elem[which(!is_ref & !is_untrt)]
-  ref_elem <- mat_elem[which(is_ref), ]
   
-  # # columns with the matching data for the treatment and reference
-  # trt_cotrt <- mat_elem[which(!is_ref & !is_untrt), ref_cotrt, with = FALSE]
-  # ref_cotrt <- mat_elem[which(is_ref), ref_cotrt, with = FALSE]
-
   out <- vector("list", nrow(trt_elem))
   names(out) <- trt_elem$rownames
   
   if (any(is_ref)) {
+    ref_elem <- mat_elem[which(is_ref), ]
+    # columns with the matching data for the treatment and reference
+    # trt_cotrt <- mat_elem[which(!is_ref & !is_untrt), cotrt_var, with = FALSE]
+    ref_cotrt <- mat_elem[which(is_ref), cotrt_var, with = FALSE]
+
     # store rownames of trt_elem and ref_elem and replicate them based on the length of 
     # drug columns
     trtNames <- rep(trt_elem$rownames, length(valid))
@@ -274,20 +274,20 @@ map_df <- function(trt_md,
     out <- split(matchTrtRef[["y"]], matchTrtRef[["x"]])
     
     # match the additional variables in the treatment
-    # if (length(ref_cotrt)) {
-    #   for (i in names(out)) {
-    #     # matching the ref_elem to the trt_elem for the cotrt_var
-    #     trt_elem[rn == i, cotrt_var, with = FALSE]
-    #     ref_elem[rn %in% out[[i]], cotrt_var, with = FALSE]
-    #     
-    #     out[[i]] <- out[[i]][
-    #       apply(
-    #         sapply(out[[i]], function(x) ref_elem[rn == x, cotrt_var, with = FALSE] ==
-    #           trt_elem[rn == i, cotrt_var, with = FALSE]),
-    #         2, all)
-    #       ]
-    #   }
-    # }
+    if (length(ref_cotrt) && length(cotrt_var)) {
+      for (i in names(out)) {
+        # matching the ref_elem to the trt_elem for the cotrt_var
+        trt_elem[rn == i, cotrt_var, with = FALSE]
+        ref_elem[rn %in% out[[i]], cotrt_var, with = FALSE]
+        
+        ref_idx <- sapply(out[[i]], function(x) ref_elem[rn == x, cotrt_var, with = FALSE] ==
+              trt_elem[rn == i, cotrt_var, with = FALSE])
+        if (!is.null(dim(ref_idx))) { # need to deal with the case of sapply collapsing the results ==
+          ref_idx <- apply(ref_idx,2, all)
+        }
+        out[[i]] <- out[[i]][ref_idx]
+      }
+    }
     out
     
   } else {
