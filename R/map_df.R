@@ -193,7 +193,7 @@ map_df <- function(trt_md,
     intersect(
       c(
         gDRutils::get_env_identifiers(
-          c("drug_name", "drug_name2", "drug_name3"), 
+          c("drug_name", "drug_name2"), 
           simplify = FALSE
         )
       ),
