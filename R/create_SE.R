@@ -103,7 +103,7 @@ create_SE <- function(df_,
   # not all entries are mapped on trt_conditions or sa_conditions 
   #   --> untreated should be mapped explicitely to avoid issues with treatments
   #       being considered as untreated in specific combination cases
-  untreated <- mapping_entries[map_untreated(mapping_entries),]
+  untreated <- mapping_entries[map_untreated(mapping_entries), ]
 
   ## Map controls.
   
