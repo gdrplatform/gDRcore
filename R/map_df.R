@@ -291,11 +291,8 @@ map_untreated <- function(mat_elem) {
   drug_cols <- mat_elem[, valid, with = FALSE]
 
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  has_tag <- lapply(drug_cols, function(x) x %in% untrt_tag)
-  data.table::setDT(has_tag)
-  ntag <- rowSums(has_tag)
-
-  is_untrt <- ntag == length(valid)
-
-  is_untrt
+  ntag <- rowSums(drug_cols[,
+                            lapply(.SD, `%in%`, untrt_tag),
+                            .SDcols = names(drug_cols)])
+  ntag == length(valid)
 }
