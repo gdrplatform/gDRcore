@@ -33,19 +33,26 @@ test_that("map_df works as expected", {
 # TODO: test_that("NAs are returned for missing controls", {}) # nolint
 
 
+mat_elem <- data.table::data.table(DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
+                                   DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
+                                   clid = rep(c("C1", "C2"), each = 4))
+
 test_that(".map_references works as expected", {
   # Combination data.
-  mat_elem <- data.table::data.table(DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
-    DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
-    clid = rep(c("C1", "C2"), each = 4))
-  obs <- gDRcore:::.map_references(mat_elem)
+  obs <- .map_references(mat_elem)
   exp <- list("3" = c("2", "4"), "7" = c("6", "8"))
   expect_equal(obs, exp)
 
   # Single-agent data.
   colname <- c("DrugName", "clid")
   mat_elem2 <- mat_elem[, colname, with = FALSE]
-  obs2 <- gDRcore:::.map_references(mat_elem2)
+  obs2 <- .map_references(mat_elem2)
   exp2 <- list("2" = NULL, "3" = NULL, "6" = NULL, "7" = NULL)
   expect_equal(obs2, exp2)
+})
+
+test_that("map_untreated works as expected", {
+  # Combination data.
+  obs <- map_untreated(mat_elem)
+  expect_equal(sum(obs), 2)
 })

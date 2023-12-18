@@ -1,3 +1,6 @@
+## 1.1.2 (2023-12-15)
+- fix issue with wrong assignment of `untreated` records
+
 ## 1.1.1 (2023-11-22)
 - sync master with devel branch
 - add support for unifying duplicates in combo matrix data
