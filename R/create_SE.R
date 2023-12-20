@@ -101,8 +101,10 @@ create_SE <- function(df_,
   sa_conditions <- unique(unname(unlist(refs)))
   
   treated <- mapping_entries[as.numeric(trt_conditions), ]
-  untreated <- mapping_entries[!mapping_entries$rn %in% 
-                                 c(trt_conditions, sa_conditions), ]
+  # not all entries are mapped on trt_conditions or sa_conditions 
+  #   --> untreated should be mapped explicitely to avoid issues with treatments
+  #       being considered as untreated in specific combination cases
+  untreated <- mapping_entries[map_untreated(mapping_entries), ]
 
   ## Map controls.
   
@@ -117,7 +119,6 @@ create_SE <- function(df_,
       ref_type = ctl_type
     )
   })
-
   
   ## Combine all controls with respective treatments.
   # Merge raw data back with groupings.

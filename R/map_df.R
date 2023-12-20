@@ -265,12 +265,10 @@ map_df <- function(trt_md,
         lapply(ref, function(x) stats::setNames(x, names(ref[[1]])))
       )
     )
-    
     # match trt and ref
     matchTrtRef <- matches(trt, ref, list = FALSE, all.y = FALSE)
     matchTrtRef[["x"]] <- trtNames[matchTrtRef[["x"]]]
     matchTrtRef[["y"]] <- refNames[matchTrtRef[["y"]]]
-    
     out <- split(matchTrtRef[["y"]], matchTrtRef[["x"]])
     
     # match the additional variables in the treatment
@@ -293,4 +291,39 @@ map_df <- function(trt_md,
   } else {
     out
   }
+}
+
+
+#' Identify untreated rows based on Drug treatment alone
+#' 
+#' @param mat_elem input data frame
+#'
+#' @details
+#' Using the given rownames, map the untreated conditions
+#' 
+#' @return list
+#' 
+map_untreated <- function(mat_elem) {
+  # TODO: avoid recycling code of map_references above
+  #
+  clid <- gDRutils::get_env_identifiers("cellline")
+  valid <- unlist(
+    intersect(
+      c(
+        gDRutils::get_env_identifiers(
+          c("drug_name", "drug_name2", "drug_name3"), 
+          simplify = FALSE
+        )
+      ),
+      colnames(mat_elem)
+    )
+  )
+  
+  drug_cols <- mat_elem[, valid, with = FALSE]
+
+  untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  ntag <- rowSums(drug_cols[,
+                            lapply(.SD, `%in%`, untrt_tag),
+                            .SDcols = names(drug_cols)])
+  ntag == length(valid)
 }
