@@ -278,7 +278,7 @@ map_df <- function(trt_md,
         trt_elem[rn == i, cotrt_var, with = FALSE]
         ref_elem[rn %in% out[[i]], cotrt_var, with = FALSE]
         
-        ref_idx <- sapply(out[[i]], function(x) ref_elem[rn == x, cotrt_var, with = FALSE] ==
+        ref_idx <- sapply(na.omit(out[[i]]), function(x) ref_elem[rn == x, cotrt_var, with = FALSE] ==
               trt_elem[rn == i, cotrt_var, with = FALSE])
         if (!is.null(dim(ref_idx))) { # need to deal with the case of sapply collapsing the results ==
           ref_idx <- apply(ref_idx,2, all)
