@@ -9,9 +9,17 @@
 \usage{
 calculate_HSA(sa1, series_id1, sa2, series_id2, metric)
 
-calculate_Bliss(sa1, series_id1, sa2, series_id2, metric)
+calculate_Bliss(sa1, series_id1, sa2, series_id2, metric, measured_col = "mx")
 
-.calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN)
+.calculate_matrix_metric(
+  sa1,
+  series_id1,
+  sa2,
+  series_id2,
+  metric,
+  FXN,
+  measured_col = "x"
+)
 }
 \arguments{
 \item{sa1}{data.table containing single agent data where entries in
