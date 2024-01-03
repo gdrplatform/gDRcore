@@ -39,7 +39,13 @@ NULL
 #' calculate_HSA(sa1, "conc", sa2, "conc2", "x")
 #' @export
 calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
-  .calculate_matrix_metric(sa1, series_id1, sa2, series_id2, metric, FXN = pmin)
+  .calculate_matrix_metric(sa1,
+                           series_id1,
+                           sa2,
+                           series_id2,
+                           metric,
+                           FXN = pmin,
+                           measured_col = "mx")
 }
 
 
@@ -50,7 +56,12 @@ calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
 #' sa2 <- data.table::data.table(conc = rep(0, n), conc2 = seq(n), x = seq(n))
 #' calculate_Bliss(sa1, "conc", sa2, "conc2", "x")
 #' @export
-calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
+calculate_Bliss <- function(sa1,
+                            series_id1,
+                            sa2,
+                            series_id2,
+                            metric,
+                            measured_col = "mx") {
   if (metric %in% c("GRvalue", "GR")) {
     lambda <- function(x, y) {
       ifelse(x < 0 | y < 0,
@@ -80,7 +91,8 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
     sa2, 
     series_id2, 
     metric, 
-    FXN = lambda
+    FXN = lambda,
+    measured_col = measured_col
   )
 }
 
@@ -89,15 +101,17 @@ calculate_Bliss <- function(sa1, series_id1, sa2, series_id2, metric) {
                                      series_id1, 
                                      sa2, 
                                      series_id2, 
-                                     metric, FXN) {
+                                     metric,
+                                     FXN,
+                                     measured_col = "x") {
   checkmate::assert_data_table(sa1)
   checkmate::assert_data_table(sa2)
 
   checkmate::assert_true(all(sa1[[series_id2]] == 0L))
   checkmate::assert_true(all(sa2[[series_id1]] == 0L))
 
-  data.table::setnames(sa1, "x", "metric1", skip_absent = TRUE)
-  data.table::setnames(sa2, "x", "metric2", skip_absent = TRUE)
+  data.table::setnames(sa1, measured_col, "metric1", skip_absent = TRUE)
+  data.table::setnames(sa2, measured_col, "metric2", skip_absent = TRUE)
 
   u <- data.table::CJ(sa1[[series_id1]], sa2[[series_id2]])
   colnames(u) <- c(series_id1, series_id2)
