@@ -50,7 +50,7 @@ test_that("fit_SE.combinations works as expected", {
  
   # combo data 
   fmae_cms <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
-  se1 <- fmae_cms[["matrix"]]
+  se1 <- fmae_cms[[gDRutils::get_experiment_groups("combination")]]
   SummarizedExperiment::assays(se1) <- SummarizedExperiment::assays(se1)["Averaged"]
   
   new_se1 <- purrr::quietly(fit_SE.combinations)(se1[1, 1])

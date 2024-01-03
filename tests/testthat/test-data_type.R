@@ -25,7 +25,8 @@ test_that("identify_data_type and split_raw_data works as expected", {
   
   df_list <- split_raw_data(df)
   expect_true(inherits(df_list, "list"))
-  expect_true(all(names(df_list) %in% c("matrix", "single-agent")))
+  expect_true(all(names(df_list) %in% c(gDRutils::get_experiment_groups("combination"),
+                                        gDRutils::get_experiment_groups("single-agent")[["single-agent"]])))
   
   
   df2 <- data.table::data.table(Gnumber = c(rep("DrugA", 9), "DrugB"),
