@@ -1,3 +1,7 @@
+## 1.1.3 (2024-01-03)
+- simplify logic of assays for combination data
+- rename `matrix` into `combination`
+
 ## 1.1.2 (2023-12-15)
 - fix issue with wrong assignment of `untreated` records
 
