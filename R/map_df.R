@@ -270,24 +270,16 @@ map_df <- function(trt_md,
     matchTrtRef[["x"]] <- trtNames[matchTrtRef[["x"]]]
     matchTrtRef[["y"]] <- refNames[matchTrtRef[["y"]]]
     out <- split(matchTrtRef[["y"]], matchTrtRef[["x"]])
-    
     # match the additional variables in the treatment
     if (length(ref_cotrt) && length(cotrt_var)) {
       for (i in names(out)) {
         # matching the ref_elem to the trt_elem for the cotrt_var
-        trt_elem[rn == i, cotrt_var, with = FALSE]
-        ref_elem[rn %in% out[[i]], cotrt_var, with = FALSE]
-        
-        ref_idx <- sapply(na.omit(out[[i]]), function(x) ref_elem[rn == x, cotrt_var, with = FALSE] ==
+        ref_idx <- lapply(na.omit(out[[i]]), function(x) ref_elem[rn == x, cotrt_var, with = FALSE] ==
               trt_elem[rn == i, cotrt_var, with = FALSE])
-        if (!is.null(dim(ref_idx))) { # need to deal with the case of sapply collapsing the results ==
-          ref_idx <- apply(ref_idx,2, all)
-        }
-        out[[i]] <- out[[i]][ref_idx]
+        out[[i]] <- out[[i]][unlist(lapply(ref_idx, all))]
       }
     }
     out
-    
   } else {
     out
   }

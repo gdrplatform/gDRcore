@@ -151,7 +151,7 @@ identify_data_type <- function(df,
 split_raw_data <- function(df,
                            type_col = "type") {
   
-  df = collapse_drugs(df)
+  df <- collapse_drugs(df)
 
   drug_ids <- unlist(gDRutils::get_env_identifiers(
     c("drug_name", "drug_name2", "drug_name3", "drug", "drug2", "drug3",
@@ -163,7 +163,7 @@ split_raw_data <- function(df,
   codrug_ids <- drug_ids[grep("[0-9]", names(drug_ids))]
   conc_idx <- drug_ids[grep("concentration", names(drug_ids))]
   codrug_drug_id <- setdiff(codrug_ids, conc_idx)
-    cl <- gDRutils::get_env_identifiers("cellline")
+  cl <- gDRutils::get_env_identifiers("cellline")
 
   df_list <- split(df, df[[type_col]])
   types <- setdiff(names(df_list), "control")
@@ -300,20 +300,16 @@ collapse_drugs <- function(df) {
   
   if (max_drug > 1) { # collapse treatment iteratively
     for (i in 2:max_drug) {
-      for (j in 1:(max_drug-1)) {
+      for (j in seq_len(max_drug - 1)) {
         idx <- df[[drug_ids[paste0('drug_name', j)]]] %in% gDRutils::get_env_identifiers("untreated_tag") & 
           !(df[[drug_ids[paste0('drug_name', j+1)]]] %in% gDRutils::get_env_identifiers("untreated_tag"))
 
         col_idx1 <- drug_ids[grepl(j, names(drug_ids))]
         col_idx2 <- drug_ids[gsub(as.character(j), as.character(j+1), names(col_idx1))]
         
-        # TODO : use data.table format
-        # df[idx, c(col_idx1, col_idx2) := as.list(df[, c(col_idx2, col_idx1)])]
-
-        df <- as.data.frame(df)
-        df[idx, c(col_idx1, col_idx2)] = df[idx, c(col_idx2, col_idx1)]
-        df <- data.table(df)
-
+        df_replace <- df[idx, c(col_idx2, col_idx1), with = FALSE]
+        df[idx,
+           c(col_idx1, col_idx2) := df_replace]
       }
     }
   }
