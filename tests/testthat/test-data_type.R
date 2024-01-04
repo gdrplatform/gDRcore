@@ -41,3 +41,29 @@ test_that("identify_data_type and split_raw_data works as expected", {
   split_df2 <- split_raw_data(df2)
   expect_true(all(split_df2[["Gnumber"]] == "DrugA"))
 })
+
+
+test_that("collapse drugs works as expected", {
+  idfs <- get_env_identifiers()
+  cols <- idfs[c("drug", "drug2", "drug3",
+                 "drug_name", "drug_name2", "drug_name3",
+                 "drug_moa", "drug_moa2", "drug_moa3",
+                 "concentration", "concentration2", "concentration3")]
+  dt <- data.table::data.table("vehicle",
+                               "drug2",
+                               "drug3",
+                               "vehicle",
+                               "drug2",
+                               "drug3",
+                               "vehicle",
+                               "moa1",
+                               "moa1",
+                               0,
+                               0.35,
+                               0.2)
+  data.table::setnames(dt, unlist(cols))
+  dt_collapsed <- collapse_drugs(dt)
+  expect_equal(dt_collapsed[[cols$drug]], "drug2")
+  expect_equal(dt_collapsed[[cols$drug2]], "drug3")
+  expect_equal(dt_collapsed[[cols$drug3]], "vehicle")
+})
