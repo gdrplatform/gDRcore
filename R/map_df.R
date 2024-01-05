@@ -187,8 +187,8 @@ map_df <- function(trt_md,
 #' @return list
 #' 
 .map_references <- function(mat_elem, 
-                            rowData_colnames = c(gDRutils::get_env_identifiers('duration'), 
-                                                paste0(c("drug", "drug_name", "drug_moa"), '3'))) {
+                            rowData_colnames = c(gDRutils::get_env_identifiers("duration"), 
+                                                paste0(c("drug", "drug_name", "drug_moa"), "3"))) {
   
   clid <- gDRutils::get_env_identifiers("cellline")
   # variables for the mapping of treatments
@@ -206,7 +206,7 @@ map_df <- function(trt_md,
   # variables for the mapping of reference treatments
   cotrt_var <- setdiff(rowData_colnames, 
      gDRutils::get_env_identifiers(
-       c("drug", "drug_name", "drug_moa", paste0(c("drug", "drug_name", "drug_moa"), '2')), 
+       c("drug", "drug_name", "drug_moa", paste0(c("drug", "drug_name", "drug_moa"), "2")), 
        simplify = FALSE
      )
   )
@@ -232,7 +232,6 @@ map_df <- function(trt_md,
   if (any(is_ref)) {
     ref_elem <- mat_elem[which(is_ref), ]
     # columns with the matching data for the treatment and reference
-    # trt_cotrt <- mat_elem[which(!is_ref & !is_untrt), cotrt_var, with = FALSE]
     ref_cotrt <- mat_elem[which(is_ref), cotrt_var, with = FALSE]
 
     # store rownames of trt_elem and ref_elem and replicate them based on the length of 
@@ -274,8 +273,10 @@ map_df <- function(trt_md,
     if (length(ref_cotrt) && length(cotrt_var)) {
       for (i in names(out)) {
         # matching the ref_elem to the trt_elem for the cotrt_var
-        ref_idx <- lapply(na.omit(out[[i]]), function(x) ref_elem[rn == x, cotrt_var, with = FALSE] ==
-              trt_elem[rn == i, cotrt_var, with = FALSE])
+        ref_idx <- lapply(na.omit(out[[i]]), function(x) {
+          ref_elem[rn == x, cotrt_var, with = FALSE] ==
+              trt_elem[rn == i, cotrt_var, with = FALSE]
+          })
         out[[i]] <- out[[i]][unlist(lapply(ref_idx, all))]
       }
     }

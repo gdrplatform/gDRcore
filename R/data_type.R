@@ -294,7 +294,7 @@ collapse_drugs <- function(df) {
     simplify = FALSE)
   )
   # add '1' to the names for more efficient loop lower
-  names(drug_ids)[!grepl("[0-9]", names(drug_ids))] <- paste0(names(drug_ids)[!grepl("[0-9]", names(drug_ids))], '1')
+  names(drug_ids)[!grepl("[0-9]", names(drug_ids))] <- paste0(names(drug_ids)[!grepl("[0-9]", names(drug_ids))], "1")
   drug_ids <- drug_ids[which(drug_ids %in% names(df))]
   max_drug <- max(as.numeric(unlist(lapply(names(drug_ids), function(x) substr(x, nchar(x), nchar(x)))),
                              na.rm = TRUE))
