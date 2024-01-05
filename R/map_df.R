@@ -180,6 +180,7 @@ map_df <- function(trt_md,
 #' Map references
 #' 
 #' @param mat_elem input data frame
+#' @param rowData_colnames character vector of variables for the mapping of reference treatments
 #'
 #' @details
 #' Using the given rownames, map the treated and reference conditions.
