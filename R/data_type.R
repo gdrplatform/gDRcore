@@ -294,18 +294,19 @@ collapse_drugs <- function(df) {
     simplify = FALSE)
   )
   # add '1' to the names for more efficient loop lower
-  names(drug_ids)[!grepl('[0-9]', names(drug_ids))] <- paste0(names(drug_ids)[!grepl('[0-9]', names(drug_ids))], '1')
+  names(drug_ids)[!grepl("[0-9]", names(drug_ids))] <- paste0(names(drug_ids)[!grepl("[0-9]", names(drug_ids))], '1')
   drug_ids <- drug_ids[which(drug_ids %in% names(df))]
-  max_drug <- max(as.numeric(sapply(names(drug_ids), function(x) substr(x, nchar(x), nchar(x)))), na.rm = T)
+  max_drug <- max(as.numeric(unlist(lapply(names(drug_ids), function(x) substr(x, nchar(x), nchar(x)))),
+                             na.rm = TRUE))
   
   if (max_drug > 1) { # collapse treatment iteratively
     for (i in 2:max_drug) {
       for (j in seq_len(max_drug - 1)) {
-        idx <- df[[drug_ids[paste0('drug_name', j)]]] %in% gDRutils::get_env_identifiers("untreated_tag") & 
-          !(df[[drug_ids[paste0('drug_name', j+1)]]] %in% gDRutils::get_env_identifiers("untreated_tag"))
+        idx <- df[[drug_ids[paste0("drug_name", j)]]] %in% gDRutils::get_env_identifiers("untreated_tag") & 
+          !(df[[drug_ids[paste0("drug_name", j + 1)]]] %in% gDRutils::get_env_identifiers("untreated_tag"))
 
         col_idx1 <- drug_ids[grepl(j, names(drug_ids))]
-        col_idx2 <- drug_ids[gsub(as.character(j), as.character(j+1), names(col_idx1))]
+        col_idx2 <- drug_ids[gsub(as.character(j), as.character(j + 1), names(col_idx1))]
         
         df_replace <- df[idx, c(col_idx2, col_idx1), with = FALSE]
         df[idx,
