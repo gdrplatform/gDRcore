@@ -44,7 +44,7 @@ test_that("identify_data_type and split_raw_data works as expected", {
 
 
 test_that("collapse drugs works as expected", {
-  idfs <- get_env_identifiers()
+  idfs <- gDRutils::get_env_identifiers()
   cols <- idfs[c("drug", "drug2", "drug3",
                  "drug_name", "drug_name2", "drug_name3",
                  "drug_moa", "drug_moa2", "drug_moa3",

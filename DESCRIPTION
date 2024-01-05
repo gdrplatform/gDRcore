@@ -36,7 +36,7 @@ Suggests:
     BiocStyle,
     gDRstyle (>= 0.99.15),
     gDRimport (>= 0.99.26),
-    gDRtestData (>= 0.99.20),
+    gDRtestData (>= 1.1.2),
     IRanges,
     knitr,
     pkgbuild,

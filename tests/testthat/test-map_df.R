@@ -39,14 +39,14 @@ mat_elem <- data.table::data.table(DrugName = rep(c("untreated", "drugA", "drugB
 
 test_that(".map_references works as expected", {
   # Combination data.
-  obs <- .map_references(mat_elem)
+  obs <- .map_references(mat_elem, rowData_colnames = c("DrugName", "DrugName_2"))
   exp <- list("3" = c("2", "4"), "7" = c("6", "8"))
   expect_equal(obs, exp)
 
   # Single-agent data.
   colname <- c("DrugName", "clid")
   mat_elem2 <- mat_elem[, colname, with = FALSE]
-  obs2 <- .map_references(mat_elem2)
+  obs2 <- .map_references(mat_elem2, rowData_colnames = c("DrugName", "DrugName_2"))
   exp2 <- list("2" = NULL, "3" = NULL, "6" = NULL, "7" = NULL)
   expect_equal(obs2, exp2)
 })
