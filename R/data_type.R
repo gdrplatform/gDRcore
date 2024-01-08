@@ -278,12 +278,10 @@ unify_combination_data <- function(df, cl, drug_ids) {
 }
 
 
+#' @keywords internal
 #' avoid `vehicle` in drug columns with low ordinality. 
 #' For example, if `drug = vehicle` and `drug_2 = drugA`, change to `drug = drugA` and `drug_2 = vehicle`.
 #' propagate to the other columns accordingly (concentration, drug_moa, drug_name)
-#'
-#' @export
-#' 
 #'
 collapse_drugs <- function(df) {
   
