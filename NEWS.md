@@ -1,3 +1,6 @@
+## 1.1.3 (2024-01-04)
+- improve logic for normalization and identification of single-agent and matrix data with Drug3
+
 ## 1.1.2 (2023-12-15)
 - fix issue with wrong assignment of `untreated` records
 
