@@ -4,10 +4,16 @@
 \alias{.map_references}
 \title{Map references}
 \usage{
-.map_references(mat_elem)
+.map_references(
+  mat_elem,
+  rowData_colnames = c(gDRutils::get_env_identifiers("duration"), paste0(c("drug",
+    "drug_name", "drug_moa"), "3"))
+)
 }
 \arguments{
 \item{mat_elem}{input data frame}
+
+\item{rowData_colnames}{character vector of variables for the mapping of reference treatments}
 }
 \value{
 list

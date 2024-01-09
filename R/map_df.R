@@ -180,15 +180,19 @@ map_df <- function(trt_md,
 #' Map references
 #' 
 #' @param mat_elem input data frame
+#' @param rowData_colnames character vector of variables for the mapping of reference treatments
 #'
 #' @details
 #' Using the given rownames, map the treated and reference conditions.
 #' 
 #' @return list
 #' 
-.map_references <- function(mat_elem) {
+.map_references <- function(mat_elem, 
+                            rowData_colnames = c(gDRutils::get_env_identifiers("duration"), 
+                                                paste0(c("drug", "drug_name", "drug_moa"), "3"))) {
   
   clid <- gDRutils::get_env_identifiers("cellline")
+  # variables for the mapping of treatments
   valid <- unlist(
     intersect(
       c(
@@ -199,6 +203,13 @@ map_df <- function(trt_md,
       ),
       colnames(mat_elem)
     )
+  )
+  # variables for the mapping of reference treatments
+  cotrt_var <- setdiff(rowData_colnames, 
+     gDRutils::get_env_identifiers(
+       c("drug", "drug_name", "drug_moa", paste0(c("drug", "drug_name", "drug_moa"), "2")), 
+       simplify = FALSE
+     )
   )
   
   drug_cols <- mat_elem[, valid, with = FALSE]
@@ -213,22 +224,27 @@ map_df <- function(trt_md,
   
   mat_elem$rownames <- as.character(seq_len(nrow(mat_elem)))
 
-  trt <- mat_elem[which(!is_ref & !is_untrt)]
-  ref <- mat_elem[which(is_ref), ]
-
-  out <- vector("list", nrow(trt))
-  names(out) <- trt$rownames
+  # columns with the primary data for the treatment and reference
+  trt_elem <- mat_elem[which(!is_ref & !is_untrt)]
+  
+  out <- vector("list", nrow(trt_elem))
+  names(out) <- trt_elem$rownames
+  
   if (any(is_ref)) {
-    # store rownames of trt and ref and replicate them based on the length of 
+    ref_elem <- mat_elem[which(is_ref), ]
+    # columns with the matching data for the treatment and reference
+    ref_cotrt <- mat_elem[which(is_ref), cotrt_var, with = FALSE]
+
+    # store rownames of trt_elem and ref_elem and replicate them based on the length of 
     # drug columns
-    trtNames <- rep(trt$rownames, length(valid))
-    refNames <- rep(ref$rownames, length(valid))
+    trtNames <- rep(trt_elem$rownames, length(valid))
+    refNames <- rep(ref_elem$rownames, length(valid))
     
     # split data.tables to simple model with clid column and drug column
     
     trt <- lapply(valid, function(x) {
       colnames <- c(clid, x) 
-      trt[, colnames, with = FALSE] 
+      trt_elem[, colnames, with = FALSE] 
     })
     trt <- do.call(
       paste, 
@@ -240,7 +256,7 @@ map_df <- function(trt_md,
     
     ref <- lapply(valid, function(x) {
       colnames <- c(clid, x) 
-      ref[, colnames, with = FALSE] 
+      ref_elem[, colnames, with = FALSE] 
     })
     ref <- do.call(
       paste, 
@@ -254,8 +270,17 @@ map_df <- function(trt_md,
     matchTrtRef[["x"]] <- trtNames[matchTrtRef[["x"]]]
     matchTrtRef[["y"]] <- refNames[matchTrtRef[["y"]]]
     out <- split(matchTrtRef[["y"]], matchTrtRef[["x"]])
-    # remove cases where the match is missing in the reference
-    out <- lapply(out, function(x) x[!is.na(x)])
+    # match the additional variables in the treatment
+    if (length(ref_cotrt) && length(cotrt_var)) {
+      for (i in names(out)) {
+        # matching the ref_elem to the trt_elem for the cotrt_var
+        ref_idx <- lapply(na.omit(out[[i]]), function(x) {
+          ref_elem[rn == x, cotrt_var, with = FALSE] ==
+              trt_elem[rn == i, cotrt_var, with = FALSE]
+          })
+        out[[i]] <- out[[i]][unlist(lapply(ref_idx, all))]
+      }
+    }
     out
   } else {
     out

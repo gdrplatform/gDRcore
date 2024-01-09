@@ -94,7 +94,8 @@ create_SE <- function(df_,
   exp_md <- md$experiment_md
 
   mapping_entries <- .create_mapping_factors(rowdata, coldata)
-  refs <- .map_references(mapping_entries)
+
+  refs <- .map_references(mapping_entries, rowData_colnames = colnames(rowdata))
   emptyRefs <- all(is.null(unlist(refs)))
   trt_conditions <- names(refs)
   sa_conditions <- unique(unname(unlist(refs)))
