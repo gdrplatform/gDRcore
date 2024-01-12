@@ -387,7 +387,7 @@ fit_SE.combinations <- function(se,
     list(metrics = metrics,
          all_iso_points = all_iso_points,
          isobolograms = isobolograms,
-         excess = excess,
+         excess = excess_full,
          scores = scores)
   })
 
