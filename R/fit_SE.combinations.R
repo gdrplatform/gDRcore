@@ -241,14 +241,14 @@ fit_SE.combinations <- function(se,
       complete_subset$mx <- rowMeans(mat, na.rm = TRUE)
       
       # just keep the relevant columns and change to the metric name
-      cols <- c(id, id2, "mx")
+      cols <- c(id, id2, "smooth")
       av_matrix <- complete_subset[, cols, with = FALSE]
       av_matrix[, "normalization_type" := norm_type]
       
       av_matrix[get(id) == 0 & get(id2) == 0, mx := 1]
       if (NROW(av_matrix) == 0) {
         excess[excess$normalization_type == norm_type,
-               c("mx", "hsa_excess", "b_excess")] <- NA
+               c("smooth", "hsa_excess", "bliss_excess")] <- NA
       } else {
         sa1 <- av_matrix[get(id2) == 0, cols, with = FALSE]
         sa2 <- av_matrix[get(id) == 0, cols, with = FALSE]
@@ -259,19 +259,19 @@ fit_SE.combinations <- function(se,
           av_matrix, 
           series_identifiers = c(id, id2), 
           metric_col = "metric",
-          measured_col = "mx"
+          measured_col = "smooth"
         )
         data.table::setnames(h_excess, "x", "hsa_excess")
         bliss <- calculate_Bliss(sa1, id, sa2, id2, norm_type)
-        b_excess <- calculate_excess(
+        bliss_excess <- calculate_excess(
           bliss, 
           av_matrix, 
           series_identifiers = c(id, id2), 
           metric_col = "metric",
-          measured_col = "mx"
+          measured_col = "smooth"
         )
-        data.table::setnames(b_excess, "x", "b_excess")
-        excess <- Reduce(function(x, y) merge(x, y, all = TRUE), list(av_matrix, h_excess, b_excess))
+        data.table::setnames(bliss_excess, "x", "bliss_excess")
+        excess <- Reduce(function(x, y) merge(x, y, all = TRUE), list(av_matrix, h_excess, bliss_excess))
       }
       
       # call calculate_Loewe and calculate_isobolograms: 
@@ -317,12 +317,12 @@ fit_SE.combinations <- function(se,
         )
       )
       scores[scores$normalization_type == norm_type, "bliss_score"] <- ifelse(
-        is.null(b_excess), 
+        is.null(bliss_excess), 
         NA, 
         mean(
-          b_excess$b_excess[
-            b_excess$b_excess >= 
-              stats::quantile(b_excess$b_excess, 0.9, na.rm = TRUE)
+          bliss_excess$bliss_excess[
+            bliss_excess$bliss_excess >= 
+              stats::quantile(bliss_excess$bliss_excess, 0.9, na.rm = TRUE)
           ], 
           na.rm = TRUE
         )
