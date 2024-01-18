@@ -45,6 +45,8 @@ Suggests:
     yaml
 VignetteBuilder: 
     knitr
+URL: https://github.com/gdrplatform/gDRcore
+BugReports: https://github.com/gdrplatform/gDRcore/issues
 biocViews: Software, ShinyApps
 ByteCompile: TRUE
 DeploySubPath: gDRcore
