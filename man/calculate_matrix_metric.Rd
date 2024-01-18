@@ -9,7 +9,14 @@
 \usage{
 calculate_HSA(sa1, series_id1, sa2, series_id2, metric)
 
-calculate_Bliss(sa1, series_id1, sa2, series_id2, metric, measured_col = "mx")
+calculate_Bliss(
+  sa1,
+  series_id1,
+  sa2,
+  series_id2,
+  metric,
+  measured_col = "smooth"
+)
 
 .calculate_matrix_metric(
   sa1,

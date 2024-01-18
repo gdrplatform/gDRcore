@@ -74,7 +74,7 @@ fit_SE.combinations <- function(se,
 
   out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
   
-    metrics <- all_iso_points <- isobolograms <- excess_full <- NULL
+    metrics <- all_iso_points <- isobolograms <- NULL
     excess <- scores <- 
       data.table::data.table(normalization_type = normalization_types)
     x <- iterator[row, ]
@@ -84,20 +84,13 @@ fit_SE.combinations <- function(se,
     avg_combo <- data.table::as.data.table(avg[avg[["row"]] == i & avg[["column"]] == j, ])
    
     if (all(is.na(avg_combo[, -c("row", "column", "normalization_type")]))) { # omit masked values (all NAs)
-      excess <- isobolograms <- metrics <- 
-        scores[, c("row_id", "col_id")] <- 
-        all_iso_points <-
+      excess <- isobolograms <- metrics <- scores <- all_iso_points <-
         data.table::data.table(row_id = i, col_id = j)
-      return(list(bliss_excess = bliss_excess,
-           hsa_excess = hsa_excess,
+      return(list(excess = excess,
            metrics = metrics,
            all_iso_points = all_iso_points,
            isobolograms = isobolograms,
-           smooth_mx = smooth_mx,
-           bliss_score = bliss_score,
-           hsa_score = hsa_score,
-           CIScore_50 = CIScore_50,
-           CIScore_80 = CIScore_80))
+           scores = scores))
     }
     
     conc_map <- map_conc_to_standardized_conc(avg_combo[[id]], avg_combo[[id2]])
@@ -238,14 +231,14 @@ fit_SE.combinations <- function(se,
       # store the values from the Averaged assay for reference
       complete_subset$av_values <- complete_subset$x
       # and replace by the Smoothed values
-      complete_subset$mx <- rowMeans(mat, na.rm = TRUE)
+      complete_subset$smooth <- rowMeans(mat, na.rm = TRUE)
       
       # just keep the relevant columns and change to the metric name
       cols <- c(id, id2, "smooth")
       av_matrix <- complete_subset[, cols, with = FALSE]
       av_matrix[, "normalization_type" := norm_type]
       
-      av_matrix[get(id) == 0 & get(id2) == 0, mx := 1]
+      av_matrix[get(id) == 0 & get(id2) == 0, smooth := 1]
       if (NROW(av_matrix) == 0) {
         excess[excess$normalization_type == norm_type,
                c("smooth", "hsa_excess", "bliss_excess")] <- NA
@@ -277,10 +270,10 @@ fit_SE.combinations <- function(se,
       # call calculate_Loewe and calculate_isobolograms: 
       # remove rows/columns with less than 2 values
       discard_conc_1 <- names(which(
-        table(av_matrix[!is.na(mx) & normalization_type == norm_type, id, with = FALSE]) < 3
+        table(av_matrix[!is.na(smooth) & normalization_type == norm_type, id, with = FALSE]) < 3
       ))
       discard_conc_2 <- names(which(
-        table(av_matrix[!is.na(mx) & normalization_type == norm_type, id2, with = FALSE]) < 3
+        table(av_matrix[!is.na(smooth) & normalization_type == norm_type, id2, with = FALSE]) < 3
       ))
       av_matrix_dense <- av_matrix[
         !(av_matrix[[id]] %in% discard_conc_1) & 

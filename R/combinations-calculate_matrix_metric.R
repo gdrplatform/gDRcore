@@ -45,7 +45,7 @@ calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
                            series_id2,
                            metric,
                            FXN = pmin,
-                           measured_col = "mx")
+                           measured_col = "smooth")
 }
 
 
@@ -61,7 +61,7 @@ calculate_Bliss <- function(sa1,
                             sa2,
                             series_id2,
                             metric,
-                            measured_col = "mx") {
+                            measured_col = "smooth") {
   if (metric %in% c("GRvalue", "GR")) {
     lambda <- function(x, y) {
       ifelse(x < 0 | y < 0,
