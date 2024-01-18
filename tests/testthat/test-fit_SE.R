@@ -55,19 +55,8 @@ test_that("fit_SE.combinations works as expected", {
   
   new_se1 <- purrr::quietly(fit_SE.combinations)(se1[1, 1])
   exp_as <-
-    c(
-      "Averaged",
-      "SmoothMatrix",
-      "BlissExcess",
-      "HSAExcess",
-      "all_iso_points",
-      "isobolograms",
-      "BlissScore",
-      "HSAScore",
-      "CIScore_50",
-      "CIScore_80",
-      "Metrics"
-    )
+    c("Averaged", "excess", "all_iso_points", "isobolograms", "scores", 
+      "Metrics")
   expect_equal(SummarizedExperiment::assayNames(new_se1$result), exp_as)
 
   aip_df <-
