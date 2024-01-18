@@ -26,6 +26,7 @@ test_that(".calculate_matrix_metric works as expected", {
   temp1 <- sa2
   temp2 <- sa1
   expect_error(
-    gDRcore:::.calculate_matrix_metric(temp1, series_id1 = "conc", temp2, series_id2 = "conc2", "mx", sum, measured_col = "mx")
+    gDRcore:::.calculate_matrix_metric(temp1, series_id1 = "conc", temp2,
+                                       series_id2 = "conc2", "mx", sum, measured_col = "mx")
   )
 })
