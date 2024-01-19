@@ -74,7 +74,7 @@ fit_SE.combinations <- function(se,
 
   out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
   
-    metrics <- all_iso_points <- isobolograms <- NULL
+    metrics <- all_iso_points <- isobolograms <- excess_full <- NULL
     excess <- scores <- 
       data.table::data.table(normalization_type = normalization_types)
     x <- iterator[row, ]
