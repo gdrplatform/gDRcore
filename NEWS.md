@@ -1,3 +1,6 @@
+## 1.1.5 (2024-01-25)
+- add support for internal source of annotation
+
 ## 1.1.4 (2024-01-22)
 - add new description fields
 
