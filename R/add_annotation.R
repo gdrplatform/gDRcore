@@ -39,27 +39,33 @@ add_CellLine_annotation <- function(
     ),
     fname = "cell_lines.csv",
     fill = "unknown",
-    annotationPackage = if ("gDRinternalData" %in% .packages(all.available = TRUE)) {
-      "gDRinternalData"
+    annotationPackage = if ("gDRinternal" %in% .packages(all.available = TRUE)) {
+      "gDRinternal"
     } else {
       "gDRtestData"
     }
 ) {
   
-  # Assertions:
-  checkmate::assert_data_table(dt_metadata)
-  checkmate::assert_string(fill, null.ok = TRUE)
+    # Assertions:
+    checkmate::assert_data_table(dt_metadata)
+    checkmate::assert_string(fill, null.ok = TRUE)
+    
+    cellline <- gDRutils::get_env_identifiers("cellline")
+    cellline_name <- gDRutils::get_env_identifiers("cellline_name")
+    add_clid <- gDRutils::get_header("add_clid")
+    
+    if (all(c(cellline, cellline_name, add_clid) %in% names(dt_metadata))) {
+      return(dt_metadata)
+    }
+    
+    CLs_info <- if (annotationPackage == "gDRtestData") {
+      data.table::fread(
+        system.file("annotation_data", fname, package = annotationPackage), header = TRUE
+      )
+    } else {
+      gDRinternal::get_cell_line_annotations(dt_metadata[[cellline]])
+    }
   
-  cellline <- gDRutils::get_env_identifiers("cellline")
-  cellline_name <- gDRutils::get_env_identifiers("cellline_name")
-  add_clid <- gDRutils::get_header("add_clid")
-  
-  if (all(c(cellline, cellline_name, add_clid) %in% names(dt_metadata))) {
-    return(dt_metadata)
-  } else {
-    CLs_info <- data.table::fread(
-      system.file("annotation_data", fname, package = annotationPackage), header = TRUE
-    )
     CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate), with = FALSE]
     
     if (nrow(CLs_info) == 0) return(dt_metadata)
@@ -128,8 +134,8 @@ add_Drug_annotation <- function(
     dt_metadata,
     fname = "drugs.csv",
     fill = "unknown",
-    annotationPackage = if ("gDRinternalData" %in% .packages(all.available = TRUE)) {
-      "gDRinternalData"
+    annotationPackage = if ("gDRinternal" %in% .packages(all.available = TRUE)) {
+      "gDRinternal"
     } else {
       "gDRtestData"
     }
@@ -166,9 +172,15 @@ add_Drug_annotation <- function(
     names(drug_identifiers_list) <- drug[drug_idx]
     
     # Read local drugs annotations
-    Drug_info <- data.table::fread(
-      system.file("annotation_data", fname, package = annotationPackage), header = TRUE
-    )
+    Drug_info <- if (annotationPackage == "gDRtestData") {
+      data.table::fread(
+        system.file("annotation_data", fname, package = annotationPackage), header = TRUE
+      )
+    } else {
+      gDRinternal::get_drug_annotations()
+    }
+      
+      
     Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa"), with = FALSE]
     data.table::setnames(Drug_info, c("gnumber", "drug_name", "drug_moa"),
                          c("drug", "drug_name", "drug_moa"))
