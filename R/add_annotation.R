@@ -108,7 +108,6 @@ add_CellLine_annotation <- function(
     stopifnot(nrows_df == nrow(dt_metadata))
     dt_metadata
   }
-}
 
 
 #' add_Drug_annotation
