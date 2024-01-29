@@ -73,7 +73,6 @@ fit_SE.combinations <- function(se,
   iterator <- unique(avg[, c("column", "row")])
 
   out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
-    print(row)
   
     metrics <- all_iso_points <- isobolograms <- excess_full <- NULL
     excess <- scores <- 
@@ -136,7 +135,6 @@ fit_SE.combinations <- function(se,
   
   
     for (norm_type in normalization_types) {
-      print(norm_type)
 
       avg_combo <- data.table::as.data.table(avg_combo)
       avg_subset <- avg_combo[normalization_type == norm_type]
