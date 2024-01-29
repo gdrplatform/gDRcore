@@ -73,6 +73,7 @@ fit_SE.combinations <- function(se,
   iterator <- unique(avg[, c("column", "row")])
 
   out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
+    print(row)
   
     metrics <- all_iso_points <- isobolograms <- excess_full <- NULL
     excess <- scores <- 
@@ -135,6 +136,7 @@ fit_SE.combinations <- function(se,
   
   
     for (norm_type in normalization_types) {
+      print(norm_type)
 
       avg_combo <- data.table::as.data.table(avg_combo)
       avg_subset <- avg_combo[normalization_type == norm_type]
@@ -326,17 +328,17 @@ fit_SE.combinations <- function(se,
           scores[scores$normalization_type == norm_type, "CIScore_80"] <- NA
       } else {
         scores[scores$normalization_type == norm_type, "CIScore_50"] <-
-          isobologram_out$df_all_AUC_log2CI$CI_100x[
+          unique(isobologram_out$df_all_AUC_log2CI$CI_100x[
           isobologram_out$df_all_AUC_log2CI$iso_level ==
             min(isobologram_out$df_all_AUC_log2CI$iso_level[
               isobologram_out$df_all_AUC_log2CI$iso_level >= 0.5
-            ])]
+            ])])
         scores[scores$normalization_type == norm_type, "CIScore_80"] <-
-          isobologram_out$df_all_AUC_log2CI$CI_100x[
+          unique(isobologram_out$df_all_AUC_log2CI$CI_100x[
           isobologram_out$df_all_AUC_log2CI$iso_level == 
             min(isobologram_out$df_all_AUC_log2CI$iso_level[
               isobologram_out$df_all_AUC_log2CI$iso_level >= 0.2
-            ])]
+            ])])
       }
       
       excess$row_id <-
