@@ -1,6 +1,9 @@
-## 1.1.4 (2024-01-09)
+## 1.1.5 (2024-01-09)
 - simplify logic of assays for combination data
 - rename `matrix` into `combination`
+
+## 1.1.4 (2024-01-22)
+- add new description fields
 
 ## 1.1.3 (2024-01-04)
 - improve logic for normalization and identification of single-agent and matrix data with Drug3

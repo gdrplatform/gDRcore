@@ -14,6 +14,7 @@
 #' represents id2.
 #' @param metric String specifying the metric of interest. Usually either 'GRvalue'
 #' or 'RelativeViability'.
+#' @param measured_col String specyfying the measured colname.
 #' @param FXN Function to apply to the single-agent fits to calculate a metric.
 #'
 #' @return data.table containing a single row for every unique combination of 
@@ -36,7 +37,7 @@ NULL
 #' n <- 10
 #' sa1 <- data.table::data.table(conc = seq(n), conc2 = rep(0, n), smooth = seq(n))
 #' sa2 <- data.table::data.table(conc = rep(0, n), conc2 = seq(n), smooth = seq(n))
-#' calculate_HSA(sa1, "conc", sa2, "conc2", "x")
+#' calculate_HSA(sa1, "conc", sa2, "conc2", "smooth")
 #' @export
 calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
   .calculate_matrix_metric(sa1,
@@ -52,9 +53,9 @@ calculate_HSA <- function(sa1, series_id1, sa2, series_id2, metric) {
 #' @rdname calculate_matrix_metric
 #' @examples
 #' n <- 10
-#' sa1 <- data.table::data.table(conc = seq(n), conc2 = rep(0, n), x = seq(n))
-#' sa2 <- data.table::data.table(conc = rep(0, n), conc2 = seq(n), x = seq(n))
-#' calculate_Bliss(sa1, "conc", sa2, "conc2", "x")
+#' sa1 <- data.table::data.table(conc = seq(n), conc2 = rep(0, n), smooth = seq(n))
+#' sa2 <- data.table::data.table(conc = rep(0, n), conc2 = seq(n), smooth = seq(n))
+#' calculate_Bliss(sa1, "conc", sa2, "conc2", "smooth")
 #' @export
 calculate_Bliss <- function(sa1,
                             series_id1,
@@ -109,6 +110,8 @@ calculate_Bliss <- function(sa1,
 
   checkmate::assert_true(all(sa1[[series_id2]] == 0L))
   checkmate::assert_true(all(sa2[[series_id1]] == 0L))
+  
+  assert_string(measured_col)
 
   data.table::setnames(sa1, measured_col, "metric1", skip_absent = TRUE)
   data.table::setnames(sa2, measured_col, "metric2", skip_absent = TRUE)
