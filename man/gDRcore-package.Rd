@@ -14,6 +14,14 @@ This package contains core functions to process and analyze drug response data. 
 \note{
 To learn more about functions start with \code{help(package = "gDRcore")}
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/gdrplatform/gDRcore}
+  \item Report bugs at \url{https://github.com/gdrplatform/gDRcore/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Arkadiusz Gladki \email{gladki.arkadiusz@gmail.com}
 
