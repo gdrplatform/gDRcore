@@ -289,12 +289,9 @@ df_layout_3 <- df_layout[df_2, on = intersect(names(df_layout), names(df_2)),
 #' @return data.table with raw input data or MAE with processed data
 generateCodilutionSmall <- function(cell_lines, drugs, save = TRUE) {
   # generate the data with combo co-dilution (small)
-  df_layout <- gDRtestData::prepareData(cell_lines[seq_len(2), ], drugs[seq_len(4), ])
-
-  df_2 <- cbind(drugs[1, , drop = FALSE], df_layout[, "Concentration", drop = FALSE])
-  df_layout_2 <- gDRtestData::prepareCodilutionData(df_2, df_layout)
-  
-  df_merged <- gDRtestData::generate_response_data(df_layout_2, 0)
+  df_merged <- gDRtestData::prepareCodilutionData(cell_lines[seq_len(2), ], 
+                                                  drugs[seq_len(4), ], 
+                                                  noise = 0)
   
   mae <- runDrugResponseProcessingPipeline(
     df_merged,
@@ -316,12 +313,10 @@ generateCodilutionSmall <- function(cell_lines, drugs, save = TRUE) {
 #' @return data.table with raw input data or MAE with processed data
 generateCodilution <- function(cell_lines, drugs, save = TRUE) {
   # generate the data for the test set with combo (co-dilution)
-  df_layout <- gDRtestData::prepareData(cell_lines[seq(1, 15, 2), ], drugs[seq_len(12), ])
+  df_merged <- gDRtestData::prepareCodilutionData(cell_lines[seq(1, 15, 2), ], 
+                                                  drugs[seq_len(12), ],
+                                                  drugsIdx2 = c(1, 1))
   
-  df_2 <- cbind(drugs[c(1, 1), ], df_layout[, "Concentration", drop = FALSE])
-  df_layout_2 <- gDRtestData::prepareCodilutionData(df_2, df_layout)
-
-  df_merged <- gDRtestData::generate_response_data(df_layout_2)
   mae <- runDrugResponseProcessingPipeline(
     df_merged,
     nested_confounders = gDRutils::get_env_identifiers("barcode")[1]
