@@ -7,7 +7,7 @@ package: gDRcore
 output:
   BiocStyle::html_document
 abstract: |
-  This vignette provides comprehensive description of data model used in the gDRsuite
+  This vignette comprehensively describes the data model used in the gDRsuite.
 vignette: |
   %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}
