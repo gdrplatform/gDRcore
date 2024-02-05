@@ -80,7 +80,7 @@ List of assays (combination-specific assays were marked with the asterisk):
 8. isobolograms (*) -- stores isobologram curves
 9. scores (*) -- scores data for each pair of concentration values (HSA score, Bliss Score, and CI (combination index) scores)
 
-All assays are represented by `r Biocpkg("BumpyMatrix")` objects.
+All assays are stored as `r Biocpkg("BumpyMatrix")` objects.
 
 Assays represented by numbers 3-9 additionally contain information about `normalization_type` to distinguish different metrics calculated for each normalization type (RelativeViability and GRValues by default).
 
