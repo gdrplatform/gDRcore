@@ -64,25 +64,25 @@ The `r Biocpkg("SummarizedExperiment")` object in gDR comprises four essential c
 
 ## Assays
 
-This section encapsulates the drug response data itself, offering a numerical representation of experimental measurements. Whether it involves single-agent studies, combination treatments, or codilution experiments, the assays contain the crucial data points for analysis. The list of available assays for a given gDR experiments can be obtained using `SummarizedExperiment::assayNames` on the `r Biocpkg("SummarizedExperiment")` object. The extraction of a specific `assay` can be done using `SummarizedExperiment::assay` function, i.e. `SummarizedExperiment::assay(se, "Normalized")`, where `se` is the `r Biocpkg("SummarizedExperiment")` object, and `Normalized` is the name of the assay within the experiment.
+This section encapsulates the drug response data itself, offering a numerical representation of experimental measurements. Whether it involves single-agent studies, combination treatments, or co-dilution experiments, the assays contain crucial data points for analysis. The list of available assays for a given gDR experiment can be obtained using `SummarizedExperiment::assayNames` on the `r Biocpkg("SummarizedExperiment")` object. The extraction of a specific `assay` can be done using `SummarizedExperiment::assay` function, i.e. `SummarizedExperiment::assay(se, "Normalized")`, where `se` is the `r Biocpkg("SummarizedExperiment")` object, and `Normalized` is the name of the assay within the experiment.
 
-The gDR experiments contains two sets of assays. One set for single-agent and co-dilution experiments (five basic assays), and another set for combinations experiments (five basic assays plus four -- combination-specific).
+The gDR experiments contain two sets of assays. One set is for single-agent and co-dilution experiments (five basic assays), and another set is for combinations experiments (five basic assays plus four -- combination-specific).
 
 List of assays (combination-specific assays were marked with the asterisk):
 
 1. RawTreated -- stores treated references
 2. Controls -- represents untreated, control references
 3. Normalized -- represents normalized data to compute RelativeViability and GRValues (default gDR normalization types)
-4. Averaged -- stores averaged replicates computed by mean and standard deviation
+4. Averaged -- stores averaged replicates computed by the mean and standard deviation
 5. Metrics -- contains fitted response curves
-6. excess (*) -- excess data for each pairs of concentration values (represents Bliss excess, HSA excess and data smoothing values)
+6. excess (*) -- excess data for each pair of concentration values (represents Bliss excess, HSA excess, and data smoothing values)
 7. all_iso_points (*) stores isobologram points
 8. isobolograms (*) -- stores isobologram curves
-9. scores (*) -- scores data for each pairs of concentration values (HSA score, Bliss Score and CI (combination index) scores)
+9. scores (*) -- scores data for each pair of concentration values (HSA score, Bliss Score, and CI (combination index) scores)
 
 All assays are represented by `r Biocpkg("BumpyMatrix")` objects.
 
-Assays represented by number 3-9 additionally contains information about `normalization_type` to distinguish different metrics calculated for each normalization type (RelativeViability and GRValues by default).
+Assays represented by numbers 3-9 additionally contain information about `normalization_type` to distinguish different metrics calculated for each normalization type (RelativeViability and GRValues by default).
 
 In gDR `r Biocpkg("BumpyMatrix")` objects can be easily transformed into the `r CRANpkg("data.table")` object using `gDRutils::convert_se_assay_to_dt` function. This function also includes information from the rowData and colData.
 
@@ -103,7 +103,7 @@ In gDR `r Biocpkg("BumpyMatrix")` objects can be easily transformed into the `r 
 
 `metadata` offers an extra layer of information about the experiment itself, metadata provides context to enhance comprehension. This may include details about the experimental design, sources of data, or any other relevant information that aids in the interpretation of results.
 
-`metadata` information can be extracted using `S4Vectors::metadata` function. In gDR object the metadata information is stores as a list.
+`metadata` information can be extracted using `S4Vectors::metadata` function. In gDR object the metadata information is stored as a list.
 
 
 
