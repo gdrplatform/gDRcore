@@ -1,3 +1,6 @@
+## 1.1.6 (2024-02-05)
+- add vignette for a data model
+
 ## 1.1.5 (2024-02-01)
 - update wrappers for co-dilution data
 
