@@ -60,7 +60,7 @@ To gain insights into the available experiments within the `r Biocpkg("MultiAssa
 
 The `r Biocpkg("SummarizedExperiment")` object emerges as a pivotal structure, integrating drug response data with essential metadata. This versatile container plays a central role in the storage of information related to drugs, cell lines, and experimental conditions, providing a comprehensive foundation for nuanced analysis within the gDR.
 
-The `r Biocpkg("SummarizedExperiment")` object in gDR comprises four essential components:
+The `r Biocpkg("SummarizedExperiment")` object in gDR contains four essential components:
 
 ## Assays
 
