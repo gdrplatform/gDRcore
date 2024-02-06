@@ -1,3 +1,6 @@
+## 1.1.7 (2024-02-06)
+- fix bug with converting standardize MAE into raw data
+
 ## 1.1.6 (2024-02-05)
 - add vignette for a data model
 
