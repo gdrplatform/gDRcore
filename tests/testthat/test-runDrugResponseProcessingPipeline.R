@@ -81,6 +81,10 @@ test_that("main pipeline functions works as expected", {
     x
   })
   
+  # Clear internal metadata (sessionInfo) to not break the tests
+  mae_v3$result$`single-agent`@metadata$.internal <- NULL
+  mae_v4$result$`single-agent`@metadata$.internal <- NULL
+  
   expect_identical(mae_v3$result, mae_v4$result)
 
   testthat::expect_error(
