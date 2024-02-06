@@ -204,7 +204,7 @@ runDrugResponseProcessingPipeline <- function(x,
                                               selected_experiments = NULL) {
   
   checkmate::assert_multi_class(x, c("data.table", "MultiAssayExperiment"))
-  if (inherits(x, "data.table")) {
+  if (data.table::is.data.table(x)) {
     checkmate::assert_true(any(
       gDRutils::get_env_identifiers("untreated_tag") %in%
         x[[gDRutils::get_env_identifiers("drug")]]
@@ -247,6 +247,7 @@ runDrugResponseProcessingPipeline <- function(x,
   # when running pipeline with x = MAE the identifiers from MAE's metadata 
   # should be restored
   if (inherits(x, "MultiAssayExperiment")) {
+    x <- gDRutils::standardize_mae(x, use_default = FALSE)
     m_idfs <- S4Vectors::metadata(x[[1]])[["identifiers"]]
     for (idx in seq_along(m_idfs)) {
       gDRutils::set_env_identifier(names(m_idfs)[idx], m_idfs[[idx]])
