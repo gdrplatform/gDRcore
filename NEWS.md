@@ -1,5 +1,14 @@
-## 1.1.5 (2024-01-25)
+## 1.1.8 (2024-02-06)
 - add support for internal source of annotation
+
+## 1.1.7 (2024-02-06)
+- fix bug with converting standardize MAE into raw data
+
+## 1.1.6 (2024-02-05)
+- add vignette for a data model
+
+## 1.1.5 (2024-02-01)
+- update wrappers for co-dilution data
 
 ## 1.1.4 (2024-01-22)
 - add new description fields
