@@ -63,7 +63,9 @@ add_CellLine_annotation <- function(
         system.file("annotation_data", fname, package = annotationPackage), header = TRUE
       )
     } else {
-      gDRinternal::get_cell_line_annotations(dt_metadata[[cellline]])
+      eval(parse(text = paste0(annotationPackage,
+                               "::",
+                               "get_cell_line_annotations")))(dt_metadata[[cellline]])
     }
   
     CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate), with = FALSE]
@@ -174,7 +176,9 @@ add_Drug_annotation <- function(
         system.file("annotation_data", fname, package = annotationPackage), header = TRUE
       )
     } else {
-      gDRinternal::get_drug_annotations()
+      eval(parse(text = paste0(annotationPackage,
+                               "::",
+                               "get_drug_annotations")))()
     }
       
       
