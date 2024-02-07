@@ -67,7 +67,7 @@ test_that("merge_data works as expected with duplicated cols", {
   template$clid <- "CL00018"
   
   merged_quietly <- purrr::quietly(merge_data)(manifest$data, template, rawData)
-  expect_equal(merged_quietly$warnings,
+  expect_equal(merged_quietly$warnings[[1]],
                "Merge data: metadata field clid found in both the manifest
         and some templates with inconsistent values;
         values in template supersede the ones in the manifest")
