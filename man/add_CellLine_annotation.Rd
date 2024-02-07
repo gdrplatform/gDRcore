@@ -11,9 +11,9 @@ add_CellLine_annotation(
     "parental_identifier", "subtype"),
   fname = "cell_lines.csv",
   fill = "unknown",
-  annotationPackage = if ("gDRinternalData" \%in\% .packages(all.available = TRUE)) {
-   
-     "gDRinternalData"
+  annotationPackage = if ("gDRinternal" \%in\% .packages(all.available = TRUE)) {
+    
+    "gDRinternal"
  } else {
      "gDRtestData"
  }
