@@ -2,8 +2,8 @@ Type: Package
 Package: gDRcore
 Title: Processing functions and interface to process and analyze drug
     dose-response data
-Version: 1.1.5
-Date: 2024-01-30
+Version: 1.1.9
+Date: 2024-02-07
 Authors@R: c(
     person("Bartosz", "Czech", , "bartosz.czech@contractors.roche.com", role = "aut"),
     person("Arkadiusz", "Gladki", role=c("cre", "aut"), email="gladki.arkadiusz@gmail.com"),
@@ -25,7 +25,11 @@ Imports:
     BiocParallel,
     checkmate,
     futile.logger,
+<<<<<<< HEAD
     gDRutils (>= 1.1.3),
+=======
+    gDRutils (>=  1.1.3),
+>>>>>>> master
     MultiAssayExperiment,
     purrr,
     stringr,    
@@ -34,9 +38,15 @@ Imports:
     data.table
 Suggests:
     BiocStyle,
+<<<<<<< HEAD
     gDRstyle (>= 1.1.1),
     gDRimport (>= 1.1.4),
     gDRtestData (>= 1.1.3),
+=======
+    gDRstyle (>= 1.1.2),
+    gDRimport (>= 1.1.4),
+    gDRtestData (>= 1.1.6),
+>>>>>>> master
     IRanges,
     knitr,
     pkgbuild,
