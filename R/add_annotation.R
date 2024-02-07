@@ -67,9 +67,7 @@ add_CellLine_annotation <- function(
     }
   
     CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate), with = FALSE]
-    
-    if (nrow(CLs_info) == 0) return(dt_metadata)
-    
+  
     validatedCLs <- unique(dt_metadata[[cellline]]) %in% CLs_info[[DB_cellid_header]]
     missingTblCellLines <- NULL
     if (!is.null(fill) && !all(validatedCLs)) {
