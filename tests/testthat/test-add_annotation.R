@@ -19,7 +19,7 @@ test_that("add_CellLine_annotation works", {
 
 test_that("add_Drug_annotation works", {
   dt_unknown <- data.table::data.table(Gnumber = "drug_id")
-  dt_unknown_annotated <- add_Drug_annotation(dt_unknown)
+  dt_unknown_annotated <- purrr::quietly(add_Drug_annotation)(dt_unknown)$result
   expect_equal(dt_unknown_annotated$drug_moa, "unknown")
   expect_equal(dt_unknown_annotated$Gnumber, dt_unknown_annotated$DrugName)
   
