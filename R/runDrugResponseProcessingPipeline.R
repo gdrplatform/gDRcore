@@ -344,7 +344,7 @@ runDrugResponseProcessingPipeline <- function(x,
       )
     
       # 4th step - Fit SE
-      if (data_type == "matrix") {
+      if (data_type == gDRutils::get_experiment_groups("combination")) {
         step_args <- list(
           se = se$result,
           data_type = data_type,

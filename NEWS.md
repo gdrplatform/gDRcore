@@ -1,3 +1,7 @@
+## 1.1.9 (2024-02-07)
+- simplify logic of assays for combination data
+- rename `matrix` into `combination`
+
 ## 1.1.8 (2024-02-06)
 - add support for internal source of annotation
 
