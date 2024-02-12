@@ -1,3 +1,6 @@
+## 1.1.10 (2024-02-12)
+- fix unit tests for GRAN
+
 ## 1.1.9 (2024-02-07)
 - simplify logic of assays for combination data
 - rename `matrix` into `combination`
