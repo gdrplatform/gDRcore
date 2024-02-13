@@ -25,7 +25,10 @@ convert_mae_to_raw_data <- function(mae) {
   
   data.table::setorder(data_df)
   
-  data_df <- data_df[!duplicated(data_df$record_id), ]
+  drug_col <- gDRutils::get_SE_identifiers(mae[[1]], "drug")
+  untreated_tag <- gDRutils::get_SE_identifiers(mae[[1]], "untreated_tag")
+  
+  data_df <- data_df[!(duplicated(record_id) & (get(drug_col) %in% untreated_tag))]
   selected_columns <- !names(data_df) %in% c("record_id", "BackgroundValue",
                                           "WellColumn", "WellRow", "Template", "swap_sa")
   data.table::setorder(data_df, record_id)
