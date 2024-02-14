@@ -2,8 +2,8 @@ Type: Package
 Package: gDRcore
 Title: Processing functions and interface to process and analyze drug
     dose-response data
-Version: 1.1.11
-Date: 2024-02-13
+Version: 1.1.12
+Date: 2024-02-14
 Authors@R: c(
     person("Bartosz", "Czech", , "bartosz.czech@contractors.roche.com", role = "aut"),
     person("Arkadiusz", "Gladki", role=c("cre", "aut"), email="gladki.arkadiusz@gmail.com"),
@@ -45,7 +45,7 @@ Suggests:
     yaml
 VignetteBuilder: 
     knitr
-URL: https://github.com/gdrplatform/gDRcore
+URL: https://github.com/gdrplatform/gDRcore, https://gdrplatform.github.io/gDRcore/
 BugReports: https://github.com/gdrplatform/gDRcore/issues
 biocViews: Software, ShinyApps
 ByteCompile: TRUE
@@ -53,6 +53,6 @@ DeploySubPath: gDRcore
 Encoding: UTF-8
 LazyLoad: yes
 NeedsCompilation: yes
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.0
 Roxygen: list(markdown = TRUE) 
 SwitchrLibrary: gDRcore

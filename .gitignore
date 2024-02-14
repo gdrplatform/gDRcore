@@ -6,3 +6,4 @@
 .github_access_token.txt
 src/*.o
 src/*.so
+docs

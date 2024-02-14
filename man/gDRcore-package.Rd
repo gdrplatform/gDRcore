@@ -18,6 +18,7 @@ To learn more about functions start with \code{help(package = "gDRcore")}
 Useful links:
 \itemize{
   \item \url{https://github.com/gdrplatform/gDRcore}
+  \item \url{https://gdrplatform.github.io/gDRcore/}
   \item Report bugs at \url{https://github.com/gdrplatform/gDRcore/issues}
 }
 

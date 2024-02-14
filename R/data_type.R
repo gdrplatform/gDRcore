@@ -263,7 +263,7 @@ unify_combination_data <- function(df, cl, drug_ids) {
       duplicated_data <- x[duplicated_full_idx, ]
       drug_data <- duplicated_data[, drug_ids[c("drug_name", "drug_name2")], with = FALSE]
       unique_rows <- drug_data[!duplicated(t(apply(drug_data, 1, sort))), ]
-      idx_duplicated <- duplicated_full_idx[which(is.na(matches(do.call(paste, unique_rows),
+      idx_duplicated <- duplicated_full_idx[which(is.na(grr_matches(do.call(paste, unique_rows),
                                                                 do.call(paste, drug_data))$x))]
       
       primary_drug_idfs <- drug_ids[c("drug", "drug_name", "drug_moa", "concentration")]

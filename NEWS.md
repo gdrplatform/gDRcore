@@ -1,5 +1,9 @@
-## 1.1.11 (2024-02-13)
+## 1.1.12 (2024-02-14)
 - fix issue with retrieving unique records from mix of control and treated samples
+
+## 1.1.11 (2024-02-14)
+- make documentation compatible with pkdgdown
+- rename 'matches' to 'grr_matches'
 
 ## 1.1.10 (2024-02-12)
 - fix unit tests for GRAN
