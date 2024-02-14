@@ -79,9 +79,6 @@
     <loc>https://gdrplatform.github.io/gDRcore/reference/gDRcore-package.html</loc>
   </url>
   <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/gdr_matches.html</loc>
-  </url>
-  <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/generateCodilution.html</loc>
   </url>
   <url>
@@ -128,6 +125,9 @@
   </url>
   <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/get_pipeline_steps.html</loc>
+  </url>
+  <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/grr_matches.html</loc>
   </url>
   <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/identify_data_type.html</loc>
