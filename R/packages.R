@@ -1,6 +1,5 @@
 #' @import S4Vectors
 #' @import checkmate
-#' @importFrom data.table ":=" ".SD" ".I"
 #' @useDynLib gDRcore, .registration = TRUE
 
 # data.table awareness

@@ -1,3 +1,7 @@
+## 1.1.1 (2024-02-14)
+- make documentation compatible with pkdgdown
+- rename 'matches' to 'grr_matches'
+
 ## 1.1.10 (2024-02-12)
 - fix unit tests for GRAN
 
