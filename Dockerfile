@@ -11,7 +11,6 @@ RUN mkdir -p /mnt/vol
 COPY rplatform/dependencies.yaml rplatform/.github_access_token.txt* /mnt/vol
 RUN echo "$GITHUB_TOKEN" >> /mnt/vol/.github_access_token.txt
 RUN Rscript -e 'BiocManager::install("BiocStyle")'
-#' @importFrom data.table := .SD .I
 RUN Rscript -e "gDRstyle::installAllDeps()"
 
 #================= Check & build package
