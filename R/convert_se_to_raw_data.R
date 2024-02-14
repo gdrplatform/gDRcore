@@ -19,16 +19,20 @@ convert_mae_to_raw_data <- function(mae) {
   
   data <- gDRutils::MAEpply(mae, convert_se_to_raw_data)
   
+  # Remove duplicates shared between assays to keep only original single-agent
+  common_records <- Reduce(intersect, lapply(data, `[[`, 'record_id'))
+  data[setdiff(names(data), "single-agent")] <- 
+    lapply(data[setdiff(names(data), "single-agent")], function(x) {
+      x[!record_id %in% common_records]
+    })
+  
   data_df <- data.table::rbindlist(data, fill = TRUE)
   
   data_df <- replace_NA_in_raw_data(data_df, mae)
   
   data.table::setorder(data_df)
   
-  drug_col <- gDRutils::get_SE_identifiers(mae[[1]], "drug")
-  untreated_tag <- gDRutils::get_SE_identifiers(mae[[1]], "untreated_tag")
-  
-  data_df <- data_df[!(duplicated(record_id) & (get(drug_col) %in% untreated_tag))]
+  data_df <- data_df[!duplicated(data_df$record_id), ]
   selected_columns <- !names(data_df) %in% c("record_id", "BackgroundValue",
                                           "WellColumn", "WellRow", "Template", "swap_sa")
   data.table::setorder(data_df, record_id)
