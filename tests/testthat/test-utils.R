@@ -1,4 +1,4 @@
-test_that("gdr_matches works as expected", {
+test_that("grr_matches works as expected", {
   # Combination data.
   mat_elem <- data.table::data.table(DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
                                      DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
@@ -16,11 +16,11 @@ test_that("gdr_matches works as expected", {
   ref <- lapply(valid, function(x) ref[, c(clid, x), with = FALSE])
   ref <- do.call(paste, do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]])))))
   
-  matchTrtRef <- gdr_matches(trt, ref, list = FALSE, all.y = FALSE)
+  matchTrtRef <- grr_matches(trt, ref, list = FALSE, all.y = FALSE)
   expect_equal(dim(matchTrtRef), c(4, 2))
   expect_s3_class(matchTrtRef, "data.table")
   
-  matchTrtRefList <- gdr_matches(trt, ref, list = TRUE)
+  matchTrtRefList <- grr_matches(trt, ref, list = TRUE)
   expect_equal(length(matchTrtRefList), 4)
 })
 
