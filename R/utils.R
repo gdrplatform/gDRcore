@@ -440,12 +440,12 @@ rbindParallelList <- function(x, name) {
 #' ref <- do.call(paste, 
 #'   do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]]))))
 #' )
-#' matches(trt, ref, list = FALSE, all.y = FALSE)
+#' gdr_matches(trt, ref, list = FALSE, all.y = FALSE)
 #' 
 #' @return data.table
 #' 
 #' @export
-matches <- function(x, 
+gdr_matches <- function(x, 
                     y, 
                     all.x = TRUE, 
                     all.y = TRUE, 

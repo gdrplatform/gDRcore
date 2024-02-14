@@ -99,7 +99,7 @@ map_df <- function(trt_md,
     # 2. search for exact matches found in the vectorised way
     #    cases with non-exact matches will be returned as NAs
     match_l <-
-      matches(
+      gdr_matches(
         do.call("paste", trt_md[, present_ref_cols, with = FALSE]),
         do.call("paste", ref_md[, present_ref_cols, with = FALSE]),
         all.y = FALSE,
@@ -266,7 +266,7 @@ map_df <- function(trt_md,
       )
     )
     # match trt and ref
-    matchTrtRef <- matches(trt, ref, list = FALSE, all.y = FALSE)
+    matchTrtRef <- gdr_matches(trt, ref, list = FALSE, all.y = FALSE)
     matchTrtRef[["x"]] <- trtNames[matchTrtRef[["x"]]]
     matchTrtRef[["y"]] <- refNames[matchTrtRef[["y"]]]
     out <- split(matchTrtRef[["y"]], matchTrtRef[["x"]])
