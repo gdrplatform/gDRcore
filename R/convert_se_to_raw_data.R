@@ -20,7 +20,7 @@ convert_mae_to_raw_data <- function(mae) {
   data <- gDRutils::MAEpply(mae, convert_se_to_raw_data)
   
   # Remove duplicates shared between assays to keep only original single-agent
-  common_records <- Reduce(intersect, lapply(data, `[[`, 'record_id'))
+  common_records <- Reduce(intersect, lapply(data, "[[", "record_id"))
   sa_name <- gDRutils::get_experiment_groups("single-agent")[["single-agent"]]
   data[setdiff(names(data), sa_name)] <- 
     lapply(data[setdiff(names(data), sa_name)], function(x) {
