@@ -1,3 +1,26 @@
+## 1.1.12 (2024-02-14)
+- fix issue with retrieving unique records from mix of control and treated samples
+
+## 1.1.11 (2024-02-14)
+- make documentation compatible with pkdgdown
+- rename 'matches' to 'grr_matches'
+
+## 1.1.10 (2024-02-12)
+- fix unit tests for GRAN
+
+## 1.1.9 (2024-02-07)
+- simplify logic of assays for combination data
+- rename `matrix` into `combination`
+
+## 1.1.8 (2024-02-06)
+- add support for internal source of annotation
+
+## 1.1.7 (2024-02-06)
+- fix bug with converting standardize MAE into raw data
+
+## 1.1.6 (2024-02-05)
+- add vignette for a data model
+
 ## 1.1.5 (2024-02-01)
 - update wrappers for co-dilution data
 

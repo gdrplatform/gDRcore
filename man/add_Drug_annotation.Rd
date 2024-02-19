@@ -8,9 +8,9 @@ add_Drug_annotation(
   dt_metadata,
   fname = "drugs.csv",
   fill = "unknown",
-  annotationPackage = if ("gDRinternalData" \%in\% .packages(all.available = TRUE)) {
-   
-     "gDRinternalData"
+  annotationPackage = if ("gDRinternal" \%in\% .packages(all.available = TRUE)) {
+    
+    "gDRinternal"
  } else {
      "gDRtestData"
  }

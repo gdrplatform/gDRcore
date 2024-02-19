@@ -338,7 +338,7 @@ calculate_Loewe <- function(
 
 
 get_isocutoffs <- function(df_mean, normalization_type) {
-  if (min(df_mean[normalization_type == normalization_type, x], na.rm = TRUE) > 0.7) {
+  if (min(df_mean[normalization_type == normalization_type, smooth], na.rm = TRUE) > 0.7) {
     iso_cutoffs <- NULL
   } else {
     if (normalization_type == "GR") {
@@ -350,7 +350,7 @@ get_isocutoffs <- function(df_mean, normalization_type) {
       max(
         max_val, 
         ceiling(
-          20 * min(df_mean[normalization_type == normalization_type, x] + 0.08, na.rm = TRUE)
+          20 * min(df_mean[normalization_type == normalization_type, smooth] + 0.08, na.rm = TRUE)
         ) / 20
       ), 
       0.8,  

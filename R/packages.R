@@ -1,6 +1,5 @@
 #' @import S4Vectors
 #' @import checkmate
-#' @importFrom data.table ":=" ".SD" ".I"
 #' @useDynLib gDRcore, .registration = TRUE
 
 # data.table awareness
@@ -45,7 +44,8 @@ if (getRversion() >= "2.15.1") {
       "Duration",
       "isDay0",
       "record_id",
-      "ratio"
+      "ratio",
+      "smooth"
     ), 
     utils::packageName())
 }

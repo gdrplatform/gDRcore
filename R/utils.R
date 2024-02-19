@@ -208,9 +208,8 @@ data_model.data.table <- function(x) {
 get_data_type_to_data_model_mapping <- function() {
   c(
     `single-agent` = "single-agent",
-    "cotreatment" = "single-agent",
     "co-dilution" = "single-agent",
-    "matrix" = "combination"
+    "combination" = "combination"
   )
 }
 
@@ -441,12 +440,12 @@ rbindParallelList <- function(x, name) {
 #' ref <- do.call(paste, 
 #'   do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]]))))
 #' )
-#' matches(trt, ref, list = FALSE, all.y = FALSE)
+#' grr_matches(trt, ref, list = FALSE, all.y = FALSE)
 #' 
 #' @return data.table
 #' 
 #' @export
-matches <- function(x, 
+grr_matches <- function(x, 
                     y, 
                     all.x = TRUE, 
                     all.y = TRUE, 

@@ -65,11 +65,13 @@ identify_data_type <- function(df,
 
   df[, record_id := .I]
   df[, type := NA_character_]
+  
+  sa_name <- gDRutils::get_experiment_groups("single-agent")[["single-agent"]]
 
   controls <- rowSums(df[, conc_ids, with = FALSE] == 0) == length(conc_ids)
   single_agent <- rowSums(df[, conc_ids, with = FALSE] != 0) == 1
   df$type <- ifelse(controls, "control",
-                    ifelse(single_agent, "single-agent", NA))
+                    ifelse(single_agent, sa_name, NA))
   
 
   if (length(conc_ids) > 1) {
@@ -81,7 +83,9 @@ identify_data_type <- function(df,
     )
     conc_ratio <- conc_ratio[!names(conc_ratio) %in% c("Inf", "-Inf")]
     
-    type <- ifelse(length(conc_ratio) <= codilution_conc, "co-dilution", "matrix")
+    type <- ifelse(length(conc_ratio) <= codilution_conc,
+                   gDRutils::get_experiment_groups("single-agent")[["co-dilution"]],
+                   gDRutils::get_experiment_groups("combination"))
     df$type[missing_type_rows] <- type
   }
   df
@@ -158,7 +162,10 @@ split_raw_data <- function(df,
       "drug_moa", "drug_moa2", "drug_moa3", "concentration", "concentration2",
       "concentration3"), 
     simplify = FALSE)
-  ) 
+  )
+  
+  sa_name <- gDRutils::get_experiment_groups("single-agent")[["single-agent"]]
+  
   drug_ids <- drug_ids[which(drug_ids %in% names(df))]
   codrug_ids <- drug_ids[grep("[0-9]", names(drug_ids))]
   conc_idx <- drug_ids[grep("concentration", names(drug_ids))]
@@ -169,7 +176,7 @@ split_raw_data <- function(df,
   types <- setdiff(names(df_list), "control")
   control <- df_list[["control"]]
   df_list[["control"]] <- NULL
-  cotrt_types <- setdiff(names(df_list), "single-agent")
+  cotrt_types <- setdiff(names(df_list), sa_name)
   
   control_sa_idx <- which(
     rowSums(df[, conc_idx, with = FALSE] == 0) == length(conc_idx)
@@ -195,8 +202,8 @@ split_raw_data <- function(df,
       df_merged <- rbind(
         df_list[[x]], 
         cotrt_matching[control, on = intersect(names(cotrt_matching), names(control))])
-      if (x == "matrix") {
-        matrix_data <- rbind(df_merged, df_list[["single-agent"]])
+      if (x == gDRutils::get_experiment_groups("combination")) {
+        matrix_data <- rbind(df_merged, df_list[[sa_name]])
         for (j in conc_idx)
           data.table::set(matrix_data, which(is.na(matrix_data[[j]])), j, 0)
         for (j in codrug_drug_id) {
@@ -209,10 +216,10 @@ split_raw_data <- function(df,
     })
   }
   
-  if (any("single-agent" == names(df_list))) {
+  if (any(sa_name == names(df_list))) {
     sa_idx <- gDRutils::loop(
       grep(drug_ids[["concentration"]], drug_ids, value = TRUE), 
-      function(x) which(!df_list[["single-agent"]][, x, with = FALSE] == 0)
+      function(x) which(!df_list[[sa_name]][, x, with = FALSE] == 0)
     )
     sa_idx[["concentration"]] <- NULL
     
@@ -223,15 +230,15 @@ split_raw_data <- function(df,
         value = TRUE
       )
       selected_columns <- unname(drug_ids[c("drug_name", "drug", "drug_moa", "concentration")])
-      df_list[["single-agent"]][sa_idx[[codrug]], selected_columns] <- 
-        df_list[["single-agent"]][sa_idx[[codrug]], codrug_cols, with = FALSE]
+      df_list[[sa_name]][sa_idx[[codrug]], selected_columns] <- 
+        df_list[[sa_name]][sa_idx[[codrug]], codrug_cols, with = FALSE]
     }
-    df_list[["single-agent"]][, codrug_ids] <- NULL
+    df_list[[sa_name]][, codrug_ids] <- NULL
     
-    selected_columns <- names(df_list[["single-agent"]])
+    selected_columns <- names(df_list[[sa_name]])
     
-    df_list[["single-agent"]] <- rbind(
-      df_list[["single-agent"]],
+    df_list[[sa_name]] <- rbind(
+      df_list[[sa_name]],
       control_sa[, selected_columns, with = FALSE]
     )
   }
@@ -256,7 +263,7 @@ unify_combination_data <- function(df, cl, drug_ids) {
       duplicated_data <- x[duplicated_full_idx, ]
       drug_data <- duplicated_data[, drug_ids[c("drug_name", "drug_name2")], with = FALSE]
       unique_rows <- drug_data[!duplicated(t(apply(drug_data, 1, sort))), ]
-      idx_duplicated <- duplicated_full_idx[which(is.na(matches(do.call(paste, unique_rows),
+      idx_duplicated <- duplicated_full_idx[which(is.na(grr_matches(do.call(paste, unique_rows),
                                                                 do.call(paste, drug_data))$x))]
       
       primary_drug_idfs <- drug_ids[c("drug", "drug_name", "drug_moa", "concentration")]
