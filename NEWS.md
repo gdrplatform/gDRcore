@@ -221,7 +221,7 @@
 * refactor mapping function to properly handle drug3
 
 ## gDRcore 0.1.3.11 - 2022-12-16
-* Replace parallelize function with gDRutils::loop
+* replace parallelize function with gDRutils::loop
 
 ## gDRcore 0.1.3.10 - 2022-12-15
 * add assert for vehicle values in input data in `runDrugResponseProcessingPipeline`
