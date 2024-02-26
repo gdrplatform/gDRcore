@@ -29,15 +29,12 @@ reference:
 - title: Data type
 - contents:
   - has_keyword("data_type")
-- title: Mappping
-- contents:
-  - has_keyword("map_df")
-- title: Identifying keys
-- contents:
-  - has_keyword("identify_keys")
 - title: Preparing input
 - contents:
   - has_keyword("prepare_input")
+- title: Mappping
+- contents:
+  - has_keyword("map_df")
 - title: Utils
 - contents:
   - has_keyword("utils")

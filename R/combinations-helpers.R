@@ -25,7 +25,7 @@
 #' 
 #' map_ids_to_fits(pred, match_col, fittings, fitting_id_col)
 #'
-#' @keywords combinations
+#' @keywords map_df
 #' @export
 map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
   
@@ -154,7 +154,7 @@ convertDFtoBumpyMatrixUsingIds <- function(df,
 #' @return numeric vector of standardized concentrations.
 #'
 #' @seealso map_conc_to_standardized_conc
-#' @keywords combinations
+#' @keywords utils
 #' @export
 replace_conc_with_standardized_conc <- function(original_concs, 
                                                 conc_map, 
@@ -200,7 +200,7 @@ replace_conc_with_standardized_conc <- function(original_concs,
 #' @seealso replace_conc_w_standardized_conc
 #' @details The concentrations are standardized in that they will contain 
 #' regularly spaced dilutions and close values will be rounded.
-#' @keywords combinations
+#' @keywords utils
 #' @export
 map_conc_to_standardized_conc <- function(conc1, conc2) {
   # Remove single-agent.
@@ -252,7 +252,7 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
 #' @return vector of standardized concentrations
 #' @details If no \code{conc} are passed, \code{NULL} is returned.
 #'
-#' @keywords combinations
+#' @keywords utils
 #' @export
 .standardize_conc <- function(conc) {
   rconc <- if (S4Vectors::isEmpty(conc)) {
