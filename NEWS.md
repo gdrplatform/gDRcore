@@ -212,7 +212,7 @@
 * update path to annotation data
 
 ## gDRcore 0.1.3.14 - 2023-02-10
-* Clean-up code
+* clean-up code
 
 ## gDRcore 0.1.3.13 - 2023-01-13
 * clean-up code
