@@ -85,7 +85,7 @@ processed data (fit_SE). See details for more in-depth explanations.</p>
 <span>  <span class="va">data_type</span>,</span>
 <span>  readout <span class="op">=</span> <span class="st">"ReadoutValue"</span>,</span>
 <span>  nested_identifiers <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  nested_confounders <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df_</span><span class="op">)</span>, <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/identifiers.html" class="external-link">get_env_identifiers</a></span><span class="op">(</span><span class="st">"barcode"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  nested_confounders <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df_</span><span class="op">)</span>, <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/identifiers.html" class="external-link">get_env_identifiers</a></span><span class="op">(</span><span class="st">"barcode"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  override_untrt_controls <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -107,7 +107,7 @@ processed data (fit_SE). See details for more in-depth explanations.</p>
 <span>  <span class="va">se</span>,</span>
 <span>  <span class="va">data_type</span>,</span>
 <span>  nested_identifiers <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  nested_confounders <span class="op">=</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/SE_metadata.html" class="external-link">get_SE_identifiers</a></span><span class="op">(</span><span class="va">se</span>, <span class="st">"barcode"</span>, simplify <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  nested_confounders <span class="op">=</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/SE_metadata.html" class="external-link">get_SE_identifiers</a></span><span class="op">(</span><span class="va">se</span>, <span class="st">"barcode"</span>, simplify <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>  control_mean_fxn <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>     <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>, trim <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span>
 <span> <span class="op">}</span>,</span>
@@ -125,7 +125,7 @@ processed data (fit_SE). See details for more in-depth explanations.</p>
 <span>     <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>, trim <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span>
 <span> <span class="op">}</span>,</span>
 <span>  nested_identifiers <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  nested_confounders <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df_</span><span class="op">)</span>, <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/identifiers.html" class="external-link">get_env_identifiers</a></span><span class="op">(</span><span class="st">"barcode"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  nested_confounders <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df_</span><span class="op">)</span>, <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/identifiers.html" class="external-link">get_env_identifiers</a></span><span class="op">(</span><span class="st">"barcode"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  override_untrt_controls <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ndigit_rounding <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  control_assay <span class="op">=</span> <span class="st">"Controls"</span>,</span>
@@ -140,7 +140,7 @@ processed data (fit_SE). See details for more in-depth explanations.</p>
 <span>     <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>, trim <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span>
 <span> <span class="op">}</span>,</span>
 <span>  nested_identifiers_l <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  nested_confounders <span class="op">=</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/identifiers.html" class="external-link">get_env_identifiers</a></span><span class="op">(</span><span class="st">"barcode"</span><span class="op">)</span>,</span>
+<span>  nested_confounders <span class="op">=</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/identifiers.html" class="external-link">get_env_identifiers</a></span><span class="op">(</span><span class="st">"barcode"</span><span class="op">)</span>,</span>
 <span>  override_untrt_controls <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  override_masked <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  ndigit_rounding <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -356,8 +356,8 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-in"><span><span class="va">keys</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Trt <span class="op">=</span> <span class="st">"Concentration"</span>, <span class="st">"masked_tag"</span> <span class="op">=</span> <span class="st">"masked"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">assays</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Normalized"</span> <span class="op">=</span> <span class="va">normalized</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></span><span class="op">(</span>assays <span class="op">=</span> <span class="va">assays</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/SE_metadata.html" class="external-link">set_SE_keys</a></span><span class="op">(</span><span class="va">se</span>, <span class="va">keys</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/SE_metadata.html" class="external-link">set_SE_identifiers</a></span><span class="op">(</span><span class="va">se</span>, <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/identifiers.html" class="external-link">get_env_identifiers</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/SE_metadata.html" class="external-link">set_SE_keys</a></span><span class="op">(</span><span class="va">se</span>, <span class="va">keys</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/SE_metadata.html" class="external-link">set_SE_identifiers</a></span><span class="op">(</span><span class="va">se</span>, <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/identifiers.html" class="external-link">get_env_identifiers</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">se1</span> <span class="op">&lt;-</span> <span class="fu">average_SE</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">se</span>,</span></span>
 <span class="r-in"><span>  data_type <span class="op">=</span> <span class="st">"single-agent"</span>,</span></span>
@@ -368,18 +368,18 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required namespace: testthat</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/get_test_data.html" class="external-link">get_test_data</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">l_tbl</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/load_data.html" class="external-link">load_data</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  manifest_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/manifest_path-method.html" class="external-link">manifest_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>, </span></span>
-<span class="r-in"><span>  df_template_files <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/template_path-method.html" class="external-link">template_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>, </span></span>
-<span class="r-in"><span>  results_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/result_path-method.html" class="external-link">result_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/get_test_data.html" class="external-link">get_test_data</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">l_tbl</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/load_data.html" class="external-link">load_data</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  manifest_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/manifest_path-method.html" class="external-link">manifest_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>, </span></span>
+<span class="r-in"><span>  df_template_files <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/template_path-method.html" class="external-link">template_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>, </span></span>
+<span class="r-in"><span>  results_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/result_path-method.html" class="external-link">result_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Manifest loaded successfully</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Reading Template_7daytreated.xlsx with load_templates_xlsx</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Loading Template_7daytreated.xlsx</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Loading Template_Untreated.xlsx</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Templates loaded successfully!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Reading file /usr/local/lib/R/site-library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:47] Manifest loaded successfully</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:47] Reading Template_7daytreated.xlsx with load_templates_xlsx</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:47] Loading Template_7daytreated.xlsx</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:47] Loading Template_Untreated.xlsx</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Templates loaded successfully!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Reading file /usr/local/lib/R/site-library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> New names:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...1`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...2`</span>
@@ -406,14 +406,14 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...23`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...24`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...25`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Plate 201904190a read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Plate 201904190b read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Plate 201904190c read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Plate 201904190d read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Plate 201904190e read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Plate 201904190f read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] File done</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Reading file /usr/local/lib/R/site-library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Plate 201904190a read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Plate 201904190b read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Plate 201904190c read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Plate 201904190d read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Plate 201904190e read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Plate 201904190f read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] File done</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Reading file /usr/local/lib/R/site-library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> New names:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...1`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...2`</span>
@@ -440,40 +440,40 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...23`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...24`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...25`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Plate 201904197a read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Plate 201904197b read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Plate 201904197c read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Plate 201904197d read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Plate 201904197e read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Plate 201904197f read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] File done</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Plate 201904197a read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Plate 201904197b read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Plate 201904197c read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Plate 201904197d read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Plate 201904197e read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Plate 201904197f read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] File done</span>
 <span class="r-in"><span><span class="va">imported_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="merge_data.html">merge_data</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">manifest</span>, </span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">treatments</span>, </span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">data</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Merging data</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Merging the metadata (manifest and treatment files)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2024-02-23 12:15:07] 4608 well loaded, 768 wells discarded for lack of annotation, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Merging data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Merging the metadata (manifest and treatment files)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2024-02-26 11:55:48] 4608 well loaded, 768 wells discarded for lack of annotation, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     3840 data point selected</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:07] Merge with Cell line info</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Merge with Cell line info</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/quietly.html" class="external-link">quietly</a></span><span class="op">(</span><span class="va">create_SE</span><span class="op">)</span><span class="op">(</span><span class="va">imported_data</span>, data_type <span class="op">=</span> <span class="st">"single-agent"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/get_test_data.html" class="external-link">get_test_data</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">l_tbl</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/load_data.html" class="external-link">load_data</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  manifest_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/manifest_path-method.html" class="external-link">manifest_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>, </span></span>
-<span class="r-in"><span>  df_template_files <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/template_path-method.html" class="external-link">template_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>, </span></span>
-<span class="r-in"><span>  results_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/result_path-method.html" class="external-link">result_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/get_test_data.html" class="external-link">get_test_data</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">l_tbl</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/load_data.html" class="external-link">load_data</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  manifest_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/manifest_path-method.html" class="external-link">manifest_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>, </span></span>
+<span class="r-in"><span>  df_template_files <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/template_path-method.html" class="external-link">template_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>, </span></span>
+<span class="r-in"><span>  results_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/result_path-method.html" class="external-link">result_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Manifest loaded successfully</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Reading Template_7daytreated.xlsx with load_templates_xlsx</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Loading Template_7daytreated.xlsx</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Loading Template_Untreated.xlsx</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Templates loaded successfully!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Reading file /usr/local/lib/R/site-library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Manifest loaded successfully</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Reading Template_7daytreated.xlsx with load_templates_xlsx</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Loading Template_7daytreated.xlsx</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Loading Template_Untreated.xlsx</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Templates loaded successfully!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:48] Reading file /usr/local/lib/R/site-library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> New names:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...1`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...2`</span>
@@ -500,14 +500,14 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...23`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...24`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...25`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Plate 201904190a read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Plate 201904190b read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Plate 201904190c read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Plate 201904190d read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Plate 201904190e read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Plate 201904190f read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] File done</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Reading file /usr/local/lib/R/site-library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Plate 201904190a read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Plate 201904190b read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Plate 201904190c read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Plate 201904190d read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Plate 201904190e read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Plate 201904190f read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] File done</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Reading file /usr/local/lib/R/site-library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> New names:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...1`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...2`</span>
@@ -534,24 +534,24 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...23`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...24`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...25`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Plate 201904197a read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Plate 201904197b read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Plate 201904197c read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Plate 201904197d read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Plate 201904197e read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Plate 201904197f read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] File done</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Plate 201904197a read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Plate 201904197b read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Plate 201904197c read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Plate 201904197d read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Plate 201904197e read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Plate 201904197f read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] File done</span>
 <span class="r-in"><span><span class="va">imported_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="merge_data.html">merge_data</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">manifest</span>, </span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">treatments</span>, </span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">data</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Merging data</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Merging the metadata (manifest and treatment files)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2024-02-23 12:15:08] 4608 well loaded, 768 wells discarded for lack of annotation, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Merging data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Merging the metadata (manifest and treatment files)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2024-02-26 11:55:49] 4608 well loaded, 768 wells discarded for lack of annotation, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     3840 data point selected</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:08] Merge with Cell line info</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] Merge with Cell line info</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">inl</span> <span class="op">&lt;-</span> <span class="fu"><a href="prepare_input.html">prepare_input</a></span><span class="op">(</span><span class="va">imported_data</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>'Plate' nested confounder(s) is/are not present in the data.</span>
@@ -560,8 +560,8 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-in"><span> <span class="va">inl</span><span class="op">$</span><span class="va">df_list</span><span class="op">[[</span><span class="st">"single-agent"</span><span class="op">]</span><span class="op">]</span>,</span></span>
 <span class="r-in"><span> data_type <span class="op">=</span> <span class="st">"single-agent"</span>,</span></span>
 <span class="r-in"><span> nested_confounders <span class="op">=</span> <span class="va">inl</span><span class="op">$</span><span class="va">nested_confounders</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:49] </span>
 <span class="r-in"><span> </span></span>
 <span class="r-in"><span><span class="fu">normalize_SE</span><span class="op">(</span><span class="va">se</span>, data_type <span class="op">=</span> <span class="st">"single-agent"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> class: SummarizedExperiment </span>
@@ -578,18 +578,18 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-out co"><span class="r-pr">#&gt;</span> colData names(6): clid CellLineName ... subtype ReferenceDivisionTime</span>
 <span class="r-in"><span><span class="va">p_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"pcheck"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">p_dir</span><span class="op">)</span> </span></span>
-<span class="r-in"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/get_test_data.html" class="external-link">get_test_data</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">l_tbl</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/load_data.html" class="external-link">load_data</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  manifest_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/manifest_path-method.html" class="external-link">manifest_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>, </span></span>
-<span class="r-in"><span>  df_template_files <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/template_path-method.html" class="external-link">template_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>, </span></span>
-<span class="r-in"><span>  results_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/result_path-method.html" class="external-link">result_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/get_test_data.html" class="external-link">get_test_data</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">l_tbl</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/load_data.html" class="external-link">load_data</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  manifest_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/manifest_path-method.html" class="external-link">manifest_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>, </span></span>
+<span class="r-in"><span>  df_template_files <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/template_path-method.html" class="external-link">template_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>, </span></span>
+<span class="r-in"><span>  results_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/result_path-method.html" class="external-link">result_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Manifest loaded successfully</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Reading Template_7daytreated.xlsx with load_templates_xlsx</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Loading Template_7daytreated.xlsx</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Loading Template_Untreated.xlsx</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Templates loaded successfully!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Reading file /usr/local/lib/R/site-library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Manifest loaded successfully</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Reading Template_7daytreated.xlsx with load_templates_xlsx</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Loading Template_7daytreated.xlsx</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Loading Template_Untreated.xlsx</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Templates loaded successfully!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Reading file /usr/local/lib/R/site-library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> New names:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...1`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...2`</span>
@@ -616,14 +616,14 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...23`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...24`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...25`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Plate 201904190a read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Plate 201904190b read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Plate 201904190c read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Plate 201904190d read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Plate 201904190e read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Plate 201904190f read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] File done</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Reading file /usr/local/lib/R/site-library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Plate 201904190a read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Plate 201904190b read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Plate 201904190c read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Plate 201904190d read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Plate 201904190e read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Plate 201904190f read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] File done</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Reading file /usr/local/lib/R/site-library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> New names:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...1`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...2`</span>
@@ -650,24 +650,24 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...23`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...24`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...25`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Plate 201904197a read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Plate 201904197b read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Plate 201904197c read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:09] Plate 201904197d read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:10] Plate 201904197e read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:10] Plate 201904197f read; 384 wells</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:10] File done</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Plate 201904197a read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Plate 201904197b read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Plate 201904197c read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Plate 201904197d read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Plate 201904197e read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Plate 201904197f read; 384 wells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] File done</span>
 <span class="r-in"><span><span class="va">imported_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="merge_data.html">merge_data</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">manifest</span>, </span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">treatments</span>, </span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">data</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:10] Merging data</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:10] Merging the metadata (manifest and treatment files)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2024-02-23 12:15:10] 4608 well loaded, 768 wells discarded for lack of annotation, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Merging data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Merging the metadata (manifest and treatment files)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2024-02-26 11:55:50] 4608 well loaded, 768 wells discarded for lack of annotation, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     3840 data point selected</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-23 12:15:10] Merge with Cell line info</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-26 11:55:50] Merge with Cell line info</span>
 <span class="r-in"><span><span class="fu">runDrugResponseProcessingPipeline</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">imported_data</span>, </span></span>
 <span class="r-in"><span>  data_dir <span class="op">=</span> <span class="va">p_dir</span></span></span>

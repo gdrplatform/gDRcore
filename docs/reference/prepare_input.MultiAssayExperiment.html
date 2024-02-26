@@ -75,7 +75,7 @@ splitting df_ into (per experiment) df_list
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for MultiAssayExperiment</span></span>
 <span><span class="fu"><a href="prepare_input.html">prepare_input</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  nested_confounders <span class="op">=</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRutils/reference/SE_metadata.html" class="external-link">get_SE_identifiers</a></span><span class="op">(</span><span class="va">x</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="st">"barcode"</span><span class="op">)</span>,</span>
+<span>  nested_confounders <span class="op">=</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/SE_metadata.html" class="external-link">get_SE_identifiers</a></span><span class="op">(</span><span class="va">x</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="st">"barcode"</span><span class="op">)</span>,</span>
 <span>  nested_identifiers_l <span class="op">=</span> <span class="fu">.get_default_nested_identifiers</span><span class="op">(</span><span class="va">x</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,</span>
 <span>  raw_data_field <span class="op">=</span> <span class="st">"experiment_raw_data"</span>,</span>
 <span>  split_data <span class="op">=</span> <span class="cn">TRUE</span>,</span>
