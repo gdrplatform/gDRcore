@@ -56,3 +56,5 @@ fitting metrics. Below details the relevant functions from the gDRcore package t
 
 ```
 
+# Website
+A package website is available under [this link](https://gdrplatform.github.io/gDRcore/).
