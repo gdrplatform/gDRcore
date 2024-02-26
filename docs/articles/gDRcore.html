@@ -126,26 +126,35 @@ are in place.</p>
 <p>When the data and metadata are merged into a long table, the wrapper
 function <code>runDrugResponseProcessingPipeline</code> can be used to
 generate an MAE with processed and analyzed data. In practice
-runDrugResponseProcessingPipeline does the following steps: *
+runDrugResponseProcessingPipeline does the following steps:</p>
+<ul>
+<li>
 <code>create_SE</code> creates the structure of the MAE and the
 associated SEs by assigning metadata into the row and column attributes.
 The assignment is performed in the function split_SE_components (see
 details below for the assumption made when building SE structures).
 create_SE also dispatches the raw data and controls into the right
 nested tables. Note that data may be duplicated between different SEs to
-make them self-contained. * <code>normalize_SE</code> normalizes the raw
-data based on the control. Calculation of the GR value is based on a
-cell line division time provided by the reference database if no
-pre-treatment control is provided. If both information are missing, GR
-values cannot be calculated. Additional normalization can be added as
-new rows in the nested table. * <code>average_SE</code> averages
-technical replicates that are stored in the same nested table are
-averaged. * <code>fit_SE</code> fits the dose-response curves and
-calculates response metrics for each normalization type. *
+make them self-contained.</li>
+<li>
+<code>normalize_SE</code> normalizes the raw data based on the
+control. Calculation of the GR value is based on a cell line division
+time provided by the reference database if no pre-treatment control is
+provided. If both information are missing, GR values cannot be
+calculated. Additional normalization can be added as new rows in the
+nested table.</li>
+<li>
+<code>average_SE</code> averages technical replicates that are
+stored in the same nested table are averaged.</li>
+<li>
+<code>fit_SE</code> fits the dose-response curves and calculates
+response metrics for each normalization type.</li>
+<li>
 <code>fit_SE.combinations</code> calculates synergy scores for drug
 combination data and, if the data is appropriate, fits along the two
 drugs and matrix-level metrics (e.g. isobolograms) are calculated. This
-is also performed for each normalization type independently.</p>
+is also performed for each normalization type independently.</li>
+</ul>
 <p>The functions to process the data have parameters for specifying the
 names of the variables and assays. Additional parameters are available
 to personalize the processing steps such as force the nesting (or not)
