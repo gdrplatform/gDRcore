@@ -85,7 +85,7 @@
 * update annotation column names for cell line annotation as per changes in the gDRutils
 
 ## gDRcore 0.99.32 - 2023-07-25
-* extended logic for supporting cols with dash, e.g. additional perturbations with "-"
+* extend logic for supporting cols with dash, e.g. additional perturbations with "-"
 
 ## gDRcore 0.99.31 - 2023-07-19
 * update the logic for handling warnings in the pipeline
@@ -125,7 +125,7 @@
 * switch from `zoo::rollmean` to `data.table::frollmean`
 
 ## gDRcore 0.99.19 - 2023-06-06
-* replaced reshape2 functions by functions from data.table
+* replace reshape2 functions by functions from data.table
 
 ## gDRcore 0.99.18 - 2023-05-31
 * fix managing of mixed types of raw data
@@ -212,16 +212,16 @@
 * update path to annotation data
 
 ## gDRcore 0.1.3.14 - 2023-02-10
-* Clean-up code
+* clean-up code
 
 ## gDRcore 0.1.3.13 - 2023-01-13
-* Clean-up code
+* clean-up code
 
 ## gDRcore 0.1.3.12 - 2023-01-12
 * refactor mapping function to properly handle drug3
 
 ## gDRcore 0.1.3.11 - 2022-12-16
-* Replace parallelize function with gDRutils::loop
+* replace parallelize function with gDRutils::loop
 
 ## gDRcore 0.1.3.10 - 2022-12-15
 * add assert for vehicle values in input data in `runDrugResponseProcessingPipeline`
@@ -242,7 +242,7 @@
 * remove global parameters for `BiocParallel`
 
 ## gDRcore 0.1.3.4 - 2022-09-29
-* Change the logic for using cores in `BiocParallel`
+* change the logic for using cores in `BiocParallel`
 
 ## gDRcore 0.1.3.3 - 2022-09-27
 * update the logic for parallel computing
