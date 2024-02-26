@@ -242,7 +242,7 @@
 * remove global parameters for `BiocParallel`
 
 ## gDRcore 0.1.3.4 - 2022-09-29
-* Change the logic for using cores in `BiocParallel`
+* change the logic for using cores in `BiocParallel`
 
 ## gDRcore 0.1.3.3 - 2022-09-27
 * update the logic for parallel computing
