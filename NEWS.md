@@ -215,7 +215,7 @@
 * Clean-up code
 
 ## gDRcore 0.1.3.13 - 2023-01-13
-* Clean-up code
+* clean-up code
 
 ## gDRcore 0.1.3.12 - 2023-01-12
 * refactor mapping function to properly handle drug3
