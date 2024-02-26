@@ -17,6 +17,7 @@
 #' test_synthetic_data(original, original, "test")
 #' 
 #' @return `NULL`
+#' @keywords test_utils
 #' @export
 test_synthetic_data <- function(original,
                                 data,

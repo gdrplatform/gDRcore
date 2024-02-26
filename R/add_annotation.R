@@ -10,6 +10,7 @@
 #' @param fname string with file name with annotation
 #' @param fill string indicating how unknown cell lines should be filled in the DB
 #' @param annotationPackage string indication name of the package containing cellline annotation
+#' @keywords annotation
 #' @details
 #' The logic of adding celline annotation for dt_metadata based on 
 #' the annotation file stored in gDRtestData. Other fields are set as "unknown".
@@ -118,6 +119,7 @@ add_CellLine_annotation <- function(
 #' @param fname string with file name with annotation
 #' @param fill string indicating how unknown cell lines should be filled in the DB
 #' @param annotationPackage string indication name of the package containing drug annotation
+#' @keywords annotation
 #' @details The logic of adding drug annotation for dt_metadata 
 #' based on the annotation file stored in gDRtestData.
 #' @examples
@@ -241,6 +243,7 @@ add_Drug_annotation <- function(
 #' Remove batch from Gnumber
 #' 
 #' @param drug drug name
+#' @keywords annotation
 #'
 #' @examples
 #' remove_drug_batch("DRUG.123")

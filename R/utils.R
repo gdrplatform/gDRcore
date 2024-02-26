@@ -40,6 +40,7 @@
 #'
 #' @return a data.table with cleaned metadata
 #' @details Adds annotations and check whether user provided correct input data.
+#' @keywords utils
 #' @export
 #'
 cleanup_metadata <- function(df_metadata) {
@@ -110,6 +111,7 @@ cleanup_metadata <- function(df_metadata) {
 #'
 #' @param df_ a data.table with results
 #'
+#' @keywords utils
 #' @return a ordered data.table with results
 #'
 order_result_df <- function(df_) {
@@ -165,6 +167,7 @@ order_result_df <- function(df_) {
 #' 
 #' @return string with the information of the raw data follows single-agent or 
 #' combination data model
+#' @keywords utils
 #' @export
 data_model <- function(x) {
   UseMethod("data_model")
@@ -178,6 +181,7 @@ data_model <- function(x) {
 #'
 #' @return string with the information of the raw data follows single-agent or 
 #' combination data model
+#' @keywords utils
 #' @export
 data_model.data.table <- function(x) {
   
@@ -205,6 +209,7 @@ data_model.data.table <- function(x) {
 }
 
 
+#' @keywords utils
 get_data_type_to_data_model_mapping <- function() {
   c(
     `single-agent` = "single-agent",
@@ -220,6 +225,7 @@ get_data_type_to_data_model_mapping <- function() {
 #'
 #' @return string with the information of the raw data follows single-agent or 
 #' combination data model
+#' @keywords utils
 #' @export
 data_model.character <- function(x) {
   # TODO: switch to gDRutils::get_experiment_groups()
@@ -261,6 +267,7 @@ validate_data_models_availability <- function(d_types, s_d_models) {
 #' 
 #' @return vector of nested identifiers
 #' 
+#' @keywords utils
 #' @export
 get_default_nested_identifiers <- function(x, data_model = NULL) {
   UseMethod("get_default_nested_identifiers")
@@ -268,6 +275,7 @@ get_default_nested_identifiers <- function(x, data_model = NULL) {
 
 
 #' @export
+#' @keywords utils
 #' @rdname get_default_nested_identifiers
 get_default_nested_identifiers.data.table <- function(x, data_model = NULL) {
   
@@ -283,6 +291,7 @@ get_default_nested_identifiers.data.table <- function(x, data_model = NULL) {
 }
 
 #' @export
+#' @keywords utils
 #' @rdname get_default_nested_identifiers
 get_default_nested_identifiers.SummarizedExperiment <- function(
     x,
@@ -291,6 +300,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
   .get_default_nested_identifiers(x, data_model)
 }
 
+#' @keywords utils
 .get_default_nested_identifiers <- function(se = NULL, data_model = NULL) {
  
   checkmate::assert_choice(
@@ -308,6 +318,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
   
 }
 
+#' @keywords utils
 .get_default_single_agent_nested_identifiers <- function(se = NULL) {
   if (is.null(se)) {
     gDRutils::get_env_identifiers("concentration")
@@ -316,6 +327,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
   }
 }
 
+#' @keywords utils
 .get_default_combination_nested_identifiers <- function(se = NULL) {
   identifiers <- if (is.null(se)) {
     gDRutils::get_env_identifiers(
@@ -333,6 +345,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
   as.character(unlist(identifiers))
 }
 
+#' @keywords utils
 .catch_warnings <- function(x) {
   warn  <- unlist(unique(x$warning))
   if (!is.null(warn)) {
@@ -349,6 +362,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
 #' round_concentration(x = c(0.00175,0.00324,0.0091), ndigit = 1)
 #'
 #' @return rounded x
+#' @keywords utils
 #' @export
 round_concentration <- function(x, ndigit = 3) {
   round(10 ^ (round(log10(x), ndigit)), ndigit - 1 - floor(log10(x)))
@@ -444,6 +458,7 @@ rbindParallelList <- function(x, name) {
 #' 
 #' @return data.table
 #' 
+#' @keywords utils
 #' @export
 grr_matches <- function(x, 
                     y, 
@@ -482,6 +497,7 @@ grr_matches <- function(x,
 #' @param status string return vector of assays created or present at the 
 #' given step?
 #' 
+#' @keywords utils
 #' @return assay
 #' 
 get_assays_per_pipeline_step <-
