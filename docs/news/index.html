@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.13</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,7 +53,728 @@
       <small>Source: <a href="https://github.com/gdrplatform/gDRcore/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
-  </main></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.13" id="gdrcore-1113---2024-02-26">gDRcore 1.1.13 - 2024-02-26<a class="anchor" aria-label="anchor" href="#gdrcore-1113---2024-02-26"></a></h2>
+<ul><li>improve pkgdown site
+<ul><li>improved references</li>
+<li>valid NEWS.md</li>
+</ul></li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.12" id="gdrcore-1112---2024-02-14">gDRcore 1.1.12 - 2024-02-14<a class="anchor" aria-label="anchor" href="#gdrcore-1112---2024-02-14"></a></h2>
+<ul><li>fix issue with retrieving unique records from mix of control and treated samples</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.11" id="gdrcore-1111---2024-02-14">gDRcore 1.1.11 - 2024-02-14<a class="anchor" aria-label="anchor" href="#gdrcore-1111---2024-02-14"></a></h2>
+<ul><li>make documentation compatible with pkdgdown</li>
+<li>rename ‘matches’ to ‘grr_matches’</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.10" id="gdrcore-1110---2024-02-12">gDRcore 1.1.10 - 2024-02-12<a class="anchor" aria-label="anchor" href="#gdrcore-1110---2024-02-12"></a></h2>
+<ul><li>fix unit tests for GRAN</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.9" id="gdrcore-119---2024-02-07">gDRcore 1.1.9 - 2024-02-07<a class="anchor" aria-label="anchor" href="#gdrcore-119---2024-02-07"></a></h2>
+<ul><li>simplify logic of assays for combination data</li>
+<li>rename <code>matrix</code> into <code>combination</code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.8" id="gdrcore-118---2024-02-06">gDRcore 1.1.8 - 2024-02-06<a class="anchor" aria-label="anchor" href="#gdrcore-118---2024-02-06"></a></h2>
+<ul><li>add support for internal source of annotation</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.7" id="gdrcore-117---2024-02-06">gDRcore 1.1.7 - 2024-02-06<a class="anchor" aria-label="anchor" href="#gdrcore-117---2024-02-06"></a></h2>
+<ul><li>fix bug with converting standardize MAE into raw data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.6" id="gdrcore-116---2024-02-05">gDRcore 1.1.6 - 2024-02-05<a class="anchor" aria-label="anchor" href="#gdrcore-116---2024-02-05"></a></h2>
+<ul><li>add vignette for a data model</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.5" id="gdrcore-115---2024-02-01">gDRcore 1.1.5 - 2024-02-01<a class="anchor" aria-label="anchor" href="#gdrcore-115---2024-02-01"></a></h2>
+<ul><li>update wrappers for co-dilution data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.4" id="gdrcore-114---2024-01-22">gDRcore 1.1.4 - 2024-01-22<a class="anchor" aria-label="anchor" href="#gdrcore-114---2024-01-22"></a></h2>
+<ul><li>add new description fields</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.3" id="gdrcore-113---2024-01-04">gDRcore 1.1.3 - 2024-01-04<a class="anchor" aria-label="anchor" href="#gdrcore-113---2024-01-04"></a></h2>
+<ul><li>improve logic for normalization and identification of single-agent and matrix data with Drug3</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.2" id="gdrcore-112---2023-12-15">gDRcore 1.1.2 - 2023-12-15<a class="anchor" aria-label="anchor" href="#gdrcore-112---2023-12-15"></a></h2>
+<ul><li>fix issue with wrong assignment of <code>untreated</code> records</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.1" id="gdrcore-111---2023-11-22">gDRcore 1.1.1 - 2023-11-22<a class="anchor" aria-label="anchor" href="#gdrcore-111---2023-11-22"></a></h2>
+<ul><li>sync master with devel branch</li>
+<li>add support for unifying duplicates in combo matrix data</li>
+<li>add “Treatment” as template identifier</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.0" id="gdrcore-110---2023-10-24">gDRcore 1.1.0 - 2023-10-24<a class="anchor" aria-label="anchor" href="#gdrcore-110---2023-10-24"></a></h2>
+<ul><li>release Bioc 3.18</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.0" id="gdrcore-100---2023-10-24">gDRcore 1.0.0 - 2023-10-24<a class="anchor" aria-label="anchor" href="#gdrcore-100---2023-10-24"></a></h2>
+<ul><li>prerelease Bioc 3.18</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.43" id="gdrcore-09943---2023-10-17">gDRcore 0.99.43 - 2023-10-17<a class="anchor" aria-label="anchor" href="#gdrcore-09943---2023-10-17"></a></h2>
+<ul><li>adjust NEWS to Bioc format</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.42" id="gdrcore-09942---2023-10-05">gDRcore 0.99.42 - 2023-10-05<a class="anchor" aria-label="anchor" href="#gdrcore-09942---2023-10-05"></a></h2>
+<ul><li>bump version of gDRtestData</li>
+<li>fix bug with merging controls in triple combo with additional perturbations</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.41" id="gdrcore-09941---2023-09-25">gDRcore 0.99.41 - 2023-09-25<a class="anchor" aria-label="anchor" href="#gdrcore-09941---2023-09-25"></a></h2>
+<ul><li>add support for adding custom annotations inside input files</li>
+<li>improve the performance</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.40" id="gdrcore-09940---2023-09-25">gDRcore 0.99.40 - 2023-09-25<a class="anchor" aria-label="anchor" href="#gdrcore-09940---2023-09-25"></a></h2>
+<ul><li>fix bug with subsetting wrong combo matrix value</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.39" id="gdrcore-09939---2023-09-19">gDRcore 0.99.39 - 2023-09-19<a class="anchor" aria-label="anchor" href="#gdrcore-09939---2023-09-19"></a></h2>
+<ul><li>extend the logic for matching missing controls</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.38" id="gdrcore-09938---2023-09-12">gDRcore 0.99.38 - 2023-09-12<a class="anchor" aria-label="anchor" href="#gdrcore-09938---2023-09-12"></a></h2>
+<ul><li>set Drug3 as an official tertiary drug in the experiment</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.37" id="gdrcore-09937---2023-09-04">gDRcore 0.99.37 - 2023-09-04<a class="anchor" aria-label="anchor" href="#gdrcore-09937---2023-09-04"></a></h2>
+<ul><li>fill NA by average values when there is no match with plate</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.36" id="gdrcore-09936---2023-09-01">gDRcore 0.99.36 - 2023-09-01<a class="anchor" aria-label="anchor" href="#gdrcore-09936---2023-09-01"></a></h2>
+<ul><li>fill NA during aggregation of ref and trt data with mean</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.35" id="gdrcore-09935---2023-08-17">gDRcore 0.99.35 - 2023-08-17<a class="anchor" aria-label="anchor" href="#gdrcore-09935---2023-08-17"></a></h2>
+<ul><li>fix issue with missing subsetting Day0 data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.34" id="gdrcore-09934---2023-08-16">gDRcore 0.99.34 - 2023-08-16<a class="anchor" aria-label="anchor" href="#gdrcore-09934---2023-08-16"></a></h2>
+<ul><li>update logic for supporting manifest and template files sharing the same column</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.33" id="gdrcore-09933---2023-08-10">gDRcore 0.99.33 - 2023-08-10<a class="anchor" aria-label="anchor" href="#gdrcore-09933---2023-08-10"></a></h2>
+<ul><li>update annotation column names for cell line annotation as per changes in the gDRutils</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.32" id="gdrcore-09932---2023-07-25">gDRcore 0.99.32 - 2023-07-25<a class="anchor" aria-label="anchor" href="#gdrcore-09932---2023-07-25"></a></h2>
+<ul><li>extended logic for supporting cols with dash, e.g. additional perturbations with “-”</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.31" id="gdrcore-09931---2023-07-19">gDRcore 0.99.31 - 2023-07-19<a class="anchor" aria-label="anchor" href="#gdrcore-09931---2023-07-19"></a></h2>
+<ul><li>update the logic for handling warnings in the pipeline</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.30" id="gdrcore-09930---2023-07-13">gDRcore 0.99.30 - 2023-07-13<a class="anchor" aria-label="anchor" href="#gdrcore-09930---2023-07-13"></a></h2>
+<ul><li>fix issue with wrong merging of data.tables without nested confounders</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.29" id="gdrcore-09929---2023-07-07">gDRcore 0.99.29 - 2023-07-07<a class="anchor" aria-label="anchor" href="#gdrcore-09929---2023-07-07"></a></h2>
+<ul><li>add information about source type for cases without metric data</li>
+<li>refactor the logic for splitting raw data from metadata - get rid of iterative approach</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.28" id="gdrcore-09928---2023-07-05">gDRcore 0.99.28 - 2023-07-05<a class="anchor" aria-label="anchor" href="#gdrcore-09928---2023-07-05"></a></h2>
+<ul><li>update logic for parallel computing</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.27" id="gdrcore-09927---2023-06-29">gDRcore 0.99.27 - 2023-06-29<a class="anchor" aria-label="anchor" href="#gdrcore-09927---2023-06-29"></a></h2>
+<ul><li>optimize unit tests</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.26" id="gdrcore-09926---2023-06-29">gDRcore 0.99.26 - 2023-06-29<a class="anchor" aria-label="anchor" href="#gdrcore-09926---2023-06-29"></a></h2>
+<ul><li>remove backward compatibility for old data model</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.25" id="gdrcore-09925---2023-06-27">gDRcore 0.99.25 - 2023-06-27<a class="anchor" aria-label="anchor" href="#gdrcore-09925---2023-06-27"></a></h2>
+<ul><li>fix bug with missing rownames in normalized assay</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.24" id="gdrcore-09924---2023-06-19">gDRcore 0.99.24 - 2023-06-19<a class="anchor" aria-label="anchor" href="#gdrcore-09924---2023-06-19"></a></h2>
+<ul><li>update logic for merging data.table objects</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.23" id="gdrcore-09923---2023-06-13">gDRcore 0.99.23 - 2023-06-13<a class="anchor" aria-label="anchor" href="#gdrcore-09923---2023-06-13"></a></h2>
+<ul><li>replace <code>order</code> with <code><a href="https://rdatatable.gitlab.io/data.table/reference/setorder.html" class="external-link">data.table::setorder</a></code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.22" id="gdrcore-09922---2023-06-09">gDRcore 0.99.22 - 2023-06-09<a class="anchor" aria-label="anchor" href="#gdrcore-09922---2023-06-09"></a></h2>
+<ul><li>switch from <code>merge</code> to <code>[[</code> for <code>data.table</code> objects</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.21" id="gdrcore-09921---2023-06-06">gDRcore 0.99.21 - 2023-06-06<a class="anchor" aria-label="anchor" href="#gdrcore-09921---2023-06-06"></a></h2>
+<ul><li>switch from <code>aggregate</code> to <code>data.table</code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.20" id="gdrcore-09920---2023-06-07">gDRcore 0.99.20 - 2023-06-07<a class="anchor" aria-label="anchor" href="#gdrcore-09920---2023-06-07"></a></h2>
+<ul><li>switch from <code><a href="https://rdrr.io/pkg/zoo/man/rollmean.html" class="external-link">zoo::rollmean</a></code> to <code><a href="https://rdatatable.gitlab.io/data.table/reference/froll.html" class="external-link">data.table::frollmean</a></code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.19" id="gdrcore-09919---2023-06-06">gDRcore 0.99.19 - 2023-06-06<a class="anchor" aria-label="anchor" href="#gdrcore-09919---2023-06-06"></a></h2>
+<ul><li>replaced reshape2 functions by functions from data.table</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.18" id="gdrcore-09918---2023-05-31">gDRcore 0.99.18 - 2023-05-31<a class="anchor" aria-label="anchor" href="#gdrcore-09918---2023-05-31"></a></h2>
+<ul><li>fix managing of mixed types of raw data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.17" id="gdrcore-09917---2023-05-29">gDRcore 0.99.17 - 2023-05-29<a class="anchor" aria-label="anchor" href="#gdrcore-09917---2023-05-29"></a></h2>
+<ul><li>fix bug with subsetting data for calculating isobologram</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.16" id="gdrcore-09916---2023-05-22">gDRcore 0.99.16 - 2023-05-22<a class="anchor" aria-label="anchor" href="#gdrcore-09916---2023-05-22"></a></h2>
+<ul><li>format the vignette with BiocStyle</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.15" id="gdrcore-09915---2023-05-16">gDRcore 0.99.15 - 2023-05-16<a class="anchor" aria-label="anchor" href="#gdrcore-09915---2023-05-16"></a></h2>
+<ul><li>fix related with data.table</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.14" id="gdrcore-09914---2023-05-15">gDRcore 0.99.14 - 2023-05-15<a class="anchor" aria-label="anchor" href="#gdrcore-09914---2023-05-15"></a></h2>
+<ul><li>rename <code>excess</code> to <code>x</code> to unify colnames in assay data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.13" id="gdrcore-09913---2023-05-10">gDRcore 0.99.13 - 2023-05-10<a class="anchor" aria-label="anchor" href="#gdrcore-09913---2023-05-10"></a></h2>
+<ul><li>refactor normalization_types in combo-specific assays</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.12" id="gdrcore-09912---2023-05-09">gDRcore 0.99.12 - 2023-05-09<a class="anchor" aria-label="anchor" href="#gdrcore-09912---2023-05-09"></a></h2>
+<ul><li>utilize <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_bumpy_function.html" class="external-link">gDRutils::apply_bumpy_function</a></code> in fit_SE</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.11" id="gdrcore-09911---2023-05-05">gDRcore 0.99.11 - 2023-05-05<a class="anchor" aria-label="anchor" href="#gdrcore-09911---2023-05-05"></a></h2>
+<ul><li>fix bug with swapping untreated/vehicle values</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.10" id="gdrcore-09910---2023-05-04">gDRcore 0.99.10 - 2023-05-04<a class="anchor" aria-label="anchor" href="#gdrcore-09910---2023-05-04"></a></h2>
+<ul><li>fix bug with data.table</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.9" id="gdrcore-0999---2023-04-21">gDRcore 0.99.9 - 2023-04-21<a class="anchor" aria-label="anchor" href="#gdrcore-0999---2023-04-21"></a></h2>
+<ul><li>utilize <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_bumpy_function.html" class="external-link">gDRutils::apply_bumpy_function</a></code> in average_SE</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.8" id="gdrcore-0998---2023-04-20">gDRcore 0.99.8 - 2023-04-20<a class="anchor" aria-label="anchor" href="#gdrcore-0998---2023-04-20"></a></h2>
+<ul><li>switch to OSI license</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.7" id="gdrcore-0997---2023-04-19">gDRcore 0.99.7 - 2023-04-19<a class="anchor" aria-label="anchor" href="#gdrcore-0997---2023-04-19"></a></h2>
+<ul><li>fix bug with replacing vehicle to untreated values</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.6" id="gdrcore-0996---2023-04-19">gDRcore 0.99.6 - 2023-04-19<a class="anchor" aria-label="anchor" href="#gdrcore-0996---2023-04-19"></a></h2>
+<ul><li>moved wrapper fuctions from gDRtestData</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.5" id="gdrcore-0995---2023-04-18">gDRcore 0.99.5 - 2023-04-18<a class="anchor" aria-label="anchor" href="#gdrcore-0995---2023-04-18"></a></h2>
+<ul><li>update dependencies</li>
+<li>add fix for bioc-devel - correct sorting in merge test</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.4" id="gdrcore-0994---2023-04-17">gDRcore 0.99.4 - 2023-04-17<a class="anchor" aria-label="anchor" href="#gdrcore-0994---2023-04-17"></a></h2>
+<ul><li>fix namespacing issue in examples</li>
+<li>add R 4.2 as dependency</li>
+<li>fix examples for normalize_SE</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.3" id="gdrcore-0993---2023-04-12">gDRcore 0.99.3 - 2023-04-12<a class="anchor" aria-label="anchor" href="#gdrcore-0993---2023-04-12"></a></h2>
+<ul><li>add logic for retrieving raw data from assay data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.2" id="gdrcore-0992---2023-04-07">gDRcore 0.99.2 - 2023-04-07<a class="anchor" aria-label="anchor" href="#gdrcore-0992---2023-04-07"></a></h2>
+<ul><li>update maintainer</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.1" id="gdrcore-0991---2023-04-04">gDRcore 0.99.1 - 2023-04-04<a class="anchor" aria-label="anchor" href="#gdrcore-0991---2023-04-04"></a></h2>
+<ul><li>bugfix for the logic in ‘cleanup_metadata’</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.0" id="gdrcore-0990---2023-03-24">gDRcore 0.99.0 - 2023-03-24<a class="anchor" aria-label="anchor" href="#gdrcore-0990---2023-03-24"></a></h2>
+<ul><li>make the package Bioc-compatible</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.22" id="gdrcore-01322---2023-03-21">gDRcore 0.1.3.22 - 2023-03-21<a class="anchor" aria-label="anchor" href="#gdrcore-01322---2023-03-21"></a></h2>
+<ul><li>improve performance of ‘map_df’ with refactored logic for exact matches</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.21" id="gdrcore-01321---2023-03-15">gDRcore 0.1.3.21 - 2023-03-15<a class="anchor" aria-label="anchor" href="#gdrcore-01321---2023-03-15"></a></h2>
+<ul><li>refactor pipeline</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.20" id="gdrcore-01320---2023-03-09">gDRcore 0.1.3.20 - 2023-03-09<a class="anchor" aria-label="anchor" href="#gdrcore-01320---2023-03-09"></a></h2>
+<ul><li>address co-treatment fit by using the matrix data type instead</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.19" id="gdrcore-01319---2023-03-07">gDRcore 0.1.3.19 - 2023-03-07<a class="anchor" aria-label="anchor" href="#gdrcore-01319---2023-03-07"></a></h2>
+<ul><li>add support for splitting normalization types</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.18" id="gdrcore-01318---2023-03-06">gDRcore 0.1.3.18 - 2023-03-06<a class="anchor" aria-label="anchor" href="#gdrcore-01318---2023-03-06"></a></h2>
+<ul><li>improve logic in functions used to generate isobolograms’ data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.17" id="gdrcore-01317---2023-03-06">gDRcore 0.1.3.17 - 2023-03-06<a class="anchor" aria-label="anchor" href="#gdrcore-01317---2023-03-06"></a></h2>
+<ul><li>remove obsolete code</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.16" id="gdrcore-01316---2023-02-21">gDRcore 0.1.3.16 - 2023-02-21<a class="anchor" aria-label="anchor" href="#gdrcore-01316---2023-02-21"></a></h2>
+<ul><li>add support for partial pipeline runs</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.15" id="gdrcore-01315---2023-02-10">gDRcore 0.1.3.15 - 2023-02-10<a class="anchor" aria-label="anchor" href="#gdrcore-01315---2023-02-10"></a></h2>
+<ul><li>update path to annotation data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.14" id="gdrcore-01314---2023-02-10">gDRcore 0.1.3.14 - 2023-02-10<a class="anchor" aria-label="anchor" href="#gdrcore-01314---2023-02-10"></a></h2>
+<ul><li>Clean-up code</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.13" id="gdrcore-01313---2023-01-13">gDRcore 0.1.3.13 - 2023-01-13<a class="anchor" aria-label="anchor" href="#gdrcore-01313---2023-01-13"></a></h2>
+<ul><li>Clean-up code</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.12" id="gdrcore-01312---2023-01-12">gDRcore 0.1.3.12 - 2023-01-12<a class="anchor" aria-label="anchor" href="#gdrcore-01312---2023-01-12"></a></h2>
+<ul><li>refactor mapping function to properly handle drug3</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.11" id="gdrcore-01311---2022-12-16">gDRcore 0.1.3.11 - 2022-12-16<a class="anchor" aria-label="anchor" href="#gdrcore-01311---2022-12-16"></a></h2>
+<ul><li>Replace parallelize function with gDRutils::loop</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.10" id="gdrcore-01310---2022-12-15">gDRcore 0.1.3.10 - 2022-12-15<a class="anchor" aria-label="anchor" href="#gdrcore-01310---2022-12-15"></a></h2>
+<ul><li>add assert for vehicle values in input data in <code>runDrugResponseProcessingPipeline</code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.9" id="gdrcore-0139---2022-12-14">gDRcore 0.1.3.9 - 2022-12-14<a class="anchor" aria-label="anchor" href="#gdrcore-0139---2022-12-14"></a></h2>
+<ul><li>fix error-handling if conditions in average_SE</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.8" id="gdrcore-0138---2022-11-07">gDRcore 0.1.3.8 - 2022-11-07<a class="anchor" aria-label="anchor" href="#gdrcore-0138---2022-11-07"></a></h2>
+<ul><li>fix invalid encapsulation in tests</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.7" id="gdrcore-0137---2022-10-18">gDRcore 0.1.3.7 - 2022-10-18<a class="anchor" aria-label="anchor" href="#gdrcore-0137---2022-10-18"></a></h2>
+<ul><li>add missing namespacing</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.6" id="gdrcore-0136---2022-10-10">gDRcore 0.1.3.6 - 2022-10-10<a class="anchor" aria-label="anchor" href="#gdrcore-0136---2022-10-10"></a></h2>
+<ul><li>add support for setting number of cores for <code>BiocParallel</code> based on the env variable</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.5" id="gdrcore-0135---2022-10-07">gDRcore 0.1.3.5 - 2022-10-07<a class="anchor" aria-label="anchor" href="#gdrcore-0135---2022-10-07"></a></h2>
+<ul><li>remove global parameters for <code>BiocParallel</code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.4" id="gdrcore-0134---2022-09-29">gDRcore 0.1.3.4 - 2022-09-29<a class="anchor" aria-label="anchor" href="#gdrcore-0134---2022-09-29"></a></h2>
+<ul><li>Change the logic for using cores in <code>BiocParallel</code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.3" id="gdrcore-0133---2022-09-27">gDRcore 0.1.3.3 - 2022-09-27<a class="anchor" aria-label="anchor" href="#gdrcore-0133---2022-09-27"></a></h2>
+<ul><li>update the logic for parallel computing</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.2" id="gdrcore-0132---2022-08-17">gDRcore 0.1.3.2 - 2022-08-17<a class="anchor" aria-label="anchor" href="#gdrcore-0132---2022-08-17"></a></h2>
+<ul><li>update the logic for default nested_confounders in <code>create_SE</code> function</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.1" id="gdrcore-0131---2022-07-08">gDRcore 0.1.3.1 - 2022-07-08<a class="anchor" aria-label="anchor" href="#gdrcore-0131---2022-07-08"></a></h2>
+<ul><li>refactor create_SE to support reverse single-agent data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3.0" id="gdrcore-0130---2022-06-02">gDRcore 0.1.3.0 - 2022-06-02<a class="anchor" aria-label="anchor" href="#gdrcore-0130---2022-06-02"></a></h2>
+<ul><li>release 1.3.0</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.39" id="gdrcore-01139---2022-05-30">gDRcore 0.1.1.39 - 2022-05-30<a class="anchor" aria-label="anchor" href="#gdrcore-01139---2022-05-30"></a></h2>
+<ul><li>add missing namespace for get_env_identifiers</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.38" id="gdrcore-01138---2022-05-09">gDRcore 0.1.1.38 - 2022-05-09<a class="anchor" aria-label="anchor" href="#gdrcore-01138---2022-05-09"></a></h2>
+<ul><li>replace <code>NA</code> by 0 in Concentration loaded in manifest file</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.37" id="gdrcore-01137---2022-05-06">gDRcore 0.1.1.37 - 2022-05-06<a class="anchor" aria-label="anchor" href="#gdrcore-01137---2022-05-06"></a></h2>
+<ul><li>switch from <code>data.table</code> to <code>data.frame</code> in add_annotation* functions</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.36" id="gdrcore-01136---2022-04-12">gDRcore 0.1.1.36 - 2022-04-12<a class="anchor" aria-label="anchor" href="#gdrcore-01136---2022-04-12"></a></h2>
+<ul><li>update function for adding unknown cell line annotations</li>
+<li>update logic for using nested confounders</li>
+<li>remove <code>grr</code> from dependencies</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.35" id="gdrcore-01135---2022-04-07">gDRcore 0.1.1.35 - 2022-04-07<a class="anchor" aria-label="anchor" href="#gdrcore-01135---2022-04-07"></a></h2>
+<ul><li>get rid of gDRwrapper</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.34" id="gdrcore-01134---2022-03-30">gDRcore 0.1.1.34 - 2022-03-30<a class="anchor" aria-label="anchor" href="#gdrcore-01134---2022-03-30"></a></h2>
+<ul><li>add support for additional barcode identifiers</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.33" id="gdrcore-01133---2022-03-18">gDRcore 0.1.1.33 - 2022-03-18<a class="anchor" aria-label="anchor" href="#gdrcore-01133---2022-03-18"></a></h2>
+<ul><li>fix documentation in calculate_matrix_metric</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.32" id="gdrcore-01132---2022-03-17">gDRcore 0.1.1.32 - 2022-03-17<a class="anchor" aria-label="anchor" href="#gdrcore-01132---2022-03-17"></a></h2>
+<ul><li>switch from <code>catchr</code> to <code>purrr</code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.31" id="gdrcore-01131---2022-03-02">gDRcore 0.1.1.31 - 2022-03-02<a class="anchor" aria-label="anchor" href="#gdrcore-01131---2022-03-02"></a></h2>
+<ul><li>fix mapping reference values of inverted treatments</li>
+<li>remove duplication of single-agent data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.30" id="gdrcore-01130---2022-02-17">gDRcore 0.1.1.30 - 2022-02-17<a class="anchor" aria-label="anchor" href="#gdrcore-01130---2022-02-17"></a></h2>
+<ul><li>wrap SE into MAE on the level of runDrugResponseProcessingPipeline</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.29" id="gdrcore-01129---2022-02-14">gDRcore 0.1.1.29 - 2022-02-14<a class="anchor" aria-label="anchor" href="#gdrcore-01129---2022-02-14"></a></h2>
+<ul><li>change identifier <code>drugname</code> to <code>drug_name</code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.28" id="gdrcore-01128---2022-02-09">gDRcore 0.1.1.28 - 2022-02-09<a class="anchor" aria-label="anchor" href="#gdrcore-01128---2022-02-09"></a></h2>
+<ul><li>switch from <code>gDRinternal</code> to <code>gDRinternalData</code> for internal annotations</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.27" id="gdrcore-01127---2022-02-08">gDRcore 0.1.1.27 - 2022-02-08<a class="anchor" aria-label="anchor" href="#gdrcore-01127---2022-02-08"></a></h2>
+<ul><li>issue with subsetting by list in R 4.2.0</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.26" id="gdrcore-01126---2022-02-02">gDRcore 0.1.1.26 - 2022-02-02<a class="anchor" aria-label="anchor" href="#gdrcore-01126---2022-02-02"></a></h2>
+<ul><li>unlist output of intersect as per R 4.2.0</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.25" id="gdrcore-01125---2022-01-31">gDRcore 0.1.1.25 - 2022-01-31<a class="anchor" aria-label="anchor" href="#gdrcore-01125---2022-01-31"></a></h2>
+<ul><li>align version criteria between <code>dependencies.yaml</code> and <code>DESCRIPTION</code> package versions</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.24" id="gdrcore-01124---2022-01-25">gDRcore 0.1.1.24 - 2022-01-25<a class="anchor" aria-label="anchor" href="#gdrcore-01124---2022-01-25"></a></h2>
+<ul><li>standardize/improve CI</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.23" id="gdrcore-01123---2022-01-24">gDRcore 0.1.1.23 - 2022-01-24<a class="anchor" aria-label="anchor" href="#gdrcore-01123---2022-01-24"></a></h2>
+<ul><li>switch from <code>cores</code> variable to <code>detect_cores-</code> function</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.22" id="gdrcore-01122---2022-01-24">gDRcore 0.1.1.22 - 2022-01-24<a class="anchor" aria-label="anchor" href="#gdrcore-01122---2022-01-24"></a></h2>
+<ul><li>fix wrong type of <code>NUM_CORES</code> env variable</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.21" id="gdrcore-01121---2022-01-03">gDRcore 0.1.1.21 - 2022-01-03<a class="anchor" aria-label="anchor" href="#gdrcore-01121---2022-01-03"></a></h2>
+<ul><li>speed-up functions for mapping treated and untreated cases</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.20" id="gdrcore-01120---2021-12-30">gDRcore 0.1.1.20 - 2021-12-30<a class="anchor" aria-label="anchor" href="#gdrcore-01120---2021-12-30"></a></h2>
+<ul><li>fix linter issues</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.19" id="gdrcore-01119---2021-12-14">gDRcore 0.1.1.19 - 2021-12-14<a class="anchor" aria-label="anchor" href="#gdrcore-01119---2021-12-14"></a></h2>
+<ul><li>use parallel computing as an alternative for <code>for</code> loops</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.18" id="gdrcore-01118---2021-12-07">gDRcore 0.1.1.18 - 2021-12-07<a class="anchor" aria-label="anchor" href="#gdrcore-01118---2021-12-07"></a></h2>
+<ul><li>update annotation script as per new csv annotation files</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.17" id="gdrcore-01117---2021-12-07">gDRcore 0.1.1.17 - 2021-12-07<a class="anchor" aria-label="anchor" href="#gdrcore-01117---2021-12-07"></a></h2>
+<ul><li>detect co-trt data and treat them as single-agent</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.16" id="gdrcore-01116---2021-11-08">gDRcore 0.1.1.16 - 2021-11-08<a class="anchor" aria-label="anchor" href="#gdrcore-01116---2021-11-08"></a></h2>
+<ul><li>set excess = NA for single-agent</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.15" id="gdrcore-01115---2021-10-29">gDRcore 0.1.1.15 - 2021-10-29<a class="anchor" aria-label="anchor" href="#gdrcore-01115---2021-10-29"></a></h2>
+<ul><li>solve rounding issues</li>
+<li>add new bliss metric</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.14" id="gdrcore-01114---2021-10-25">gDRcore 0.1.1.14 - 2021-10-25<a class="anchor" aria-label="anchor" href="#gdrcore-01114---2021-10-25"></a></h2>
+<ul><li>refactor isobolograms</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.13" id="gdrcore-01113---2021-10-25">gDRcore 0.1.1.13 - 2021-10-25<a class="anchor" aria-label="anchor" href="#gdrcore-01113---2021-10-25"></a></h2>
+<ul><li>move p_trt_keys to the proper place</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.12" id="gdrcore-01112---2021-10-20">gDRcore 0.1.1.12 - 2021-10-20<a class="anchor" aria-label="anchor" href="#gdrcore-01112---2021-10-20"></a></h2>
+<ul><li>add support for masked data in fit_SE.combinations.R</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.11" id="gdrcore-01111---2021-10-14">gDRcore 0.1.1.11 - 2021-10-14<a class="anchor" aria-label="anchor" href="#gdrcore-01111---2021-10-14"></a></h2>
+<ul><li>address issues in creating the SE for combo matrix experiments</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.10" id="gdrcore-01110---2021-10-13">gDRcore 0.1.1.10 - 2021-10-13<a class="anchor" aria-label="anchor" href="#gdrcore-01110---2021-10-13"></a></h2>
+<ul><li>refactor the logic for calculation Loewe when there is no <code>Concentration == 0</code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.9" id="gdrcore-0119---2021-10-12">gDRcore 0.1.1.9 - 2021-10-12<a class="anchor" aria-label="anchor" href="#gdrcore-0119---2021-10-12"></a></h2>
+<ul><li>refactor the logic for combo data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.8" id="gdrcore-0118---2021-09-27">gDRcore 0.1.1.8 - 2021-09-27<a class="anchor" aria-label="anchor" href="#gdrcore-0118---2021-09-27"></a></h2>
+<ul><li>updated normalization_types in ‘calculate_combo_matrix’ and ‘fit_SE’</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.7" id="gdrcore-0117---2021-09-21">gDRcore 0.1.1.7 - 2021-09-21<a class="anchor" aria-label="anchor" href="#gdrcore-0117---2021-09-21"></a></h2>
+<ul><li>calculate_GR_value by removing cl_name param</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.6" id="gdrcore-0116---2021-08-25">gDRcore 0.1.1.6 - 2021-08-25<a class="anchor" aria-label="anchor" href="#gdrcore-0116---2021-08-25"></a></h2>
+<ul><li>fix but with missing <code>nested_identifiers</code> variables for creating DataFrame for masked values</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.5" id="gdrcore-0115---2021-08-04">gDRcore 0.1.1.5 - 2021-08-04<a class="anchor" aria-label="anchor" href="#gdrcore-0115---2021-08-04"></a></h2>
+<ul><li>refactor reading annotations and add default parameters</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.4" id="gdrcore-0114---2021-07-30">gDRcore 0.1.1.4 - 2021-07-30<a class="anchor" aria-label="anchor" href="#gdrcore-0114---2021-07-30"></a></h2>
+<ul><li>fix bug for nested_confounders not present in ref_df</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.3" id="gdrcore-0113---2021-07-27">gDRcore 0.1.1.3 - 2021-07-27<a class="anchor" aria-label="anchor" href="#gdrcore-0113---2021-07-27"></a></h2>
+<ul><li>add support for nested_identifiers and nested_confounders</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1.2" id="gdrcore-0112---2021-07-23">gDRcore 0.1.1.2 - 2021-07-23<a class="anchor" aria-label="anchor" href="#gdrcore-0112---2021-07-23"></a></h2>
+<ul><li>remove obsolete dependencies from DESCRIPTION:Imports</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0.9" id="gdrcore-0109---2021-07-01">gDRcore 0.1.0.9 - 2021-07-01<a class="anchor" aria-label="anchor" href="#gdrcore-0109---2021-07-01"></a></h2>
+<ul><li>function for testing synthetic data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0.8" id="gdrcore-0108---2021-06-25">gDRcore 0.1.0.8 - 2021-06-25<a class="anchor" aria-label="anchor" href="#gdrcore-0108---2021-06-25"></a></h2>
+<ul><li>move functions for importing template files to gDRimport package</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0.7" id="gdrcore-0107---2021-06-23">gDRcore 0.1.0.7 - 2021-06-23<a class="anchor" aria-label="anchor" href="#gdrcore-0107---2021-06-23"></a></h2>
+<ul><li>add linter</li>
+<li>remove obsolete functions from test.utils.R</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0.6" id="gdrcore-0106---2021-06-22">gDRcore 0.1.0.6 - 2021-06-22<a class="anchor" aria-label="anchor" href="#gdrcore-0106---2021-06-22"></a></h2>
+<ul><li>move importing functions to gDRimport package</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0.5" id="gdrcore-0105---2021-06-14">gDRcore 0.1.0.5 - 2021-06-14<a class="anchor" aria-label="anchor" href="#gdrcore-0105---2021-06-14"></a></h2>
+<ul><li>add unit tests for synthetic data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0.4" id="gdrcore-0104---2021-06-14">gDRcore 0.1.0.4 - 2021-06-14<a class="anchor" aria-label="anchor" href="#gdrcore-0104---2021-06-14"></a></h2>
+<ul><li>remove deprecated functions and unit tests</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0.3" id="gdrcore-0103---2021-06-14">gDRcore 0.1.0.3 - 2021-06-14<a class="anchor" aria-label="anchor" href="#gdrcore-0103---2021-06-14"></a></h2>
+<ul><li>update namespace for ‘metadata-’</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0.2" id="gdrcore-0102---2021-06-10">gDRcore 0.1.0.2 - 2021-06-10<a class="anchor" aria-label="anchor" href="#gdrcore-0102---2021-06-10"></a></h2>
+<ul><li>change package name - gDR =&gt; gDRcore</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0.1" id="gdrcore-0101---2021-06-04">gDRcore 0.1.0.1 - 2021-06-04<a class="anchor" aria-label="anchor" href="#gdrcore-0101---2021-06-04"></a></h2>
+<ul><li>export/update docs for ‘standardize_record_values’</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0.0" id="gdrcore-0100---2021-06-02">gDRcore 0.1.0.0 - 2021-06-02<a class="anchor" aria-label="anchor" href="#gdrcore-0100---2021-06-02"></a></h2>
+<ul><li>release 1.0.0</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.52" id="gdrcore-00152---2021-04-29">gDRcore 0.0.1.52 - 2021-04-29<a class="anchor" aria-label="anchor" href="#gdrcore-00152---2021-04-29"></a></h2>
+<ul><li>remove all the gDRinternal-related files</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.51" id="gdrcore-00151---2021-04-27">gDRcore 0.0.1.51 - 2021-04-27<a class="anchor" aria-label="anchor" href="#gdrcore-00151---2021-04-27"></a></h2>
+<ul><li>fix wrong argument name in <code>fit_curves</code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.50" id="gdrcore-00150---2021-04-23">gDRcore 0.0.1.50 - 2021-04-23<a class="anchor" aria-label="anchor" href="#gdrcore-00150---2021-04-23"></a></h2>
+<ul><li>ensure that dts in <code>assay- se,"Averaged"</code> are NULL when there are not treatments</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.49" id="gdrcore-00149---2021-04-20">gDRcore 0.0.1.49 - 2021-04-20<a class="anchor" aria-label="anchor" href="#gdrcore-00149---2021-04-20"></a></h2>
+<ul><li>add processing info metadata to SE</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.48" id="gdrcore-00148---2021-04-14">gDRcore 0.0.1.48 - 2021-04-14<a class="anchor" aria-label="anchor" href="#gdrcore-00148---2021-04-14"></a></h2>
+<ul><li>improve handling of nested_keys and override_controls</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.47" id="gdrcore-00147---2021-04-09">gDRcore 0.0.1.47 - 2021-04-09<a class="anchor" aria-label="anchor" href="#gdrcore-00147---2021-04-09"></a></h2>
+<ul><li>get rid of sorting index columns in getMetaData</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.46" id="gdrcore-00146---2021-03-31">gDRcore 0.0.1.46 - 2021-03-31<a class="anchor" aria-label="anchor" href="#gdrcore-00146---2021-03-31"></a></h2>
+<ul><li>move SE metadata getters and setters to gDRutils</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.45" id="gdrcore-00145---2021-03-31">gDRcore 0.0.1.45 - 2021-03-31<a class="anchor" aria-label="anchor" href="#gdrcore-00145---2021-03-31"></a></h2>
+<ul><li>fix a bug in map_df function</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.44" id="gdrcore-00144---2021-03-26">gDRcore 0.0.1.44 - 2021-03-26<a class="anchor" aria-label="anchor" href="#gdrcore-00144---2021-03-26"></a></h2>
+<ul><li>refactor processing functions in create_SE2, normalize_SE2, average_SE2, and fit_SE2 and friends</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.43" id="gdrcore-00143---2021-02-22">gDRcore 0.0.1.43 - 2021-02-22<a class="anchor" aria-label="anchor" href="#gdrcore-00143---2021-02-22"></a></h2>
+<ul><li>add drug_moa_2 to merged df</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.42" id="gdrcore-00142---2021-02-17">gDRcore 0.0.1.42 - 2021-02-17<a class="anchor" aria-label="anchor" href="#gdrcore-00142---2021-02-17"></a></h2>
+<ul><li>fix a bug with adding annotation to codrugs</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.41" id="gdrcore-00141---2021-02-04">gDRcore 0.0.1.41 - 2021-02-04<a class="anchor" aria-label="anchor" href="#gdrcore-00141---2021-02-04"></a></h2>
+<ul><li>add script for benchmarking [normalize/average/metrics]-SE functions</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.40" id="gdrcore-00140---2021-02-02">gDRcore 0.0.1.40 - 2021-02-02<a class="anchor" aria-label="anchor" href="#gdrcore-00140---2021-02-02"></a></h2>
+<ul><li>fix unit tests</li>
+<li>include discard keys info in getMetaData for rowData</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.39" id="gdrcore-00139---2021-01-29">gDRcore 0.0.1.39 - 2021-01-29<a class="anchor" aria-label="anchor" href="#gdrcore-00139---2021-01-29"></a></h2>
+<ul><li>utilize refactored and renamed fitting function RVGRfit to fit_curves</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.38" id="gdrcore-00138---2021-01-27">gDRcore 0.0.1.38 - 2021-01-27<a class="anchor" aria-label="anchor" href="#gdrcore-00138---2021-01-27"></a></h2>
+<ul><li>export some functions for use in gDRutils</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.37" id="gdrcore-00137---2021-01-20">gDRcore 0.0.1.37 - 2021-01-20<a class="anchor" aria-label="anchor" href="#gdrcore-00137---2021-01-20"></a></h2>
+<ul><li>move df_to_assay and df_to_bm_assay to gDRutils</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.36" id="gdrcore-00136---2021-01-18">gDRcore 0.0.1.36 - 2021-01-18<a class="anchor" aria-label="anchor" href="#gdrcore-00136---2021-01-18"></a></h2>
+<ul><li>updated rowData and colData in SE with additional columns</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.35" id="gdrcore-00135---2021-01-14">gDRcore 0.0.1.35 - 2021-01-14<a class="anchor" aria-label="anchor" href="#gdrcore-00135---2021-01-14"></a></h2>
+<ul><li>update positional header calls to explicit identifier calls</li>
+<li>minor changes to comply with gDRstyle</li>
+<li>minor changes to use identifiers over hard coded DrugName requirements</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.34" id="gdrcore-00134---2021-01-12">gDRcore 0.0.1.34 - 2021-01-12<a class="anchor" aria-label="anchor" href="#gdrcore-00134---2021-01-12"></a></h2>
+<ul><li>update scripts related to annotation of drugs and cell lines</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.33" id="gdrcore-00133---2021-01-05">gDRcore 0.0.1.33 - 2021-01-05<a class="anchor" aria-label="anchor" href="#gdrcore-00133---2021-01-05"></a></h2>
+<ul><li>anonymize test data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.32" id="gdrcore-00132---2020-12-24">gDRcore 0.0.1.32 - 2020-12-24<a class="anchor" aria-label="anchor" href="#gdrcore-00132---2020-12-24"></a></h2>
+<ul><li>switch from GeneDataScreenR to gDRinternal from QCS to gDR functions</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.31" id="gdrcore-00131---2020-12-22">gDRcore 0.0.1.31 - 2020-12-22<a class="anchor" aria-label="anchor" href="#gdrcore-00131---2020-12-22"></a></h2>
+<ul><li>make createSE returning assays as ‘BumpyMatrix’ objects - previously ‘matrix’ objects only</li>
+<li>add df_to_bm_assay function - returning BumpyMatrix object from raw experiment data</li>
+<li>add initial tests for createSE function</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.30" id="gdrcore-00130---2020-12-21">gDRcore 0.0.1.30 - 2020-12-21<a class="anchor" aria-label="anchor" href="#gdrcore-00130---2020-12-21"></a></h2>
+<ul><li>minor clean-up</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.29" id="gdrcore-00129---2020-12-15">gDRcore 0.0.1.29 - 2020-12-15<a class="anchor" aria-label="anchor" href="#gdrcore-00129---2020-12-15"></a></h2>
+<ul><li>remove dplyr</li>
+<li>use the latest version of gDRutils</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.28" id="gdrcore-00128---2020-12-07">gDRcore 0.0.1.28 - 2020-12-07<a class="anchor" aria-label="anchor" href="#gdrcore-00128---2020-12-07"></a></h2>
+<ul><li>error messages</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.27" id="gdrcore-00127---2020-12-02">gDRcore 0.0.1.27 - 2020-12-02<a class="anchor" aria-label="anchor" href="#gdrcore-00127---2020-12-02"></a></h2>
+<ul><li>refactor analyze_data.R with taking account codilution combo</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.26" id="gdrcore-00126---2020-11-24">gDRcore 0.0.1.26 - 2020-11-24<a class="anchor" aria-label="anchor" href="#gdrcore-00126---2020-11-24"></a></h2>
+<ul><li>bug with reading raw data</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.25" id="gdrcore-00125---2020-11-08">gDRcore 0.0.1.25 - 2020-11-08<a class="anchor" aria-label="anchor" href="#gdrcore-00125---2020-11-08"></a></h2>
+<ul><li>clean-up repository from duplicated functions</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.25" id="gdrcore-00125---2020-11-06">gDRcore 0.0.1.25 - 2020-11-06<a class="anchor" aria-label="anchor" href="#gdrcore-00125---2020-11-06"></a></h2>
+<ul><li>switch to R 4.0</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.24" id="gdrcore-00124---2020-10-01">gDRcore 0.0.1.24 - 2020-10-01<a class="anchor" aria-label="anchor" href="#gdrcore-00124---2020-10-01"></a></h2>
+<ul><li>bugs in function for metrics calculation as per QCS dataset</li>
+<li>QCS data</li>
+<li>scripts for processing and pushing QCS data on Rosalind</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.23" id="gdrcore-00123---2020-09-29">gDRcore 0.0.1.23 - 2020-09-29<a class="anchor" aria-label="anchor" href="#gdrcore-00123---2020-09-29"></a></h2>
+<ul><li>updated README.md</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.22" id="gdrcore-00122---2020-09-22">gDRcore 0.0.1.22 - 2020-09-22<a class="anchor" aria-label="anchor" href="#gdrcore-00122---2020-09-22"></a></h2>
+<ul><li>bug in update_experiment_metadata</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.21" id="gdrcore-00121---2020-09-03">gDRcore 0.0.1.21 - 2020-09-03<a class="anchor" aria-label="anchor" href="#gdrcore-00121---2020-09-03"></a></h2>
+<ul><li>logic as per new db model</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.20" id="gdrcore-00120---2020-08-26">gDRcore 0.0.1.20 - 2020-08-26<a class="anchor" aria-label="anchor" href="#gdrcore-00120---2020-08-26"></a></h2>
+<ul><li>RDS files for the other GDS data - GDS5, GDS6, GDS7</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.19" id="gdrcore-00119---2020-08-03">gDRcore 0.0.1.19 - 2020-08-03<a class="anchor" aria-label="anchor" href="#gdrcore-00119---2020-08-03"></a></h2>
+<ul><li>support an import of single agent data from GDS
+<ul><li>including the masked field to be able to remove the masked data from averages</li>
+<li>add a function to annotate drug combinations - add_codrug_group</li>
+<li>update the tests that contained combination experiments accordingly.</li>
+<li>add new tests for the GDS data</li>
+<li>minor refactor to use the ‘masked’ column. If it is not part of the initial dataframe it is added automatically - and set to FALSE</li>
+</ul></li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.18" id="gdrcore-00118---2020-07-29">gDRcore 0.0.1.18 - 2020-07-29<a class="anchor" aria-label="anchor" href="#gdrcore-00118---2020-07-29"></a></h2>
+<ul><li>fixed issue in update_experiment_metadata.R</li>
+<li>unit test for update_experiment_metadata.R</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.17" id="gdrcore-00117---2020-07-14">gDRcore 0.0.1.17 - 2020-07-14<a class="anchor" aria-label="anchor" href="#gdrcore-00117---2020-07-14"></a></h2>
+<ul><li>function for updating metadata in SE</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.16" id="gdrcore-00116---2020-07-14">gDRcore 0.0.1.16 - 2020-07-14<a class="anchor" aria-label="anchor" href="#gdrcore-00116---2020-07-14"></a></h2>
+<ul><li>dependencies: kcloak, gDRwrapper</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1.15" id="gdrcore-00115---2020-07-08">gDRcore 0.0.1.15 - 2020-07-08<a class="anchor" aria-label="anchor" href="#gdrcore-00115---2020-07-08"></a></h2>
+<ul><li>dependencies</li>
+</ul></div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

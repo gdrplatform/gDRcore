@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.13</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,7 +53,90 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="pipeline">Pipeline<a class="anchor" aria-label="anchor" href="#pipeline"></a></h2>
+      
+      <p class="section-desc"></p><p>Run different components of the gDR drug response processing pipeline. Either create a SummarizedExperiment and normalize raw treated and control data (create_and_normalize_SE), average data (average_SE), or fit the processed data (fit_SE).</p>
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="fit_SE.combinations.html">fit_SE.combinations()</a></code> 
+        </dt>
+        <dd>fit_SE for combination screens</dd>
+      </dl><dl><dt>
+          
+          <code><a href="runDrugResponseProcessingPipelineFxns.html">average_SE()</a></code> <code><a href="runDrugResponseProcessingPipelineFxns.html">create_SE()</a></code> <code><a href="runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code> <code><a href="runDrugResponseProcessingPipelineFxns.html">normalize_SE()</a></code> <code><a href="runDrugResponseProcessingPipelineFxns.html">create_and_normalize_SE()</a></code> <code><a href="runDrugResponseProcessingPipelineFxns.html">runDrugResponseProcessingPipeline()</a></code> 
+        </dt>
+        <dd>Run drug response processing pipeline</dd>
+      </dl></div><div class="section level2">
+      <h2 id="merging-data">Merging data<a class="anchor" aria-label="anchor" href="#merging-data"></a></h2>
+      
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="merge_data.html">merge_data()</a></code> 
+        </dt>
+        <dd>merge_data</dd>
+      </dl></div><div class="section level2">
+      <h2 id="combination-helpers">Combination helpers<a class="anchor" aria-label="anchor" href="#combination-helpers"></a></h2>
+      
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="calculate_excess.html">calculate_excess()</a></code> 
+        </dt>
+        <dd>Calculate the difference between values in two data.tables</dd>
+      </dl><dl><dt>
+          
+          <code><a href="calculate_matrix_metric.html">calculate_HSA()</a></code> <code><a href="calculate_matrix_metric.html">calculate_Bliss()</a></code> <code><a href="calculate_matrix_metric.html">.calculate_matrix_metric()</a></code> 
+        </dt>
+        <dd>Calculate a metric for combination data.</dd>
+      </dl><dl><dt>
+          
+          <code><a href="define_matrix_grid_positions.html">define_matrix_grid_positions()</a></code> 
+        </dt>
+        <dd>Define matrix grid positions</dd>
+      </dl><dl><dt>
+          
+          <code><a href="dot-standardize_conc.html">.standardize_conc()</a></code> 
+        </dt>
+        <dd>Standardize concentration values.</dd>
+      </dl><dl><dt>
+          
+          <code><a href="map_conc_to_standardized_conc.html">map_conc_to_standardized_conc()</a></code> 
+        </dt>
+        <dd>Create a mapping of concentrations to standardized concentrations.</dd>
+      </dl><dl><dt>
+          
+          <code><a href="map_ids_to_fits.html">map_ids_to_fits()</a></code> 
+        </dt>
+        <dd>Get predicted values for a given fit and input.</dd>
+      </dl><dl><dt>
+          
+          <code><a href="replace_conc_with_standardized_conc.html">replace_conc_with_standardized_conc()</a></code> 
+        </dt>
+        <dd>Standardize concentrations.</dd>
+      </dl></div><div class="section level2">
+      <h2 id="annotation">Annotation<a class="anchor" aria-label="anchor" href="#annotation"></a></h2>
       
       
 
@@ -75,25 +158,37 @@
         <dd>add_Drug_annotation</dd>
       </dl><dl><dt>
           
+          <code><a href="remove_drug_batch.html">remove_drug_batch()</a></code> 
+        </dt>
+        <dd>Remove batch from Gnumber</dd>
+      </dl></div><div class="section level2">
+      <h2 id="calculating-gr">Calculating GR<a class="anchor" aria-label="anchor" href="#calculating-gr"></a></h2>
+      
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
           <code><a href="calculate_GR_value.html">calculate_GR_value()</a></code> <code><a href="calculate_GR_value.html">calculate_time_dep_GR_value()</a></code> <code><a href="calculate_GR_value.html">calculate_endpt_GR_value()</a></code> 
         </dt>
         <dd>Calculate a GR value.</dd>
-      </dl><dl><dt>
-          
-          <code><a href="calculate_excess.html">calculate_excess()</a></code> 
-        </dt>
-        <dd>Calculate the difference between values in two data.tables</dd>
-      </dl><dl><dt>
-          
-          <code><a href="calculate_matrix_metric.html">calculate_HSA()</a></code> <code><a href="calculate_matrix_metric.html">calculate_Bliss()</a></code> <code><a href="calculate_matrix_metric.html">.calculate_matrix_metric()</a></code> 
-        </dt>
-        <dd>Calculate a metric for combination data.</dd>
-      </dl><dl><dt>
-          
-          <code><a href="cleanup_metadata.html">cleanup_metadata()</a></code> 
-        </dt>
-        <dd>cleanup_metadata</dd>
-      </dl><dl><dt>
+      </dl></div><div class="section level2">
+      <h2 id="converting-to-raw-data">Converting to raw data<a class="anchor" aria-label="anchor" href="#converting-to-raw-data"></a></h2>
+      
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
           
           <code><a href="convert_mae_to_raw_data.html">convert_mae_to_raw_data()</a></code> 
         </dt>
@@ -103,6 +198,111 @@
           <code><a href="convert_se_to_raw_data.html">convert_se_to_raw_data()</a></code> 
         </dt>
         <dd>Transform se into raw_data</dd>
+      </dl></div><div class="section level2">
+      <h2 id="data-type">Data type<a class="anchor" aria-label="anchor" href="#data-type"></a></h2>
+      
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="identify_data_type.html">identify_data_type()</a></code> 
+        </dt>
+        <dd>Identify type of data</dd>
+      </dl><dl><dt>
+          
+          <code><a href="split_raw_data.html">split_raw_data()</a></code> 
+        </dt>
+        <dd>Split raw data into list based on the data types</dd>
+      </dl></div><div class="section level2">
+      <h2 id="mappping">Mappping<a class="anchor" aria-label="anchor" href="#mappping"></a></h2>
+      
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="dot-map_references.html">.map_references()</a></code> 
+        </dt>
+        <dd>Map references</dd>
+      </dl><dl><dt>
+          
+          <code><a href="map_df.html">map_df()</a></code> 
+        </dt>
+        <dd>Map treated conditions to their respective references.</dd>
+      </dl><dl><dt>
+          
+          <code><a href="map_untreated.html">map_untreated()</a></code> 
+        </dt>
+        <dd>Identify untreated rows based on Drug treatment alone</dd>
+      </dl></div><div class="section level2">
+      <h2 id="identifying-keys">Identifying keys<a class="anchor" aria-label="anchor" href="#identifying-keys"></a></h2>
+      
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="identify_keys.html">identify_keys()</a></code> 
+        </dt>
+        <dd>identify_keys</dd>
+      </dl></div><div class="section level2">
+      <h2 id="preparing-input">Preparing input<a class="anchor" aria-label="anchor" href="#preparing-input"></a></h2>
+      
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="prepare_input.MultiAssayExperiment.html">prepare_input(<i>&lt;MultiAssayExperiment&gt;</i>)</a></code> 
+        </dt>
+        <dd>Prepare input data common for all experiments</dd>
+      </dl><dl><dt>
+          
+          <code><a href="prepare_input.html">prepare_input()</a></code> 
+        </dt>
+        <dd>Prepare input data common for all experiments</dd>
+      </dl><dl><dt>
+          
+          <code><a href="prepare_input.data.table.html">prepare_input(<i>&lt;data.table&gt;</i>)</a></code> 
+        </dt>
+        <dd>Prepare input data common for all experiments</dd>
+      </dl></div><div class="section level2">
+      <h2 id="utils">Utils<a class="anchor" aria-label="anchor" href="#utils"></a></h2>
+      
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="cleanup_metadata.html">cleanup_metadata()</a></code> 
+        </dt>
+        <dd>cleanup_metadata</dd>
       </dl><dl><dt>
           
           <code><a href="data_model.html">data_model()</a></code> 
@@ -120,26 +320,6 @@
         <dd>Detect model of data in data.table</dd>
       </dl><dl><dt>
           
-          <code><a href="define_matrix_grid_positions.html">define_matrix_grid_positions()</a></code> 
-        </dt>
-        <dd>Define matrix grid positions</dd>
-      </dl><dl><dt>
-          
-          <code><a href="dot-map_references.html">.map_references()</a></code> 
-        </dt>
-        <dd>Map references</dd>
-      </dl><dl><dt>
-          
-          <code><a href="dot-standardize_conc.html">.standardize_conc()</a></code> 
-        </dt>
-        <dd>Standardize concentration values.</dd>
-      </dl><dl><dt>
-          
-          <code><a href="fit_SE.combinations.html">fit_SE.combinations()</a></code> 
-        </dt>
-        <dd>fit_SE for combination screens</dd>
-      </dl><dl><dt>
-          
           <code><a href="get_assays_per_pipeline_step.html">get_assays_per_pipeline_step()</a></code> 
         </dt>
         <dd>get info about created/present assays in SE at the given pipeline step</dd>
@@ -155,92 +335,33 @@
         <dd>Value Matching</dd>
       </dl><dl><dt>
           
-          <code><a href="identify_data_type.html">identify_data_type()</a></code> 
-        </dt>
-        <dd>Identify type of data</dd>
-      </dl><dl><dt>
-          
-          <code><a href="identify_keys.html">identify_keys()</a></code> 
-        </dt>
-        <dd>identify_keys</dd>
-      </dl><dl><dt>
-          
-          <code><a href="map_conc_to_standardized_conc.html">map_conc_to_standardized_conc()</a></code> 
-        </dt>
-        <dd>Create a mapping of concentrations to standardized concentrations.</dd>
-      </dl><dl><dt>
-          
-          <code><a href="map_df.html">map_df()</a></code> 
-        </dt>
-        <dd>Map treated conditions to their respective references.</dd>
-      </dl><dl><dt>
-          
-          <code><a href="map_ids_to_fits.html">map_ids_to_fits()</a></code> 
-        </dt>
-        <dd>Get predicted values for a given fit and input.</dd>
-      </dl><dl><dt>
-          
-          <code><a href="map_untreated.html">map_untreated()</a></code> 
-        </dt>
-        <dd>Identify untreated rows based on Drug treatment alone</dd>
-      </dl><dl><dt>
-          
-          <code><a href="merge_data.html">merge_data()</a></code> 
-        </dt>
-        <dd>merge_data</dd>
-      </dl><dl><dt>
-          
           <code><a href="order_result_df.html">order_result_df()</a></code> 
         </dt>
         <dd>Order_result_df</dd>
       </dl><dl><dt>
           
-          <code><a href="prepare_input.MultiAssayExperiment.html">prepare_input(<i>&lt;MultiAssayExperiment&gt;</i>)</a></code> 
-        </dt>
-        <dd>Prepare input data common for all experiments</dd>
-      </dl><dl><dt>
-          
-          <code><a href="prepare_input.html">prepare_input()</a></code> 
-        </dt>
-        <dd>Prepare input data common for all experiments</dd>
-      </dl><dl><dt>
-          
-          <code><a href="prepare_input.data.table.html">prepare_input(<i>&lt;data.table&gt;</i>)</a></code> 
-        </dt>
-        <dd>Prepare input data common for all experiments</dd>
-      </dl><dl><dt>
-          
-          <code><a href="remove_drug_batch.html">remove_drug_batch()</a></code> 
-        </dt>
-        <dd>Remove batch from Gnumber</dd>
-      </dl><dl><dt>
-          
-          <code><a href="replace_conc_with_standardized_conc.html">replace_conc_with_standardized_conc()</a></code> 
-        </dt>
-        <dd>Standardize concentrations.</dd>
-      </dl><dl><dt>
-          
           <code><a href="round_concentration.html">round_concentration()</a></code> 
         </dt>
         <dd>Round concentration to ndigit significant digits</dd>
-      </dl><dl><dt>
-          
-          <code><a href="runDrugResponseProcessingPipelineFxns.html">average_SE()</a></code> <code><a href="runDrugResponseProcessingPipelineFxns.html">create_SE()</a></code> <code><a href="runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code> <code><a href="runDrugResponseProcessingPipelineFxns.html">normalize_SE()</a></code> <code><a href="runDrugResponseProcessingPipelineFxns.html">create_and_normalize_SE()</a></code> <code><a href="runDrugResponseProcessingPipelineFxns.html">runDrugResponseProcessingPipeline()</a></code> 
-        </dt>
-        <dd>If a column called <code>"BackgroundValue"</code> exists in <code>df_</code>,
-it will be removed from the <code>readout</code> column.</dd>
-      </dl><dl><dt>
-          
-          <code><a href="split_raw_data.html">split_raw_data()</a></code> 
-        </dt>
-        <dd>Split raw data into list based on the data types</dd>
-      </dl><dl><dt>
+      </dl></div><div class="section level2">
+      <h2 id="test-utils">Test utils<a class="anchor" aria-label="anchor" href="#test-utils"></a></h2>
+      
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
           
           <code><a href="test_synthetic_data.html">test_synthetic_data()</a></code> 
         </dt>
         <dd>Testing synthetic data form gDRtestData package</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
