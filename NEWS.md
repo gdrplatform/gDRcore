@@ -85,7 +85,7 @@
 * update annotation column names for cell line annotation as per changes in the gDRutils
 
 ## gDRcore 0.99.32 - 2023-07-25
-* extended logic for supporting cols with dash, e.g. additional perturbations with "-"
+* extend logic for supporting cols with dash, e.g. additional perturbations with "-"
 
 ## gDRcore 0.99.31 - 2023-07-19
 * update the logic for handling warnings in the pipeline
