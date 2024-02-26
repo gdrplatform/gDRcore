@@ -125,7 +125,7 @@
 * switch from `zoo::rollmean` to `data.table::frollmean`
 
 ## gDRcore 0.99.19 - 2023-06-06
-* replaced reshape2 functions by functions from data.table
+* replace reshape2 functions by functions from data.table
 
 ## gDRcore 0.99.18 - 2023-05-31
 * fix managing of mixed types of raw data
