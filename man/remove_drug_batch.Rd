@@ -19,3 +19,4 @@ Remove batch from Gnumber
 remove_drug_batch("DRUG.123")
 
 }
+\keyword{annotation}

@@ -37,3 +37,4 @@ fittings[[fitting_id_col]] <- c(1, 2)
 map_ids_to_fits(pred, match_col, fittings, fitting_id_col)
 
 }
+\keyword{combinations}

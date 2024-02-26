@@ -52,3 +52,4 @@ SummarizedExperiment::assays(se1) <-
 fit_SE.combinations(se1[1, 1])
 
 }
+\keyword{runDrugResponseProcessingPipeline}

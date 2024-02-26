@@ -28,3 +28,4 @@ Get default nested identifiers
 get_default_nested_identifiers(data.table::data.table())
 
 }
+\keyword{utils}

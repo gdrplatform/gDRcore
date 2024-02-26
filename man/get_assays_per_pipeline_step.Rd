@@ -24,3 +24,4 @@ assay
 \description{
 get info about created/present assays in SE at the given pipeline step
 }
+\keyword{utils}

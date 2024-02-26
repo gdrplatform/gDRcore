@@ -9,8 +9,7 @@
 \alias{runDrugResponseProcessingPipelineFxns}
 \alias{create_and_normalize_SE}
 \alias{runDrugResponseProcessingPipeline}
-\title{If a column called \code{"BackgroundValue"} exists in \code{df_},
-it will be removed from the \code{readout} column.}
+\title{Run drug response processing pipeline}
 \usage{
 average_SE(
   se,
@@ -117,7 +116,8 @@ normalized data. Defaults to \code{"Normalized"}.}
 \linkS4class{SummarizedExperiment}. Defaults to \code{"Averaged"}.}
 
 \item{df_}{data.table of raw drug response data containing both treated and
-untreated values.}
+untreated values. If a column called \code{"BackgroundValue"} exists
+in \code{df_}, it will be removed from the \code{readout} column.}
 
 \item{readout}{string of the name containing the cell viability readout
 values.}
@@ -309,3 +309,4 @@ runDrugResponseProcessingPipeline(
 )
 
 }
+\keyword{runDrugResponseProcessingPipeline}

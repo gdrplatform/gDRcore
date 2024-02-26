@@ -17,3 +17,4 @@ combination data model
 \description{
 Detect model of data in data.table
 }
+\keyword{utils}

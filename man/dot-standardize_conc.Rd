@@ -23,3 +23,4 @@ concs <- 10 ^ (seq(-1, 1, 0.9))
 .standardize_conc(concs)
 
 }
+\keyword{combinations}
