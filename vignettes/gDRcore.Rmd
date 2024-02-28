@@ -41,7 +41,7 @@ For drug response data, the input files need to be merged such that each measure
 
 When the data and metadata are merged into a long table, the wrapper function `runDrugResponseProcessingPipeline` can be used to generate an MAE with processed and analyzed data. 
 
-![Figure 1. The overview of the runDrugResponseProcessingPipeline. ](https://raw.githubusercontent.com/gdrplatform/gDRcore/GDR-2419/inst/images/pipeline2.png).
+![Figure 1. The overview of the runDrugResponseProcessingPipeline. ](https://raw.githubusercontent.com/gdrplatform/gDRcore/main/inst/images/pipeline2.png).
 
 In practice runDrugResponseProcessingPipeline does the following steps:
 
@@ -52,7 +52,7 @@ create_SE also dispatches the raw data and controls into the right nested tables
 * `fit_SE` fits the dose-response curves and calculates response metrics for each normalization type.
 * `fit_SE.combinations` calculates synergy scores for drug combination data and, if the data is appropriate, fits along the two drugs and matrix-level metrics (e.g. isobolograms) are calculated. This is also performed for each normalization type independently.
 
-![Figure 2. Detailed overview of the drug processing pipeline. ](https://raw.githubusercontent.com/gdrplatform/gDRcore/GDR-2419/inst/images/pipeline.png).
+![Figure 2. Detailed overview of the drug processing pipeline. ](https://raw.githubusercontent.com/gdrplatform/gDRcore/main/inst/images/pipeline.png).
 
 The functions to process the data have parameters for specifying the names of the variables and assays. Additional parameters are available to personalize the processing steps such as force the nesting (or not) of an attribute, specify attributes that should be considered as technical replicates or not.
 
