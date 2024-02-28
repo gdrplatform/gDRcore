@@ -16,13 +16,11 @@ Entity "SummarizedExperiment(s)" as SE {
  + "RawTreated"
  + "Controls"
  + "Normalized"
- + "RefRelativeViability"
- + "RefGRvalue"
  + "Averaged"
  + **"Metrics"**
- - **Isobologram**
- - **Excess**
- - **Scores**
+ - **isobologram**
+ - **excess**
+ - **scores**
 }
 }
 

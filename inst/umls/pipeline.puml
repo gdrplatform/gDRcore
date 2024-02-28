@@ -24,8 +24,6 @@ Entity "SummarizedExperiment" as SE2 {
  + "RawTreated"
  + "Controls" 
  + **"Normalized"**
- + **"RefRelativeViability"**
- + **"RefGRvalue"**
 }
 
 Entity "SummarizedExperiment" as SE3 {
@@ -36,8 +34,6 @@ Entity "SummarizedExperiment" as SE3 {
  + "RawTreated"
  + "Controls" 
  + "Normalized"
- + "RefRelativeViability"
- + "RefGRvalue"
  + **"Averaged"**
 }
 
@@ -49,13 +45,11 @@ Entity "SummarizedExperiment" as SE4 {
  + "RawTreated"
  + "Controls" 
  + "Normalized"
- + "RefRelativeViability"
- + "RefGRvalue"
  + "Averaged"
  + **"Metrics"**
- - **Isobologram**
- - **Excess**
- - **Scores**
+ - **isobologram**
+ - **excess**
+ - **scores**
 }
 
 RD --> DF
@@ -82,11 +76,11 @@ Average the replicates for the treated readout values.
 reference readout to compute a RelativeViability and GRvalue
 for both the references and treated conditions. 
 end note
-SE3 --> SE4: " fit_SE()"
+SE3 --> SE4: " fit_SE()/fit_SE.combinations()"
 note right on link
 Fit a dose response curve to the SE,
 and get back fit metrics for the curves 
-  - utilize the RefRelativeViability and RefGRValue
+  - utilize the Averaged assay
 end note
 
 @enduml
