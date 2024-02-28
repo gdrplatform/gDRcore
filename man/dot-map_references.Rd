@@ -24,3 +24,4 @@ Map references
 \details{
 Using the given rownames, map the treated and reference conditions.
 }
+\keyword{map_df}

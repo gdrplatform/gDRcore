@@ -42,3 +42,4 @@ add_Drug_annotation(
     DrugName = "name of the drug")
 )
 }
+\keyword{annotation}

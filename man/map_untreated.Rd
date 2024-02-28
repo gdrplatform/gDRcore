@@ -18,3 +18,4 @@ Identify untreated rows based on Drug treatment alone
 \details{
 Using the given rownames, map the untreated conditions
 }
+\keyword{map_df}

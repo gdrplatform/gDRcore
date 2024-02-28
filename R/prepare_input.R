@@ -7,6 +7,7 @@
 #' 
 #' @param x data.table with raw data or MAE object with dose-reponse data
 #' @param ... additional parameters
+#' @keywords prepare_input
 #' 
 #' @examples 
 #' td <- gDRimport::get_test_data()
@@ -53,6 +54,7 @@ prepare_input <-
 #' 
 #' @return list of input data
 #' 
+#' @keywords prepare_input
 #' @export
 prepare_input.data.table <-
   function(x,
@@ -109,6 +111,7 @@ prepare_input.data.table <-
 #' 
 #' @return list of input data
 #' 
+#' @keywords prepare_input
 #' @export
 prepare_input.MultiAssayExperiment <-
   function(x,
@@ -171,6 +174,7 @@ prepare_input.MultiAssayExperiment <-
     inl
   }
 
+#' @keywords prepare_input
 .set_nested_confounders <- function(nested_confounders, df) {
   x_names <- names(df)
   # Some experiment can have nested_confounders = NULL that is appropriate 
@@ -201,6 +205,7 @@ prepare_input.MultiAssayExperiment <-
   }
 }
 
+#' @keywords prepare_input
 .set_nested_identifiers <- function(nested_identifiers_l, args = list()) {
   if (is.null(nested_identifiers_l)) {
     do.call(.get_default_nested_identifiers, args)
@@ -209,6 +214,7 @@ prepare_input.MultiAssayExperiment <-
   }
 }
 
+#' @keywords prepare_input
 .set_exps <- function(df_list) {
   df_names <- names(df_list)
   exps <- lapply(df_names, function(x) NULL)

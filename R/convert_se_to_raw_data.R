@@ -8,6 +8,7 @@
 #' convert_mae_to_raw_data(mae)
 #' 
 #' @return data.table with raw data
+#' @keywords convert_to_raw_data
 #' @export
 convert_mae_to_raw_data <- function(mae) {
   
@@ -52,6 +53,7 @@ convert_mae_to_raw_data <- function(mae) {
 #' se <- mae[[1]]
 #' convert_se_to_raw_data(se)
 #' 
+#' @keywords convert_to_raw_data
 #' @export
 convert_se_to_raw_data <- function(se) {
   checkmate::assert_class(se, "SummarizedExperiment")

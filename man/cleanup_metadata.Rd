@@ -29,3 +29,4 @@ df <- data.table::data.table(
 cleanup_df <- cleanup_metadata(df)
 
 }
+\keyword{utils}

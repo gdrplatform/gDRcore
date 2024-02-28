@@ -20,3 +20,4 @@ mae <- gDRutils::get_synthetic_data("finalMAE_small")
 convert_mae_to_raw_data(mae)
 
 }
+\keyword{convert_to_raw_data}

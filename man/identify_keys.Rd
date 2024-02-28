@@ -59,3 +59,4 @@ identify_keys(trt_df)
 \seealso{
 map_df, create_SE
 }
+\keyword{utils}

@@ -21,3 +21,4 @@ se <- mae[[1]]
 convert_se_to_raw_data(se)
 
 }
+\keyword{convert_to_raw_data}

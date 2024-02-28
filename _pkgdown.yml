@@ -1,3 +1,43 @@
 url: https://gdrplatform.github.io/gDRcore/
 template:
   bootstrap: 5
+
+reference:
+- title: Pipeline
+  desc: >
+    Run different components of the gDR drug response processing pipeline.
+    Either create a SummarizedExperiment and normalize raw treated and control 
+    data (create_and_normalize_SE), average data (average_SE), or fit the 
+    processed data (fit_SE). 
+- contents:
+  - has_keyword("runDrugResponseProcessingPipeline")
+- title: Merging data
+- contents:
+  - has_keyword("merge_data")
+- title: Combination helpers
+- contents:
+  - has_keyword("combinations")
+- title: Annotation
+- contents:
+  - has_keyword("annotation")
+- title: Calculating GR
+- contents:
+  - has_keyword("calculate_GR")
+- title: Converting to raw data
+- contents:
+  - has_keyword("convert_to_raw_data")
+- title: Data type
+- contents:
+  - has_keyword("data_type")
+- title: Preparing input
+- contents:
+  - has_keyword("prepare_input")
+- title: Mappping
+- contents:
+  - has_keyword("map_df")
+- title: Utils
+- contents:
+  - has_keyword("utils")
+- title: Test utils
+- contents:
+  - has_keyword("test_utils")

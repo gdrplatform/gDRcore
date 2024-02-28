@@ -26,6 +26,7 @@
 #'   SummarizedExperiment::assays(se1)["Averaged"]
 #' fit_SE.combinations(se1[1, 1])
 #'
+#' @keywords runDrugResponseProcessingPipeline
 #' @return A code{SummarizedExperiment} object with an additional assay 
 #' containing the combination metrics.
 #' 

@@ -7,7 +7,9 @@
 #'
 #' @param x data.table of MAE with drug response data
 #' @param df_ data.table of raw drug response data containing both treated and 
-#' untreated values.
+#' untreated values. If a column called \code{"BackgroundValue"} exists 
+#' in \code{df_}, it will be removed from the \code{readout} column.
+#' 
 #' @param data_type single-agent vs combination
 #' @param se \code{SummarizedExperiment} object.
 #' @param readout string of the name containing the cell viability readout 
@@ -100,6 +102,7 @@
 #' `partial_run` is enabled.
 #'
 #' @name runDrugResponseProcessingPipelineFxns
+#' @keywords runDrugResponseProcessingPipeline
 #' 
 #' @examples 
 #' p_dir <- file.path(tempdir(), "pcheck")

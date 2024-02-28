@@ -21,3 +21,4 @@ Detect model of data
 data_model("single-agent")
 
 }
+\keyword{utils}

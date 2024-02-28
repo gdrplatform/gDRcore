@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, echo = FALSE}
 library(gDRimport)
 library(gDRtestData)
 library(gDRcore)
@@ -39,13 +39,20 @@ a series or the same number of elements, the attributes (columns of the table) s
 ## Drug processing 
 For drug response data, the input files need to be merged such that each measurement (data) is associated with the right metadata (cell line properties and treatment definition). Metadata can be added with the function `cleanup_metadata` if the right reference databases are in place.
 
-When the data and metadata are merged into a long table, the wrapper function `runDrugResponseProcessingPipeline` can be used to generate an MAE with processed and analyzed data. In practice runDrugResponseProcessingPipeline does the following steps:
+When the data and metadata are merged into a long table, the wrapper function `runDrugResponseProcessingPipeline` can be used to generate an MAE with processed and analyzed data. 
+
+![Figure 1. The overview of the runDrugResponseProcessingPipeline. ](https://raw.githubusercontent.com/gdrplatform/gDRcore/GDR-2419/inst/images/pipeline2.png).
+
+In practice runDrugResponseProcessingPipeline does the following steps:
+
 * `create_SE` creates the structure of the MAE and the associated SEs by assigning metadata into the row and column attributes. The assignment is performed in the function split_SE_components (see details below for the assumption made when building SE structures).
 create_SE also dispatches the raw data and controls into the right nested tables. Note that data may be duplicated between different SEs to make them self-contained.
 * `normalize_SE` normalizes the raw data based on the control. Calculation of the GR value is based on a cell line division time provided by the reference database if no pre-treatment control is provided. If both information are missing, GR values cannot be calculated. Additional normalization can be added as new rows in the nested table.
 * `average_SE` averages technical replicates that are stored in the same nested table are averaged.
 * `fit_SE` fits the dose-response curves and calculates response metrics for each normalization type.
 * `fit_SE.combinations` calculates synergy scores for drug combination data and, if the data is appropriate, fits along the two drugs and matrix-level metrics (e.g. isobolograms) are calculated. This is also performed for each normalization type independently.
+
+![Figure 2. Detailed overview of the drug processing pipeline. ](https://raw.githubusercontent.com/gdrplatform/gDRcore/GDR-2419/inst/images/pipeline.png).
 
 The functions to process the data have parameters for specifying the names of the variables and assays. Additional parameters are available to personalize the processing steps such as force the nesting (or not) of an attribute, specify attributes that should be considered as technical replicates or not.
 
