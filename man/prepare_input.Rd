@@ -41,3 +41,4 @@ nested_confounders = intersect(
 prepare_input(df_, nested_confounders, NULL)
 
 }
+\keyword{prepare_input}

@@ -42,3 +42,4 @@ original <- gDRutils::get_synthetic_data(data)
 test_synthetic_data(original, original, "test")
 
 }
+\keyword{test_utils}

@@ -45,6 +45,7 @@
 #' TODO: FILL ME!
 #' 
 #' @seealso identify_keys
+#' @keywords map_df
 #' @export
 #'
 map_df <- function(trt_md, 
@@ -185,6 +186,7 @@ map_df <- function(trt_md,
 #' @details
 #' Using the given rownames, map the treated and reference conditions.
 #' 
+#' @keywords map_df
 #' @return list
 #' 
 .map_references <- function(mat_elem, 
@@ -295,6 +297,7 @@ map_df <- function(trt_md,
 #' @details
 #' Using the given rownames, map the untreated conditions
 #' 
+#' @keywords map_df
 #' @return list
 #' 
 map_untreated <- function(mat_elem) {

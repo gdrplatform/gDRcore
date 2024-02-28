@@ -21,3 +21,4 @@ Define matrix grid positions
 \code{drug_1} is diluted along the rows as the y-axis and
 \code{drug_2} is diluted along the columns and will be the x-axis.
 }
+\keyword{combinations}

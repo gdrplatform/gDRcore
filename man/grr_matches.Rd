@@ -98,3 +98,4 @@ ref <- do.call(paste,
 grr_matches(trt, ref, list = FALSE, all.y = FALSE)
 
 }
+\keyword{utils}

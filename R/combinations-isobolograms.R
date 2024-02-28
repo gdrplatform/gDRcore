@@ -7,6 +7,7 @@
 #' \code{drug_1} is diluted along the rows as the y-axis and
 #' \code{drug_2} is diluted along the columns and will be the x-axis.
 #' 
+#' @keywords combinations
 #' @return list with axis grid positions
 #' 
 define_matrix_grid_positions <- function(conc1, conc2) {
@@ -35,6 +36,7 @@ define_matrix_grid_positions <- function(conc1, conc2) {
   list(axis_1 = axis_1, axis_2 = axis_2)
 }
 
+#' @keywords combinations
 calculate_Loewe <- function(
     df_mean, 
     row_fittings, 
@@ -337,6 +339,7 @@ calculate_Loewe <- function(
 }
 
 
+#' @keywords combinations
 get_isocutoffs <- function(df_mean, normalization_type) {
   if (min(df_mean[normalization_type == normalization_type, smooth], na.rm = TRUE) > 0.7) {
     iso_cutoffs <- NULL
@@ -362,6 +365,7 @@ get_isocutoffs <- function(df_mean, normalization_type) {
 }
 
 
+#' @keywords combinations
 calculate_isobolograms <- function(row_fittings, 
                                    col_fittings, 
                                    codilution_fittings, 

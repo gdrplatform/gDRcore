@@ -1,7 +1,3 @@
-#' If a column called \code{"BackgroundValue"} exists in \code{df_},
-#' it will be removed from the \code{readout} column.
-#' @rdname runDrugResponseProcessingPipelineFxns
-#' 
 #' @examples
 #' 
 #' td <- gDRimport::get_test_data()
@@ -20,6 +16,7 @@
 #' 
 #' 
 #' @export
+#' @rdname runDrugResponseProcessingPipelineFxns
 #'
 create_SE <- function(df_,
                       data_type,

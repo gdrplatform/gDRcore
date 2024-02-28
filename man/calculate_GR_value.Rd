@@ -102,3 +102,4 @@ calculate_endpt_GR_value(readouts, 72, 1, ndigit_rounding = 2)
 \seealso{
 normalize_SE2
 }
+\keyword{calculate_GR}

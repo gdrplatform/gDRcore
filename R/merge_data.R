@@ -20,6 +20,7 @@
 #' )
 #'
 #' @return a data.table with merged data and metadata.
+#' @keywords merge_data
 #' @export
 #'
 merge_data <- function(manifest, treatments, data) {

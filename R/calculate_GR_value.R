@@ -38,6 +38,7 @@
 NULL
 
 
+#' @keywords calculate_GR
 #' @export
 #' 
 #' @examples
@@ -120,6 +121,7 @@ calculate_GR_value <- function(rel_viability,
 #' readouts <- rep(10000, 5)
 #' calculate_time_dep_GR_value(readouts, readouts * 1.32, readouts * 2, 2)
 #' 
+#' @keywords calculate_GR
 #' @export
 #'
 calculate_time_dep_GR_value <- function(corrected_readout,
@@ -140,6 +142,7 @@ calculate_time_dep_GR_value <- function(corrected_readout,
 #' readouts <- rep(10000, 5)
 #' calculate_endpt_GR_value(readouts, 72, 1, ndigit_rounding = 2)
 #' 
+#' @keywords calculate_GR
 #' @export
 #'
 calculate_endpt_GR_value <- function(rel_viability, 

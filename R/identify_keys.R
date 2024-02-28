@@ -38,6 +38,7 @@
 #' to reference. 
 #'
 #' @seealso map_df, create_SE
+#' @keywords utils
 #' @export
 #'
 identify_keys <- function(df_,  

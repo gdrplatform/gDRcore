@@ -16,3 +16,4 @@ combination data model
 \description{
 Detect model of data from experiment name
 }
+\keyword{utils}

@@ -10,6 +10,7 @@
 #'                    as co-treatment or matrix data type;
 #'                    defaults to \code{1}
 #' 
+#' @keywords data_type
 #' @examples
 #' conc <- rep(seq(0, 0.3, 0.1), 2)
 #' ctrl_df <- S4Vectors::DataFrame(
@@ -35,6 +36,7 @@
 #' @return 
 #' data.table of raw drug response data with additional column \code{type} 
 #' with the info of data type for a given row of data.table
+#' @keywords data_type
 #' @export
 #'
 #' @author Bartosz Czech <bartosz.czech@@contractors.roche.com>
@@ -150,6 +152,7 @@ identify_data_type <- function(df,
 #' split_raw_data(split_df)
 #'
 #' @return list with split data based on its data type
+#' @keywords data_type
 #' @export
 #' @author Bartosz Czech <bartosz.czech@@contractors.roche.com>
 split_raw_data <- function(df,
