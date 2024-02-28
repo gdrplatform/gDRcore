@@ -84,11 +84,6 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/gdrplatform/gDRimport" class="external-link">gDRimport</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/gdrplatform/gDRtestData" class="external-link">gDRtestData</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/gdrplatform/gDRcore" class="external-link">gDRcore</a></span><span class="op">)</span></span>
-<span><span class="va">log_level</span> <span class="op">&lt;-</span> <span class="fu">futile.logger</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/futile.logger/man/flog.threshold.html" class="external-link">flog.threshold</a></span><span class="op">(</span><span class="st">"ERROR"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
@@ -179,7 +174,7 @@ bunch of tools allowing to prepare input data for
 <code>gDR</code> required three types of data that should be used as the
 raw input: Template, Manifest, and RawData. More info about these three
 types of data you could find in our general documentation.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/get_test_data.html" class="external-link">get_test_data</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Provided dataset needs to be merged into the one
 <code>data.table</code> object to be able to run gDR pipeline. This
@@ -196,9 +191,9 @@ splits data into treatment and control assays, normalizes, averages,
 calculates gDR metrics, and finally, creates the MultiAssayExperiment
 object. This function is called
 <code>runDrugResponseProcessingPipeline</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runDrugResponseProcessingPipelineFxns.html">runDrugResponseProcessingPipeline</a></span><span class="op">(</span><span class="va">input_df</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mae</span></span>
 <span><span class="co">#&gt; A MultiAssayExperiment object of 2 listed</span></span>
 <span><span class="co">#&gt;  experiments with user-defined names and respective classes.</span></span>
@@ -215,7 +210,7 @@ object. This function is called
 <span><span class="co">#&gt;  exportClass() - save data to flat files</span></span></code></pre></div>
 <p>And we can subset the MultiAssayExperiment to receive the
 SummarizedExperiment specific to any data type, e.g.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mae</span><span class="op">[[</span><span class="st">"single-agent"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; class: SummarizedExperiment </span></span>
 <span><span class="co">#&gt; dim: 3 6 </span></span>
@@ -244,7 +239,7 @@ vignette to familiarize with these functionalities.</p>
 <div class="section level2">
 <h2 class="unnumbered" id="sessioninfo">SessionInfo<a class="anchor" aria-label="anchor" href="#sessioninfo"></a>
 </h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.3.0 (2023-04-21)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
@@ -330,7 +325,7 @@ vignette to familiarize with these functionalities.</p>
 
     <footer><div class="pkgdown-footer-left">
   <p></p>
-<p>Developed by Bartosz Czech, Arkadiusz Gladki, Marc Hafner, Pawel Piatkowski, Natalia Potocka, Dariusz Scigocki, Janina Smola, Sergiu Mocanu, Allison Vuong.</p>
+<p>Developed by Bartosz Czech, Arkadiusz Gladki, Marc Hafner, Pawel Piatkowski, Natalia Potocka, Dariusz Scigocki, Janina Smola, Sergiu Mocanu, Marcin Kamianowski, Allison Vuong.</p>
 </div>
 
 <div class="pkgdown-footer-right">
