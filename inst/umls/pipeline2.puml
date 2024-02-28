@@ -1,0 +1,41 @@
+@startuml
+set namespaceSeparator none
+skinparam linetype polyline
+skinparam backgroundcolor transparent
+ 
+Entity "raw data && metadata" as RD {}
+ 
+Entity "data.table(s)" as DF {}
+ 
+package MultiAssayExperiment as MAE <<Node>> {
+Entity "SummarizedExperiment(s)" as SE {
+ metadata(se)
+ rowData(se)
+ colData(se)
+ .. assays(se) ..
+ + "RawTreated"
+ + "Controls"
+ + "Normalized"
+ + "RefRelativeViability"
+ + "RefGRvalue"
+ + "Averaged"
+ + **"Metrics"**
+ - **Isobologram**
+ - **Excess**
+ - **Scores**
+}
+}
+
+
+RD --> DF
+note right on link
+merge template, readouts, treatments, conditions
+end note
+
+DF --> MAE: " runDrugResponseProcessingPipeline()"
+note right on link
+generate an MAE with processed and analyzed data
+end note
+
+
+@enduml

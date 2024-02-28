@@ -1,0 +1,93 @@
+@startuml
+set namespaceSeparator none
+skinparam linetype polyline
+skinparam backgroundcolor transparent
+
+Entity "raw data && metadata" as RD {}
+
+Entity "data.table(s)" as DF {}
+
+Entity "SummarizedExperiment" as SE {
+ metadata(se)
+ rowData(se)
+ colData(se)
+ .. assays(se) ..
+ + **"RawTreated"**
+ + **"Controls"** 
+}
+
+Entity "SummarizedExperiment" as SE2 {
+ metadata(se)
+ rowData(se)
+ colData(se)
+ .. assays(se) ..
+ + "RawTreated"
+ + "Controls" 
+ + **"Normalized"**
+ + **"RefRelativeViability"**
+ + **"RefGRvalue"**
+}
+
+Entity "SummarizedExperiment" as SE3 {
+ metadata(se)
+ rowData(se)
+ colData(se)
+ .. assays(se) ..
+ + "RawTreated"
+ + "Controls" 
+ + "Normalized"
+ + "RefRelativeViability"
+ + "RefGRvalue"
+ + **"Averaged"**
+}
+
+Entity "SummarizedExperiment" as SE4 {
+ metadata(se)
+ rowData(se)
+ colData(se)
+ .. assays(se) ..
+ + "RawTreated"
+ + "Controls" 
+ + "Normalized"
+ + "RefRelativeViability"
+ + "RefGRvalue"
+ + "Averaged"
+ + **"Metrics"**
+ - **Isobologram**
+ - **Excess**
+ - **Scores**
+}
+
+RD --> DF
+note right on link
+merge template, readouts, treatments, conditions
+end note
+DF --> SE: " create_SE()"
+note right on link
+Creates a SummarizedExperiment object with 2 asssays:
+1) a raw, treated, BumpyMatrix named "RawTreated"
+2) a raw, untreated, BumpyMatrix named "Controls"
+  - maps treated to untreated references
+  - averages untreated references
+end note
+SE --> SE2: " normalize_SE()"
+note right on link
+Normalize the treated readouts to their corresponding end note
+reference readout to compute a RelativeViability and GRvalue
+for both the references and treated conditions.
+end note
+SE2 --> SE3: " average_SE()"
+note right on link
+Average the replicates for the treated readout values.
+reference readout to compute a RelativeViability and GRvalue
+for both the references and treated conditions. 
+end note
+SE3 --> SE4: " fit_SE()"
+note right on link
+Fit a dose response curve to the SE,
+and get back fit metrics for the curves 
+  - utilize the RefRelativeViability and RefGRValue
+end note
+
+@enduml
+
