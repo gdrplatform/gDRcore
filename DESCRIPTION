@@ -16,6 +16,7 @@ Authors@R: c(
     person("Dariusz", "Scigocki", role = "aut"),
     person("Janina", "Smola", role = "aut"),
     person("Sergiu", "Mocanu", role = "aut"),
+    person("Marcin", "Kamianowski", role="aut"),
     person("Allison", "Vuong", role = "aut")
   )
 Description: This package contains core functions to process and analyze drug response data. The package provides tools for normalizing, averaging,
