@@ -47,7 +47,7 @@ Entity "SummarizedExperiment" as SE4 {
  + "Normalized"
  + "Averaged"
  + **"Metrics"**
- - **isobologram**
+ - **isobolograms**
  - **excess**
  - **scores**
 }
