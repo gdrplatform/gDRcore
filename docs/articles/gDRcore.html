@@ -125,8 +125,10 @@ function <code>cleanup_metadata</code> if the right reference databases
 are in place.</p>
 <p>When the data and metadata are merged into a long table, the wrapper
 function <code>runDrugResponseProcessingPipeline</code> can be used to
-generate an MAE with processed and analyzed data. In practice
-runDrugResponseProcessingPipeline does the following steps:</p>
+generate an MAE with processed and analyzed data.</p>
+<p><img src="https://raw.githubusercontent.com/gdrplatform/gDRcore/GDR-2419/inst/images/pipeline2.png" alt="Figure 1. The overview of the runDrugResponseProcessingPipeline.">.</p>
+<p>In practice runDrugResponseProcessingPipeline does the following
+steps:</p>
 <ul>
 <li>
 <code>create_SE</code> creates the structure of the MAE and the
@@ -155,6 +157,7 @@ combination data and, if the data is appropriate, fits along the two
 drugs and matrix-level metrics (e.g. isobolograms) are calculated. This
 is also performed for each normalization type independently.</li>
 </ul>
+<p><img src="https://raw.githubusercontent.com/gdrplatform/gDRcore/GDR-2419/inst/images/pipeline.png" alt="Figure 2. Detailed overview of the drug processing pipeline.">.</p>
 <p>The functions to process the data have parameters for specifying the
 names of the variables and assays. Additional parameters are available
 to personalize the processing steps such as force the nesting (or not)
@@ -266,13 +269,13 @@ vignette to familiarize with these functionalities.</p>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] gDRcore_1.1.13    gDRtestData_1.1.8 gDRimport_1.1.5   BiocStyle_2.30.0 </span></span>
+<span><span class="co">#&gt; [1] gDRcore_1.1.13    gDRtestData_1.1.9 gDRimport_1.1.6   BiocStyle_2.30.0 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] bitops_1.0-7                fastmap_1.1.1              </span></span>
 <span><span class="co">#&gt;  [3] RCurl_1.98-1.14             BumpyMatrix_1.10.0         </span></span>
 <span><span class="co">#&gt;  [5] TH.data_1.1-2               digest_0.6.34              </span></span>
-<span><span class="co">#&gt;  [7] lifecycle_1.0.4             gDRutils_1.1.6             </span></span>
+<span><span class="co">#&gt;  [7] lifecycle_1.0.4             gDRutils_1.1.7             </span></span>
 <span><span class="co">#&gt;  [9] survival_3.5-5              magrittr_2.0.3             </span></span>
 <span><span class="co">#&gt; [11] compiler_4.3.0              rlang_1.1.3                </span></span>
 <span><span class="co">#&gt; [13] sass_0.4.8                  drc_3.0-1                  </span></span>
