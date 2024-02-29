@@ -8,24 +8,45 @@
 #' convert_mae_to_raw_data(mae)
 #' 
 #' @return data.table with raw data
+#' @keywords convert_to_raw_data
 #' @export
 convert_mae_to_raw_data <- function(mae) {
   
   checkmate::assert_class(mae, "MultiAssayExperiment")
   checkmate::assert_true(all(vapply(gDRutils::MAEpply(mae, SummarizedExperiment::assayNames),
-         function(x) all(c("RawTreated", "Controls") %in% x), FUN.VALUE = logical(1))))
+                                    function(x) all(c("RawTreated", "Controls") %in% x), FUN.VALUE = logical(1))))
   
   # Get the data from se
   
   data <- gDRutils::MAEpply(mae, convert_se_to_raw_data)
   
+  if ("swap_sa" %in% names(merged_df)) {
+    data.table::setorder(merged_df, swap_sa)
+    merged_df[merged_df$swap_sa,
+              c(conc_cols1,
+                drug_cols1[1],
+                drug_cols1[2],
+                drug_cols1[3],
+                conc_cols2,
+                drug_cols2[1],
+                drug_cols2[2],
+                drug_cols2[3]) :=
+                .(get(conc_cols2),
+                  get(drug_cols2[1]),
+                  get(drug_cols2[2]),
+                  get(drug_cols2[3]),
+                  get(conc_cols1),
+                  get(drug_cols1[1]),
+                  get(drug_cols1[2]),
+                  get(drug_cols1[3]))]
+  }
+  
   # Remove duplicates shared between assays to keep only original single-agent
   common_records <- Reduce(intersect, lapply(data, "[[", "record_id"))
   sa_name <- gDRutils::get_experiment_groups("single-agent")[["single-agent"]]
-  data[setdiff(names(data), sa_name)] <- 
-    lapply(data[setdiff(names(data), sa_name)], function(x) {
-      x[!record_id %in% common_records]
-    })
+  if (length(names(data) > 1)) {
+    data[[sa_name]] <- data[[sa_name]][!record_id %in% common_records]
+  }
   
   data_df <- data.table::rbindlist(data, fill = TRUE)
   
@@ -35,7 +56,7 @@ convert_mae_to_raw_data <- function(mae) {
   
   data_df <- data_df[!duplicated(data_df$record_id), ]
   selected_columns <- !names(data_df) %in% c("record_id", "BackgroundValue",
-                                          "WellColumn", "WellRow", "Template", "swap_sa")
+                                             "WellColumn", "WellRow", "Template", "swap_sa")
   data.table::setorder(data_df, record_id)
   data_df[, selected_columns, with = FALSE]
 }
@@ -52,6 +73,7 @@ convert_mae_to_raw_data <- function(mae) {
 #' se <- mae[[1]]
 #' convert_se_to_raw_data(se)
 #' 
+#' @keywords convert_to_raw_data
 #' @export
 convert_se_to_raw_data <- function(se) {
   checkmate::assert_class(se, "SummarizedExperiment")
@@ -63,14 +85,14 @@ convert_se_to_raw_data <- function(se) {
   
   # Identifiers
   conc_cols1 <- intersect(unlist(gDRutils::get_SE_identifiers(se, "concentration",
-                                                   simplify = FALSE)), names(trt))
+                                                              simplify = FALSE)), names(trt))
   conc_cols2 <- intersect(unlist(gDRutils::get_SE_identifiers(se, "concentration2",
-                                                    simplify = FALSE)), names(trt))
+                                                              simplify = FALSE)), names(trt))
   conc_cols <- c(conc_cols1, conc_cols2)
   drug_cols1 <- intersect(unlist(gDRutils::get_SE_identifiers(se, c("drug", "drug_name", "drug_moa"),
-                                                   simplify = FALSE)), names(trt))
+                                                              simplify = FALSE)), names(trt))
   drug_cols2 <- intersect(unlist(gDRutils::get_SE_identifiers(se, c("drug2", "drug_name2", "drug_moa2"),
-                                                   simplify = FALSE)), names(trt))
+                                                              simplify = FALSE)), names(trt))
   drug_cols <- c(drug_cols1, drug_cols2)
   untreated_tag <- gDRutils::get_SE_identifiers(se, "untreated_tag")[1]
   masked_tag <- gDRutils::get_SE_identifiers(se, "masked_tag")[1]
@@ -96,6 +118,7 @@ convert_se_to_raw_data <- function(se) {
   
   # Merge and adjust the data
   merged_df <- data.table::rbindlist(list(trt, ctrl), fill = TRUE)
+  
   merged_df$rId <- merged_df$cId <-  merged_df$ReadoutValue <- NULL
   data.table::setnames(merged_df, "CorrectedReadout", "ReadoutValue")
   
