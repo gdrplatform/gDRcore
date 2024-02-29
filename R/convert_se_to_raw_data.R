@@ -20,14 +20,34 @@ convert_mae_to_raw_data <- function(mae) {
   
   data <- gDRutils::MAEpply(mae, convert_se_to_raw_data)
   
+  if ("swap_sa" %in% names(merged_df)) {
+    data.table::setorder(merged_df, swap_sa)
+    merged_df[merged_df$swap_sa,
+              c(conc_cols1,
+                drug_cols1[1],
+                drug_cols1[2],
+                drug_cols1[3],
+                conc_cols2,
+                drug_cols2[1],
+                drug_cols2[2],
+                drug_cols2[3]) :=
+                .(get(conc_cols2),
+                  get(drug_cols2[1]),
+                  get(drug_cols2[2]),
+                  get(drug_cols2[3]),
+                  get(conc_cols1),
+                  get(drug_cols1[1]),
+                  get(drug_cols1[2]),
+                  get(drug_cols1[3]))]
+  }
+  
   # Remove duplicates shared between assays to keep only original single-agent
   common_records <- Reduce(intersect, lapply(data, "[[", "record_id"))
   sa_name <- gDRutils::get_experiment_groups("single-agent")[["single-agent"]]
-  data[setdiff(names(data), sa_name)] <- 
-    lapply(data[setdiff(names(data), sa_name)], function(x) {
-      x[!record_id %in% common_records]
-    })
-  
+  if (length(names(data) > 1)) {
+    data[[sa_name]] <- data[[sa_name]][!record_id %in% common_records]
+  }
+
   data_df <- data.table::rbindlist(data, fill = TRUE)
   
   data_df <- replace_NA_in_raw_data(data_df, mae)
@@ -98,6 +118,7 @@ convert_se_to_raw_data <- function(se) {
   
   # Merge and adjust the data
   merged_df <- data.table::rbindlist(list(trt, ctrl), fill = TRUE)
+  
   merged_df$rId <- merged_df$cId <-  merged_df$ReadoutValue <- NULL
   data.table::setnames(merged_df, "CorrectedReadout", "ReadoutValue")
   
