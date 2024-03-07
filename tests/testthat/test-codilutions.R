@@ -12,7 +12,7 @@ test_that("fit_combo_codilutions works as expected", {
     x = vals,
     normalization_type = "GR")
 
-  obs <- gDRcore:::fit_combo_codilutions(measured, nested_identifiers, "GR")
+  obs <- fit_combo_codilutions(measured, nested_identifiers, "GR")
   expect_equal(dim(obs), c(7, 17))
   expect_true("ratio" %in% colnames(obs))
   expect_equal(obs$ratio, c(.04, .1, .3, 1, 3, 10, 30), tolerance = 10e-3)
@@ -38,7 +38,7 @@ test_that("fit_codilution_series works as expected", {
   keep <- !is.na(ratios) & ratios == ratio
   codilution <- measured[keep, ]
 
-  res <- purrr::quietly(gDRcore:::fit_codilution_series)(
+  res <- purrr::quietly(fit_codilution_series)(
     codilution,
     series_1 = "Concentration",
     series_2 = "Concentration_2",

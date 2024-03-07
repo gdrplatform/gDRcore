@@ -11,7 +11,7 @@ test_that("fit_combo_cotreatments works as expected", {
     GRvalue = vals)
 
   obs <- suppressWarnings(# warnings are expected
-    gDRcore:::fit_combo_cotreatments(
+    fit_combo_cotreatments(
       measured, 
       series_id = "Concentration",
       cotrt_id = "Concentration_2",
@@ -39,7 +39,7 @@ test_that("fit_cotreatment_series works as expected", {
     normalization_type = "GR")
 
   obs <- suppressWarnings(# warnings are expected
-    gDRcore:::fit_cotreatment_series(
+    fit_cotreatment_series(
       measured, 
       series_id = "Concentration",
       cotrt_id = "Concentration_2",
