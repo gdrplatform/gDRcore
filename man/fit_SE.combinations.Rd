@@ -33,7 +33,7 @@ in the returned \linkS4class{SummarizedExperiment}.
 whose combination represents a unique series for which to fit curves.}
 }
 \value{
-A code{SummarizedExperiment} object with an additional assay
+A \code{SummarizedExperiment} object with an additional assay
 containing the combination metrics.
 }
 \description{

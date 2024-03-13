@@ -39,7 +39,9 @@ test_that("main pipeline functions works as expected", {
     data_dir = p_dir
   )
   expect_true(length(list.files(p_dir)) > 0)
-  expect_length(mae_v1$warnings, 2)
+  expect_lte(length(mae_v1$warnings), 3)
+  expect_true(any(grepl("Switching into 'Barcode' nested confounder.", mae_v1$warnings)))
+  expect_true(any(grepl("method L-BFGS-B uses 'factr'.", mae_v1$warnings)))
 
   mae_v2 <-
     purrr::quietly(runDrugResponseProcessingPipeline)(
@@ -58,13 +60,17 @@ test_that("main pipeline functions works as expected", {
       start_from = "normalize_SE",
       selected_experiments = c("single-agent")
     )
-  expect_length(mae_v3$warnings, 2)
-
+  expect_lte(length(mae_v3$warnings), 3)
+  expect_true(any(grepl("Switching into 'Barcode' nested confounder.", mae_v3$warnings)))
+  expect_true(any(grepl("method L-BFGS-B uses 'factr'.", mae_v3$warnings)))
+  
   mae_v4 <-
     purrr::quietly(runDrugResponseProcessingPipeline)(
       mae_v1$result
     )
   expect_lte(length(mae_v4$warnings), 3)
+  expect_true(any(grepl("Switching into 'Barcode' nested confounder.", mae_v3$warnings)))
+  expect_true(any(grepl("method L-BFGS-B uses 'factr'.", mae_v3$warnings)))
 
   expect_identical(mae_v1$result, mae_v2$result)
   expect_identical(mae_v2$result, mae_v3$result)

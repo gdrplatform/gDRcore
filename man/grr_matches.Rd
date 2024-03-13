@@ -37,7 +37,7 @@ actual values.}
 \item{nomatch}{the value to be returned in the case when no match is found.
 If not provided and \code{indexes=TRUE}, items with no match will be
 represented as \code{NA}.  If set to \code{NULL}, items with no match will
-be set to an index value of \code{length+1}.  If {indexes=FALSE}, they will
+be set to an index value of \code{length+1}.  If \code{indexes=FALSE}, they will
 default to \code{NA}.}
 }
 \value{

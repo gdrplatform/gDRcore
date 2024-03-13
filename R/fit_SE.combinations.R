@@ -27,7 +27,7 @@
 #' fit_SE.combinations(se1[1, 1])
 #'
 #' @keywords runDrugResponseProcessingPipeline
-#' @return A code{SummarizedExperiment} object with an additional assay 
+#' @return A \code{SummarizedExperiment} object with an additional assay 
 #' containing the combination metrics.
 #' 
 #' @export
