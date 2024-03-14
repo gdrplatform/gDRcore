@@ -1,5 +1,8 @@
-## gDRcore 1.1.14 - 2024-03-07
+## gDRcore 1.1.15 - 2024-03-14
 * cleanup package
+
+## gDRcore 1.1.14 - 2024-03-12
+* update function description
 
 ## gDRcore 1.1.13 - 2024-02-26
 * improve pkgdown site
