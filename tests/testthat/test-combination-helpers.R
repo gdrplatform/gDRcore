@@ -38,7 +38,7 @@ test_that("calculate_excess works as expected", {
 test_that(".calculate_dilution_ratio works as expected", {
   ratio <- 0.5
   concs <- 10 ^ (seq(-3, 1, ratio))
-  obs <- gDRcore:::.calculate_dilution_ratio(concs)
+  obs <- .calculate_dilution_ratio(concs)
   expect_equal(obs, ratio)
 })
 
