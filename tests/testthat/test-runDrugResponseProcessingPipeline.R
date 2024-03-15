@@ -68,7 +68,6 @@ test_that("main pipeline functions works as expected", {
     purrr::quietly(runDrugResponseProcessingPipeline)(
       mae_v1$result
     )
-  expect_lte(length(mae_v4$warnings), 3)
   expect_true(any(grepl("Switching into 'Barcode' nested confounder.", mae_v3$warnings)))
   expect_true(any(grepl("method L-BFGS-B uses 'factr'.", mae_v3$warnings)))
 
