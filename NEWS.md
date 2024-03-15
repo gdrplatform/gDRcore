@@ -1,3 +1,6 @@
+## gDRcore 1.1.16 - 2024-03-15
+* remove unstable tests
+
 ## gDRcore 1.1.15 - 2024-03-14
 * cleanup package
 
