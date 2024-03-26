@@ -24,17 +24,18 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Arkadiusz Gladki \email{gladki.arkadiusz@gmail.com}
+\strong{Maintainer}: Arkadiusz Gladki \email{gladki.arkadiusz@gmail.com} (\href{https://orcid.org/0000-0002-7059-6378}{ORCID})
 
 Authors:
 \itemize{
-  \item Bartosz Czech \email{bartosz.czech@contractors.roche.com}
-  \item Marc Hafner
+  \item Bartosz Czech \email{bartosz.czech@contractors.roche.com} (\href{https://orcid.org/0000-0002-9908-3007}{ORCID})
+  \item Marc Hafner (\href{https://orcid.org/0000-0003-1337-7598}{ORCID})
   \item Pawel Piatkowski
   \item Natalia Potocka
   \item Dariusz Scigocki
   \item Janina Smola
   \item Sergiu Mocanu
+  \item Marcin Kamianowski
   \item Allison Vuong
 }
 
