@@ -1,3 +1,6 @@
+## gDRcore 1.1.17 - 2024-03-26
+* fix bug with converting mae into raw_data
+
 ## gDRcore 1.1.16 - 2024-03-15
 * remove unstable tests
 
