@@ -23,11 +23,16 @@ convert_mae_to_raw_data <- function(mae) {
   # Remove duplicates shared between assays to keep only original single-agent
   common_records <- Reduce(intersect, lapply(data, "[[", "record_id"))
   sa_name <- gDRutils::get_experiment_groups("single-agent")[["single-agent"]]
-  data[setdiff(names(data), sa_name)] <- 
-    lapply(data[setdiff(names(data), sa_name)], function(x) {
-      x[!record_id %in% common_records]
-    })
-  
+  combo_name <- gDRutils::get_experiment_groups("combination")
+  if (length(names(data)) > 1 && max(table(unique(data[[combo_name]])[record_id %in% common_records]$record_id)) == 1) {
+    data[[sa_name]] <- data[[sa_name]][!record_id %in% common_records]
+  } else {
+    data[setdiff(names(data), sa_name)] <- 
+      lapply(data[setdiff(names(data), sa_name)], function(x) {
+        x[!record_id %in% common_records]
+      })
+  }
+
   data_df <- data.table::rbindlist(data, fill = TRUE)
   
   data_df <- replace_NA_in_raw_data(data_df, mae)
