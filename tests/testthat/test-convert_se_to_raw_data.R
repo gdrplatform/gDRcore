@@ -28,6 +28,8 @@ test_that("convert_mae_to_raw_data works as expected with matrix data", {
   mae2 <- purrr::quietly(runDrugResponseProcessingPipeline)(
     input_df
   )
+  
+  
   test_synthetic_data(original, mae$result, data)
   test_synthetic_data(mae$result, mae2$result, data)
 })
