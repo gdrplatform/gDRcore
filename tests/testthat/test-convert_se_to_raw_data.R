@@ -33,7 +33,7 @@ test_that("convert_mae_to_raw_data works as expected with matrix data", {
   
   trt <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(original[[1]], "RawTreated"))
   trt <- trt[!duplicated(trt$record_id), ]
-  df_raw1 <- convert_mae_to_raw_data(original)
+  dt_raw1 <- convert_mae_to_raw_data(original)
   SummarizedExperiment::assay(original[[1]], "RawTreated") <- BumpyMatrix::splitAsBumpyMatrix(
     trt[!colnames(trt) %in% c("row", "column")],
     row = trt$row,
