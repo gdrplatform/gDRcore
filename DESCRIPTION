@@ -57,6 +57,6 @@ DeploySubPath: gDRcore
 Encoding: UTF-8
 LazyLoad: yes
 NeedsCompilation: yes
-RoxygenNote: 7.3.0
+RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE) 
 SwitchrLibrary: gDRcore

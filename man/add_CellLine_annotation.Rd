@@ -16,7 +16,8 @@ add_CellLine_annotation(
     "gDRinternal"
  } else {
      "gDRtestData"
- }
+ },
+  externalSource = Sys.getenv("gDR_cellline_annotation")
 )
 }
 \arguments{
@@ -33,6 +34,9 @@ used in the annotation file}
 \item{fill}{string indicating how unknown cell lines should be filled in the DB}
 
 \item{annotationPackage}{string indication name of the package containing cellline annotation}
+
+\item{externalSource}{string with path to external file with annotation data; by default it checks
+'gDR_cellline_annotation' env var. This file should contain columns such as gnumber, drug_name and drug_moa}
 }
 \value{
 data.table with metadata with annotated cell lines

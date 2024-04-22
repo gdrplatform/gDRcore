@@ -13,7 +13,8 @@ add_Drug_annotation(
     "gDRinternal"
  } else {
      "gDRtestData"
- }
+ },
+  externalSource = Sys.getenv("gDR_drug_annotation")
 )
 }
 \arguments{
@@ -24,6 +25,10 @@ add_Drug_annotation(
 \item{fill}{string indicating how unknown cell lines should be filled in the DB}
 
 \item{annotationPackage}{string indication name of the package containing drug annotation}
+
+\item{externalSource}{string with path to external file with annotation data; by default it checks
+'gDR_drug_annotation' env var. This file should contain columns such as cell_line_identifier,
+cell_line_name, primary_tissue, doubling_time, parental_identifier, and subtype}
 }
 \value{
 data.table with metadata with annotated drugs
