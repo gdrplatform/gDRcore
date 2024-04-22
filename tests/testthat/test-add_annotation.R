@@ -17,6 +17,31 @@ test_that("add_CellLine_annotation works", {
   expect_true(all(dt_annotated$subtype == "unknown"))
 })
 
+
+test_that("add_CellLine_annotation works with custom annotation in external file", {
+  dt_unknown <- data.table::data.table(clid = "cl_id")
+  
+  # create custom annotations
+  temp_path <- tempfile(pattern = "file")
+  custom_annotation <- data.table::data.table(cell_line_identifier = "cl_id",
+                                              cell_line_name = "custom_name",
+                                              primary_tissue = "custom_tissue",
+                                              doubling_time = 99,
+                                              parental_identifier = "some text",
+                                              subtype = "random")
+  data.table::fwrite(custom_annotation,
+                     temp_path)
+  Sys.setenv(gDR_cellline_annotation = temp_path)
+  dt_unknown_annotated <- purrr::quietly(add_CellLine_annotation)(dt_unknown)$result
+  expect_equal(unname(dt_unknown_annotated), unname(custom_annotation))
+  
+  # restore default
+  Sys.setenv(gDR_cellline_annotation = "")
+  dt_unknown_annotated <- purrr::quietly(add_CellLine_annotation)(dt_unknown)$result
+  expect_equal(dt_unknown_annotated$clid, custom_annotation$cell_line_identifier)
+})
+
+
 test_that("add_Drug_annotation works", {
   dt_unknown <- data.table::data.table(Gnumber = "drug_id")
   dt_unknown_annotated <- purrr::quietly(add_Drug_annotation)(dt_unknown)$result
@@ -32,6 +57,27 @@ test_that("add_Drug_annotation works", {
   dt_annotated <- add_Drug_annotation(dt, annotationPackage = "gDRtestData")
   
   expect_identical(dt_annotated, dt_result)
+})
+
+
+test_that("add_Drug_annotation works with custom annotation in external file", {
+  dt_unknown <- data.table::data.table(Gnumber = "drug_id")
+  
+  # create custom annotations
+  temp_path <- tempfile(pattern = "file")
+  custom_annotation <- data.table::data.table(gnumber = "drug_id",
+                                              drug_name = "custom_name",
+                                              drug_moa = "custom_moa")
+  data.table::fwrite(custom_annotation,
+                     temp_path)
+  Sys.setenv(gDR_drug_annotation = temp_path)
+  dt_unknown_annotated <- purrr::quietly(add_Drug_annotation)(dt_unknown)$result
+  expect_equal(unname(dt_unknown_annotated), unname(custom_annotation))
+  
+  # restore default
+  Sys.setenv(gDR_drug_annotation = "")
+  dt_unknown_annotated <- purrr::quietly(add_Drug_annotation)(dt_unknown)$result
+  expect_equal(dt_unknown_annotated$DrugName, custom_annotation$gnumber)
 })
 
 test_that("remove_drug_batch works", {
