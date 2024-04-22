@@ -1,0 +1,95 @@
+---
+title: "gDR annotation"
+author: "gDR team"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{gDRcore}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Data Annotation Process for gDR Pipeline
+
+## Introduction
+Before running the gDR pipeline, it is essential to annotate the data properly with drug and cell line information. This document outlines the process of data annotation and the requirements for the annotation files.
+
+## Annotation Files
+gDR uses two sources of annotation: drug annotation and cell line annotation. These annotations are added to a data table before running the pipeline. The scripts for adding data annotation are located in `R/add_annotation.R`, which contains two functions: `add_CellLine_annotation` and `add_Drug_annotation`. It is recommended to run the `cleanup_metadata` function, which adds annotations and performs some data cleaning.
+
+### Annotation File Locations
+Both drug and cell line annotation files are stored in `gDRtestData/inst/annotation_data`. There are two files:
+- `cell_lines.csv`
+- `drugs.csv`
+
+Users can edit these files to add their own annotations. After updating, it is required to reinstall `gDRtestData` to use the new annotations.
+
+Alternatively, users can use other annotation files stored outside of this package. For this purpose, it is necessary to set two environmental variables:
+- `gDR_cellline_annotation`: Represents the path to the cell line annotation CSV file.
+- `gDR_drug_annotation`: Represents the path to the drug annotation CSV file.
+
+NOTE: gDR annotation can be sourced from different locations. Setting environmental variables with paths for annotation has the highest priority and will be used as the first source of annotation, even if other sources are available. To clarify, if both the environmental variables and the internal annotation databases are set, gDR will prioritize the environmental variables for annotation.
+
+To turn off the usage of external paths for data annotation, please set these two environmental variables to empty.
+
+
+## Annotation Requirements
+gDR has specific requirements for the annotation files to properly annotate the data.
+
+### Drug Annotation Requirements
+The obligatory fields for drug annotation are:
+- `gnumber`: Represents the ID of the drug.
+- `drug_name`: Represents the name of the drug.
+- `drug_moa`: Represents the drug mechanism of action.
+
+### Cell Line Annotation Requirements
+The obligatory fields for cell line annotation are:
+- `cell_line_identifier`: Represents the cell line ID.
+- `cell_line_name`: Represents the name of the cell line.
+- `primary_tissue`: Represents the primary tissue of the cell line.
+- `doubling_time`: Represents the doubling time of the cell line in hours.
+- `parental_identifier`: Represents the name of the parental cell line.
+- `subtype`: Represents the subtype of the cell line.
+
+If some information is not known for the cell line or drug, the corresponding field should be left empty.
+
+## Creating a Data Table with Annotation
+To illustrate, here's an example of how to create a `data.table` with the required fields for drug and cell line annotation:
+
+```{r, eval=FALSE}
+# Example of creating a data.table with required fields for drug annotation
+drug_annotation <- data.table(
+  gnumber = c("G1", "G2", "G3"),
+  drug_name = c("Drug A", "Drug B", "Drug C"),
+  drug_moa = c("MOA A", "MOA B", "MOA C")
+)
+
+# Example of creating a data.table with required fields for cell line annotation
+cell_line_annotation <- data.table(
+  cell_line_identifier = c("Cell_Line_1", "Cell_Line_2", "Cell_Line_3"),
+  cell_line_name = c("Cell Line 1", "Cell Line 2", "Cell Line 3"),
+  primary_tissue = c("Tissue A", "Tissue B", "Tissue C"),
+  doubling_time = c(24, 30, 28),
+  parental_identifier = c("Parental 1", "Parental 2", "Parental 3"),
+  subtype = c("Subtype A", "Subtype B", "Subtype C")
+)
+```
+
+## Additional Information for Genentech/Roche Users
+For users within Genentech/Roche, we recommend utilizing our internal annotation databases. We provide the `gDRinternal` package specifically for internal users, which includes functions for managing internal annotation data. If you are an internal user, you can install the `gDRinternal` package, and `gDRcore` will automatically utilize this package as a source of data annotation.
+
+
+## Conclusion
+Proper annotation of drug and cell line data is crucial for running the gDR pipeline effectively. By adhering to the annotation requirements and following the outlined process, users can ensure accurate and reliable results from the pipeline.
+
+# SessionInfo {-}
+
+```{r sessionInfo}
+sessionInfo()
+```
