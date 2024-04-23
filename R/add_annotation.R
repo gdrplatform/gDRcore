@@ -53,6 +53,7 @@ add_CellLine_annotation <- function(
     # Assertions:
     checkmate::assert_data_table(dt_metadata)
     checkmate::assert_string(fill, null.ok = TRUE)
+    checkmate::assert_string(externalSource, null.ok = TRUE)
     
     cellline <- gDRutils::get_env_identifiers("cellline")
     cellline_name <- gDRutils::get_env_identifiers("cellline_name")
@@ -154,6 +155,8 @@ add_Drug_annotation <- function(
   # Assertions:
   checkmate::assert_data_table(dt_metadata)
   checkmate::assert_string(fill, null.ok = TRUE)
+  checkmate::assert_string(externalSource, null.ok = TRUE)
+  
   nrows_df <- nrow(dt_metadata)
   
   drug <- unlist(gDRutils::get_env_identifiers(c(

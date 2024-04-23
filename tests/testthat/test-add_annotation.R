@@ -35,10 +35,24 @@ test_that("add_CellLine_annotation works with custom annotation in external file
   dt_unknown_annotated <- purrr::quietly(add_CellLine_annotation)(dt_unknown)$result
   expect_equal(unname(dt_unknown_annotated), unname(custom_annotation))
   
+  expect_identical(purrr::quietly(add_CellLine_annotation)(dt_metadata = dt_unknown,
+                                                       externalSource = temp_path)$result,
+                   dt_unknown_annotated)
+  
   # restore default
   Sys.setenv(gDR_cellline_annotation = "")
   dt_unknown_annotated <- purrr::quietly(add_CellLine_annotation)(dt_unknown)$result
   expect_equal(dt_unknown_annotated$clid, custom_annotation$cell_line_identifier)
+  
+  # Check validation
+  custom_annotation_wrong <- data.table::copy(custom_annotation)
+  custom_annotation_wrong$subtype <- NULL
+  temp_path_wrong <- tempfile(pattern = "file")
+  data.table::fwrite(custom_annotation_wrong,
+                     temp_path_wrong)
+  expect_error(add_CellLine_annotation(dt_metadata = dt_unknown,
+                                       externalSource = temp_path_wrong),
+               regexp = "column.s. not found. .subtype.")
 })
 
 
@@ -74,10 +88,25 @@ test_that("add_Drug_annotation works with custom annotation in external file", {
   dt_unknown_annotated <- purrr::quietly(add_Drug_annotation)(dt_unknown)$result
   expect_equal(unname(dt_unknown_annotated), unname(custom_annotation))
   
+  expect_identical(purrr::quietly(add_Drug_annotation)(dt_metadata = dt_unknown,
+                                                           externalSource = temp_path)$result,
+                   dt_unknown_annotated)
+  
   # restore default
   Sys.setenv(gDR_drug_annotation = "")
   dt_unknown_annotated <- purrr::quietly(add_Drug_annotation)(dt_unknown)$result
   expect_equal(dt_unknown_annotated$DrugName, custom_annotation$gnumber)
+  
+  
+  # Check validation
+  custom_annotation_wrong <- data.table::copy(custom_annotation)
+  custom_annotation_wrong$drug_name <- NULL
+  temp_path_wrong <- tempfile(pattern = "file")
+  data.table::fwrite(custom_annotation_wrong,
+                     temp_path_wrong)
+  expect_error(add_Drug_annotation(dt_metadata = dt_unknown,
+                                   externalSource = temp_path_wrong),
+               regexp = "column.s. not found. .drug_name.", perl = TRUE)
 })
 
 test_that("remove_drug_batch works", {
