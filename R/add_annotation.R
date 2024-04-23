@@ -10,6 +10,8 @@
 #' @param fname string with file name with annotation
 #' @param fill string indicating how unknown cell lines should be filled in the DB
 #' @param annotationPackage string indication name of the package containing cellline annotation
+#' @param externalSource string with path to external file with annotation data; by default it checks 
+#' 'GDR_CELLLINE_ANNOTATION' env var. This file should contain columns such as gnumber, drug_name and drug_moa
 #' @keywords annotation
 #' @details
 #' The logic of adding celline annotation for dt_metadata based on 
@@ -44,12 +46,14 @@ add_CellLine_annotation <- function(
       "gDRinternal"
     } else {
       "gDRtestData"
-    }
+    },
+    externalSource = Sys.getenv("GDR_CELLLINE_ANNOTATION")
 ) {
   
     # Assertions:
     checkmate::assert_data_table(dt_metadata)
     checkmate::assert_string(fill, null.ok = TRUE)
+    checkmate::assert_string(externalSource, null.ok = TRUE)
     
     cellline <- gDRutils::get_env_identifiers("cellline")
     cellline_name <- gDRutils::get_env_identifiers("cellline_name")
@@ -59,7 +63,9 @@ add_CellLine_annotation <- function(
       return(dt_metadata)
     }
     
-    CLs_info <- if (annotationPackage == "gDRtestData") {
+    CLs_info <- if (nchar(externalSource) && file.exists(externalSource)) {
+      data.table::fread(externalSource)
+    } else if (annotationPackage == "gDRtestData") {
       data.table::fread(
         system.file("annotation_data", fname, package = annotationPackage), header = TRUE
       )
@@ -119,6 +125,8 @@ add_CellLine_annotation <- function(
 #' @param fname string with file name with annotation
 #' @param fill string indicating how unknown cell lines should be filled in the DB
 #' @param annotationPackage string indication name of the package containing drug annotation
+#' @param externalSource string with path to external file with annotation data; by default it checks 
+#' 'GDR_DRUG_ANNOTATION' env var. This file should contain columns such as gnumber, drug_name, and drug_moa
 #' @keywords annotation
 #' @details The logic of adding drug annotation for dt_metadata 
 #' based on the annotation file stored in gDRtestData.
@@ -139,12 +147,15 @@ add_Drug_annotation <- function(
       "gDRinternal"
     } else {
       "gDRtestData"
-    }
+    },
+    externalSource = Sys.getenv("GDR_DRUG_ANNOTATION")
 ) {
   
   # Assertions:
   checkmate::assert_data_table(dt_metadata)
   checkmate::assert_string(fill, null.ok = TRUE)
+  checkmate::assert_string(externalSource, null.ok = TRUE)
+  
   nrows_df <- nrow(dt_metadata)
   
   drug <- unlist(gDRutils::get_env_identifiers(c(
@@ -173,7 +184,9 @@ add_Drug_annotation <- function(
     names(drug_identifiers_list) <- drug[drug_idx]
     
     # Read local drugs annotations
-    Drug_info <- if (annotationPackage == "gDRtestData") {
+    Drug_info <- if (nchar(externalSource) && file.exists(externalSource)) {
+      data.table::fread(externalSource)
+    } else if (annotationPackage == "gDRtestData") {
       data.table::fread(
         system.file("annotation_data", fname, package = annotationPackage), header = TRUE
       )

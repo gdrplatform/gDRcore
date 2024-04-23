@@ -1,5 +1,8 @@
-## gDRcore 1.1.18 - 2024-04-22
+## gDRcore 1.1.19 - 2024-04-23
 * add vignette with documentation for data annotation
+
+## gDRcore 1.1.18 - 2024-04-22
+* add support for external annotation specified in the env var
 
 ## gDRcore 1.1.17 - 2024-03-26
 * fix bug with converting mae into raw_data
