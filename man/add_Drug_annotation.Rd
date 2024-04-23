@@ -27,8 +27,7 @@ add_Drug_annotation(
 \item{annotationPackage}{string indication name of the package containing drug annotation}
 
 \item{externalSource}{string with path to external file with annotation data; by default it checks
-'GDR_DRUG_ANNOTATION' env var. This file should contain columns such as cell_line_identifier,
-cell_line_name, primary_tissue, doubling_time, parental_identifier, and subtype}
+'GDR_DRUG_ANNOTATION' env var. This file should contain columns such as gnumber, drug_name, and drug_moa}
 }
 \value{
 data.table with metadata with annotated drugs
