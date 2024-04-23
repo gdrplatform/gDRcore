@@ -33,12 +33,12 @@ Users can edit these files to add their own annotations. After updating, it is r
 
 Alternatively, users can use other annotation files stored outside of this package. For this purpose, it is necessary to set two environmental variables:
 
-- `gDR_cellline_annotation`: Represents the path to the cell line annotation CSV file.
-- `gDR_drug_annotation`: Represents the path to the drug annotation CSV file.
+- `GDR_CELLLINE_ANNOTATION`: Represents the path to the cell line annotation CSV file.
+- `GDR_DRUG_ANNOTATION`: Represents the path to the drug annotation CSV file.
 
 ```{r, eval=FALSE}
-Sys.setenv(gDR_cellline_annotation = "some/path/to/cell_line_annotation.csv")
-Sys.setenv(gDR_drug_annotation = "some/path/to/drug_annotation.csv")
+Sys.setenv(GDR_CELLLINE_ANNOTATION = "some/path/to/cell_line_annotation.csv")
+Sys.setenv(GDR_DRUG_ANNOTATION = "some/path/to/drug_annotation.csv")
 ```
 
 
@@ -47,8 +47,8 @@ NOTE: gDR annotation can be sourced from different locations. Setting environmen
 To turn off the usage of external paths for data annotation, please set these two environmental variables to empty.
 
 ```{r, eval=FALSE}
-Sys.setenv(gDR_cellline_annotation = "")
-Sys.setenv(gDR_drug_annotation = "")
+Sys.setenv(GDR_CELLLINE_ANNOTATION = "")
+Sys.setenv(GDR_DRUG_ANNOTATION = "")
 ```
 
 
