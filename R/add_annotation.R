@@ -126,8 +126,7 @@ add_CellLine_annotation <- function(
 #' @param fill string indicating how unknown cell lines should be filled in the DB
 #' @param annotationPackage string indication name of the package containing drug annotation
 #' @param externalSource string with path to external file with annotation data; by default it checks 
-#' 'GDR_DRUG_ANNOTATION' env var. This file should contain columns such as cell_line_identifier,
-#' cell_line_name, primary_tissue, doubling_time, parental_identifier, and subtype
+#' 'GDR_DRUG_ANNOTATION' env var. This file should contain columns such as gnumber, drug_name, and drug_moa
 #' @keywords annotation
 #' @details The logic of adding drug annotation for dt_metadata 
 #' based on the annotation file stored in gDRtestData.
