@@ -31,7 +31,7 @@ test_that("add_CellLine_annotation works with custom annotation in external file
                                               subtype = "random")
   data.table::fwrite(custom_annotation,
                      temp_path)
-  Sys.setenv(gDR_cellline_annotation = temp_path)
+  Sys.setenv(GDR_CELLLINE_ANNOTATION = temp_path)
   dt_unknown_annotated <- purrr::quietly(add_CellLine_annotation)(dt_unknown)$result
   expect_equal(unname(dt_unknown_annotated), unname(custom_annotation))
   
@@ -40,7 +40,7 @@ test_that("add_CellLine_annotation works with custom annotation in external file
                    dt_unknown_annotated)
   
   # restore default
-  Sys.setenv(gDR_cellline_annotation = "")
+  Sys.setenv(GDR_CELLLINE_ANNOTATION = "")
   dt_unknown_annotated <- purrr::quietly(add_CellLine_annotation)(dt_unknown)$result
   expect_equal(dt_unknown_annotated$clid, custom_annotation$cell_line_identifier)
   
@@ -84,7 +84,7 @@ test_that("add_Drug_annotation works with custom annotation in external file", {
                                               drug_moa = "custom_moa")
   data.table::fwrite(custom_annotation,
                      temp_path)
-  Sys.setenv(gDR_drug_annotation = temp_path)
+  Sys.setenv(GDR_DRUG_ANNOTATION = temp_path)
   dt_unknown_annotated <- purrr::quietly(add_Drug_annotation)(dt_unknown)$result
   expect_equal(unname(dt_unknown_annotated), unname(custom_annotation))
   
@@ -93,7 +93,7 @@ test_that("add_Drug_annotation works with custom annotation in external file", {
                    dt_unknown_annotated)
   
   # restore default
-  Sys.setenv(gDR_drug_annotation = "")
+  Sys.setenv(GDR_DRUG_ANNOTATION = "")
   dt_unknown_annotated <- purrr::quietly(add_Drug_annotation)(dt_unknown)$result
   expect_equal(dt_unknown_annotated$DrugName, custom_annotation$gnumber)
   
