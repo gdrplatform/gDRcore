@@ -17,6 +17,45 @@ test_that("add_CellLine_annotation works", {
   expect_true(all(dt_annotated$subtype == "unknown"))
 })
 
+
+test_that("add_CellLine_annotation works with custom annotation in external file", {
+  dt_unknown <- data.table::data.table(clid = "cl_id")
+  
+  # create custom annotations
+  temp_path <- tempfile(pattern = "file")
+  custom_annotation <- data.table::data.table(cell_line_identifier = "cl_id",
+                                              cell_line_name = "custom_name",
+                                              primary_tissue = "custom_tissue",
+                                              doubling_time = 99,
+                                              parental_identifier = "some text",
+                                              subtype = "random")
+  data.table::fwrite(custom_annotation,
+                     temp_path)
+  Sys.setenv(GDR_CELLLINE_ANNOTATION = temp_path)
+  dt_unknown_annotated <- purrr::quietly(add_CellLine_annotation)(dt_unknown)$result
+  expect_equal(unname(dt_unknown_annotated), unname(custom_annotation))
+  
+  expect_identical(purrr::quietly(add_CellLine_annotation)(dt_metadata = dt_unknown,
+                                                       externalSource = temp_path)$result,
+                   dt_unknown_annotated)
+  
+  # restore default
+  Sys.setenv(GDR_CELLLINE_ANNOTATION = "")
+  dt_unknown_annotated <- purrr::quietly(add_CellLine_annotation)(dt_unknown)$result
+  expect_equal(dt_unknown_annotated$clid, custom_annotation$cell_line_identifier)
+  
+  # Check validation
+  custom_annotation_wrong <- data.table::copy(custom_annotation)
+  custom_annotation_wrong$subtype <- NULL
+  temp_path_wrong <- tempfile(pattern = "file")
+  data.table::fwrite(custom_annotation_wrong,
+                     temp_path_wrong)
+  expect_error(add_CellLine_annotation(dt_metadata = dt_unknown,
+                                       externalSource = temp_path_wrong),
+               regexp = "column.s. not found. .subtype.")
+})
+
+
 test_that("add_Drug_annotation works", {
   dt_unknown <- data.table::data.table(Gnumber = "drug_id")
   dt_unknown_annotated <- purrr::quietly(add_Drug_annotation)(dt_unknown)$result
@@ -32,6 +71,42 @@ test_that("add_Drug_annotation works", {
   dt_annotated <- add_Drug_annotation(dt, annotationPackage = "gDRtestData")
   
   expect_identical(dt_annotated, dt_result)
+})
+
+
+test_that("add_Drug_annotation works with custom annotation in external file", {
+  dt_unknown <- data.table::data.table(Gnumber = "drug_id")
+  
+  # create custom annotations
+  temp_path <- tempfile(pattern = "file")
+  custom_annotation <- data.table::data.table(gnumber = "drug_id",
+                                              drug_name = "custom_name",
+                                              drug_moa = "custom_moa")
+  data.table::fwrite(custom_annotation,
+                     temp_path)
+  Sys.setenv(GDR_DRUG_ANNOTATION = temp_path)
+  dt_unknown_annotated <- purrr::quietly(add_Drug_annotation)(dt_unknown)$result
+  expect_equal(unname(dt_unknown_annotated), unname(custom_annotation))
+  
+  expect_identical(purrr::quietly(add_Drug_annotation)(dt_metadata = dt_unknown,
+                                                           externalSource = temp_path)$result,
+                   dt_unknown_annotated)
+  
+  # restore default
+  Sys.setenv(GDR_DRUG_ANNOTATION = "")
+  dt_unknown_annotated <- purrr::quietly(add_Drug_annotation)(dt_unknown)$result
+  expect_equal(dt_unknown_annotated$DrugName, custom_annotation$gnumber)
+  
+  
+  # Check validation
+  custom_annotation_wrong <- data.table::copy(custom_annotation)
+  custom_annotation_wrong$drug_name <- NULL
+  temp_path_wrong <- tempfile(pattern = "file")
+  data.table::fwrite(custom_annotation_wrong,
+                     temp_path_wrong)
+  expect_error(add_Drug_annotation(dt_metadata = dt_unknown,
+                                   externalSource = temp_path_wrong),
+               regexp = "column.s. not found. .drug_name.", perl = TRUE)
 })
 
 test_that("remove_drug_batch works", {
