@@ -5,7 +5,7 @@
 #' - refining nested identifiers
 #' - splitting df_ into (per experiment) df_list
 #' 
-#' @param x data.table with raw data or MAE object with dose-reponse data
+#' @param x data.table with raw data or MAE object with dose-response data
 #' @param ... additional parameters
 #' @keywords prepare_input
 #' 
@@ -95,7 +95,7 @@ prepare_input.data.table <-
 #' - refining nested confounders
 #' - refining nested identifiers
 #' - splitting df_ into (per experiment) df_list
-#' @param x MAE object with dose-reponse data
+#' @param x MAE object with dose-response data
 #' @param ... additional parameters
 #' @param nested_identifiers_l list with the 
 #' nested_identifiers(character vectors) for `single-agent` and (optionally) 

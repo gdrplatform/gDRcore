@@ -14,7 +14,7 @@
 )
 }
 \arguments{
-\item{x}{MAE object with dose-reponse data}
+\item{x}{MAE object with dose-response data}
 
 \item{nested_confounders}{Character vector of the nested_confounders for
 a given assay. nested_keys is character vector of column names to include

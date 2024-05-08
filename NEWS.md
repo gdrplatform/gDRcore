@@ -1,3 +1,6 @@
+## gDRcore 1.1.20 - 2024-05-08
+* fix typo
+
 ## gDRcore 1.1.19 - 2024-04-23
 * add vignette with documentation for data annotation
 
