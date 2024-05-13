@@ -60,7 +60,7 @@ add_CellLine_annotation <- function(
     add_clid <- gDRutils::get_header("add_clid")
     
     if (all(c(cellline, cellline_name, add_clid) %in% names(dt_metadata))) {
-      dt_metadata[, (add_clid) := NULL]
+      dt_metadata[, (unlist(add_clid)) := NULL]
     }
     
     CLs_info <- if (nchar(externalSource) && file.exists(externalSource)) {
@@ -171,7 +171,7 @@ add_Drug_annotation <- function(
   if (all(c(drug[["drug"]],
             drug_name[["drug_name"]],
             drug_moa[["drug_moa"]]) %in% names(dt_metadata))) {
-    dt_metadata[, (interesect(c(drug_name, drug_moa), names(dt_metadata))) := NULL]
+    dt_metadata[, (unlist(interesect(c(drug_name, drug_moa), names(dt_metadata)))) := NULL]
   }
   drug_full_identifiers <- c(
     drug[drug_idx], 
