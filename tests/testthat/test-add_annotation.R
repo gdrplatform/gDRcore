@@ -134,3 +134,30 @@ test_that("add_Drug_annotation works with custom annotations", {
   dt_unknown_annotated <- add_Drug_annotation(dt_unknown)
   expect_identical(dt_unknown, dt_unknown_annotated)
 })
+
+
+
+test_that("get_drug_annotation_from_dt worksas expected", {
+  dt_example <- data.table::data.table(Gnumber = "drug_id",
+                                       DrugName = "DrugName",
+                                       drug_moa = "drug_moa",
+                                       some_col = "value")
+  annotation <- get_drug_annotation_from_dt(dt_example)
+  testthat::expect_true(data.table::is.data.table(annotation))
+  testthat::expect_equal(dim(annotation), c(1, 3))
+})
+
+test_that("get_cellline_annotation_from_dt worksas expected", {
+  dt_example <- data.table::data.table(ReadoutValue = runif(5),
+                                       clid = paste0("CL", 1:5),
+                                       CellLineName = paste0("RandomName", 1:5),
+                                       Tissue =  paste0("Tissue", 1:5),
+                                       ReferenceDivisionTime = 1:5,
+                                       parental_identifier = 1:5,
+                                       subtype = "subtype",
+                                       some_col = "value")
+  annotation <- get_cellline_annotation_from_dt(dt_example)
+  testthat::expect_true(data.table::is.data.table(annotation))
+  testthat::expect_equal(dim(annotation), c(5, 6))
+})
+
