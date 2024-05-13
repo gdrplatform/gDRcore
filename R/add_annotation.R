@@ -282,7 +282,7 @@ remove_drug_batch <- function(drug) {
 get_drug_annotation_from_dt <- function(dt) {
   checkmate::assert_data_table(dt)
   drug_cols <- intersect(gDRutils::get_env_identifiers()
-                         [grep("drug",names(gDRutils::get_env_identifiers()))],
+                         [grep("drug", names(gDRutils::get_env_identifiers()))],
                          names(dt))
   dt_drug <- dt[, unlist(drug_cols), with = FALSE]
   dt_long <- data.table::melt(dt_drug,
