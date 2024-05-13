@@ -60,7 +60,7 @@ add_CellLine_annotation <- function(
     add_clid <- gDRutils::get_header("add_clid")
     
     if (all(c(cellline, cellline_name, add_clid) %in% names(dt_metadata))) {
-      return(dt_metadata)
+      dt_metadata[, (add_clid) := NULL]
     }
     
     CLs_info <- if (nchar(externalSource) && file.exists(externalSource)) {
@@ -171,86 +171,85 @@ add_Drug_annotation <- function(
   if (all(c(drug[["drug"]],
             drug_name[["drug_name"]],
             drug_moa[["drug_moa"]]) %in% names(dt_metadata))) {
-    return(dt_metadata)
-  } else {
-    drug_full_identifiers <- c(
-      drug[drug_idx], 
-      drug_name[drug_idx], 
-      drug_moa[drug_idx]
-    )
-    drug_ids <- stringr::str_extract(names(drug_full_identifiers), "[0-9]") 
-    drug_ids <- ifelse(is.na(drug_ids), 1, drug_ids)
-    drug_identifiers_list <- split(drug_full_identifiers, drug_ids)
-    names(drug_identifiers_list) <- drug[drug_idx]
-    
-    # Read local drugs annotations
-    Drug_info <- if (nchar(externalSource) && file.exists(externalSource)) {
-      data.table::fread(externalSource)
-    } else if (annotationPackage == "gDRtestData") {
-      data.table::fread(
-        system.file("annotation_data", fname, package = annotationPackage), header = TRUE
-      )
-    } else {
-      eval(parse(text = paste0(annotationPackage,
-                               "::",
-                               "get_drug_annotations")))()
-    }
-      
-      
-    Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa"), with = FALSE]
-    data.table::setnames(Drug_info, c("gnumber", "drug_name", "drug_moa"),
-                         c("drug", "drug_name", "drug_moa"))
-    drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
-    validatedDrugs <- 
-      remove_drug_batch(drugsTreated) %in% remove_drug_batch(Drug_info[["drug"]])
-    #### function should be parallelizeized
-    missingTblDrugs <- NULL
-    if (!is.null(fill) && any(!validatedDrugs)) {
-      missingTblDrugs <- data.table::data.table(
-        drug = remove_drug_batch(drugsTreated[!validatedDrugs]),
-        drug_name = drugsTreated[!validatedDrugs],
-        drug_moa = fill
-      )
-    }
-    
-    if (nrow(Drug_info) == 0) {
-      drug_name <- intersect(drug_name, colnames(dt_metadata))
-      drug <- intersect(drug, colnames(dt_metadata))
-      dt_metadata[, (drug_name) := get(drug)]
-      return(dt_metadata)
-    }
-    
-    Drug_info <- rbind(Drug_info, missingTblDrugs)
-    
-    Drug_info$drug <- remove_drug_batch(Drug_info$drug)
-    Drug_info <-
-      rbind(data.table::data.table(
-        drug = untreated_tag,
-        drug_name = untreated_tag,
-        drug_moa = untreated_tag
-      ),
-      Drug_info)
-    Drug_info <- Drug_info[!duplicated(Drug_info[["drug"]]), ]
-    if (any(!remove_drug_batch(drugsTreated) %in% Drug_info$drug) && 
-        !is.null(missingTblDrugs)) {
-      Drug_info <- rbind(Drug_info, stats::setNames(
-        missingTblDrugs[!(remove_drug_batch(missingTblDrugs$drug) %in% 
-                            Drug_info$drug), ],
-        names(Drug_info)
-      ))
-    }
-    for (drug_idf in names(drug_identifiers_list)) {
-      colnames(Drug_info) <- drug_identifiers_list[[drug_idf]]
-      dt_metadata$batch <- dt_metadata[[drug_idf]]
-      dt_metadata[[drug_idf]] <- remove_drug_batch(dt_metadata[[drug_idf]])
-      req_col <- c(drug_idf, setdiff(colnames(dt_metadata), colnames(Drug_info)))
-      dt_metadata <- Drug_info[dt_metadata[, req_col, with = FALSE],  on = drug_idf]
-      dt_metadata[[drug_idf]] <- dt_metadata$batch
-      dt_metadata$batch <- NULL
-    }
-    stopifnot(nrows_df == nrow(dt_metadata))
-    dt_metadata
+    dt_metadata[, (interesect(c(drug_name, drug_moa), names(dt_metadata))) := NULL]
   }
+  drug_full_identifiers <- c(
+    drug[drug_idx], 
+    drug_name[drug_idx], 
+    drug_moa[drug_idx]
+  )
+  drug_ids <- stringr::str_extract(names(drug_full_identifiers), "[0-9]") 
+  drug_ids <- ifelse(is.na(drug_ids), 1, drug_ids)
+  drug_identifiers_list <- split(drug_full_identifiers, drug_ids)
+  names(drug_identifiers_list) <- drug[drug_idx]
+  
+  # Read local drugs annotations
+  Drug_info <- if (nchar(externalSource) && file.exists(externalSource)) {
+    data.table::fread(externalSource)
+  } else if (annotationPackage == "gDRtestData") {
+    data.table::fread(
+      system.file("annotation_data", fname, package = annotationPackage), header = TRUE
+    )
+  } else {
+    eval(parse(text = paste0(annotationPackage,
+                             "::",
+                             "get_drug_annotations")))()
+  }
+    
+    
+  Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa"), with = FALSE]
+  data.table::setnames(Drug_info, c("gnumber", "drug_name", "drug_moa"),
+                       c("drug", "drug_name", "drug_moa"))
+  drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
+  validatedDrugs <- 
+    remove_drug_batch(drugsTreated) %in% remove_drug_batch(Drug_info[["drug"]])
+  #### function should be parallelizeized
+  missingTblDrugs <- NULL
+  if (!is.null(fill) && any(!validatedDrugs)) {
+    missingTblDrugs <- data.table::data.table(
+      drug = remove_drug_batch(drugsTreated[!validatedDrugs]),
+      drug_name = drugsTreated[!validatedDrugs],
+      drug_moa = fill
+    )
+  }
+  
+  if (nrow(Drug_info) == 0) {
+    drug_name <- intersect(drug_name, colnames(dt_metadata))
+    drug <- intersect(drug, colnames(dt_metadata))
+    dt_metadata[, (drug_name) := get(drug)]
+    return(dt_metadata)
+  }
+  
+  Drug_info <- rbind(Drug_info, missingTblDrugs)
+  
+  Drug_info$drug <- remove_drug_batch(Drug_info$drug)
+  Drug_info <-
+    rbind(data.table::data.table(
+      drug = untreated_tag,
+      drug_name = untreated_tag,
+      drug_moa = untreated_tag
+    ),
+    Drug_info)
+  Drug_info <- Drug_info[!duplicated(Drug_info[["drug"]]), ]
+  if (any(!remove_drug_batch(drugsTreated) %in% Drug_info$drug) && 
+      !is.null(missingTblDrugs)) {
+    Drug_info <- rbind(Drug_info, stats::setNames(
+      missingTblDrugs[!(remove_drug_batch(missingTblDrugs$drug) %in% 
+                          Drug_info$drug), ],
+      names(Drug_info)
+    ))
+  }
+  for (drug_idf in names(drug_identifiers_list)) {
+    colnames(Drug_info) <- drug_identifiers_list[[drug_idf]]
+    dt_metadata$batch <- dt_metadata[[drug_idf]]
+    dt_metadata[[drug_idf]] <- remove_drug_batch(dt_metadata[[drug_idf]])
+    req_col <- c(drug_idf, setdiff(colnames(dt_metadata), colnames(Drug_info)))
+    dt_metadata <- Drug_info[dt_metadata[, req_col, with = FALSE],  on = drug_idf]
+    dt_metadata[[drug_idf]] <- dt_metadata$batch
+    dt_metadata$batch <- NULL
+  }
+  stopifnot(nrows_df == nrow(dt_metadata))
+  dt_metadata
 }
 
 #' Remove batch from Gnumber
