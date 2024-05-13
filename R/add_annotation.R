@@ -266,3 +266,72 @@ add_Drug_annotation <- function(
 remove_drug_batch <- function(drug) {
   gsub("\\.[0-9]+.*", "", drug)
 }
+
+
+#' Retrieve the drug annotation from the annotated dt input
+#'
+#' @param dt annotated data.table
+#'
+#' @return data.table with drug annotation
+#' @export
+#'
+#' @examples
+#' dt <- data.table::data.table(Gnumber = "A",
+#' DrugName = "drugA",
+#' drug_moa = "drug_moa_A")
+#' get_drug_annotation_from_dt(dt)
+get_drug_annotation_from_dt <- function(dt) {
+  checkmate::assert_data_table(dt)
+  drug_cols <- intersect(gDRutils::get_env_identifiers()
+                         [grep("drug",names(gDRutils::get_env_identifiers()))],
+                         names(dt))
+  dt_drug <- dt[, unlist(drug_cols), with = FALSE]
+  dt_long <- data.table::melt(dt_drug,
+                              measure.vars = patterns(paste0("^", unlist(drug_cols[c("drug",
+                                                                                     "drug_name",
+                                                                                     "drug_moa")]))),
+                              value.name = unlist(drug_cols[c("drug",
+                                                              "drug_name",
+                                                              "drug_moa")]))
+  dt_long[, variable := NULL]
+  data.table::setnames(dt_long,
+                       unlist(drug_cols[c("drug",
+                                          "drug_name",
+                                          "drug_moa")]),
+                       c("gnumber", "drug_name", "drug_moa"))
+  unique_dt <- unique(dt_long)
+  unique_dt[!gnumber %in% gDRutils::get_env_identifiers("untreated_tag"), ]
+}
+
+
+#' Retrieve the cell line annotation from the annotated dt input
+#'
+#' @param dt annotated data.table
+#'
+#' @return data.table with cell line annotation
+#' @export
+#'
+#' @examples
+#' dt <- data.table::data.table(Gnumber = "A",
+#' clid = "CL123",
+#' CellLineName = "cl name",
+#' Tissue = "Bone",
+#' parental_identifier = "some cl",
+#' subtype = "cortical",
+#' ReferenceDivisionTime = 5)
+#' get_cellline_annotation_from_dt(dt)
+get_cellline_annotation_from_dt <- function(dt) {
+  checkmate::assert_data_table(dt)
+  cell_cols <- c(gDRutils::get_env_identifiers("cellline"),
+                 gDRutils::get_header("add_clid"))
+  cell_dt <- dt[, unlist(cell_cols), with = FALSE]
+  data.table::setnames(cell_dt,
+                       unlist(cell_cols),
+                       c("cell_line_identifier",
+                         "cell_line_name",
+                         "primary_tissue",
+                         "parental_identifier",
+                         "subtype",
+                         "doubling_time"))
+  unique(cell_dt)
+}
