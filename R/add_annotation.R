@@ -286,10 +286,10 @@ get_drug_annotation_from_dt <- function(dt) {
                          names(dt))
   dt_drug <- dt[, unlist(drug_cols), with = FALSE]
   dt_long <- data.table::melt(dt_drug,
-                              measure.vars = data.table::patterns(paste0("^",
-                                                                         unlist(drug_cols[c("drug",
-                                                                                            "drug_name",
-                                                                                            "drug_moa")]))),
+                              measure.vars = data.table:::patterns(paste0("^",
+                                                                          unlist(drug_cols[c("drug",
+                                                                                             "drug_name",
+                                                                                             "drug_moa")]))),
                               value.name = unlist(drug_cols[c("drug",
                                                               "drug_name",
                                                               "drug_moa")]))
