@@ -171,7 +171,7 @@ add_Drug_annotation <- function(
   if (all(c(drug[["drug"]],
             drug_name[["drug_name"]],
             drug_moa[["drug_moa"]]) %in% names(dt_metadata))) {
-    dt_metadata[, (unlist(interesect(c(drug_name, drug_moa), names(dt_metadata)))) := NULL]
+    dt_metadata[, (unlist(intersect(c(drug_name, drug_moa), names(dt_metadata)))) := NULL]
   }
   drug_full_identifiers <- c(
     drug[drug_idx], 
@@ -286,20 +286,21 @@ get_drug_annotation_from_dt <- function(dt) {
                          names(dt))
   dt_drug <- dt[, unlist(drug_cols), with = FALSE]
   dt_long <- data.table::melt(dt_drug,
-                              measure.vars = patterns(paste0("^", unlist(drug_cols[c("drug",
-                                                                                     "drug_name",
-                                                                                     "drug_moa")]))),
+                              measure.vars = data.table::patterns(paste0("^",
+                                                                         unlist(drug_cols[c("drug",
+                                                                                            "drug_name",
+                                                                                            "drug_moa")]))),
                               value.name = unlist(drug_cols[c("drug",
                                                               "drug_name",
                                                               "drug_moa")]))
-  dt_long[, variable := NULL]
+  dt_long[, "variable" := NULL]
   data.table::setnames(dt_long,
                        unlist(drug_cols[c("drug",
                                           "drug_name",
                                           "drug_moa")]),
                        c("gnumber", "drug_name", "drug_moa"))
   unique_dt <- unique(dt_long)
-  unique_dt[!gnumber %in% gDRutils::get_env_identifiers("untreated_tag"), ]
+  unique_dt[!unique_dt$gnumber %in% gDRutils::get_env_identifiers("untreated_tag"), ]
 }
 
 
