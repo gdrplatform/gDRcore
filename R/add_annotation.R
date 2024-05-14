@@ -53,7 +53,10 @@ add_CellLine_annotation <- function(
     # Assertions:
     checkmate::assert_data_table(dt_metadata)
     checkmate::assert_string(fill, null.ok = TRUE)
-    checkmate::assert_string(externalSource, null.ok = TRUE)
+    checkmate::assert(checkmate::check_string(externalSource, null.ok = TRUE),
+                      checkmate::check_data_table(externalSource,
+                                                  col.names = "named"))
+    
     
     cellline <- gDRutils::get_env_identifiers("cellline")
     cellline_name <- gDRutils::get_env_identifiers("cellline_name")
@@ -63,8 +66,10 @@ add_CellLine_annotation <- function(
       dt_metadata[, (unlist(add_clid)) := NULL]
     }
     
-    CLs_info <- if (nchar(externalSource) && file.exists(externalSource)) {
+    CLs_info <- if (is.character(externalSource) && nchar(externalSource) && file.exists(externalSource)) {
       data.table::fread(externalSource)
+    } else if (data.table::is.data.table(externalSource)) {
+      externalSource
     } else if (annotationPackage == "gDRtestData") {
       data.table::fread(
         system.file("annotation_data", fname, package = annotationPackage), header = TRUE
@@ -154,8 +159,9 @@ add_Drug_annotation <- function(
   # Assertions:
   checkmate::assert_data_table(dt_metadata)
   checkmate::assert_string(fill, null.ok = TRUE)
-  checkmate::assert_string(externalSource, null.ok = TRUE)
-  
+  checkmate::assert(checkmate::check_string(externalSource, null.ok = TRUE),
+                    checkmate::check_data_table(externalSource,
+                                                col.names = "named"))  
   nrows_df <- nrow(dt_metadata)
   
   drug <- unlist(gDRutils::get_env_identifiers(c(
@@ -184,8 +190,11 @@ add_Drug_annotation <- function(
   names(drug_identifiers_list) <- drug[drug_idx]
   
   # Read local drugs annotations
-  Drug_info <- if (nchar(externalSource) && file.exists(externalSource)) {
+  
+  Drug_info <- if (is.character(externalSource) && nchar(externalSource) && file.exists(externalSource)) {
     data.table::fread(externalSource)
+  } else if (data.table::is.data.table(externalSource)) {
+    externalSource
   } else if (annotationPackage == "gDRtestData") {
     data.table::fread(
       system.file("annotation_data", fname, package = annotationPackage), header = TRUE
@@ -287,8 +296,8 @@ get_drug_annotation_from_dt <- function(dt) {
                          names(dt))
   dt_drug <- dt[, unlist(drug_cols), with = FALSE]
   dt_long <- data.table::melt(dt_drug,
-                              measure.vars = :patterns(paste0("^",
-                                                              unlist(drug_cols[c("drug",
+                              measure.vars = patterns(paste0("^",
+                                                             unlist(drug_cols[c("drug",
                                                                                              "drug_name",
                                                                                              "drug_moa")]))),
                               value.name = unlist(drug_cols[c("drug",
