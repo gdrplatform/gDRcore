@@ -9,8 +9,8 @@
 #'                         used in the annotation file
 #' @param fname string with file name with annotation
 #' @param fill string indicating how unknown cell lines should be filled in the DB
-#' @param annotationPackage string indication name of the package containing cellline annotation
-#' @param externalSource string with path to external file with annotation data; by default it checks 
+#' @param annotation_package string indication name of the package containing cellline annotation
+#' @param external_source string with path to external file with annotation data; by default it checks 
 #' 'GDR_CELLLINE_ANNOTATION' env var. This file should contain columns such as gnumber, drug_name and drug_moa
 #' @keywords annotation
 #' @details
@@ -42,19 +42,19 @@ add_CellLine_annotation <- function(
     ),
     fname = "cell_lines.csv",
     fill = "unknown",
-    annotationPackage = if ("gDRinternal" %in% .packages(all.available = TRUE)) {
+    annotation_package = if ("gDRinternal" %in% .packages(all.available = TRUE)) {
       "gDRinternal"
     } else {
       "gDRtestData"
     },
-    externalSource = Sys.getenv("GDR_CELLLINE_ANNOTATION")
+    external_source = Sys.getenv("GDR_CELLLINE_ANNOTATION")
 ) {
   
     # Assertions:
     checkmate::assert_data_table(dt_metadata)
     checkmate::assert_string(fill, null.ok = TRUE)
-    checkmate::assert(checkmate::check_string(externalSource, null.ok = TRUE),
-                      checkmate::check_data_table(externalSource,
+    checkmate::assert(checkmate::check_string(external_source, null.ok = TRUE),
+                      checkmate::check_data_table(external_source,
                                                   col.names = "named"))
     
     
@@ -66,16 +66,16 @@ add_CellLine_annotation <- function(
       dt_metadata[, (unlist(add_clid)) := NULL]
     }
     
-    CLs_info <- if (is.character(externalSource) && nchar(externalSource) && file.exists(externalSource)) {
-      data.table::fread(externalSource)
-    } else if (data.table::is.data.table(externalSource)) {
-      externalSource
-    } else if (annotationPackage == "gDRtestData") {
+    CLs_info <- if (is.character(external_source) && nchar(external_source) && file.exists(external_source)) {
+      data.table::fread(external_source)
+    } else if (data.table::is.data.table(external_source)) {
+      external_source
+    } else if (annotation_package == "gDRtestData") {
       data.table::fread(
-        system.file("annotation_data", fname, package = annotationPackage), header = TRUE
+        system.file("annotation_data", fname, package = annotation_package), header = TRUE
       )
     } else {
-      eval(parse(text = paste0(annotationPackage,
+      eval(parse(text = paste0(annotation_package,
                                "::",
                                "get_cell_line_annotations")))(dt_metadata[[cellline]])
     }
@@ -129,8 +129,8 @@ add_CellLine_annotation <- function(
 #' @param dt_metadata data.table with metadata
 #' @param fname string with file name with annotation
 #' @param fill string indicating how unknown cell lines should be filled in the DB
-#' @param annotationPackage string indication name of the package containing drug annotation
-#' @param externalSource string with path to external file with annotation data; by default it checks 
+#' @param annotation_package string indication name of the package containing drug annotation
+#' @param external_source string with path to external file with annotation data; by default it checks 
 #' 'GDR_DRUG_ANNOTATION' env var. This file should contain columns such as gnumber, drug_name, and drug_moa
 #' @keywords annotation
 #' @details The logic of adding drug annotation for dt_metadata 
@@ -148,19 +148,19 @@ add_Drug_annotation <- function(
     dt_metadata,
     fname = "drugs.csv",
     fill = "unknown",
-    annotationPackage = if ("gDRinternal" %in% .packages(all.available = TRUE)) {
+    annotation_package = if ("gDRinternal" %in% .packages(all.available = TRUE)) {
       "gDRinternal"
     } else {
       "gDRtestData"
     },
-    externalSource = Sys.getenv("GDR_DRUG_ANNOTATION")
+    external_source = Sys.getenv("GDR_DRUG_ANNOTATION")
 ) {
   
   # Assertions:
   checkmate::assert_data_table(dt_metadata)
   checkmate::assert_string(fill, null.ok = TRUE)
-  checkmate::assert(checkmate::check_string(externalSource, null.ok = TRUE),
-                    checkmate::check_data_table(externalSource,
+  checkmate::assert(checkmate::check_string(external_source, null.ok = TRUE),
+                    checkmate::check_data_table(external_source,
                                                 col.names = "named"))  
   nrows_df <- nrow(dt_metadata)
   
@@ -191,16 +191,16 @@ add_Drug_annotation <- function(
   
   # Read local drugs annotations
   
-  Drug_info <- if (is.character(externalSource) && nchar(externalSource) && file.exists(externalSource)) {
-    data.table::fread(externalSource)
-  } else if (data.table::is.data.table(externalSource)) {
-    externalSource
-  } else if (annotationPackage == "gDRtestData") {
+  Drug_info <- if (is.character(external_source) && nchar(external_source) && file.exists(external_source)) {
+    data.table::fread(external_source)
+  } else if (data.table::is.data.table(external_source)) {
+    external_source
+  } else if (annotation_package == "gDRtestData") {
     data.table::fread(
-      system.file("annotation_data", fname, package = annotationPackage), header = TRUE
+      system.file("annotation_data", fname, package = annotation_package), header = TRUE
     )
   } else {
-    eval(parse(text = paste0(annotationPackage,
+    eval(parse(text = paste0(annotation_package,
                              "::",
                              "get_drug_annotations")))()
   }
@@ -290,7 +290,6 @@ remove_drug_batch <- function(drug) {
 #' get_drug_annotation_from_dt(dt)
 get_drug_annotation_from_dt <- function(dt) {
   checkmate::assert_data_table(dt)
-  require(data.table)
   drug_cols <- intersect(gDRutils::get_env_identifiers()
                          [grep("drug", names(gDRutils::get_env_identifiers()))],
                          names(dt))

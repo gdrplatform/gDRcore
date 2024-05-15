@@ -8,13 +8,13 @@ add_Drug_annotation(
   dt_metadata,
   fname = "drugs.csv",
   fill = "unknown",
-  annotationPackage = if ("gDRinternal" \%in\% .packages(all.available = TRUE)) {
+  annotation_package = if ("gDRinternal" \%in\% .packages(all.available = TRUE)) {
     
     "gDRinternal"
  } else {
      "gDRtestData"
  },
-  externalSource = Sys.getenv("GDR_DRUG_ANNOTATION")
+  external_source = Sys.getenv("GDR_DRUG_ANNOTATION")
 )
 }
 \arguments{
@@ -24,9 +24,9 @@ add_Drug_annotation(
 
 \item{fill}{string indicating how unknown cell lines should be filled in the DB}
 
-\item{annotationPackage}{string indication name of the package containing drug annotation}
+\item{annotation_package}{string indication name of the package containing drug annotation}
 
-\item{externalSource}{string with path to external file with annotation data; by default it checks
+\item{external_source}{string with path to external file with annotation data; by default it checks
 'GDR_DRUG_ANNOTATION' env var. This file should contain columns such as gnumber, drug_name, and drug_moa}
 }
 \value{
