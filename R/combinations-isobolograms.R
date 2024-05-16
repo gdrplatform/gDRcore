@@ -1,41 +1,3 @@
-#' Define matrix grid positions
-#'
-#' @param conc1 drug_1 concentration
-#' @param conc2 drug_2 concentration
-#'
-#' @details
-#' \code{drug_1} is diluted along the rows as the y-axis and
-#' \code{drug_2} is diluted along the columns and will be the x-axis.
-#' 
-#' @keywords combinations
-#' @return list with axis grid positions
-#' 
-define_matrix_grid_positions <- function(conc1, conc2) {
-  .generate_gap_for_single_agent <- function(x) {
-    2 * x[2] - x[3] - log10(1.5)
-  } 
-
-  conc_1 <- sort(unique(round_concentration(conc1)))
-  pos_y <- log10conc_1 <- log10(conc_1)
-  pos_y[1] <- .generate_gap_for_single_agent(log10conc_1)
-  axis_1 <- data.table::data.table(conc_1 = conc_1,
-    log10conc_1 = log10conc_1,
-    pos_y = pos_y,
-    marks_y = sprintf("%.2g", conc_1)
-  )
-
-  conc_2 <- sort(unique(round_concentration(conc2)))
-  pos_x <- log10conc_2 <- log10(conc_2)
-  pos_x[1] <- .generate_gap_for_single_agent(log10conc_2)
-  axis_2 <- data.table::data.table(conc_2 = conc_2,
-    log10conc_2 = log10conc_2,
-    pos_x = pos_x,
-    marks_x = sprintf("%.2g", conc_2)
-  )
-
-  list(axis_1 = axis_1, axis_2 = axis_2)
-}
-
 #' @keywords combinations
 calculate_Loewe <- function(
     df_mean, 
@@ -62,7 +24,7 @@ calculate_Loewe <- function(
   all_iso <- vector("list", length(iso_cutoffs))
   names(all_iso) <- iso_cutoffs
 
-  axes <- define_matrix_grid_positions(
+  axes <- gDRutils::define_matrix_grid_positions(
     df_mean[[series_identifiers[1]]], 
     df_mean[[series_identifiers[2]]]
   )
