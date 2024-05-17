@@ -353,6 +353,20 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
   }
 }
 
+#' @keywords internal
+#' @noRd
+rbindParallelList <- function(x, name) {
+  S4Vectors::DataFrame(
+    do.call(
+      rbind, 
+      c(lapply(x, function(x) {
+        dt <- data.table::as.data.table("[[" (x, name))
+        data.table::setorder(dt)
+        dt
+      }), fill = TRUE)
+    )
+  )
+}
 
 #' Value Matching
 #' 
@@ -571,4 +585,3 @@ get_mae_from_intermediate_data <- function(data_dir) {
   }
   MultiAssayExperiment::MultiAssayExperiment(experiments = sel)
 }
-
