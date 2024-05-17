@@ -353,21 +353,6 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
   }
 }
 
-#' Round concentration to ndigit significant digits
-#'
-#' @param x value to be rounded.
-#' @param ndigit number of significant digits (default = 4).
-#' 
-#' @examples 
-#' round_concentration(x = c(0.00175,0.00324,0.0091), ndigit = 1)
-#'
-#' @return rounded x
-#' @keywords utils
-#' @export
-round_concentration <- function(x, ndigit = 3) {
-  round(10 ^ (round(log10(x), ndigit)), ndigit - 1 - floor(log10(x)))
-}
-
 #' @keywords internal
 #' @noRd
 rbindParallelList <- function(x, name) {
@@ -382,7 +367,6 @@ rbindParallelList <- function(x, name) {
     )
   )
 }
-
 
 #' Value Matching
 #' 
@@ -601,4 +585,3 @@ get_mae_from_intermediate_data <- function(data_dir) {
   }
   MultiAssayExperiment::MultiAssayExperiment(experiments = sel)
 }
-

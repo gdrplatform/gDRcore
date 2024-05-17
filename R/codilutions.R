@@ -13,9 +13,9 @@ fit_combo_codilutions <- function(measured,
   if (nrow(measured) < 4) {
     return(NULL)
   }
-
+  
   # Filter only to what diagonals are valid for a fit (>4 points).
-  measured$ratios <- round_concentration(
+  measured$ratios <- gDRutils::round_concentration(
     measured[[id2]] / measured[[id]], 
     ndigit = 1
   )
@@ -24,7 +24,7 @@ fit_combo_codilutions <- function(measured,
     nrow(x) > 4
   }))
   valid <- ratios[keep]
-
+  
   fits <- vector("list", length(valid))
   for (i in seq_along(fits)) {
     fits[[i]] <- fit_codilution_series(
@@ -36,7 +36,7 @@ fit_combo_codilutions <- function(measured,
       normalization_type
     )
   }
-
+  
   out <- data.table::rbindlist(fits)
   if (nrow(out) == 0) {
     out <- NULL  
@@ -53,7 +53,7 @@ fit_codilution_series <- function(measured,
                                   GR_0, 
                                   normalization_type) {
   ratio <- unique(
-    round_concentration(
+    gDRutils::round_concentration(
       measured[[series_2]] / measured[[series_1]], 
       ndigit = 1
     )
@@ -73,7 +73,7 @@ fit_codilution_series <- function(measured,
     cap = 0.2,
     normalization_type = normalization_type
   )
-
+  
   codilution_fit$ratio <- ratio 
   codilution_fit
 }

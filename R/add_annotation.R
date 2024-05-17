@@ -264,11 +264,11 @@ add_Drug_annotation <- function(
 #' Remove batch from Gnumber
 #' 
 #' @param drug drug name
-#' @keywords annotation
 #'
 #' @examples
 #' remove_drug_batch("DRUG.123")
 #'
+#' @keywords annotation
 #' @return Gnumber without a batch
 #' @export
 remove_drug_batch <- function(drug) {
@@ -283,6 +283,7 @@ remove_drug_batch <- function(drug) {
 #' @return data.table with drug annotation
 #' @export
 #'
+#' @keywords annotation
 #' @examples
 #' dt <- data.table::data.table(Gnumber = "A",
 #' DrugName = "drugA",
@@ -322,6 +323,7 @@ get_drug_annotation_from_dt <- function(dt) {
 #' @return data.table with cell line annotation
 #' @export
 #'
+#' @keywords annotation
 #' @examples
 #' dt <- data.table::data.table(Gnumber = "A",
 #' clid = "CL123",
