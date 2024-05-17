@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.20</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.22</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,13 +65,13 @@
 <span>  <span class="va">dt_metadata</span>,</span>
 <span>  fname <span class="op">=</span> <span class="st">"drugs.csv"</span>,</span>
 <span>  fill <span class="op">=</span> <span class="st">"unknown"</span>,</span>
-<span>  annotationPackage <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="st">"gDRinternal"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/zpackages.html" class="external-link">.packages</a></span><span class="op">(</span>all.available <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  annotation_package <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="st">"gDRinternal"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/zpackages.html" class="external-link">.packages</a></span><span class="op">(</span>all.available <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    </span>
 <span>    <span class="st">"gDRinternal"</span></span>
 <span> <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
 <span>     <span class="st">"gDRtestData"</span></span>
 <span> <span class="op">}</span>,</span>
-<span>  externalSource <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"GDR_DRUG_ANNOTATION"</span><span class="op">)</span></span>
+<span>  external_source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"GDR_DRUG_ANNOTATION"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -89,11 +89,11 @@
 <dd><p>string indicating how unknown cell lines should be filled in the DB</p></dd>
 
 
-<dt>annotationPackage</dt>
+<dt>annotation_package</dt>
 <dd><p>string indication name of the package containing drug annotation</p></dd>
 
 
-<dt>externalSource</dt>
+<dt>external_source</dt>
 <dd><p>string with path to external file with annotation data; by default it checks
 'GDR_DRUG_ANNOTATION' env var. This file should contain columns such as gnumber, drug_name, and drug_moa</p></dd>
 

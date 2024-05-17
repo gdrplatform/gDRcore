@@ -64,9 +64,6 @@
     <loc>https://gdrplatform.github.io/gDRcore/reference/data_model.html</loc>
   </url>
   <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/define_matrix_grid_positions.html</loc>
-  </url>
-  <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/do_skip_step.html</loc>
   </url>
   <url>
@@ -121,7 +118,13 @@
     <loc>https://gdrplatform.github.io/gDRcore/reference/get_assays_per_pipeline_step.html</loc>
   </url>
   <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/get_cellline_annotation_from_dt.html</loc>
+  </url>
+  <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/get_default_nested_identifiers.html</loc>
+  </url>
+  <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/get_drug_annotation_from_dt.html</loc>
   </url>
   <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/get_mae_from_intermediate_data.html</loc>
@@ -179,9 +182,6 @@
   </url>
   <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/replace_conc_with_standardized_conc.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/round_concentration.html</loc>
   </url>
   <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.html</loc>
