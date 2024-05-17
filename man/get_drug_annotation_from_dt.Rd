@@ -21,3 +21,4 @@ DrugName = "drugA",
 drug_moa = "drug_moa_A")
 get_drug_annotation_from_dt(dt)
 }
+\keyword{annotation}
