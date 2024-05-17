@@ -207,13 +207,13 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
   
   conc_1 <- setdiff(conc1, 0)
   conc_2 <- setdiff(conc2, 0)
-
+  
   conc_1 <- sort(unique(conc_1))
   rconc1 <- .standardize_conc(conc_1)
   
   conc_2 <- sort(unique(conc_2))
   rconc2 <- .standardize_conc(conc_2)
-
+  
   rconc <- c(0, unique(c(rconc1, rconc2)))
   .find_closest_match <- function(x) {
     rconc[abs(rconc - x) == min(abs(rconc - x))]
@@ -221,7 +221,7 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
   concs <- unique(c(conc1, conc2))
   mapped_rconcs <- vapply(concs, .find_closest_match, numeric(1))
   map <- unique(data.table::data.table(concs = concs, rconcs = mapped_rconcs))
-
+  
   tol <- 1
   
   # Check if standardized values are within 5% of the original values
@@ -229,11 +229,11 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
   
   map$rconcs[round_diff] <- map$concs[round_diff]
   mismatched <- which(
-    round_concentration(map$conc, tol) != round_concentration(map$rconc, tol)
+    gDRutils::round_concentration(map$conc, tol) != gDRutils::round_concentration(map$rconc, tol)
   )
   for (i in mismatched) {
     warning(sprintf("mapping original concentration '%s' to '%s'",
-      map[i, "concs"], map[i, "rconcs"]))
+                    map[i, "concs"], map[i, "rconcs"]))
   }
   map
 }
@@ -257,16 +257,16 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
 .standardize_conc <- function(conc) {
   rconc <- if (S4Vectors::isEmpty(conc)) {
     NULL
-  } else if (length(unique(round_concentration(conc, 3))) > 4) {
+  } else if (length(unique(gDRutils::round_concentration(conc, 3))) > 4) {
     # 4 is determined by the fewest number of concentrations required to be 
     # considered a "matrix".
     log10_step <- .calculate_dilution_ratio(conc)
     num_steps <- round((log10(max(conc)) - log10(min(conc)) / log10_step), 0)
     seqs <- log10(max(conc)) - (log10_step * c(0:num_steps))
-    sort(round_concentration(10 ^ seqs, 3))
+    sort(gDRutils::round_concentration(10 ^ seqs, 3))
   } else {
     # Few enough concentrations, don't need to calculate a series.
-    round_concentration(conc, 3)
+    gDRutils::round_concentration(conc, 3)
   }
   rconc
 }
@@ -288,13 +288,13 @@ map_conc_to_standardized_conc <- function(conc1, conc2) {
   first_two_removed <- first_removed[-1]
   last_removed <- concs[-length(concs)]
   last_two_removed <- last_removed[-length(last_removed)]
-
+  
   dil_ratios <- c(
     log10(first_removed / last_removed), 
     log10(first_two_removed / last_two_removed)
   )
-  rounded_dil_ratios <- round_concentration(dil_ratios, 2)
-
+  rounded_dil_ratios <- gDRutils::round_concentration(dil_ratios, 2)
+  
   # Get most frequent dilution ratio.
   highest_freq_ratio <- names(
     sort(table(rounded_dil_ratios), decreasing = TRUE)

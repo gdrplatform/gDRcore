@@ -199,7 +199,7 @@ fit_SE.combinations <- function(se,
         # of identifiers for each ratio)
         complete_subset$codil_values <- map_ids_to_fits(
           pred = complete_subset[[id2]] + complete_subset[[id]],
-          match_col = round_concentration(complete_subset[[id2]] / complete_subset[[id]], 1),
+          match_col = gDRutils::round_concentration(complete_subset[[id2]] / complete_subset[[id]], 1),
           codilution_fittings, 
           "ratio"
         )

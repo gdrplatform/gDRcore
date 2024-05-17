@@ -31,8 +31,8 @@ calculate_Loewe <- function(
   axis_1 <- axes$axis_1
   axis_2 <- axes$axis_2
   
-  max1_cap <- round_concentration(max(axis_1$conc_1) * conc_margin)
-  max2_cap <- round_concentration(max(axis_2$conc_2) * conc_margin)
+  max1_cap <- gDRutils::round_concentration(max(axis_1$conc_1) * conc_margin)
+  max2_cap <- gDRutils::round_concentration(max(axis_2$conc_2) * conc_margin)
 
   data.table::setorder(row_fittings, -cotrt_value)
   data.table::setorder(col_fittings, cotrt_value)
