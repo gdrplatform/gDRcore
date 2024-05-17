@@ -4,6 +4,7 @@
 
 # data.table awareness
 .datatable.aware <- TRUE
+patterns <- data.table:::patterns
 
 #' onload function
 #'

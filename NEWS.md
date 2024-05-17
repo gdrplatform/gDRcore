@@ -1,3 +1,6 @@
+## gDRcore 1.1.21 - 2024-05-13
+* add functions for retrieving annotation data from input dt
+
 ## gDRcore 1.1.20 - 2024-05-08
 * fix typo
 
