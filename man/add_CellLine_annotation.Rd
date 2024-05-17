@@ -11,13 +11,13 @@ add_CellLine_annotation(
     "parental_identifier", "subtype"),
   fname = "cell_lines.csv",
   fill = "unknown",
-  annotationPackage = if ("gDRinternal" \%in\% .packages(all.available = TRUE)) {
+  annotation_package = if ("gDRinternal" \%in\% .packages(all.available = TRUE)) {
     
     "gDRinternal"
  } else {
      "gDRtestData"
  },
-  externalSource = Sys.getenv("GDR_CELLLINE_ANNOTATION")
+  external_source = Sys.getenv("GDR_CELLLINE_ANNOTATION")
 )
 }
 \arguments{
@@ -33,9 +33,9 @@ used in the annotation file}
 
 \item{fill}{string indicating how unknown cell lines should be filled in the DB}
 
-\item{annotationPackage}{string indication name of the package containing cellline annotation}
+\item{annotation_package}{string indication name of the package containing cellline annotation}
 
-\item{externalSource}{string with path to external file with annotation data; by default it checks
+\item{external_source}{string with path to external file with annotation data; by default it checks
 'GDR_CELLLINE_ANNOTATION' env var. This file should contain columns such as gnumber, drug_name and drug_moa}
 }
 \value{

@@ -1,5 +1,8 @@
-## gDRcore 1.1.20 - 2024-05-16
+## gDRcore 1.1.22 - 2024-05-16
 * move `define_matrix_grid_positions` and `round_concentration` functions to `gDRutils` package
+
+## gDRcore 1.1.21 - 2024-05-13
+* add functions for retrieving annotation data from input dt
 
 ## gDRcore 1.1.20 - 2024-05-08
 * fix typo
