@@ -1,3 +1,6 @@
+## gDRcore 1.3.1 - 2024-05-27
+* synchronize Bioconductor and GitHub versioning
+
 ## gDRcore 1.1.22 - 2024-05-16
 * move `define_matrix_grid_positions` and `round_concentration` functions to `gDRutils` package
 
