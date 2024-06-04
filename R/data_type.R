@@ -68,7 +68,7 @@ identify_data_type <- function(df,
   df[, record_id := .I]
   df[, type := NA_character_]
   
-  sa_name <- gDRutils::get_experiment_groups("single-agent")[["single-agent"]]
+  sa_name <- gDRutils::get_supported_experiments("sa")
 
   controls <- rowSums(df[, conc_ids, with = FALSE] == 0) == length(conc_ids)
   single_agent <- rowSums(df[, conc_ids, with = FALSE] != 0) == 1
@@ -86,8 +86,8 @@ identify_data_type <- function(df,
     conc_ratio <- conc_ratio[!names(conc_ratio) %in% c("Inf", "-Inf")]
     
     type <- ifelse(length(conc_ratio) <= codilution_conc,
-                   gDRutils::get_experiment_groups("single-agent")[["co-dilution"]],
-                   gDRutils::get_experiment_groups("combination"))
+                   gDRutils::get_supported_experiments("cd"),
+                   gDRutils::get_supported_experiments("combo"))
     df$type[missing_type_rows] <- type
   }
   df
@@ -167,7 +167,7 @@ split_raw_data <- function(df,
     simplify = FALSE)
   )
   
-  sa_name <- gDRutils::get_experiment_groups("single-agent")[["single-agent"]]
+  sa_name <- gDRutils::get_supported_experiments("sa")
   
   drug_ids <- drug_ids[which(drug_ids %in% names(df))]
   codrug_ids <- drug_ids[grep("[0-9]", names(drug_ids))]
@@ -205,7 +205,7 @@ split_raw_data <- function(df,
       df_merged <- rbind(
         df_list[[x]], 
         cotrt_matching[control, on = intersect(names(cotrt_matching), names(control))])
-      if (x == gDRutils::get_experiment_groups("combination")) {
+      if (x == gDRutils::get_supported_experiments("combo")) {
         matrix_data <- rbind(df_merged, df_list[[sa_name]])
         for (j in conc_idx)
           data.table::set(matrix_data, which(is.na(matrix_data[[j]])), j, 0)

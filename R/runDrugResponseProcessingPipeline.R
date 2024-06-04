@@ -234,8 +234,7 @@ runDrugResponseProcessingPipeline <- function(x,
   checkmate::assert_choice(start_from, get_pipeline_steps())
   checkmate::assert_character(selected_experiments, null.ok = TRUE)
   checkmate::assert_subset(selected_experiments,
-                           names(gDRutils::get_experiment_groups()),
-  )
+                           gDRutils::get_supported_experiments())
   
   if (!is.null(selected_experiments) && !partial_run) {
     stop("Selected experiments are only supported with partial_run enabled")
@@ -347,7 +346,7 @@ runDrugResponseProcessingPipeline <- function(x,
       )
     
       # 4th step - Fit SE
-      if (data_type == gDRutils::get_experiment_groups("combination")) {
+      if (data_type == gDRutils::get_supported_experiments("combo")) {
         step_args <- list(
           se = se$result,
           data_type = data_type,

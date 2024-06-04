@@ -21,7 +21,7 @@
 #' @examples 
 #' fmae_cms <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
 #' 
-#' se1 <- fmae_cms[[gDRutils::get_experiment_groups("combination")]]
+#' se1 <- fmae_cms[[gDRutils::get_supported_experiments("combo")]]
 #' SummarizedExperiment::assays(se1) <- 
 #'   SummarizedExperiment::assays(se1)["Averaged"]
 #' fit_SE.combinations(se1[1, 1])
@@ -33,7 +33,7 @@
 #' @export
 #'
 fit_SE.combinations <- function(se,
-                                data_type = gDRutils::get_experiment_groups("combination"),
+                                data_type = gDRutils::get_supported_experiments("combo"),
                                 series_identifiers = NULL,
                                 normalization_types = c("GR", "RV"),
                                 averaged_assay = "Averaged",
