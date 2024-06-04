@@ -199,7 +199,7 @@ data_model.data.table <- function(x) {
             %in% gDRutils::get_env_identifiers("untreated_tag"))) {
       "single-agent"
     } else {
-        "combination"
+      "combination"
     }
   } else if (.get_default_single_agent_nested_identifiers() %in% colnames(x)) {
     "single-agent"
@@ -207,17 +207,6 @@ data_model.data.table <- function(x) {
     stop("Unknown data model")
   }
 }
-
-
-#' @keywords utils
-get_data_type_to_data_model_mapping <- function() {
-  c(
-    `single-agent` = "single-agent",
-    "co-dilution" = "single-agent",
-    "combination" = "combination"
-  )
-}
-
 
 #' Detect model of data from experiment name
 #'
@@ -228,22 +217,27 @@ get_data_type_to_data_model_mapping <- function() {
 #' @keywords utils
 #' @export
 data_model.character <- function(x) {
-  # TODO: switch to gDRutils::get_experiment_groups()
-  # once we clean-up single-agent/combination assignemnts
-  exp_v <- get_data_type_to_data_model_mapping()
+  checkmate::assert_subset(x, gDRutils::get_supported_experiments())
   
-  checkmate::assert_subset(x, names(exp_v))
-  
-  exp_v[[x]]
-  
+  exp_v <- gDRutils::get_experiment_groups()
+  names(exp_v[grep(x, exp_v)])
 }
 
+
+#' Validate availability of data models
+#' 
+#' @param d_types character vector with experiment names in \code{MultiAssayExperiment} object
+#' @param s_d_models character vector with names of supported experiment
+#'
+#' @keywords internal
 validate_data_models_availability <- function(d_types, s_d_models) {
+  checkmate::assert_character(d_types)
+  checkmate::assert_character(s_d_models)
   
-  dm_v <- get_data_type_to_data_model_mapping()
-  
+  dm_v <- gDRutils::get_experiment_groups()
+
   req_d_models <-
-    unique(as.character(dm_v[names(dm_v) %in% d_types]))
+    unique(names(dm_v)[vapply(d_types, function(i) grep(i, dm_v), integer(1))])
   f_models <- req_d_models[!req_d_models %in% s_d_models]
   if (length(f_models)) {
     msg1 <-
@@ -258,7 +252,7 @@ validate_data_models_availability <- function(d_types, s_d_models) {
 
 #' Get default nested identifiers
 #'
-#' @param x data.table with raw data or SummarizedExperiment object 
+#' @param x data.table with raw data or \code{SummarizedExperiment} object 
 #' with gDR assays
 #' @param data_model single-agent vs combination
 #' 

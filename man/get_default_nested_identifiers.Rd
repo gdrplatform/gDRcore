@@ -13,7 +13,7 @@ get_default_nested_identifiers(x, data_model = NULL)
 \method{get_default_nested_identifiers}{SummarizedExperiment}(x, data_model = NULL)
 }
 \arguments{
-\item{x}{data.table with raw data or SummarizedExperiment object
+\item{x}{data.table with raw data or \code{SummarizedExperiment} object
 with gDR assays}
 
 \item{data_model}{single-agent vs combination}
