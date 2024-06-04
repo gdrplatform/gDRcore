@@ -232,7 +232,7 @@ data_model.character <- function(x) {
 #' @keywords internal
 validate_data_models_availability <- function(d_types, s_d_models) {
   checkmate::assert_character(d_types)
-  checkmate::assert_character(s_d_models)
+  checkmate::assert_character(s_d_models, null.ok = TRUE)
   
   dm_v <- gDRutils::get_experiment_groups()
 
