@@ -16,7 +16,8 @@ fit_SE <- function(se,
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_string(data_type)
-  checkmate::assert_choice(data_type, gDRutils::get_experiment_groups("single-agent"))
+  checkmate::assert_choice(data_type, choices = c(gDRutils::get_supported_experiments("cd"),
+                                                  gDRutils::get_supported_experiments("combo")))
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_string(averaged_assay)
   checkmate::assert_string(metrics_assay)
