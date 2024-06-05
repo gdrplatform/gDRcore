@@ -195,4 +195,7 @@
   <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/test_synthetic_data.html</loc>
   </url>
+  <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/validate_data_models_availability.html</loc>
+  </url>
 </urlset>
