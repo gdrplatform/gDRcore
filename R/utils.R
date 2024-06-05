@@ -237,7 +237,7 @@ validate_data_models_availability <- function(d_types, s_d_models) {
   dm_v <- gDRutils::get_experiment_groups()
 
   req_d_models <-
-    unique(names(dm_v)[vapply(d_types, function(i) grep(i, dm_v), integer(1))])
+    unique(names(dm_v)[vapply(dm_v, function(x) any(d_types %in% x), logical(1))])
   f_models <- req_d_models[!req_d_models %in% s_d_models]
   if (length(f_models)) {
     msg1 <-
