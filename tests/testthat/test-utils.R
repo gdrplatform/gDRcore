@@ -43,9 +43,12 @@ test_that("data_model.character works as expected", {
 })
 
 test_that("validate_data_models_availability works as expected", {
-  d_type <- c("single_agent", "combination")
+  d_type <- c("co-dilution", "combination")
 
   expect_equal(validate_data_models_availability(d_types = d_type, 
+                                                 s_d_models = gDRutils::get_supported_experiments()),
+               NULL)
+  expect_equal(validate_data_models_availability(d_types = "single-a", 
                                                  s_d_models = gDRutils::get_supported_experiments()),
                NULL)
   expect_error(validate_data_models_availability(d_types = d_type, 
