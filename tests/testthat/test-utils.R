@@ -32,3 +32,31 @@ test_that("cleanup_metadata works as expected", {
   cleanup_df <- purrr::quietly(cleanup_metadata)(df)
   expect_equal(dim(cleanup_df$result), c(1, 11))
 })
+
+test_that("data_model.character works as expected", {
+  expect_equal(data_model("co-dilution"), "single-agent")
+  expect_equal(data_model("combination"), "combination")
+  
+  expect_error(data_model("single-a"))
+  expect_error(data_model(""))
+  expect_error(data_model(NULL))
+})
+
+test_that("validate_data_models_availability works as expected", {
+  d_type <- c("co-dilution", "combination")
+
+  expect_equal(validate_data_models_availability(d_types = d_type, 
+                                                 s_d_models = gDRutils::get_supported_experiments()),
+               NULL)
+  expect_equal(validate_data_models_availability(d_types = "single-a", 
+                                                 s_d_models = gDRutils::get_supported_experiments()),
+               NULL)
+  expect_error(validate_data_models_availability(d_types = d_type, 
+                                                 s_d_models = "single_agent"),
+               "'nested_identifiers_l' lacks information for the ")
+  expect_error(validate_data_models_availability(d_types = d_type, 
+                                                 s_d_models = NULL),
+               "'nested_identifiers_l' lacks information for the ")
+  
+})
+
