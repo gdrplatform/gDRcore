@@ -1,3 +1,6 @@
+## gDRcore 1.3.3 - 2024-07-10
+* update unit tests
+
 ## gDRcore 1.3.2 - 2024-06-04
 * switch to `get_supported_experiments`
 

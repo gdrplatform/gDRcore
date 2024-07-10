@@ -17,7 +17,7 @@ test_that("fit_combo_cotreatments works as expected", {
       cotrt_id = "Concentration_2",
       normalization_type = "GR"
   ))
-  expect_equal(dim(obs), c(11, 17))
+  expect_equal(dim(obs), c(11, 19))
   expect_true("cotrt_value" %in% colnames(obs))
   expect_equal(class(obs$cotrt_value), "numeric")
   # TODO: test that all the fits are the same.
@@ -49,7 +49,7 @@ test_that("fit_cotreatment_series works as expected", {
       normalization_type = "GR"
   ))
 
-  expect_equal(dim(obs), c(1, 17))
+  expect_equal(dim(obs), c(1, 19))
   expect_true("cotrt_value" %in% colnames(obs))
   expect_equal(class(obs$cotrt_value), "numeric")
 })
