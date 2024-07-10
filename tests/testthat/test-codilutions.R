@@ -13,7 +13,7 @@ test_that("fit_combo_codilutions works as expected", {
     normalization_type = "GR")
 
   obs <- fit_combo_codilutions(measured, nested_identifiers, "GR")
-  expect_equal(dim(obs), c(7, 17))
+  expect_equal(dim(obs), c(7, 19))
   expect_true("ratio" %in% colnames(obs))
   expect_equal(obs$ratio, c(.04, .1, .3, 1, 3, 10, 30), tolerance = 10e-3)
 })
@@ -50,7 +50,7 @@ test_that("fit_codilution_series works as expected", {
   expect_length(res$warnings, 4)
   
   obs <- res$result
-  expect_equal(dim(obs), c(1, 17))
+  expect_equal(dim(obs), c(1, 19))
   expect_true("ratio" %in% colnames(obs))
   expect_equal(obs$ratio, ratio, tolerance = 10e-3)
 })
