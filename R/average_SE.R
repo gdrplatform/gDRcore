@@ -91,7 +91,7 @@ average_FUN <- function(x,
     series_identifiers <- intersect(series_identifiers, colnames(x))
     unmasked <- x[!masked, , drop = FALSE]
     agg_df <- unmasked[, list(mean(x, na.rm = TRUE),
-                    sd(x, na.rm = TRUE)),
+                    ifelse(length(x) == 1, 0, sd(x, na.rm = TRUE))),
              by = c("normalization_type", series_identifiers)]
     data.table::setorderv(agg_df, c(series_identifiers, "normalization_type"))
     data.table::setnames(agg_df, c("V1", "V2"), c("x", "x_std"))
