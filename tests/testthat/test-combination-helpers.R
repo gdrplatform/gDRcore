@@ -47,6 +47,10 @@ test_that("calculate_score works as expected", {
   obs <- calculate_excess(metric, measured, series_identifiers, metric_col, measured_col)
   score <- calculate_score(obs$x)
   expect_equal(score, 100)
+  
+  na_data <- rep(NA, 10)
+  score2 <- calculate_score(na_data)
+  expect_true(is.na(score2))
 })
 
 
