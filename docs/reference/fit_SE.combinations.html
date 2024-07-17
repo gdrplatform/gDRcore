@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.5</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,7 +67,8 @@
 <span>  series_identifiers <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  normalization_types <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GR"</span>, <span class="st">"RV"</span><span class="op">)</span>,</span>
 <span>  averaged_assay <span class="op">=</span> <span class="st">"Averaged"</span>,</span>
-<span>  metrics_assay <span class="op">=</span> <span class="st">"Metrics"</span></span>
+<span>  metrics_assay <span class="op">=</span> <span class="st">"Metrics"</span>,</span>
+<span>  score_FUN <span class="op">=</span> <span class="va">calculate_score</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -101,6 +102,10 @@ input. in the <code>se</code>.</p></dd>
 <dd><p>string of the name of the metrics assay to output
 in the returned SummarizedExperiment.
 whose combination represents a unique series for which to fit curves.</p></dd>
+
+
+<dt>score_FUN</dt>
+<dd><p>function used to calculate score for HSA and Bliss</p></dd>
 
 </dl></div>
     <div class="section level2">
