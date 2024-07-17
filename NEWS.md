@@ -1,3 +1,6 @@
+## gDRcore 1.3.4 - 2024-07-15
+* refactor logic for calculating standard deviation for single values
+
 ## gDRcore 1.3.3 - 2024-07-10
 * update unit tests
 
