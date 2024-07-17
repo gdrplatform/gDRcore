@@ -10,7 +10,8 @@ fit_SE.combinations(
   series_identifiers = NULL,
   normalization_types = c("GR", "RV"),
   averaged_assay = "Averaged",
-  metrics_assay = "Metrics"
+  metrics_assay = "Metrics",
+  score_FUN = calculate_score
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ input. in the \code{se}.}
 \item{metrics_assay}{string of the name of the metrics assay to output
 in the returned \linkS4class{SummarizedExperiment}.
 whose combination represents a unique series for which to fit curves.}
+
+\item{score_FUN}{function used to calculate score for HSA and Bliss}
 }
 \value{
 A \code{SummarizedExperiment} object with an additional assay

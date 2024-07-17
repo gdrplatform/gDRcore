@@ -1,3 +1,6 @@
+## gDRcore 1.3.5 - 2024-07-17
+* allow using custom functions for calculating HSA and Bliss scores for combination data
+
 ## gDRcore 1.3.4 - 2024-07-15
 * refactor logic for calculating standard deviation for single values
 

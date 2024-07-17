@@ -13,6 +13,7 @@
 #' @param metrics_assay string of the name of the metrics assay to output
 #' in the returned \linkS4class{SummarizedExperiment}.
 #' whose combination represents a unique series for which to fit curves. 
+#' @param score_FUN function used to calculate score for HSA and Bliss
 #'
 #' @details
 #' This function assumes that the combination is set up with both 
@@ -37,7 +38,8 @@ fit_SE.combinations <- function(se,
                                 series_identifiers = NULL,
                                 normalization_types = c("GR", "RV"),
                                 averaged_assay = "Averaged",
-                                metrics_assay = "Metrics"
+                                metrics_assay = "Metrics",
+                                score_FUN = calculate_score
                                 ) {
 
   checkmate::assert_class(se, "SummarizedExperiment")
@@ -45,6 +47,7 @@ fit_SE.combinations <- function(se,
   checkmate::assert_character(normalization_types)
   checkmate::assert_string(averaged_assay)
   checkmate::assert_string(metrics_assay)
+  checkmate::assert_function(score_FUN)
   
   if (is.null(series_identifiers)) {
     series_identifiers <- get_default_nested_identifiers(
@@ -302,24 +305,12 @@ fit_SE.combinations <- function(se,
       scores[scores$normalization_type == norm_type, "hsa_score"] <- ifelse(
         is.null(h_excess), 
         NA, 
-        mean(
-          h_excess$hsa_excess[
-            h_excess$hsa_excess >= 
-              stats::quantile(h_excess$hsa_excess, 0.9, na.rm = TRUE)
-          ], 
-          na.rm = TRUE
-        )
+        score_FUN(h_excess$hsa_excess)
       )
       scores[scores$normalization_type == norm_type, "bliss_score"] <- ifelse(
         is.null(bliss_excess), 
-        NA, 
-        mean(
-          bliss_excess$bliss_excess[
-            bliss_excess$bliss_excess >= 
-              stats::quantile(bliss_excess$bliss_excess, 0.9, na.rm = TRUE)
-          ], 
-          na.rm = TRUE
-        )
+        NA,
+        score_FUN(bliss_excess$bliss_excess)
       )
 
       if (all(vapply(isobologram_out, function(x) is.null(x) || all(is.na(x)), logical(1)))) {

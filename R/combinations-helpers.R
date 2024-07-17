@@ -112,6 +112,42 @@ calculate_excess <- function(metric,
   out
 }
 
+#' Calculate score for HSA and Bliss
+#'
+#' @param excess numeric vector with excess
+#'
+#' @examples
+#' metric <- data.table::data.table(
+#'   Concentration = c(1, 2, 3, 1, 2, 3),
+#'   Concentration_2 = c(1, 1, 1, 2, 2, 2),
+#'   GRvalue = c(100, 200, 300, 400, 500, 600)
+#' )
+#' measured <- data.table::data.table(
+#'   Concentration = c(3, 1, 2, 2, 1, 3),
+#'   Concentration_2 = c(1, 1, 1, 2, 2, 2),
+#'   testvalue = c(200, 0, 100, 400, 300, 500)
+#' )
+#' series_identifiers <- c("Concentration", "Concentration_2")
+#' metric_col <- "GRvalue"
+#' measured_col <- "testvalue"
+#' x <- calculate_excess(
+#'   metric, 
+#'   measured, 
+#'   series_identifiers, 
+#'   metric_col, 
+#'   measured_col
+#' )
+#' calculate_score(x$x)
+#'
+#' @return numeric vector with calculated score
+#' @keywords combinations
+#' @export
+calculate_score <- function(excess) {
+  checkmate::assert_numeric(excess)
+  # average the top 10-percentile excess to get a single value  for the excess
+  mean(excess[excess >= stats::quantile(excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
+}
+
 
 #' @keywords internal
 #' @noRd
