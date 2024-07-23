@@ -53,7 +53,7 @@ normalize_SE <- function(se,
   gDRutils::validate_se_assay_name(se, raw_treated_assay)
   
   
-  if (is.null(nested_identifiers)) {
+  if (!length(nested_identifiers)) {
     nested_identifiers <- get_default_nested_identifiers(
       se, 
       data_model(data_type)

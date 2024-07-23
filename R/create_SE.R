@@ -35,7 +35,7 @@ create_SE <- function(df_,
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
   
-  if (is.null(nested_identifiers)) {
+  if (!length(nested_identifiers)) {
     nested_identifiers <-
       get_default_nested_identifiers(df_)[[data_model(data_type)]]
   }
