@@ -36,7 +36,7 @@ create_SE <- function(df_,
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
   
   
-  if length(nested_confounders) == 0 {
+  if (length(nested_confounders) == 0) {
     nested_confounders <- NULL
   }
   
