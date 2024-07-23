@@ -1,3 +1,6 @@
+## gDRcore 1.3.6 - 2024-07-23
+* fix issue with providing empty nested_confounder
+
 ## gDRcore 1.3.5 - 2024-07-17
 * allow using custom functions for calculating HSA and Bliss scores for combination data
 

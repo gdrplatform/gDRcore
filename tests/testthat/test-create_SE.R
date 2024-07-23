@@ -49,3 +49,25 @@ test_that("create_SE works as expected", {
   expect_true(all(is.na(controls$CorrectedReadout[
     controls$control_type == "Day0Readout"])))
 })
+
+
+test_that("create_SE works with empty nested confounder", {
+  
+  td <- gDRimport::get_test_data()
+  l_tbl <- purrr::quietly(gDRimport::load_data)(gDRimport::manifest_path(td), 
+                                                gDRimport::template_path(td), 
+                                                gDRimport::result_path(td))
+  imported_data <- purrr::quietly(merge_data)(
+    data.table::setDT(l_tbl$result$manifest),
+    data.table::setDT(l_tbl$result$treatments),
+    data.table::setDT(l_tbl$result$data)
+  )
+  
+  imported_data$result$Barcode <- NULL
+  
+  se <- purrr::quietly(create_SE)(imported_data$result, data_type = "single-agent", nested_confounders = NULL)
+  
+  testthat::expect_s4_class(se$result, "SummarizedExperiment")
+  expect_equal(dim(se$result), c(2, 6))
+})
+

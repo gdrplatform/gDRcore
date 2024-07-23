@@ -53,6 +53,10 @@ normalize_SE <- function(se,
   gDRutils::validate_se_assay_name(se, raw_treated_assay)
   
   
+  if (length(nested_confounders) == 0) {
+    nested_confounders <- NULL
+  }
+  
   if (is.null(nested_identifiers)) {
     nested_identifiers <- get_default_nested_identifiers(
       se, 
