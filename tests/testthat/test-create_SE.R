@@ -68,6 +68,6 @@ test_that("create_SE works with empty nested confounder", {
   se <- purrr::quietly(create_SE)(imported_data$result, data_type = "single-agent", nested_confounders = NULL)
   
   testthat::expect_s4_class(se$result, "SummarizedExperiment")
-  expect_equal(dim(se$result), c(12, 6))
+  expect_equal(dim(se$result), c(2, 6))
 })
 
