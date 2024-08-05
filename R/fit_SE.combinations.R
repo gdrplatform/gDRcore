@@ -112,7 +112,8 @@ fit_SE.combinations <- function(se,
       "rconcs"
     )
     
-    mean_avg_combo <-  avg_combo[, lapply(.SD, mean), by = c(id, id2, "normalization_type"), .SDcols = "x"]
+    mean_avg_combo <-  avg_combo[, lapply(.SD, mean), by = c(id, id2, "normalization_type"), .SDcols = c("x", "x_std")]
+
     # deal with cases of multiple concentrations mapped to the same value 
     # when rounded create a complete matrix with the most frequence combo 
     # concentrations
