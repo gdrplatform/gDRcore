@@ -1,3 +1,6 @@
+## gDRcore 1.3.7 - 2024-08-05
+* fix issue with non-avearaged concentration data
+
 ## gDRcore 1.3.6 - 2024-07-23
 * fix issue with providing empty nested_confounder
 
