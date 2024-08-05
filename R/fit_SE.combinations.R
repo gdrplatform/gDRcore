@@ -140,7 +140,9 @@ fit_SE.combinations <- function(se,
   
     for (norm_type in normalization_types) {
 
-      avg_combo <- data.table::as.data.table(avg_combo)
+      # use data.tablea with averaged concentration values 
+      # (if some duplicates appeared after mapping to standardized concentrations)
+      avg_combo <- data.table::as.data.table(mean_avg_combo)
       avg_subset <- avg_combo[normalization_type == norm_type]
       complete_subset <- complete[normalization_type == norm_type | is.na(normalization_type)]
       complete_subset[is.na(normalization_type), normalization_type := norm_type]
