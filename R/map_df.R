@@ -149,7 +149,7 @@ map_df <- function(trt_md,
       # are found.
       idx <- idx * match_mx[matchFactor, ]
       
-      if (any(idx > 0)) {
+      if (any(idx > 0, na.rm = TRUE)) {
         match_idx <- which.max(idx)
         msgs <- c(
           msgs, 
