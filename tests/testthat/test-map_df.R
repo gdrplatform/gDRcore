@@ -24,7 +24,9 @@ test_that("map_df works as expected", {
   expect_equal(mapping, out)
   expect_equal(sort(unique(unname(unlist(mapping)))), sort(rownames(ref_df)))
   
-  trt_dt <- dt <- data.table(
+  # Test Day0 data with E2
+  
+  trt_dt <- data.table::data.table(
     clid = c("Cell123456", "Cell123456", "Cell654321", "Cell654321"),
     CellLineName = c("CellLineA", "CellLineA", "CellLineB", "CellLineB"),
     Tissue = c("Liver", "Liver", "Liver", "Liver"),
@@ -39,7 +41,7 @@ test_that("map_df works as expected", {
     rn = c("1", "2", "6", "7")
   )
   
-  ref_dt <- data.table(
+  ref_dt <- data.table::data.table(
     clid = c("Cell123456", "Cell123456", "Cell123456", "Cell654321", "Cell654321", "Cell654321"),
     CellLineName = c("CellLineA", "CellLineA", "CellLineA", "CellLineB", "CellLineB", "CellLineB"),
     Tissue = c("Liver", "Liver", "Liver", "Liver", "Liver", "Liver"),
@@ -68,12 +70,9 @@ test_that("map_df works as expected", {
 })
 
 
-
 # TODO: test_that("Best match is detected for missing controls", {}) # nolint
 
-
 # TODO: test_that("NAs are returned for missing controls", {}) # nolint
-
 
 mat_elem <- data.table::data.table(DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
                                    DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
