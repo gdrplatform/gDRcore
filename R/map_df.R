@@ -123,7 +123,7 @@ map_df <- function(trt_md,
 
   out <- lapply(seq_along(trt_rnames), function(i) {
     treatment <- trt_rnames[i]
-    if (is.na(exact_out[[treatment]]) || !is.null(override_untrt_controls)) {
+    if (all(is.na(exact_out[[treatment]])) || !is.null(override_untrt_controls)) {
       
       refs <- lapply(present_ref_cols, function(y) {
         unname(unlist(ref_md[, y, with = FALSE]) == unlist(trt_md[which(trt_md$rn == treatment),
