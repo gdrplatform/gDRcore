@@ -23,6 +23,48 @@ test_that("map_df works as expected", {
 
   expect_equal(mapping, out)
   expect_equal(sort(unique(unname(unlist(mapping)))), sort(rownames(ref_df)))
+  
+  trt_dt <- dt <- data.table(
+    clid = c("Cell123456", "Cell123456", "Cell654321", "Cell654321"),
+    CellLineName = c("CellLineA", "CellLineA", "CellLineB", "CellLineB"),
+    Tissue = c("Liver", "Liver", "Liver", "Liver"),
+    parental_identifier = c("ParentA", "ParentA", "ParentB", "ParentB"),
+    subtype = c("type1", "type1", "type2", "type2"),
+    ReferenceDivisionTime = c(45, 45, 30, 30),
+    Gnumber = c("Drug12345678", "Drug12345678", "Drug87654321", "Drug87654321"),
+    DrugName = c("DrugX", "DrugX", "DrugY", "DrugY"),
+    drug_moa = c("MOA1", "MOA1", "MOA2", "MOA2"),
+    Duration = c(120, 120, 120, 120),
+    E2 = c("0", "0.0023", "0", "0.0023"),
+    rn = c("1", "2", "6", "7")
+  )
+  
+  ref_dt <- data.table(
+    clid = c("Cell123456", "Cell123456", "Cell123456", "Cell654321", "Cell654321", "Cell654321"),
+    CellLineName = c("CellLineA", "CellLineA", "CellLineA", "CellLineB", "CellLineB", "CellLineB"),
+    Tissue = c("Liver", "Liver", "Liver", "Liver", "Liver", "Liver"),
+    parental_identifier = c("ParentA", "ParentA", "ParentA", "ParentB", "ParentB", "ParentB"),
+    subtype = c("type1", "type1", "type1", "type2", "type2", "type2"),
+    ReferenceDivisionTime = c(NA, NA, NA, 60, 60, 60),
+    Gnumber = c("Drug12345678", "Drug12345678", "Drug12345678", "Drug87654321", "Drug87654321", "Drug87654321"),
+    DrugName = c("DrugX", "DrugX", "DrugX", "DrugY", "DrugY", "DrugY"),
+    drug_moa = c("MOA1", "MOA1", "MOA1", "MOA2", "MOA2", "MOA2"),
+    Duration = c(0, 168, 168, 0, 168, 168),
+    E2 = c("0", "0", "0.0023", "0", "0", "0.0023"),
+    rn = c("3", "4", "5", "8", "9", "10")
+  )
+  
+  ref_cols <- c("CellLineName", "Tissue", "parental_identifier", "subtype", 
+                "Barcode", "clid")
+  
+  ref_type <- "Day0"
+  map_override_untrt_controls <- map_df(trt_dt,
+                                        ref_dt,
+                                        ref_cols = ref_cols,
+                                        ref_type = ref_type,
+                                        override_untrt_controls = c(E2 = 0.0023))
+  expect_list(map_override_untrt_controls)
+  expect_length(map_override_untrt_controls, 4)
 })
 
 
