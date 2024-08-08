@@ -1,3 +1,6 @@
+## gDRcore 1.3.8 - 2024-08-08
+* fix issue with mapping overrides untreated controls
+
 ## gDRcore 1.3.7 - 2024-08-05
 * fix issue with non-avearaged concentration data
 
