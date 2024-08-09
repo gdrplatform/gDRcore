@@ -1,3 +1,6 @@
+## gDRcore 1.3.9 - 2024-08-09
+* fix issue with wrong mapping of Day0 data
+
 ## gDRcore 1.3.8 - 2024-08-08
 * fix issue with mapping overrides untreated controls
 
