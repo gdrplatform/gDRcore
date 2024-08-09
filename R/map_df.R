@@ -68,6 +68,10 @@ map_df <- function(trt_md,
     c("concentration", "concentration2"), 
     simplify = FALSE
   ))
+
+  if (ref_type == "Day0") {
+    ref_md <- ref_md[get(duration_col) == 0, ]
+  }
   
   conc <- cbind(array(0, nrow(ref_md)), # padding to avoid empty df;
                 ref_md[, intersect(names(ref_md), conc_cols), drop = FALSE])
