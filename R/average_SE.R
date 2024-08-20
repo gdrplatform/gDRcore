@@ -92,7 +92,7 @@ average_FUN <- function(x,
     unmasked <- x[!masked, , drop = FALSE]
     agg_df <- unmasked[, list(mean(x, na.rm = TRUE),
                               # set sd = 1 for single values
-                    ifelse(length(x) == 1, 0, sd(x, na.rm = TRUE))),
+                    gDRutils::calc_sd(x)),
              by = c("normalization_type", series_identifiers)]
     data.table::setorderv(agg_df, c(series_identifiers, "normalization_type"))
     data.table::setnames(agg_df, c("V1", "V2"), c("x", "x_std"))

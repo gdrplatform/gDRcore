@@ -1,3 +1,6 @@
+## gDRcore 1.3.10 - 2024-08-19
+* utilize `calc_sd` function
+
 ## gDRcore 1.3.9 - 2024-08-09
 * fix issue with wrong mapping of Day0 data
 
