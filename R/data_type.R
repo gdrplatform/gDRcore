@@ -54,6 +54,7 @@ identify_data_type <- function(df,
   
   # Get untreated tag and cell line identifiers
   untreated_tag <- c(gDRutils::get_env_identifiers("untreated_tag"), NA)
+  cell <- gDRutils::get_env_identifiers("cellline_name")
   
   # Process perturbations
   dt <- process_perturbations(df, drugs_cotrt_ids, conc_cotrt_ids, untreated_tag)
@@ -66,7 +67,7 @@ identify_data_type <- function(df,
   conc_cotrt_ids <- setdiff(conc_ids, "concentration")
   
   
-  cols_pairs <- intersect(names(df),  c(drug_ids, cell, conc_ids))
+  cols_pairs <- intersect(names(df), c(drug_ids, cell, conc_ids))
   drug_pairs <- unique(df[, cols_pairs, with = FALSE])
 
   df[, record_id := .I]
