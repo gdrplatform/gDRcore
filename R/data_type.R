@@ -44,24 +44,28 @@ identify_data_type <- function(df,
                                codilution_conc = 2,
                                matrix_conc = 1) {
   
-  # find the pairs of drugs with relevant metadata
-  drug_ids <- unlist(gDRutils::get_env_identifiers(
-    c("drug_name", "drug_name2", "drug_name3"), 
-    simplify = FALSE
-  )) 
-  drugs_ids <- drug_ids[which(drug_ids %in% names(df))]
+  # Get drug and concentration identifiers
+  drug_ids <- get_relevant_ids(c("drug_name", "drug_name2", "drug_name3"), df)
+  conc_ids <- get_relevant_ids(c("concentration", "concentration2", "concentration3"), df)
   
-  conc_ids <- unlist(gDRutils::get_env_identifiers(
-    c("concentration", "concentration2", "concentration3"), 
-    simplify = FALSE
-  ))
-  conc_ids <- conc_ids[which(conc_ids %in% names(df))]
+  # Filter out primary drug and concentration identifiers
+  drugs_cotrt_ids <- setdiff(drug_ids, "drug_name")
+  conc_cotrt_ids <- setdiff(conc_ids, "concentration")
   
-  drugs_cotrt_ids <- drugs_ids[!names(drugs_ids) %in% "drug_name"]
-  conc_cotrt_ids <- conc_ids[!names(conc_ids) %in% "concentration"]
-  
+  # Get untreated tag and cell line identifiers
   untreated_tag <- c(gDRutils::get_env_identifiers("untreated_tag"), NA)
-  cell <- gDRutils::get_env_identifiers("cellline_name")
+  
+  # Process perturbations
+  dt <- process_perturbations(df, drugs_cotrt_ids, conc_cotrt_ids, untreated_tag)
+  
+  # Double-check the columns after processing perturbations
+  drug_ids <- get_relevant_ids(c("drug_name", "drug_name2", "drug_name3"), df)
+  conc_ids <- get_relevant_ids(c("concentration", "concentration2", "concentration3"), df)
+  
+  drugs_cotrt_ids <- setdiff(drug_ids, "drug_name")
+  conc_cotrt_ids <- setdiff(conc_ids, "concentration")
+  
+  
   cols_pairs <- intersect(names(df),  c(drug_ids, cell, conc_ids))
   drug_pairs <- unique(df[, cols_pairs, with = FALSE])
 
@@ -253,6 +257,18 @@ split_raw_data <- function(df,
 }
 
 #' @keywords internal
+#' Function to get relevant identifiers from the environment
+#' @param identifiers A character vector of identifier names to fetch from the environment
+#' @param df A data frame containing the columns to be checked against the identifiers
+#' @return A character vector of relevant identifiers that are present in the data frame
+#' @keywords internal
+get_relevant_ids <- function(identifiers, df) {
+  ids <- unlist(gDRutils::get_env_identifiers(identifiers, simplify = FALSE))
+  ids[ids %in% names(df)]
+}
+
+
+#' @keywords internal
 #'
 #' ensure that the pair of drugs are matching such that there are not data with
 #' `drug = drugA` and `drug_2 = drugB`, and `drug = drugB` and `drug_2 = drugA` at the same time
@@ -323,4 +339,77 @@ collapse_drugs <- function(df) {
     }
   }
   df  
+}
+
+
+
+
+#' Cleanup additional perturbations in the data.table
+#' 
+#' This function processes drug and concentration columns in a data.table.
+#' It checks if there is only one unique drug (excluding a specified untreated tag)
+#' and if there are exactly two doses (one of which is 0). If these conditions are met,
+#' it creates a new column named after the drug and fills it with the doses,
+#' then removes the original drug and concentration columns.
+#'
+#' @param dt A data.table containing the data.
+#' @param drugs_cotrt_ids A vector of column names related to drugs.
+#' @param conc_cotrt_ids A vector of column names related to concentrations.
+#' @param untreated_tag A string representing the untreated tag (default is "vehicle").
+#' @return A modified data.table with new columns for the drugs and removed original drug and concentration columns.
+#' @examples
+#' library(data.table)
+#' dt <- data.table(
+#'   drug1 = c("vehicle", "drugA", "drugA"),
+#'   conc1 = c(0, 10, 0),
+#'   drug2 = c("vehicle", "drugB", "drugB"),
+#'   conc2 = c(0, 20, 0)
+#' )
+#' drugs_cotrt_ids <- c("drug1", "drug2")
+#' conc_cotrt_ids <- c("conc1", "conc2")
+#' dt <- process_drug_doses(dt, drugs_cotrt_ids, conc_cotrt_ids)
+#' print(dt)
+#' @export
+process_perturbations <- function(dt,
+                                  drugs_cotrt_ids,
+                                  conc_cotrt_ids,
+                                  untreated_tag = "vehicle") {
+  
+  # Assertions
+  checkmate::assert_data_table(dt)
+  checkmate::assert_character(drugs_cotrt_ids, any.missing = FALSE)
+  checkmate::assert_character(conc_cotrt_ids, any.missing = FALSE)
+  checkmate::assert_true(length(drugs_cotrt_ids) == length(conc_cotrt_ids))
+  
+  
+  # If lengths of drugs_cotrt_ids and conc_cotrt_ids are 0, return dt unchanged
+  if (length(drugs_cotrt_ids) == 0 && length(conc_cotrt_ids) == 0) {
+    return(dt)
+  } else {
+    
+    # Iterate through each pair of columns in drugs_cotrt_ids and conc_cotrt_ids
+    for (i in seq_along(drugs_cotrt_ids)) {
+      drug_col <- drugs_cotrt_ids[i]
+      conc_col <- conc_cotrt_ids[i]
+      
+      # Check if there is only one drug in the current drug column (excluding untreated_tag)
+      unique_drugs <- unique(dt[[drug_col]])
+      unique_drugs <- unique_drugs[!unique_drugs %in% untreated_tag]
+      
+      if (length(unique_drugs) == 1) {
+        # Check if there are only two doses in the current concentration column (0 and another value)
+        unique_doses <- unique(dt[[conc_col]])
+        
+        if (length(unique_doses) == 2 && 0 %in% unique_doses) {
+          # Create a new column named after the drug (excluding untreated_tag) and fill it with the doses
+          new_column_name <- unique_drugs[1]
+          dt[, (new_column_name) := dt[[conc_col]]]
+          
+          # Remove the current drug and concentration columns
+          dt[, (c(drug_col, conc_col)) := NULL]
+        }
+      }
+    }
+    return(dt) 
+  }
 }
