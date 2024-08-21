@@ -68,3 +68,71 @@ test_that("collapse drugs works as expected", {
   expect_equal(dt_collapsed[[cols$drug2]], "drug3")
   expect_equal(dt_collapsed[[cols$drug3]], "vehicle")
 })
+
+
+test_that("process_perturbations works as expected", {
+  dt <- data.table::data.table(
+    drug1 = c("vehicle", "drugA", "drugA"),
+    conc1 = c(0, 10, 0),
+    drug2 = c("vehicle", "drugB", "drugB"),
+    conc2 = c(0, 20, 0)
+  )
+  
+  drugs_cotrt_ids <- c("drug1", "drug2")
+  conc_cotrt_ids <- c("conc1", "conc2")
+  
+  result <- process_perturbations(dt, drugs_cotrt_ids, conc_cotrt_ids)
+  
+  expected <- data.table::data.table(
+    drugA = c(0, 10, 0),
+    drugB = c(0, 20, 0)
+  )
+  
+  expect_equal(result, expected)
+  
+  
+  dt2 <- data.table::data.table(
+    drug1 = c("vehicle", "drugA", "drugA"),
+    conc1 = c(0, 10, 0),
+    drug2 = c("vehicle", "drugB", "drugB"),
+    conc2 = c(0, 20, 0),
+    drug3 = c("vehicle", "drugC", "drugC"),
+    conc3 = c(0, 30, 0)
+  )
+  
+  drugs_cotrt_ids <- c("drug1", "drug2", "drug3")
+  conc_cotrt_ids <- c("conc1", "conc2", "conc3")
+  
+  result <- process_perturbations(dt2, drugs_cotrt_ids, conc_cotrt_ids)
+  
+  expected <- data.table::data.table(
+    drugA = c(0, 10, 0),
+    drugB = c(0, 20, 0),
+    drugC = c(0, 30, 0)
+  )
+  expect_equal(result, expected)
+  
+  
+  dt3 <- data.table::data.table(
+    drug1 = c("vehicle", "drugA", "drugB"),
+    conc1 = c(0, 10, 2),
+    drug2 = c("vehicle", "drugB", "drugB"),
+    conc2 = c(0, 20, 0),
+    drug3 = c("vehicle", "drugC", "drugC"),
+    conc3 = c(0, 30, 0)
+  )
+  
+  drugs_cotrt_ids <- c("drug1", "drug2", "drug3")
+  conc_cotrt_ids <- c("conc1", "conc2", "conc3")
+  
+  result <- process_perturbations(dt3, drugs_cotrt_ids, conc_cotrt_ids)
+  
+  expected <- data.table::data.table(
+    drug1 = c("vehicle", "drugA", "drugB"),
+    conc1 = c(0, 10, 2),
+    drugB = c(0, 20, 0),
+    drugC = c(0, 30, 0)
+  )
+  expect_equal(result, expected)
+})
+
