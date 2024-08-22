@@ -72,14 +72,14 @@ test_that("collapse drugs works as expected", {
 
 test_that("process_perturbations works as expected", {
   dt <- data.table::data.table(
-    drug1 = c("vehicle", "drugA", "drugA"),
-    conc1 = c(0, 10, 0),
-    drug2 = c("vehicle", "drugB", "drugB"),
-    conc2 = c(0, 20, 0)
+    DrugName = c("vehicle", "drugA", "drugA"),
+    Concentration = c(0, 10, 0),
+    DrugName_2 = c("vehicle", "drugB", "drugB"),
+    Concentration_2 = c(0, 20, 0)
   )
   
-  drugs_cotrt_ids <- c("drug1", "drug2")
-  conc_cotrt_ids <- c("conc1", "conc2")
+  drugs_cotrt_ids <- c("DrugName", "DrugName_2")
+  conc_cotrt_ids <- c("Concentration", "Concentration_2")
   
   result <- process_perturbations(dt, drugs_cotrt_ids, conc_cotrt_ids)
   
@@ -132,6 +132,28 @@ test_that("process_perturbations works as expected", {
     conc1 = c(0, 10, 2),
     drugB = c(0, 20, 0),
     drugC = c(0, 30, 0)
+  )
+  expect_equal(result, expected)
+  
+  
+  dt4 <- data.table::data.table(
+    Gnumber = c("vehicle", "drugA", "drugB"),
+    Concentration = c(0, 10, 2),
+    Gnumber_2 = c("vehicle", "drugB", "drugB"),
+    Concentration_2 = c(0, 20, 0),
+    drug_moa_2 = c("vehicle", "moa_A", "moa_A"),
+    DrugName_2 = c("vehicle", "drugB", "drugB")
+  )
+  
+  drugs_cotrt_ids <- "Gnumber_2"
+  conc_cotrt_ids <- "Concentration_2"
+  
+  result <- process_perturbations(dt4, drugs_cotrt_ids, conc_cotrt_ids)
+  
+  expected <- data.table::data.table(
+    Gnumber = c("vehicle", "drugA", "drugB"),
+    Concentration = c(0, 10, 2),
+    drugB = c(0, 20, 0)
   )
   expect_equal(result, expected)
 })

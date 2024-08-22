@@ -408,12 +408,14 @@ process_perturbations <- function(dt,
           
           drug_order <- gsub(".*_(\\d+)$|.*", "\\1", drug_col)
           drug_cols <- 
-            get_relevant_ids(paste0(
+            unique(c(
+              get_relevant_ids(paste0(
               c("drug", "drug_name", "drug_moa", "concentration"), drug_order),
-              dt)
+              dt),
+              drug_col, conc_col))
           
           # Remove the current drug and concentration columns
-          dt[, (drug_cols, drug_col, conc_col) := NULL]
+          dt[, (drug_cols) := NULL]
         }
       }
     }
