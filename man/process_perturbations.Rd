@@ -31,8 +31,7 @@ it creates a new column named after the drug and fills it with the doses,
 then removes the original drug and concentration columns.
 }
 \examples{
-library(data.table)
-dt <- data.table(
+dt <- data.table::data.table(
   drug1 = c("vehicle", "drugA", "drugA"),
   conc1 = c(0, 10, 0),
   drug2 = c("vehicle", "drugB", "drugB"),
@@ -40,6 +39,6 @@ dt <- data.table(
 )
 drugs_cotrt_ids <- c("drug1", "drug2")
 conc_cotrt_ids <- c("conc1", "conc2")
-dt <- process_drug_doses(dt, drugs_cotrt_ids, conc_cotrt_ids)
+dt <- process_perturbations(dt, drugs_cotrt_ids, conc_cotrt_ids)
 print(dt)
 }

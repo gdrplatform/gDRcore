@@ -1,35 +1,35 @@
 test_that("identify_data_type and split_raw_data works as expected", {
-  df_layout <-
+  dt_layout <-
     data.table::as.data.table(merge.data.frame(cell_lines[7:8, ], drugs[c(4:6), ], by = NULL))
-  df_layout <- gDRtestData::add_data_replicates(df_layout)
-  df_layout <- gDRtestData::add_concentration(df_layout, concentrations = 10 ^ (seq(-3, .5, .5)))
+  dt_layout <- gDRtestData::add_data_replicates(dt_layout)
+  dt_layout <- gDRtestData::add_concentration(dt_layout, concentrations = 10 ^ (seq(-3, .5, .5)))
   
-  df_2 <-
+  dt_2 <-
     data.table::as.data.table(merge.data.frame(
-      cell_lines[cell_lines$clid %in% df_layout$clid, ], 
+      cell_lines[cell_lines$clid %in% dt_layout$clid, ], 
       drugs[c(21, 26), ], 
       by = NULL
     ))
-  df_2 <- gDRtestData::add_data_replicates(df_2)
-  df_2 <- gDRtestData::add_concentration(df_2, concentrations = 10 ^ (seq(-3, .5, .5)))
-  colnames(df_2)[colnames(df_2) %in% c(colnames(drugs), "Concentration")] <- 
-    paste0(colnames(df_2)[colnames(df_2) %in% c(colnames(drugs), "Concentration")], "_2")
+  dt_2 <- gDRtestData::add_data_replicates(dt_2)
+  dt_2 <- gDRtestData::add_concentration(dt_2, concentrations = 10 ^ (seq(-3, .5, .5)))
+  colnames(dt_2)[colnames(dt_2) %in% c(colnames(drugs), "Concentration")] <- 
+    paste0(colnames(dt_2)[colnames(dt_2) %in% c(colnames(drugs), "Concentration")], "_2")
   
-  df_layout_2 <- df_layout[df_2, on = intersect(names(df_layout), names(df_2)),
+  dt_layout_2 <- dt_layout[dt_2, on = intersect(names(dt_layout), names(dt_2)),
                            allow.cartesian = TRUE]
   
-  df_merged_data <- gDRtestData::generate_response_data(df_layout_2, 0)
-  df <- identify_data_type(df_merged_data)
-  expect_equal(ncol(df_merged_data), ncol(df))
-  expect_true("type" %in% names(df))
+  dt_merged_data <- gDRtestData::generate_response_data(dt_layout_2, 0)
+  dt <- identify_data_type(dt_merged_data)
+  expect_equal(ncol(dt_merged_data), ncol(dt))
+  expect_true("type" %in% names(dt))
   
-  df_list <- split_raw_data(df)
-  expect_true(inherits(df_list, "list"))
-  expect_true(all(names(df_list) %in% c(gDRutils::get_supported_experiments("combo"),
+  dt_list <- split_raw_data(dt)
+  expect_true(inherits(dt_list, "list"))
+  expect_true(all(names(dt_list) %in% c(gDRutils::get_supported_experiments("combo"),
                                         gDRutils::get_supported_experiments("sa"))))
   
   
-  df2 <- data.table::data.table(Gnumber = c(rep("DrugA", 9), "DrugB"),
+  dt2 <- data.table::data.table(Gnumber = c(rep("DrugA", 9), "DrugB"),
                                 DrugName = c(rep("DrugA", 9), "DrugB"),
                                 drug_moa = "unknown",
                                 drug_moa_2 = "unknown",
@@ -38,15 +38,15 @@ test_that("identify_data_type and split_raw_data works as expected", {
                                 Concentration = runif(10) + 0.01,
                                 Concentration_2 = runif(10) + 0.01,
                                 clid = "CL1")
-  df2 <- identify_data_type(df2)
-  split_df2 <- split_raw_data(df2)
-  expect_true(all(split_df2[["Gnumber"]] == "DrugA"))
+  dt2 <- identify_data_type(dt2)
+  split_dt2 <- split_raw_data(dt2)
+  expect_true(all(split_dt2[["Gnumber"]] == "DrugA"))
 })
 
 
 test_that("collapse drugs works as expected", {
-  idfs <- gDRutils::get_env_identifiers()
-  cols <- idfs[c("drug", "drug2", "drug3",
+  idts <- gDRutils::get_env_identifiers()
+  cols <- idts[c("drug", "drug2", "drug3",
                  "drug_name", "drug_name2", "drug_name3",
                  "drug_moa", "drug_moa2", "drug_moa3",
                  "concentration", "concentration2", "concentration3")]

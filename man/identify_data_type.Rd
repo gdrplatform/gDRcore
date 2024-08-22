@@ -4,10 +4,10 @@
 \alias{identify_data_type}
 \title{Identify type of data}
 \usage{
-identify_data_type(df, codilution_conc = 2, matrix_conc = 1)
+identify_data_type(dt, codilution_conc = 2, matrix_conc = 1)
 }
 \arguments{
-\item{df}{data.table of raw drug response data
+\item{dt}{data.table of raw drug response data
 containing both treated and untreated values}
 
 \item{codilution_conc}{integer of maximum number of concentration ratio
@@ -28,7 +28,7 @@ Identify type of data
 }
 \examples{
 conc <- rep(seq(0, 0.3, 0.1), 2)
-ctrl_df <- S4Vectors::DataFrame(
+ctrl_dt <- S4Vectors::DataFrame(
   ReadoutValue = c(2, 2, 1, 1, 2, 1),
   Concentration = rep(0, 6),
   masked = FALSE,
@@ -36,17 +36,17 @@ ctrl_df <- S4Vectors::DataFrame(
   CellLineName = "CELL1"
 )
 
-trt_df <- S4Vectors::DataFrame(
+trt_dt <- S4Vectors::DataFrame(
   ReadoutValue = rep(seq(1, 4, 1), 2),
   Concentration = conc,
   masked = rep(FALSE, 8),
   DrugName = c("DRUG_10", "DRUG_8"),
   CellLineName = "CELL1"
 )
-input_df <- data.table::as.data.table(rbind(ctrl_df, trt_df))
-input_df$Duration <- 72
-input_df$CorrectedReadout2 <- input_df$ReadoutValue
-identify_data_type(input_df)
+input_dt <- data.table::as.data.table(rbind(ctrl_dt, trt_dt))
+input_dt$Duration <- 72
+input_dt$CorrectedReadout2 <- input_dt$ReadoutValue
+identify_data_type(input_dt)
 }
 \author{
 Bartosz Czech \href{mailto:bartosz.czech@contractors.roche.com}{bartosz.czech@contractors.roche.com}
