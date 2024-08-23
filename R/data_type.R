@@ -257,11 +257,10 @@ split_raw_data <- function(dt,
   }, dt_list)
 }
 
-#' @keywords internal
 #' Function to get relevant identifiers from the environment
 #' @param identifiers A character vector of identifier names to fetch from the environment
-#' @param dt A data frame containing the columns to be checked against the identifiers
-#' @return A character vector of relevant identifiers that are present in the data frame
+#' @param dt A data.table containing the columns to be checked against the identifiers
+#' @return A character vector of relevant identifiers that are present in the data.table
 #' @keywords internal
 get_relevant_ids <- function(identifiers, dt) {
   checkmate::assert_character(identifiers, any.missing = FALSE)
@@ -371,6 +370,7 @@ collapse_drugs <- function(dt) {
 #' conc_cotrt_ids <- c("conc1", "conc2")
 #' dt <- process_perturbations(dt, drugs_cotrt_ids, conc_cotrt_ids)
 #' print(dt)
+#' @keywords data_type
 #' @export
 process_perturbations <- function(dt,
                                   drugs_cotrt_ids,
