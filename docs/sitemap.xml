@@ -136,6 +136,9 @@
     <loc>https://gdrplatform.github.io/gDRcore/reference/get_pipeline_steps.html</loc>
   </url>
   <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/get_relevant_ids.html</loc>
+  </url>
+  <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/grr_matches.html</loc>
   </url>
   <url>
@@ -176,6 +179,9 @@
   </url>
   <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/prepare_input.html</loc>
+  </url>
+  <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/process_perturbations.html</loc>
   </url>
   <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/read_intermediate_data.html</loc>

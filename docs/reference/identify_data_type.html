@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.11</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,12 +61,12 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">identify_data_type</span><span class="op">(</span><span class="va">df</span>, codilution_conc <span class="op">=</span> <span class="fl">2</span>, matrix_conc <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">identify_data_type</span><span class="op">(</span><span class="va">dt</span>, codilution_conc <span class="op">=</span> <span class="fl">2</span>, matrix_conc <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>df</dt>
+    <dl><dt>dt</dt>
 <dd><p>data.table of raw drug response data
 containing both treated and untreated values</p></dd>
 
@@ -101,7 +101,7 @@ defaults to <code>1</code></p></dd>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.3</span>, <span class="fl">0.1</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">ctrl_df</span> <span class="op">&lt;-</span> <span class="fu">S4Vectors</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html" class="external-link">DataFrame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">ctrl_dt</span> <span class="op">&lt;-</span> <span class="fu">S4Vectors</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html" class="external-link">DataFrame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  ReadoutValue <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  Concentration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">6</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  masked <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
@@ -109,17 +109,17 @@ defaults to <code>1</code></p></dd>
 <span class="r-in"><span>  CellLineName <span class="op">=</span> <span class="st">"CELL1"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">trt_df</span> <span class="op">&lt;-</span> <span class="fu">S4Vectors</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html" class="external-link">DataFrame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">trt_dt</span> <span class="op">&lt;-</span> <span class="fu">S4Vectors</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html" class="external-link">DataFrame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  ReadoutValue <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">4</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  Concentration <span class="op">=</span> <span class="va">conc</span>,</span></span>
 <span class="r-in"><span>  masked <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="fl">8</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  DrugName <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DRUG_10"</span>, <span class="st">"DRUG_8"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  CellLineName <span class="op">=</span> <span class="st">"CELL1"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">input_df</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/as.data.table.html" class="external-link">as.data.table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">ctrl_df</span>, <span class="va">trt_df</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">input_df</span><span class="op">$</span><span class="va">Duration</span> <span class="op">&lt;-</span> <span class="fl">72</span></span></span>
-<span class="r-in"><span><span class="va">input_df</span><span class="op">$</span><span class="va">CorrectedReadout2</span> <span class="op">&lt;-</span> <span class="va">input_df</span><span class="op">$</span><span class="va">ReadoutValue</span></span></span>
-<span class="r-in"><span><span class="fu">identify_data_type</span><span class="op">(</span><span class="va">input_df</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">input_dt</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/as.data.table.html" class="external-link">as.data.table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">ctrl_dt</span>, <span class="va">trt_dt</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">input_dt</span><span class="op">$</span><span class="va">Duration</span> <span class="op">&lt;-</span> <span class="fl">72</span></span></span>
+<span class="r-in"><span><span class="va">input_dt</span><span class="op">$</span><span class="va">CorrectedReadout2</span> <span class="op">&lt;-</span> <span class="va">input_dt</span><span class="op">$</span><span class="va">ReadoutValue</span></span></span>
+<span class="r-in"><span><span class="fu">identify_data_type</span><span class="op">(</span><span class="va">input_dt</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     ReadoutValue Concentration masked DrugName CellLineName Duration</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            &lt;num&gt;         &lt;num&gt; &lt;lgcl&gt;   &lt;char&gt;       &lt;char&gt;    &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1:            2           0.0  FALSE  DRUG_10        CELL1       72</span>

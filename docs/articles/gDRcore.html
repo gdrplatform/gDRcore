@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.11</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -196,11 +196,10 @@ object. This function is called
 <code class="sourceCode R"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runDrugResponseProcessingPipelineFxns.html">runDrugResponseProcessingPipeline</a></span><span class="op">(</span><span class="va">input_df</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mae</span></span>
-<span><span class="co">#&gt; A MultiAssayExperiment object of 2 listed</span></span>
-<span><span class="co">#&gt;  experiments with user-defined names and respective classes.</span></span>
-<span><span class="co">#&gt;  Containing an ExperimentList class object of length 2:</span></span>
-<span><span class="co">#&gt;  [1] combination: SummarizedExperiment with 2 rows and 6 columns</span></span>
-<span><span class="co">#&gt;  [2] single-agent: SummarizedExperiment with 3 rows and 6 columns</span></span>
+<span><span class="co">#&gt; A MultiAssayExperiment object of 1 listed</span></span>
+<span><span class="co">#&gt;  experiment with a user-defined name and respective class.</span></span>
+<span><span class="co">#&gt;  Containing an ExperimentList class object of length 1:</span></span>
+<span><span class="co">#&gt;  [1] single-agent: SummarizedExperiment with 4 rows and 6 columns</span></span>
 <span><span class="co">#&gt; Functionality:</span></span>
 <span><span class="co">#&gt;  experiments() - obtain the ExperimentList instance</span></span>
 <span><span class="co">#&gt;  colData() - the primary/phenotype DataFrame</span></span>
@@ -214,13 +213,15 @@ SummarizedExperiment specific to any data type, e.g.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mae</span><span class="op">[[</span><span class="st">"single-agent"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; class: SummarizedExperiment </span></span>
-<span><span class="co">#&gt; dim: 3 6 </span></span>
+<span><span class="co">#&gt; dim: 4 6 </span></span>
 <span><span class="co">#&gt; metadata(5): identifiers experiment_metadata Keys fit_parameters</span></span>
 <span><span class="co">#&gt;   .internal</span></span>
 <span><span class="co">#&gt; assays(5): RawTreated Controls Normalized Averaged Metrics</span></span>
-<span><span class="co">#&gt; rownames(3): G00002_drug_002_moa_A_168 G00004_drug_004_moa_A_168</span></span>
-<span><span class="co">#&gt;   G00011_drug_011_moa_B_168</span></span>
-<span><span class="co">#&gt; rowData names(4): Gnumber DrugName drug_moa Duration</span></span>
+<span><span class="co">#&gt; rownames(4): G00002_drug_002_moa_A_168_0</span></span>
+<span><span class="co">#&gt;   G00002_drug_002_moa_A_168_0.149999910525364</span></span>
+<span><span class="co">#&gt;   G00004_drug_004_moa_A_168_0</span></span>
+<span><span class="co">#&gt;   G00004_drug_004_moa_A_168_0.149999910525364</span></span>
+<span><span class="co">#&gt; rowData names(5): Gnumber DrugName drug_moa Duration drug_011</span></span>
 <span><span class="co">#&gt; colnames(6): CL00011_cellline_BA_breast_cellline_BA_unknown_26</span></span>
 <span><span class="co">#&gt;   CL00012_cellline_CA_breast_cellline_CA_unknown_30 ...</span></span>
 <span><span class="co">#&gt;   CL00015_cellline_FA_breast_cellline_FA_unknown_42</span></span>
@@ -265,7 +266,7 @@ vignette to familiarize with these functionalities.</p>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] gDRcore_1.3.10    gDRtestData_1.3.2 BiocStyle_2.30.0 </span></span>
+<span><span class="co">#&gt; [1] gDRcore_1.3.11    gDRtestData_1.3.2 BiocStyle_2.30.0 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] bitops_1.0-8                fastmap_1.1.1              </span></span>
