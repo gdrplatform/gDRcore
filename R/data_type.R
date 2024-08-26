@@ -390,8 +390,10 @@ process_perturbations <- function(dt,
   checkmate::assert_true(length(drugs_cotrt_ids) == length(conc_cotrt_ids))
   checkmate::assert_subset(untreated_tag, c(gDRutils::get_env_identifiers("untreated_tag"), NA))
   
+  # Create a copy of dt to avoid modifying the input in place
+  dt_copy <- data.table::copy(dt)
   
-  # If lengths of drugs_cotrt_ids and conc_cotrt_ids are 0, return dt unchanged
+  # If lengths of drugs_cotrt_ids and conc_cotrt_ids are 0, return dt_copy unchanged
   if (length(drugs_cotrt_ids) != 0 && length(conc_cotrt_ids) != 0) {
     
     # Iterate through each pair of columns in drugs_cotrt_ids and conc_cotrt_ids
@@ -400,31 +402,31 @@ process_perturbations <- function(dt,
       conc_col <- conc_cotrt_ids[i]
       
       # Check if there is only one drug in the current drug column (excluding untreated_tag)
-      unique_drugs <- unique(dt[[drug_col]])
+      unique_drugs <- unique(dt_copy[[drug_col]])
       unique_drugs <- unique_drugs[!unique_drugs %in% untreated_tag]
       
       if (length(unique_drugs) == 1) {
         # Check if there are only two doses in the current concentration column (0 and another value)
-        unique_doses <- unique(dt[[conc_col]])
+        unique_doses <- unique(dt_copy[[conc_col]])
         
         if (length(unique_doses) == 2 && 0 %in% unique_doses) {
           # Create a new column named after the drug (excluding untreated_tag) and fill it with the doses
           new_column_name <- unique_drugs[1]
-          dt[, (new_column_name) := dt[[conc_col]]]
+          dt_copy[, (new_column_name) := dt_copy[[conc_col]]]
           
           drug_order <- gsub(".*_(\\d+)$|.*", "\\1", drug_col)
           drug_cols <- 
             unique(c(
               get_relevant_ids(paste0(
                 c("drug", "drug_name", "drug_moa", "concentration"), drug_order),
-                dt),
+                dt_copy),
               drug_col, conc_col))
           
           # Remove the current drug and concentration columns
-          dt[, (drug_cols) := NULL]
+          dt_copy[, (drug_cols) := NULL]
         }
       }
     }
   }
-  return(dt)
+  return(dt_copy)
 }
