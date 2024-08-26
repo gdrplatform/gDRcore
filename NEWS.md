@@ -1,3 +1,6 @@
+## gDRcore 1.3.11 - 2024-08-21
+* identify additional perturbations hidden in the secondary drug
+
 ## gDRcore 1.3.10 - 2024-08-19
 * utilize `calc_sd` function
 

@@ -4,13 +4,13 @@
 \alias{split_raw_data}
 \title{Split raw data into list based on the data types}
 \usage{
-split_raw_data(df, type_col = "type")
+split_raw_data(dt, type_col = "type")
 }
 \arguments{
-\item{df}{data.table of raw drug response data containing both treated and
+\item{dt}{data.table of raw drug response data containing both treated and
 untreated values with column specified in \code{type_col} argument.}
 
-\item{type_col}{string with column names in \code{df} with info about data type.
+\item{type_col}{string with column names in \code{dt} with info about data type.
 Defaults to \code{"type"}.}
 }
 \value{
@@ -22,33 +22,33 @@ Split raw data into list based on the data types
 \examples{
 cell_lines <- gDRtestData::create_synthetic_cell_lines()
 drugs <- gDRtestData::create_synthetic_drugs()
-df_layout <- drugs[4:6, as.list(cell_lines[7:8, ]), names(drugs)]
-df_layout <- gDRtestData::add_data_replicates(df_layout)
-df_layout <- gDRtestData::add_concentration(
-  df_layout,
+dt_layout <- drugs[4:6, as.list(cell_lines[7:8, ]), names(drugs)]
+dt_layout <- gDRtestData::add_data_replicates(dt_layout)
+dt_layout <- gDRtestData::add_concentration(
+  dt_layout,
   concentrations = 10 ^ (seq(-3, .5, .5))
 )
 
-df_2 <- 
-  drugs[c(21, 26), as.list(cell_lines[which(cell_lines$clid \%in\% df_layout$clid)]), names(drugs)]
-df_2 <- gDRtestData::add_data_replicates(df_2)
-df_2 <- gDRtestData::add_concentration(
-  df_2,
+dt_2 <- 
+  drugs[c(21, 26), as.list(cell_lines[which(cell_lines$clid \%in\% dt_layout$clid)]), names(drugs)]
+dt_2 <- gDRtestData::add_data_replicates(dt_2)
+dt_2 <- gDRtestData::add_concentration(
+  dt_2,
   concentrations = 10 ^ (seq(-3, .5, .5))
 )
-colnames(df_2)[colnames(df_2) \%in\% c(colnames(drugs), "Concentration")] <-
+colnames(dt_2)[colnames(dt_2) \%in\% c(colnames(drugs), "Concentration")] <-
   paste0(
-    colnames(df_2)[colnames(df_2) \%in\% c(colnames(drugs), "Concentration")],
+    colnames(dt_2)[colnames(dt_2) \%in\% c(colnames(drugs), "Concentration")],
     "_2"
   )
-df_layout_2 <- df_layout[df_2, on = intersect(names(df_layout), names(df_2)), 
+dt_layout_2 <- dt_layout[dt_2, on = intersect(names(dt_layout), names(dt_2)), 
                         allow.cartesian = TRUE]
-df_merged_data <- gDRtestData::generate_response_data(df_layout_2, 0)
-df <- identify_data_type(df_merged_data)
-split_raw_data(df)
+dt_merged_data <- gDRtestData::generate_response_data(dt_layout_2, 0)
+dt <- identify_data_type(dt_merged_data)
+split_raw_data(dt)
 
 conc <- rep(seq(0, 0.3, 0.1), 2)
-ctrl_df <- S4Vectors::DataFrame(
+ctrl_dt <- S4Vectors::DataFrame(
   ReadoutValue = c(2, 2, 1, 1, 2, 1),
   Concentration = rep(0, 6),
   masked = FALSE,
@@ -56,18 +56,18 @@ ctrl_df <- S4Vectors::DataFrame(
   CellLineName = "CELL1"
 )
 
-trt_df <- S4Vectors::DataFrame(
+trt_dt <- S4Vectors::DataFrame(
   ReadoutValue = rep(seq(1, 4, 1), 2),
   Concentration = conc,
   masked = rep(FALSE, 8),
   DrugName = c("DRUG_10", "DRUG_8"),
   CellLineName = "CELL1"
 )
-input_df <- data.table::as.data.table(rbind(ctrl_df, trt_df))
-input_df$Duration <- 72
-input_df$CorrectedReadout2 <- input_df$ReadoutValue
-split_df <- identify_data_type(input_df)
-split_raw_data(split_df)
+input_dt <- data.table::as.data.table(rbind(ctrl_dt, trt_dt))
+input_dt$Duration <- 72
+input_dt$CorrectedReadout2 <- input_dt$ReadoutValue
+split_dt <- identify_data_type(input_dt)
+split_raw_data(split_dt)
 
 }
 \author{
