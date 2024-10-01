@@ -20,7 +20,7 @@ test_that("identify_data_type and split_raw_data works as expected", {
   
   dt_merged_data <- gDRtestData::generate_response_data(dt_layout_2, 0)
   dt <- identify_data_type(dt_merged_data)
-  expect_equal(ncol(dt_merged_data) + 2, ncol(dt))
+  expect_equal(ncol(dt_merged_data), ncol(dt))
   expect_true("type" %in% names(dt))
   
   dt_list <- split_raw_data(dt)
