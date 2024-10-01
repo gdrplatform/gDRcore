@@ -1,3 +1,6 @@
+## gDRcore 1.3.12 - 2024-09-30
+* handle properly additional perturbations to get rid of creating additional columns that can't be hangle properly by the app
+
 ## gDRcore 1.3.11 - 2024-08-21
 * identify additional perturbations hidden in the secondary drug
 
