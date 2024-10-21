@@ -1,3 +1,6 @@
+## gDRcore 1.3.13 - 2024-10-21
+* add support for reprocessing data with old data model
+
 ## gDRcore 1.3.12 - 2024-09-30
 * handle properly additional perturbations to get rid of creating additional columns that can't be hangle properly by the app
 
