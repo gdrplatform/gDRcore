@@ -81,9 +81,10 @@ cleanup_metadata <- function(df_metadata) {
   idfs_len <- vapply(drug_conc_cols_list, length, FUN.VALUE = numeric(1))
   
   if (any(idfs_len != 2)) {
-    df_metadata[, (intersect(unlist(get_env_identifiers(paste0(c("drug", "drug_name", "drug_moa", "concentration"),
-                                                               names(drug_conc_cols_list[which(idfs_len != 2)])),
-                                                        simplify = FALSE)), names(df_metadata))) := NULL]
+    df_metadata[, (intersect(unlist(gDRutils::get_env_identifiers(
+      paste0(c("drug", "drug_name", "drug_moa", "concentration"),
+             names(drug_conc_cols_list[which(idfs_len != 2)])),
+      simplify = FALSE)), names(df_metadata))) := NULL]
     drug_conc_cols_list <- drug_conc_cols_list[-which(idfs_len != 2)]
   }
   
