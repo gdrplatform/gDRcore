@@ -23,7 +23,7 @@ convert_mae_to_raw_data <- function(mae) {
   # Remove duplicates shared between assays to keep only original single-agent
   common_records <- Reduce(intersect, lapply(data, "[[", "record_id"))
   sa_name <- gDRutils::get_supported_experiments("sa")
-  combo_name <- gDRutils::get_supported_experiments("combo")
+  combo_name <- intersect(names(data), c(gDRutils::get_supported_experiments("combo"), "matrix"))
   # check if data contains combination data and shared single-agent records are unique (true for internal data)
   if (length(names(data)) > 1 && max(table(unique(data[[combo_name]])[record_id %in% common_records]$record_id)) == 1) {
     data[[sa_name]] <- data[[sa_name]][!record_id %in% common_records]
@@ -70,22 +70,22 @@ convert_se_to_raw_data <- function(se) {
   ctrl <- gDRutils::convert_se_assay_to_dt(se, "Controls")
   
   # Identifiers
-  conc_cols1 <- intersect(unlist(gDRutils::get_SE_identifiers(se, "concentration",
+  conc_cols1 <- intersect(unlist(gDRutils::get_env_identifiers("concentration",
                                                    simplify = FALSE)), names(trt))
-  conc_cols2 <- intersect(unlist(gDRutils::get_SE_identifiers(se, "concentration2",
+  conc_cols2 <- intersect(unlist(gDRutils::get_env_identifiers("concentration2",
                                                     simplify = FALSE)), names(trt))
   conc_cols <- c(conc_cols1, conc_cols2)
-  drug_cols1 <- intersect(unlist(gDRutils::get_SE_identifiers(se, c("drug", "drug_name", "drug_moa"),
+  drug_cols1 <- intersect(unlist(gDRutils::get_env_identifiers(c("drug", "drug_name", "drug_moa"),
                                                    simplify = FALSE)), names(trt))
-  drug_cols2 <- intersect(unlist(gDRutils::get_SE_identifiers(se, c("drug2", "drug_name2", "drug_moa2"),
+  drug_cols2 <- intersect(unlist(gDRutils::get_env_identifiers(c("drug2", "drug_name2", "drug_moa2"),
                                                    simplify = FALSE)), names(trt))
   drug_cols <- c(drug_cols1, drug_cols2)
-  untreated_tag <- gDRutils::get_SE_identifiers(se, "untreated_tag")[1]
-  masked_tag <- gDRutils::get_SE_identifiers(se, "masked_tag")[1]
-  ref_div_time <- gDRutils::get_SE_identifiers(se, "cellline_ref_div_time")
+  untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")[1]
+  masked_tag <- gDRutils::get_env_identifiers("masked_tag")[1]
+  ref_div_time <- gDRutils::get_env_identifiers("cellline_ref_div_time")
   readout_val <- "ReadoutValue"
   background_val <- "BackgroundValue"
-  duration <- gDRutils::get_SE_identifiers(se, "duration")
+  duration <- gDRutils::get_env_identifiers("duration")
   
   # Add required cols and correct the data
   ctrl[, (drug_cols) := NULL]
@@ -116,14 +116,14 @@ convert_se_to_raw_data <- function(se) {
 replace_NA_in_raw_data <- function(df, mae) {
   df_ <- data.table::copy(df)
   # Identifiers
-  conc_cols <- intersect(unlist(gDRutils::get_SE_identifiers(mae[[1]], c("concentration", "concentration2"),
+  conc_cols <- intersect(unlist(gDRutils::get_env_identifiers(c("concentration", "concentration2"),
                                                              simplify = FALSE)), names(df_))
   
-  drug_cols <- intersect(unlist(gDRutils::get_SE_identifiers(mae[[1]], c("drug", "drug_name", "drug_moa",
+  drug_cols <- intersect(unlist(gDRutils::get_env_identifiers(c("drug", "drug_name", "drug_moa",
                                                                          "drug2", "drug_name2", "drug_moa2"),
                                                              simplify = FALSE)), names(df_))
   
-  untreated_tag <- gDRutils::get_SE_identifiers(mae[[1]], "untreated_tag")
+  untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   
   df_[, (conc_cols) := lapply(.SD, function(x) replace(x, is.na(x), 0)), .SDcols = conc_cols]
   df_[, (drug_cols) := lapply(.SD, function(x) replace(x, is.na(x), untreated_tag[[1]])), .SDcols = drug_cols]

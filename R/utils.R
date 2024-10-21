@@ -52,7 +52,9 @@ cleanup_metadata <- function(df_metadata) {
   duration_id <- gDRutils::get_env_identifiers("duration")
   df_metadata[[duration_id]] <- round(as.numeric(df_metadata[[duration_id]], 6))
   
-  df_metadata <- add_CellLine_annotation(df_metadata)
+  if (!gDRutils::get_env_identifiers("cellline_name") %in% names(df_metadata)) {
+    df_metadata <- add_CellLine_annotation(df_metadata)
+  }
   
   drug_conc_cols <- unlist(
     gDRutils::get_env_identifiers(
@@ -75,6 +77,15 @@ cleanup_metadata <- function(df_metadata) {
     names(x) <- gsub("[0-9]", "", names(x))
     x
   })
+  
+  idfs_len <- vapply(drug_conc_cols_list, length, FUN.VALUE = numeric(1))
+  
+  if (any(idfs_len != 2)) {
+    df_metadata[, (intersect(unlist(get_env_identifiers(paste0(c("drug", "drug_name", "drug_moa", "concentration"),
+                                                               names(drug_conc_cols_list[which(idfs_len != 2)])),
+                                                        simplify = FALSE)), names(df_metadata))) := NULL]
+    drug_conc_cols_list <- drug_conc_cols_list[-which(idfs_len != 2)]
+  }
   
   # clean up concentration fields
   for (i in drug_conc_cols_list) {
@@ -100,7 +111,9 @@ cleanup_metadata <- function(df_metadata) {
     )
   }
   
-  df_metadata <- add_Drug_annotation(df_metadata)
+  if (!gDRutils::get_env_identifiers("drug_name") %in% names(df_metadata)) {
+    df_metadata <- add_Drug_annotation(df_metadata)
+  }
   df_metadata
 }
 
