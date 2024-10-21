@@ -62,8 +62,8 @@ add_CellLine_annotation <- function(
     cellline_name <- gDRutils::get_env_identifiers("cellline_name")
     add_clid <- gDRutils::get_header("add_clid")
     
-    if (all(c(cellline, cellline_name, add_clid) %in% names(dt_metadata))) {
-      dt_metadata[, (unlist(add_clid)) := NULL]
+    if (any(unlist(add_clid) %in% names(dt_metadata))) {
+      dt_metadata[, (intersect(unlist(add_clid), names(dt_metadata))) := NULL]
     }
     
     CLs_info <- if (is.character(external_source) && nchar(external_source) && file.exists(external_source)) {
@@ -81,7 +81,7 @@ add_CellLine_annotation <- function(
     }
   
     CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate), with = FALSE]
-  
+    
     validatedCLs <- unique(dt_metadata[[cellline]]) %in% CLs_info[[DB_cellid_header]]
     missingTblCellLines <- NULL
     if (!is.null(fill) && !all(validatedCLs)) {
@@ -337,7 +337,7 @@ get_cellline_annotation_from_dt <- function(dt) {
   checkmate::assert_data_table(dt)
   cell_cols <- c(gDRutils::get_env_identifiers("cellline"),
                  gDRutils::get_header("add_clid"))
-  cell_dt <- dt[, unlist(cell_cols), with = FALSE]
+  cell_dt <- dt[, intersect(unlist(cell_cols), names(dt)), with = FALSE]
   data.table::setnames(cell_dt,
                        unlist(cell_cols),
                        c("cell_line_identifier",
@@ -345,6 +345,7 @@ get_cellline_annotation_from_dt <- function(dt) {
                          "primary_tissue",
                          "parental_identifier",
                          "subtype",
-                         "doubling_time"))
+                         "doubling_time"),
+                       skip_absent = TRUE)
   unique(cell_dt)
 }

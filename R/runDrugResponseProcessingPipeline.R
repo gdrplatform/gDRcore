@@ -250,10 +250,6 @@ runDrugResponseProcessingPipeline <- function(x,
   # should be restored
   if (inherits(x, "MultiAssayExperiment")) {
     x <- gDRutils::standardize_mae(x, use_default = FALSE)
-    m_idfs <- S4Vectors::metadata(x[[1]])[["identifiers"]]
-    for (idx in seq_along(m_idfs)) {
-      gDRutils::set_env_identifier(names(m_idfs)[idx], m_idfs[[idx]])
-    }
   }
   
   inl <- prepare_input(x,
