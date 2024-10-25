@@ -229,7 +229,8 @@ annotate_dt_with_drug <- function(
   }
   
   drug_annotation[[drug[["drug"]]]] <- remove_drug_batch(drug_annotation[[drug[["drug"]]]])
-  untrt_drug_annotation <- data.table::data.table(drug = untreated_tag, drug_name = untreated_tag, drug_moa = untreated_tag)
+  untrt_drug_annotation <- data.table::data.table(
+    drug = untreated_tag, drug_name = untreated_tag, drug_moa = untreated_tag)
   data.table::setnames(untrt_drug_annotation, drug_ann_cols)
   drug_annotation <- unique(rbind(
     untrt_drug_annotation,
