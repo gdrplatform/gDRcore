@@ -53,7 +53,8 @@ cleanup_metadata <- function(df_metadata) {
   df_metadata[[duration_id]] <- round(as.numeric(df_metadata[[duration_id]], 6))
   
   if (!gDRutils::get_env_identifiers("cellline_name") %in% names(df_metadata)) {
-    df_metadata <- add_CellLine_annotation(df_metadata)
+    df_metadata <- annotate_dt_with_cell_line(df_metadata,
+                                              cell_line_annotation = get_cell_line_annotation(df_metadata))
   }
   
   drug_conc_cols <- unlist(
@@ -113,6 +114,8 @@ cleanup_metadata <- function(df_metadata) {
   }
   
   if (!gDRutils::get_env_identifiers("drug_name") %in% names(df_metadata)) {
+    df_metadata <- annotate_dt_with_drug(df_metadata,
+                                         drug_annotation = get_drug_annotation(df_metadata))
     df_metadata <- add_Drug_annotation(df_metadata)
   }
   df_metadata
