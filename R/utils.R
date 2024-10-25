@@ -116,7 +116,6 @@ cleanup_metadata <- function(df_metadata) {
   if (!gDRutils::get_env_identifiers("drug_name") %in% names(df_metadata)) {
     df_metadata <- annotate_dt_with_drug(df_metadata,
                                          drug_annotation = get_drug_annotation(df_metadata))
-    df_metadata <- add_Drug_annotation(df_metadata)
   }
   df_metadata
 }
