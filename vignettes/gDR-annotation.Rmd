@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 Before running the gDR pipeline, it is essential to annotate the data properly with drug and cell line information. This document outlines the process of data annotation and the requirements for the annotation files.
 
 ## Annotation Files
-gDR uses two sources of annotation: drug annotation and cell line annotation. These annotations are added to a data table before running the pipeline. The scripts for adding data annotation are located in `R/add_annotation.R`, which contains two functions: `add_CellLine_annotation` and `add_Drug_annotation`. It is recommended to run the `cleanup_metadata` function, which adds annotations and performs some data cleaning.
+gDR uses two sources of annotation: drug annotation and cell line annotation. These annotations are added to a data table before running the pipeline. The scripts for adding data annotation are located in `R/add_annotation.R`, which contains four primary functions: `annotate_dt_with_cell_line` and `annotate_dt_with_drug` for annotating the data and functions `get_cell_line_annotation` and `get_drug_annotation` for receiving the default annotation for the data. It is recommended to run the `cleanup_metadata` function, which adds annotations and performs some data cleaning.
 
 ### Annotation File Locations
 Both drug and cell line annotation files are stored in `gDRtestData/inst/annotation_data`. There are two files:
@@ -59,17 +59,17 @@ gDR has specific requirements for the annotation files to properly annotate the 
 ### Drug Annotation Requirements
 The obligatory fields for drug annotation are:
 
-- `gnumber`: Represents the ID of the drug.
-- `drug_name`: Represents the name of the drug.
+- `Gnumber`: Represents the ID of the drug.
+- `DrugName`: Represents the name of the drug.
 - `drug_moa`: Represents the drug mechanism of action.
 
 ### Cell Line Annotation Requirements
 The obligatory fields for cell line annotation are:
 
-- `cell_line_identifier`: Represents the cell line ID.
-- `cell_line_name`: Represents the name of the cell line.
-- `primary_tissue`: Represents the primary tissue of the cell line.
-- `doubling_time`: Represents the doubling time of the cell line in hours.
+- `clid`: Represents the cell line ID.
+- `CellLineName`: Represents the name of the cell line.
+- `Tissue`: Represents the primary tissue of the cell line.
+- `ReferenceDivisionTime`: Represents the doubling time of the cell line in hours.
 - `parental_identifier`: Represents the name of the parental cell line.
 - `subtype`: Represents the subtype of the cell line.
 
@@ -81,17 +81,17 @@ To illustrate, here's an example of how to create a `data.table` with the requir
 ```{r, eval=FALSE}
 # Example of creating a data.table with required fields for drug annotation
 drug_annotation <- data.table(
-  gnumber = c("G1", "G2", "G3"),
-  drug_name = c("Drug A", "Drug B", "Drug C"),
+  Gnumber = c("G1", "G2", "G3"),
+  DrugName = c("Drug A", "Drug B", "Drug C"),
   drug_moa = c("MOA A", "MOA B", "MOA C")
 )
 
 # Example of creating a data.table with required fields for cell line annotation
 cell_line_annotation <- data.table(
-  cell_line_identifier = c("Cell_Line_1", "Cell_Line_2", "Cell_Line_3"),
-  cell_line_name = c("Cell Line 1", "Cell Line 2", "Cell Line 3"),
-  primary_tissue = c("Tissue A", "Tissue B", "Tissue C"),
-  doubling_time = c(24, 30, 28),
+  clid = c("Cell_Line_1", "Cell_Line_2", "Cell_Line_3"),
+  CellLineName = c("Cell Line 1", "Cell Line 2", "Cell Line 3"),
+  Tissue = c("Tissue A", "Tissue B", "Tissue C"),
+  ReferenceDivisionTime = c(24, 30, 28),
   parental_identifier = c("Parental 1", "Parental 2", "Parental 3"),
   subtype = NA
 )

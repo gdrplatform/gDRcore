@@ -1,264 +1,256 @@
-#' add_CellLine_annotation
+#' get_cell_line_annotation
 #'
-#' add cellline annotation to a data.table with metadata
+#' Get cell line annotation data table
 #'
-#' @param dt_metadata data.table with metadata
-#' @param DB_cellid_header string with colnames with cell line identifier
-#'                         in the annotation file
-#' @param DB_cell_annotate character vector with mandatory colnames 
-#'                         used in the annotation file
-#' @param fname string with file name with annotation
+#' @param data data.table with cell line identifiers to be matched
+#' @param fname string with file name containing the annotation
 #' @param fill string indicating how unknown cell lines should be filled in the DB
-#' @param annotation_package string indication name of the package containing cellline annotation
-#' @param external_source string with path to external file with annotation data; by default it checks 
-#' 'GDR_CELLLINE_ANNOTATION' env var. This file should contain columns such as gnumber, drug_name and drug_moa
+#' @param annotation_package string indicating name of the package containing cell line annotation
+#' @return data.table with cell line annotations
 #' @keywords annotation
-#' @details
-#' The logic of adding celline annotation for dt_metadata based on 
-#' the annotation file stored in gDRtestData. Other fields are set as "unknown".
-#' This approach will be corrected once we will implement final solution 
-#' for adding cell lines.
-#' 
-#' @examples 
-#' 
-#' add_CellLine_annotation(
-#'   data.table::data.table(
-#'     clid = "123", 
-#'     CellLineName = "name of the cell line")
-#' )
-#'
-#' @return data.table with metadata with annotated cell lines
+#' @examples
+#' data <- data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+#' cell_line_annotation <- get_cell_line_annotation(data)
 #' @export
 #'
-add_CellLine_annotation <- function(
-    dt_metadata,
-    DB_cellid_header = "cell_line_identifier",
-    DB_cell_annotate = c(
-      "cell_line_name", 
-      "primary_tissue", 
-      "doubling_time",
-      "parental_identifier", 
-      "subtype"
-    ),
+get_cell_line_annotation <- function(
+    data,
     fname = "cell_lines.csv",
     fill = "unknown",
     annotation_package = if ("gDRinternal" %in% .packages(all.available = TRUE)) {
       "gDRinternal"
     } else {
       "gDRtestData"
-    },
-    external_source = Sys.getenv("GDR_CELLLINE_ANNOTATION")
+    }
 ) {
+  checkmate::assert_data_table(data)
   
-    # Assertions:
-    checkmate::assert_data_table(dt_metadata)
-    checkmate::assert_string(fill, null.ok = TRUE)
-    checkmate::assert(checkmate::check_string(external_source, null.ok = TRUE),
-                      checkmate::check_data_table(external_source,
-                                                  col.names = "named"))
-    
-    
-    cellline <- gDRutils::get_env_identifiers("cellline")
-    cellline_name <- gDRutils::get_env_identifiers("cellline_name")
-    add_clid <- gDRutils::get_header("add_clid")
-    
-    if (any(unlist(add_clid) %in% names(dt_metadata))) {
-      dt_metadata[, (intersect(unlist(add_clid), names(dt_metadata))) := NULL]
-    }
-    
-    CLs_info <- if (is.character(external_source) && nchar(external_source) && file.exists(external_source)) {
-      data.table::fread(external_source)
-    } else if (data.table::is.data.table(external_source)) {
-      external_source
-    } else if (annotation_package == "gDRtestData") {
-      data.table::fread(
-        system.file("annotation_data", fname, package = annotation_package), header = TRUE
-      )
-    } else {
-      eval(parse(text = paste0(annotation_package,
-                               "::",
-                               "get_cell_line_annotations")))(dt_metadata[[cellline]])
-    }
+  clid <- gDRutils::get_env_identifiers("cellline")
   
-    CLs_info <- CLs_info[, c(DB_cellid_header, DB_cell_annotate), with = FALSE]
-    
-    validatedCLs <- unique(dt_metadata[[cellline]]) %in% CLs_info[[DB_cellid_header]]
-    missingTblCellLines <- NULL
-    if (!is.null(fill) && !all(validatedCLs)) {
-      unValidatedCellLine <- unique(dt_metadata[[cellline]])[!validatedCLs]
-      missingTblCellLines <- data.table::data.table(
-        parental_identifier = unValidatedCellLine,
-        cell_line_name = unValidatedCellLine,
-        cell_line_identifier = unValidatedCellLine,
-        doubling_time = NA,
-        primary_tissue = fill,
-        subtype = fill
-      )
-    }
-    
-    if (any(!dt_metadata[[cellline]] %in% CLs_info[[DB_cellid_header]]) && 
-        !is.null(missingTblCellLines)) {
-      CLs_info <- rbind(CLs_info, missingTblCellLines)
-    }
-    cols_to_fill <- names(CLs_info)[!names(CLs_info) %in% c("doubling_time")]
-    for (col in cols_to_fill) {
-      CLs_info[[col]][is.na(CLs_info[[col]])] <- fill
-    }
-    cols_num <- "doubling_time"
-    CLs_info[, (cols_num) := as.numeric(get(cols_num))]
-    
-    
-    colnames(CLs_info) <- unlist(c(cellline, add_clid[c("cellline_name",
-                                                        "cellline_tissue",
-                                                        "cellline_ref_div_time",
-                                                        "cellline_parental_identifier",
-                                                        "cellline_subtype")]))
-    
-    futile.logger::flog.info("Merge with Cell line info")
-    nrows_df <- nrow(dt_metadata)
-    dt_metadata <- CLs_info[dt_metadata, on = cellline]
-    stopifnot(nrows_df == nrow(dt_metadata))
-    dt_metadata
+  # Read the cell line annotation data
+  cell_line_annotation <- if (annotation_package == "gDRinternal") {
+    eval(parse(text = paste0(annotation_package, "::get_cell_line_annotations")))(data[[clid]])
+  } else {
+    data.table::fread(
+      system.file("annotation_data", fname, package = annotation_package), header = TRUE
+    )
   }
+  
+  if (NROW(cell_line_annotation) > 0) {
+    cmn <- cell_line_annotation[[clid]] %in% data[[clid]]
+    cell_line_annotation <- cell_line_annotation[cmn, ]
+  }
+  
+  # Handle missing cell lines
+  missing_cell_lines <- setdiff(unique(data[[clid]]), cell_line_annotation[[clid]])
+  if (length(missing_cell_lines) > 0) {
+    missing_tbl_cell_lines <- data.table::data.table(
+      clid = missing_cell_lines,
+      CellLineName = missing_cell_lines,
+      Tissue = fill,
+      ReferenceDivisionTime = NA,
+      parental_identifier = fill,
+      subtype = fill
+    )
+    data.table::setnames(missing_tbl_cell_lines, names(cell_line_annotation))
+    cell_line_annotation <- rbind(cell_line_annotation, missing_tbl_cell_lines)
+  }
+  
+  # Fill missing values
+  ref_div_time <- gDRutils::get_env_identifiers("cellline_ref_div_time")
+  
+  for (col in setdiff(names(cell_line_annotation), ref_div_time)) {
+    cell_line_annotation[[col]][is.na(cell_line_annotation[[col]])] <- fill
+  }
+  cell_line_annotation[, (ref_div_time) := as.numeric(get(ref_div_time))]
+  
+  (cell_line_annotation)
+}
 
-
-#' add_Drug_annotation
+#' annotate_dt_with_cell_line
 #'
-#' add drug annotation to a data.table with metadata
+#' Annotate cell line data with the provided annotation table
 #'
-#' @param dt_metadata data.table with metadata
-#' @param fname string with file name with annotation
+#' @param data data.table with dose-response data
+#' @param cell_line_annotation data.table with cell line annotations
 #' @param fill string indicating how unknown cell lines should be filled in the DB
-#' @param annotation_package string indication name of the package containing drug annotation
-#' @param external_source string with path to external file with annotation data; by default it checks 
-#' 'GDR_DRUG_ANNOTATION' env var. This file should contain columns such as gnumber, drug_name, and drug_moa
+#' @return data.table with annotated cell lines
 #' @keywords annotation
-#' @details The logic of adding drug annotation for dt_metadata 
-#' based on the annotation file stored in gDRtestData.
 #' @examples
-#' add_Drug_annotation(
-#'   data.table::data.table(
-#'     Gnumber = "drug_id", 
-#'     DrugName = "name of the drug")
+#' data <- data.table::data.table(
+#'   clid = c("CL1", "CL2", "CL3"),
+#'   Gnumber = c("D1", "D2", "D3")
 #' )
-#' @return data.table with metadata with annotated drugs
+#' cell_line_annotation <- get_cell_line_annotation(data)
+#' annotated_metadata <- annotate_dt_with_cell_line(data, cell_line_annotation)
 #' @export
 #'
-add_Drug_annotation <- function(
-    dt_metadata,
+annotate_dt_with_cell_line <- function(
+    data,
+    cell_line_annotation,
+    fill = "unknown"
+) {
+  checkmate::assert_data_table(data)
+  checkmate::assert_data_table(cell_line_annotation)
+  
+  cellline <- gDRutils::get_env_identifiers("cellline")
+  add_clid <- gDRutils::get_header("add_clid")
+  
+  # Remove existing annotations if any
+  existing_cols <- intersect(unlist(add_clid), names(data))
+  if (length(existing_cols) > 0) {
+    data[, (existing_cols) := NULL]
+  }
+  
+  colnames(cell_line_annotation) <- c(cellline, unlist(add_clid))
+  data <- cell_line_annotation[data, on = cellline]
+  (data)
+}
+
+#' get_drug_annotation
+#'
+#' Get drug annotation data table
+#'
+#' @param data data.table with drug identifiers to be matched
+#' @param fname string with file name containing the annotation
+#' @param fill string indicating how unknown drugs should be filled in the DB
+#' @param annotation_package string indicating name of the package containing drug annotation
+#' @return data.table with drug annotations
+#' @keywords annotation
+#' @examples
+#' data <- data.table::data.table(Gnumber = c("drug1", "drug2", "drug3"))
+#' drug_annotation <- get_drug_annotation(data)
+#' @export
+#'
+get_drug_annotation <- function(
+    data,
     fname = "drugs.csv",
     fill = "unknown",
     annotation_package = if ("gDRinternal" %in% .packages(all.available = TRUE)) {
       "gDRinternal"
     } else {
       "gDRtestData"
-    },
-    external_source = Sys.getenv("GDR_DRUG_ANNOTATION")
+    }
 ) {
+  checkmate::assert_data_table(data)
   
-  # Assertions:
-  checkmate::assert_data_table(dt_metadata)
-  checkmate::assert_string(fill, null.ok = TRUE)
-  checkmate::assert(checkmate::check_string(external_source, null.ok = TRUE),
-                    checkmate::check_data_table(external_source,
-                                                col.names = "named"))  
-  nrows_df <- nrow(dt_metadata)
+  drug <- unlist(gDRutils::get_env_identifiers(c("drug", "drug2", "drug3"), simplify = FALSE))
+  drug_ann_cols <- unlist(gDRutils::get_env_identifiers(c("drug", "drug_name", "drug_moa"), simplify = FALSE))
   
-  drug <- unlist(gDRutils::get_env_identifiers(c(
-    "drug", "drug2", "drug3"), simplify = FALSE))
-  untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  drug_name <- unlist(gDRutils::get_env_identifiers(c(
-    "drug_name", "drug_name2", "drug_name3"), simplify = FALSE))
-  drug_moa <- unlist(gDRutils::get_env_identifiers(c(
-    "drug_moa", "drug_moa2", "drug_moa3"), simplify = FALSE))
-  drug_idx <- which(drug %in% names(dt_metadata))
-  drugsTreated <- unique(unlist(subset(dt_metadata, select = drug[drug_idx])))
   
-  if (all(c(drug[["drug"]],
-            drug_name[["drug_name"]],
-            drug_moa[["drug_moa"]]) %in% names(dt_metadata))) {
-    dt_metadata[, (unlist(intersect(c(drug_name, drug_moa), names(dt_metadata)))) := NULL]
-  }
-  drug_full_identifiers <- c(
-    drug[drug_idx], 
-    drug_name[drug_idx], 
-    drug_moa[drug_idx]
-  )
-  drug_ids <- stringr::str_extract(names(drug_full_identifiers), "[0-9]") 
-  drug_ids <- ifelse(is.na(drug_ids), 1, drug_ids)
-  drug_identifiers_list <- split(drug_full_identifiers, drug_ids)
-  names(drug_identifiers_list) <- drug[drug_idx]
-  
-  # Read local drugs annotations
-  
-  Drug_info <- if (is.character(external_source) && nchar(external_source) && file.exists(external_source)) {
-    data.table::fread(external_source)
-  } else if (data.table::is.data.table(external_source)) {
-    external_source
-  } else if (annotation_package == "gDRtestData") {
+  # Read the drug annotation data
+  drug_annotation <- if (annotation_package == "gDRinternal") {
+    eval(parse(text = paste0(annotation_package, "::get_drug_annotations")))()
+  } else {
     data.table::fread(
       system.file("annotation_data", fname, package = annotation_package), header = TRUE
     )
-  } else {
-    eval(parse(text = paste0(annotation_package,
-                             "::",
-                             "get_drug_annotations")))()
   }
-    
-    
-  Drug_info <- Drug_info[, c("gnumber", "drug_name", "drug_moa"), with = FALSE]
-  data.table::setnames(Drug_info, c("gnumber", "drug_name", "drug_moa"),
-                       c("drug", "drug_name", "drug_moa"))
-  drugsTreated <- drugsTreated[!drugsTreated %in% untreated_tag]
-  validatedDrugs <- 
-    remove_drug_batch(drugsTreated) %in% remove_drug_batch(Drug_info[["drug"]])
-  #### function should be parallelizeized
-  missingTblDrugs <- NULL
-  if (!is.null(fill) && any(!validatedDrugs)) {
-    missingTblDrugs <- data.table::data.table(
-      drug = remove_drug_batch(drugsTreated[!validatedDrugs]),
-      drug_name = drugsTreated[!validatedDrugs],
+  
+  untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  all_data_drugs <- setdiff(remove_drug_batch(unlist(data[, intersect(names(data), drug), with = FALSE])),
+                            untreated_tag)
+  drug_annotation <- drug_annotation[remove_drug_batch(drug_annotation[[drug_ann_cols[["drug"]]]]) %in%
+                                       all_data_drugs]
+  
+  # Handle missing drugs
+  missing_drugs <- setdiff(unique(all_data_drugs),
+                           remove_drug_batch(drug_annotation[[drug_ann_cols[["drug"]]]]))
+  if (length(missing_drugs) > 0) {
+    missing_tbl_drugs <- data.table::data.table(
+      drug = missing_drugs,
+      drug_name = missing_drugs,
       drug_moa = fill
     )
+    data.table::setnames(missing_tbl_drugs, drug_ann_cols)
+    drug_annotation <- rbind(drug_annotation, missing_tbl_drugs)
   }
   
-  if (nrow(Drug_info) == 0) {
-    drug_name <- intersect(drug_name, colnames(dt_metadata))
-    drug <- intersect(drug, colnames(dt_metadata))
-    dt_metadata[, (drug_name) := get(drug)]
-    return(dt_metadata)
+  (drug_annotation)
+}
+
+#' annotate_dt_with_drug
+#'
+#' Annotate drug data with the provided annotation table
+#'
+#' @param data data.table with dose-response data
+#' @param drug_annotation data.table with drug annotations
+#' @param fill string indicating how unknown drugs should be filled in the DB
+#' @return data.table with annotated drugs
+#' @keywords annotation
+#' @examples
+#' data <- data.table::data.table(
+#'   clid = c("CL1", "CL2", "CL3"),
+#'   Gnumber = c("D1", "D2", "D3")
+#' )
+#' drug_annotation <- get_drug_annotation(data)
+#' annotated_metadata <- annotate_dt_with_drug(data, drug_annotation)
+#' @export
+#'
+annotate_dt_with_drug <- function(
+    data,
+    drug_annotation,
+    fill = "unknown"
+) {
+  checkmate::assert_data_table(data)
+  checkmate::assert_data_table(drug_annotation)
+  
+  drug <- unlist(gDRutils::get_env_identifiers(c("drug", "drug2", "drug3"), simplify = FALSE))
+  untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  drug_name <- unlist(gDRutils::get_env_identifiers(c("drug_name", "drug_name2", "drug_name3"), simplify = FALSE))
+  drug_moa <- unlist(gDRutils::get_env_identifiers(c("drug_moa", "drug_moa2", "drug_moa3"), simplify = FALSE))
+  drug_idx <- which(drug %in% names(data))
+  drug_data <- unlist(data[, intersect(names(data), drug), with = FALSE])
+  drug_ann_cols <- unlist(gDRutils::get_env_identifiers(c("drug", "drug_name", "drug_moa"), simplify = FALSE))
+  
+  # Remove existing annotations if any
+  existing_cols <- intersect(c(drug_name, drug_moa), names(data))
+  if (length(existing_cols) > 0) {
+    data[, (existing_cols) := NULL]
   }
   
-  Drug_info <- rbind(Drug_info, missingTblDrugs)
+  # Extract numeric suffixes from column names
+  drug_ids <- sub(".*?(\\d+)$", "\\1", names(drug[drug_idx]))
+  drug_ids[grepl("^\\d+$", drug_ids)] <- as.numeric(drug_ids[grepl("^\\d+$", drug_ids)])
+  drug_ids[grepl("^\\D+$", drug_ids)] <- 1
   
-  Drug_info$drug <- remove_drug_batch(Drug_info$drug)
-  Drug_info <-
-    rbind(data.table::data.table(
-      drug = untreated_tag,
-      drug_name = untreated_tag,
-      drug_moa = untreated_tag
-    ),
-    Drug_info)
-  Drug_info <- Drug_info[!duplicated(Drug_info[["drug"]]), ]
-  if (any(!remove_drug_batch(drugsTreated) %in% Drug_info$drug) && 
-      !is.null(missingTblDrugs)) {
-    Drug_info <- rbind(Drug_info, stats::setNames(
-      missingTblDrugs[!(remove_drug_batch(missingTblDrugs$drug) %in% 
-                          Drug_info$drug), ],
-      names(Drug_info)
-    ))
+  drug_identifiers_list <- split(c(drug[drug_idx], drug_name[drug_idx], drug_moa[drug_idx]), drug_ids)
+  names(drug_identifiers_list) <- drug[drug_idx]
+  drug_identifiers_list <- rev(drug_identifiers_list)
+  
+  drugs_treated <- setdiff(drug_data, untreated_tag)
+  validated_drugs <- remove_drug_batch(drugs_treated) %in% remove_drug_batch(drug_annotation[[drug[["drug"]]]])
+  if (any(!validated_drugs)) {
+    missing_tbl_drugs <- data.table::data.table(
+      drug = remove_drug_batch(drugs_treated[!validated_drugs]),
+      drug_name = drugs_treated[!validated_drugs],
+      drug_moa = fill
+    )
+    data.table::setnames(missing_tbl_drugs, drug_ann_cols)
+    drug_annotation <- rbind(drug_annotation, missing_tbl_drugs)
   }
+  
+  drug_annotation[[drug[["drug"]]]] <- remove_drug_batch(drug_annotation[[drug[["drug"]]]])
+  untrt_drug_annotation <- data.table::data.table(
+    drug = untreated_tag, drug_name = untreated_tag, drug_moa = untreated_tag)
+  data.table::setnames(untrt_drug_annotation, drug_ann_cols)
+  drug_annotation <- unique(rbind(
+    untrt_drug_annotation,
+    drug_annotation
+  ))
+  
   for (drug_idf in names(drug_identifiers_list)) {
-    colnames(Drug_info) <- drug_identifiers_list[[drug_idf]]
-    dt_metadata$batch <- dt_metadata[[drug_idf]]
-    dt_metadata[[drug_idf]] <- remove_drug_batch(dt_metadata[[drug_idf]])
-    req_col <- c(drug_idf, setdiff(colnames(dt_metadata), colnames(Drug_info)))
-    dt_metadata <- Drug_info[dt_metadata[, req_col, with = FALSE],  on = drug_idf]
-    dt_metadata[[drug_idf]] <- dt_metadata$batch
-    dt_metadata$batch <- NULL
+    colnames(drug_annotation) <- drug_identifiers_list[[drug_idf]]
+    data$batch <- data[[drug_idf]]
+    data[[drug_idf]] <- remove_drug_batch(data[[drug_idf]])
+    req_col <- c(drug_idf, setdiff(names(data), names(drug_annotation)))
+    data.table::setkeyv(drug_annotation, drug_idf)
+    data <- drug_annotation[data[, req_col, with = FALSE], on = drug_idf]
+    data[[drug_idf]] <- data$batch
+    data$batch <- NULL
   }
-  stopifnot(nrows_df == nrow(dt_metadata))
-  dt_metadata
+  
+  (data)
 }
 
 #' Remove batch from Gnumber
@@ -306,13 +298,8 @@ get_drug_annotation_from_dt <- function(dt) {
                                                               "drug_name",
                                                               "drug_moa")]))
   dt_long[, "variable" := NULL]
-  data.table::setnames(dt_long,
-                       unlist(drug_cols[c("drug",
-                                          "drug_name",
-                                          "drug_moa")]),
-                       c("gnumber", "drug_name", "drug_moa"))
   unique_dt <- unique(dt_long)
-  unique_dt[!unique_dt$gnumber %in% gDRutils::get_env_identifiers("untreated_tag"), ]
+  unique_dt[!unique_dt[[drug_cols[["drug"]]]] %in% gDRutils::get_env_identifiers("untreated_tag"), ]
 }
 
 
@@ -338,14 +325,5 @@ get_cellline_annotation_from_dt <- function(dt) {
   cell_cols <- c(gDRutils::get_env_identifiers("cellline"),
                  gDRutils::get_header("add_clid"))
   cell_dt <- dt[, intersect(unlist(cell_cols), names(dt)), with = FALSE]
-  data.table::setnames(cell_dt,
-                       unlist(cell_cols),
-                       c("cell_line_identifier",
-                         "cell_line_name",
-                         "primary_tissue",
-                         "parental_identifier",
-                         "subtype",
-                         "doubling_time"),
-                       skip_absent = TRUE)
   unique(cell_dt)
 }
