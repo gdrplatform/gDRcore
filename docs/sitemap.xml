@@ -28,13 +28,13 @@
     <loc>https://gdrplatform.github.io/gDRcore/news/index.html</loc>
   </url>
   <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/add_CellLine_annotation.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/add_Drug_annotation.html</loc>
-  </url>
-  <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/add_intermediate_data.html</loc>
+  </url>
+  <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/annotate_dt_with_cell_line.html</loc>
+  </url>
+  <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/annotate_dt_with_drug.html</loc>
   </url>
   <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/calculate_GR_value.html</loc>
@@ -121,10 +121,16 @@
     <loc>https://gdrplatform.github.io/gDRcore/reference/get_assays_per_pipeline_step.html</loc>
   </url>
   <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/get_cell_line_annotation.html</loc>
+  </url>
+  <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/get_cellline_annotation_from_dt.html</loc>
   </url>
   <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/get_default_nested_identifiers.html</loc>
+  </url>
+  <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/get_drug_annotation.html</loc>
   </url>
   <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/get_drug_annotation_from_dt.html</loc>

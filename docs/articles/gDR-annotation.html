@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.14</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -102,11 +102,13 @@ files.</p>
 <p>gDR uses two sources of annotation: drug annotation and cell line
 annotation. These annotations are added to a data table before running
 the pipeline. The scripts for adding data annotation are located in
-<code>R/add_annotation.R</code>, which contains two functions:
-<code>add_CellLine_annotation</code> and
-<code>add_Drug_annotation</code>. It is recommended to run the
-<code>cleanup_metadata</code> function, which adds annotations and
-performs some data cleaning.</p>
+<code>R/add_annotation.R</code>, which contains four primary functions:
+<code>annotate_dt_with_cell_line</code> and
+<code>annotate_dt_with_drug</code> for annotating the data and functions
+<code>get_cell_line_annotation</code> and
+<code>get_drug_annotation</code> for receiving the default annotation
+for the data. It is recommended to run the <code>cleanup_metadata</code>
+function, which adds annotations and performs some data cleaning.</p>
 <div class="section level4">
 <h4 id="annotation-file-locations">Annotation File Locations<a class="anchor" aria-label="anchor" href="#annotation-file-locations"></a>
 </h4>
@@ -157,9 +159,9 @@ annotate the data.</p>
 <p>The obligatory fields for drug annotation are:</p>
 <ul>
 <li>
-<code>gnumber</code>: Represents the ID of the drug.</li>
+<code>Gnumber</code>: Represents the ID of the drug.</li>
 <li>
-<code>drug_name</code>: Represents the name of the drug.</li>
+<code>DrugName</code>: Represents the name of the drug.</li>
 <li>
 <code>drug_moa</code>: Represents the drug mechanism of action.</li>
 </ul>
@@ -170,16 +172,16 @@ annotate the data.</p>
 <p>The obligatory fields for cell line annotation are:</p>
 <ul>
 <li>
-<code>cell_line_identifier</code>: Represents the cell line ID.</li>
+<code>clid</code>: Represents the cell line ID.</li>
 <li>
-<code>cell_line_name</code>: Represents the name of the cell
+<code>CellLineName</code>: Represents the name of the cell
 line.</li>
 <li>
-<code>primary_tissue</code>: Represents the primary tissue of the
-cell line.</li>
+<code>Tissue</code>: Represents the primary tissue of the cell
+line.</li>
 <li>
-<code>doubling_time</code>: Represents the doubling time of the cell
-line in hours.</li>
+<code>ReferenceDivisionTime</code>: Represents the doubling time of
+the cell line in hours.</li>
 <li>
 <code>parental_identifier</code>: Represents the name of the
 parental cell line.</li>
@@ -201,17 +203,17 @@ annotation:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Example of creating a data.table with required fields for drug annotation</span></span>
 <span><span class="va">drug_annotation</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="op">(</span></span>
-<span>  gnumber <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"G1"</span>, <span class="st">"G2"</span>, <span class="st">"G3"</span><span class="op">)</span>,</span>
-<span>  drug_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Drug A"</span>, <span class="st">"Drug B"</span>, <span class="st">"Drug C"</span><span class="op">)</span>,</span>
+<span>  Gnumber <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"G1"</span>, <span class="st">"G2"</span>, <span class="st">"G3"</span><span class="op">)</span>,</span>
+<span>  DrugName <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Drug A"</span>, <span class="st">"Drug B"</span>, <span class="st">"Drug C"</span><span class="op">)</span>,</span>
 <span>  drug_moa <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"MOA A"</span>, <span class="st">"MOA B"</span>, <span class="st">"MOA C"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Example of creating a data.table with required fields for cell line annotation</span></span>
 <span><span class="va">cell_line_annotation</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="op">(</span></span>
-<span>  cell_line_identifier <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cell_Line_1"</span>, <span class="st">"Cell_Line_2"</span>, <span class="st">"Cell_Line_3"</span><span class="op">)</span>,</span>
-<span>  cell_line_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cell Line 1"</span>, <span class="st">"Cell Line 2"</span>, <span class="st">"Cell Line 3"</span><span class="op">)</span>,</span>
-<span>  primary_tissue <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Tissue A"</span>, <span class="st">"Tissue B"</span>, <span class="st">"Tissue C"</span><span class="op">)</span>,</span>
-<span>  doubling_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">24</span>, <span class="fl">30</span>, <span class="fl">28</span><span class="op">)</span>,</span>
+<span>  clid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cell_Line_1"</span>, <span class="st">"Cell_Line_2"</span>, <span class="st">"Cell_Line_3"</span><span class="op">)</span>,</span>
+<span>  CellLineName <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cell Line 1"</span>, <span class="st">"Cell Line 2"</span>, <span class="st">"Cell Line 3"</span><span class="op">)</span>,</span>
+<span>  Tissue <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Tissue A"</span>, <span class="st">"Tissue B"</span>, <span class="st">"Tissue C"</span><span class="op">)</span>,</span>
+<span>  ReferenceDivisionTime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">24</span>, <span class="fl">30</span>, <span class="fl">28</span><span class="op">)</span>,</span>
 <span>  parental_identifier <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Parental 1"</span>, <span class="st">"Parental 2"</span>, <span class="st">"Parental 3"</span><span class="op">)</span>,</span>
 <span>  subtype <span class="op">=</span> <span class="cn">NA</span></span>
 <span><span class="op">)</span></span></code></pre></div>
