@@ -1,3 +1,6 @@
+## gDRcore 1.3.15 - 2024-10-30
+* hot fix for annotation colnames of cell lines
+
 ## gDRcore 1.3.14 - 2024-10-24
 * split and refactor annotation functions
 
