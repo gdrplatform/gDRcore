@@ -92,6 +92,7 @@ annotate_dt_with_cell_line <- function(
 ) {
   checkmate::assert_data_table(data)
   checkmate::assert_data_table(cell_line_annotation)
+  checkmate::assert_names(names(cell_line_annotation), must.include = c(cellline, unlist(add_clid)))
   
   cellline <- gDRutils::get_env_identifiers("cellline")
   add_clid <- gDRutils::get_header("add_clid")
@@ -101,8 +102,6 @@ annotate_dt_with_cell_line <- function(
   if (length(existing_cols) > 0) {
     data[, (existing_cols) := NULL]
   }
-  
-  colnames(cell_line_annotation) <- c(cellline, unlist(add_clid))
   data <- cell_line_annotation[data, on = cellline]
   (data)
 }

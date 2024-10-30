@@ -20,6 +20,7 @@ test_that("annotate_dt_with_cell_line works correctly", {
     subtype = c("Subtype 1", "Subtype 2")
   )
   result <- annotate_dt_with_cell_line(data, cell_line_annotation, fill = "unknown")
+  expect_true(all(c(24, 48) %in% result$ReferenceDivisionTime))
   expect_true("data.table" %in% class(result))
   expect_equal(ncol(result), ncol(data) + ncol(cell_line_annotation) - 1)
   expect_equal(result$CellLineName, c("Cell Line 1", "Cell Line 2", NA))
