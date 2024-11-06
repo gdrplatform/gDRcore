@@ -1,3 +1,6 @@
+## gDRcore 1.5.1 - 2024-11-05
+* synchronize Bioconductor and GitHub versioning
+
 ## gDRcore 1.3.15 - 2024-10-30
 * hot fix for annotation colnames of cell lines
 
