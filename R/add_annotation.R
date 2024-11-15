@@ -294,9 +294,9 @@ get_drug_annotation_from_dt <- function(dt) {
                                                                   unlist(drug_cols[c("drug",
                                                                                      "drug_name",
                                                                                      "drug_moa")])))),
-                              value.name = unlist(drug_cols[c("drug",
-                                                              "drug_name",
-                                                              "drug_moa")]))
+                              value.name = as.character(unlist(drug_cols[c("drug",
+                                                                           "drug_name",
+                                                                           "drug_moa")])))
   dt_long[, "variable" := NULL]
   unique_dt <- unique(dt_long)
   unique_dt[!unique_dt[[drug_cols[["drug"]]]] %in% gDRutils::get_env_identifiers("untreated_tag"), ]

@@ -1,3 +1,6 @@
+## gDRcore 1.5.2 - 2024-11-15
+* fix melt in annotation function to fix Bioc error
+
 ## gDRcore 1.5.1 - 2024-11-05
 * synchronize Bioconductor and GitHub versioning
 
