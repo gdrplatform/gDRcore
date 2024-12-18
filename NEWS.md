@@ -1,3 +1,6 @@
+## gDRcore 1.5.3 - 2024-12-18
+* fix melt error after changed `intersect` behaviour
+
 ## gDRcore 1.5.2 - 2024-11-15
 * fix melt in annotation function to fix Bioc error
 
