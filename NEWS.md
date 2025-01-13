@@ -1,3 +1,6 @@
+## gDRcore 1.5.4 - 2025-01-13
+* switch to `gDRutils::remove_drug_batch` function
+
 ## gDRcore 1.5.3 - 2024-12-18
 * fix melt error after changed `intersect` behaviour
 
