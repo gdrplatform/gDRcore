@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.4</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -176,9 +176,7 @@ bunch of tools allowing to prepare input data for
 raw input: Template, Manifest, and RawData. More info about these three
 types of data you could find in our general documentation.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/get_test_data.html" class="external-link">get_test_data</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error in get(paste0(generic, ".", class), envir = get_method_env()) : </span></span>
-<span><span class="co">#&gt;   object 'type_sum.accel' not found</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/get_test_data.html" class="external-link">get_test_data</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Provided dataset needs to be merged into the one
 <code>data.table</code> object to be able to run gDR pipeline. This
 process can be done using two functions –
@@ -267,15 +265,15 @@ vignette to familiarize with these functionalities.</p>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] gDRcore_1.5.3     gDRtestData_1.5.1 BiocStyle_2.30.0 </span></span>
+<span><span class="co">#&gt; [1] gDRcore_1.5.4     gDRtestData_1.5.1 BiocStyle_2.30.0 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] bitops_1.0-9                fastmap_1.1.1              </span></span>
 <span><span class="co">#&gt;  [3] RCurl_1.98-1.16             BumpyMatrix_1.10.0         </span></span>
-<span><span class="co">#&gt;  [5] TH.data_1.1-2               digest_0.6.34              </span></span>
-<span><span class="co">#&gt;  [7] lifecycle_1.0.4             gDRutils_1.5.5             </span></span>
+<span><span class="co">#&gt;  [5] TH.data_1.1-3               digest_0.6.34              </span></span>
+<span><span class="co">#&gt;  [7] lifecycle_1.0.4             gDRutils_1.5.6             </span></span>
 <span><span class="co">#&gt;  [9] survival_3.5-5              magrittr_2.0.3             </span></span>
-<span><span class="co">#&gt; [11] compiler_4.3.0              rlang_1.1.4                </span></span>
+<span><span class="co">#&gt; [11] compiler_4.3.0              rlang_1.1.5                </span></span>
 <span><span class="co">#&gt; [13] sass_0.4.8                  drc_3.0-1                  </span></span>
 <span><span class="co">#&gt; [15] tools_4.3.0                 plotrix_3.8-4              </span></span>
 <span><span class="co">#&gt; [17] yaml_2.3.8                  data.table_1.16.4          </span></span>
@@ -288,7 +286,7 @@ vignette to familiarize with these functionalities.</p>
 <span><span class="co">#&gt; [31] colorspace_2.1-1            scales_1.3.0               </span></span>
 <span><span class="co">#&gt; [33] MASS_7.3-58.4               gtools_3.9.5               </span></span>
 <span><span class="co">#&gt; [35] MultiAssayExperiment_1.28.0 SummarizedExperiment_1.32.0</span></span>
-<span><span class="co">#&gt; [37] cli_3.6.3                   mvtnorm_1.3-2              </span></span>
+<span><span class="co">#&gt; [37] cli_3.6.3                   mvtnorm_1.3-3              </span></span>
 <span><span class="co">#&gt; [39] rmarkdown_2.25              crayon_1.5.3               </span></span>
 <span><span class="co">#&gt; [41] ragg_1.2.7                  readxl_1.4.3               </span></span>
 <span><span class="co">#&gt; [43] cachem_1.0.8                stringr_1.5.1              </span></span>
@@ -296,7 +294,7 @@ vignette to familiarize with these functionalities.</p>
 <span><span class="co">#&gt; [47] gDRimport_1.5.4             assertthat_0.2.1           </span></span>
 <span><span class="co">#&gt; [49] parallel_4.3.0              formatR_1.14               </span></span>
 <span><span class="co">#&gt; [51] BiocManager_1.30.22         cellranger_1.1.0           </span></span>
-<span><span class="co">#&gt; [53] XVector_0.42.0              matrixStats_1.4.1          </span></span>
+<span><span class="co">#&gt; [53] XVector_0.42.0              matrixStats_1.5.0          </span></span>
 <span><span class="co">#&gt; [55] vctrs_0.6.5                 Matrix_1.6-5               </span></span>
 <span><span class="co">#&gt; [57] sandwich_3.1-1              jsonlite_1.8.9             </span></span>
 <span><span class="co">#&gt; [59] carData_3.0-5               bookdown_0.37              </span></span>
@@ -308,7 +306,7 @@ vignette to familiarize with these functionalities.</p>
 <span><span class="co">#&gt; [71] codetools_0.2-19            stringi_1.8.4              </span></span>
 <span><span class="co">#&gt; [73] futile.logger_1.4.3         GenomeInfoDb_1.38.8        </span></span>
 <span><span class="co">#&gt; [75] GenomicRanges_1.54.1        munsell_0.5.1              </span></span>
-<span><span class="co">#&gt; [77] tibble_3.2.1                pillar_1.10.0              </span></span>
+<span><span class="co">#&gt; [77] tibble_3.2.1                pillar_1.10.1              </span></span>
 <span><span class="co">#&gt; [79] htmltools_0.5.7             brio_1.1.4                 </span></span>
 <span><span class="co">#&gt; [81] GenomeInfoDbData_1.2.11     R6_2.5.1                   </span></span>
 <span><span class="co">#&gt; [83] textshaping_0.3.7           evaluate_0.23              </span></span>
