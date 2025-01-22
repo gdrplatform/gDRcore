@@ -66,13 +66,6 @@ test_that("annotate_dt_with_drug works correctly", {
   expect_equal(result$DrugName_2, c("Drug 4", "Drug 5", "D6"))
 })
 
-test_that("remove_drug_batch works", {
-  dt <- data.table::data.table(Gnumber = "DRUG.123")
-  gnumber_without_batch <- remove_drug_batch(dt$Gnumber)
-  expect_equal(gnumber_without_batch, "DRUG")
-})
-
-
 test_that("get_drug_annotation_from_dt works as expected", {
   dt_example <- data.table::data.table(Gnumber = "drug_id",
                                        DrugName = "DrugName",

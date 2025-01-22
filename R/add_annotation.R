@@ -148,14 +148,14 @@ get_drug_annotation <- function(
   }
   
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  all_data_drugs <- setdiff(remove_drug_batch(unlist(data[, intersect(names(data), drug), with = FALSE])),
+  all_data_drugs <- setdiff(gDRutils::remove_drug_batch(unlist(data[, intersect(names(data), drug), with = FALSE])),
                             untreated_tag)
-  drug_annotation <- drug_annotation[remove_drug_batch(drug_annotation[[drug_ann_cols[["drug"]]]]) %in%
+  drug_annotation <- drug_annotation[gDRutils::remove_drug_batch(drug_annotation[[drug_ann_cols[["drug"]]]]) %in%
                                        all_data_drugs]
   
   # Handle missing drugs
   missing_drugs <- setdiff(unique(all_data_drugs),
-                           remove_drug_batch(drug_annotation[[drug_ann_cols[["drug"]]]]))
+                           gDRutils::remove_drug_batch(drug_annotation[[drug_ann_cols[["drug"]]]]))
   if (length(missing_drugs) > 0) {
     missing_tbl_drugs <- data.table::data.table(
       drug = missing_drugs,
@@ -219,10 +219,12 @@ annotate_dt_with_drug <- function(
   drug_identifiers_list <- rev(drug_identifiers_list)
   
   drugs_treated <- setdiff(drug_data, untreated_tag)
-  validated_drugs <- remove_drug_batch(drugs_treated) %in% remove_drug_batch(drug_annotation[[drug[["drug"]]]])
+  drugs_treated_wo_batch <- gDRutils::remove_drug_batch(drugs_treated) 
+  drug_annots_wo_batch <- gDRutils::remove_drug_batch(drug_annotation[[drug[["drug"]]]])
+  validated_drugs <- drugs_treated_wo_batch %in% drug_annots_wo_batch
   if (any(!validated_drugs)) {
     missing_tbl_drugs <- data.table::data.table(
-      drug = remove_drug_batch(drugs_treated[!validated_drugs]),
+      drug = gDRutils::remove_drug_batch(drugs_treated[!validated_drugs]),
       drug_name = drugs_treated[!validated_drugs],
       drug_moa = fill
     )
@@ -230,7 +232,7 @@ annotate_dt_with_drug <- function(
     drug_annotation <- rbind(drug_annotation, missing_tbl_drugs)
   }
   
-  drug_annotation[[drug[["drug"]]]] <- remove_drug_batch(drug_annotation[[drug[["drug"]]]])
+  drug_annotation[[drug[["drug"]]]] <- gDRutils::remove_drug_batch(drug_annotation[[drug[["drug"]]]])
   untrt_drug_annotation <- data.table::data.table(
     drug = untreated_tag, drug_name = untreated_tag, drug_moa = untreated_tag)
   data.table::setnames(untrt_drug_annotation, drug_ann_cols)
@@ -242,7 +244,7 @@ annotate_dt_with_drug <- function(
   for (drug_idf in names(drug_identifiers_list)) {
     colnames(drug_annotation) <- drug_identifiers_list[[drug_idf]]
     data$batch <- data[[drug_idf]]
-    data[[drug_idf]] <- remove_drug_batch(data[[drug_idf]])
+    data[[drug_idf]] <- gDRutils::remove_drug_batch(data[[drug_idf]])
     req_col <- c(drug_idf, setdiff(names(data), names(drug_annotation)))
     data.table::setkeyv(drug_annotation, drug_idf)
     data <- drug_annotation[data[, req_col, with = FALSE], on = drug_idf]
@@ -251,20 +253,6 @@ annotate_dt_with_drug <- function(
   }
   
   (data)
-}
-
-#' Remove batch from Gnumber
-#' 
-#' @param drug drug name
-#'
-#' @examples
-#' remove_drug_batch("DRUG.123")
-#'
-#' @keywords annotation
-#' @return Gnumber without a batch
-#' @export
-remove_drug_batch <- function(drug) {
-  gsub("\\.[0-9]+.*", "", drug)
 }
 
 
