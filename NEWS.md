@@ -1,13 +1,13 @@
-## gDRcore 1.5.4 - 2025-01-13
+## gDRcore 1.4.4 - 2025-01-13
 * switch to `gDRutils::remove_drug_batch` function
 
-## gDRcore 1.5.3 - 2024-12-18
+## gDRcore 1.4.3 - 2024-12-18
 * fix melt error after changed `intersect` behaviour
 
-## gDRcore 1.5.2 - 2024-11-15
+## gDRcore 1.4.2 - 2024-11-15
 * fix melt in annotation function to fix Bioc error
 
-## gDRcore 1.5.1 - 2024-11-05
+## gDRcore 1.4.1 - 2024-11-05
 * synchronize Bioconductor and GitHub versioning
 
 ## gDRcore 1.3.15 - 2024-10-30
