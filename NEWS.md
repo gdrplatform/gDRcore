@@ -1,3 +1,6 @@
+## gDRcore 1.5.5 - 2025-03-05
+* update assay names for combo data in `get_assays_per_pipeline_step` function
+
 ## gDRcore 1.5.4 - 2025-01-13
 * switch to `gDRutils::remove_drug_batch` function
 
