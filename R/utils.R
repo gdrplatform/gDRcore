@@ -507,15 +507,11 @@ get_assays_per_pipeline_step <-
       "Metrics"
     } else {
       c(
-        "BlissExcess",
-        "BlissScore",
-        "CIScore_50",
-        "CIScore_80",
-        "HSAExcess",
-        "HSAScore",
+        "excess",
+        "all_iso_points",
         "isobolograms",
-        "Metrics",
-        "SmoothMatrix"
+        "scores",
+        "Metrics"
       )
     }
     as_map <- list(
