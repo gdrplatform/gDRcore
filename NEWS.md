@@ -1,3 +1,6 @@
+## gDRcore 1.5.6 - 2025-03-10
+* move `map_conc_to_standardized_conc` to gDRutils package
+
 ## gDRcore 1.5.5 - 2025-03-05
 * update assay names for combo data in `get_assays_per_pipeline_step` function
 

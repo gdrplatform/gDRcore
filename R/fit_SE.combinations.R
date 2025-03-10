@@ -97,7 +97,7 @@ fit_SE.combinations <- function(se,
            scores = scores))
     }
     
-    conc_map <- map_conc_to_standardized_conc(avg_combo[[id]], avg_combo[[id2]])
+    conc_map <- gDRutils::map_conc_to_standardized_conc(avg_combo[[id]], avg_combo[[id2]])
 
     avg_combo[[id]] <- replace_conc_with_standardized_conc(
       avg_combo[[id]], 

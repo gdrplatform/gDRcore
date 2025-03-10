@@ -29,7 +29,7 @@ Imports:
     BiocParallel,
     checkmate,
     futile.logger,
-    gDRutils (>= 1.5.6),
+    gDRutils (>= 1.5.13),
     MultiAssayExperiment,
     purrr,
     stringr,    
