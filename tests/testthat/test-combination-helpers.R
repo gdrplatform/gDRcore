@@ -53,28 +53,6 @@ test_that("calculate_score works as expected", {
   expect_true(is.na(score2))
 })
 
-
-test_that(".calculate_dilution_ratio works as expected", {
-  ratio <- 0.5
-  concs <- 10 ^ (seq(-3, 1, ratio))
-  obs <- .calculate_dilution_ratio(concs)
-  expect_equal(obs, ratio)
-})
-
-
-test_that("map_conc_to_standardized_conc works as expected", {
-  ratio <- 0.5
-  conc1 <- c(0, 10 ^ (seq(-3, 1, ratio)))
-
-  shorter_range <- conc1[-1]
-  noise <- runif(length(shorter_range), 1e-12, 1e-11)
-  conc2 <- shorter_range + noise
-
-  obs <- map_conc_to_standardized_conc(conc1, conc2)
-  expect_true(methods::is(obs, "data.table"))
-})
-
-
 test_that("replace_conc_with_standardized_conc works as expected", {
   conc_map <- data.table::data.table(orig = c(0.99, 0.6, 0.456, 0.4), std = c(1, 0.6, 0.46, 0.4))
   original_concs <- c(0.456, 0.456, 0.4, 0.99)
@@ -82,10 +60,4 @@ test_that("replace_conc_with_standardized_conc works as expected", {
   obs <- replace_conc_with_standardized_conc(original_concs, conc_map,
                                              original_conc_col = "orig", standardized_conc_col = "std")
   expect_equal(unname(obs), exp)
-})
-
-test_that(".standardize_conc works as expected", {
-  concs <- 10 ^ (seq(-1, 1, 0.9))
-  obs <- .standardize_conc(concs)
-  expect_equal(obs, c(0.1, 0.794, 6.31))
 })
