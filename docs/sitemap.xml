@@ -73,9 +73,6 @@
     <loc>https://gdrplatform.github.io/gDRcore/reference/dot-map_references.html</loc>
   </url>
   <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/dot-standardize_conc.html</loc>
-  </url>
-  <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.html</loc>
   </url>
   <url>
@@ -158,9 +155,6 @@
   </url>
   <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/is_preceding_step.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/map_conc_to_standardized_conc.html</loc>
   </url>
   <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/map_df.html</loc>
