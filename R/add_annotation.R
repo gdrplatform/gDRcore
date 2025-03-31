@@ -271,7 +271,7 @@ annotate_dt_with_drug <- function(
 #' get_drug_annotation_from_dt(dt)
 get_drug_annotation_from_dt <- function(dt) {
   checkmate::assert_data_table(dt)
-
+  
   identifiers <- gDRutils::get_env_identifiers()
   drug_ids <- identifiers[grep("drug", names(identifiers))]
   drug_cols <- Filter(function(el) el %in% names(dt), drug_ids)
@@ -289,6 +289,14 @@ get_drug_annotation_from_dt <- function(dt) {
                                                               "drug_moa")]))
   dt_long[, "variable" := NULL]
   unique_dt <- unique(dt_long)
+  
+  missing_cols <- setdiff(unlist(drug_ids[c("drug", "drug_name", "drug_moa")]), names(unique_dt))
+  if (length(missing_cols) > 0) {
+    for (col in missing_cols) {
+      unique_dt[, (col) := "unknown"]
+    }
+  }
+  
   unique_dt[!unique_dt[[drug_cols[["drug"]]]] %in% gDRutils::get_env_identifiers("untreated_tag"), ]
 }
 
@@ -312,8 +320,18 @@ get_drug_annotation_from_dt <- function(dt) {
 #' get_cellline_annotation_from_dt(dt)
 get_cellline_annotation_from_dt <- function(dt) {
   checkmate::assert_data_table(dt)
+  
   cell_cols <- c(gDRutils::get_env_identifiers("cellline"),
                  gDRutils::get_header("add_clid"))
+  
   cell_dt <- dt[, intersect(unlist(cell_cols), names(dt)), with = FALSE]
+  
+  missing_cols <- setdiff(unlist(cell_cols), names(cell_dt))
+  if (length(missing_cols) > 0) {
+    for (col in missing_cols) {
+      cell_dt[, (col) := "unknown"]
+    }
+  }
+  
   unique(cell_dt)
 }
