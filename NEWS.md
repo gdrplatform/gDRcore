@@ -1,3 +1,6 @@
+## gDRcore 1.5.7 - 2025-03-31
+* extend the logic of functions for getting annotation from dt to fill missing cols with unknown
+
 ## gDRcore 1.5.6 - 2025-03-10
 * move `map_conc_to_standardized_conc` to gDRutils package
 

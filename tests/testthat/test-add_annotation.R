@@ -74,6 +74,9 @@ test_that("get_drug_annotation_from_dt works as expected", {
   annotation <- get_drug_annotation_from_dt(dt_example)
   testthat::expect_true(data.table::is.data.table(annotation))
   testthat::expect_equal(dim(annotation), c(1, 3))
+  dt_example$drug_moa <- NULL
+  annotation2 <- get_drug_annotation_from_dt(dt_example)
+  expect_equal(annotation2$drug_moa, "unknown")
 })
 
 test_that("get_cellline_annotation_from_dt works as expected", {
@@ -88,5 +91,8 @@ test_that("get_cellline_annotation_from_dt works as expected", {
   annotation <- get_cellline_annotation_from_dt(dt_example)
   testthat::expect_true(data.table::is.data.table(annotation))
   testthat::expect_equal(dim(annotation), c(5, 6))
+  dt_example$subtype <- NULL
+  annotation2 <- get_cellline_annotation_from_dt(dt_example)
+  expect_true(all(annotation2$subtype == "unknown"))
 })
 
