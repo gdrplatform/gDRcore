@@ -29,7 +29,7 @@ Imports:
     BiocParallel,
     checkmate,
     futile.logger,
-    gDRutils (>= 1.5.13),
+    gDRutils (>= 1.7.1),
     MultiAssayExperiment,
     purrr,
     stringr,    
@@ -38,9 +38,9 @@ Imports:
     data.table
 Suggests:
     BiocStyle,
-    gDRstyle (>= 1.1.5),
-    gDRimport (>= 1.1.9),
-    gDRtestData (>= 1.1.10),
+    gDRstyle (>= 1.7.1),
+    gDRimport (>= 1.7.1),
+    gDRtestData (>= 1.7.1),
     IRanges,
     knitr,
     pkgbuild,
