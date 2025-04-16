@@ -1,3 +1,6 @@
+## gDRcore 1.7.1 - 2025-04-16
+* synchronize Bioconductor and GitHub versioning
+
 ## gDRcore 1.5.7 - 2025-03-31
 * extend the logic of functions for getting annotation from dt to fill missing cols with unknown
 
