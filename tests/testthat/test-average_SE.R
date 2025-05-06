@@ -3,14 +3,12 @@ test_that("average_SE works as expected", {
   d <- rep(seq(0.1, 0.9, 0.1), each = 4)
   v <- rep(seq(0.1, 0.4, 0.1), 9)
   df <- S4Vectors::DataFrame(Concentration = d,
-                             masked = rep(c(TRUE, TRUE, TRUE, FALSE), 9),
                              normalization_type = rep(c("GR", "RV"),
                                                       length(v) * 2),
                              x = rep(v, 2))
   normalized <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = df)
 
-  keys <- list(Trt = "Concentration",
-               "masked_tag" = "masked")
+  keys <- list(Trt = "Concentration")
   assays <- list("Normalized" = normalized)
   se <- SummarizedExperiment::SummarizedExperiment(assays = assays)
   se <- gDRutils::set_SE_keys(se, keys)
@@ -21,7 +19,6 @@ test_that("average_SE works as expected", {
     average_SE(
       se,
       data_type = "single-agent",
-      override_masked = FALSE,
       normalized_assay = "Normalized",
       averaged_assay = "Averaged"
     )
@@ -35,7 +32,6 @@ test_that("average_SE works as expected", {
     average_SE(
       se,
       "single-agent",
-      override_masked = TRUE,
       normalized_assay = "Normalized",
       averaged_assay = "Averaged"
     )
