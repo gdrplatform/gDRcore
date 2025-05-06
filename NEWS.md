@@ -1,3 +1,6 @@
+## gDRcore 1.7.2 - 2025-05-06
+* remove support for `masked` values
+
 ## gDRcore 1.7.1 - 2025-04-16
 * synchronize Bioconductor and GitHub versioning
 
