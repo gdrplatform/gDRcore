@@ -66,7 +66,6 @@ normalize_SE <- function(se,
   
   # Keys
   nested_keys <- c(nested_identifiers, nested_confounders)
-  masked_key <- gDRutils::get_SE_identifiers(se, "masked_tag", simplify = TRUE)
   trt_keys <- gDRutils::get_SE_keys(se, key_type = "Trt")
   
   cdata <- SummarizedExperiment::colData(se)
@@ -200,7 +199,7 @@ normalize_SE <- function(se,
     
     # Carry over present treated keys.
     keep <- intersect(
-      c(nested_identifiers, trt_keys, masked_key), colnames(all_readouts_df)
+      c(nested_identifiers, trt_keys), colnames(all_readouts_df)
     )
     normalized <- cbind(all_readouts_df[, keep, with = FALSE], normalized) 
     normalized$row_id <- i
@@ -239,7 +238,7 @@ normalize_SE <- function(se,
 aggregate_ref <- function(ref_df, control_mean_fxn) {
   
   checkmate::assert_data_table(ref_df)
-  data_columns <- setdiff(colnames(ref_df), c("row", "column", "masked", "isDay0"))
+  data_columns <- setdiff(colnames(ref_df), c("row", "column", "isDay0"))
   corr_readout <- "CorrectedReadout"
   ref_cols <- ref_df[, data_columns, with = FALSE]
   group_cols <- setdiff(names(ref_cols), corr_readout)

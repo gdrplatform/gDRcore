@@ -30,9 +30,6 @@
 #' \code{measured} or \code{metric} which define a unique data point.
 #' @param override_untrt_controls named list containing defining factors in 
 #' the treatments. Defaults to \code{NULL}.
-#' @param override_masked boolean indicating whether or not to override 
-#' the masked wells in the averaging and include all wells. 
-#' Defaults to \code{FALSE}.
 #' @param ndigit_rounding integer indicating number of digits to round to 
 #' in calculations. Defaults to \code{4}.
 #' @param n_point_cutoff integer of how many points should be considered the 
@@ -191,7 +188,6 @@ runDrugResponseProcessingPipeline <- function(x,
                                                   "barcode"
                                                 ),
                                               override_untrt_controls = NULL,
-                                              override_masked = FALSE,
                                               ndigit_rounding = 4,
                                               n_point_cutoff = 4,
                                               control_assay = "Controls",
@@ -218,7 +214,6 @@ runDrugResponseProcessingPipeline <- function(x,
   checkmate::assert_multi_class(nested_identifiers_l, c("list"), null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
-  checkmate::assert_flag(override_masked)
   checkmate::assert_numeric(ndigit_rounding)
   checkmate::assert_number(n_point_cutoff)
   checkmate::assert_string(control_assay)
@@ -334,7 +329,6 @@ runDrugResponseProcessingPipeline <- function(x,
           se = se$result, 
           data_type = data_type,
           series_identifiers = nested_identifiers,
-          override_masked = override_masked, 
           normalized_assay = normalized_assay, 
           averaged_assay = averaged_assay
         ), 

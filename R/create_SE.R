@@ -52,8 +52,9 @@ create_SE <- function(df_,
   identifiers <- gDRutils::get_env_identifiers()
   Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
 
-  if (!(any(identifiers$masked_tag == colnames(df_)))) {
-    df_[, identifiers$masked_tag] <- FALSE
+  if (identifiers$masked_tag %chin% colnames(df_)) {
+    df_ <- df_[!get(identifiers$masked_tag)]
+    df_[, (identifiers$masked_tag) := NULL]
   }
 
   # Remove background value from readout (at least 1e-10 to avoid artefactual 
