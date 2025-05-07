@@ -23,7 +23,7 @@ test_that("average_SE works as expected", {
       averaged_assay = "Averaged"
     )
   avg1 <- SummarizedExperiment::assays(se1)[["Averaged"]][1, 1][[1]]
-  expect_true(all(avg1$Concentration == seq(0.1, 0.9, 0.1)))
+  expect_true(all(avg1$Concentration == rep(seq(0.1, 0.9, 0.1), each = 2)))
   expect_true(all(avg1$GRvalue == 0.4))
   expect_true(all(avg1$RelativeViability == 0.4))
 

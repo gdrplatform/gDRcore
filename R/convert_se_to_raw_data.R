@@ -95,10 +95,12 @@ convert_se_to_raw_data <- function(se) {
   ctrl[, c("control_type", "isDay0") := NULL]
   ctrl[, c(eval(conc_cols), "BackgroundValue") := 0]
   ctrl[, eval(drug_cols) := untreated_tag]
-  ctrl[, eval(masked_tag) := FALSE]
-  
   trt[get(conc_cols1) == 0, (drug_cols1) := untreated_tag]
   
+  
+  if (masked_tag %in% names(trt)) {
+    ctrl[, eval(masked_tag) := FALSE]
+  }
   
   if (length(conc_cols2) > 0 && length(drug_cols2) > 0) {
     trt[get(conc_cols2) == 0, (drug_cols2) := untreated_tag]
