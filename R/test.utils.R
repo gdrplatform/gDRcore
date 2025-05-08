@@ -34,10 +34,19 @@ test_synthetic_data <- function(original,
     )
   }
   
+  masked_tag <- gDRutils::get_env_identifiers("masked_tag")
+  
   purrr::walk(assays, function(x) {
               dt_original <- gDRutils::convert_mae_assay_to_dt(original, x)
-              dt_reprocessed <- gDRutils::convert_mae_assay_to_dt(data, x)
+              if (masked_tag %in% names(dt_original)) {
+                dt_original[, (masked_tag) := NULL]
+              }
               
+              dt_reprocessed <- gDRutils::convert_mae_assay_to_dt(data, x)
+              if (masked_tag %in% names(dt_reprocessed)) {
+                dt_reprocessed[, (masked_tag) := NULL]
+              }
+
               data.table::setcolorder(dt_original, names(dt_reprocessed))
               data.table::setorderv(dt_original, names(dt_original))
               data.table::setorderv(dt_reprocessed, names(dt_reprocessed))

@@ -15,7 +15,6 @@ average_SE(
   se,
   data_type,
   series_identifiers = NULL,
-  override_masked = FALSE,
   normalized_assay = "Normalized",
   averaged_assay = "Averaged"
 )
@@ -82,7 +81,6 @@ runDrugResponseProcessingPipeline(
   nested_identifiers_l = NULL,
   nested_confounders = gDRutils::get_env_identifiers("barcode"),
   override_untrt_controls = NULL,
-  override_masked = FALSE,
   ndigit_rounding = 4,
   n_point_cutoff = 4,
   control_assay = "Controls",
@@ -104,10 +102,6 @@ runDrugResponseProcessingPipeline(
 
 \item{series_identifiers}{character vector of identifiers in
 \code{measured} or \code{metric} which define a unique data point.}
-
-\item{override_masked}{boolean indicating whether or not to override
-the masked wells in the averaging and include all wells.
-Defaults to \code{FALSE}.}
 
 \item{normalized_assay}{string of the assay name containing the
 normalized data. Defaults to \code{"Normalized"}.}
@@ -236,13 +230,12 @@ d <- rep(seq(0.1, 0.9, 0.1), each = 4)
 v <- rep(seq(0.1, 0.4, 0.1), 9)
 df <- S4Vectors::DataFrame(
   Concentration = d,
-  masked = rep(c(TRUE, TRUE, TRUE, FALSE), 9),
   normalization_type = rep(c("GR", "RV"), length(v) * 2),
   x = rep(v, 2)
 )
 normalized <- BumpyMatrix::splitAsBumpyMatrix(row = 1, column = 1, x = df)
 
-keys <- list(Trt = "Concentration", "masked_tag" = "masked")
+keys <- list(Trt = "Concentration")
 assays <- list("Normalized" = normalized)
 se <- SummarizedExperiment::SummarizedExperiment(assays = assays)
 se <- gDRutils::set_SE_keys(se, keys)
@@ -250,7 +243,6 @@ se <- gDRutils::set_SE_identifiers(se, gDRutils::get_env_identifiers())
 se1 <- average_SE(
   se,
   data_type = "single-agent",
-  override_masked = FALSE,
   normalized_assay = "Normalized",
   averaged_assay = "Averaged"
 )

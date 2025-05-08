@@ -19,8 +19,7 @@ test_that("normalize_SE works as expected", {
   
   trt_df <- S4Vectors::DataFrame(CorrectedReadout = rep(seq(1, 3, 1), 2),
                                  Concentration = conc,
-                                 Barcode = rep(c(1, 2), each = 3),
-                                 masked = rep(FALSE, 6))
+                                 Barcode = rep(c(1, 2), each = 3))
 
   coldata <- S4Vectors::DataFrame(CellLineName = "Mickey Mouse",
                                   ReferenceDivisionTime = 1)
@@ -37,7 +36,6 @@ test_that("normalize_SE works as expected", {
   metadata <- list(identifiers = list("cellline_name" = "CellLineName", 
                                       "cellline_ref_div_time" = "ReferenceDivisionTime", 
                                       "duration" = "Duration", 
-                                      "masked_tag" = "masked",
                                       "barcode" = "Barcode",
                                       "concentration" = "Concentration",
                                       "concentration2" = "Concentration2"),
@@ -66,12 +64,12 @@ test_that("normalize_SE works as expected", {
   expect_equal(normalized, normalized2)
   
   expect_true(methods::is(normalized, "DataFrame"))
-  expect_equal(dim(normalized), c(12, 4))
-  expect_true(all(colnames(normalized) %in% c("Concentration", "masked", "normalization_type", "x")))
+  expect_equal(dim(normalized), c(12, 3))
+  expect_true(all(colnames(normalized) %in% c("Concentration", "normalization_type", "x")))
   expect_equal(unique(normalized$Concentration), unique(conc))
   
   se2 <- normalize_SE(se, "single-agent", nested_confounders = 
-                        c(gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE), "masked"))
+                        c(gDRutils::get_SE_identifiers(se, "barcode", simplify = TRUE)))
   expect_s4_class(se2, "SummarizedExperiment")
   
   
@@ -84,7 +82,7 @@ test_that("normalize_SE works as expected", {
                                                    rowData = rowdata,
                                                    metadata = metadata)
   
-  se3 <- normalize_SE(se3, "single-agent", nested_confounders = NULL, "masked")
+  se3 <- normalize_SE(se3, "single-agent", nested_confounders = NULL)
   expect_s4_class(se3, "SummarizedExperiment")
 })
 
@@ -98,7 +96,6 @@ test_that("merge_trt_with_ref and aggregate_ref works as expected with Day0data"
                                    Barcode = "230815_3",
                                    ReadoutValue = 601116,
                                    BackgroundValue = 0,
-                                   masked = FALSE,
                                    CorrectedReadout = 601116)
   agg_ref <- aggregate_ref(ref_df, mean)
   merged_trt_ref <- merge_trt_with_ref(ref_df, trt_df, "Barcode", mean)
