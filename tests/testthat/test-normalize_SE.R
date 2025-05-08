@@ -64,7 +64,7 @@ test_that("normalize_SE works as expected", {
   expect_equal(normalized, normalized2)
   
   expect_true(methods::is(normalized, "DataFrame"))
-  expect_equal(dim(normalized), c(12, 4))
+  expect_equal(dim(normalized), c(12, 3))
   expect_true(all(colnames(normalized) %in% c("Concentration", "normalization_type", "x")))
   expect_equal(unique(normalized$Concentration), unique(conc))
   
