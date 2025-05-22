@@ -21,7 +21,7 @@ Annotate MultiAssayExperiment object with drug annotations
 }
 \examples{
 mae <- MultiAssayExperiment::MultiAssayExperiment(
-  experiments = list(SummarizedExperiment::SummarizedExperiment(
+  experiments = list(exp1 = SummarizedExperiment::SummarizedExperiment(
     rowData = data.table::data.table(Gnumber = c("D1", "D2", "D3"))
   ))
 )

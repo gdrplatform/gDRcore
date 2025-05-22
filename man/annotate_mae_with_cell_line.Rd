@@ -21,7 +21,7 @@ Annotate MultiAssayExperiment object with cell line annotations
 }
 \examples{
 mae <- MultiAssayExperiment::MultiAssayExperiment(
-  experiments = list(SummarizedExperiment::SummarizedExperiment(
+  experiments = list(exp1 = SummarizedExperiment::SummarizedExperiment(
     rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
   ))
 )

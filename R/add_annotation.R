@@ -380,7 +380,7 @@ annotate_se_with_drug <- function(
 #' @keywords annotation
 #' @examples
 #' mae <- MultiAssayExperiment::MultiAssayExperiment(
-#'   experiments = list(SummarizedExperiment::SummarizedExperiment(
+#'   experiments = list(exp1 = SummarizedExperiment::SummarizedExperiment(
 #'     rowData = data.table::data.table(Gnumber = c("D1", "D2", "D3"))
 #'   ))
 #' )
@@ -449,7 +449,7 @@ annotate_se_with_cell_line <- function(
 #' @keywords annotation
 #' @examples
 #' mae <- MultiAssayExperiment::MultiAssayExperiment(
-#'   experiments = list(SummarizedExperiment::SummarizedExperiment(
+#'   experiments = list(exp1 = SummarizedExperiment::SummarizedExperiment(
 #'     rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
 #'   ))
 #' )
