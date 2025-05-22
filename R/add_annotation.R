@@ -335,3 +335,132 @@ get_cellline_annotation_from_dt <- function(dt) {
   
   unique(cell_dt)
 }
+
+
+#' annotate_se_with_drug
+#'
+#' Annotate SummarizedExperiment object with drug annotations
+#'
+#' @param se SummarizedExperiment object containing dose-response data
+#' @param drug_annotation data.table with drug annotations
+#' @param fill string indicating how unknown drugs should be filled in the DB
+#' @return SummarizedExperiment object with annotated drugs
+#' @keywords annotation
+#' @examples
+#' se <- SummarizedExperiment::SummarizedExperiment(
+#'   rowData = data.table::data.table(Gnumber = c("D1", "D2", "D3"))
+#' )
+#' drug_annotation <- get_drug_annotation(data.table::as.data.table(SummarizedExperiment::rowData(se)))
+#' annotated_se <- annotate_se_with_drug(se, drug_annotation)
+#' @export
+#'
+annotate_se_with_drug <- function(
+    se,
+    drug_annotation,
+    fill = "unknown"
+) {
+  checkmate::assert_class(se, "SummarizedExperiment")
+  data <- data.table::as.data.table(SummarizedExperiment::rowData(se))
+  annotated_data <- annotate_dt_with_drug(data, drug_annotation, fill)
+  SummarizedExperiment::rowData(se) <- annotated_data
+  (se)
+}
+
+#' annotate_mae_with_drug
+#'
+#' Annotate MultiAssayExperiment object with drug annotations
+#'
+#' @param mae MultiAssayExperiment object containing dose-response data
+#' @param drug_annotation data.table with drug annotations
+#' @param fill string indicating how unknown drugs should be filled in the DB
+#' @return MultiAssayExperiment object with annotated drugs
+#' @keywords annotation
+#' @examples
+#' mae <- MultiAssayExperiment::MultiAssayExperiment(
+#'   experiments = list(SummarizedExperiment::SummarizedExperiment(
+#'     rowData = data.table::data.table(Gnumber = c("D1", "D2", "D3"))
+#'   ))
+#' )
+#' drug_annotation <- get_drug_annotation(data.table::as.data.table(
+#'   SummarizedExperiment::rowData(
+#'     MultiAssayExperiment::experiments(mae)[[1]])))
+#' annotated_mae <- annotate_mae_with_drug(mae, drug_annotation)
+#' @export
+#'
+annotate_mae_with_drug <- function(
+    mae,
+    drug_annotation,
+    fill = "unknown"
+) {
+  checkmate::assert_class(mae, "MultiAssayExperiment")
+  for (i in seq_along(MultiAssayExperiment::experiments(mae))) {
+    se <- MultiAssayExperiment::experiments(mae)[[i]]
+    MultiAssayExperiment::experiments(mae)[[i]] <- annotate_se_with_drug(se, drug_annotation, fill)
+  }
+  (mae)
+}
+
+#' annotate_se_with_cell_line
+#'
+#' Annotate SummarizedExperiment object with cell line annotations
+#'
+#' @param se SummarizedExperiment object containing dose-response data
+#' @param cell_line_annotation data.table with cell line annotations
+#' @param fill string indicating how unknown cell lines should be filled in the DB
+#' @return SummarizedExperiment object with annotated cell lines
+#' @keywords annotation
+#' @examples
+#' se <- SummarizedExperiment::SummarizedExperiment(
+#'   rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+#' )
+#' cell_line_annotation <- get_cell_line_annotation(data.table::as.data.table(SummarizedExperiment::rowData(se)))
+#' annotated_se <- annotate_se_with_cell_line(se, cell_line_annotation)
+#' @export
+#'
+annotate_se_with_cell_line <- function(
+    se,
+    cell_line_annotation,
+    fill = "unknown"
+) {
+  checkmate::assert_class(se, "SummarizedExperiment")
+  data <- data.table::as.data.table(SummarizedExperiment::rowData(se))
+  annotated_data <- annotate_dt_with_cell_line(data, cell_line_annotation, fill)
+  SummarizedExperiment::rowData(se) <- annotated_data
+  (se)
+}
+
+#' annotate_mae_with_cell_line
+#'
+#' Annotate MultiAssayExperiment object with cell line annotations
+#'
+#' @param mae MultiAssayExperiment object containing dose-response data
+#' @param cell_line_annotation data.table with cell line annotations
+#' @param fill string indicating how unknown cell lines should be filled in the DB
+#' @return MultiAssayExperiment object with annotated cell lines
+#' @keywords annotation
+#' @examples
+#' mae <- MultiAssayExperiment::MultiAssayExperiment(
+#'   experiments = list(SummarizedExperiment::SummarizedExperiment(
+#'     rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+#'   ))
+#' )
+#' cell_line_annotation <- get_cell_line_annotation(data.table::as.data.table(
+#'   SummarizedExperiment::rowData(
+#'     MultiAssayExperiment::experiments(mae)[[1]])))
+#' annotated_mae <- annotate_mae_with_cell_line(mae, cell_line_annotation)
+#' @export
+#'
+annotate_mae_with_cell_line <- function(
+    mae,
+    cell_line_annotation,
+    fill = "unknown"
+) {
+  checkmate::assert_class(mae, "MultiAssayExperiment")
+  for (i in seq_along(MultiAssayExperiment::experiments(mae))) {
+    se <- MultiAssayExperiment::experiments(mae)[[i]]
+    MultiAssayExperiment::experiments(mae)[[i]] <- annotate_se_with_cell_line(se,
+                                                                              cell_line_annotation,
+                                                                              fill)
+  }
+  (mae)
+}
