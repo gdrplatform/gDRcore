@@ -363,7 +363,7 @@ annotate_se_with_drug <- function(
   data <- data.table::as.data.table(SummarizedExperiment::rowData(se))
   annotated_data <- annotate_dt_with_drug(data, drug_annotation, fill)
   SummarizedExperiment::rowData(se) <- annotated_data
-  (se)
+  se
 }
 
 #' annotate_mae_with_drug
@@ -397,7 +397,7 @@ annotate_mae_with_drug <- function(
     se <- MultiAssayExperiment::experiments(mae)[[i]]
     MultiAssayExperiment::experiments(mae)[[i]] <- annotate_se_with_drug(se, drug_annotation, fill)
   }
-  (mae)
+  mae
 }
 
 #' annotate_se_with_cell_line
@@ -426,7 +426,7 @@ annotate_se_with_cell_line <- function(
   data <- data.table::as.data.table(SummarizedExperiment::rowData(se))
   annotated_data <- annotate_dt_with_cell_line(data, cell_line_annotation, fill)
   SummarizedExperiment::rowData(se) <- annotated_data
-  (se)
+  se
 }
 
 #' annotate_mae_with_cell_line
@@ -462,5 +462,5 @@ annotate_mae_with_cell_line <- function(
                                                                               cell_line_annotation,
                                                                               fill)
   }
-  (mae)
+  mae
 }

@@ -96,9 +96,6 @@ test_that("get_cellline_annotation_from_dt works as expected", {
   expect_true(all(annotation2$subtype == "unknown"))
 })
 
-library(testthat)
-library(data.table)
-
 test_that("annotate_se_with_drug works correctly", {
   se <- SummarizedExperiment::SummarizedExperiment(
     rowData = data.table::data.table(Gnumber = c("D1", "D2", "D3"))
