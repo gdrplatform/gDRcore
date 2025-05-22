@@ -360,6 +360,9 @@ annotate_se_with_drug <- function(
     fill = "unknown"
 ) {
   checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_data_table(drug_annotation)
+  checkmate::assert_string(fill)
+  
   data <- data.table::as.data.table(SummarizedExperiment::rowData(se))
   annotated_data <- annotate_dt_with_drug(data, drug_annotation, fill)
   SummarizedExperiment::rowData(se) <- annotated_data
@@ -393,6 +396,9 @@ annotate_mae_with_drug <- function(
     fill = "unknown"
 ) {
   checkmate::assert_class(mae, "MultiAssayExperiment")
+  checkmate::assert_data_table(drug_annotation)
+  checkmate::assert_string(fill)
+  
   for (i in seq_along(MultiAssayExperiment::experiments(mae))) {
     se <- MultiAssayExperiment::experiments(mae)[[i]]
     MultiAssayExperiment::experiments(mae)[[i]] <- annotate_se_with_drug(se, drug_annotation, fill)
@@ -423,6 +429,9 @@ annotate_se_with_cell_line <- function(
     fill = "unknown"
 ) {
   checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_data_table(cell_line_annotation)
+  checkmate::assert_string(fill)
+  
   data <- data.table::as.data.table(SummarizedExperiment::rowData(se))
   annotated_data <- annotate_dt_with_cell_line(data, cell_line_annotation, fill)
   SummarizedExperiment::rowData(se) <- annotated_data
@@ -456,11 +465,12 @@ annotate_mae_with_cell_line <- function(
     fill = "unknown"
 ) {
   checkmate::assert_class(mae, "MultiAssayExperiment")
+  checkmate::assert_data_table(cell_line_annotation)
+  checkmate::assert_string(fill)
+  
   for (i in seq_along(MultiAssayExperiment::experiments(mae))) {
     se <- MultiAssayExperiment::experiments(mae)[[i]]
-    MultiAssayExperiment::experiments(mae)[[i]] <- annotate_se_with_cell_line(se,
-                                                                              cell_line_annotation,
-                                                                              fill)
+    MultiAssayExperiment::experiments(mae)[[i]] <- annotate_se_with_cell_line(se, cell_line_annotation, fill)
   }
   mae
 }
