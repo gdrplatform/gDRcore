@@ -96,3 +96,101 @@ test_that("get_cellline_annotation_from_dt works as expected", {
   expect_true(all(annotation2$subtype == "unknown"))
 })
 
+library(testthat)
+library(data.table)
+
+test_that("annotate_se_with_drug works correctly", {
+  se <- SummarizedExperiment::SummarizedExperiment(
+    rowData = data.table::data.table(Gnumber = c("D1", "D2", "D3"))
+  )
+  drug_annotation <- data.table::data.table(
+    Gnumber = c("D1", "D2"),
+    DrugName = c("Drug 1", "Drug 2"),
+    drug_moa = c("MOA 1", "MOA 2")
+  )
+  
+  annotated_se <- annotate_se_with_drug(se, drug_annotation, fill = "unknown")
+  result <- data.table::as.data.table(SummarizedExperiment::rowData(annotated_se))
+  
+  expect_true("data.table" %in% class(result))
+  expect_equal(result$DrugName, c("Drug 1", "Drug 2", "D3"))
+})
+
+test_that("annotate_mae_with_drug works correctly", {
+  se1 <- SummarizedExperiment::SummarizedExperiment(
+    rowData = data.table::data.table(Gnumber = c("D1", "D2", "D3"))
+  )
+  se2 <- SummarizedExperiment::SummarizedExperiment(
+    rowData = data.table::data.table(Gnumber = c("D4", "D5", "D6"))
+  )
+  mae <- MultiAssayExperiment::MultiAssayExperiment(experiments = list(se1 = se1, se2 = se2))
+  
+  drug_annotation <- data.table::data.table(
+    Gnumber = c("D1", "D2", "D4", "D5"),
+    DrugName = c("Drug 1", "Drug 2", "Drug 4", "Drug 5"),
+    drug_moa = c("MOA 1", "MOA 2", "MOA 4", "MOA 5")
+  )
+  
+  annotated_mae <- annotate_mae_with_drug(mae, drug_annotation, fill = "unknown")
+  
+  result1 <- data.table::as.data.table(SummarizedExperiment::rowData(
+    MultiAssayExperiment::experiments(annotated_mae)[[1]]))
+  result2 <- data.table::as.data.table(SummarizedExperiment::rowData(
+    MultiAssayExperiment::experiments(annotated_mae)[[2]]))
+  
+  expect_true("data.table" %in% class(result1))
+  expect_equal(result1$DrugName, c("Drug 1", "Drug 2", "D3"))
+  expect_true("data.table" %in% class(result2))
+  expect_equal(result2$DrugName, c("Drug 4", "Drug 5", "D6"))
+})
+
+test_that("annotate_se_with_cell_line works correctly", {
+  se <- SummarizedExperiment::SummarizedExperiment(
+    rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+  )
+  cell_line_annotation <- data.table::data.table(
+    clid = c("CL1", "CL2"),
+    CellLineName = c("Cell Line 1", "Cell Line 2"),
+    Tissue = c("Tissue 1", "Tissue 2"),
+    ReferenceDivisionTime = c(24, 48),
+    parental_identifier = c("Parent 1", "Parent 2"),
+    subtype = c("Subtype 1", "Subtype 2")
+  )
+  
+  annotated_se <- annotate_se_with_cell_line(se, cell_line_annotation, fill = "unknown")
+  result <- data.table::as.data.table(SummarizedExperiment::rowData(annotated_se))
+  
+  expect_true("data.table" %in% class(result))
+  expect_equal(result$CellLineName, c("Cell Line 1", "Cell Line 2", NA))
+})
+
+test_that("annotate_mae_with_cell_line works correctly", {
+  se1 <- SummarizedExperiment::SummarizedExperiment(
+    rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+  )
+  se2 <- SummarizedExperiment::SummarizedExperiment(
+    rowData = data.table::data.table(clid = c("CL4", "CL5", "CL6"))
+  )
+  mae <- MultiAssayExperiment::MultiAssayExperiment(experiments = list(se1 = se1, se2 = se2))
+  
+  cell_line_annotation <- data.table::data.table(
+    clid = c("CL1", "CL2", "CL4", "CL5"),
+    CellLineName = c("Cell Line 1", "Cell Line 2", "Cell Line 4", "Cell Line 5"),
+    Tissue = c("Tissue 1", "Tissue 2", "Tissue 4", "Tissue 5"),
+    ReferenceDivisionTime = c(24, 48, 72, 96),
+    parental_identifier = c("Parent 1", "Parent 2", "Parent 4", "Parent 5"),
+    subtype = c("Subtype 1", "Subtype 2", "Subtype 4", "Subtype 5")
+  )
+  
+  annotated_mae <- annotate_mae_with_cell_line(mae, cell_line_annotation, fill = "unknown")
+  
+  result1 <- data.table::as.data.table(SummarizedExperiment::rowData(
+    MultiAssayExperiment::experiments(annotated_mae)[[1]]))
+  result2 <- data.table::as.data.table(SummarizedExperiment::rowData(
+    MultiAssayExperiment::experiments(annotated_mae)[[2]]))
+  
+  expect_true("data.table" %in% class(result1))
+  expect_equal(result1$CellLineName, c("Cell Line 1", "Cell Line 2", NA))
+  expect_true("data.table" %in% class(result2))
+  expect_equal(result2$CellLineName, c("Cell Line 4", "Cell Line 5", NA))
+})
