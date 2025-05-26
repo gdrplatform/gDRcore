@@ -36,6 +36,8 @@ get_cell_line_annotation <- function(
     )
   }
   
+  assert_cell_line_annotation(cell_line_annotation)
+  
   if (NROW(cell_line_annotation) > 0) {
     cmn <- cell_line_annotation[[clid]] %in% data[[clid]]
     cell_line_annotation <- cell_line_annotation[cmn, ]
@@ -91,7 +93,7 @@ annotate_dt_with_cell_line <- function(
     fill = "unknown"
 ) {
   checkmate::assert_data_table(data)
-  checkmate::assert_data_table(cell_line_annotation)
+  assert_cell_line_annotation(cell_line_annotation)
   
   cellline <- gDRutils::get_env_identifiers("cellline")
   add_clid <- gDRutils::get_header("add_clid")
@@ -137,7 +139,6 @@ get_drug_annotation <- function(
   drug <- unlist(gDRutils::get_env_identifiers(c("drug", "drug2", "drug3"), simplify = FALSE))
   drug_ann_cols <- unlist(gDRutils::get_env_identifiers(c("drug", "drug_name", "drug_moa"), simplify = FALSE))
   
-  
   # Read the drug annotation data
   drug_annotation <- if (annotation_package == "gDRinternal") {
     eval(parse(text = paste0(annotation_package, "::get_drug_annotations")))()
@@ -146,6 +147,8 @@ get_drug_annotation <- function(
       system.file("annotation_data", fname, package = annotation_package), header = TRUE
     )
   }
+  
+  assert_drug_annotation(drug_annotation)
   
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   all_data_drugs <- setdiff(gDRutils::remove_drug_batch(unlist(data[, intersect(names(data), drug), with = FALSE])),
@@ -193,7 +196,7 @@ annotate_dt_with_drug <- function(
     fill = "unknown"
 ) {
   checkmate::assert_data_table(data)
-  checkmate::assert_data_table(drug_annotation)
+  assert_drug_annotation(drug_annotation)
   
   drug <- unlist(gDRutils::get_env_identifiers(c("drug", "drug2", "drug3"), simplify = FALSE))
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
@@ -255,7 +258,6 @@ annotate_dt_with_drug <- function(
   (data)
 }
 
-
 #' Retrieve the drug annotation from the annotated dt input
 #'
 #' @param dt annotated data.table
@@ -300,7 +302,6 @@ get_drug_annotation_from_dt <- function(dt) {
   unique_dt[!unique_dt[[drug_cols[["drug"]]]] %in% gDRutils::get_env_identifiers("untreated_tag"), ]
 }
 
-
 #' Retrieve the cell line annotation from the annotated dt input
 #'
 #' @param dt annotated data.table
@@ -326,6 +327,8 @@ get_cellline_annotation_from_dt <- function(dt) {
   
   cell_dt <- dt[, intersect(unlist(cell_cols), names(dt)), with = FALSE]
   
+  assert_cell_line_annotation(cell_dt)
+  
   missing_cols <- setdiff(unlist(cell_cols), names(cell_dt))
   if (length(missing_cols) > 0) {
     for (col in missing_cols) {
@@ -335,7 +338,6 @@ get_cellline_annotation_from_dt <- function(dt) {
   
   unique(cell_dt)
 }
-
 
 #' annotate_se_with_drug
 #'
@@ -360,7 +362,7 @@ annotate_se_with_drug <- function(
     fill = "unknown"
 ) {
   checkmate::assert_class(se, "SummarizedExperiment")
-  checkmate::assert_data_table(drug_annotation)
+  assert_drug_annotation(drug_annotation)
   checkmate::assert_string(fill)
   
   data <- data.table::as.data.table(SummarizedExperiment::rowData(se))
@@ -396,7 +398,7 @@ annotate_mae_with_drug <- function(
     fill = "unknown"
 ) {
   checkmate::assert_class(mae, "MultiAssayExperiment")
-  checkmate::assert_data_table(drug_annotation)
+  assert_drug_annotation(drug_annotation)
   checkmate::assert_string(fill)
   
   for (i in seq_along(MultiAssayExperiment::experiments(mae))) {
@@ -429,7 +431,7 @@ annotate_se_with_cell_line <- function(
     fill = "unknown"
 ) {
   checkmate::assert_class(se, "SummarizedExperiment")
-  checkmate::assert_data_table(cell_line_annotation)
+  assert_cell_line_annotation(cell_line_annotation)
   checkmate::assert_string(fill)
   
   data <- data.table::as.data.table(SummarizedExperiment::rowData(se))
@@ -465,7 +467,7 @@ annotate_mae_with_cell_line <- function(
     fill = "unknown"
 ) {
   checkmate::assert_class(mae, "MultiAssayExperiment")
-  checkmate::assert_data_table(cell_line_annotation)
+  assert_cell_line_annotation(cell_line_annotation)
   checkmate::assert_string(fill)
   
   for (i in seq_along(MultiAssayExperiment::experiments(mae))) {
@@ -473,4 +475,31 @@ annotate_mae_with_cell_line <- function(
     MultiAssayExperiment::experiments(mae)[[i]] <- annotate_se_with_cell_line(se, cell_line_annotation, fill)
   }
   mae
+}
+
+#' Assert cell line annotation
+#'
+#' Validates that the cell line annotation data.table has the required columns.
+#'
+#' @param cell_line_annotation data.table with cell line annotations
+#' @keywords internal
+assert_cell_line_annotation <- function(cell_line_annotation) {
+  checkmate::assert_data_table(cell_line_annotation)
+  required_cell_line_cols <- unlist(gDRutils::get_env_identifiers(
+    c("cellline", "cellline_name", "cellline_tissue", "cellline_ref_div_time",
+      "cellline_parental_identifier", "cellline_subtype"), simplify = FALSE), use.names = FALSE)
+  checkmate::assert_names(names(cell_line_annotation), must.include = required_cell_line_cols)
+}
+
+#' Assert drug annotation
+#'
+#' Validates that the drug annotation data.table has the required columns.
+#'
+#' @param drug_annotation data.table with drug annotations
+#' @keywords internal
+assert_drug_annotation <- function(drug_annotation) {
+  checkmate::assert_data_table(drug_annotation)
+  required_drug_cols <- unlist(gDRutils::get_env_identifiers(
+    c("drug", "drug_name", "drug_moa"), simplify = FALSE), use.names = FALSE)
+  checkmate::assert_names(names(drug_annotation), must.include = required_drug_cols)
 }
