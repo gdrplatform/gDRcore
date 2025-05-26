@@ -107,4 +107,3 @@ Proper annotation of drug and cell line data is crucial for running the gDR pipe
 ```{r sessionInfo}
 sessionInfo()
 ```
-```
