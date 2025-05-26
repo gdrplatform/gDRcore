@@ -106,6 +106,21 @@ annotate_dt_with_cell_line <- function(
     data[, (existing_cols) := NULL]
   }
   data <- cell_line_annotation[data, on = cellline]
+  
+  # Handle missing cell lines
+  missing_cell_lines <- setdiff(unique(data[[cellline]]), cell_line_annotation[[cellline]])
+  if (length(missing_cell_lines) > 0) {
+    missing_tbl_cell_lines <- data.table::data.table(
+      clid = missing_cell_lines,
+      CellLineName = missing_cell_lines,
+      Tissue = fill,
+      ReferenceDivisionTime = NA,
+      parental_identifier = fill,
+      subtype = fill
+    )
+    data.table::setnames(missing_tbl_cell_lines, names(cell_line_annotation))
+    data <- rbind(data[clid != missing_cell_lines], missing_tbl_cell_lines, fill = TRUE)
+  }
   (data)
 }
 

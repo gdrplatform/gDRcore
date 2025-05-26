@@ -158,7 +158,10 @@ test_that("annotate_se_with_cell_line works correctly", {
   result <- data.table::as.data.table(SummarizedExperiment::rowData(annotated_se))
   
   expect_true("data.table" %in% class(result))
-  expect_equal(result$CellLineName, c("Cell Line 1", "Cell Line 2", NA))
+  expect_equal(result$CellLineName, c("Cell Line 1", "Cell Line 2", "CL3"))
+  
+  cell_line_annotation$CellLineName <- NULL
+  expect_error(annotate_se_with_cell_line(se, cell_line_annotation, fill = "unknown"))
 })
 
 test_that("annotate_mae_with_cell_line works correctly", {
@@ -187,7 +190,7 @@ test_that("annotate_mae_with_cell_line works correctly", {
     MultiAssayExperiment::experiments(annotated_mae)[[2]]))
   
   expect_true("data.table" %in% class(result1))
-  expect_equal(result1$CellLineName, c("Cell Line 1", "Cell Line 2", NA))
+  expect_equal(result1$CellLineName, c("Cell Line 1", "Cell Line 2", "CL3"))
   expect_true("data.table" %in% class(result2))
-  expect_equal(result2$CellLineName, c("Cell Line 4", "Cell Line 5", NA))
+  expect_equal(result2$CellLineName, c("Cell Line 4", "Cell Line 5", "CL6"))
 })
