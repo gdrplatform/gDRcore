@@ -165,6 +165,9 @@ test_that("annotate_se_with_cell_line works correctly", {
   
   expect_true("data.table" %in% class(result))
   expect_equal(result$CellLineName, c("Cell Line 1", "Cell Line 2", "CL3"))
+  expect_equal(result$Tissue, c(cell_line_annotation$Tissue, "unknown"))
+  expect_equal(result$parental_identifier, c(cell_line_annotation$parental_identifier, "unknown"))
+  expect_equal(result$subtype, c(cell_line_annotation$subtype, "unknown"))
   
   cell_line_annotation$CellLineName <- NULL
   expect_error(annotate_se_with_cell_line(se, cell_line_annotation, fill = "unknown"))
