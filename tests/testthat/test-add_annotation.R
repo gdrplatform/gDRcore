@@ -24,6 +24,9 @@ test_that("annotate_dt_with_cell_line works correctly", {
   expect_true("data.table" %in% class(result))
   expect_equal(ncol(result), ncol(data) + ncol(cell_line_annotation) - 1)
   expect_equal(result$CellLineName, c("Cell Line 1", "Cell Line 2", "CL3"))
+  expect_equal(result$Tissue, c(cell_line_annotation$Tissue, "unknown"))
+  expect_equal(result$parental_identifier, c(cell_line_annotation$parental_identifier, "unknown"))
+  expect_equal(result$subtype, c(cell_line_annotation$subtype, "unknown"))
 })
 
 test_that("get_drug_annotation works correctly", {
