@@ -205,4 +205,7 @@ test_that("annotate_mae_with_cell_line works correctly", {
   expect_equal(result1$subtype, c(cell_line_annotation$subtype[1:2], "unknown"))
   expect_true("data.table" %in% class(result2))
   expect_equal(result2$CellLineName, c("Cell Line 4", "Cell Line 5", "CL6"))
+  expect_equal(result2$Tissue, c(cell_line_annotation$Tissue[3:4], "unknown"))
+  expect_equal(result2$parental_identifier, c(cell_line_annotation$parental_identifier[3:4], "unknown"))
+  expect_equal(result2$subtype, c(cell_line_annotation$subtype[3:4], "unknown"))
 })
