@@ -119,7 +119,8 @@ annotate_dt_with_cell_line <- function(
       subtype = fill
     )
     data.table::setnames(missing_tbl_cell_lines, names(cell_line_annotation))
-    data <- rbind(data[clid != missing_cell_lines], missing_tbl_cell_lines, fill = TRUE)
+    data <- rbind(data[data[[cellline]] != missing_cell_lines],
+                  missing_tbl_cell_lines, fill = TRUE)
   }
   (data)
 }
