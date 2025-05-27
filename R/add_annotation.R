@@ -342,8 +342,6 @@ get_cellline_annotation_from_dt <- function(dt) {
   
   cell_dt <- dt[, intersect(unlist(cell_cols), names(dt)), with = FALSE]
   
-  assert_cell_line_annotation(cell_dt)
-  
   missing_cols <- setdiff(unlist(cell_cols), names(cell_dt))
   if (length(missing_cols) > 0) {
     for (col in missing_cols) {
