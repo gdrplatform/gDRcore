@@ -144,6 +144,7 @@ test_that("annotate_mae_with_drug works correctly", {
   expect_equal(result1$drug_moa, c(drug_annotation$drug_moa[1:2], "unknown"))
   expect_true("data.table" %in% class(result2))
   expect_equal(result2$DrugName, c("Drug 4", "Drug 5", "D6"))
+  expect_equal(result2$drug_moa, c(drug_annotation$drug_moa[3:4], "unknown"))
 })
 
 test_that("annotate_se_with_cell_line works correctly", {
