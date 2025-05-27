@@ -23,7 +23,7 @@ test_that("annotate_dt_with_cell_line works correctly", {
   expect_true(all(c(24, 48) %in% result$ReferenceDivisionTime))
   expect_true("data.table" %in% class(result))
   expect_equal(ncol(result), ncol(data) + ncol(cell_line_annotation) - 1)
-  expect_equal(result$CellLineName, c("Cell Line 1", "Cell Line 2", NA))
+  expect_equal(result$CellLineName, c("Cell Line 1", "Cell Line 2", "CL3"))
 })
 
 test_that("get_drug_annotation works correctly", {
