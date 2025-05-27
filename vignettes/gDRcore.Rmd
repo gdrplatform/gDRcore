@@ -22,55 +22,76 @@ log_level <- futile.logger::flog.threshold("ERROR")
 ```
 
 # Overview
-The `gDRcore` is the part of the `gDR` suite. The package provides set of tools to proces and analyze drug response data.
-
+The `gDRcore` is part of the `gDR` suite. The package provides a set of tools to process and analyze drug response data.
 
 # Introduction
 
 ## Data model
-The data model is built on the MultiAssayExperiments (MAE) structure. Within an MAE, each SummarizedExperiment (SE) contains a different
-unit type (e.g. single-agent, or combination treatment). Columns of the MAE are defined by the cell lines and any modification of them
-and are shared with the SEs. Rows are defined by the treatments (e.g drugs, perturbations) and are specific to each SE. Assays of the
-SE are the different levels of data processing (raw, control, normalized, averaged data, as well as metrics). Each nested element of
-the assays of the SEs comprises the series themselves as a table (data.table in practice). Although not all elements need to have
-a series or the same number of elements, the attributes (columns of the table) should be consistent across the SE.
+The data model is built on the MultiAssayExperiment (MAE) structure. Within an MAE, each SummarizedExperiment (SE) contains a different unit type (e.g., single-agent or combination treatment). Columns of the MAE are defined by the cell lines and any modifications to them and are shared with the SEs. Rows are defined by the treatments (e.g., drugs, perturbations) and are specific to each SE. Assays of the SE are the different levels of data processing (raw, control, normalized, averaged data, as well as metrics). Each nested element of the assays of the SEs comprises the series themselves as a table (data.table in practice). Although not all elements need to have a series or the same number of elements, the attributes (columns of the table) should be consistent across the SE.
 
 ## Drug processing 
-For drug response data, the input files need to be merged such that each measurement (data) is associated with the right metadata (cell line properties and treatment definition). Metadata can be added with the function `cleanup_metadata` if the right reference databases are in place.
+For drug response data, the input files need to be merged such that each measurement (data) is associated with the correct metadata (cell line properties and treatment definition). Metadata can be added with the function `cleanup_metadata` if the right reference databases are in place.
+
+## Required columns
+To process the data through `runDrugResponseProcessingPipeline`, the input data should contain the required columns as well as optional columns.
+
+For single-agent experiments, the required columns are:
+* Gnumber
+* DrugName
+* drug_moa
+* Concentration
+* clid
+* CellLineName
+* Tissue
+* ReferenceDivisionTime
+* parental_identifier
+* subtype
+* Duration
+* ReadoutValue
+
+For combination experiments, additional required fields are:
+* Gnumber_2
+* DrugName_2
+* drug_moa_2
+* Concentration_2
+
+gDR supports the inclusion of any additional metadata in the long table for the pipeline. However, the most common supported by default are:
+
+* Barcode (or Plate)
+* BackgroundValue
+* WellRow
+* WellColumn
+
+## gDR pipeline
 
 When the data and metadata are merged into a long table, the wrapper function `runDrugResponseProcessingPipeline` can be used to generate an MAE with processed and analyzed data. 
 
 ![Figure 1. The overview of the runDrugResponseProcessingPipeline. ](https://raw.githubusercontent.com/gdrplatform/gDRcore/main/inst/images/pipeline2.png).
 
-In practice runDrugResponseProcessingPipeline does the following steps:
+In practice, `runDrugResponseProcessingPipeline` performs the following steps:
 
-* `create_SE` creates the structure of the MAE and the associated SEs by assigning metadata into the row and column attributes. The assignment is performed in the function split_SE_components (see details below for the assumption made when building SE structures).
-create_SE also dispatches the raw data and controls into the right nested tables. Note that data may be duplicated between different SEs to make them self-contained.
-* `normalize_SE` normalizes the raw data based on the control. Calculation of the GR value is based on a cell line division time provided by the reference database if no pre-treatment control is provided. If both information are missing, GR values cannot be calculated. Additional normalization can be added as new rows in the nested table.
-* `average_SE` averages technical replicates that are stored in the same nested table are averaged.
-* `fit_SE` fits the dose-response curves and calculates response metrics for each normalization type.
-* `fit_SE.combinations` calculates synergy scores for drug combination data and, if the data is appropriate, fits along the two drugs and matrix-level metrics (e.g. isobolograms) are calculated. This is also performed for each normalization type independently.
+* `create_SE`: Creates the structure of the MAE and the associated SEs by assigning metadata into the row and column attributes. The assignment is performed in the function `split_SE_components` (see details below for the assumptions made when building SE structures). `create_SE` also dispatches the raw data and controls into the right nested tables. Note that data may be duplicated between different SEs to make them self-contained.
+* `normalize_SE`: Normalizes the raw data based on the control. Calculation of the GR value is based on a cell line division time provided by the reference database if no pre-treatment control is provided. If both pieces of information are missing, GR values cannot be calculated. Additional normalization can be added as new rows in the nested table.
+* `average_SE`: Averages technical replicates that are stored in the same nested table.
+* `fit_SE`: Fits the dose-response curves and calculates response metrics for each normalization type.
+* `fit_SE.combinations`: Calculates synergy scores for drug combination data and, if the data is appropriate, fits along the two drugs and matrix-level metrics (e.g., isobolograms) are calculated. This is also performed for each normalization type independently.
 
 ![Figure 2. Detailed overview of the drug processing pipeline. ](https://raw.githubusercontent.com/gdrplatform/gDRcore/main/inst/images/pipeline.png).
 
-The functions to process the data have parameters for specifying the names of the variables and assays. Additional parameters are available to personalize the processing steps such as force the nesting (or not) of an attribute, specify attributes that should be considered as technical replicates or not.
+The functions used to process the data have parameters for specifying the names of the variables and assays. Additional parameters are available to personalize the processing steps, such as forcing the nesting (or not) of an attribute and specifying attributes that should be considered as technical replicates or not.
 
 # Use Cases
 
 ## Data preprocessing
-Please familiarize with `gDRimport` package containing bunch of tools allowing to prepare input data for `gDRcore`.
+Please familiarize yourself with the `gDRimport` package, which contains a variety of tools to prepare input data for `gDRcore`.
 
-This example is made up based on the artificial dataset called `data1` available within `gDRimport` package. `gDR` required three types of data
-that should be used as the raw input: Template, Manifest, and RawData. More info about these three types of data you could find in our general
-documentation.
-
+This example is based on the artificial dataset called `data1` available within the `gDRimport` package. `gDR` requires three types of data that should be used as the raw input: Template, Manifest, and RawData. More information about these three types of data can be found in our general documentation.
 
 ```{r}
 td <- gDRimport::get_test_data()
 ```
 
-Provided dataset needs to be merged into the one `data.table` object to be able to run gDR pipeline. This process can be done using two functions --
-`gDRimport::load_data()` and `gDRcore::merge_data()`.
+The provided dataset needs to be merged into one `data.table` object to be able to run the gDR pipeline. This process can be done using two functions: `gDRimport::load_data()` and `gDRcore::merge_data()`.
 
 ```{r, include=FALSE}
 loaded_data <-
@@ -89,7 +110,6 @@ head(input_df)
 
 We provide an all-in-one function that splits data into appropriate data types, creates the SummarizedExperiment object for each data type, splits data into treatment and control assays, normalizes, averages, calculates gDR metrics, and finally, creates the MultiAssayExperiment object. This function is called `runDrugResponseProcessingPipeline`.
 
-
 ```{r, message = FALSE, results = FALSE, warning = FALSE}
 mae <- runDrugResponseProcessingPipeline(input_df)
 ```
@@ -103,12 +123,13 @@ And we can subset the MultiAssayExperiment to receive the SummarizedExperiment s
 mae[["single-agent"]]
 ```
 
-
 ## Data extraction
-Extraction of the data from either `MultiAssayExperiment` or `SummarizedExperiment` objects into more user-friendly structures as well as other data transformations can be done using `gDRutils`. We encourage to read `gDRutils` vignette to familiarize with these functionalities.
+Extraction of the data from either `MultiAssayExperiment` or `SummarizedExperiment` objects into more user-friendly structures, as well as other data transformations, can be done using `gDRutils`. We encourage reading the `gDRutils` vignette to familiarize yourself with these functionalities.
 
 # SessionInfo {-}
 
 ```{r sessionInfo}
 sessionInfo()
 ```
+
+---
