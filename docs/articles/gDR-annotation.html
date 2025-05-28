@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.3</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -99,15 +99,20 @@ files.</p>
 <div class="section level3">
 <h3 id="annotation-files">Annotation Files<a class="anchor" aria-label="anchor" href="#annotation-files"></a>
 </h3>
-<p>gDR uses two sources of annotation: drug annotation and cell line
+<p>gDR uses two types of annotation: drug annotation and cell line
 annotation. These annotations are added to a data table before running
 the pipeline. The scripts for adding data annotation are located in
-<code>R/add_annotation.R</code>, which contains four primary functions:
-<code>annotate_dt_with_cell_line</code> and
-<code>annotate_dt_with_drug</code> for annotating the data and functions
-<code>get_cell_line_annotation</code> and
+<code>R/add_annotation.R</code>, which contains several primary
+functions: <code>annotate_dt_with_cell_line</code>,
+<code>annotate_dt_with_drug</code>,
+<code>get_cell_line_annotation</code>, and
 <code>get_drug_annotation</code> for receiving the default annotation
-for the data. It is recommended to run the <code>cleanup_metadata</code>
+for the data. Additionally, <code>annotate_se_with_drug</code>,
+<code>annotate_mae_with_drug</code>,
+<code>annotate_se_with_cell_line</code>, and
+<code>annotate_mae_with_cell_line</code> are provided to annotate
+<code>SummarizedExperiment</code> and <code>MultiAssayExperiment</code>
+objects. It is recommended to run the <code>cleanup_metadata</code>
 function, which adds annotations and performs some data cleaning.</p>
 <div class="section level4">
 <h4 id="annotation-file-locations">Annotation File Locations<a class="anchor" aria-label="anchor" href="#annotation-file-locations"></a>
@@ -135,12 +140,12 @@ annotation CSV file.</li>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>GDR_CELLLINE_ANNOTATION <span class="op">=</span> <span class="st">"some/path/to/cell_line_annotation.csv"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>GDR_DRUG_ANNOTATION <span class="op">=</span> <span class="st">"some/path/to/drug_annotation.csv"</span><span class="op">)</span></span></code></pre></div>
-<p>NOTE: gDR annotation can be sourced from different locations. Setting
-environmental variables with paths for annotation has the highest
-priority and will be used as the first source of annotation, even if
-other sources are available. To clarify, if both the environmental
-variables and the internal annotation databases are set, gDR will
-prioritize the environmental variables for annotation.</p>
+<p><strong>NOTE:</strong> gDR annotation can be sourced from different
+locations. Setting environmental variables with paths for annotation has
+the highest priority and will be used as the first source of annotation,
+even if other sources are available. To clarify, if both the
+environmental variables and the internal annotation databases are set,
+gDR will prioritize the environmental variables for annotation.</p>
 <p>To turn off the usage of external paths for data annotation, please
 set these two environmental variables to empty.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -195,28 +200,34 @@ default value of ‘unknown’ can be altered by the user.</p>
 </div>
 </div>
 <div class="section level3">
-<h3 id="creating-a-data-table-with-annotation">Creating a Data Table with Annotation<a class="anchor" aria-label="anchor" href="#creating-a-data-table-with-annotation"></a>
+<h3 id="annotating-summarizedexperiment-and-multiassayexperiment-objects">Annotating SummarizedExperiment and MultiAssayExperiment
+Objects<a class="anchor" aria-label="anchor" href="#annotating-summarizedexperiment-and-multiassayexperiment-objects"></a>
 </h3>
-<p>To illustrate, here’s an example of how to create a
-<code>data.table</code> with the required fields for drug and cell line
-annotation:</p>
+<p>To annotate <code>SummarizedExperiment</code> and
+<code>MultiAssayExperiment</code> objects, use the functions
+<code>annotate_se_with_drug</code>, <code>annotate_mae_with_drug</code>,
+<code>annotate_se_with_cell_line</code>, and
+<code>annotate_mae_with_cell_line</code>. These functions take the
+experiment objects and the corresponding annotation tables as input and
+return the annotated objects.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Example of creating a data.table with required fields for drug annotation</span></span>
-<span><span class="va">drug_annotation</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="op">(</span></span>
-<span>  Gnumber <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"G1"</span>, <span class="st">"G2"</span>, <span class="st">"G3"</span><span class="op">)</span>,</span>
-<span>  DrugName <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Drug A"</span>, <span class="st">"Drug B"</span>, <span class="st">"Drug C"</span><span class="op">)</span>,</span>
-<span>  drug_moa <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"MOA A"</span>, <span class="st">"MOA B"</span>, <span class="st">"MOA C"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># Example for SummarizedExperiment</span></span>
+<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></span><span class="op">(</span></span>
+<span>  rowData <span class="op">=</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>Gnumber <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"D1"</span>, <span class="st">"D2"</span>, <span class="st">"D3"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
+<span><span class="va">drug_annotation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_drug_annotation.html">get_drug_annotation</a></span><span class="op">(</span><span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/as.data.table.html" class="external-link">as.data.table</a></span><span class="op">(</span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">annotated_se</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/annotate_se_with_drug.html">annotate_se_with_drug</a></span><span class="op">(</span><span class="va">se</span>, <span class="va">drug_annotation</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Example of creating a data.table with required fields for cell line annotation</span></span>
-<span><span class="va">cell_line_annotation</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="op">(</span></span>
-<span>  clid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cell_Line_1"</span>, <span class="st">"Cell_Line_2"</span>, <span class="st">"Cell_Line_3"</span><span class="op">)</span>,</span>
-<span>  CellLineName <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cell Line 1"</span>, <span class="st">"Cell Line 2"</span>, <span class="st">"Cell Line 3"</span><span class="op">)</span>,</span>
-<span>  Tissue <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Tissue A"</span>, <span class="st">"Tissue B"</span>, <span class="st">"Tissue C"</span><span class="op">)</span>,</span>
-<span>  ReferenceDivisionTime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">24</span>, <span class="fl">30</span>, <span class="fl">28</span><span class="op">)</span>,</span>
-<span>  parental_identifier <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Parental 1"</span>, <span class="st">"Parental 2"</span>, <span class="st">"Parental 3"</span><span class="op">)</span>,</span>
-<span>  subtype <span class="op">=</span> <span class="cn">NA</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># Example for MultiAssayExperiment</span></span>
+<span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu">MultiAssayExperiment</span><span class="fu">::</span><span class="fu"><a href="https://github.com/waldronlab/MultiAssayExperiment/reference/MultiAssayExperiment.html" class="external-link">MultiAssayExperiment</a></span><span class="op">(</span></span>
+<span>  experiments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>exp1 <span class="op">=</span> <span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></span><span class="op">(</span></span>
+<span>    rowData <span class="op">=</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>clid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CL1"</span>, <span class="st">"CL2"</span>, <span class="st">"CL3"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">cell_line_annotation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_cell_line_annotation.html">get_cell_line_annotation</a></span><span class="op">(</span><span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/as.data.table.html" class="external-link">as.data.table</a></span><span class="op">(</span></span>
+<span>  <span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span></span>
+<span>    <span class="fu">MultiAssayExperiment</span><span class="fu">::</span><span class="fu"><a href="https://github.com/waldronlab/MultiAssayExperiment/reference/MultiAssayExperiment-methods.html" class="external-link">experiments</a></span><span class="op">(</span><span class="va">mae</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">annotated_mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/annotate_mae_with_cell_line.html">annotate_mae_with_cell_line</a></span><span class="op">(</span><span class="va">mae</span>, <span class="va">cell_line_annotation</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="additional-information-for-genentechroche-users">Additional Information for Genentech/Roche Users<a class="anchor" aria-label="anchor" href="#additional-information-for-genentechroche-users"></a>

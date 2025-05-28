@@ -37,6 +37,24 @@
     <loc>https://gdrplatform.github.io/gDRcore/reference/annotate_dt_with_drug.html</loc>
   </url>
   <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/annotate_mae_with_cell_line.html</loc>
+  </url>
+  <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/annotate_mae_with_drug.html</loc>
+  </url>
+  <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/annotate_se_with_cell_line.html</loc>
+  </url>
+  <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/annotate_se_with_drug.html</loc>
+  </url>
+  <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/assert_cell_line_annotation.html</loc>
+  </url>
+  <url>
+    <loc>https://gdrplatform.github.io/gDRcore/reference/assert_drug_annotation.html</loc>
+  </url>
+  <url>
     <loc>https://gdrplatform.github.io/gDRcore/reference/calculate_GR_value.html</loc>
   </url>
   <url>
