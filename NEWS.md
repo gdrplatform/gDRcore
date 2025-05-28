@@ -1,3 +1,7 @@
+## gDRcore 1.7.3 - 2025-05-22
+* add functions for reannotating `SummarizedExperiment` and `MultiAssayExperiment` objects
+* update vignettes
+
 ## gDRcore 1.7.2 - 2025-05-06
 * remove support for `masked` values
 

@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 Before running the gDR pipeline, it is essential to annotate the data properly with drug and cell line information. This document outlines the process of data annotation and the requirements for the annotation files.
 
 ## Annotation Files
-gDR uses two sources of annotation: drug annotation and cell line annotation. These annotations are added to a data table before running the pipeline. The scripts for adding data annotation are located in `R/add_annotation.R`, which contains four primary functions: `annotate_dt_with_cell_line` and `annotate_dt_with_drug` for annotating the data and functions `get_cell_line_annotation` and `get_drug_annotation` for receiving the default annotation for the data. It is recommended to run the `cleanup_metadata` function, which adds annotations and performs some data cleaning.
+gDR uses two types of annotation: drug annotation and cell line annotation. These annotations are added to a data table before running the pipeline. The scripts for adding data annotation are located in `R/add_annotation.R`, which contains several primary functions: `annotate_dt_with_cell_line`, `annotate_dt_with_drug`, `get_cell_line_annotation`, and `get_drug_annotation` for receiving the default annotation for the data. Additionally, `annotate_se_with_drug`, `annotate_mae_with_drug`, `annotate_se_with_cell_line`, and `annotate_mae_with_cell_line` are provided to annotate `SummarizedExperiment` and `MultiAssayExperiment` objects. It is recommended to run the `cleanup_metadata` function, which adds annotations and performs some data cleaning.
 
 ### Annotation File Locations
 Both drug and cell line annotation files are stored in `gDRtestData/inst/annotation_data`. There are two files:
@@ -41,8 +41,7 @@ Sys.setenv(GDR_CELLLINE_ANNOTATION = "some/path/to/cell_line_annotation.csv")
 Sys.setenv(GDR_DRUG_ANNOTATION = "some/path/to/drug_annotation.csv")
 ```
 
-
-NOTE: gDR annotation can be sourced from different locations. Setting environmental variables with paths for annotation has the highest priority and will be used as the first source of annotation, even if other sources are available. To clarify, if both the environmental variables and the internal annotation databases are set, gDR will prioritize the environmental variables for annotation.
+**NOTE:** gDR annotation can be sourced from different locations. Setting environmental variables with paths for annotation has the highest priority and will be used as the first source of annotation, even if other sources are available. To clarify, if both the environmental variables and the internal annotation databases are set, gDR will prioritize the environmental variables for annotation.
 
 To turn off the usage of external paths for data annotation, please set these two environmental variables to empty.
 
@@ -50,8 +49,6 @@ To turn off the usage of external paths for data annotation, please set these tw
 Sys.setenv(GDR_CELLLINE_ANNOTATION = "")
 Sys.setenv(GDR_DRUG_ANNOTATION = "")
 ```
-
-
 
 ## Annotation Requirements
 gDR has specific requirements for the annotation files to properly annotate the data.
@@ -75,31 +72,32 @@ The obligatory fields for cell line annotation are:
 
 If some information is not known for the cell line or drug, the corresponding field should be left empty or NA. Nonetheless, since the fill parameter is consistently specified in the annotation function, the default value of 'unknown' can be altered by the user.
 
-## Creating a Data Table with Annotation
-To illustrate, here's an example of how to create a `data.table` with the required fields for drug and cell line annotation:
+## Annotating SummarizedExperiment and MultiAssayExperiment Objects
+
+To annotate `SummarizedExperiment` and `MultiAssayExperiment` objects, use the functions `annotate_se_with_drug`, `annotate_mae_with_drug`, `annotate_se_with_cell_line`, and `annotate_mae_with_cell_line`. These functions take the experiment objects and the corresponding annotation tables as input and return the annotated objects.
 
 ```{r, eval=FALSE}
-# Example of creating a data.table with required fields for drug annotation
-drug_annotation <- data.table(
-  Gnumber = c("G1", "G2", "G3"),
-  DrugName = c("Drug A", "Drug B", "Drug C"),
-  drug_moa = c("MOA A", "MOA B", "MOA C")
+# Example for SummarizedExperiment
+se <- SummarizedExperiment::SummarizedExperiment(
+  rowData = data.table::data.table(Gnumber = c("D1", "D2", "D3"))
 )
+drug_annotation <- get_drug_annotation(data.table::as.data.table(SummarizedExperiment::rowData(se)))
+annotated_se <- annotate_se_with_drug(se, drug_annotation)
 
-# Example of creating a data.table with required fields for cell line annotation
-cell_line_annotation <- data.table(
-  clid = c("Cell_Line_1", "Cell_Line_2", "Cell_Line_3"),
-  CellLineName = c("Cell Line 1", "Cell Line 2", "Cell Line 3"),
-  Tissue = c("Tissue A", "Tissue B", "Tissue C"),
-  ReferenceDivisionTime = c(24, 30, 28),
-  parental_identifier = c("Parental 1", "Parental 2", "Parental 3"),
-  subtype = NA
+# Example for MultiAssayExperiment
+mae <- MultiAssayExperiment::MultiAssayExperiment(
+  experiments = list(exp1 = SummarizedExperiment::SummarizedExperiment(
+    rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+  ))
 )
+cell_line_annotation <- get_cell_line_annotation(data.table::as.data.table(
+  SummarizedExperiment::rowData(
+    MultiAssayExperiment::experiments(mae)[[1]])))
+annotated_mae <- annotate_mae_with_cell_line(mae, cell_line_annotation)
 ```
 
 ## Additional Information for Genentech/Roche Users
 For users within Genentech/Roche, we recommend utilizing our internal annotation databases. We provide the `gDRinternal` package specifically for internal users, which includes functions for managing internal annotation data. If you are an internal user, you can install the `gDRinternal` package, and `gDRcore` will automatically utilize this package as a source of data annotation.
-
 
 ## Conclusion
 Proper annotation of drug and cell line data is crucial for running the gDR pipeline effectively. By adhering to the annotation requirements and following the outlined process, users can ensure accurate and reliable results from the pipeline.
