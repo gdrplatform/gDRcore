@@ -36,6 +36,7 @@ For drug response data, the input files need to be merged such that each measure
 To process the data through `runDrugResponseProcessingPipeline`, the input data should contain the required columns as well as optional columns.
 
 For single-agent experiments, the required columns are:
+
 * Gnumber
 * DrugName
 * drug_moa
@@ -50,6 +51,7 @@ For single-agent experiments, the required columns are:
 * ReadoutValue
 
 For combination experiments, additional required fields are:
+
 * Gnumber_2
 * DrugName_2
 * drug_moa_2
