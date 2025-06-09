@@ -216,10 +216,8 @@ prepare_input.MultiAssayExperiment <-
 
 #' @keywords prepare_input
 .set_exps <- function(df_list) {
-  df_names <- names(df_list)
-  exps <- gDRutils::loop(df_names, function(x) NULL)
-  names(exps) <- df_names
-  
+  exps <- vector("list", NROW(names(df_list)))
+  names(exps) <- names(df_list)
   exps
 }
 

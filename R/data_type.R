@@ -44,6 +44,7 @@ identify_data_type <- function(dt,
                                codilution_conc = 2,
                                matrix_conc = 1) {
   
+  dt <- data.table::copy(dt)
   # Get drug and concentration identifiers
   drug_ids <- get_relevant_ids(c("drug_name", "drug_name2", "drug_name3"), dt)
   conc_ids <- get_relevant_ids(c("concentration", "concentration2", "concentration3"), dt)
