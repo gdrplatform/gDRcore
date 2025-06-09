@@ -120,7 +120,7 @@ calculate_Loewe <- function(
         rowMeans(
           do.call(
             cbind, 
-            lapply(names(which(table(df_iso$fit_type) > 1)), function(x) {
+            gDRutils::loop(names(which(table(df_iso$fit_type) > 1)), function(x) {
               stats::approx(
                 x = df_iso$x1[df_iso$fit_type == x], 
                 y = df_iso$x2_off[df_iso$fit_type == x], 
@@ -260,7 +260,7 @@ calculate_Loewe <- function(
 
   df_all_iso_points <- do.call(
     rbind, 
-    lapply(names(all_iso), function(x) {
+    gDRutils::loop(names(all_iso), function(x) {
       cbind(
         iso_level = x,
         all_iso[[x]]$df_iso[, c(
@@ -271,7 +271,7 @@ calculate_Loewe <- function(
   )
   df_all_iso_curves <- do.call(
     rbind, 
-    lapply(names(all_iso), function(x) {
+    gDRutils::loop(names(all_iso), function(x) {
       cbind(
         iso_level = x,
         all_iso[[x]]$df_iso_curve[, c(
@@ -283,7 +283,7 @@ calculate_Loewe <- function(
   )
   df_all_AUC_log2CI <- do.call(
     rbind, 
-    lapply(names(all_iso), function(x) {
+    gDRutils::loop(names(all_iso), function(x) {
       data.table::data.table(
         iso_level = x, 
         CI_100x = all_iso[[x]]$AUC_log2CI,

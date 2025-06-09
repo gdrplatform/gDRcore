@@ -16,7 +16,7 @@ test_that("map_df works as expected", {
   expect_equal(names(mapping), trt_df$rn)
   expect_equal(length(mapping), nrow(trt_df))
 
-  out <- lapply(seq(33, 64, 1), function(x) {
+  out <- gDRutils::loop(seq(33, 64, 1), function(x) {
     as.character(c((x - 1) %% 16 + 1, 17 + ((x - 1) %% 16)))
     })
   names(out) <- seq(33, 64, 1)

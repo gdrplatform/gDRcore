@@ -142,7 +142,7 @@ prepare_input.MultiAssayExperiment <-
       inl$df_list <- split_raw_data(unique(data.table::rbindlist(list(inl$df_), fill = TRUE))) 
     } else {
       inl$df_list <-
-        lapply(names(x), function(y) {
+        gDRutils::loop(names(x), function(y) {
           md <- S4Vectors::metadata(x[[y]])
           if (is.null(md[[raw_data_field]])) {
             NULL
@@ -217,7 +217,7 @@ prepare_input.MultiAssayExperiment <-
 #' @keywords prepare_input
 .set_exps <- function(df_list) {
   df_names <- names(df_list)
-  exps <- lapply(df_names, function(x) NULL)
+  exps <- gDRutils::loop(df_names, function(x) NULL)
   names(exps) <- df_names
   
   exps

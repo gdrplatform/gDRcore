@@ -111,7 +111,7 @@ map_df <- function(trt_md,
         list = TRUE
       )
     names(match_l) <- trt_rnames
-    lapply(match_l, function(x) {
+    gDRutils::loop(match_l, function(x) {
       ref_rnames[sort(x)]
     })
   }
@@ -125,11 +125,11 @@ map_df <- function(trt_md,
     # this logic is pretty slow currently 
   } else {
 
-  out <- lapply(seq_along(trt_rnames), function(i) {
+  out <- gDRutils::loop(seq_along(trt_rnames), function(i) {
     treatment <- trt_rnames[i]
     if (all(is.na(exact_out[[treatment]])) || !is.null(override_untrt_controls)) {
       
-      refs <- lapply(present_ref_cols, function(y) {
+      refs <- gDRutils::loop(present_ref_cols, function(y) {
         unname(unlist(ref_md[, y, with = FALSE]) == unlist(trt_md[which(trt_md$rn == treatment),
                                                                   y, with = FALSE]))
       })
@@ -221,7 +221,7 @@ map_df <- function(trt_md,
   drug_cols <- mat_elem[, valid, with = FALSE]
 
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  has_tag <- lapply(drug_cols, function(x) x %in% untrt_tag)
+  has_tag <- gDRutils::loop(drug_cols, function(x) x %in% untrt_tag)
   data.table::setDT(has_tag)
   ntag <- rowSums(has_tag)
 
@@ -248,7 +248,7 @@ map_df <- function(trt_md,
     
     # split data.tables to simple model with clid column and drug column
     
-    trt <- lapply(valid, function(x) {
+    trt <- gDRutils::loop(valid, function(x) {
       colnames <- c(clid, x) 
       trt_elem[, colnames, with = FALSE] 
     })
@@ -256,11 +256,11 @@ map_df <- function(trt_md,
       paste, 
       do.call(
         rbind, 
-        lapply(trt, function(x) stats::setNames(x, names(trt[[1]])))
+        gDRutils::loop(trt, function(x) stats::setNames(x, names(trt[[1]])))
       )
     )
     
-    ref <- lapply(valid, function(x) {
+    ref <- gDRutils::loop(valid, function(x) {
       colnames <- c(clid, x) 
       ref_elem[, colnames, with = FALSE] 
     })
@@ -268,7 +268,7 @@ map_df <- function(trt_md,
       paste, 
       do.call(
         rbind, 
-        lapply(ref, function(x) stats::setNames(x, names(ref[[1]])))
+        gDRutils::loop(ref, function(x) stats::setNames(x, names(ref[[1]])))
       )
     )
     # match trt and ref
@@ -280,11 +280,11 @@ map_df <- function(trt_md,
     if (length(ref_cotrt) && length(cotrt_var)) {
       for (i in names(out)) {
         # matching the ref_elem to the trt_elem for the cotrt_var
-        ref_idx <- lapply(na.omit(out[[i]]), function(x) {
+        ref_idx <- gDRutils::loop(na.omit(out[[i]]), function(x) {
           ref_elem[rn == x, cotrt_var, with = FALSE] ==
               trt_elem[rn == i, cotrt_var, with = FALSE]
           })
-        out[[i]] <- out[[i]][unlist(lapply(ref_idx, all))]
+        out[[i]] <- out[[i]][unlist(gDRutils::loop(ref_idx, all))]
       }
     }
     out
@@ -324,7 +324,7 @@ map_untreated <- function(mat_elem) {
 
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
   ntag <- rowSums(drug_cols[,
-                            lapply(.SD, `%in%`, untrt_tag),
+                            gDRutils::loop(.SD, `%in%`, untrt_tag),
                             .SDcols = names(drug_cols)])
   ntag == length(valid)
 }
