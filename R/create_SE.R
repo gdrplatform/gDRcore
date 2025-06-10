@@ -139,7 +139,7 @@ create_SE <- function(df_,
 
   
   out <- vector("list", length = nrow(treated))
-  out <- lapply(seq_len(nrow(treated)), function(i) {
+  out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
     trt <- treated$rn[i]
     
     trt_df <- dfs[trt]
