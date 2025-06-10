@@ -81,7 +81,7 @@ create_SE <- function(df_,
   }
   
   
-  df_[, (names(df_)) := gDRutils::loop(.SD, function(x) {
+  df_[, (names(df_)) := lapply(.SD, function(x) {
     if (is.character(x)) {
       gsub(paste(untreated_tag, collapse = "|"), untreated_tag[1], x)
     } else {
@@ -225,7 +225,7 @@ create_SE <- function(df_,
   # Capture important values in experiment metadata.
   se <- gDRutils::set_SE_identifiers(se, identifiers)
   se <- gDRutils::set_SE_experiment_metadata(se, exp_md)
-  se <- gDRutils::set_SE_keys(se, gDRutils::loop(Keys, sort))
+  se <- gDRutils::set_SE_keys(se, lapply(Keys, sort))
 
   se
 }

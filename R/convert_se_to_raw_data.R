@@ -21,7 +21,7 @@ convert_mae_to_raw_data <- function(mae) {
   data <- gDRutils::MAEpply(mae, convert_se_to_raw_data)
   
   # Remove duplicates shared between assays to keep only original single-agent
-  common_records <- Reduce(intersect, gDRutils::loop(data, "[[", "record_id"))
+  common_records <- Reduce(intersect, lapply(data, "[[", "record_id"))
   sa_name <- gDRutils::get_supported_experiments("sa")
   
   # Get combo exp name (also support extracting the obsolete name for reprocessing purposes)
@@ -31,7 +31,7 @@ convert_mae_to_raw_data <- function(mae) {
     data[[sa_name]] <- data[[sa_name]][!record_id %in% common_records]
   } else {
     data[setdiff(names(data), sa_name)] <- 
-      gDRutils::loop(data[setdiff(names(data), sa_name)], function(x) {
+      lapply(data[setdiff(names(data), sa_name)], function(x) {
         x[!record_id %in% common_records]
       })
   }
@@ -129,7 +129,7 @@ replace_NA_in_raw_data <- function(df, mae) {
   
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   
-  df_[, (conc_cols) := gDRutils::loop(.SD, function(x) replace(x, is.na(x), 0)), .SDcols = conc_cols]
-  df_[, (drug_cols) := gDRutils::loop(.SD, function(x) replace(x, is.na(x), untreated_tag[[1]])), .SDcols = drug_cols]
+  df_[, (conc_cols) := lapply(.SD, function(x) replace(x, is.na(x), 0)), .SDcols = conc_cols]
+  df_[, (drug_cols) := lapply(.SD, function(x) replace(x, is.na(x), untreated_tag[[1]])), .SDcols = drug_cols]
   df_
 }

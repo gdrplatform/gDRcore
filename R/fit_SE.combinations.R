@@ -112,7 +112,7 @@ fit_SE.combinations <- function(se,
       "rconcs"
     )
     
-    mean_avg_combo <-  avg_combo[, gDRutils::loop(.SD, mean), by = c(id, id2, "normalization_type"), .SDcols = c("x", "x_std")]
+    mean_avg_combo <-  avg_combo[, lapply(.SD, mean), by = c(id, id2, "normalization_type"), .SDcols = c("x", "x_std")]
 
     # deal with cases of multiple concentrations mapped to the same value 
     # when rounded create a complete matrix with the most frequence combo 
@@ -226,7 +226,7 @@ fit_SE.combinations <- function(se,
               c("DRCInvalidFitResult", "DRCTooFewPointsToFit")), 
         ]
       if (nrow(metrics_merged) == 0) {
-        metrics_merged <- metrics_merged[, gDRutils::loop(.SD, function(x) NA)]
+        metrics_merged <- metrics_merged[, lapply(.SD, function(x) NA)]
         metrics_merged[, `:=`(normalization_type = norm_type, fit_source = "gDR")]
         metrics_merged
       }
