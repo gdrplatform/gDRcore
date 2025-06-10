@@ -89,7 +89,7 @@ identify_keys <- function(df_,
     nested_keys = nested_keys
   )
 
-  keys <- gDRutils::loop(
+  keys <- lapply(
     keys, 
     function(x) {
       setdiff(x, c(gDRutils::get_header("raw_data"),
@@ -112,7 +112,7 @@ identify_keys <- function(df_,
   # TODO: Improve this.
   for (k in keys[["untrt_Endpoint"]]) {
     if (all(is.na(df_[, k, with = FALSE]))) {
-      keys <- gDRutils::loop(keys, function(x) setdiff(x, k))
+      keys <- lapply(keys, function(x) setdiff(x, k))
     }
     if (all(is.na(df_[which(t0), k, with = FALSE]))) {
       keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
