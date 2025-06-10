@@ -44,7 +44,6 @@ identify_data_type <- function(dt,
                                codilution_conc = 2,
                                matrix_conc = 1) {
   
-  dt <- data.table::copy(dt)
   # Get drug and concentration identifiers
   drug_ids <- get_relevant_ids(c("drug_name", "drug_name2", "drug_name3"), dt)
   conc_ids <- get_relevant_ids(c("concentration", "concentration2", "concentration3"), dt)
@@ -267,7 +266,7 @@ get_relevant_ids <- function(identifiers, dt) {
 #'
 unify_combination_data <- function(dt, cl, drug_ids) {
   cotrt_data <- split(dt, dt[[cl]])
-  data.table::rbindlist(gDRutils::loop(cotrt_data, function(x) {
+  data.table::rbindlist(lapply(cotrt_data, function(x) {
     duplicated_full_idx <- which(x[[drug_ids[["drug_name"]]]] %chin% x[[drug_ids[["drug_name2"]]]] &
                                    x[[drug_ids[["drug_name2"]]]] %chin% x[[drug_ids[["drug_name"]]]])
     if (length(duplicated_full_idx)) {
@@ -312,7 +311,7 @@ collapse_drugs <- function(dt) {
   # add '1' to the names for more efficient loop lower
   names(drug_ids)[!grepl("[0-9]", names(drug_ids))] <- paste0(names(drug_ids)[!grepl("[0-9]", names(drug_ids))], "1")
   drug_ids <- drug_ids[which(drug_ids %in% names(dt))]
-  max_drug <- max(as.numeric(unlist(gDRutils::loop(names(drug_ids), function(x) substr(x, nchar(x), nchar(x)))),
+  max_drug <- max(as.numeric(unlist(lapply(names(drug_ids), function(x) substr(x, nchar(x), nchar(x)))),
                              na.rm = TRUE))
   
   if (max_drug > 1) { # collapse treatment iteratively

@@ -10,11 +10,11 @@ test_that("grr_matches works as expected", {
   valid <- c("DrugName", "DrugName_2")
   clid <- "clid"
   # split data.tables to simple model with clid column and drug column
-  trt <- gDRutils::loop(valid, function(x) treated[, c(clid, x), with = FALSE])
-  trt <- do.call(paste, do.call(rbind, gDRutils::loop(trt, function(x) setNames(x, names(trt[[1]])))))
+  trt <- lapply(valid, function(x) treated[, c(clid, x), with = FALSE])
+  trt <- do.call(paste, do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]])))))
   
-  ref <- gDRutils::loop(valid, function(x) ref[, c(clid, x), with = FALSE])
-  ref <- do.call(paste, do.call(rbind, gDRutils::loop(ref, function(x) setNames(x, names(ref[[1]])))))
+  ref <- lapply(valid, function(x) ref[, c(clid, x), with = FALSE])
+  ref <- do.call(paste, do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]])))))
   
   matchTrtRef <- grr_matches(trt, ref, list = FALSE, all.y = FALSE)
   expect_equal(dim(matchTrtRef), c(4, 2))

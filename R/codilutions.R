@@ -20,7 +20,7 @@ fit_combo_codilutions <- function(measured,
     ndigit = 1
   )
   ratios <- S4Vectors::split(measured, measured$ratios)
-  keep <- unlist(gDRutils::loop(ratios, function(x) {
+  keep <- unlist(lapply(ratios, function(x) {
     nrow(x) > 4
   }))
   valid <- ratios[keep]

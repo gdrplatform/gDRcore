@@ -74,7 +74,7 @@ cleanup_metadata <- function(df_metadata) {
   split_idx <- stringr::str_extract(names(drug_conc_cols), "[0-9]")
   split_idx[is.na(split_idx)] <- 1
   drug_conc_cols_list <- split(drug_conc_cols, split_idx)
-  drug_conc_cols_list <- gDRutils::loop(drug_conc_cols_list, function(x) {
+  drug_conc_cols_list <- lapply(drug_conc_cols_list, function(x) {
     names(x) <- gsub("[0-9]", "", names(x))
     x
   })
@@ -369,7 +369,7 @@ rbindParallelList <- function(x, name) {
   S4Vectors::DataFrame(
     do.call(
       rbind, 
-      c(gDRutils::loop(x, function(x) {
+      c(lapply(x, function(x) {
         dt <- data.table::as.data.table("[[" (x, name))
         data.table::setorder(dt)
         dt
@@ -434,19 +434,19 @@ rbindParallelList <- function(x, name) {
 #' ref <- mat_elem[ref_idx, ]
 #' treated <- mat_elem[-ref_idx, ]
 #' valid <- c("DrugName", "DrugName_2")
-#' trt <- gDRutils::loop(valid, function(x) {
+#' trt <- lapply(valid, function(x) {
 #'   colnames <- c("clid", x) 
 #'   treated[, colnames, with = FALSE]
 #' })
 #' trt <- do.call(paste, 
-#'   do.call(rbind, gDRutils::loop(trt, function(x) setNames(x, names(trt[[1]]))))
+#'   do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]]))))
 #' )
-#' ref <- gDRutils::loop(valid, function(x) {
+#' ref <- lapply(valid, function(x) {
 #'   colnames <- c("clid", x) 
 #'   ref[, colnames, with = FALSE]
 #' })
 #' ref <- do.call(paste, 
-#'   do.call(rbind, gDRutils::loop(ref, function(x) setNames(x, names(ref[[1]]))))
+#'   do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]]))))
 #' )
 #' grr_matches(trt, ref, list = FALSE, all.y = FALSE)
 #' 
