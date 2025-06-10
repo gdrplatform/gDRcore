@@ -1,3 +1,6 @@
+## gDRcore 1.7.4 - 2025-06-10
+* switch from `lapply` into `gDRutils::loop` in create_SE
+
 ## gDRcore 1.7.3 - 2025-05-22
 * add functions for reannotating `SummarizedExperiment` and `MultiAssayExperiment` objects
 * update vignettes
