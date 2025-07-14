@@ -1,3 +1,6 @@
+## gDRcore 1.7.5 - 2025-07-14
+* update headers in `fit_SE`
+
 ## gDRcore 1.7.4 - 2025-06-10
 * switch from `lapply` into `gDRutils::loop` in create_SE
 
