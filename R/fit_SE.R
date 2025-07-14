@@ -77,7 +77,7 @@ fit_SE <- function(se,
 
 #' @keywords internal
 fit_FUN <- function(x, 
-                    metric_cols = gDRutils::get_header("response_metrics")
+                    metric_cols = gDRutils::get_header("response_metrics"),
                     conc = gDRutils::get_env_identifiers("concentration"),
                     nested_identifiers,
                     n_point_cutoff,
