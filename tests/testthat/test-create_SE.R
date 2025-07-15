@@ -71,3 +71,22 @@ test_that("create_SE works with empty nested confounder", {
   expect_equal(dim(se$result), c(2, 6))
 })
 
+test_that("create_SE swap drugs properly", {
+  
+  data_mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+  data_raw <- gDRcore::convert_mae_to_raw_data(data_mae)
+  data_new <- data_raw[data_raw$Gnumber == "G00005" & data_raw$Gnumber_2 == "G00026"]
+  
+  data_new$Gnumber_2 <- "G00005"
+  data_new$DrugName_2 <- "drug_005"
+  data_new$drug_moa_2 <- "moa_A"
+  
+  data_new$Gnumber <- "G00026"
+  data_new$DrugName <- "drug_026"
+  data_new$drug_moa <- "moa_E"
+  data_final <- rbind(data_raw, data_new)
+  mae <- gDRcore::create_SE(data_final, data_type = "combination")
+  mae2 <- gDRcore::create_SE(data_raw, data_type = "combination")
+  expect_equal(dim(mae), dim(mae2))
+})
+
