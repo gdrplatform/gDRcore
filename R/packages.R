@@ -46,7 +46,10 @@ if (getRversion() >= "2.15.1") {
       "isDay0",
       "record_id",
       "ratio",
-      "smooth"
+      "smooth",
+      "priority1",
+      "priority2",
+      "x.N"
     ), 
     utils::packageName())
 }

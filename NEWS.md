@@ -1,3 +1,6 @@
+## gDRcore 1.7.6 - 2025-07-15
+* swap drugs to unify combination order
+
 ## gDRcore 1.7.5 - 2025-07-14
 * update headers in `fit_SE`
 
