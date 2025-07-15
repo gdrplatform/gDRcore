@@ -71,7 +71,7 @@ test_that("create_SE works with empty nested confounder", {
   expect_equal(dim(se$result), c(2, 6))
 })
 
-test_that("create_SE swap drugs properly", {
+test_that("create_SE swaps drugs properly", {
   
   data_mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
   data_raw <- gDRcore::convert_mae_to_raw_data(data_mae)
