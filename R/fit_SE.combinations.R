@@ -151,45 +151,45 @@ fit_SE.combinations <- function(se,
       # fit by column: the series in the primary identifier, the cotrt is the 
       # secondary one
       
-      col_fittings <- fit_combo_cotreatments(
+      drug_1 <- fit_combo_cotreatments(
         avg_subset,
         series_id = id, 
         cotrt_id = id2, 
         norm_type
       )
-      col_fittings <- if (all(is.na(col_fittings$fit_type))) {
-        x <- col_fittings[1, ]
+      drug_1 <- if (all(is.na(drug_1$fit_type))) {
+        x <- drug_1[1, ]
         x[, "cotrt_value"] <- NA
         x
       } else {
-        na.omit(col_fittings, col = "fit_type")
+        na.omit(drug_1, col = "fit_type")
       }
     
       # fit by row (flipped): the series in the secondary identifier, the 
       # cotrt is the primary one
-      row_fittings <- fit_combo_cotreatments(
+      drug_2 <- fit_combo_cotreatments(
         avg_subset,
         series_id = id2, 
         cotrt_id = id, 
         norm_type
       )
       
-      row_fittings <- na.omit(row_fittings, col = "fit_type")
+      drug_2 <- na.omit(drug_2, col = "fit_type")
 
       # fit by codilution (diagonal)
-      codilution_fittings <- fit_combo_codilutions(
+      codilution <- fit_combo_codilutions(
         avg_subset,
         series_identifiers, 
         norm_type
       )
-      codilution_fittings <- na.omit(codilution_fittings, col = "fit_type")
+      codilution <- na.omit(codilution, col = "fit_type")
 
       # apply the fit to get smoothed data: results per column
       # (along primary identifier for each value of the secondary identifier)
       complete_subset$col_values <- map_ids_to_fits(
         pred = complete_subset[[id]],
         match_col = complete_subset[[id2]], 
-        col_fittings, 
+        drug_1, 
         "cotrt_value"
       )
       # apply the fit the get smoothed data: results per row
@@ -197,25 +197,25 @@ fit_SE.combinations <- function(se,
       complete_subset$row_values <- map_ids_to_fits(
         pred = complete_subset[[id2]],
         match_col = complete_subset[[id]], 
-        row_fittings, "cotrt_value"
+        drug_2, "cotrt_value"
       )
-      metrics_names <- c("col_fittings", "row_fittings")
-      if (!is.null(codilution_fittings)) {
+      metrics_names <- c("drug_1", "drug_2")
+      if (!is.null(codilution)) {
         # apply the fit the get smoothed data: codilution results (along sum 
         # of identifiers for each ratio)
         complete_subset$codil_values <- map_ids_to_fits(
           pred = complete_subset[[id2]] + complete_subset[[id]],
           match_col = gDRutils::round_concentration(complete_subset[[id2]] / complete_subset[[id]], 1),
-          codilution_fittings, 
+          codilution, 
           "ratio"
         )
-        metrics_names <- c(metrics_names, "codilution_fittings")
+        metrics_names <- c(metrics_names, "codilution")
       } 
 
       metrics_merged <- data.table::rbindlist(mget(metrics_names), fill = TRUE)
-      # we need it to distinguish which rows are col_fittings/row_fittings 
+      # we need it to distinguish which rows are drug_1/drug_2 
       # and codilution_fitting
-      metrics_merged$source <- rep(
+      metrics_merged$dilution_drug <- rep(
         metrics_names, 
         vapply(mget(metrics_names), nrow, numeric(1))
       )
@@ -288,13 +288,13 @@ fit_SE.combinations <- function(se,
       ]
       isobologram_out <- if (
           sum((av_matrix_dense[[id]] * av_matrix_dense[[id2]]) > 0) > 9 &&
-          min(row_fittings$cotrt_value) == 0
+          min(drug_2$cotrt_value) == 0
         ) {
           calculate_Loewe(
             av_matrix, 
-            row_fittings, 
-            col_fittings, 
-            codilution_fittings,
+            drug_2, 
+            drug_1, 
+            codilution,
             series_identifiers = c(id, id2), 
             normalization_type = norm_type
           )
@@ -337,13 +337,13 @@ fit_SE.combinations <- function(se,
       excess$row_id <-
         isobologram_out$df_all_iso_points$row_id <-
         isobologram_out$df_all_iso_curves$row_id <-
-        col_fittings$row_id <-
+        drug_1$row_id <-
         scores$row_id <-
         metrics_merged$row_id <- i
       excess$col_id <-
         isobologram_out$df_all_iso_points$col_id <-
         isobologram_out$df_all_iso_curves$col_id <-
-        col_fittings$col_id <-
+        drug_1$col_id <-
         scores$col_id <-
         metrics_merged$col_id <- j
       
