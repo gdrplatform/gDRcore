@@ -1,9 +1,9 @@
 #' @keywords combinations
 calculate_Loewe <- function(
     df_mean, 
-    row_fittings, 
-    col_fittings, 
-    codilution_fittings, 
+    drug_2, 
+    drug_1, 
+    codilution, 
     series_identifiers,
     normalization_type,
     conc_margin = 10 ^ 0.5,
@@ -34,22 +34,22 @@ calculate_Loewe <- function(
   max1_cap <- gDRutils::round_concentration(max(axis_1$conc_1) * conc_margin)
   max2_cap <- gDRutils::round_concentration(max(axis_2$conc_2) * conc_margin)
 
-  data.table::setorder(row_fittings, -cotrt_value)
-  data.table::setorder(col_fittings, cotrt_value)
-  if (!is.null(codilution_fittings)) {
-    data.table::setorder(codilution_fittings, -ratio)
-    codilution_fittings <- 
-      codilution_fittings[codilution_fittings$fit_type %in% 
+  data.table::setorder(drug_2, -cotrt_value)
+  data.table::setorder(drug_1, cotrt_value)
+  if (!is.null(codilution)) {
+    data.table::setorder(codilution, -ratio)
+    codilution <- 
+      codilution[codilution$fit_type %in% 
                           "DRC3pHillFitModelFixS0", ]
     # more restrictive to be sure that it adds fit quality
-    codilution_fittings <-
-      codilution_fittings[codilution_fittings$N_conc >= min_n_conc &
-                            codilution_fittings$r2 > min_r2, ]
+    codilution <-
+      codilution[codilution$N_conc >= min_n_conc &
+                            codilution$r2 > min_r2, ]
   }
   futile.logger::flog.debug(
     "codilution fittings after transformation/filtering:"
   )
-  futile.logger::flog.debug(knitr::kable(codilution_fittings))
+  futile.logger::flog.debug(knitr::kable(codilution))
   
   for (isobol_value in iso_cutoffs) { # run through the different isobolograms
     
@@ -58,11 +58,11 @@ calculate_Loewe <- function(
     # filtered_cf can be empty (i.e. no rows) - this edge case is handled in 
     # calculate_isobolograms
     filtered_cf <- 
-      codilution_fittings[codilution_fittings$x_inf < (isobol_value - .1), ]
+      codilution[codilution$x_inf < (isobol_value - .1), ]
     
     df_iso <- calculate_isobolograms(
-      row_fittings, 
-      col_fittings, 
+      drug_2, 
+      drug_1, 
       filtered_cf, 
       isobol_value, 
       max1_cap, 
@@ -328,9 +328,9 @@ get_isocutoffs <- function(df_mean, normalization_type) {
 
 
 #' @keywords combinations
-calculate_isobolograms <- function(row_fittings, 
-                                   col_fittings, 
-                                   codilution_fittings, 
+calculate_isobolograms <- function(drug_2, 
+                                   drug_1, 
+                                   codilution, 
                                    isobol_value,
                                    max1_cap, 
                                    max2_cap) {
@@ -338,25 +338,25 @@ calculate_isobolograms <- function(row_fittings,
     # cutoff point by row
     conc2 <- gDRutils::predict_conc_from_efficacy(
       efficacy = isobol_value,
-      x_inf = row_fittings$x_inf,
-      x_0 = row_fittings$x_0,
-      ec50 = row_fittings$ec50,
-      h = row_fittings$h
+      x_inf = drug_2$x_inf,
+      x_0 = drug_2$x_0,
+      ec50 = drug_2$ec50,
+      h = drug_2$h
     )
-    row_iso <- data.table::data.table(conc_1 = row_fittings[, cotrt_value],
+    row_iso <- data.table::data.table(conc_1 = drug_2[, cotrt_value],
       conc_2 = conc2,
       fit_type = "by_row")
 
     # cutoff point by columns
     conc1 <- gDRutils::predict_conc_from_efficacy(
       efficacy = isobol_value,
-      x_inf = col_fittings$x_inf,
-      x_0 = col_fittings$x_0,
-      ec50 = col_fittings$ec50,
-      h = col_fittings$h
+      x_inf = drug_1$x_inf,
+      x_0 = drug_1$x_0,
+      ec50 = drug_1$ec50,
+      h = drug_1$h
     )
     col_iso <- data.table::data.table(conc_1 = conc1,
-      conc_2 = col_fittings[, cotrt_value],
+      conc_2 = drug_1[, cotrt_value],
       fit_type = "by_col")
 
     xy_iso <- data.table::rbindlist(list(row_iso, col_iso))
@@ -365,17 +365,17 @@ calculate_isobolograms <- function(row_fittings,
 
     # cutoff point by diagonal (co-dilution)
     # co-dil is given as concentration of drug 1
-    if (!is.null(codilution_fittings) && NROW(codilution_fittings) > 1) {
+    if (!is.null(codilution) && NROW(codilution) > 1) {
       conc_mix <- gDRutils::predict_conc_from_efficacy(
         efficacy = isobol_value,
-        x_inf = codilution_fittings$x_inf,
-        x_0 = codilution_fittings$x_0,
-        ec50 = codilution_fittings$ec50,
-        h = codilution_fittings$h
+        x_inf = codilution$x_inf,
+        x_0 = codilution$x_0,
+        ec50 = codilution$ec50,
+        h = codilution$h
       ) 
       codil_iso <- data.table::data.table(
-        conc_1 = conc_mix / (1 + codilution_fittings$ratio),
-        conc_2 = conc_mix / (1 + (1 / codilution_fittings$ratio)),
+        conc_1 = conc_mix / (1 + codilution$ratio),
+        conc_2 = conc_mix / (1 + (1 / codilution$ratio)),
         fit_type = "by_codil"
       )
 
@@ -383,11 +383,11 @@ calculate_isobolograms <- function(row_fittings,
       capped_idx <- codil_iso$conc_1 > max1_cap | codil_iso$conc_2 > max2_cap
       codil_iso$conc_1[capped_idx] <- pmin(
         max1_cap, 
-        codilution_fittings$conc_ratio * max2_cap
+        codilution$conc_ratio * max2_cap
       )[capped_idx]
       codil_iso$conc_2[capped_idx] <- pmin(
         max2_cap, 
-        max1_cap / codilution_fittings$conc_ratio
+        max1_cap / codilution$conc_ratio
       )[capped_idx]
       
       isobologram_values <- data.table::rbindlist(list(xy_iso, codil_iso), fill = TRUE)

@@ -1,3 +1,6 @@
+## gDRcore 1.7.7 - 2025-07-28
+* replace `row/col_fittings` in source for matrix Metrics assay
+
 ## gDRcore 1.7.6 - 2025-07-15
 * swap drugs to unify combination order
 
