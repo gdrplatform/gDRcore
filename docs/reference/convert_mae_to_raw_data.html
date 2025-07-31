@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.7</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,32 +82,32 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/get_synthetic_data.html" class="external-link">get_synthetic_data</a></span><span class="op">(</span><span class="st">"finalMAE_small"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">convert_mae_to_raw_data</span><span class="op">(</span><span class="va">mae</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: BumpyMatrix</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       Barcode Concentration masked ReadoutValue Gnumber DrugName drug_moa</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        &lt;char&gt;         &lt;num&gt; &lt;lgcl&gt;        &lt;num&gt;  &lt;char&gt;   &lt;char&gt;   &lt;char&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    1: plate_1             0  FALSE         95.7 vehicle  vehicle  vehicle</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    2: plate_1             0  FALSE        100.2 vehicle  vehicle  vehicle</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    3: plate_1             0  FALSE        102.6 vehicle  vehicle  vehicle</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    4: plate_1             0  FALSE        101.6 vehicle  vehicle  vehicle</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    5: plate_1             0  FALSE         99.9 vehicle  vehicle  vehicle</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ---                                                                    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3296: plate_3            10  FALSE         57.7  G00011 drug_011    moa_B</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3297: plate_3            10  FALSE         37.7  G00011 drug_011    moa_B</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3298: plate_3            10  FALSE         28.6  G00011 drug_011    moa_B</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3299: plate_3            10  FALSE         29.6  G00011 drug_011    moa_B</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3300: plate_3            10  FALSE         11.0  G00011 drug_011    moa_B</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       Duration    clid CellLineName   Tissue ReferenceDivisionTime</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;num&gt;  &lt;char&gt;       &lt;char&gt;   &lt;char&gt;                 &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    1:       72 CL00011  cellline_BA tissue_x                    26</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    2:       72 CL00012  cellline_CA tissue_x                    30</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    3:       72 CL00013  cellline_DA tissue_x                    34</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    4:       72 CL00014  cellline_EA tissue_x                    38</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    5:       72 CL00015  cellline_FA tissue_x                    42</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ---                                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3296:       72 CL00016  cellline_GB tissue_y                    46</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3297:       72 CL00017  cellline_HB tissue_y                    50</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3298:       72 CL00018  cellline_IB tissue_y                    54</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3299:       72 CL00019  cellline_JB tissue_z                    58</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3300:       72 CL00020  cellline_KB tissue_z                    62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       Barcode Concentration ReadoutValue Gnumber DrugName drug_moa Duration</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        &lt;char&gt;         &lt;num&gt;        &lt;num&gt;  &lt;char&gt;   &lt;char&gt;   &lt;char&gt;    &lt;num&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    1: plate_1             0         95.7 vehicle  vehicle  vehicle       72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    2: plate_1             0        100.2 vehicle  vehicle  vehicle       72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    3: plate_1             0        102.6 vehicle  vehicle  vehicle       72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    4: plate_1             0        101.6 vehicle  vehicle  vehicle       72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    5: plate_1             0         99.9 vehicle  vehicle  vehicle       72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ---                                                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3296: plate_3            10         57.7  G00011 drug_011    moa_B       72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3297: plate_3            10         37.7  G00011 drug_011    moa_B       72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3298: plate_3            10         28.6  G00011 drug_011    moa_B       72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3299: plate_3            10         29.6  G00011 drug_011    moa_B       72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3300: plate_3            10         11.0  G00011 drug_011    moa_B       72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          clid CellLineName   Tissue ReferenceDivisionTime</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        &lt;char&gt;       &lt;char&gt;   &lt;char&gt;                 &lt;num&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    1: CL00011  cellline_BA tissue_x                    26</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    2: CL00012  cellline_CA tissue_x                    30</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    3: CL00013  cellline_DA tissue_x                    34</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    4: CL00014  cellline_EA tissue_x                    38</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    5: CL00015  cellline_FA tissue_x                    42</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ---                                                    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3296: CL00016  cellline_GB tissue_y                    46</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3297: CL00017  cellline_HB tissue_y                    50</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3298: CL00018  cellline_IB tissue_y                    54</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3299: CL00019  cellline_JB tissue_z                    58</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3300: CL00020  cellline_KB tissue_z                    62</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
