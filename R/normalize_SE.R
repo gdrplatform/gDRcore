@@ -52,7 +52,10 @@ normalize_SE <- function(se,
   gDRutils::validate_se_assay_name(se, control_assay)
   gDRutils::validate_se_assay_name(se, raw_treated_assay)
   
-  
+   if (data_type == "time-course") {
+      return(normalize_SE_time_course(se))
+  }
+    
   if (length(nested_confounders) == 0) {
     nested_confounders <- NULL
   }
@@ -233,6 +236,8 @@ normalize_SE <- function(se,
   SummarizedExperiment::assays(se)[[normalized_assay]] <- norm
   se
 }
+
+
   
 #' @keywords internal
 aggregate_ref <- function(ref_df, control_mean_fxn) {
@@ -254,6 +259,27 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
                                length(setdiff(names(ref_df_dcast), group_cols)), ]
   fill_NA_by_mean(cleaned_df, cleaned_df, unique(ref_df$control_type))
 }
+
+
+normalize_SE_time_course <- function(se_tc) {
+  day_0 <- convert_se_assay_to_dt(se_tc, "RawTreated") %>% filter(Duration == 0)
+  day_0$tag <- paste0(day_0$WellRow, day_0$WellColumn, "_", day_0$Barcode)
+  plate_map_ <- c()
+  for (row in 1:nrow(day_0)) {
+    plate_map_[day_0[row,]$tag] <- log(day_0[row,]$ReadoutValue)
+  }
+  bumpy_matrix = assay(se_tc, 'RawTreated')
+  for (i in 1:length(bumpy_matrix)) {
+    time_i_log_cell_counts <- log(bumpy_matrix[i][[1]]$ReadoutValue)
+    tags <- paste0(bumpy_matrix[i][[1]]$WellRow, bumpy_matrix[i][[1]]$WellColumn, "_", bumpy_matrix[i][[1]]$Barcode)
+    time_0_log_cell_counts <- unlist(lapply(FUN=function(x) plate_map_[x], tags))
+    bumpy_matrix[i][[1]]$ReadoutValue <- time_i_log_cell_counts - time_0_log_cell_counts
+    bumpy_matrix[i][[1]]$CorrectedReadout <- time_i_log_cell_counts - time_0_log_cell_counts
+  }
+  assays(se_tc)$LogFoldChange <- bumpy_matrix
+  return(se_tc)
+}
+
 
 #' @keywords internal
 fill_NA_by_mean <- function(dt, ref_df, cols) {

@@ -90,7 +90,7 @@ create_SE <- function(df_,
   }), .SDcols = names(df_)]
 
   # Identify treatments, conditions, and experiment metadata.
-  md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
+  md <- split_SE_components(df_, nested_keys = Keys$nested_keys) # Change to gDRutils::
   
   coldata <- md$condition_md
   rowdata <- md$treatment_md
@@ -102,13 +102,19 @@ create_SE <- function(df_,
   emptyRefs <- all(is.null(unlist(refs)))
   trt_conditions <- names(refs)
   sa_conditions <- unique(unname(unlist(refs)))
+
+  trt_conditions <- as.numeric(trt_conditions)
+  if (data_type == "time-course"){
+      trt_conditions <- 1:nrow(mapping_entries)
+      sa_conditions <- c()
+      map_untreated <- function(x) FALSE
+  }
   
-  treated <- mapping_entries[as.numeric(trt_conditions), ]
+  treated <- mapping_entries[trt_conditions, ]
   # not all entries are mapped on trt_conditions or sa_conditions 
   #   --> untreated should be mapped explicitely to avoid issues with treatments
   #       being considered as untreated in specific combination cases
   untreated <- mapping_entries[map_untreated(mapping_entries), ]
-
   ## Map controls.
   
   controls <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
@@ -131,12 +137,14 @@ create_SE <- function(df_,
   ## The mapping_entries contain all exhaustive combinations of treatments 
   ## and cells. Not all conditions will actually exist in the data, so filter 
   ## out those that do not exist. 
+  
+  untreated_rn <- unique(unlist(ctl_maps))
   treated_rows <- which(treated$rn %in% dfs$rn)
+  
   treated <- treated[treated_rows, ]
-  untreated <- dfs[dfs$rn %in% unique(unlist(ctl_maps)), ]
+  untreated <- dfs[dfs$rn %in% untreated_rn, ]
   
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
-
   
   out <- vector("list", length = nrow(treated))
   out <- lapply(seq_len(nrow(treated)), function(i) {
@@ -146,8 +154,10 @@ create_SE <- function(df_,
     row_id <- unique(trt_df[["row_id"]])
     refs_df <- dfs[refs[[trt]]]
     
-    trt_df <- 
-      validate_mapping(trt_df, refs_df, nested_confounders)
+    if (data_type != "time-course") {
+        trt_df <- 
+            validate_mapping(trt_df, refs_df, nested_confounders)
+    }
     selected_columns <- names(trt_df) %in% data_fields
     trt_df <- trt_df[, selected_columns, with = FALSE]
 
