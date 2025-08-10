@@ -68,6 +68,40 @@ create_SE <- function(df_,
   # overwrite "drug", "drug_name", "drug_moa"
   # with "untreated" if "concentration2" == 0
   if (any(gDRutils::get_env_identifiers("concentration2") == colnames(df_))) {
+    id_cols <- c("drug", "drug_name", "drug_moa", "concentration")
+    cols1 <- unlist(gDRutils::get_env_identifiers(id_cols, simplify = FALSE))
+    cols2 <- unlist(gDRutils::get_env_identifiers(paste0(id_cols, "2"), simplify = FALSE))
+    drug1_col <- cols1[["drug"]]
+    drug2_col <- cols2[["drug2"]]
+    conc2_col <- cols2[["concentration2"]]
+    
+    combo_idx <- df_[[conc2_col]] > 0 & !is.na(df_[[drug2_col]])
+    
+    if (any(combo_idx)) {
+      freq_counts <- df_[combo_idx, .N, by = c(drug1_col)]
+      
+      df_[, priority1 := freq_counts[.(df_[[drug1_col]]), on = drug1_col, x.N]]
+      df_[, priority2 := freq_counts[.(df_[[drug2_col]]), on = drug1_col, x.N]]
+      df_[is.na(priority1), priority1 := 0]
+      df_[is.na(priority2), priority2 := 0]
+      
+      swap_idx <- which(
+        combo_idx &
+          (
+            (df_$priority1 < df_$priority2) |
+              (df_$priority1 == df_$priority2 & df_[[drug1_col]] > df_[[drug2_col]])
+          )
+      )
+      
+      if (length(swap_idx) > 0) {
+        temp <- df_[swap_idx, .SD, .SDcols = cols1]
+        df_[swap_idx, (cols1) := df_[swap_idx, .SD, .SDcols = cols2]]
+        df_[swap_idx, (cols2) := temp]
+      }
+      
+      df_[, c("priority1", "priority2") := NULL]
+    }
+    
     single_agent_idx <-
       df_[[gDRutils::get_env_identifiers("concentration2")]] %in% 0
     drug_cols <- c("drug", "drug_name", "drug_moa")
@@ -147,7 +181,7 @@ create_SE <- function(df_,
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
   
   out <- vector("list", length = nrow(treated))
-  out <- lapply(seq_len(nrow(treated)), function(i) {
+  out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
     trt <- treated$rn[i]
     
     trt_df <- dfs[trt]

@@ -1,3 +1,15 @@
+## gDRcore 1.7.7 - 2025-07-28
+* replace `row/col_fittings` in source for matrix Metrics assay
+
+## gDRcore 1.7.6 - 2025-07-15
+* swap drugs to unify combination order
+
+## gDRcore 1.7.5 - 2025-07-14
+* update headers in `fit_SE`
+
+## gDRcore 1.7.4 - 2025-06-10
+* switch from `lapply` into `gDRutils::loop` in create_SE
+
 ## gDRcore 1.7.3 - 2025-05-22
 * add functions for reannotating `SummarizedExperiment` and `MultiAssayExperiment` objects
 * update vignettes
