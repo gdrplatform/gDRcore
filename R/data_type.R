@@ -79,9 +79,11 @@ identify_data_type <- function(dt,
     )
     conc_ratio <- conc_ratio[!names(conc_ratio) %in% c("Inf", "-Inf")]
     
-    type <- ifelse(length(conc_ratio) <= codilution_conc,
-                   gDRutils::get_supported_experiments("cd"),
-                   gDRutils::get_supported_experiments("combo"))
+    type <- if (length(conc_ratio) <= codilution_conc) {
+      gDRutils::get_supported_experiments("cd")
+    } else {
+      gDRutils::get_supported_experiments("combo")
+    }
     dt$type[missing_type_rows] <- type
   }
   dt
