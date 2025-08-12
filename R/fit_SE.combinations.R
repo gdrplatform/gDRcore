@@ -305,16 +305,17 @@ fit_SE.combinations <- function(se,
 
       # average the top 10-percentile excess to get a single value 
       # for the excess
-      scores[scores$normalization_type == norm_type, "hsa_score"] <- ifelse(
-        is.null(h_excess), 
-        NA, 
+      scores[scores$normalization_type == norm_type, "hsa_score"] <- if (is.null(h_excess)) {
+        NA
+      } else {
         score_FUN(h_excess$hsa_excess)
-      )
-      scores[scores$normalization_type == norm_type, "bliss_score"] <- ifelse(
-        is.null(bliss_excess), 
-        NA,
+      }
+
+      scores[scores$normalization_type == norm_type, "bliss_score"] <- if (is.null(bliss_excess)) {
+        NA
+      } else {
         score_FUN(bliss_excess$bliss_excess)
-      )
+      }
 
       if (all(vapply(isobologram_out, function(x) is.null(x) || all(is.na(x)), logical(1)))) {
         scores[scores$normalization_type == norm_type, "CIScore_50"] <-
