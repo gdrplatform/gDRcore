@@ -77,7 +77,7 @@ create_SE <- function(df_,
     
     combo_idx <- df_[[conc2_col]] > 0 & !is.na(df_[[drug2_col]])
     
-    if (any(combo_idx)) {
+    if (any(combo_idx) && (data_type != "time-course")) {
       freq_counts <- df_[combo_idx, .N, by = c(drug1_col)]
       
       df_[, priority1 := freq_counts[.(df_[[drug1_col]]), on = drug1_col, x.N]]
@@ -181,7 +181,9 @@ create_SE <- function(df_,
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
   
   out <- vector("list", length = nrow(treated))
-  out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
+  out <- lapply(seq_len(nrow(treated)), function(i) {
+    # Originaly gDRutils::loop instead of lapply, but need to add time-course
+    # To allowed data_model.character list
     trt <- treated$rn[i]
     
     trt_df <- dfs[trt]

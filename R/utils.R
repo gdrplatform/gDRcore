@@ -1,3 +1,272 @@
+#' @noRd
+#' @keywords internal
+#'
+.create_mapping_factors <- function(rowdata, coldata) {
+  
+  col_id <- rownames(coldata)
+  row_id <- rownames(rowdata)
+  
+  mapping_grid <- data.table::CJ(
+    col_id = col_id,
+    row_id = row_id
+  )
+  
+  rowdata_dt <- data.table::as.data.table(rowdata)
+  coldata_dt <- data.table::as.data.table(coldata)
+  
+  rowdata_dt[, row_id := row_id]
+  coldata_dt[, col_id := col_id]
+  
+  dt <- coldata_dt[rowdata_dt[mapping_grid, on = "row_id"], on = "col_id"]
+  dt[, rn := as.character(.I)]
+}
+
+
+#' cleanup_metadata
+#'
+#' Cleanup a data.table with metadata
+#'
+#' @param df_metadata a data.table with metadata
+#'
+#' @examples
+#'
+#' df <- data.table::data.table(
+#'   clid = "CELL_LINE",
+#'   Gnumber = "DRUG_1",
+#'   Concentration = c(0, 1),
+#'   Duration = 72
+#' )
+#' cleanup_df <- cleanup_metadata(df)
+#'
+#' @return a data.table with cleaned metadata
+#' @details Adds annotations and check whether user provided correct input data.
+#' @keywords utils
+#' @export
+#'
+cleanup_metadata <- function(df_metadata) {
+  
+  # Assertions:
+  checkmate::assert_data_table(df_metadata)
+
+  # Round duration to 6 values. 
+  duration_id <- gDRutils::get_env_identifiers("duration")
+  df_metadata[[duration_id]] <- round(as.numeric(df_metadata[[duration_id]], 6))
+  
+  if (!gDRutils::get_env_identifiers("cellline_name") %in% names(df_metadata)) {
+    df_metadata <- annotate_dt_with_cell_line(df_metadata,
+                                              cell_line_annotation = get_cell_line_annotation(df_metadata))
+  }
+  
+  drug_conc_cols <- unlist(
+    gDRutils::get_env_identifiers(
+      c(
+        "drug", 
+        "drug2", 
+        "drug3", 
+        "concentration", 
+        "concentration2", 
+        "concentration3"
+      ),
+      simplify = FALSE
+    )
+  )
+  drug_conc_cols <- drug_conc_cols[drug_conc_cols %in% names(df_metadata)]
+  split_idx <- stringr::str_extract(names(drug_conc_cols), "[0-9]")
+  split_idx[is.na(split_idx)] <- 1
+  drug_conc_cols_list <- split(drug_conc_cols, split_idx)
+  drug_conc_cols_list <- lapply(drug_conc_cols_list, function(x) {
+    names(x) <- gsub("[0-9]", "", names(x))
+    x
+  })
+  
+  idfs_len <- vapply(drug_conc_cols_list, length, FUN.VALUE = numeric(1))
+  
+  if (any(idfs_len != 2)) {
+    df_metadata[, (intersect(unlist(gDRutils::get_env_identifiers(
+      paste0(c("drug", "drug_name", "drug_moa", "concentration"),
+             names(drug_conc_cols_list[which(idfs_len != 2)])),
+      simplify = FALSE)), names(df_metadata))) := NULL]
+    drug_conc_cols_list <- drug_conc_cols_list[-which(idfs_len != 2)]
+  }
+  
+  # clean up concentration fields
+  for (i in drug_conc_cols_list) {
+    conc_id <- i[["concentration"]]
+    drug_id <- i[["drug"]]
+    untrt_id <- gDRutils::get_env_identifiers("untreated_tag")
+    
+    df_metadata[[conc_id]] <- ifelse(
+      is.na(df_metadata[[conc_id]]),
+      0,
+      df_metadata[[conc_id]]
+    )
+    
+    # set all untreated to 0
+    df_metadata[df_metadata[[drug_id]] %in% untrt_id, conc_id] <- 0
+    
+    df_metadata[[conc_id]] <- 
+      10 ^ round(log10(as.numeric(df_metadata[[conc_id]])), 6)
+    df_metadata[[drug_id]] <- ifelse(
+      is.na(df_metadata[[drug_id]]) & df_metadata[[conc_id]] == 0,
+      untrt_id[[1]],
+      df_metadata[[drug_id]]
+    )
+  }
+  
+  if (!gDRutils::get_env_identifiers("drug_name") %in% names(df_metadata)) {
+    df_metadata <- annotate_dt_with_drug(df_metadata,
+                                         drug_annotation = get_drug_annotation(df_metadata))
+  }
+  df_metadata
+}
+
+
+#' Order_result_df
+#'
+#' Order a data.table with results
+#'
+#' @param df_ a data.table with results
+#'
+#' @keywords utils
+#' @return a ordered data.table with results
+#'
+order_result_df <- function(df_) {
+
+  # Assertions:
+  
+  checkmate::assert_data_table(df_)
+
+  ordered_1 <- gDRutils::get_header("ordered_1")
+  ordered_2 <- gDRutils::get_header("ordered_2")
+  cols <- c(
+    ordered_1,
+    setdiff(colnames(df_), c(ordered_1, ordered_2)),
+    ordered_2
+  )
+  
+  cols <- intersect(cols, colnames(df_))
+
+  row_order_col <-
+    unlist(intersect(
+      c(
+        gDRutils::get_env_identifiers(
+          c("cellline_name", "duration", "drug_name"), 
+          simplify = FALSE
+        ),
+        "Concentration",
+        paste0(
+          c(
+            paste0(gDRutils::get_env_identifiers("drug_name"), "_"), 
+            "Concentration_"
+          ),
+          sort(rep(2:10, 2))
+        ),
+        setdiff(colnames(df_), c(ordered_1, ordered_2))
+      ),
+      cols
+    ))
+  
+  cols <- unlist(cols)
+  data.table::setorderv(df_, row_order_col)
+  df_ <- df_[, cols, with = FALSE]
+
+  return(df_)
+}
+
+#' Detect model of data
+#'
+#' @param x data.table with raw data or SummarizedExperiment object 
+#'          with gDR assays
+#' 
+#' @examples 
+#' data_model("single-agent")
+#' 
+#' @return string with the information of the raw data follows single-agent or 
+#' combination data model
+#' @keywords utils
+#' @export
+data_model <- function(x) {
+  UseMethod("data_model")
+}
+
+
+#' Detect model of data in data.table
+#'
+#' @param x data.table of raw drug response data 
+#'          containing both treated and untreated values. 
+#'
+#' @return string with the information of the raw data follows single-agent or 
+#' combination data model
+#' @keywords utils
+#' @export
+data_model.data.table <- function(x) {
+  
+  checkmate::assert_data_table(x)
+  drug_ids <- unlist(
+    gDRutils::get_env_identifiers(
+      c("drug_name", "drug_name2"), 
+      simplify = FALSE
+    )
+  )
+  cl_id <- gDRutils::get_env_identifiers("cellline")
+  conc2 <- gDRutils::get_env_identifiers("concentration2")
+  if (all(.get_default_combination_nested_identifiers() %in% colnames(x))) {
+    if (all(x[[conc2]]
+            %in% gDRutils::get_env_identifiers("untreated_tag"))) {
+      "single-agent"
+    } else {
+      "combination"
+    }
+  } else if (.get_default_single_agent_nested_identifiers() %in% colnames(x)) {
+    "single-agent"
+  } else {
+    "time-course" # May need a separate identifier for time-course data.
+  }
+}
+
+#' Detect model of data from experiment name
+#'
+#' @param x character with experiment name
+#'
+#' @return string with the information of the raw data follows single-agent or 
+#' combination data model
+#' @keywords utils
+#' @export
+data_model.character <- function(x) {
+  checkmate::assert_subset(x,  c('single-agent','combination','co-dilution','time-course'))
+ 
+  exp_v <- gDRutils::get_experiment_groups()
+  exp_v$`time-course` = "time-course"
+  names(exp_v[grep(x, exp_v)])
+}
+
+
+#' Validate availability of data models
+#' 
+#' @param d_types character vector with experiment names in \code{MultiAssayExperiment} object
+#' @param s_d_models character vector with names of supported experiment
+#'
+#' @keywords internal
+validate_data_models_availability <- function(d_types, s_d_models) {
+  checkmate::assert_character(d_types)
+  checkmate::assert_character(s_d_models, null.ok = TRUE)
+  
+  dm_v <- gDRutils::get_experiment_groups()
+
+  req_d_models <-
+    unique(names(dm_v)[vapply(dm_v, function(x) any(d_types %in% x), logical(1))])
+  f_models <- req_d_models[!req_d_models %in% s_d_models]
+  if (length(f_models)) {
+    msg1 <-
+      sprintf(
+        "'nested_identifiers_l' lacks information for the 
+        following data model(s): '%s'",
+        toString(f_models)
+      )
+    stop(msg1)
+  }
+}
+
 #' Get default nested identifiers
 #'
 #' @param x data.table with raw data or \code{SummarizedExperiment} object 
@@ -88,312 +357,239 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
   as.character(unlist(identifiers))
 }
 
+#' @keywords utils
+.catch_warnings <- function(x) {
+  warn  <- unlist(unique(x$warning))
+  if (!is.null(warn)) {
+    futile.logger::flog.warn(paste0(warn, collapse = "\n"))
+  }
+}
 
+#' @keywords internal
+#' @noRd
+rbindParallelList <- function(x, name) {
+  S4Vectors::DataFrame(
+    do.call(
+      rbind, 
+      c(lapply(x, function(x) {
+        dt <- data.table::as.data.table("[[" (x, name))
+        data.table::setorder(dt)
+        dt
+      }), fill = TRUE)
+    )
+  )
+}
 
-
-
-
-
-#' Detect model of data in data.table
-#'
-#' @param x data.table of raw drug response data 
-#'          containing both treated and untreated values. 
-#'
-#' @return string with the information of the raw data follows single-agent or 
-#' combination data model
+#' Value Matching
+#' 
+#' Returns a lookup table or list of the positions of ALL matches of its first
+#' argument in its second and vice versa. Similar to \code{\link{match}}, though
+#' that function only returns the first match.
+#' 
+#' This behavior can be imitated by using joins to create lookup tables, but
+#' \code{matches} is simpler and faster: usually faster than the best joins in
+#' other packages and thousands of times faster than the built in
+#' \code{\link{merge}}.
+#' 
+#' \code{all.x/all.y} correspond to the four types of database joins in the
+#' following way:
+#' 
+#' \describe{ \item{left}{\code{all.x=TRUE}, \code{all.y=FALSE}} 
+#' \item{right}{\code{all.x=FALSE}, \code{all.y=TRUE}} 
+#' \item{inner}{\code{all.x=FALSE}, \code{all.y=FALSE}} 
+#' \item{full}{\code{all.x=TRUE}, \code{all.y=TRUE}} }
+#' 
+#' Note that \code{NA} values will match other \code{NA} values.
+#' 
+#' @param x vector.  The values to be matched.  Long vectors are not currently
+#'   supported.
+#' @param y vector.  The values to be matched.  Long vectors are not currently
+#'   supported.
+#' @param all.x logical; if \code{TRUE}, then each value in \code{x} will be
+#'   included even if it has no matching values in \code{y}
+#' @param all.y logical; if \code{TRUE}, then each value in \code{y} will be
+#'   included even if it has no matching values in \code{x}
+#' @param list logical.  If \code{TRUE}, the result will be returned as a list
+#'   of vectors, each vector being the matching values in y. If \code{FALSE},
+#'   result is returned as a data.table with repeated values for each match.
+#' @param indexes logical.  Whether to return the indices of the matches or the
+#'   actual values.
+#' @param nomatch the value to be returned in the case when no match is found.
+#'   If not provided and \code{indexes=TRUE}, items with no match will be
+#'   represented as \code{NA}.  If set to \code{NULL}, items with no match will
+#'   be set to an index value of \code{length+1}.  If \code{indexes=FALSE}, they will
+#'   default to \code{NA}.
+#' @details Source of the function: 
+#' https://github.com/cran/grr/blob/master/R/grr.R
+#' 
+#' @examples 
+#' mat_elem <- data.table::data.table(
+#'   DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
+#'   DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
+#'   clid = rep(c("C1", "C2"), each = 4)
+#' )
+#' untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
+#' ref_idx <- which(
+#'   mat_elem$DrugName %in% untreated_tag |
+#'    mat_elem$DrugName_2 %in% untreated_tag
+#' )
+#' ref <- mat_elem[ref_idx, ]
+#' treated <- mat_elem[-ref_idx, ]
+#' valid <- c("DrugName", "DrugName_2")
+#' trt <- lapply(valid, function(x) {
+#'   colnames <- c("clid", x) 
+#'   treated[, colnames, with = FALSE]
+#' })
+#' trt <- do.call(paste, 
+#'   do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]]))))
+#' )
+#' ref <- lapply(valid, function(x) {
+#'   colnames <- c("clid", x) 
+#'   ref[, colnames, with = FALSE]
+#' })
+#' ref <- do.call(paste, 
+#'   do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]]))))
+#' )
+#' grr_matches(trt, ref, list = FALSE, all.y = FALSE)
+#' 
+#' @return data.table
+#' 
 #' @keywords utils
 #' @export
-data_model.data.table <- function(x) {
-  
-  checkmate::assert_data_table(x)
-  drug_ids <- unlist(
-    gDRutils::get_env_identifiers(
-      c("drug_name", "drug_name2"), 
-      simplify = FALSE
-    )
-  )
-  cl_id <- gDRutils::get_env_identifiers("cellline")
-  conc2 <- gDRutils::get_env_identifiers("concentration2")
-  if (all(.get_default_combination_nested_identifiers() %in% colnames(x))) {
-    if (all(x[[conc2]]
-            %in% gDRutils::get_env_identifiers("untreated_tag"))) {
-      "single-agent"
-    } else {
-      "combination"
-    }
-  } else if (.get_default_single_agent_nested_identifiers() %in% colnames(x)) {
-    "single-agent"
-  } else {
-    "time-course"
-    # stop("Unknown data model")
+grr_matches <- function(x, 
+                    y, 
+                    all.x = TRUE, 
+                    all.y = TRUE, 
+                    list = FALSE, 
+                    indexes = TRUE, 
+                    nomatch = NA) {
+  result <- .Call("matches", x, y)
+  result <- data.table::data.table(x = result[[1]], y = result[[2]])
+  if (!all.y) {
+    selected_rows <- which(result$x != length(x) + 1)
+    result <- result[selected_rows, ]
   }
+  if (!all.x) {
+    selected_rows <- which(result$y != length(y) + 1)
+    result <- result[selected_rows, ]
+  }
+  if (!indexes) {
+    result$x <- x[result$x]
+    result$y <- y[result$y]
+  } else if (!is.null(nomatch)) {
+    result$x[result$x == length(x) + 1] <- nomatch
+    result$y[result$y == length(y) + 1] <- nomatch
+  }
+  if (list) {
+    result <- tapply(result$y, result$x, function(z) z[!is.na(z)])
+  }
+  result
 }
 
-#' Detect model of data from experiment name
-#'
-#' @param x character with experiment name
-#'
-#' @return string with the information of the raw data follows single-agent or 
-#' combination data model
+
+#' get info about created/present assays in SE at the given pipeline step
+#' @param step string with pipeline step
+#' @param data_model single-agent vs combination
+#' @param status string return vector of assays created or present at the 
+#' given step?
+#' 
 #' @keywords utils
-#' @export
-data_model.character <- function(x) {
-  checkmate::assert_subset(x,  c('single-agent','combination','co-dilution', 'time-course'))
- 
-  exp_v <- gDRutils::get_experiment_groups()
-  exp_v$`time-course` = "time-course"
-  names(exp_v[grep(x, exp_v)])
-}
-
-
-
-
-create_SE <- function(df_,
-                      data_type,
-                      readout = "ReadoutValue",
-                      nested_identifiers = NULL,
-                      nested_confounders = intersect(
-                        names(df_),
-                        gDRutils::get_env_identifiers("barcode")
-                      ),
-                      override_untrt_controls = NULL) {
-  # Assertions:
-  checkmate::assert_multi_class(df_, c("data.table", "DataFrame"))
-  checkmate::assert_string(data_type)
-  checkmate::assert_string(readout)
-  checkmate::assert_character(nested_identifiers, null.ok = TRUE)
-  checkmate::assert_character(nested_confounders, null.ok = TRUE)
-  checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
-
-  if (length(nested_confounders) == 0) {
-    nested_confounders <- NULL
-  }
-
-  if (is.null(nested_identifiers)) {
-    nested_identifiers <-
-      get_default_nested_identifiers(df_)[[data_model(data_type)]]
-  }
-
-  untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
-
-  nested_keys <- intersect(c(nested_identifiers, nested_confounders, "record_id"),
-                           names(df_))
-  identifiers <- gDRutils::get_env_identifiers()
-  Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
-
-  if (identifiers$masked_tag %chin% colnames(df_)) {
-    df_ <- df_[!get(identifiers$masked_tag)]
-    df_[, (identifiers$masked_tag) := NULL]
-  }
-
-  # Remove background value from readout (at least 1e-10 to avoid artefactual
-  # normalized values).
-  if (any("BackgroundValue" == colnames(df_))) {
-    df_[, CorrectedReadout := pmax(.SD[[readout]] - df_$BackgroundValue, 1e-10)]
-  } else {
-    df_[, CorrectedReadout := .SD[[readout]]]
-  }
-
-  # overwrite "drug", "drug_name", "drug_moa"
-  # with "untreated" if "concentration2" == 0
-  if (any(gDRutils::get_env_identifiers("concentration2") == colnames(df_))) {
-    single_agent_idx <-
-      df_[[gDRutils::get_env_identifiers("concentration2")]] %in% 0
-    drug_cols <- c("drug", "drug_name", "drug_moa")
-    drug2_var <- intersect(
-      unlist(gDRutils::get_env_identifiers(
-        paste0(drug_cols, "2"), simplify = FALSE)
-      ),
-      colnames(df_)
-    )
-    df_[single_agent_idx, (drug2_var) := untreated_tag[1]]
-  }
-
-  df_[, (names(df_)) := lapply(.SD, function(x) {
-    if (is.character(x)) {
-      gsub(paste(untreated_tag, collapse = "|"), untreated_tag[1], x)
-    } else {
-      x
-    }
-  }), .SDcols = names(df_)]
-
-  # Identify treatments, conditions, and experiment metadata.
-  md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
-
-  coldata <- md$condition_md
-  rowdata <- md$treatment_md
-  exp_md <- md$experiment_md
-
-  mapping_entries <- .create_mapping_factors(rowdata, coldata)
-
-  refs <- .map_references(mapping_entries, rowData_colnames = colnames(rowdata))
-  emptyRefs <- all(is.null(unlist(refs)))
-  trt_conditions <- names(refs)
-  sa_conditions <- unique(unname(unlist(refs)))
-  
-  treated <- mapping_entries[as.numeric(trt_conditions), ]
-
-  # not all entries are mapped on trt_conditions or sa_conditions
-  #   --> untreated should be mapped explicitely to avoid issues with treatments
-  #       being considered as untreated in specific combination cases
-  untreated <- mapping_entries[map_untreated(mapping_entries), ]
-
-  ## Map controls.
-
-  controls <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
-
-  ctl_maps <- gDRutils::loop(controls, function(ctl_type) {
-    map_df(
-      treated,
-      untreated,
-      override_untrt_controls = override_untrt_controls,
-      ref_cols = Keys[[ctl_type]],
-      ref_type = ctl_type
-    )
-  })
-
-  ## Combine all controls with respective treatments.
-  # Merge raw data back with groupings.
-  dfs <- mapping_entries[df_, on = c(colnames(rowdata), colnames(coldata)), allow.cartesian = TRUE]
-  data.table::setkey(dfs, rn)
-
-  ## The mapping_entries contain all exhaustive combinations of treatments
-  ## and cells. Not all conditions will actually exist in the data, so filter
-  ## out those that do not exist.
-  treated_rows <- which(treated$rn %in% dfs$rn)
-  treated <- treated[treated_rows, ]
-  untreated <- dfs[dfs$rn %in% unique(unlist(ctl_maps)), ]
-
-  data_fields <- c(md$data_fields, "Duration", "row_id", "col_id", "swap_sa")
-
-
-  out <- vector("list", length = nrow(treated))
-  out <- lapply(seq_len(nrow(treated)), function(i) {
-    trt <- treated$rn[i]
-
-    trt_df <- dfs[trt]
-    row_id <- unique(trt_df[["row_id"]])
-    refs_df <- dfs[refs[[trt]]]
-
-    trt_df <-
-      validate_mapping(trt_df, refs_df, nested_confounders)
-    selected_columns <- names(trt_df) %in% data_fields
-    trt_df <- trt_df[, selected_columns, with = FALSE]
-
-    # Override the row_id of the references.
-    trt_df$row_id <- row_id
-
-    untrt_ref <- ctl_maps[["untrt_Endpoint"]][[trt]]
-    untrt_cols <- intersect(c("CorrectedReadout", "record_id", 'Duration', nested_confounders), names(dfs))
-    untrt_df <- untreated[untreated$rn == untrt_ref[1], untrt_cols, with = FALSE]
-    untrt_df <- if (nrow(untrt_df) == 0) {
-      data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
-    } else {
-      untrt_df
-    }
-    untrt_df$isDay0 <- FALSE
-
-    day0_ref <- ctl_maps[["Day0"]][[trt]]
-    day0_df <- untreated[untreated$rn %chin% day0_ref]
-    isDay0 <- day0_df[[gDRutils::get_env_identifiers("duration")]] == 0
-
-    day0_df <- day0_df[isDay0, untrt_cols, with = FALSE]
-    day0_df <- if (nrow(day0_df) == 0) {
-      data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
-    } else {
-      df <- day0_df
-      df$isDay0 <- TRUE
-      df
-    }
-
-    ctl_df <- data.table::rbindlist(list(UntrtReadout = untrt_df,
-                                         Day0Readout = day0_df),
-                                    fill = TRUE,
-                                    idcol = "control_type")
-    ctl_df[is.na(isDay0), isDay0 := FALSE]
-
-    row_id <- unique(trt_df$row_id)
-    col_id <- unique(trt_df$col_id)
-    if (length(row_id) != 1L || length(col_id) != 1L) {
-      stop(sprintf("non-unique row_ids: '%s' and col_ids: '%s'",
-                   paste0(row_id, collapse = ", "), paste0(col_id, collapse = ", ")))
-    }
-    ctl_df$row_id <- row_id
-    ctl_df$col_id <- col_id
-
-    list(ctl_df = ctl_df,
-         trt_df = trt_df)
-  })
-
-  trt_out <- rbindParallelList(out, "trt_df")
-  ctl_out <- rbindParallelList(out, "ctl_df")
-
-  trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
-  ctl_keep <- !colnames(ctl_out) %in% c("row_id", "col_id")
-  # trt_keep[1] <- TRUE
-  # trt_keep[2] <- TRUE
-  # print(trt_out)
-  trt_mat <- BumpyMatrix::splitAsBumpyMatrix(
-    trt_out[, trt_keep, drop = FALSE],
-    row = trt_out$row_id, col = trt_out$col_id
-  )
-  ctl_mat <- BumpyMatrix::splitAsBumpyMatrix(
-    ctl_out[, ctl_keep, drop = FALSE],
-    row = ctl_out$row_id, col = ctl_out$col_id
-  )
-  matsL <- list(RawTreated = trt_mat, Controls = ctl_mat)
-  print(rownames(trt_mat))
-  # Filter out to 'treated' conditions only.
-  trt_rowdata <- rowdata[rownames(trt_mat), , drop = FALSE]
-  stopifnot(nrow(trt_rowdata) > 0)
-  stopifnot(nrow(trt_rowdata) == length(unique(trt_out$row_id)))
-
-  se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
-    colData = coldata[match(colnames(trt_mat), rownames(coldata)), ],
-    rowData = trt_rowdata,
-    metadata = list())
-
-  # Capture important values in experiment metadata.
-  se <- gDRutils::set_SE_identifiers(se, identifiers)
-  se <- gDRutils::set_SE_experiment_metadata(se, exp_md)
-  se <- gDRutils::set_SE_keys(se, lapply(Keys, sort))
-
-  se
-}
-
-
-
-normalize_SE <- function(se,
-                         data_type,
-                         nested_identifiers = NULL,
-                         nested_confounders = 
-                           gDRutils::get_SE_identifiers(
-                             se, 
-                             "barcode", 
-                             simplify = TRUE
-                           ),
-                         control_mean_fxn = function(x) {
-                           mean(x, trim = 0.25)
-                         },
-                         control_assay = "Controls", 
-                         raw_treated_assay = "RawTreated", 
-                         normalized_assay = "Normalized",
-                         ndigit_rounding = 4) {
+#' @return assay
+#' 
+get_assays_per_pipeline_step <-
+  function(step,
+           data_model,
+           status = c("created", "present")) {
     
-  ta <- assay(se, 'RawTreated')
-  
-  stopifnot(all(ta[1,1,1] == 0))
-  log_cell_counts_0 <- log(unlist(ta[1,1,6]))
-  
-  normalized_cell_counts = c()
-  for (i in 1:length(ta)) {
-    norm_log_cell_counts <- log(unlist(ta[i,1,6])) - log_cell_counts_0
-    normalized_cell_counts <- c(normalized_cell_counts, norm_log_cell_counts)
+    checkmate::assert_choice(step, get_pipeline_steps())
+    checkmate::assert_choice(data_model, c("single-agent", "combination"))
+    checkmate::assert_choice(status, c("created", "present"))
+    
+    fit_se <- if (data_model == "single-agent") {
+      "Metrics"
+    } else {
+      c(
+        "excess",
+        "all_iso_points",
+        "isobolograms",
+        "scores",
+        "Metrics"
+      )
+    }
+    as_map <- list(
+      "create_SE" = c("RawTreated", "Controls"),
+      "normalize_SE" = "Normalized",
+      "average_SE" = "Averaged",
+      "fit_SE" = fit_se
+    )
+    
+    ass <- if (status == "created") {
+      as_map[[step]]
+    } else {
+      as.character(unlist(as_map[seq_len(which(names(as_map) == step))]))
+    }
+    ass
   }
-  ta <- unsplitAsDataFrame(ta)
-  ta$NormReadoutValue <- normalized_cell_counts
+
+#' add intermediate data (qs files) for given ma
+#' @param mae mae with dose-response data
+#' @param data_dir output directory
+#' @param steps character vector with pipeline steps for which 
+#'              intermediate data should be saved
+#' 
+#' @return \code{NULL}
+#' 
+#' @keywords internal
+#' 
+add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
   
-  return(ta)
+  checkmate::assert_class(mae, "MultiAssayExperiment")
+  checkmate::assert_directory(data_dir, access = "rw")
+  checkmate::assert_subset(steps, get_pipeline_steps())
+  
+  for (data_type in names(mae)) {
+    for (step in steps) {
+      as_names <-
+        get_assays_per_pipeline_step(
+          step, 
+          data_model(data_type), 
+          status = "present"
+        )
+      se <- mae[[data_type]]
+      se_subset <- SummarizedExperiment::SummarizedExperiment(
+        assays = SummarizedExperiment::assays(se)[as_names],
+        rowData = SummarizedExperiment::rowData(se),
+        colData = SummarizedExperiment::colData(se),
+        metadata = S4Vectors::metadata(se)
+      )
+      save_intermediate_data(data_dir, step, data_type, se_subset)
+    }
+  }
 }
 
-
+#' get mae dataset from intermediate data
+#' 
+#' @param data_dir directory with intermediate data
+#' 
+#' @return MAE object
+#' 
+#' @keywords internal
+#' 
+get_mae_from_intermediate_data <- function(data_dir) {
+  
+  checkmate::assert_directory(data_dir)
+  
+  last_step <- tail(get_pipeline_steps(), n = 1)
+  s_pattern <- paste0("__", last_step, ".qs")
+  
+  fpaths <- list.files(data_dir, pattern = s_pattern, full.names = TRUE)
+  checkmate::assert_true(length(fpaths) > 0)
+  
+  sel <- list()
+  
+  for (fpath in fpaths) {
+    exp_name <- sub(s_pattern, "", basename(fpath))
+    sel[[exp_name]] <- qs::qread(fpath)
+  }
+  MultiAssayExperiment::MultiAssayExperiment(experiments = sel)
+}
