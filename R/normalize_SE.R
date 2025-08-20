@@ -266,13 +266,18 @@ normalize_SE_time_course <- function(se_tc) {
   day_0$tag <- paste0(day_0$WellRow, day_0$WellColumn, "_", day_0$Barcode)
   plate_map_ <- c()
   for (row in 1:nrow(day_0)) {
-    plate_map_[day_0[row,]$tag] <- log(day_0[row,]$ReadoutValue)
+    plate_map_[day_0[row, ]$tag] <- log(day_0[row, ]$ReadoutValue)
   }
-  bumpy_matrix = assay(se_tc, 'RawTreated')
+  bumpy_matrix <- assay(se_tc, "RawTreated")
   for (i in 1:length(bumpy_matrix)) {
     time_i_log_cell_counts <- log(bumpy_matrix[i][[1]]$ReadoutValue)
     tags <- paste0(bumpy_matrix[i][[1]]$WellRow, bumpy_matrix[i][[1]]$WellColumn, "_", bumpy_matrix[i][[1]]$Barcode)
-    time_0_log_cell_counts <- unlist(lapply(FUN=function(x) plate_map_[x], tags))
+    time_0_log_cell_counts <- unlist(lapply(
+      FUN = function(x) {
+        plate_map_[x]
+      },
+      tags
+    ))
     bumpy_matrix[i][[1]]$ReadoutValue <- time_i_log_cell_counts - time_0_log_cell_counts
     bumpy_matrix[i][[1]]$CorrectedReadout <- time_i_log_cell_counts - time_0_log_cell_counts
   }

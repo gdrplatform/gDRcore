@@ -138,10 +138,12 @@ create_SE <- function(df_,
   sa_conditions <- unique(unname(unlist(refs)))
 
   trt_conditions <- as.numeric(trt_conditions)
-  if (data_type == "time-course"){
-      trt_conditions <- 1:nrow(mapping_entries)
-      sa_conditions <- c()
-      map_untreated <- function(x) FALSE
+  if (data_type == "time-course") {
+    trt_conditions <- 1:nrow(mapping_entries)
+    sa_conditions <- c()
+    map_untreated <- function(x) {
+      FALSE
+    }
   }
   
   treated <- mapping_entries[trt_conditions, ]

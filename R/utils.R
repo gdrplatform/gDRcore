@@ -233,10 +233,12 @@ data_model.data.table <- function(x) {
 #' @keywords utils
 #' @export
 data_model.character <- function(x) {
-  checkmate::assert_subset(x,  c('single-agent','combination','co-dilution','time-course'))
- 
+  
+  checkmate::assert_subset(x,
+                           c("single-agent", "combination", "co-dilution", "time-course"))
+  
   exp_v <- gDRutils::get_experiment_groups()
-  exp_v$`time-course` = "time-course"
+  exp_v$`time-course` <- "time-course"
   names(exp_v[grep(x, exp_v)])
 }
 
