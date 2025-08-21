@@ -234,8 +234,7 @@ data_model.data.table <- function(x) {
 #' @export
 data_model.character <- function(x) {
   
-  checkmate::assert_subset(x,
-                           c("single-agent", "combination", "co-dilution", "time-course"))
+  checkmate::assert_subset(x, c(gDRutils::get_supported_experiments(), "time-course"))
   
   exp_v <- gDRutils::get_experiment_groups()
   exp_v$`time-course` <- "time-course"
