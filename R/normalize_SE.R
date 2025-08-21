@@ -281,7 +281,7 @@ normalize_SE_time_course <- function(se_tc) {
     bumpy_matrix[i][[1]]$ReadoutValue <- time_i_log_cell_counts - time_0_log_cell_counts
     bumpy_matrix[i][[1]]$CorrectedReadout <- time_i_log_cell_counts - time_0_log_cell_counts
   }
-  assays(se_tc)$LogFoldChange <- bumpy_matrix
+  SummarizedExperiment::assays(se_tc)[["LogFoldChange"]] <- bumpy_matrix
   return(se_tc)
 }
 
