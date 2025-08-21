@@ -174,16 +174,15 @@ create_SE <- function(df_,
   ## and cells. Not all conditions will actually exist in the data, so filter 
   ## out those that do not exist. 
   
-  untreated_rn <- unique(unlist(ctl_maps))
   treated_rows <- which(treated$rn %in% dfs$rn)
   
   treated <- treated[treated_rows, ]
-  untreated <- dfs[dfs$rn %in% untreated_rn, ]
+  untreated <- dfs[dfs$rn %in% unique(unlist(ctl_maps)), ]
   
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
   
   out <- vector("list", length = nrow(treated))
- out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
+  out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
     # Originaly gDRutils::loop instead of lapply, but need to add time-course
     # To allowed data_model.character list
     trt <- treated$rn[i]
