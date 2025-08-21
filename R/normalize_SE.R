@@ -243,7 +243,11 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
   ref_cols <- ref_df[, data_columns, with = FALSE]
   group_cols <- setdiff(names(ref_cols), corr_readout)
   additional_cov <- setdiff(group_cols, "control_type")
-  response <- if (length(additional_cov) == 0) "." else additional_cov
+  response <- if (length(additional_cov) == 0) {
+    "."
+  } else {
+    additional_cov
+  }
   aggregate_formula <- stats::reformulate("control_type", response)
   
   ref_df_aggregate <- unique(ref_cols[, (control_mean_fxn(get(corr_readout))), by = eval(group_cols)])
