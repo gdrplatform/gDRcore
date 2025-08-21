@@ -124,7 +124,7 @@ create_SE <- function(df_,
   }), .SDcols = names(df_)]
 
   # Identify treatments, conditions, and experiment metadata.
-  md <- split_SE_components(df_, nested_keys = Keys$nested_keys) # Change to gDRutils::
+   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
   
   coldata <- md$condition_md
   rowdata <- md$treatment_md
