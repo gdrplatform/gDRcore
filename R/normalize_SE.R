@@ -267,7 +267,7 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
 
 normalize_SE_time_course <- function(se_tc) {
     ay_0 <- gDRutils::convert_se_assay_to_dt(se_tc, "RawTreated")[Duration == 0, ]
-  day_0$tag <- paste0(day_0$WellRow, day_0$WellColumn, "_", day_0$Barcode)
+  day_0[, tag := sprintf("%s_%s_%s", day_0$WellRow, day_0$WellColumn, day_0$Barcode)]
   plate_map_ <- c()
   for (row in 1:nrow(day_0)) {
     plate_map_[day_0[row, ]$tag] <- log(day_0[row, ]$ReadoutValue)
