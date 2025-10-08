@@ -1,5 +1,8 @@
-## gDRcore 1.7.8 - 2025-09-25
+## gDRcore 1.7.9 - 2025-10-08
 * add support for Incucyte data
+
+## gDRcore 1.7.8 - 2025-08-12
+* fix usage of `ifelse`
 
 ## gDRcore 1.7.7 - 2025-07-28
 * replace `row/col_fittings` in source for matrix Metrics assay
