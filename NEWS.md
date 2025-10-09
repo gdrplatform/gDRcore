@@ -1,3 +1,6 @@
+## gDRcore 1.7.9 - 2025-10-09
+* move `fit_curves/logisticFit` to gDRcore
+
 ## gDRcore 1.7.8 - 2025-08-12
 * fix usage of `ifelse`
 
