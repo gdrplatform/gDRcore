@@ -538,11 +538,10 @@ average_dups <- function(dt, col) {
 # Setters
 ############
 
-#' @importFrom checkmate assert_number
 #' @keywords fit_curves
 #' @export
 .set_mean_params <- function(out, mean_norm_value) {
-  assert_number(mean_norm_value)
+  checkmate::assert_number(mean_norm_value)
 
   out$xc50 <- .estimate_xc50(mean_norm_value)
 
