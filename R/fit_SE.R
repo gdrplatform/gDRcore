@@ -95,7 +95,7 @@ fit_FUN <- function(x,
       x <- x[x[[conc]] != 0, ]
     }
     
-    fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(
+    fit_df <- S4Vectors::DataFrame(fit_curves(
       data.table::as.data.table(x),
       series_identifiers = nested_identifiers,
       e_0 = 1,

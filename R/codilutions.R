@@ -64,7 +64,7 @@ fit_codilution_series <- function(measured,
   
   measured$summed_conc <- measured[[series_1]] + measured[[series_2]]
   keep <- setdiff(colnames(measured), c(series_1, series_2))
-  codilution_fit <- gDRutils::fit_curves(
+  codilution_fit <- fit_curves(
     df_ = measured[, keep, with = FALSE],
     series_identifiers = "summed_conc",
     e_0 = e_0,

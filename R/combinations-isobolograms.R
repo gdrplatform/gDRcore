@@ -336,7 +336,7 @@ calculate_isobolograms <- function(drug_2,
                                    max2_cap) {
   
     # cutoff point by row
-    conc2 <- gDRutils::predict_conc_from_efficacy(
+    conc2 <- predict_conc_from_efficacy(
       efficacy = isobol_value,
       x_inf = drug_2$x_inf,
       x_0 = drug_2$x_0,
@@ -348,7 +348,7 @@ calculate_isobolograms <- function(drug_2,
       fit_type = "by_row")
 
     # cutoff point by columns
-    conc1 <- gDRutils::predict_conc_from_efficacy(
+    conc1 <- predict_conc_from_efficacy(
       efficacy = isobol_value,
       x_inf = drug_1$x_inf,
       x_0 = drug_1$x_0,
@@ -366,7 +366,7 @@ calculate_isobolograms <- function(drug_2,
     # cutoff point by diagonal (co-dilution)
     # co-dil is given as concentration of drug 1
     if (!is.null(codilution) && NROW(codilution) > 1) {
-      conc_mix <- gDRutils::predict_conc_from_efficacy(
+      conc_mix <- predict_conc_from_efficacy(
         efficacy = isobol_value,
         x_inf = codilution$x_inf,
         x_0 = codilution$x_0,

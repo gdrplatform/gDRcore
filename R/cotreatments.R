@@ -32,7 +32,7 @@ fit_combo_cotreatments <- function(measured,
   cotrt_fittings <- vector("list", length(cotrt_concs))
   for (i in seq_along(cotrt_concs)) {
     conc <- cotrt_concs[[i, drop = TRUE]]
-    sa <- gDRutils::predict_efficacy_from_conc(
+    sa <- predict_efficacy_from_conc(
       conc, 
       sa_fit$x_inf, 
       sa_fit$x_0, 
@@ -78,7 +78,7 @@ fit_cotreatment_series <- function(measured,
     measured[[cotrt_id]] == cotrt_value & measured[[series_id]] > 0, , 
     drop = FALSE
   ]
-  cotrt_fit <- gDRutils::fit_curves(
+  cotrt_fit <- fit_curves(
     df_ = df_,
     series_identifiers = series_id,
     e_0 = e_0,
