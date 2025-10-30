@@ -1,3 +1,6 @@
+## gDRcore 1.9.1 - 2025-10-30
+* synchronize Bioconductor and GitHub versioning
+
 ## gDRcore 1.7.8 - 2025-08-12
 * fix usage of `ifelse`
 
