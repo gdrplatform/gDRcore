@@ -1,3 +1,6 @@
+## gDRcore 1.7.9 - 2025-11-12
+* remove empty clids from day0 data during merging raw data
+
 ## gDRcore 1.7.8 - 2025-08-12
 * fix usage of `ifelse`
 
