@@ -115,8 +115,10 @@ merge_data <- function(manifest, treatments, data) {
     sum(is.na(df_metadata[, drug_id, with = FALSE])),
     nrow(df_metadata_trimmed)
   )
-  df_metadata_trimmed <- df_metadata_trimmed[!is.na(get(expected_headers))]
   
+  df_metadata_trimmed <- df_metadata_trimmed[stats::complete.cases(
+    mget(expected_headers))]
+
   # clean up the metadata
   cleanedup_metadata <- cleanup_metadata(df_metadata_trimmed)
   # should not happen
