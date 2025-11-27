@@ -202,26 +202,27 @@ data_model <- function(x) {
 data_model.data.table <- function(x) {
   
   checkmate::assert_data_table(x)
-  drug_ids <- unlist(
-    gDRutils::get_env_identifiers(
-      c("drug_name", "drug_name2"), 
-      simplify = FALSE
-    )
-  )
-  cl_id <- gDRutils::get_env_identifiers("cellline")
+  
   conc2 <- gDRutils::get_env_identifiers("concentration2")
-  if (all(.get_default_combination_nested_identifiers() %in% colnames(x))) {
-    if (all(x[[conc2]]
-            %in% gDRutils::get_env_identifiers("untreated_tag"))) {
-      gDRutils::get_supported_experiments("sa")
-    } else {
-      gDRutils::get_supported_experiments("combo")
-    }
+  untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  barcode_col <- gDRutils::get_env_identifiers("barcode")
+  well_cols <- gDRutils::get_env_identifiers("well_position")
+  
+  # Check for Time-Course: defined by multiple records per well (e.g. multiple timepoints)
+  # We check for duplication in Barcode + Well identifiers
+  id_cols <- intersect(c(barcode_col, well_cols), colnames(x))
+  is_time_course <- if (length(id_cols) > 0) anyDuplicated(x, by = id_cols) > 0 else FALSE
+
+  if (is_time_course) {
+    gDRutils::get_supported_experiments("time_course")
+  } else if (all(.get_default_combination_nested_identifiers() %in% colnames(x)) &&
+             !all(x[[conc2]] %in% c(untreated_tag, 0))) {
+    # It is combination if Concentration_2 exists and is not all 0 or vehicle
+    gDRutils::get_supported_experiments("combo")
   } else if (.get_default_single_agent_nested_identifiers() %in% colnames(x)) {
     gDRutils::get_supported_experiments("sa")
   } else {
-    # Fallback to time-course
-    gDRutils::get_supported_experiments("time_course") 
+    stop("Unknown data model")
   }
 }
 
