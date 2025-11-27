@@ -301,9 +301,9 @@ normalize_SE_time_course <- function(se_tc) {
   # Merge T0 back to main data
   dt_norm <- merge(dt, day0_map, by = keys, all.x = TRUE)
   
-  # Calculate LogFoldChange: log(Readout(t)) - log(Readout(t=0))
-  # Using natural log as per original PR request
-  dt_norm[, LogFoldChange := log(ReadoutValue) - log(ReadoutValue_T0)]
+  # Calculate Log2 Fold Change: log2(Readout(t)) - log2(Readout(t=0))
+  # This quantifies the number of doublings (or halving) relative to the start.
+  dt_norm[, LogFoldChange := log2(ReadoutValue) - log2(ReadoutValue_T0)]
   
   # Prepare the values for the BumpyMatrix
   # Cleanup intermediate columns, keeping LogFoldChange for clarity in the new assay.
