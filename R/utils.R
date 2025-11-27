@@ -214,7 +214,7 @@ data_model.data.table <- function(x) {
   is_time_course <- if (length(id_cols) > 0) anyDuplicated(x, by = id_cols) > 0 else FALSE
 
   if (is_time_course) {
-    gDRutils::get_supported_experiments("time_course")
+    gDRutils::get_supported_experiments("time-course")
   } else if (all(.get_default_combination_nested_identifiers() %in% colnames(x)) &&
              !all(x[[conc2]] %in% c(untreated_tag, 0))) {
     # It is combination if Concentration_2 exists and is not all 0 or vehicle
@@ -321,7 +321,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
     null.ok = TRUE
   )
  
-  tc_name <- gDRutils::get_supported_experiments("time_course")
+  tc_name <- gDRutils::get_supported_experiments("time-course")
   sa_name <- gDRutils::get_supported_experiments("sa")
   combo_name <- gDRutils::get_supported_experiments("combo")
 

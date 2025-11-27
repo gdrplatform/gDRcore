@@ -33,7 +33,7 @@ create_SE <- function(df_,
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
   
-  tc_name <- gDRutils::get_supported_experiments("time_course")
+  tc_name <- gDRutils::get_supported_experiments("time-course")
   
   if (length(nested_confounders) == 0) {
     nested_confounders <- NULL

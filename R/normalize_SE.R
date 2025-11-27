@@ -52,7 +52,7 @@ normalize_SE <- function(se,
   gDRutils::validate_se_assay_name(se, control_assay)
   gDRutils::validate_se_assay_name(se, raw_treated_assay)
   
-  tc_name <- gDRutils::get_supported_experiments("time_course")
+  tc_name <- gDRutils::get_supported_experiments("time-course")
   
   if (data_type == tc_name) {
     return(normalize_SE_time_course(se))
