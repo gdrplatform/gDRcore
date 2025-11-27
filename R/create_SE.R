@@ -22,11 +22,9 @@ create_SE <- function(df_,
                       data_type,
                       readout = "ReadoutValue",
                       nested_identifiers = NULL,
-                      nested_confounders = intersect(
-                        names(df_),
-                        gDRutils::get_env_identifiers("barcode")
-                      ),
+                      nested_confounders = intersect(names(df_), gDRutils::get_env_identifiers("barcode")),
                       override_untrt_controls = NULL) {
+  
   # Assertions:
   checkmate::assert_multi_class(df_, c("data.table", "DataFrame"))
   checkmate::assert_string(data_type)
@@ -193,9 +191,9 @@ create_SE <- function(df_,
     refs_df <- dfs[refs[[trt]]]
     
     if (data_type != tc_name) {
-        trt_df <- 
-            validate_mapping(trt_df, refs_df, nested_confounders)
+      trt_df <- validate_mapping(trt_df, refs_df, nested_confounders)
     }
+ 
     selected_columns <- names(trt_df) %in% data_fields
     trt_df <- trt_df[, selected_columns, with = FALSE]
 

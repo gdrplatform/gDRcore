@@ -276,8 +276,10 @@ normalize_SE_time_course <- function(se_tc) {
   # Identify Duration column (support various standard names)
   dur_col <- gDRutils::get_env_identifiers("duration")
   if (!dur_col %in% names(dt)) {
-    # Fallback if the standard identifier isn't found
-    dur_col <- "Duration" 
+    msg_a <- "Duration column '%s' not found in data. "
+    msg_b <- "Please check your data or 'duration' identifier configuration."
+    f_msg <- paste0(msg_a, msg_b)
+    stop(sprintf(f_msg, dur_col))
   }
   
   # Filter T0 values
@@ -290,7 +292,7 @@ normalize_SE_time_course <- function(se_tc) {
   }
   
   # Define keys to match T0 to time series: usually Barcode + Well 
-  keys <- c("Barcode", "WellRow", "WellColumn")
+  keys <- c(gDRutils::get_env_identifiers("barcode")[1], gDRutils::get_env_identifiers("well_position"))
   
   # Prepare T0 map
   day0_map <- day0[, c(keys, "ReadoutValue"), with = FALSE]
@@ -304,12 +306,8 @@ normalize_SE_time_course <- function(se_tc) {
   dt_norm[, LogFoldChange := log(ReadoutValue) - log(ReadoutValue_T0)]
   
   # Prepare the values for the BumpyMatrix
-  # User requested ReadoutValue and CorrectedReadout to be overwritten with the LogFoldChange value
-  dt_norm[, ReadoutValue := LogFoldChange]
-  dt_norm[, CorrectedReadout := LogFoldChange]
-  
-  # Cleanup intermediate columns
-  dt_norm[, c("ReadoutValue_T0", "LogFoldChange") := NULL]
+  # Cleanup intermediate columns, keeping LogFoldChange for clarity in the new assay.
+  dt_norm[, c("ReadoutValue", "CorrectedReadout", "ReadoutValue_T0") := NULL]
   
   # Convert back to BumpyMatrix
   # 'convert_se_assay_to_dt' includes rId and cId which we need for splitting
