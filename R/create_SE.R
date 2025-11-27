@@ -35,6 +35,7 @@ create_SE <- function(df_,
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
   
+  tc_name <- gDRutils::get_supported_experiments("time_course")
   
   if (length(nested_confounders) == 0) {
     nested_confounders <- NULL
@@ -77,7 +78,7 @@ create_SE <- function(df_,
     
     combo_idx <- df_[[conc2_col]] > 0 & !is.na(df_[[drug2_col]])
     
-    if (any(combo_idx) && (data_type != "time-course")) {
+    if (any(combo_idx) && (data_type != tc_name)) {
       freq_counts <- df_[combo_idx, .N, by = c(drug1_col)]
       
       df_[, priority1 := freq_counts[.(df_[[drug1_col]]), on = drug1_col, x.N]]
@@ -138,7 +139,7 @@ create_SE <- function(df_,
   sa_conditions <- unique(unname(unlist(refs)))
 
   trt_conditions <- as.numeric(trt_conditions)
-  if (data_type == "time-course") {
+  if (data_type == tc_name) {
     trt_conditions <- seq_len(NROW(mapping_entries))
     sa_conditions <- c()
     map_untreated <- function(x) {
@@ -174,24 +175,24 @@ create_SE <- function(df_,
   ## and cells. Not all conditions will actually exist in the data, so filter 
   ## out those that do not exist. 
   
+  untreated_rn <- unique(unlist(ctl_maps))
   treated_rows <- which(treated$rn %in% dfs$rn)
   
   treated <- treated[treated_rows, ]
-  untreated <- dfs[dfs$rn %in% unique(unlist(ctl_maps)), ]
+  untreated <- dfs[dfs$rn %in% untreated_rn, ]
   
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
   
   out <- vector("list", length = nrow(treated))
   out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
-    # Originaly gDRutils::loop instead of lapply, but need to add time-course
-    # To allowed data_model.character list
+    
     trt <- treated$rn[i]
     
     trt_df <- dfs[trt]
     row_id <- unique(trt_df[["row_id"]])
     refs_df <- dfs[refs[[trt]]]
     
-    if (data_type != "time-course") {
+    if (data_type != tc_name) {
         trt_df <- 
             validate_mapping(trt_df, refs_df, nested_confounders)
     }
@@ -276,6 +277,7 @@ create_SE <- function(df_,
 
   se
 }
+
 
 #' @keywords internal
 validate_mapping <- function(trt_df, refs_df, nested_confounders) {
