@@ -1,5 +1,11 @@
-## gDRcore 1.7.9 - 2025-10-08
+## gDRcore 1.9.3 - 2025-11-27
 * add support for Incucyte data
+
+## gDRcore 1.9.2 - 2025-11-17
+* remove empty clids from day0 data during merging raw data
+
+## gDRcore 1.9.1 - 2025-10-30
+* synchronize Bioconductor and GitHub versioning
 
 ## gDRcore 1.7.8 - 2025-08-12
 * fix usage of `ifelse`
