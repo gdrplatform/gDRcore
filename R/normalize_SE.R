@@ -52,8 +52,10 @@ normalize_SE <- function(se,
   gDRutils::validate_se_assay_name(se, control_assay)
   gDRutils::validate_se_assay_name(se, raw_treated_assay)
   
-   if (data_type == "time-course") {
-      return(normalize_SE_time_course(se))
+  tc_name <- gDRutils::get_supported_experiments("time_course")
+  
+  if (data_type == tc_name) {
+    return(normalize_SE_time_course(se))
   }
     
   if (length(nested_confounders) == 0) {
@@ -265,27 +267,59 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
 }
 
 
+#' @keywords internal
 normalize_SE_time_course <- function(se_tc) {
-    ay_0 <- gDRutils::convert_se_assay_to_dt(se_tc, "RawTreated")[Duration == 0, ]
-  day_0[, tag := sprintf("%s_%s_%s", day_0$WellRow, day_0$WellColumn, day_0$Barcode)]
-  plate_map_ <- c()
-  for (row in 1:nrow(day_0)) {
-    plate_map_[day_0[row, ]$tag] <- log(day_0[row, ]$ReadoutValue)
+  
+  # Extract RawTreated as a long data.table to perform vectorized operations
+  dt <- gDRutils::convert_se_assay_to_dt(se_tc, "RawTreated")
+  
+  # Identify Duration column (support various standard names)
+  dur_col <- gDRutils::get_env_identifiers("duration")
+  if (!dur_col %in% names(dt)) {
+    # Fallback if the standard identifier isn't found
+    dur_col <- "Duration" 
   }
-  bumpy_matrix <- SummarizedExperiment::assay(se_tc, "RawTreated")
-  for (i in 1:length(bumpy_matrix)) {
-    time_i_log_cell_counts <- log(bumpy_matrix[i][[1]]$ReadoutValue)
-    tags <- paste0(bumpy_matrix[i][[1]]$WellRow, bumpy_matrix[i][[1]]$WellColumn, "_", bumpy_matrix[i][[1]]$Barcode)
-    time_0_log_cell_counts <- unlist(lapply(
-      FUN = function(x) {
-        plate_map_[x]
-      },
-      tags
-    ))
-    bumpy_matrix[i][[1]]$ReadoutValue <- time_i_log_cell_counts - time_0_log_cell_counts
-    bumpy_matrix[i][[1]]$CorrectedReadout <- time_i_log_cell_counts - time_0_log_cell_counts
+  
+  # Filter T0 values
+  # We assume T0 is defined by Duration == 0
+  day0 <- dt[get(dur_col) == 0, ]
+  
+  if (nrow(day0) == 0) {
+    warning("normalize_SE_time_course: No time=0 data found. returning SE unchanged.")
+    return(se_tc)
   }
-  SummarizedExperiment::assays(se_tc)[["LogFoldChange"]] <- bumpy_matrix
+  
+  # Define keys to match T0 to time series: usually Barcode + Well 
+  keys <- c("Barcode", "WellRow", "WellColumn")
+  
+  # Prepare T0 map
+  day0_map <- day0[, c(keys, "ReadoutValue"), with = FALSE]
+  data.table::setnames(day0_map, "ReadoutValue", "ReadoutValue_T0")
+  
+  # Merge T0 back to main data
+  dt_norm <- merge(dt, day0_map, by = keys, all.x = TRUE)
+  
+  # Calculate LogFoldChange: log(Readout(t)) - log(Readout(t=0))
+  # Using natural log as per original PR request
+  dt_norm[, LogFoldChange := log(ReadoutValue) - log(ReadoutValue_T0)]
+  
+  # Prepare the values for the BumpyMatrix
+  # User requested ReadoutValue and CorrectedReadout to be overwritten with the LogFoldChange value
+  dt_norm[, ReadoutValue := LogFoldChange]
+  dt_norm[, CorrectedReadout := LogFoldChange]
+  
+  # Cleanup intermediate columns
+  dt_norm[, c("ReadoutValue_T0", "LogFoldChange") := NULL]
+  
+  # Convert back to BumpyMatrix
+  # 'convert_se_assay_to_dt' includes rId and cId which we need for splitting
+  bm <- BumpyMatrix::splitAsBumpyMatrix(
+    dt_norm[, !c("rId", "cId"), with = FALSE],
+    row = dt_norm$rId,
+    col = dt_norm$cId
+  )
+  
+  SummarizedExperiment::assays(se_tc)[["LogFoldChange"]] <- bm
   return(se_tc)
 }
 
