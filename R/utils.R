@@ -213,14 +213,15 @@ data_model.data.table <- function(x) {
   if (all(.get_default_combination_nested_identifiers() %in% colnames(x))) {
     if (all(x[[conc2]]
             %in% gDRutils::get_env_identifiers("untreated_tag"))) {
-      "single-agent"
+      gDRutils::get_supported_experiments("sa")
     } else {
-      "combination"
+      gDRutils::get_supported_experiments("combo")
     }
   } else if (.get_default_single_agent_nested_identifiers() %in% colnames(x)) {
-    "single-agent"
+    gDRutils::get_supported_experiments("sa")
   } else {
-    "time-course" # May need a separate identifier for time-course data.
+    # Fallback to time-course
+    gDRutils::get_supported_experiments("time_course") 
   }
 }
 
@@ -234,10 +235,9 @@ data_model.data.table <- function(x) {
 #' @export
 data_model.character <- function(x) {
   
-  checkmate::assert_subset(x, c(gDRutils::get_supported_experiments(), "time-course"))
+  checkmate::assert_subset(x, gDRutils::get_supported_experiments())
   
   exp_v <- gDRutils::get_experiment_groups()
-  exp_v$`time-course` <- "time-course"
   names(exp_v[grep(x, exp_v)])
 }
 
@@ -294,7 +294,7 @@ get_default_nested_identifiers.data.table <- function(x, data_model = NULL) {
   checkmate::assert_data_table(x)
   checkmate::assert_choice(
     data_model,
-    c("single-agent", "combination", "time-course"), 
+    gDRutils::get_supported_experiments(), 
     null.ok = TRUE
   )
   
@@ -316,13 +316,19 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
 .get_default_nested_identifiers <- function(se = NULL, data_model = NULL) {
  
   checkmate::assert_choice(
-    data_model, c("single-agent", "time-course", "combination"),
+    data_model, gDRutils::get_supported_experiments(),
     null.ok = TRUE
   )
  
-  ml <- list(`single-agent` = .get_default_single_agent_nested_identifiers(se),
-             combination = .get_default_combination_nested_identifiers(se),
-             `time-course` = .get_default_combination_nested_identifiers(se))
+  tc_name <- gDRutils::get_supported_experiments("time_course")
+  sa_name <- gDRutils::get_supported_experiments("sa")
+  combo_name <- gDRutils::get_supported_experiments("combo")
+
+  ml <- list()
+  ml[[sa_name]] <- .get_default_single_agent_nested_identifiers(se)
+  ml[[combo_name]] <- .get_default_combination_nested_identifiers(se)
+  ml[[tc_name]] <- .get_default_combination_nested_identifiers(se)
+
   if (is.null(data_model)) {
     ml
   } else {
