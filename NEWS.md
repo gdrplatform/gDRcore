@@ -1,3 +1,6 @@
+## gDRcore 1.9.3 - 2025-11-27
+* add support for Incucyte data
+
 ## gDRcore 1.9.2 - 2025-11-17
 * remove empty clids from day0 data during merging raw data
 

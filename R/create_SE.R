@@ -22,11 +22,9 @@ create_SE <- function(df_,
                       data_type,
                       readout = "ReadoutValue",
                       nested_identifiers = NULL,
-                      nested_confounders = intersect(
-                        names(df_),
-                        gDRutils::get_env_identifiers("barcode")
-                      ),
+                      nested_confounders = intersect(names(df_), gDRutils::get_env_identifiers("barcode")),
                       override_untrt_controls = NULL) {
+  
   # Assertions:
   checkmate::assert_multi_class(df_, c("data.table", "DataFrame"))
   checkmate::assert_string(data_type)
@@ -35,6 +33,7 @@ create_SE <- function(df_,
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
   
+  tc_name <- gDRutils::get_supported_experiments("time-course")
   
   if (length(nested_confounders) == 0) {
     nested_confounders <- NULL
@@ -77,7 +76,7 @@ create_SE <- function(df_,
     
     combo_idx <- df_[[conc2_col]] > 0 & !is.na(df_[[drug2_col]])
     
-    if (any(combo_idx)) {
+    if (any(combo_idx) && (data_type != tc_name)) {
       freq_counts <- df_[combo_idx, .N, by = c(drug1_col)]
       
       df_[, priority1 := freq_counts[.(df_[[drug1_col]]), on = drug1_col, x.N]]
@@ -124,7 +123,7 @@ create_SE <- function(df_,
   }), .SDcols = names(df_)]
 
   # Identify treatments, conditions, and experiment metadata.
-  md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
+   md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
   
   coldata <- md$condition_md
   rowdata <- md$treatment_md
@@ -136,13 +135,21 @@ create_SE <- function(df_,
   emptyRefs <- all(is.null(unlist(refs)))
   trt_conditions <- names(refs)
   sa_conditions <- unique(unname(unlist(refs)))
+
+  trt_conditions <- as.numeric(trt_conditions)
+  if (data_type == tc_name) {
+    trt_conditions <- seq_len(NROW(mapping_entries))
+    sa_conditions <- c()
+    map_untreated <- function(x) {
+      FALSE
+    }
+  }
   
-  treated <- mapping_entries[as.numeric(trt_conditions), ]
+  treated <- mapping_entries[trt_conditions, ]
   # not all entries are mapped on trt_conditions or sa_conditions 
   #   --> untreated should be mapped explicitely to avoid issues with treatments
   #       being considered as untreated in specific combination cases
   untreated <- mapping_entries[map_untreated(mapping_entries), ]
-
   ## Map controls.
   
   controls <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
@@ -165,23 +172,28 @@ create_SE <- function(df_,
   ## The mapping_entries contain all exhaustive combinations of treatments 
   ## and cells. Not all conditions will actually exist in the data, so filter 
   ## out those that do not exist. 
+  
+  untreated_rn <- unique(unlist(ctl_maps))
   treated_rows <- which(treated$rn %in% dfs$rn)
+  
   treated <- treated[treated_rows, ]
-  untreated <- dfs[dfs$rn %in% unique(unlist(ctl_maps)), ]
+  untreated <- dfs[dfs$rn %in% untreated_rn, ]
   
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
-
   
   out <- vector("list", length = nrow(treated))
   out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
+    
     trt <- treated$rn[i]
     
     trt_df <- dfs[trt]
     row_id <- unique(trt_df[["row_id"]])
     refs_df <- dfs[refs[[trt]]]
     
-    trt_df <- 
-      validate_mapping(trt_df, refs_df, nested_confounders)
+    if (data_type != tc_name) {
+      trt_df <- validate_mapping(trt_df, refs_df, nested_confounders)
+    }
+ 
     selected_columns <- names(trt_df) %in% data_fields
     trt_df <- trt_df[, selected_columns, with = FALSE]
 
@@ -263,6 +275,7 @@ create_SE <- function(df_,
 
   se
 }
+
 
 #' @keywords internal
 validate_mapping <- function(trt_df, refs_df, nested_confounders) {

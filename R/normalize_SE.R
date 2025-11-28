@@ -52,7 +52,12 @@ normalize_SE <- function(se,
   gDRutils::validate_se_assay_name(se, control_assay)
   gDRutils::validate_se_assay_name(se, raw_treated_assay)
   
+  tc_name <- gDRutils::get_supported_experiments("time-course")
   
+  if (data_type == tc_name) {
+    return(normalize_SE_time_course(se))
+  }
+    
   if (length(nested_confounders) == 0) {
     nested_confounders <- NULL
   }
@@ -233,6 +238,8 @@ normalize_SE <- function(se,
   SummarizedExperiment::assays(se)[[normalized_assay]] <- norm
   se
 }
+
+
   
 #' @keywords internal
 aggregate_ref <- function(ref_df, control_mean_fxn) {
@@ -258,6 +265,62 @@ aggregate_ref <- function(ref_df, control_mean_fxn) {
                                length(setdiff(names(ref_df_dcast), group_cols)), ]
   fill_NA_by_mean(cleaned_df, cleaned_df, unique(ref_df$control_type))
 }
+
+
+#' @keywords internal
+normalize_SE_time_course <- function(se_tc) {
+  
+  # Extract RawTreated as a long data.table to perform vectorized operations
+  dt <- gDRutils::convert_se_assay_to_dt(se_tc, "RawTreated")
+  
+  # Identify Duration column (support various standard names)
+  dur_col <- gDRutils::get_env_identifiers("duration")
+  if (!dur_col %in% names(dt)) {
+    msg_a <- "Duration column '%s' not found in data. "
+    msg_b <- "Please check your data or 'duration' identifier configuration."
+    f_msg <- paste0(msg_a, msg_b)
+    stop(sprintf(f_msg, dur_col))
+  }
+  
+  # Filter T0 values
+  # We assume T0 is defined by Duration == 0
+  day0 <- dt[get(dur_col) == 0, ]
+  
+  if (nrow(day0) == 0) {
+    warning("normalize_SE_time_course: No time=0 data found. returning SE unchanged.")
+    return(se_tc)
+  }
+  
+  # Define keys to match T0 to time series: usually Barcode + Well 
+  keys <- c(gDRutils::get_env_identifiers("barcode")[1], gDRutils::get_env_identifiers("well_position"))
+  
+  # Prepare T0 map
+  day0_map <- day0[, c(keys, "ReadoutValue"), with = FALSE]
+  data.table::setnames(day0_map, "ReadoutValue", "ReadoutValue_T0")
+  
+  # Merge T0 back to main data
+  dt_norm <- merge(dt, day0_map, by = keys, all.x = TRUE)
+  
+  # Calculate Log2 Fold Change: log2(Readout(t)) - log2(Readout(t=0))
+  # This quantifies the number of doublings (or halving) relative to the start.
+  dt_norm[, LogFoldChange := log2(ReadoutValue) - log2(ReadoutValue_T0)]
+  
+  # Prepare the values for the BumpyMatrix
+  # Cleanup intermediate columns, keeping LogFoldChange for clarity in the new assay.
+  dt_norm[, c("ReadoutValue", "CorrectedReadout", "ReadoutValue_T0") := NULL]
+  
+  # Convert back to BumpyMatrix
+  # 'convert_se_assay_to_dt' includes rId and cId which we need for splitting
+  bm <- BumpyMatrix::splitAsBumpyMatrix(
+    dt_norm[, !c("rId", "cId"), with = FALSE],
+    row = dt_norm$rId,
+    col = dt_norm$cId
+  )
+  
+  SummarizedExperiment::assays(se_tc)[["LogFoldChange"]] <- bm
+  return(se_tc)
+}
+
 
 #' @keywords internal
 fill_NA_by_mean <- function(dt, ref_df, cols) {

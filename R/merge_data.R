@@ -126,8 +126,24 @@ merge_data <- function(manifest, treatments, data) {
   
   data$WellColumn <- as.character(data$WellColumn)
 
+  # Merge Data and Metadata
+  # NOTE: If 'Duration' (or other cols) exists in both, data.table[data] keeps the 
+  # metadata version as 'col' and the data version as 'i.col'. 
+  # For time-course data, the raw data Duration is the source of truth.
+  
   df_merged <- cleanedup_metadata[data, on = c(identifiers[["barcode"]],
                                                identifiers[["well_position"]])]
+  
+  # Handle column collisions (specifically Duration for time-course)
+  dur_col <- gDRutils::get_env_identifiers("duration")
+  i_dur_col <- paste0("i.", dur_col)
+  
+  if (i_dur_col %in% names(df_merged)) {
+    # Overwrite the metadata duration with the raw data duration
+    df_merged[[dur_col]] <- df_merged[[i_dur_col]]
+    df_merged[, (i_dur_col) := NULL]
+  }
+
   if (nrow(df_merged) != nrow(data)) {
     # need to identify issue and output relevant warning
     futile.logger::flog.warn(
