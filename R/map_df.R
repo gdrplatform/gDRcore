@@ -10,39 +10,14 @@
 #' @param ref_cols character vector of the names of reference columns to 
 #' include. Likely obtained from \code{identify_keys()}.
 #' @param ref_type string of the reference type to map to.
-#' Should be one of \code{c("Day0", "untrt_Endpoint", "ref_Endpoint")}.
-#' 
-#' @examples 
-#' n <- 64
-#' md_df <- data.table::data.table(
-#'   Gnumber = rep(c("vehicle", "untreated", paste0("G", seq(2))), each = 16), 
-#'   DrugName = rep(c("vehicle", "untreated", paste0("GN", seq(2))), each = 16), 
-#'   clid = paste0("C", rep_len(seq(4), n)),
-#'   CellLineName = paste0("N", rep_len(seq(4), n)),
-#'   replicates = rep_len(paste0("R", rep(seq(4), each = 4)), 64),
-#'   drug_moa = "inhibitor",
-#'   ReferenceDivisionTime = rep_len(c(120, 60), n),
-#'   Tissue = "Lung",
-#'   parental_identifier = "CL12345",
-#'   Duration = 160
-#' )
-#' md_df <- unique(md_df)
-#' ref <- md_df$Gnumber %in% c("vehicle", "untreated")
-#' ref_df <- md_df[ref, ]
-#' trt_df <- md_df[!ref, ]
-#' Keys <- identify_keys(trt_df)
-#' ref_type <- "untrt_Endpoint"
-#' map_df(
-#'   trt_df, 
-#'   ref_df, 
-#'   ref_cols = Keys[[ref_type]],
-#'   ref_type = ref_type
-#' )
+#' Should be one of \code{c("Day0", "untrt_Endpoint")}.
 #'
 #' @return named list mapping treated metadata to untreated metadata.
 #'
-#' @details If \code{override_untrt_controls} is specified, 
-#' TODO: FILL ME!
+#' @details If \code{override_untrt_controls} is specified, the values in the 
+#' named list will supersede the values in \code{trt_md} during the matching 
+#' process. This is useful for mapping treatments to specific "standard" 
+#' untreated controls.
 #' 
 #' @seealso identify_keys
 #' @keywords map_df
@@ -57,9 +32,8 @@ map_df <- function(trt_md,
   # Assertions:
   checkmate::assert_data_table(trt_md)
   checkmate::assert_data_table(ref_md)
-  checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
+  checkmate::assert_list(override_untrt_controls, null.ok = TRUE)
   checkmate::assert_character(ref_cols)
-  checkmate::assert_character(ref_type)
   
   ref_type <- match.arg(ref_type)
   
@@ -68,18 +42,16 @@ map_df <- function(trt_md,
     c("concentration", "concentration2"), 
     simplify = FALSE
   ))
-
+  
   if (ref_type == "Day0") {
     ref_md <- ref_md[get(duration_col) == 0, ]
   }
   
-  conc <- cbind(array(0, nrow(ref_md)), # padding to avoid empty df;
-                ref_md[, intersect(names(ref_md), conc_cols), drop = FALSE])
+  conc <- cbind(array(0, nrow(ref_md)), 
+                ref_md[, intersect(names(ref_md), conc_cols), with = FALSE])
   is_ref_conc <- rowSums(conc == 0) == ncol(conc)
   
-  
   if (ref_type == "Day0") {
-    # Identifying which of the durations have a value of 0.
     matching_list <- list(T0 = ref_md[[duration_col]] == 0, conc = is_ref_conc)
     matchFactor <- "T0"
   } else if (ref_type == "untrt_Endpoint") {
@@ -90,241 +62,186 @@ map_df <- function(trt_md,
   trt_rnames <- trt_md$rn
   ref_rnames <- ref_md$rn
   
-  # define matrix with matching metadata
   present_ref_cols <- intersect(ref_cols, names(ref_md))
-  names(present_ref_cols) <- present_ref_cols
   msgs <- NULL
   
-  # 1. there are no matches (present_ref_cols is empty)
+  # 1. Exact matches vectorized
   exact_out <- if (length(present_ref_cols) == 0) {
-    out <- stats::setNames(replicate(length(trt_rnames), character(0), simplify = FALSE), trt_rnames)
-    names(out) <- trt_rnames
-    out
+    stats::setNames(replicate(length(trt_rnames), character(0), simplify = FALSE), trt_rnames)
   } else {
-    # 2. search for exact matches found in the vectorised way
-    #    cases with non-exact matches will be returned as NAs
-    match_l <-
-      grr_matches(
-        do.call("paste", trt_md[, present_ref_cols, with = FALSE]),
-        do.call("paste", ref_md[, present_ref_cols, with = FALSE]),
-        all.y = FALSE,
-        list = TRUE
-      )
+    match_l <- grr_matches(
+      do.call("paste", trt_md[, ..present_ref_cols]),
+      do.call("paste", ref_md[, ..present_ref_cols]),
+      all.y = FALSE,
+      list = TRUE
+    )
     names(match_l) <- trt_rnames
-    lapply(match_l, function(x) {
-      ref_rnames[sort(x)]
-    })
+    lapply(match_l, function(x) ref_rnames[sort(x)])
   }
- 
-  # 3. only exact matches found 
-  out <- if (!anyNA(exact_out) && is.null(override_untrt_controls)) {
-    exact_out
-    # 4. not all entres are exact matches
-    # 4.1 search for potential non-exact matches
-    # 4.2 support cases with overriden untreated controls
-    # this logic is pretty slow currently 
-  } else {
-
+  
+  # 2. Search for non-exact matches or overrides
   out <- lapply(seq_along(trt_rnames), function(i) {
     treatment <- trt_rnames[i]
-    if (all(is.na(exact_out[[treatment]])) || !is.null(override_untrt_controls)) {
+    
+    if (length(exact_out[[treatment]]) == 0 || any(is.na(exact_out[[treatment]])) || !is.null(override_untrt_controls)) {
       
       refs <- lapply(present_ref_cols, function(y) {
-        unname(unlist(ref_md[, y, with = FALSE]) == unlist(trt_md[which(trt_md$rn == treatment),
-                                                                  y, with = FALSE]))
+        ref_md[[y]] == trt_md[rn == treatment, ..y][[1]]
       })
+      names(refs) <- present_ref_cols
       
       if (!is.null(override_untrt_controls)) {
         for (overridden in names(override_untrt_controls)) {
-          refs[[overridden]] <-
-            unname(unlist(ref_md[, overridden, with = FALSE]) == override_untrt_controls[[overridden]])
+          if (overridden %in% names(ref_md)) {
+            refs[[overridden]] <- ref_md[[overridden]] == override_untrt_controls[[overridden]]
+          }
         }
       }
       
       all_checks <- c(refs, matching_list)
       match_mx <- do.call("rbind", all_checks)
-      rownames(match_mx) <- names(all_checks)
-      match_idx <- which(colSums(match_mx) == ncol(match_mx))
-      # No exact match, try to find best match (as many metadata fields as 
-      # possible).
-      # TODO: rowSums?
-      idx <- colSums(match_mx)
-      # TODO: Sort this out so that it also takes the average in case multiple 
-      # are found.
-      idx <- idx * match_mx[matchFactor, ]
       
-      if (any(idx > 0, na.rm = TRUE)) {
-        match_idx <- which.max(idx)
-        msgs <- c(
-          msgs, 
-          sprintf(
-            "Found partial match: ('%s') for treatment: ('%s')",
-            rownames(ref_md)[match_idx], treatment
-          )
-        )
-      } else { # failed to find any potential match
-        msgs <- c(
-          msgs, 
-          sprintf("No partial match found for treatment: ('%s')", treatment)
-        )
+      # Calculate scores
+      idx <- colSums(match_mx)
+      
+      # score for metadata columns only (to avoid matching on Duration alone)
+      meta_score <- if (length(present_ref_cols) > 0) {
+        colSums(match_mx[present_ref_cols, , drop = FALSE])
+      } else {
+        rep(0, ncol(match_mx))
       }
-      ref_rnames[match_idx] # TODO: Check that this properly handles 
-                            # NAs or NULLs.
+      
+      if (matchFactor %in% rownames(match_mx)) {
+        idx <- idx * match_mx[matchFactor, ]
+      }
+      
+      # Identify best matches where at least one metadata field matches
+      if (any(idx > 0 & meta_score > 0, na.rm = TRUE)) {
+        valid_idx <- which(idx > 0 & meta_score > 0)
+        match_idx <- valid_idx[which(idx[valid_idx] == max(idx[valid_idx]))]
+        
+        msgs <<- c(msgs, sprintf("Found partial match: ('%s') for treatment: ('%s')", 
+                                 paste(ref_rnames[match_idx], collapse = ", "), treatment))
+        ref_rnames[match_idx] 
+      } else {
+        msgs <<- c(msgs, sprintf("No partial match found for treatment: ('%s')", treatment) )
+        character(0)
+      }
     } else {
       exact_out[[treatment]]
     }
   })
-  names(out) <- trt_rnames
-  out
-  }
   
-  futile.logger::flog.info(paste0(msgs, collapse = "\n"))
+  names(out) <- trt_rnames
+  if (!is.null(msgs)) futile.logger::flog.info(paste0(msgs, collapse = "\n"))
   out
 }
 
 #' Map references
 #' 
-#' @param mat_elem input data frame
-#' @param rowData_colnames character vector of variables for the mapping of reference treatments
-#'
-#' @details
-#' Using the given rownames, map the treated and reference conditions.
-#' 
+#' @param mat_elem data.table input
+#' @param rowData_colnames character vector of variables for mapping
 #' @keywords map_df
 #' @return list
-#' 
+#' @export
 .map_references <- function(mat_elem, 
                             rowData_colnames = c(gDRutils::get_env_identifiers("duration"), 
-                                                paste0(c("drug", "drug_name", "drug_moa"), "3"))) {
+                                                 paste0(c("drug", "drug_name", "drug_moa"), "3"))) {
+  
+  checkmate::assert_data_table(mat_elem)
+  checkmate::assert_character(rowData_colnames, null.ok = TRUE)
   
   clid <- gDRutils::get_env_identifiers("cellline")
-  # variables for the mapping of treatments
-  valid <- unlist(
-    intersect(
-      c(
-        gDRutils::get_env_identifiers(
-          c("drug_name", "drug_name2"), 
-          simplify = FALSE
-        )
-      ),
-      colnames(mat_elem)
-    )
-  )
-  # variables for the mapping of reference treatments
-  cotrt_var <- setdiff(rowData_colnames, 
-     gDRutils::get_env_identifiers(
-       c("drug", "drug_name", "drug_moa", paste0(c("drug", "drug_name", "drug_moa"), "2")), 
-       simplify = FALSE
-     )
-  )
+  checkmate::assert_choice(clid, colnames(mat_elem))
   
-  drug_cols <- mat_elem[, valid, with = FALSE]
-
-  untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  has_tag <- lapply(drug_cols, function(x) x %in% untrt_tag)
-  data.table::setDT(has_tag)
-  ntag <- rowSums(has_tag)
-
-  is_untrt <- ntag == length(valid)
-  is_ref <- ntag != 0L & !is_untrt
+  # Avoid recycling code using helper
+  tag_info <- .get_untreated_tag_count(mat_elem, c("drug_name", "drug_name2"))
+  valid <- tag_info$valid_cols
+  
+  is_untrt <- tag_info$ntag == tag_info$num_cols
+  is_ref   <- tag_info$ntag != 0L & !is_untrt
+  
+  cotrt_var <- setdiff(rowData_colnames, 
+                       gDRutils::get_env_identifiers(
+                         c("drug", "drug_name", "drug_moa", paste0(c("drug", "drug_name", "drug_moa"), "2")), 
+                         simplify = FALSE
+                       )
+  )
+  cotrt_var <- intersect(cotrt_var, colnames(mat_elem))
   
   mat_elem$rownames <- as.character(seq_len(nrow(mat_elem)))
-
-  # columns with the primary data for the treatment and reference
-  trt_elem <- mat_elem[which(!is_ref & !is_untrt)]
+  trt_elem <- mat_elem[!is_ref & !is_untrt]
   
   out <- vector("list", nrow(trt_elem))
   names(out) <- trt_elem$rownames
   
   if (any(is_ref)) {
-    ref_elem <- mat_elem[which(is_ref), ]
-    # columns with the matching data for the treatment and reference
-    ref_cotrt <- mat_elem[which(is_ref), cotrt_var, with = FALSE]
-
-    # store rownames of trt_elem and ref_elem and replicate them based on the length of 
-    # drug columns
+    ref_elem <- mat_elem[is_ref]
+    
     trtNames <- rep(trt_elem$rownames, length(valid))
     refNames <- rep(ref_elem$rownames, length(valid))
     
-    # split data.tables to simple model with clid column and drug column
+    trt <- do.call(paste, do.call(rbind, lapply(valid, function(x) {
+      stats::setNames(trt_elem[, c(clid, x), with = FALSE], c(clid, "drug"))
+    })))
     
-    trt <- lapply(valid, function(x) {
-      colnames <- c(clid, x) 
-      trt_elem[, colnames, with = FALSE] 
-    })
-    trt <- do.call(
-      paste, 
-      do.call(
-        rbind, 
-        lapply(trt, function(x) stats::setNames(x, names(trt[[1]])))
-      )
-    )
+    ref <- do.call(paste, do.call(rbind, lapply(valid, function(x) {
+      stats::setNames(ref_elem[, c(clid, x), with = FALSE], c(clid, "drug"))
+    })))
     
-    ref <- lapply(valid, function(x) {
-      colnames <- c(clid, x) 
-      ref_elem[, colnames, with = FALSE] 
-    })
-    ref <- do.call(
-      paste, 
-      do.call(
-        rbind, 
-        lapply(ref, function(x) stats::setNames(x, names(ref[[1]])))
-      )
-    )
-    # match trt and ref
     matchTrtRef <- grr_matches(trt, ref, list = FALSE, all.y = FALSE)
     matchTrtRef[["x"]] <- trtNames[matchTrtRef[["x"]]]
     matchTrtRef[["y"]] <- refNames[matchTrtRef[["y"]]]
     out <- split(matchTrtRef[["y"]], matchTrtRef[["x"]])
-    # match the additional variables in the treatment
-    if (length(ref_cotrt) && length(cotrt_var)) {
+    
+    if (length(cotrt_var) > 0) {
       for (i in names(out)) {
-        # matching the ref_elem to the trt_elem for the cotrt_var
         ref_idx <- lapply(na.omit(out[[i]]), function(x) {
-          ref_elem[rn == x, cotrt_var, with = FALSE] ==
-              trt_elem[rn == i, cotrt_var, with = FALSE]
-          })
-        out[[i]] <- out[[i]][unlist(lapply(ref_idx, all))]
+          all(ref_elem[rownames == x, ..cotrt_var] == trt_elem[rownames == i, ..cotrt_var])
+        })
+        out[[i]] <- out[[i]][unlist(ref_idx)]
       }
     }
-    out
-  } else {
-    out
   }
+  out
 }
-
 
 #' Identify untreated rows based on Drug treatment alone
 #' 
-#' @param mat_elem input data frame
-#'
-#' @details
-#' Using the given rownames, map the untreated conditions
-#' 
+#' @param mat_elem data.table input
 #' @keywords map_df
-#' @return list
-#' 
+#' @return logical vector
+#' @export
 map_untreated <- function(mat_elem) {
-  # TODO: avoid recycling code of map_references above
-  #
-  clid <- gDRutils::get_env_identifiers("cellline")
-  valid <- unlist(
+  checkmate::assert_data_table(mat_elem)
+  tag_info <- .get_untreated_tag_count(mat_elem)
+  tag_info$ntag == tag_info$num_cols
+}
+
+#' Get the count of untreated tags per row
+#' 
+#' @param mat_elem data.table input data frame
+#' @param drug_identifier_keys character vector of keys to look up identifiers
+#'
+#' @return list containing ntag, num_cols, and valid_cols
+#' @keywords internal
+.get_untreated_tag_count <- function(mat_elem, 
+                                     drug_identifier_keys = c("drug_name", "drug_name2", "drug_name3")) {
+  
+  checkmate::assert_data_table(mat_elem)
+  valid_cols <- unlist(
     intersect(
-      c(
-        gDRutils::get_env_identifiers(
-          c("drug_name", "drug_name2", "drug_name3"), 
-          simplify = FALSE
-        )
-      ),
+      gDRutils::get_env_identifiers(drug_identifier_keys, simplify = FALSE),
       colnames(mat_elem)
     )
   )
   
-  drug_cols <- mat_elem[, valid, with = FALSE]
-
+  if (length(valid_cols) == 0) {
+    stop(sprintf("None of the drug identifiers [%s] found", paste(drug_identifier_keys, collapse = ", ")))
+  }
+  
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  ntag <- rowSums(drug_cols[,
-                            lapply(.SD, `%in%`, untrt_tag),
-                            .SDcols = names(drug_cols)])
-  ntag == length(valid)
+  ntag <- rowSums(mat_elem[, lapply(.SD, `%in%`, untrt_tag), .SDcols = valid_cols])
+  
+  list(ntag = ntag, num_cols = length(valid_cols), valid_cols = valid_cols)
 }
