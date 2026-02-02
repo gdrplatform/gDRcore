@@ -63,7 +63,6 @@ map_df <- function(trt_md,
   ref_rnames <- ref_md$rn
   
   present_ref_cols <- intersect(ref_cols, names(ref_md))
-  msgs <- NULL
   
   # 1. Exact matches vectorized
   exact_out <- if (length(present_ref_cols) == 0) {
@@ -80,8 +79,10 @@ map_df <- function(trt_md,
   }
   
   # 2. Search for non-exact matches or overrides
-  out <- lapply(seq_along(trt_rnames), function(i) {
+  # We return a list containing both the mapped references and any messages
+  res_list <- lapply(seq_along(trt_rnames), function(i) {
     treatment <- trt_rnames[i]
+    msg <- NULL
     
     if (length(exact_out[[treatment]]) == 0 || any(is.na(exact_out[[treatment]])) || !is.null(override_untrt_controls)) {
       
@@ -120,20 +121,28 @@ map_df <- function(trt_md,
         valid_idx <- which(idx > 0 & meta_score > 0)
         match_idx <- valid_idx[which(idx[valid_idx] == max(idx[valid_idx]))]
         
-        msgs <<- c(msgs, sprintf("Found partial match: ('%s') for treatment: ('%s')", 
-                                 paste(ref_rnames[match_idx], collapse = ", "), treatment))
-        ref_rnames[match_idx] 
+        msg <- sprintf("Found partial match: ('%s') for treatment: ('%s')", 
+                       paste(ref_rnames[match_idx], collapse = ", "), treatment)
+        
+        return(list(ref = ref_rnames[match_idx], msg = msg))
       } else {
-        msgs <<- c(msgs, sprintf("No partial match found for treatment: ('%s')", treatment) )
-        character(0)
+        msg <- sprintf("No partial match found for treatment: ('%s')", treatment)
+        return(list(ref = character(0), msg = msg))
       }
     } else {
-      exact_out[[treatment]]
+      return(list(ref = exact_out[[treatment]], msg = NULL))
     }
   })
   
+  # Flatten result list into mapping and messages
+  out <- lapply(res_list, `[[`, "ref")
   names(out) <- trt_rnames
-  if (!is.null(msgs)) futile.logger::flog.info(paste0(msgs, collapse = "\n"))
+  
+  msgs <- unlist(lapply(res_list, `[[`, "msg"))
+  if (length(msgs) > 0) {
+    futile.logger::flog.info(paste0(msgs, collapse = "\n"))
+  }
+  
   out
 }
 
