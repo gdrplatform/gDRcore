@@ -7,15 +7,12 @@
 map_untreated(mat_elem)
 }
 \arguments{
-\item{mat_elem}{input data frame}
+\item{mat_elem}{data.table input}
 }
 \value{
-list
+logical vector
 }
 \description{
 Identify untreated rows based on Drug treatment alone
-}
-\details{
-Using the given rownames, map the untreated conditions
 }
 \keyword{map_df}
