@@ -84,7 +84,9 @@ map_df <- function(trt_md,
     treatment <- trt_rnames[i]
     msg <- NULL
     
-    if (length(exact_out[[treatment]]) == 0 || any(is.na(exact_out[[treatment]])) || !is.null(override_untrt_controls)) {
+    if (length(exact_out[[treatment]]) == 0 ||
+        any(is.na(exact_out[[treatment]])) ||
+        !is.null(override_untrt_controls)) {
       
       refs <- lapply(present_ref_cols, function(y) {
         ref_md[[y]] == trt_md[rn == treatment, ..y][[1]]

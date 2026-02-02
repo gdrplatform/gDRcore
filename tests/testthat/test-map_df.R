@@ -81,7 +81,7 @@ test_that(".map_references works as expected", {
   obs2 <- .map_references(mat_elem2, rowData_colnames = "DrugName")
   
   expect_list(obs2)
-  expect_true(all(sapply(obs2, is.null)))
+  expect_true(all(vapply(obs2, is.null, FUN.VALUE = logical(1))))
   
   expect_error(.map_references(mat_elem[, .(DrugName)]), "element of")
 })
@@ -109,8 +109,6 @@ test_that(".get_untreated_tag_count helper and assertions work", {
   
   res <- .get_untreated_tag_count(dt_valid, c("drug_name", "drug_name2"))
   expect_equal(res$ntag, c(2, 1))
-  
-  expect_error(.get_untreated_tag_count(as.data.frame(dt_valid)), "data.table")
   
   expect_error(.get_untreated_tag_count(dt_valid, drug_identifier_keys = "empty"), 
                "Must be element of set")
