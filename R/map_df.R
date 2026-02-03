@@ -32,7 +32,10 @@ map_df <- function(trt_md,
   # Assertions:
   checkmate::assert_data_table(trt_md)
   checkmate::assert_data_table(ref_md)
-  checkmate::assert_list(override_untrt_controls, null.ok = TRUE)
+  checkmate::assert(
+    checkmate::check_list(override_untrt_controls, names = "named", null.ok = TRUE),
+    checkmate::check_vector(override_untrt_controls, names = "named", null.ok = TRUE)
+  )
   checkmate::assert_character(ref_cols)
   
   ref_type <- match.arg(ref_type)
