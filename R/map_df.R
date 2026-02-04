@@ -255,17 +255,6 @@ map_untreated <- function(mat_elem) {
 #' drug column names in the \code{gDRutils} environment.
 #'
 #' @return list containing ntag, num_cols, and valid_cols
-#' @examples
-#' # Assuming gDRutils identifiers are set: 
-#' # drug_name = "DrugName", drug_name2 = "DrugName_2", untreated_tag = "untreated"
-#' 
-#' mat <- data.table::data.table(
-#'   DrugName = c("untreated", "DrugA", "untreated"),
-#'   DrugName_2 = c("untreated", "untreated", "DrugB"),
-#'   clid = "Cell1"
-#' )
-#' 
-#' .get_untreated_tag_count(mat, c("drug_name", "drug_name2"))
 #' @keywords internal
 .get_untreated_tag_count <- function(mat_elem, 
                                      drug_identifier_keys = c("drug_name", "drug_name2", "drug_name3")) {
