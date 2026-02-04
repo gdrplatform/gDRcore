@@ -7,7 +7,8 @@
 map_untreated(mat_elem)
 }
 \arguments{
-\item{mat_elem}{data.table input}
+\item{mat_elem}{data.table input containing drug name or drug identifier
+columns.}
 }
 \value{
 logical vector

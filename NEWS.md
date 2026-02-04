@@ -1,5 +1,5 @@
 ## gDRcore 1.9.4 - 2026-02-02
-* fix TODOs in `map_df.R`
+* remove duplicated code from `map_references` in `map_untreated`
 
 ## gDRcore 1.9.3 - 2025-11-27
 * add support for Incucyte data

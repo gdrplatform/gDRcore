@@ -39,6 +39,21 @@ named list will supersede the values in \code{trt_md} during the matching
 process. This is useful for mapping treatments to specific "standard"
 untreated controls.
 }
+\examples{
+# Standard Endpoint Mapping
+trt_dt <- data.table::data.table(
+  clid = c("C1", "C2"),
+  Duration = 72,
+  rn = c("T1", "T2")
+)
+ref_dt <- data.table::data.table(
+  clid = c("C1", "C2"),
+  Duration = 72,
+  rn = c("R1", "R2")
+)
+map_df(trt_dt, ref_dt, ref_cols = "clid", ref_type = "untrt_Endpoint")
+
+}
 \seealso{
 identify_keys
 }

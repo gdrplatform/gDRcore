@@ -10,14 +10,27 @@
 )
 }
 \arguments{
-\item{mat_elem}{data.table input data frame}
+\item{mat_elem}{data.table input data frame to evaluate.}
 
-\item{drug_identifier_keys}{character vector of keys to look up identifiers}
+\item{drug_identifier_keys}{character vector of keys used to look up
+drug column names in the \code{gDRutils} environment.}
 }
 \value{
 list containing ntag, num_cols, and valid_cols
 }
 \description{
 Get the count of untreated tags per row
+}
+\examples{
+# Assuming gDRutils identifiers are set: 
+# drug_name = "DrugName", drug_name2 = "DrugName_2", untreated_tag = "untreated"
+
+mat <- data.table::data.table(
+  DrugName = c("untreated", "DrugA", "untreated"),
+  DrugName_2 = c("untreated", "untreated", "DrugB"),
+  clid = "Cell1"
+)
+
+.get_untreated_tag_count(mat, c("drug_name", "drug_name2"))
 }
 \keyword{internal}

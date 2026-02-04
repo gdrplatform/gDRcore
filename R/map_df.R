@@ -19,6 +19,20 @@
 #' process. This is useful for mapping treatments to specific "standard" 
 #' untreated controls.
 #' 
+#' @examples
+#' # Standard Endpoint Mapping
+#' trt_dt <- data.table::data.table(
+#'   clid = c("C1", "C2"),
+#'   Duration = 72,
+#'   rn = c("T1", "T2")
+#' )
+#' ref_dt <- data.table::data.table(
+#'   clid = c("C1", "C2"),
+#'   Duration = 72,
+#'   rn = c("R1", "R2")
+#' )
+#' map_df(trt_dt, ref_dt, ref_cols = "clid", ref_type = "untrt_Endpoint")
+#' 
 #' @seealso identify_keys
 #' @keywords map_df
 #' @export
@@ -153,11 +167,12 @@ map_df <- function(trt_md,
 
 #' Map references
 #' 
-#' @param mat_elem data.table input
-#' @param rowData_colnames character vector of variables for mapping
+#' @param mat_elem data.table input containing experimental metadata and 
+#' row identifiers.
+#' @param rowData_colnames character vector of variables (column names) used 
+#' to identify and map reference treatments.
 #' @keywords map_df
 #' @return list
-#' @export
 .map_references <- function(mat_elem, 
                             rowData_colnames = c(gDRutils::get_env_identifiers("duration"), 
                                                  paste0(c("drug", "drug_name", "drug_moa"), "3"))) {
@@ -222,7 +237,8 @@ map_df <- function(trt_md,
 
 #' Identify untreated rows based on Drug treatment alone
 #' 
-#' @param mat_elem data.table input
+#' @param mat_elem data.table input containing drug name or drug identifier 
+#' columns.
 #' @keywords map_df
 #' @return logical vector
 #' @export
@@ -234,10 +250,22 @@ map_untreated <- function(mat_elem) {
 
 #' Get the count of untreated tags per row
 #' 
-#' @param mat_elem data.table input data frame
-#' @param drug_identifier_keys character vector of keys to look up identifiers
+#' @param mat_elem data.table input data frame to evaluate.
+#' @param drug_identifier_keys character vector of keys used to look up 
+#' drug column names in the \code{gDRutils} environment.
 #'
 #' @return list containing ntag, num_cols, and valid_cols
+#' @examples
+#' # Assuming gDRutils identifiers are set: 
+#' # drug_name = "DrugName", drug_name2 = "DrugName_2", untreated_tag = "untreated"
+#' 
+#' mat <- data.table::data.table(
+#'   DrugName = c("untreated", "DrugA", "untreated"),
+#'   DrugName_2 = c("untreated", "untreated", "DrugB"),
+#'   clid = "Cell1"
+#' )
+#' 
+#' .get_untreated_tag_count(mat, c("drug_name", "drug_name2"))
 #' @keywords internal
 .get_untreated_tag_count <- function(mat_elem, 
                                      drug_identifier_keys = c("drug_name", "drug_name2", "drug_name3")) {

@@ -112,5 +112,7 @@ test_that(".get_untreated_tag_count helper and assertions work", {
   
   expect_error(.get_untreated_tag_count(dt_valid, drug_identifier_keys = "empty"), 
                "Must be element of set")
+  expect_error(.get_untreated_tag_count(dt_valid, drug_identifier_keys = "drug"),
+               "None of the drug")
 })
 
