@@ -11,17 +11,16 @@
 )
 }
 \arguments{
-\item{mat_elem}{input data frame}
+\item{mat_elem}{data.table input containing experimental metadata and
+row identifiers.}
 
-\item{rowData_colnames}{character vector of variables for the mapping of reference treatments}
+\item{rowData_colnames}{character vector of variables (column names) used
+to identify and map reference treatments.}
 }
 \value{
 list
 }
 \description{
 Map references
-}
-\details{
-Using the given rownames, map the treated and reference conditions.
 }
 \keyword{map_df}

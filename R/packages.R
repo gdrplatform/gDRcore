@@ -49,7 +49,12 @@ if (getRversion() >= "2.15.1") {
       "smooth",
       "priority1",
       "priority2",
-      "x.N"
+      "x.N",
+      "..cotrt_var",
+      "..present_ref_cols",
+      "..y",
+      "LogFoldChange",
+      "ReadoutValue"
     ), 
     utils::packageName())
 }

@@ -24,7 +24,7 @@ fields should be used as a control. Defaults to \code{NULL}.}
 include. Likely obtained from \code{identify_keys()}.}
 
 \item{ref_type}{string of the reference type to map to.
-Should be one of \code{c("Day0", "untrt_Endpoint", "ref_Endpoint")}.}
+Should be one of \code{c("Day0", "untrt_Endpoint")}.}
 }
 \value{
 named list mapping treated metadata to untreated metadata.
@@ -34,35 +34,24 @@ Map treated conditions to their respective Day0, untreated, or single-agent
 references using condition metadata.
 }
 \details{
-If \code{override_untrt_controls} is specified,
-TODO: FILL ME!
+If \code{override_untrt_controls} is specified, the values in the
+named list will supersede the values in \code{trt_md} during the matching
+process. This is useful for mapping treatments to specific "standard"
+untreated controls.
 }
 \examples{
-n <- 64
-md_df <- data.table::data.table(
-  Gnumber = rep(c("vehicle", "untreated", paste0("G", seq(2))), each = 16), 
-  DrugName = rep(c("vehicle", "untreated", paste0("GN", seq(2))), each = 16), 
-  clid = paste0("C", rep_len(seq(4), n)),
-  CellLineName = paste0("N", rep_len(seq(4), n)),
-  replicates = rep_len(paste0("R", rep(seq(4), each = 4)), 64),
-  drug_moa = "inhibitor",
-  ReferenceDivisionTime = rep_len(c(120, 60), n),
-  Tissue = "Lung",
-  parental_identifier = "CL12345",
-  Duration = 160
+# Standard Endpoint Mapping
+trt_dt <- data.table::data.table(
+  clid = c("C1", "C2"),
+  Duration = 72,
+  rn = c("T1", "T2")
 )
-md_df <- unique(md_df)
-ref <- md_df$Gnumber \%in\% c("vehicle", "untreated")
-ref_df <- md_df[ref, ]
-trt_df <- md_df[!ref, ]
-Keys <- identify_keys(trt_df)
-ref_type <- "untrt_Endpoint"
-map_df(
-  trt_df, 
-  ref_df, 
-  ref_cols = Keys[[ref_type]],
-  ref_type = ref_type
+ref_dt <- data.table::data.table(
+  clid = c("C1", "C2"),
+  Duration = 72,
+  rn = c("R1", "R2")
 )
+map_df(trt_dt, ref_dt, ref_cols = "clid", ref_type = "untrt_Endpoint")
 
 }
 \seealso{
