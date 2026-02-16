@@ -1,3 +1,9 @@
+
+.drugNameRegex <- NULL
+.untreated_tag_patterns <- NULL
+.untreatedDrugNameRegex <- NULL
+patterns <- NULL
+
 #' onload function
 #'
 #' @param libname library name
