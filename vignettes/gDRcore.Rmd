@@ -8,7 +8,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r init, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -87,13 +87,13 @@ Please familiarize yourself with the `gDRimport` package, which contains a varie
 
 This example is based on the artificial dataset called `data1` available within the `gDRimport` package. `gDR` requires three types of data that should be used as the raw input: Template, Manifest, and RawData. More information about these three types of data can be found in our general documentation.
 
-```{r}
+```{r get_testdata}
 td <- gDRimport::get_test_data()
 ```
 
 The provided dataset needs to be merged into one `data.table` object to be able to run the gDR pipeline. This process can be done using two functions: `gDRimport::load_data()` and `gDRcore::merge_data()`.
 
-```{r, include=FALSE}
+```{r load_data, include=FALSE}
 loaded_data <-
   suppressMessages(
     gDRimport::load_data(
@@ -110,16 +110,16 @@ head(input_df)
 
 We provide an all-in-one function that splits data into appropriate data types, creates the SummarizedExperiment object for each data type, splits data into treatment and control assays, normalizes, averages, calculates gDR metrics, and finally, creates the MultiAssayExperiment object. This function is called `runDrugResponseProcessingPipeline`.
 
-```{r, message = FALSE, results = FALSE, warning = FALSE}
+```{r run_pipeline, message = FALSE, results = FALSE, warning = FALSE}
 mae <- runDrugResponseProcessingPipeline(input_df)
 ```
 
-```{r}
+```{r mae}
 mae
 ```
 And we can subset the MultiAssayExperiment to receive the SummarizedExperiment specific to any data type, e.g.
 
-```{r}
+```{r single-agent}
 mae[["single-agent"]]
 ```
 

@@ -9,7 +9,7 @@ output:
 abstract: |
   This vignette comprehensively describes the data model used in the gDRsuite.
 vignette: |
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{gDRcore}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
