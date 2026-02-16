@@ -28,7 +28,7 @@ patterns <- NULL
   } 
   # CONS
   drugs_id <- gDRutils::get_env_identifiers("drug_name")
-  assignInNamespace(".drugNameRegex", sprintf("^%s$|^%s_[[:digit:]]+$", drugs_id, drugs_id), ns = pkgname)
+  utils::assignInNamespace(".drugNameRegex", sprintf("^%s$|^%s_[[:digit:]]+$", drugs_id, drugs_id), ns = pkgname)
   
   untreated_tag_patterns <- vapply(
     gDRutils::get_env_identifiers("untreated_tag"),
@@ -36,11 +36,11 @@ patterns <- NULL
     fmt = "^%s$",
     character(1)
   )
-  assignInNamespace(".untreated_tag_patterns", untreated_tag_patterns, ns = pkgname)
-  assignInNamespace(".untreatedDrugNameRegex", paste(untreated_tag_patterns, collapse = "|"), ns = pkgname)
+  utils::assignInNamespace(".untreated_tag_patterns", untreated_tag_patterns, ns = pkgname)
+  utils::assignInNamespace(".untreatedDrugNameRegex", paste(untreated_tag_patterns, collapse = "|"), ns = pkgname)
   
   # data.table compatible
-  assignInNamespace("patterns", data.table:::patterns, ns = pkgname)
+  utils::assignInNamespace("patterns", data.table:::patterns, ns = pkgname)
   utils::globalVariables(
     c(
       ".",
