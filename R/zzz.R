@@ -1,9 +1,3 @@
-
-.drugNameRegex <- NULL
-.untreated_tag_patterns <- NULL
-.untreatedDrugNameRegex <- NULL
-patterns <- NULL
-
 #' onload function
 #'
 #' @param libname library name
@@ -28,18 +22,19 @@ patterns <- NULL
   } 
   # CONS
   drugs_id <- gDRutils::get_env_identifiers("drug_name")
-  .drugNameRegex <<- sprintf("^%s$|^%s_[[:digit:]]+$", drugs_id, drugs_id)
+  assignInNamespace(".drugNameRegex", sprintf("^%s$|^%s_[[:digit:]]+$", drugs_id, drugs_id), ns = pkgname)
   
-  .untreated_tag_patterns <<- vapply(
+  untreated_tag_patterns <- vapply(
     gDRutils::get_env_identifiers("untreated_tag"),
     sprintf,
     fmt = "^%s$",
     character(1)
   )
-  .untreatedDrugNameRegex <<- paste(.untreated_tag_patterns, collapse = "|")
+  assignInNamespace(".untreated_tag_patterns", untreated_tag_patterns, ns = pkgname)
+  assignInNamespace(".untreatedDrugNameRegex", paste(untreated_tag_patterns, collapse = "|"), ns = pkgname)
   
   # data.table compatible
-  patterns <<- data.table:::patterns
+  assignInNamespace("patterns", data.table:::patterns, ns = pkgname)
   utils::globalVariables(
     c(
       ".",
