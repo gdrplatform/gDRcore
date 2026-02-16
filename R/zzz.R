@@ -27,9 +27,8 @@ patterns <- NULL
     )
   } 
   # CONS
-  .drugNameRegex <<- sprintf("^%s$|^%s_[[:digit:]]+$",
-                            gDRutils::get_env_identifiers("drug_name"),
-                            gDRutils::get_env_identifiers("drug_name"))
+  drugs_id <- gDRutils::get_env_identifiers("drug_name")
+  .drugNameRegex <<- sprintf("^%s$|^%s_[[:digit:]]+$", drugs_id, drugs_id)
   
   .untreated_tag_patterns <<- vapply(
     gDRutils::get_env_identifiers("untreated_tag"),
