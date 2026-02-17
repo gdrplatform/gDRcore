@@ -1,3 +1,6 @@
+## gDRcore 1.9.5 - 2026-02-16
+* fix stack imbalance warnings during byte-compilation
+
 ## gDRcore 1.9.4 - 2026-02-02
 * remove duplicated code from `map_references` in `map_untreated`
 
