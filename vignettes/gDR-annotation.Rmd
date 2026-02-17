@@ -8,7 +8,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r init, include = FALSE}
+```{r knitr-setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -36,7 +36,7 @@ Alternatively, users can use other annotation files stored outside of this packa
 - `GDR_CELLLINE_ANNOTATION`: Represents the path to the cell line annotation CSV file.
 - `GDR_DRUG_ANNOTATION`: Represents the path to the drug annotation CSV file.
 
-```{r set_envvar, eval=FALSE}
+```{r set-external-annotations, eval=FALSE}
 Sys.setenv(GDR_CELLLINE_ANNOTATION = "some/path/to/cell_line_annotation.csv")
 Sys.setenv(GDR_DRUG_ANNOTATION = "some/path/to/drug_annotation.csv")
 ```
@@ -45,7 +45,7 @@ Sys.setenv(GDR_DRUG_ANNOTATION = "some/path/to/drug_annotation.csv")
 
 To turn off the usage of external paths for data annotation, please set these two environmental variables to empty.
 
-```{r set_envvar_2, eval=FALSE}
+```{r unset-external-annotations, eval=FALSE}
 Sys.setenv(GDR_CELLLINE_ANNOTATION = "")
 Sys.setenv(GDR_DRUG_ANNOTATION = "")
 ```
@@ -76,7 +76,7 @@ If some information is not known for the cell line or drug, the corresponding fi
 
 To annotate `SummarizedExperiment` and `MultiAssayExperiment` objects, use the functions `annotate_se_with_drug`, `annotate_mae_with_drug`, `annotate_se_with_cell_line`, and `annotate_mae_with_cell_line`. These functions take the experiment objects and the corresponding annotation tables as input and return the annotated objects.
 
-```{r annotation, eval=FALSE}
+```{r annotate-experiment-objects, eval=FALSE}
 # Example for SummarizedExperiment
 se <- SummarizedExperiment::SummarizedExperiment(
   rowData = data.table::data.table(Gnumber = c("D1", "D2", "D3"))
@@ -104,6 +104,6 @@ Proper annotation of drug and cell line data is crucial for running the gDR pipe
 
 # SessionInfo {-}
 
-```{r sessionInfo}
+```{r session-info}
 sessionInfo()
 ```

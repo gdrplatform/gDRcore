@@ -110,6 +110,6 @@ In gDR `r Biocpkg("BumpyMatrix")` objects can be easily transformed into the `r 
 
 # Session info {.unnumbered}
 
-```{r sessionInfo, echo=FALSE}
+```{r session-info, echo=FALSE}
 sessionInfo()
 ```

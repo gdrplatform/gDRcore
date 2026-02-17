@@ -8,14 +8,14 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r init, include = FALSE}
+```{r knitr-config, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
-```{r setup, echo = FALSE}
+```{r load-gdr-libraries, echo = FALSE}
 library(gDRtestData)
 library(gDRcore)
 log_level <- futile.logger::flog.threshold("ERROR")
@@ -87,13 +87,13 @@ Please familiarize yourself with the `gDRimport` package, which contains a varie
 
 This example is based on the artificial dataset called `data1` available within the `gDRimport` package. `gDR` requires three types of data that should be used as the raw input: Template, Manifest, and RawData. More information about these three types of data can be found in our general documentation.
 
-```{r get_testdata}
+```{r fetch-import-test-data}
 td <- gDRimport::get_test_data()
 ```
 
 The provided dataset needs to be merged into one `data.table` object to be able to run the gDR pipeline. This process can be done using two functions: `gDRimport::load_data()` and `gDRcore::merge_data()`.
 
-```{r load_data, include=FALSE}
+```{r merge-manifest-templates-results, include=FALSE}
 loaded_data <-
   suppressMessages(
     gDRimport::load_data(
@@ -110,16 +110,16 @@ head(input_df)
 
 We provide an all-in-one function that splits data into appropriate data types, creates the SummarizedExperiment object for each data type, splits data into treatment and control assays, normalizes, averages, calculates gDR metrics, and finally, creates the MultiAssayExperiment object. This function is called `runDrugResponseProcessingPipeline`.
 
-```{r run_pipeline, message = FALSE, results = FALSE, warning = FALSE}
+```{r execute-processing-pipeline, message = FALSE, results = FALSE, warning = FALSE}
 mae <- runDrugResponseProcessingPipeline(input_df)
 ```
 
-```{r mae}
+```{r inspect-mae-output}
 mae
 ```
 And we can subset the MultiAssayExperiment to receive the SummarizedExperiment specific to any data type, e.g.
 
-```{r single-agent}
+```{r subset-single-agent-experiment}
 mae[["single-agent"]]
 ```
 
@@ -128,6 +128,6 @@ Extraction of the data from either `MultiAssayExperiment` or `SummarizedExperime
 
 # SessionInfo {-}
 
-```{r sessionInfo}
+```{r session-info}
 sessionInfo()
 ```
