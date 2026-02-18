@@ -1,3 +1,6 @@
+## gDRcore 1.9.6 - 2026-02-18
+* fix handling of numeric identifiers in annotation functions
+
 ## gDRcore 1.9.5 - 2026-02-16
 * fix stack imbalance warnings during byte-compilation
 
