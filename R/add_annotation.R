@@ -37,7 +37,7 @@ get_cell_line_annotation <- function(
   }
   
   if (is.numeric(cell_line_annotation[[clid]])) {
-    cell_line_annotation[[clid]] <- as.character(cell_line_annotation[[clid]])
+    cell_line_annotation[, (clid) := as.character(get(clid))]
   }
   
   assert_cell_line_annotation(cell_line_annotation)
@@ -177,7 +177,7 @@ get_drug_annotation <- function(
   }
   
   if (is.numeric(drug_annotation[[drug_ann_cols[["drug"]]]])) {
-    drug_annotation[[drug_ann_cols[["drug"]]]] <- as.character(drug_annotation[[drug_ann_cols[["drug"]]]])
+    drug_annotation[, (drug_ann_cols[["drug"]]) := as.character(get(drug_ann_cols[["drug"]]))]
   }
   
   assert_drug_annotation(drug_annotation)
@@ -246,7 +246,7 @@ annotate_dt_with_drug <- function(
   drug_ann_cols <- unlist(gDRutils::get_env_identifiers(c("drug", "drug_name", "drug_moa"), simplify = FALSE))
   
   if (is.numeric(drug_annotation[[drug_ann_cols[["drug"]]]])) {
-    drug_annotation[[drug_ann_cols[["drug"]]]] <- as.character(drug_annotation[[drug_ann_cols[["drug"]]]])
+    drug_annotation[, (drug_ann_cols[["drug"]]) := as.character(get(drug_ann_cols[["drug"]]))]
   }
   
   # Remove existing annotations if any
