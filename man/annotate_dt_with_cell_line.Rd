@@ -21,8 +21,8 @@ Annotate cell line data with the provided annotation table
 }
 \examples{
 data <- data.table::data.table(
-  clid = c("CL1", "CL2", "CL3"),
-  Gnumber = c("D1", "D2", "D3")
+   clid = c("CL1", "CL2", "CL3"),
+   Gnumber = c("D1", "D2", "D3")
 )
 cell_line_annotation <- get_cell_line_annotation(data)
 annotated_metadata <- annotate_dt_with_cell_line(data, cell_line_annotation)

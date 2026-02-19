@@ -36,15 +36,19 @@ get_cell_line_annotation <- function(
     )
   }
   
+  if (is.numeric(cell_line_annotation[[clid]])) {
+    cell_line_annotation[, (clid) := as.character(get(clid))]
+  }
+  
   assert_cell_line_annotation(cell_line_annotation)
   
   if (NROW(cell_line_annotation) > 0) {
-    cmn <- cell_line_annotation[[clid]] %in% data[[clid]]
+    cmn <- cell_line_annotation[[clid]] %in% as.character(data[[clid]])
     cell_line_annotation <- cell_line_annotation[cmn, ]
   }
   
   # Handle missing cell lines
-  missing_cell_lines <- setdiff(unique(data[[clid]]), cell_line_annotation[[clid]])
+  missing_cell_lines <- setdiff(unique(as.character(data[[clid]])), cell_line_annotation[[clid]])
   if (length(missing_cell_lines) > 0) {
     missing_tbl_cell_lines <- data.table::data.table(
       clid = missing_cell_lines,
@@ -80,8 +84,8 @@ get_cell_line_annotation <- function(
 #' @keywords annotation
 #' @examples
 #' data <- data.table::data.table(
-#'   clid = c("CL1", "CL2", "CL3"),
-#'   Gnumber = c("D1", "D2", "D3")
+#'    clid = c("CL1", "CL2", "CL3"),
+#'    Gnumber = c("D1", "D2", "D3")
 #' )
 #' cell_line_annotation <- get_cell_line_annotation(data)
 #' annotated_metadata <- annotate_dt_with_cell_line(data, cell_line_annotation)
@@ -105,6 +109,14 @@ annotate_dt_with_cell_line <- function(
   if (length(existing_cols) > 0) {
     data[, (existing_cols) := NULL]
   }
+  
+  if (is.numeric(data[[cellline]])) {
+    data[, (cellline) := as.character(get(cellline))]
+  }
+  if (is.numeric(cell_line_annotation[[cellline]])) {
+    cell_line_annotation[, (cellline) := as.character(get(cellline))]
+  }
+  
   data <- cell_line_annotation[data, on = cellline]
   
   # Handle missing cell lines
@@ -164,11 +176,23 @@ get_drug_annotation <- function(
     )
   }
   
+  if (is.numeric(drug_annotation[[drug_ann_cols[["drug"]]]])) {
+    drug_annotation[, (drug_ann_cols[["drug"]]) := as.character(get(drug_ann_cols[["drug"]]))]
+  }
+  
   assert_drug_annotation(drug_annotation)
   
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  all_data_drugs <- setdiff(gDRutils::remove_drug_batch(unlist(data[, intersect(names(data), drug), with = FALSE])),
-                            untreated_tag)
+  all_data_drugs <- setdiff(
+    gDRutils::remove_drug_batch(
+      as.character(
+        unlist(
+          data[, intersect(names(data), drug), with = FALSE]
+        )
+      )
+    ), 
+    untreated_tag
+  )
   drug_annotation <- drug_annotation[gDRutils::remove_drug_batch(drug_annotation[[drug_ann_cols[["drug"]]]]) %in%
                                        all_data_drugs]
   
@@ -199,8 +223,8 @@ get_drug_annotation <- function(
 #' @keywords annotation
 #' @examples
 #' data <- data.table::data.table(
-#'   clid = c("CL1", "CL2", "CL3"),
-#'   Gnumber = c("D1", "D2", "D3")
+#'    clid = c("CL1", "CL2", "CL3"),
+#'    Gnumber = c("D1", "D2", "D3")
 #' )
 #' drug_annotation <- get_drug_annotation(data)
 #' annotated_metadata <- annotate_dt_with_drug(data, drug_annotation)
@@ -219,8 +243,19 @@ annotate_dt_with_drug <- function(
   drug_name <- unlist(gDRutils::get_env_identifiers(c("drug_name", "drug_name2", "drug_name3"), simplify = FALSE))
   drug_moa <- unlist(gDRutils::get_env_identifiers(c("drug_moa", "drug_moa2", "drug_moa3"), simplify = FALSE))
   drug_idx <- which(drug %in% names(data))
+  
+  for (col in drug[drug_idx]) {
+    if (is.numeric(data[[col]])) {
+      data[, (col) := as.character(get(col))]
+    }
+  }
+  
   drug_data <- unlist(data[, intersect(names(data), drug), with = FALSE])
   drug_ann_cols <- unlist(gDRutils::get_env_identifiers(c("drug", "drug_name", "drug_moa"), simplify = FALSE))
+  
+  if (is.numeric(drug_annotation[[drug_ann_cols[["drug"]]]])) {
+    drug_annotation[, (drug_ann_cols[["drug"]]) := as.character(get(drug_ann_cols[["drug"]]))]
+  }
   
   # Remove existing annotations if any
   existing_cols <- intersect(c(drug_name, drug_moa), names(data))
@@ -364,7 +399,7 @@ get_cellline_annotation_from_dt <- function(dt) {
 #' @keywords annotation
 #' @examples
 #' se <- SummarizedExperiment::SummarizedExperiment(
-#'   rowData = data.table::data.table(Gnumber = c("D1", "D2", "D3"))
+#'    rowData = data.table::data.table(Gnumber = c("D1", "D2", "D3"))
 #' )
 #' drug_annotation <- get_drug_annotation(data.table::as.data.table(SummarizedExperiment::rowData(se)))
 #' annotated_se <- annotate_se_with_drug(se, drug_annotation)
@@ -396,13 +431,13 @@ annotate_se_with_drug <- function(
 #' @keywords annotation
 #' @examples
 #' mae <- MultiAssayExperiment::MultiAssayExperiment(
-#'   experiments = list(exp1 = SummarizedExperiment::SummarizedExperiment(
-#'     rowData = data.table::data.table(Gnumber = c("D1", "D2", "D3"))
-#'   ))
+#'    experiments = list(exp1 = SummarizedExperiment::SummarizedExperiment(
+#'      rowData = data.table::data.table(Gnumber = c("D1", "D2", "D3"))
+#'    ))
 #' )
 #' drug_annotation <- get_drug_annotation(data.table::as.data.table(
-#'   SummarizedExperiment::rowData(
-#'     MultiAssayExperiment::experiments(mae)[[1]])))
+#'    SummarizedExperiment::rowData(
+#'      MultiAssayExperiment::experiments(mae)[[1]])))
 #' annotated_mae <- annotate_mae_with_drug(mae, drug_annotation)
 #' @export
 #'
@@ -433,7 +468,7 @@ annotate_mae_with_drug <- function(
 #' @keywords annotation
 #' @examples
 #' se <- SummarizedExperiment::SummarizedExperiment(
-#'   rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+#'    rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
 #' )
 #' cell_line_annotation <- get_cell_line_annotation(data.table::as.data.table(SummarizedExperiment::rowData(se)))
 #' annotated_se <- annotate_se_with_cell_line(se, cell_line_annotation)
@@ -465,13 +500,13 @@ annotate_se_with_cell_line <- function(
 #' @keywords annotation
 #' @examples
 #' mae <- MultiAssayExperiment::MultiAssayExperiment(
-#'   experiments = list(exp1 = SummarizedExperiment::SummarizedExperiment(
-#'     rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
-#'   ))
+#'    experiments = list(exp1 = SummarizedExperiment::SummarizedExperiment(
+#'      rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+#'    ))
 #' )
 #' cell_line_annotation <- get_cell_line_annotation(data.table::as.data.table(
-#'   SummarizedExperiment::rowData(
-#'     MultiAssayExperiment::experiments(mae)[[1]])))
+#'    SummarizedExperiment::rowData(
+#'      MultiAssayExperiment::experiments(mae)[[1]])))
 #' annotated_mae <- annotate_mae_with_cell_line(mae, cell_line_annotation)
 #' @export
 #'

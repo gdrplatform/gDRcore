@@ -21,13 +21,13 @@ Annotate MultiAssayExperiment object with cell line annotations
 }
 \examples{
 mae <- MultiAssayExperiment::MultiAssayExperiment(
-  experiments = list(exp1 = SummarizedExperiment::SummarizedExperiment(
-    rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
-  ))
+   experiments = list(exp1 = SummarizedExperiment::SummarizedExperiment(
+     rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+   ))
 )
 cell_line_annotation <- get_cell_line_annotation(data.table::as.data.table(
-  SummarizedExperiment::rowData(
-    MultiAssayExperiment::experiments(mae)[[1]])))
+   SummarizedExperiment::rowData(
+     MultiAssayExperiment::experiments(mae)[[1]])))
 annotated_mae <- annotate_mae_with_cell_line(mae, cell_line_annotation)
 }
 \keyword{annotation}
