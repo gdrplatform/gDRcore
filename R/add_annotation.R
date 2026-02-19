@@ -183,8 +183,16 @@ get_drug_annotation <- function(
   assert_drug_annotation(drug_annotation)
   
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  all_data_drugs <- setdiff(gDRutils::remove_drug_batch(as.character(unlist(data[, intersect(names(data), drug), with = FALSE]))),
-                            untreated_tag)
+  all_data_drugs <- setdiff(
+    gDRutils::remove_drug_batch(
+      as.character(
+        unlist(
+          data[, intersect(names(data), drug), with = FALSE]
+        )
+      )
+    ), 
+    untreated_tag
+  )
   drug_annotation <- drug_annotation[gDRutils::remove_drug_batch(drug_annotation[[drug_ann_cols[["drug"]]]]) %in%
                                        all_data_drugs]
   
