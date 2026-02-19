@@ -21,7 +21,7 @@ Annotate SummarizedExperiment object with cell line annotations
 }
 \examples{
 se <- SummarizedExperiment::SummarizedExperiment(
-  rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+   rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
 )
 cell_line_annotation <- get_cell_line_annotation(data.table::as.data.table(SummarizedExperiment::rowData(se)))
 annotated_se <- annotate_se_with_cell_line(se, cell_line_annotation)

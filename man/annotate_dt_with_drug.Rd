@@ -21,8 +21,8 @@ Annotate drug data with the provided annotation table
 }
 \examples{
 data <- data.table::data.table(
-  clid = c("CL1", "CL2", "CL3"),
-  Gnumber = c("D1", "D2", "D3")
+   clid = c("CL1", "CL2", "CL3"),
+   Gnumber = c("D1", "D2", "D3")
 )
 drug_annotation <- get_drug_annotation(data)
 annotated_metadata <- annotate_dt_with_drug(data, drug_annotation)
