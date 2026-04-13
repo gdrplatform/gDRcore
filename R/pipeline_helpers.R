@@ -138,8 +138,8 @@ save_intermediate_data <- function(path, step, experiment, se) {
   checkmate::assert_string(step)
   checkmate::assert_string(experiment)
   
-  fpath <- file.path(path, paste0(experiment, "__", step, ".qs"))
-  qs::qsave(se, fpath)
+  fpath <- file.path(path, paste0(experiment, "__", step, ".qs2"))
+  qs2::qs_save(se, fpath)
 }
 
 #' read intermediate data for the given experiment and step to qs file
@@ -157,8 +157,8 @@ read_intermediate_data <- function(path, step, experiment) {
   checkmate::assert_string(step)
   checkmate::assert_string(experiment)
   
-  fpath <- file.path(path, paste0(experiment, "__", step, ".qs"))
-  qs::qread(fpath)
+  fpath <- file.path(path, paste0(experiment, "__", step, ".qs2"))
+  qs2::qs_read(fpath)
 }
 
 #' @keywords internal

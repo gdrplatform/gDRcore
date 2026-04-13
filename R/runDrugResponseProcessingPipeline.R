@@ -55,7 +55,7 @@
 #' relative viability at.
 #' @param curve_type vector of curve type values.
 #' @param data_dir string with the path to the directory with intermediate data 
-#' of experiments (qs files). If set to NULL (default) intermediate data is not 
+#' of experiments (qs2 files). If set to NULL (default) intermediate data is not
 #' saved/read in.
 #' @param partial_run logical flag indicating if the pipeline should be run 
 #' partially (from the step defined with `start_from`)
@@ -91,8 +91,8 @@
 #' Pipeline can be run partially with `partial_run` flag set to TRUE. The 
 #' `start_from` string defines the step from which the pipeline will be 
 #' launched. However, partial run of the pipeline is possible only if the whole
-#' pipeline was launched at least once with defined `data_dir` and intermediate 
-#' data was saved as qs files into `data_dir`. 
+#' pipeline was launched at least once with defined `data_dir` and intermediate
+#' data was saved as qs2 files into `data_dir`. 
 #' 
 #' Pipeline can be run for the selected experiments by changing the default 
 #' value of `selected_experiments` param. This scenario only works when 
