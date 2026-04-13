@@ -133,11 +133,14 @@ is_preceding_step <-
 #' @return \code{NULL}
 #' 
 save_intermediate_data <- function(path, step, experiment, se) {
-  
+
+  if (!requireNamespace("qs2", quietly = TRUE)) {
+    stop("Package 'qs2' is required for saving intermediate data. Please install it.")
+  }
   checkmate::assert_directory(path, "rw")
   checkmate::assert_string(step)
   checkmate::assert_string(experiment)
-  
+
   fpath <- file.path(path, paste0(experiment, "__", step, ".qs2"))
   qs2::qs_save(se, fpath)
 }
@@ -152,11 +155,14 @@ save_intermediate_data <- function(path, step, experiment, se) {
 #' @return se
 #' 
 read_intermediate_data <- function(path, step, experiment) {
-  
+
+  if (!requireNamespace("qs2", quietly = TRUE)) {
+    stop("Package 'qs2' is required to read intermediate data. Please install it.")
+  }
   checkmate::assert_directory(path, "r")
   checkmate::assert_string(step)
   checkmate::assert_string(experiment)
-  
+
   fpath <- file.path(path, paste0(experiment, "__", step, ".qs2"))
   qs2::qs_read(fpath)
 }

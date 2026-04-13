@@ -587,14 +587,17 @@ get_mae_from_intermediate_data <- function(data_dir) {
   
   checkmate::assert_directory(data_dir)
   
+  if (!requireNamespace("qs2", quietly = TRUE)) {
+    stop("Package 'qs2' is required to read intermediate data. Please install it.")
+  }
   last_step <- tail(get_pipeline_steps(), n = 1)
-  s_pattern <- paste0("__", last_step, ".qs2")
-  
+  s_pattern <- paste0("__", last_step, "\\.qs2$")
+
   fpaths <- list.files(data_dir, pattern = s_pattern, full.names = TRUE)
   checkmate::assert_true(length(fpaths) > 0)
-  
+
   sel <- list()
-  
+
   for (fpath in fpaths) {
     exp_name <- sub(s_pattern, "", basename(fpath))
     sel[[exp_name]] <- qs2::qs_read(fpath)
