@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{add_intermediate_data}
 \alias{add_intermediate_data}
-\title{add intermediate data (qs files) for given ma}
+\title{add intermediate data (qs2 files) for given ma}
 \usage{
 add_intermediate_data(mae, data_dir, steps = get_pipeline_steps())
 }
@@ -18,6 +18,6 @@ intermediate data should be saved}
 \code{NULL}
 }
 \description{
-add intermediate data (qs files) for given ma
+add intermediate data (qs2 files) for given ma
 }
 \keyword{internal}

@@ -2,12 +2,12 @@
 % Please edit documentation in R/pipeline_helpers.R
 \name{read_intermediate_data}
 \alias{read_intermediate_data}
-\title{read intermediate data for the given experiment and step to qs file}
+\title{read intermediate data for the given experiment and step to qs2 file}
 \usage{
 read_intermediate_data(path, step, experiment)
 }
 \arguments{
-\item{path}{string with the input directory of the qs file}
+\item{path}{string with the input directory of the qs2 file}
 
 \item{step, }{string with the step name}
 
@@ -17,6 +17,6 @@ read_intermediate_data(path, step, experiment)
 se
 }
 \description{
-read intermediate data for the given experiment and step to qs file
+read intermediate data for the given experiment and step to qs2 file
 }
 \keyword{internal}
