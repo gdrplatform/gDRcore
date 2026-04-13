@@ -539,7 +539,7 @@ get_assays_per_pipeline_step <-
     ass
   }
 
-#' add intermediate data (qs files) for given ma
+#' add intermediate data (qs2 files) for given ma
 #' @param mae mae with dose-response data
 #' @param data_dir output directory
 #' @param steps character vector with pipeline steps for which 

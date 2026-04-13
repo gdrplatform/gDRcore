@@ -121,9 +121,9 @@ is_preceding_step <-
     s_idx - c_idx == 1
   }
 
-#' save intermediate data for the given experiment and step to qs file
-#' 
-#' @param path string with the save directory for the qs file 
+#' save intermediate data for the given experiment and step to qs2 file
+#'
+#' @param path string with the save directory for the qs2 file
 #' @param step, string with the step name
 #' @param experiment string with the experiment name
 #' @param se output se 
@@ -145,9 +145,9 @@ save_intermediate_data <- function(path, step, experiment, se) {
   qs2::qs_save(se, fpath)
 }
 
-#' read intermediate data for the given experiment and step to qs file
-#' 
-#' @param path string with the input directory of the qs file 
+#' read intermediate data for the given experiment and step to qs2 file
+#'
+#' @param path string with the input directory of the qs2 file
 #' @param step, string with the step name
 #' @param experiment string with the experiment name
 #' 
