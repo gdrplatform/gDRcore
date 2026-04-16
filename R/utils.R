@@ -539,8 +539,8 @@ get_assays_per_pipeline_step <-
     ass
   }
 
-#' add intermediate data (qs2 files) for given ma
-#' @param mae mae with dose-response data
+#' add intermediate data (qs2 files) for given MAE
+#' @param mae \code{MultiAssayExperiment} with dose-response data
 #' @param data_dir output directory
 #' @param steps character vector with pipeline steps for which 
 #'              intermediate data should be saved
