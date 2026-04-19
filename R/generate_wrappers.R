@@ -16,7 +16,7 @@ generateNoNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
   if (save) {
     save_qs(
       qsObj = mae,
-      qsName = "finalMAE_small_no_noise.qs"
+      qsName = "finalMAE_small_no_noise.qs2"
     )
   }
   invisible(mae)
@@ -39,7 +39,7 @@ generateNoiseRawData <- function(cell_lines, drugs, save = TRUE) {
   if (save) {
     save_qs(
       qsObj = mae,
-      qsName = "finalMAE_small.qs"
+      qsName = "finalMAE_small.qs2"
     )
   }
   invisible(mae)
@@ -75,7 +75,7 @@ generateLigandData <- function(cell_lines, drugs, save = TRUE) {
   if (save) {
     save_qs(
       qsObj = mae,
-      qsName = "finalMAE_wLigand.qs"
+      qsName = "finalMAE_wLigand.qs2"
     )
   }
   invisible(mae)
@@ -97,7 +97,7 @@ generateMediumData <- function(cell_lines, drugs, save = TRUE) {
   if (save) {
     save_qs(
       qsObj = mae,
-      qsName = "finalMAE_medium.qs"
+      qsName = "finalMAE_medium.qs2"
     )
   }
   invisible(mae)
@@ -121,7 +121,7 @@ generateComboNoNoiseData <- function(cell_lines, drugs, save = TRUE) {
   if (save) {
     save_qs(
       qsObj = mae,
-      qsName = "finalMAE_combo_2dose_nonoise.qs"
+      qsName = "finalMAE_combo_2dose_nonoise.qs2"
     )
   }
   invisible(mae)
@@ -146,7 +146,7 @@ generateComboNoNoiseData2 <- function(cell_lines, drugs, save = TRUE) {
   if (save) {
     save_qs(
       qsObj = mae,
-      qsName = "finalMAE_combo_2dose_nonoise2.qs"
+      qsName = "finalMAE_combo_2dose_nonoise2.qs2"
     )
   }
   invisible(mae)
@@ -175,7 +175,7 @@ generateComboNoNoiseData3 <- function(cell_lines, drugs, save = TRUE) {
   if (save) {
     save_qs(
       qsObj = mae,
-      qsName = "finalMAE_combo_2dose_nonoise3.qs"
+      qsName = "finalMAE_combo_2dose_nonoise3.qs2"
     )
   }
   invisible(mae)
@@ -204,7 +204,7 @@ generateComboMatrixSmall <- function(cell_lines, drugs, save = TRUE) {
   if (save) {
     save_qs(
       qsObj = mae,
-      qsName = "finalMAE_combo_matrix_small.qs"
+      qsName = "finalMAE_combo_matrix_small.qs2"
     )
   }
   invisible(mae)
@@ -232,7 +232,7 @@ generateComboMatrix <- function(cell_lines, drugs, save = TRUE) {
   if (save) {
     save_qs(
       qsObj = mae,
-      qsName = "finalMAE_combo_matrix.qs"
+      qsName = "finalMAE_combo_matrix.qs2"
     )
   }
   invisible(mae)
@@ -277,7 +277,7 @@ df_layout_3 <- df_layout[df_2, on = intersect(names(df_layout), names(df_2)),
   if (save) {
     save_qs(
       qsObj = mae,
-      qsName = "finalMAE_combo_triple.qs"
+      qsName = "finalMAE_combo_triple.qs2"
     )
   }
   invisible(mae)
@@ -301,7 +301,7 @@ generateCodilutionSmall <- function(cell_lines, drugs, save = TRUE) {
   if (save) {
     save_qs(
       qsObj = mae,
-      qsName = "finalMAE_combo_codilution_small.qs"
+      qsName = "finalMAE_combo_codilution_small.qs2"
     )
   }
   invisible(mae)
@@ -325,7 +325,7 @@ generateCodilution <- function(cell_lines, drugs, save = TRUE) {
   if (save) {
     save_qs(
       qsObj = mae,
-      qsName = "finalMAE_combo_codilution.qs"
+      qsName = "finalMAE_combo_codilution.qs2"
     )
   }
   
@@ -334,7 +334,7 @@ generateCodilution <- function(cell_lines, drugs, save = TRUE) {
 
 #' @keywords internal
 save_qs <- function(qsObj, qsName) {
-  qs::qsave(
+  qs2::qs_save(
     qsObj,
     file.path(system.file("testdata", package = "gDRtestData"), qsName)
   )

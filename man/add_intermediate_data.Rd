@@ -2,12 +2,12 @@
 % Please edit documentation in R/utils.R
 \name{add_intermediate_data}
 \alias{add_intermediate_data}
-\title{add intermediate data (qs files) for given ma}
+\title{add intermediate data (qs2 files) for given MAE}
 \usage{
 add_intermediate_data(mae, data_dir, steps = get_pipeline_steps())
 }
 \arguments{
-\item{mae}{mae with dose-response data}
+\item{mae}{\code{MultiAssayExperiment} with dose-response data}
 
 \item{data_dir}{output directory}
 
@@ -18,6 +18,6 @@ intermediate data should be saved}
 \code{NULL}
 }
 \description{
-add intermediate data (qs files) for given ma
+add intermediate data (qs2 files) for given MAE
 }
 \keyword{internal}

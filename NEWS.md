@@ -1,3 +1,7 @@
+## gDRcore 1.9.7 - 2026-04-13
+* migrate from `qs` to `qs2` package (`qs::qread` → `qs2::qs_read`, `qs::qsave` → `qs2::qs_save`)
+* update checkpoint and generated data file extensions from `.qs` to `.qs2`
+
 ## gDRcore 1.9.6 - 2026-02-18
 * fix handling of numeric identifiers in annotation functions
 

@@ -2,12 +2,12 @@
 % Please edit documentation in R/pipeline_helpers.R
 \name{save_intermediate_data}
 \alias{save_intermediate_data}
-\title{save intermediate data for the given experiment and step to qs file}
+\title{save intermediate data for the given experiment and step to qs2 file}
 \usage{
 save_intermediate_data(path, step, experiment, se)
 }
 \arguments{
-\item{path}{string with the save directory for the qs file}
+\item{path}{string with the save directory for the qs2 file}
 
 \item{step, }{string with the step name}
 
@@ -19,6 +19,6 @@ save_intermediate_data(path, step, experiment, se)
 \code{NULL}
 }
 \description{
-save intermediate data for the given experiment and step to qs file
+save intermediate data for the given experiment and step to qs2 file
 }
 \keyword{internal}

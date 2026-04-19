@@ -539,8 +539,8 @@ get_assays_per_pipeline_step <-
     ass
   }
 
-#' add intermediate data (qs files) for given ma
-#' @param mae mae with dose-response data
+#' add intermediate data (qs2 files) for given MAE
+#' @param mae \code{MultiAssayExperiment} with dose-response data
 #' @param data_dir output directory
 #' @param steps character vector with pipeline steps for which 
 #'              intermediate data should be saved
@@ -587,17 +587,20 @@ get_mae_from_intermediate_data <- function(data_dir) {
   
   checkmate::assert_directory(data_dir)
   
+  if (!requireNamespace("qs2", quietly = TRUE)) {
+    stop("Package 'qs2' is required to read intermediate data. Please install it.")
+  }
   last_step <- tail(get_pipeline_steps(), n = 1)
-  s_pattern <- paste0("__", last_step, ".qs")
-  
+  s_pattern <- paste0("__", last_step, "\\.qs2$")
+
   fpaths <- list.files(data_dir, pattern = s_pattern, full.names = TRUE)
   checkmate::assert_true(length(fpaths) > 0)
-  
+
   sel <- list()
-  
+
   for (fpath in fpaths) {
     exp_name <- sub(s_pattern, "", basename(fpath))
-    sel[[exp_name]] <- qs::qread(fpath)
+    sel[[exp_name]] <- qs2::qs_read(fpath)
   }
   MultiAssayExperiment::MultiAssayExperiment(experiments = sel)
 }

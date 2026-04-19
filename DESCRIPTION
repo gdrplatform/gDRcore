@@ -2,7 +2,7 @@ Type: Package
 Package: gDRcore
 Title: Processing functions and interface to process and analyze drug
     dose-response data
-Version: 1.9.6
+Version: 1.9.7
 Date: 2026-02-18
 Authors@R: c(
     person("Bartosz", "Czech", , "bartosz.czech@contractors.roche.com", role = "aut",
@@ -44,7 +44,7 @@ Suggests:
     IRanges,
     knitr,
     pkgbuild,
-    qs,
+    qs2,
     testthat,
     yaml
 VignetteBuilder: 

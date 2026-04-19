@@ -121,9 +121,9 @@ is_preceding_step <-
     s_idx - c_idx == 1
   }
 
-#' save intermediate data for the given experiment and step to qs file
-#' 
-#' @param path string with the save directory for the qs file 
+#' save intermediate data for the given experiment and step to qs2 file
+#'
+#' @param path string with the save directory for the qs2 file
 #' @param step, string with the step name
 #' @param experiment string with the experiment name
 #' @param se output se 
@@ -133,18 +133,21 @@ is_preceding_step <-
 #' @return \code{NULL}
 #' 
 save_intermediate_data <- function(path, step, experiment, se) {
-  
+
+  if (!requireNamespace("qs2", quietly = TRUE)) {
+    stop("Package 'qs2' is required for saving intermediate data. Please install it.")
+  }
   checkmate::assert_directory(path, "rw")
   checkmate::assert_string(step)
   checkmate::assert_string(experiment)
-  
-  fpath <- file.path(path, paste0(experiment, "__", step, ".qs"))
-  qs::qsave(se, fpath)
+
+  fpath <- file.path(path, paste0(experiment, "__", step, ".qs2"))
+  qs2::qs_save(se, fpath)
 }
 
-#' read intermediate data for the given experiment and step to qs file
-#' 
-#' @param path string with the input directory of the qs file 
+#' read intermediate data for the given experiment and step to qs2 file
+#'
+#' @param path string with the input directory of the qs2 file
 #' @param step, string with the step name
 #' @param experiment string with the experiment name
 #' 
@@ -152,13 +155,16 @@ save_intermediate_data <- function(path, step, experiment, se) {
 #' @return se
 #' 
 read_intermediate_data <- function(path, step, experiment) {
-  
+
+  if (!requireNamespace("qs2", quietly = TRUE)) {
+    stop("Package 'qs2' is required to read intermediate data. Please install it.")
+  }
   checkmate::assert_directory(path, "r")
   checkmate::assert_string(step)
   checkmate::assert_string(experiment)
-  
-  fpath <- file.path(path, paste0(experiment, "__", step, ".qs"))
-  qs::qread(fpath)
+
+  fpath <- file.path(path, paste0(experiment, "__", step, ".qs2"))
+  qs2::qs_read(fpath)
 }
 
 #' @keywords internal

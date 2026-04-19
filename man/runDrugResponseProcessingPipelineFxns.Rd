@@ -169,7 +169,7 @@ ectors) for \code{single-agent} and (optionally) for \code{combination} data}
 MultiAssayExperiment should be split again into appropriate data types}
 
 \item{data_dir}{string with the path to the directory with intermediate data
-of experiments (qs files). If set to NULL (default) intermediate data is not
+of experiments (qs2 files). If set to NULL (default) intermediate data is not
 saved/read in.}
 
 \item{partial_run}{logical flag indicating if the pipeline should be run
@@ -218,7 +218,7 @@ Pipeline can be run partially with \code{partial_run} flag set to TRUE. The
 \code{start_from} string defines the step from which the pipeline will be
 launched. However, partial run of the pipeline is possible only if the whole
 pipeline was launched at least once with defined \code{data_dir} and intermediate
-data was saved as qs files into \code{data_dir}.
+data was saved as qs2 files into \code{data_dir}.
 
 Pipeline can be run for the selected experiments by changing the default
 value of \code{selected_experiments} param. This scenario only works when
