@@ -39,9 +39,14 @@ extern "C" SEXP sortcpp(SEXP x) {
   case LGLSXP:
     std::sort(LOGICAL(x),LOGICAL(x)+LENGTH(x));
     break;
-  case STRSXP:
-    std::sort(const_cast<SEXP*>(STRING_PTR_RO(x)), const_cast<SEXP*>(STRING_PTR_RO(x)) + LENGTH(x), cmp_char);
+  case STRSXP: {
+    int n = LENGTH(x);
+    std::vector<SEXP> tmp(n);
+    for (int i = 0; i < n; ++i) tmp[i] = STRING_ELT(x, i);
+    std::sort(tmp.begin(), tmp.end(), cmp_char);
+    for (int i = 0; i < n; ++i) SET_STRING_ELT(x, i, tmp[i]);
     break;
+  }
   default:
     UNPROTECT(1);
   error_return("Unsupported type for sort.")
