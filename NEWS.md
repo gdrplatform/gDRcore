@@ -1,3 +1,6 @@
+## gDRcore 1.9.8 - 2026-04-27
+* fix C++ compilation error on R-devel (STRING_PTR → STRING_PTR_RO)
+
 ## gDRcore 1.9.7 - 2026-04-13
 * migrate from `qs` to `qs2` package (`qs::qread` → `qs2::qs_read`, `qs::qsave` → `qs2::qs_save`)
 * update checkpoint and generated data file extensions from `.qs` to `.qs2`
