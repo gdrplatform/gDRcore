@@ -40,7 +40,7 @@ extern "C" SEXP sortcpp(SEXP x) {
     std::sort(LOGICAL(x),LOGICAL(x)+LENGTH(x));
     break;
   case STRSXP:
-    std::sort(STRING_PTR(x), STRING_PTR(x) + LENGTH(x), cmp_char);
+    std::sort(const_cast<SEXP*>(STRING_PTR_RO(x)), const_cast<SEXP*>(STRING_PTR_RO(x)) + LENGTH(x), cmp_char);
     break;
   default:
     UNPROTECT(1);
@@ -76,8 +76,8 @@ struct CMP_REAL {
 };
 
 struct CMP_CHAR2 {
-  SEXP* start;
-  CMP_CHAR2(SEXP* start) : start(start) {};
+  const SEXP* start;
+  CMP_CHAR2(const SEXP* start) : start(start) {};
   bool operator()(int x, int y) {
     return strcmp(CHAR(*(start+x-1)),CHAR(*(start+y-1))) < 0; // shift compensates for difference between R and C indexing
   }
@@ -113,7 +113,7 @@ void internalOrder(int* index,SEXP x)
   }
   case STRSXP:
   {
-    SEXP* start = &STRING_PTR(x)[0];
+    const SEXP* start = STRING_PTR_RO(x);
     std::sort(index,index+LENGTH(x), CMP_CHAR2(start));
     break;
   }
@@ -280,8 +280,8 @@ extern "C" SEXP matches(SEXP a, SEXP b)
   }
   case STRSXP:
   {
-    SEXP* astart = &STRING_PTR(a)[0];
-    SEXP* bstart = &STRING_PTR(b)[0];
+    const SEXP* astart = STRING_PTR_RO(a);
+    const SEXP* bstart = STRING_PTR_RO(b);
     cmatch(astart,bstart,indexsA,indexsB,apoint,bpoint,alength,blength);
     break;
   }
