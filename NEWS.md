@@ -1,3 +1,6 @@
+## gDRcore 1.9.9 - 2026-04-28
+* update author email address
+
 ## gDRcore 1.9.8 - 2026-04-27
 * fix C++ compilation error on R-devel (STRING_PTR → STRING_PTR_RO)
 
