@@ -39,7 +39,7 @@
 #' @keywords data_type
 #' @export
 #'
-#' @author Bartosz Czech <bartosz.czech@@contractors.roche.com>
+#' @author Bartosz Czech <czech.bartosz@@external.gene.com>
 identify_data_type <- function(dt,
                                codilution_conc = 2,
                                matrix_conc = 1) {
@@ -150,7 +150,7 @@ identify_data_type <- function(dt,
 #' @return list with split data based on its data type
 #' @keywords data_type
 #' @export
-#' @author Bartosz Czech <bartosz.czech@@contractors.roche.com>
+#' @author Bartosz Czech <czech.bartosz@@external.gene.com>
 split_raw_data <- function(dt,
                            type_col = "type") {
   
