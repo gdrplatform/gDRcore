@@ -71,6 +71,6 @@ split_raw_data(split_dt)
 
 }
 \author{
-Bartosz Czech \href{mailto:bartosz.czech@contractors.roche.com}{bartosz.czech@contractors.roche.com}
+Bartosz Czech \href{mailto:czech.bartosz@external.gene.com}{czech.bartosz@external.gene.com}
 }
 \keyword{data_type}
