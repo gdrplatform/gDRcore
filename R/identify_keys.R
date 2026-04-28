@@ -107,7 +107,7 @@ identify_keys <- function(df_,
   keys$duration <- duration_col 
   keys$untreated_tag <- identifiers$untreated_tag
 
-  t0 <- df_[, duration_col, with = FALSE] == 0
+  t0 <- df_[[duration_col]] %in% 0
   # Remove keys where all values are NA.
   # TODO: Improve this.
   for (k in keys[["untrt_Endpoint"]]) {
