@@ -114,7 +114,7 @@ identify_keys <- function(df_,
     if (all(is.na(df_[, k, with = FALSE]))) {
       keys <- gDRutils::loop(keys, function(x) setdiff(x, k))
     }
-    if (all(is.na(df_[which(t0), k, with = FALSE]))) {
+    if (any(t0) && all(is.na(df_[which(t0), k, with = FALSE]))) {
       keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
     }
   }
