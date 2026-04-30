@@ -1,3 +1,6 @@
+## gDRcore 1.11.1 - 2026-04-29
+* synchronize Bioconductor and GitHub versioning
+
 ## gDRcore 1.9.8 - 2026-04-27
 * fix C++ compilation error on R-devel (STRING_PTR → STRING_PTR_RO)
 
