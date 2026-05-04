@@ -108,13 +108,18 @@ identify_keys <- function(df_,
   keys$untreated_tag <- identifiers$untreated_tag
 
   t0 <- df_[[duration_col]] %in% 0
+  has_day0 <- any(t0)
   # Remove keys where all values are NA.
   # TODO: Improve this.
   for (k in keys[["untrt_Endpoint"]]) {
     if (all(is.na(df_[, k, with = FALSE]))) {
+      saved_day0 <- keys[["Day0"]]
       keys <- gDRutils::loop(keys, function(x) setdiff(x, k))
+      if (!has_day0) {
+        keys[["Day0"]] <- saved_day0
+      }
     }
-    if (any(t0) && all(is.na(df_[which(t0), k, with = FALSE]))) {
+    if (has_day0 && all(is.na(df_[which(t0), k, with = FALSE]))) {
       keys[["Day0"]] <- setdiff(keys[["Day0"]], k)
     }
   }
