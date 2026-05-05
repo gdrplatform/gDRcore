@@ -1,5 +1,11 @@
-## gDRcore 1.9.9 - 2026-04-28
+## gDRcore 1.11.3 - 2026-05-05
 * update author email address
+
+## gDRcore 1.11.2 - 2026-05-04
+* fix handling of NA Duration in Day0 detection and GR value calculation
+
+## gDRcore 1.11.1 - 2026-04-29
+* synchronize Bioconductor and GitHub versioning
 
 ## gDRcore 1.9.8 - 2026-04-27
 * fix C++ compilation error on R-devel (STRING_PTR → STRING_PTR_RO)

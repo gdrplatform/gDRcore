@@ -92,7 +92,7 @@ calculate_GR_value <- function(rel_viability,
   if (any(is.na(day0_readout))) {
     ## Back-calculate the day0_readout using the reference doubling time 
     ## and the duration of treatment.
-    GRvalue <- if (is.null(ref_div_time) || is.na(ref_div_time)) {
+    GRvalue <- if (is.null(ref_div_time) || is.na(ref_div_time) || is.null(duration) || is.na(duration)) {
       rep(NA, length(rel_viability))
     } else if (ref_div_time > 1.5 * duration) {
       rep(NA, length(rel_viability))

@@ -64,6 +64,18 @@ test_that("calculate_GR_value works as expected", {
     ref_div_time = (duration * 1.5) + 1
   )
   expect_true(all(is.na(gr4)))
+
+  # day0_readout is NA, duration is NA (e.g. PRISM data).
+  gr5 <- calculate_GR_value(
+    rel_viability = rv,
+    corrected_readout = corrected,
+    day0_readout = NA,
+    untrt_readout = untrt,
+    ndigit_rounding = 4,
+    duration = NA_real_,
+    ref_div_time = duration / 2
+  )
+  expect_true(all(is.na(gr5)))
 })
 
 test_that("calculate_GR_value throws expected errors", {
