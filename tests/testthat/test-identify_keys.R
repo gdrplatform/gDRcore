@@ -54,4 +54,9 @@ test_that("identify_keys works", {
   df_$E2 <- NA
   k3 <- identify_keys(df_, nested_keys = NULL)
   expect_equal(setdiff(k1[["untrt_Endpoint"]], k3[["untrt_Endpoint"]]), "E2")
+
+  # NA Duration should not be treated as Day0.
+  df_$Duration <- NA_real_
+  k4 <- identify_keys(df_, nested_keys = NULL)
+  expect_equal(sort(k4[["Day0"]]), sort(c(cl, misc)))
 })

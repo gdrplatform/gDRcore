@@ -61,7 +61,7 @@ map_df <- function(trt_md,
   ))
   
   if (ref_type == "Day0") {
-    ref_md <- ref_md[get(duration_col) == 0, ]
+    ref_md <- ref_md[get(duration_col) %in% 0, ]
   }
   
   conc <- cbind(array(0, nrow(ref_md)), 
@@ -69,7 +69,7 @@ map_df <- function(trt_md,
   is_ref_conc <- rowSums(conc == 0) == ncol(conc)
   
   if (ref_type == "Day0") {
-    matching_list <- list(T0 = ref_md[[duration_col]] == 0, conc = is_ref_conc)
+    matching_list <- list(T0 = ref_md[[duration_col]] %in% 0, conc = is_ref_conc)
     matchFactor <- "T0"
   } else if (ref_type == "untrt_Endpoint") {
     matching_list <- list(conc = is_ref_conc)
