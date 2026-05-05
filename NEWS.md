@@ -1,3 +1,6 @@
+## gDRcore 1.11.3 - 2026-05-05
+* update author email address
+
 ## gDRcore 1.11.2 - 2026-05-04
 * fix handling of NA Duration in Day0 detection and GR value calculation
 
