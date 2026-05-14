@@ -145,9 +145,9 @@ normalize_SE <- function(se,
                                                names(refs)))
   
   norm_cols <- c("RV", "GR")
-  out <- vector("list", nrow(se) * ncol(se))
+  out <- vector("list", NROW(se) * NCOL(se))
   ref_rel_viability <- ref_GR_value <- div_time <- 
-    matrix(NA, nrow = nrow(se), ncol = ncol(se), dimnames = dimnames(se))
+    matrix(NA, nrow = NROW(se), ncol = NCOL(se), dimnames = dimnames(se))
   msgs <- NULL
   iterator <- unique(rbind(refs[, c("column", "row")],
                            trt[, c("column", "row")]))
@@ -155,7 +155,7 @@ normalize_SE <- function(se,
   
   # Column major order, so go down first.
 
-  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
+  out <- gDRutils::loop(seq_len(NROW(iterator)), function(row) {
     
     x <- iterator[row, ]
     i <- x[["row"]]
@@ -176,7 +176,7 @@ normalize_SE <- function(se,
                                           nested_confounders,
                                           control_mean_fxn)
     normalized <- data.table::data.table(
-      matrix(NA, nrow = nrow(trt_df), ncol = length(norm_cols))
+      matrix(NA, nrow = NROW(trt_df), ncol = length(norm_cols))
     )
     colnames(normalized) <- c(norm_cols)
 
@@ -209,7 +209,7 @@ normalize_SE <- function(se,
     normalized <- cbind(all_readouts_df[, keep, with = FALSE], normalized) 
     normalized$row_id <- i
     normalized$col_id <- j
-    normalized$id <- as.character(seq_len(nrow(normalized)))
+    normalized$id <- as.character(seq_len(NROW(normalized)))
     normalized <- data.table::melt(normalized,
                                    measure.vars = norm_cols,
                                    variable.name = "normalization_type",
@@ -286,7 +286,7 @@ normalize_SE_time_course <- function(se_tc) {
   # We assume T0 is defined by Duration == 0
   day0 <- dt[get(dur_col) == 0, ]
   
-  if (nrow(day0) == 0) {
+  if (NROW(day0) == 0) {
     warning("normalize_SE_time_course: No time=0 data found. returning SE unchanged.")
     return(se_tc)
   }

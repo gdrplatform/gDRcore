@@ -76,7 +76,7 @@ fit_SE.combinations <- function(se,
 
   iterator <- unique(avg[, c("column", "row")])
 
-  out <- gDRutils::loop(seq_len(nrow(iterator)), function(row) {
+  out <- gDRutils::loop(seq_len(NROW(iterator)), function(row) {
   
     metrics <- all_iso_points <- isobolograms <- excess_full <- NULL
     excess <- scores <- 
@@ -225,7 +225,7 @@ fit_SE.combinations <- function(se,
           !(metrics_merged$fit_type %in% 
               c("DRCInvalidFitResult", "DRCTooFewPointsToFit")), 
         ]
-      if (nrow(metrics_merged) == 0) {
+      if (NROW(metrics_merged) == 0) {
         metrics_merged <- metrics_merged[, lapply(.SD, function(x) NA)]
         metrics_merged[, `:=`(normalization_type = norm_type, fit_source = "gDR")]
         metrics_merged

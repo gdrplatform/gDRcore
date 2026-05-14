@@ -111,9 +111,9 @@ merge_data <- function(manifest, treatments, data) {
   futile.logger::flog.warn(
     "%i well loaded, %i wells discarded for lack of annotation, 
     %i data point selected\n",
-    nrow(data),
+    NROW(data),
     sum(is.na(df_metadata[, drug_id, with = FALSE])),
-    nrow(df_metadata_trimmed)
+    NROW(df_metadata_trimmed)
   )
   
   df_metadata_trimmed <- df_metadata_trimmed[stats::complete.cases(
@@ -122,7 +122,7 @@ merge_data <- function(manifest, treatments, data) {
   # clean up the metadata
   cleanedup_metadata <- cleanup_metadata(df_metadata_trimmed)
   # should not happen
-  stopifnot(nrow(cleanedup_metadata) == nrow(df_metadata_trimmed))
+  stopifnot(NROW(cleanedup_metadata) == NROW(df_metadata_trimmed))
   
   data$WellColumn <- as.character(data$WellColumn)
 
@@ -144,14 +144,14 @@ merge_data <- function(manifest, treatments, data) {
     df_merged[, (i_dur_col) := NULL]
   }
 
-  if (nrow(df_merged) != nrow(data)) {
+  if (NROW(df_merged) != NROW(data)) {
     # need to identify issue and output relevant warning
     futile.logger::flog.warn(
       "merge_data: Not all results have been matched with treatments;
       merged table is smaller than data table"
     )
   }
-  if (nrow(df_merged) != nrow(df_metadata)) {
+  if (NROW(df_merged) != NROW(df_metadata)) {
     # need to identify issue and print relevant warning
     futile.logger::flog.warn(
       "merge_data: Not all treatments have been matched with results;

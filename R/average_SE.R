@@ -84,7 +84,7 @@ average_FUN <- function(x,
     sep = "_"
   )
   
-  if (nrow(agg_df) == 0) {
+  if (NROW(agg_df) == 0) {
     p_trt_keys <- intersect(trt_keys, colnames(x))
     all_cols <- unique(c(series_identifiers, p_trt_keys, "x", "x_std",
                          "normalization_type"))
@@ -93,7 +93,7 @@ average_FUN <- function(x,
     colnames(agg_df) <- all_cols
     agg_df$normalization_type <- norm_types
     rownames(agg_df) <- paste(
-      seq_len(nrow(agg_df)), 
+      seq_len(NROW(agg_df)), 
       agg_df$normalization_type, 
       sep = "_"
     )

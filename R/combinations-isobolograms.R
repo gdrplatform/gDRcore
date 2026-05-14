@@ -84,7 +84,7 @@ calculate_Loewe <- function(
       (df_iso$conc_2 > axis_2$conc_2[2] / 2 | df_iso$fit_type == "by_col"), 
     ]
 
-    if (nrow(df_iso) < 5) {
+    if (NROW(df_iso) < 5) {
       next
     }
 
@@ -168,7 +168,7 @@ calculate_Loewe <- function(
     
     # rotate back the reference
     # In next step we will add two NA rows so we need to include them in the length:
-    len <- nrow(df_iso_curve)
+    len <- NROW(df_iso_curve)
     df_iso_curve$pos_x_ref <- 
       (df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) + min(axis_2$pos_x)
     df_iso_curve$pos_y_ref <- 
@@ -229,7 +229,7 @@ calculate_Loewe <- function(
     )
     
     if (length(ratio_idx) == 0) {
-      ratio_idx <- round(nrow(df_iso_curve) / 2)
+      ratio_idx <- round(NROW(df_iso_curve) / 2)
     }
 
     df_100x_AUC <- data.table::data.table(

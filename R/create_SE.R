@@ -181,8 +181,8 @@ create_SE <- function(df_,
   
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
   
-  out <- vector("list", length = nrow(treated))
-  out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
+  out <- vector("list", length = NROW(treated))
+  out <- gDRutils::loop(seq_len(NROW(treated)), function(i) {
     
     trt <- treated$rn[i]
     
@@ -203,7 +203,7 @@ create_SE <- function(df_,
     untrt_ref <- ctl_maps[["untrt_Endpoint"]][[trt]]
     untrt_cols <- intersect(c("CorrectedReadout", "record_id", nested_confounders), names(dfs))
     untrt_df <- untreated[untreated$rn == untrt_ref[1], untrt_cols, with = FALSE]
-    untrt_df <- if (nrow(untrt_df) == 0) {
+    untrt_df <- if (NROW(untrt_df) == 0) {
       data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
     } else {
       untrt_df
@@ -215,7 +215,7 @@ create_SE <- function(df_,
     isDay0 <- day0_df[[gDRutils::get_env_identifiers("duration")]] %in% 0
     
     day0_df <- day0_df[isDay0, untrt_cols, with = FALSE]
-    day0_df <- if (nrow(day0_df) == 0) {
+    day0_df <- if (NROW(day0_df) == 0) {
       data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
     } else {
       df <- day0_df
@@ -260,8 +260,8 @@ create_SE <- function(df_,
 
   # Filter out to 'treated' conditions only.
   trt_rowdata <- rowdata[rownames(trt_mat), , drop = FALSE] 
-  stopifnot(nrow(trt_rowdata) > 0)
-  stopifnot(nrow(trt_rowdata) == length(unique(trt_out$row_id)))
+  stopifnot(NROW(trt_rowdata) > 0)
+  stopifnot(NROW(trt_rowdata) == length(unique(trt_out$row_id)))
  
   se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
     colData = coldata[match(colnames(trt_mat), rownames(coldata)), ],

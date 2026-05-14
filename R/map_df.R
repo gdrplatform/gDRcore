@@ -64,9 +64,9 @@ map_df <- function(trt_md,
     ref_md <- ref_md[get(duration_col) %in% 0, ]
   }
   
-  conc <- cbind(array(0, nrow(ref_md)), 
+  conc <- cbind(array(0, NROW(ref_md)), 
                 ref_md[, intersect(names(ref_md), conc_cols), with = FALSE])
-  is_ref_conc <- rowSums(conc == 0) == ncol(conc)
+  is_ref_conc <- rowSums(conc == 0) == NCOL(conc)
   
   if (ref_type == "Day0") {
     matching_list <- list(T0 = ref_md[[duration_col]] %in% 0, conc = is_ref_conc)
@@ -128,7 +128,7 @@ map_df <- function(trt_md,
       meta_score <- if (length(present_ref_cols) > 0) {
         colSums(match_mx[present_ref_cols, , drop = FALSE])
       } else {
-        rep(0, ncol(match_mx))
+        rep(0, NCOL(match_mx))
       }
       
       if (matchFactor %in% rownames(match_mx)) {
@@ -198,10 +198,10 @@ map_df <- function(trt_md,
   )
   cotrt_var <- intersect(cotrt_var, colnames(mat_elem))
   
-  mat_elem$rownames <- as.character(seq_len(nrow(mat_elem)))
+  mat_elem$rownames <- as.character(seq_len(NROW(mat_elem)))
   trt_elem <- mat_elem[!is_ref & !is_untrt]
   
-  out <- vector("list", nrow(trt_elem))
+  out <- vector("list", NROW(trt_elem))
   names(out) <- trt_elem$rownames
   
   if (any(is_ref)) {

@@ -10,7 +10,7 @@ fit_combo_codilutions <- function(measured,
   # Filter out all single-agents.
   single_agents <- measured[[id]] == 0 | measured[[id2]] == 0
   measured <- measured[!single_agents, , drop = FALSE]
-  if (nrow(measured) < 4) {
+  if (NROW(measured) < 4) {
     return(NULL)
   }
   
@@ -21,7 +21,7 @@ fit_combo_codilutions <- function(measured,
   )
   ratios <- S4Vectors::split(measured, measured$ratios)
   keep <- unlist(lapply(ratios, function(x) {
-    nrow(x) > 4
+    NROW(x) > 4
   }))
   valid <- ratios[keep]
   
@@ -38,7 +38,7 @@ fit_combo_codilutions <- function(measured,
   }
   
   out <- data.table::rbindlist(fits)
-  if (nrow(out) == 0) {
+  if (NROW(out) == 0) {
     out <- NULL  
   }
   out
