@@ -2,7 +2,7 @@
 title: "gDR -- data model"
 author:
 - name: gDR team
-  email: gdr-support-d@gene.com 
+  email: gdr-support-d@gene.com
 package: gDRcore
 output:
   BiocStyle::html_document

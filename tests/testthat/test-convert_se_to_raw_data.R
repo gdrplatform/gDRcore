@@ -30,7 +30,7 @@ test_that("convert_mae_to_raw_data works as expected with matrix data", {
   )
   test_synthetic_data(original, mae$result, data)
   test_synthetic_data(mae$result, mae2$result, data)
-  
+
   trt <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(original[[1]], "RawTreated"))
   trt <- trt[!duplicated(trt$record_id), ]
   dt_raw1 <- convert_mae_to_raw_data(original)

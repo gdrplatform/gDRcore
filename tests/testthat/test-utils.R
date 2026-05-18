@@ -12,14 +12,14 @@ test_that("grr_matches works as expected", {
   # split data.tables to simple model with clid column and drug column
   trt <- lapply(valid, function(x) treated[, c(clid, x), with = FALSE])
   trt <- do.call(paste, do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]])))))
-  
+
   ref <- lapply(valid, function(x) ref[, c(clid, x), with = FALSE])
   ref <- do.call(paste, do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]])))))
-  
+
   matchTrtRef <- grr_matches(trt, ref, list = FALSE, all.y = FALSE)
   expect_equal(dim(matchTrtRef), c(4, 2))
   expect_s3_class(matchTrtRef, "data.table")
-  
+
   matchTrtRefList <- grr_matches(trt, ref, list = TRUE)
   expect_equal(length(matchTrtRefList), 4)
 })
@@ -36,7 +36,7 @@ test_that("cleanup_metadata works as expected", {
 test_that("data_model.character works as expected", {
   expect_equal(data_model("co-dilution"), "single-agent")
   expect_equal(data_model("combination"), "combination")
-  
+
   expect_error(data_model("single-a"))
   expect_error(data_model(""))
   expect_error(data_model(NULL))
@@ -45,18 +45,17 @@ test_that("data_model.character works as expected", {
 test_that("validate_data_models_availability works as expected", {
   d_type <- c("co-dilution", "combination")
 
-  expect_equal(validate_data_models_availability(d_types = d_type, 
+  expect_equal(validate_data_models_availability(d_types = d_type,
                                                  s_d_models = gDRutils::get_supported_experiments()),
                NULL)
-  expect_equal(validate_data_models_availability(d_types = "single-a", 
+  expect_equal(validate_data_models_availability(d_types = "single-a",
                                                  s_d_models = gDRutils::get_supported_experiments()),
                NULL)
-  expect_error(validate_data_models_availability(d_types = d_type, 
+  expect_error(validate_data_models_availability(d_types = d_type,
                                                  s_d_models = "single_agent"),
                "'nested_identifiers_l' lacks information for the ")
-  expect_error(validate_data_models_availability(d_types = d_type, 
+  expect_error(validate_data_models_availability(d_types = d_type,
                                                  s_d_models = NULL),
                "'nested_identifiers_l' lacks information for the ")
-  
-})
 
+})

@@ -1,21 +1,21 @@
 #' @keywords pipeline
-create_SE_step <- function(inl, 
+create_SE_step <- function(inl,
                            exp,
-                           data_type, 
-                           readout, 
-                           control_mean_fxn, 
+                           data_type,
+                           readout,
+                           control_mean_fxn,
                            nested_identifiers,
                            override_untrt_controls) {
   df <- inl$df_list[[exp]]
   if (is.null(df)) {
- 
+
     msg1 <- sprintf(
-      "It's impossible to run pipeline from the first 
+      "It's impossible to run pipeline from the first
       step ('%s') for experiment: '%s'. ",
       get_pipeline_steps()[1], exp
     )
     msg2 <- sprintf(
-      "Consider running the pipeline from the second ('%s') step", 
+      "Consider running the pipeline from the second ('%s') step",
       get_pipeline_steps()[2]
     )
     stop(c(msg1, msg2))
@@ -34,11 +34,11 @@ create_SE_step <- function(inl,
 }
 
 #' @keywords pipeline
-run_pipeline_step <- function(run_vars, 
-                              step, 
+run_pipeline_step <- function(run_vars,
+                              step,
                               se,
-                              step_fun, 
-                              step_args, 
+                              step_fun,
+                              step_args,
                               if_paste_warnings = FALSE,
                               if_read_intermediate_data = TRUE) {
   if (!run_vars$partial_run || !do_skip_step(step, run_vars$start_from)) {
@@ -51,7 +51,7 @@ run_pipeline_step <- function(run_vars,
       paste_warnings(se$warnings)
     }
   } else {
-    if (if_read_intermediate_data && 
+    if (if_read_intermediate_data &&
         is_preceding_step(step, run_vars$start_from)) {
       se$result <- read_intermediate_data(run_vars$data_dir, step, run_vars$exp)
     }
@@ -61,9 +61,9 @@ run_pipeline_step <- function(run_vars,
 }
 
 #' get pipeline steps
-#' 
+#'
 #' @return vector with steps
-#' 
+#'
 #' @keywords internal
 get_pipeline_steps <-
   function() {
@@ -74,22 +74,22 @@ get_pipeline_steps <-
   }
 
 #' check if the given step can be skipped if partial run is chosen
-#' 
+#'
 #' @param current_step, string with the step to be evaluated
-#' @param start_from string indicating the pipeline step from which partial 
+#' @param start_from string indicating the pipeline step from which partial
 #' run should be launched
 #' @param steps charvect with all available steps
-#' 
+#'
 #' @keywords internal
 #' @return logical
-#' 
+#'
 do_skip_step <-
   function(current_step, start_from, steps = get_pipeline_steps()) {
-    
+
     checkmate::assert_choice(current_step, steps)
     checkmate::assert_choice(start_from, steps, null.ok = TRUE)
     checkmate::assert_character(steps)
-    
+
     if (is.null(start_from)) {
       FALSE
     } else {
@@ -100,22 +100,22 @@ do_skip_step <-
   }
 
 #' check if the given step is preceding the step chosen in the partial run
-#' 
+#'
 #' @param current_step, string with the step to be evaluated
-#' @param start_from string indicating the pipeline step from which 
+#' @param start_from string indicating the pipeline step from which
 #' partial run should be launched
 #' @param steps charvect with all available steps
-#' 
+#'
 #' @keywords internal
 #' @return logical
-#' 
+#'
 is_preceding_step <-
   function(current_step, start_from, steps = get_pipeline_steps()) {
-   
+
     checkmate::assert_choice(current_step, steps)
     checkmate::assert_choice(start_from, steps)
     checkmate::assert_character(steps)
-    
+
     c_idx <- which(steps %in% current_step)
     s_idx <- which(steps %in% start_from)
     s_idx - c_idx == 1
@@ -126,12 +126,12 @@ is_preceding_step <-
 #' @param path string with the save directory for the qs2 file
 #' @param step, string with the step name
 #' @param experiment string with the experiment name
-#' @param se output se 
-#' 
+#' @param se output se
+#'
 #' @keywords internal
-#' 
+#'
 #' @return \code{NULL}
-#' 
+#'
 save_intermediate_data <- function(path, step, experiment, se) {
 
   if (!requireNamespace("qs2", quietly = TRUE)) {
@@ -150,10 +150,10 @@ save_intermediate_data <- function(path, step, experiment, se) {
 #' @param path string with the input directory of the qs2 file
 #' @param step, string with the step name
 #' @param experiment string with the experiment name
-#' 
+#'
 #' @keywords internal
 #' @return se
-#' 
+#'
 read_intermediate_data <- function(path, step, experiment) {
 
   if (!requireNamespace("qs2", quietly = TRUE)) {
@@ -170,7 +170,7 @@ read_intermediate_data <- function(path, step, experiment) {
 #' @keywords internal
 paste_warnings <- function(list, sep = "\n") {
   if (length(list)) {
-    pasted <- paste0(list, sep = sep)
+    pasted <- paste(list, collapse = sep)
     warning(pasted, call. = FALSE)
   } else {
     invisible(NULL)

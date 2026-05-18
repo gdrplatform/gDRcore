@@ -11,25 +11,25 @@ patterns <- NULL
 #' @noRd
 .onLoad <- function(libname, pkgname) {
   # scientific notation was disabled due to the problem with unit tests
-  options(scipen = 999) 
-  
+  options(scipen = 999)
+
   cores <- Sys.getenv("NUM_CORES")
   # based on https://github.com/Bioconductor/BiocParallel/issues/98
   if (.Platform$OS.type != "windows" && cores != "") {
     BiocParallel::register(
-      BiocParallel::MulticoreParam(workers = as.numeric(cores)), 
+      BiocParallel::MulticoreParam(workers = as.numeric(cores)),
       default = TRUE
     )
-  } else { 
+  } else {
     BiocParallel::register(
-      BiocParallel::SerialParam(), 
+      BiocParallel::SerialParam(),
       default = TRUE
     )
-  } 
+  }
   # CONS
   drugs_id <- gDRutils::get_env_identifiers("drug_name")
   utils::assignInNamespace(".drugNameRegex", sprintf("^%s$|^%s_[[:digit:]]+$", drugs_id, drugs_id), ns = pkgname)
-  
+
   untreated_tag_patterns <- vapply(
     gDRutils::get_env_identifiers("untreated_tag"),
     sprintf,
@@ -38,7 +38,7 @@ patterns <- NULL
   )
   utils::assignInNamespace(".untreated_tag_patterns", untreated_tag_patterns, ns = pkgname)
   utils::assignInNamespace(".untreatedDrugNameRegex", paste(untreated_tag_patterns, collapse = "|"), ns = pkgname)
-  
+
   # data.table compatible
   utils::assignInNamespace("patterns", data.table:::patterns, ns = pkgname)
   utils::globalVariables(
@@ -66,6 +66,6 @@ patterns <- NULL
       "smooth",
       "x",
       "x.N"
-    ), 
+    ),
     pkgname)
 }

@@ -25,12 +25,12 @@ test_that("main pipeline functions works as expected", {
   imported_data <-  purrr::quietly(merge_data)(l_data$result$manifest,
                                                l_data$result$treatments,
                                                l_data$result$data)
-  
+
   input_data <- imported_data$result
 
   input_data <- input_data[input_data$CellLineName %in% unique(input_data$CellLineName)[1] &
                            input_data$DrugName_2 %in% gDRutils::get_env_identifiers("untreated_tag"), ]
-  
+
   ### runDrugResponseProcessingPipeline ###
   expect_true(length(list.files(p_dir)) == 0)
 
@@ -63,7 +63,7 @@ test_that("main pipeline functions works as expected", {
   expect_lte(length(mae_v3$warnings), 3)
   expect_true(any(grepl("Switching into 'Barcode' nested confounder.", mae_v3$warnings)))
   expect_true(any(grepl("method L-BFGS-B uses 'factr'.", mae_v3$warnings)))
-  
+
   mae_v4 <-
     purrr::quietly(runDrugResponseProcessingPipeline)(
       mae_v1$result
@@ -73,23 +73,23 @@ test_that("main pipeline functions works as expected", {
 
   expect_identical(mae_v1$result, mae_v2$result)
   expect_identical(mae_v2$result, mae_v3$result)
-  
+
   mae_v3$result <- gDRutils::MAEpply(mae_v3$result, function(x) {
     SummarizedExperiment::assay(x, "Controls") <- NULL
     SummarizedExperiment::assay(x, "RawTreated") <- NULL
     x
   })
-  
+
   mae_v4$result <- gDRutils::MAEpply(mae_v4$result, function(x) {
     SummarizedExperiment::assay(x, "Controls") <- NULL
     SummarizedExperiment::assay(x, "RawTreated") <- NULL
     x
   })
-  
+
   # Clear internal metadata (sessionInfo) to not break the tests
   mae_v3$result$`single-agent`@metadata$.internal <- NULL
   mae_v4$result$`single-agent`@metadata$.internal <- NULL
-  
+
   expect_identical(mae_v3$result, mae_v4$result)
 
   testthat::expect_error(

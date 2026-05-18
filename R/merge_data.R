@@ -5,17 +5,17 @@
 #' @param manifest a data.table with a manifest info
 #' @param treatments a data.table with a treaatments info
 #' @param data a data.table with a raw data info
-#' 
-#' @examples 
+#'
+#' @examples
 #' td <- gDRimport::get_test_data()
 #' l_tbl <- gDRimport::load_data(
-#'   manifest_file = gDRimport::manifest_path(td), 
-#'   df_template_files = gDRimport::template_path(td), 
+#'   manifest_file = gDRimport::manifest_path(td),
+#'   df_template_files = gDRimport::template_path(td),
 #'   results_file = gDRimport::result_path(td)
 #' )
 #' merge_data(
-#'   l_tbl$manifest, 
-#'   l_tbl$treatments, 
+#'   l_tbl$manifest,
+#'   l_tbl$treatments,
 #'   l_tbl$data
 #' )
 #'
@@ -28,7 +28,7 @@ merge_data <- function(manifest, treatments, data) {
   checkmate::assert_data_table(manifest)
   checkmate::assert_data_table(treatments)
   checkmate::assert_data_table(data)
-  
+
   futile.logger::flog.info("Merging data")
 
   # first unify capitalization in the headers of treatments with manifest
@@ -40,7 +40,7 @@ merge_data <- function(manifest, treatments, data) {
     colnames(treatments)[colnames(treatments) == m_col] <-
       colnames(manifest)[toupper(m_col) == toupper(colnames(manifest))]
     futile.logger::flog.trace(
-      "Header %s in templates corrected to match case with manifest", 
+      "Header %s in templates corrected to match case with manifest",
       m_col
     )
   }
@@ -49,37 +49,37 @@ merge_data <- function(manifest, treatments, data) {
   identifiers <- gDRutils::validate_identifiers(manifest, req_ids = "barcode")
   m_ids <- identifiers[["template"]]
   t_ids <- gDRutils::validate_identifiers(treatments, req_ids = "drug")[["template"]]
-  
+
   manifest_cp <- data.table::setkeyv(data.table::copy(manifest), m_ids)
   treatments_cp <- data.table::setkeyv(data.table::copy(treatments), t_ids)
-  
+
   df_metadata <- manifest_cp[treatments_cp, allow.cartesian = TRUE]
-  
+
   futile.logger::flog.info(
     "Merging the metadata (manifest and treatment files)"
   )
 
   # sort out duplicate metadata columns
   duplicated_col <- setdiff(
-    intersect(colnames(manifest), colnames(treatments)), 
+    intersect(colnames(manifest), colnames(treatments)),
     c(m_ids, t_ids)
   )
   for (m_col in duplicated_col) {
     alt_col <- setdiff(grep(m_col, names(df_metadata), value = TRUE), m_col)
-    
+
     is_empty_col <- function(col) {
       is.na(col) | col %in% c("", "-")
     }
-    
-    
+
+
     df_metadata[[m_col]] <-
       ifelse(is_empty_col(df_metadata[[m_col]]), df_metadata[[alt_col]],
       df_metadata[[m_col]])
-    
+
     df_metadata[[alt_col]] <-
       ifelse(is_empty_col(df_metadata[[alt_col]]), df_metadata[[m_col]],
              df_metadata[[alt_col]])
-    
+
     if (!identical(df_metadata[[m_col]], df_metadata[[alt_col]])) {
       warning(sprintf(
         "Merge data: metadata field %s found in both the manifest
@@ -87,7 +87,7 @@ merge_data <- function(manifest, treatments, data) {
         values in template supersede the ones in the manifest", m_col
       ))
     }
-    
+
     df_metadata[, (alt_col) := NULL]
   }
 
@@ -109,13 +109,13 @@ merge_data <- function(manifest, treatments, data) {
   df_metadata_trimmed <-
     df_metadata[which(!is.na(df_metadata[, drug_id, with = FALSE])), ]
   futile.logger::flog.warn(
-    "%i well loaded, %i wells discarded for lack of annotation, 
+    "%i well loaded, %i wells discarded for lack of annotation,
     %i data point selected\n",
     NROW(data),
     sum(is.na(df_metadata[, drug_id, with = FALSE])),
     NROW(df_metadata_trimmed)
   )
-  
+
   df_metadata_trimmed <- df_metadata_trimmed[stats::complete.cases(
     mget(expected_headers))]
 
@@ -123,21 +123,21 @@ merge_data <- function(manifest, treatments, data) {
   cleanedup_metadata <- cleanup_metadata(df_metadata_trimmed)
   # should not happen
   stopifnot(NROW(cleanedup_metadata) == NROW(df_metadata_trimmed))
-  
+
   data$WellColumn <- as.character(data$WellColumn)
 
   # Merge Data and Metadata
-  # NOTE: If 'Duration' (or other cols) exists in both, data.table[data] keeps the 
-  # metadata version as 'col' and the data version as 'i.col'. 
+  # NOTE: If 'Duration' (or other cols) exists in both, data.table[data] keeps the
+  # metadata version as 'col' and the data version as 'i.col'.
   # For time-course data, the raw data Duration is the source of truth.
-  
+
   df_merged <- cleanedup_metadata[data, on = c(identifiers[["barcode"]],
                                                identifiers[["well_position"]])]
-  
+
   # Handle column collisions (specifically Duration for time-course)
   dur_col <- gDRutils::get_env_identifiers("duration")
   i_dur_col <- paste0("i.", dur_col)
-  
+
   if (i_dur_col %in% names(df_merged)) {
     # Overwrite the metadata duration with the raw data duration
     df_merged[[dur_col]] <- df_merged[[i_dur_col]]
@@ -162,7 +162,7 @@ merge_data <- function(manifest, treatments, data) {
   # remove wells not labeled
   df_raw_data <-
     df_merged[which(!is.na(df_merged[, drug_id, with = FALSE])), ]
-  
+
   # reorder the columns
   df_raw_data <- order_result_df(df_raw_data)
 

@@ -24,9 +24,9 @@ get_cell_line_annotation <- function(
     }
 ) {
   checkmate::assert_data_table(data)
-  
+
   clid <- gDRutils::get_env_identifiers("cellline")
-  
+
   # Read the cell line annotation data
   cell_line_annotation <- if (annotation_package == "gDRinternal") {
     eval(parse(text = paste0(annotation_package, "::get_cell_line_annotations")))(data[[clid]])
@@ -35,18 +35,18 @@ get_cell_line_annotation <- function(
       system.file("annotation_data", fname, package = annotation_package), header = TRUE
     )
   }
-  
+
   if (is.numeric(cell_line_annotation[[clid]])) {
     cell_line_annotation[, (clid) := as.character(get(clid))]
   }
-  
+
   assert_cell_line_annotation(cell_line_annotation)
-  
+
   if (NROW(cell_line_annotation) > 0) {
     cmn <- cell_line_annotation[[clid]] %in% as.character(data[[clid]])
     cell_line_annotation <- cell_line_annotation[cmn, ]
   }
-  
+
   # Handle missing cell lines
   missing_cell_lines <- setdiff(unique(as.character(data[[clid]])), cell_line_annotation[[clid]])
   if (length(missing_cell_lines) > 0) {
@@ -61,15 +61,15 @@ get_cell_line_annotation <- function(
     data.table::setnames(missing_tbl_cell_lines, names(cell_line_annotation))
     cell_line_annotation <- rbind(cell_line_annotation, missing_tbl_cell_lines)
   }
-  
+
   # Fill missing values
   ref_div_time <- gDRutils::get_env_identifiers("cellline_ref_div_time")
-  
+
   for (col in setdiff(names(cell_line_annotation), ref_div_time)) {
     cell_line_annotation[[col]][is.na(cell_line_annotation[[col]])] <- fill
   }
   cell_line_annotation[, (ref_div_time) := as.numeric(get(ref_div_time))]
-  
+
   (cell_line_annotation)
 }
 
@@ -98,27 +98,27 @@ annotate_dt_with_cell_line <- function(
 ) {
   checkmate::assert_data_table(data)
   assert_cell_line_annotation(cell_line_annotation)
-  
+
   cellline <- gDRutils::get_env_identifiers("cellline")
   add_clid <- gDRutils::get_header("add_clid")
-  
+
   checkmate::assert_names(names(cell_line_annotation), must.include = c(cellline, unlist(add_clid)))
-  
+
   # Remove existing annotations if any
   existing_cols <- intersect(unlist(add_clid), names(data))
   if (length(existing_cols) > 0) {
     data[, (existing_cols) := NULL]
   }
-  
+
   if (is.numeric(data[[cellline]])) {
     data[, (cellline) := as.character(get(cellline))]
   }
   if (is.numeric(cell_line_annotation[[cellline]])) {
     cell_line_annotation[, (cellline) := as.character(get(cellline))]
   }
-  
+
   data <- cell_line_annotation[data, on = cellline]
-  
+
   # Handle missing cell lines
   missing_cell_lines <- setdiff(unique(data[[cellline]]), cell_line_annotation[[cellline]])
   if (length(missing_cell_lines) > 0) {
@@ -163,10 +163,10 @@ get_drug_annotation <- function(
     }
 ) {
   checkmate::assert_data_table(data)
-  
+
   drug <- unlist(gDRutils::get_env_identifiers(c("drug", "drug2", "drug3"), simplify = FALSE))
   drug_ann_cols <- unlist(gDRutils::get_env_identifiers(c("drug", "drug_name", "drug_moa"), simplify = FALSE))
-  
+
   # Read the drug annotation data
   drug_annotation <- if (annotation_package == "gDRinternal") {
     eval(parse(text = paste0(annotation_package, "::get_drug_annotations")))()
@@ -175,13 +175,13 @@ get_drug_annotation <- function(
       system.file("annotation_data", fname, package = annotation_package), header = TRUE
     )
   }
-  
+
   if (is.numeric(drug_annotation[[drug_ann_cols[["drug"]]]])) {
     drug_annotation[, (drug_ann_cols[["drug"]]) := as.character(get(drug_ann_cols[["drug"]]))]
   }
-  
+
   assert_drug_annotation(drug_annotation)
-  
+
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   all_data_drugs <- setdiff(
     gDRutils::remove_drug_batch(
@@ -190,12 +190,12 @@ get_drug_annotation <- function(
           data[, intersect(names(data), drug), with = FALSE]
         )
       )
-    ), 
+    ),
     untreated_tag
   )
   drug_annotation <- drug_annotation[gDRutils::remove_drug_batch(drug_annotation[[drug_ann_cols[["drug"]]]]) %in%
                                        all_data_drugs]
-  
+
   # Handle missing drugs
   missing_drugs <- setdiff(unique(all_data_drugs),
                            gDRutils::remove_drug_batch(drug_annotation[[drug_ann_cols[["drug"]]]]))
@@ -208,7 +208,7 @@ get_drug_annotation <- function(
     data.table::setnames(missing_tbl_drugs, drug_ann_cols)
     drug_annotation <- rbind(drug_annotation, missing_tbl_drugs)
   }
-  
+
   (drug_annotation)
 }
 
@@ -237,43 +237,43 @@ annotate_dt_with_drug <- function(
 ) {
   checkmate::assert_data_table(data)
   assert_drug_annotation(drug_annotation)
-  
+
   drug <- unlist(gDRutils::get_env_identifiers(c("drug", "drug2", "drug3"), simplify = FALSE))
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   drug_name <- unlist(gDRutils::get_env_identifiers(c("drug_name", "drug_name2", "drug_name3"), simplify = FALSE))
   drug_moa <- unlist(gDRutils::get_env_identifiers(c("drug_moa", "drug_moa2", "drug_moa3"), simplify = FALSE))
   drug_idx <- which(drug %in% names(data))
-  
+
   for (col in drug[drug_idx]) {
     if (is.numeric(data[[col]])) {
       data[, (col) := as.character(get(col))]
     }
   }
-  
+
   drug_data <- unlist(data[, intersect(names(data), drug), with = FALSE])
   drug_ann_cols <- unlist(gDRutils::get_env_identifiers(c("drug", "drug_name", "drug_moa"), simplify = FALSE))
-  
+
   if (is.numeric(drug_annotation[[drug_ann_cols[["drug"]]]])) {
     drug_annotation[, (drug_ann_cols[["drug"]]) := as.character(get(drug_ann_cols[["drug"]]))]
   }
-  
+
   # Remove existing annotations if any
   existing_cols <- intersect(c(drug_name, drug_moa), names(data))
   if (length(existing_cols) > 0) {
     data[, (existing_cols) := NULL]
   }
-  
+
   # Extract numeric suffixes from column names
   drug_ids <- sub(".*?(\\d+)$", "\\1", names(drug[drug_idx]))
   drug_ids[grepl("^\\d+$", drug_ids)] <- as.numeric(drug_ids[grepl("^\\d+$", drug_ids)])
   drug_ids[grepl("^\\D+$", drug_ids)] <- 1
-  
+
   drug_identifiers_list <- split(c(drug[drug_idx], drug_name[drug_idx], drug_moa[drug_idx]), drug_ids)
   names(drug_identifiers_list) <- drug[drug_idx]
   drug_identifiers_list <- rev(drug_identifiers_list)
-  
+
   drugs_treated <- setdiff(drug_data, untreated_tag)
-  drugs_treated_wo_batch <- gDRutils::remove_drug_batch(drugs_treated) 
+  drugs_treated_wo_batch <- gDRutils::remove_drug_batch(drugs_treated)
   drug_annots_wo_batch <- gDRutils::remove_drug_batch(drug_annotation[[drug[["drug"]]]])
   validated_drugs <- drugs_treated_wo_batch %in% drug_annots_wo_batch
   if (any(!validated_drugs)) {
@@ -285,7 +285,7 @@ annotate_dt_with_drug <- function(
     data.table::setnames(missing_tbl_drugs, drug_ann_cols)
     drug_annotation <- rbind(drug_annotation, missing_tbl_drugs)
   }
-  
+
   drug_annotation[[drug[["drug"]]]] <- gDRutils::remove_drug_batch(drug_annotation[[drug[["drug"]]]])
   untrt_drug_annotation <- data.table::data.table(
     drug = untreated_tag, drug_name = untreated_tag, drug_moa = untreated_tag)
@@ -294,7 +294,7 @@ annotate_dt_with_drug <- function(
     untrt_drug_annotation,
     drug_annotation
   ))
-  
+
   for (drug_idf in names(drug_identifiers_list)) {
     colnames(drug_annotation) <- drug_identifiers_list[[drug_idf]]
     data$batch <- data[[drug_idf]]
@@ -305,7 +305,7 @@ annotate_dt_with_drug <- function(
     data[[drug_idf]] <- data$batch
     data$batch <- NULL
   }
-  
+
   (data)
 }
 
@@ -324,11 +324,11 @@ annotate_dt_with_drug <- function(
 #' get_drug_annotation_from_dt(dt)
 get_drug_annotation_from_dt <- function(dt) {
   checkmate::assert_data_table(dt)
-  
+
   identifiers <- gDRutils::get_env_identifiers()
   drug_ids <- identifiers[grep("drug", names(identifiers))]
   drug_cols <- Filter(function(el) el %in% names(dt), drug_ids)
-  
+
   dt_drug <- dt[, unlist(drug_cols), with = FALSE]
   dt_long <- data.table::melt(dt_drug,
                               measure.vars = patterns(gsub("[0-9]",
@@ -342,14 +342,14 @@ get_drug_annotation_from_dt <- function(dt) {
                                                               "drug_moa")]))
   dt_long[, "variable" := NULL]
   unique_dt <- unique(dt_long)
-  
+
   missing_cols <- setdiff(unlist(drug_ids[c("drug", "drug_name", "drug_moa")]), names(unique_dt))
   if (length(missing_cols) > 0) {
     for (col in missing_cols) {
       unique_dt[, (col) := "unknown"]
     }
   }
-  
+
   unique_dt[!unique_dt[[drug_cols[["drug"]]]] %in% gDRutils::get_env_identifiers("untreated_tag"), ]
 }
 
@@ -372,19 +372,19 @@ get_drug_annotation_from_dt <- function(dt) {
 #' get_cellline_annotation_from_dt(dt)
 get_cellline_annotation_from_dt <- function(dt) {
   checkmate::assert_data_table(dt)
-  
+
   cell_cols <- c(gDRutils::get_env_identifiers("cellline"),
                  gDRutils::get_header("add_clid"))
-  
+
   cell_dt <- dt[, intersect(unlist(cell_cols), names(dt)), with = FALSE]
-  
+
   missing_cols <- setdiff(unlist(cell_cols), names(cell_dt))
   if (length(missing_cols) > 0) {
     for (col in missing_cols) {
       cell_dt[, (col) := "unknown"]
     }
   }
-  
+
   unique(cell_dt)
 }
 
@@ -413,7 +413,7 @@ annotate_se_with_drug <- function(
   checkmate::assert_class(se, "SummarizedExperiment")
   assert_drug_annotation(drug_annotation)
   checkmate::assert_string(fill)
-  
+
   data <- data.table::as.data.table(SummarizedExperiment::rowData(se))
   annotated_data <- annotate_dt_with_drug(data, drug_annotation, fill)
   SummarizedExperiment::rowData(se) <- annotated_data
@@ -449,7 +449,7 @@ annotate_mae_with_drug <- function(
   checkmate::assert_class(mae, "MultiAssayExperiment")
   assert_drug_annotation(drug_annotation)
   checkmate::assert_string(fill)
-  
+
   for (i in seq_along(MultiAssayExperiment::experiments(mae))) {
     se <- MultiAssayExperiment::experiments(mae)[[i]]
     MultiAssayExperiment::experiments(mae)[[i]] <- annotate_se_with_drug(se, drug_annotation, fill)
@@ -482,7 +482,7 @@ annotate_se_with_cell_line <- function(
   checkmate::assert_class(se, "SummarizedExperiment")
   assert_cell_line_annotation(cell_line_annotation)
   checkmate::assert_string(fill)
-  
+
   data <- data.table::as.data.table(SummarizedExperiment::rowData(se))
   annotated_data <- annotate_dt_with_cell_line(data, cell_line_annotation, fill)
   SummarizedExperiment::rowData(se) <- annotated_data
@@ -518,7 +518,7 @@ annotate_mae_with_cell_line <- function(
   checkmate::assert_class(mae, "MultiAssayExperiment")
   assert_cell_line_annotation(cell_line_annotation)
   checkmate::assert_string(fill)
-  
+
   for (i in seq_along(MultiAssayExperiment::experiments(mae))) {
     se <- MultiAssayExperiment::experiments(mae)[[i]]
     MultiAssayExperiment::experiments(mae)[[i]] <- annotate_se_with_cell_line(se, cell_line_annotation, fill)

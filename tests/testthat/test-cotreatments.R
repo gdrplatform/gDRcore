@@ -12,7 +12,7 @@ test_that("fit_combo_cotreatments works as expected", {
 
   obs <- suppressWarnings(# warnings are expected
     fit_combo_cotreatments(
-      measured, 
+      measured,
       series_id = "Concentration",
       cotrt_id = "Concentration_2",
       normalization_type = "GR"
@@ -40,7 +40,7 @@ test_that("fit_cotreatment_series works as expected", {
 
   obs <- suppressWarnings(# warnings are expected
     fit_cotreatment_series(
-      measured, 
+      measured,
       series_id = "Concentration",
       cotrt_id = "Concentration_2",
       e_0 = 1,

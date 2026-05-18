@@ -28,7 +28,7 @@ test_that("calculate_GR_value works as expected", {
     ref_div_time = duration / 2
   )
   expect_true(is.numeric(gr1))
-  
+
   # day0_readout is NA, reference division time missing.
   gr2 <- calculate_GR_value(
     rel_viability = rv,
@@ -40,7 +40,7 @@ test_that("calculate_GR_value works as expected", {
     ref_div_time = NA
   )
   expect_true(all(is.na(gr2)))
-  
+
   # day0_readout is NA, reference division time is present and valid.
   gr3 <- calculate_GR_value(
     rel_viability = rv,
