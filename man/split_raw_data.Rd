@@ -29,7 +29,7 @@ dt_layout <- gDRtestData::add_concentration(
   concentrations = 10 ^ (seq(-3, .5, .5))
 )
 
-dt_2 <- 
+dt_2 <-
   drugs[c(21, 26), as.list(cell_lines[which(cell_lines$clid \%in\% dt_layout$clid)]), names(drugs)]
 dt_2 <- gDRtestData::add_data_replicates(dt_2)
 dt_2 <- gDRtestData::add_concentration(
@@ -41,7 +41,7 @@ colnames(dt_2)[colnames(dt_2) \%in\% c(colnames(drugs), "Concentration")] <-
     colnames(dt_2)[colnames(dt_2) \%in\% c(colnames(drugs), "Concentration")],
     "_2"
   )
-dt_layout_2 <- dt_layout[dt_2, on = intersect(names(dt_layout), names(dt_2)), 
+dt_layout_2 <- dt_layout[dt_2, on = intersect(names(dt_layout), names(dt_2)),
                         allow.cartesian = TRUE]
 dt_merged_data <- gDRtestData::generate_response_data(dt_layout_2, 0)
 dt <- identify_data_type(dt_merged_data)

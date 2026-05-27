@@ -54,10 +54,10 @@ series_identifiers <- c("Concentration", "Concentration_2")
 metric_col <- "GRvalue"
 measured_col <- "testvalue"
 calculate_excess(
-  metric, 
-  measured, 
-  series_identifiers, 
-  metric_col, 
+  metric,
+  measured,
+  series_identifiers,
+  metric_col,
   measured_col
 )
 

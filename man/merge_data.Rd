@@ -22,13 +22,13 @@ Merge all the input data into a single data.table
 \examples{
 td <- gDRimport::get_test_data()
 l_tbl <- gDRimport::load_data(
-  manifest_file = gDRimport::manifest_path(td), 
-  df_template_files = gDRimport::template_path(td), 
+  manifest_file = gDRimport::manifest_path(td),
+  df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
 merge_data(
-  l_tbl$manifest, 
-  l_tbl$treatments, 
+  l_tbl$manifest,
+  l_tbl$treatments,
   l_tbl$data
 )
 
