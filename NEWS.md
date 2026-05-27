@@ -1,4 +1,4 @@
-## gDRcore 1.11.4 - 2026-05-18
+## gDRcore 1.11.4 - 2026-05-27
 * apply updated gDRstyle rules
 
 ## gDRcore 1.11.3 - 2026-05-05
