@@ -217,7 +217,7 @@ fit_SE.combinations <- function(se,
       # and codilution_fitting
       metrics_merged$dilution_drug <- rep(
         metrics_names,
-        vapply(mget(metrics_names), nrow, numeric(1))
+        vapply(mget(metrics_names), NROW, numeric(1))
       )
       # remove degenerated fits
       metrics_merged <-
