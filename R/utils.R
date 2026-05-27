@@ -261,8 +261,7 @@ validate_data_models_availability <- function(d_types, s_d_models) {
   if (length(f_models)) {
     msg1 <-
       sprintf(
-        "'nested_identifiers_l' lacks information for the
-        following data model(s): '%s'",
+        "'nested_identifiers_l' lacks information for the following data model(s): '%s'",
         toString(f_models)
       )
     stop(msg1)
