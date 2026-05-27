@@ -18,7 +18,7 @@ test_that("map_df works as expected", {
   mapping <- map_df(trt_df, ref_df, ref_cols = ref_cols, ref_type = "untrt_Endpoint")
 
   expect_equal(names(mapping), trt_df$rn)
-  expect_equal(length(mapping), nrow(trt_df))
+  expect_equal(length(mapping), NROW(trt_df))
   expect_equal(sort(unique(unname(unlist(mapping)))), sort(ref_df$rn))
 })
 

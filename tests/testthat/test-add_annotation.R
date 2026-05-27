@@ -3,7 +3,7 @@ test_that("get_cell_line_annotation works correctly", {
   # Assuming the annotation file "cell_lines.csv" is available in the package "gDRtestData"
   result <- get_cell_line_annotation(data, fill = "unknown", annotation_package = "gDRtestData")
   expect_true("data.table" %in% class(result))
-  expect_equal(nrow(result), 3)
+  expect_equal(NROW(result), 3)
   expect_equal(result$clid, c("CL1", "CL2", "CL3"))
   # Check if the fill value is correctly applied to missing annotations
   expect_equal(result$Tissue[result$clid == "CL3"], "unknown")
@@ -22,7 +22,7 @@ test_that("annotate_dt_with_cell_line works correctly", {
   result <- annotate_dt_with_cell_line(data, cell_line_annotation, fill = "unknown")
   expect_true(all(c(24, 48) %in% result$ReferenceDivisionTime))
   expect_true("data.table" %in% class(result))
-  expect_equal(ncol(result), ncol(data) + ncol(cell_line_annotation) - 1)
+  expect_equal(NCOL(result), NCOL(data) + NCOL(cell_line_annotation) - 1)
   expect_equal(result$CellLineName, c("Cell Line 1", "Cell Line 2", "CL3"))
   expect_equal(result$Tissue, c(cell_line_annotation$Tissue, "unknown"))
   expect_equal(result$parental_identifier, c(cell_line_annotation$parental_identifier, "unknown"))
@@ -34,7 +34,7 @@ test_that("get_drug_annotation works correctly", {
   # Assuming the annotation file "drugs.csv" is available in the package "gDRtestData"
   result <- get_drug_annotation(data, fill = "unknown", annotation_package = "gDRtestData")
   expect_true("data.table" %in% class(result))
-  expect_equal(nrow(result), 3)
+  expect_equal(NROW(result), 3)
   expect_equal(result$Gnumber, c("drug1", "drug2", "drug3"))
   # Check if the fill value is correctly applied to missing annotations
   expect_equal(result$drug_moa[result$Gnumber == "drug3"], "unknown")
@@ -42,7 +42,7 @@ test_that("get_drug_annotation works correctly", {
   complex_data <- data.table::data.table(Gnumber = c("D1", "D2", "D3"), Gnumber_2 = c("D4", "D5", "D6"))
   result <- get_drug_annotation(complex_data, fill = "unknown", annotation_package = "gDRtestData")
   expect_true("data.table" %in% class(result))
-  expect_equal(nrow(result), 6)
+  expect_equal(NROW(result), 6)
 })
 
 test_that("annotate_dt_with_drug works correctly", {
@@ -54,7 +54,7 @@ test_that("annotate_dt_with_drug works correctly", {
   )
   result <- annotate_dt_with_drug(data, drug_annotation, fill = "unknown")
   expect_true("data.table" %in% class(result))
-  expect_equal(ncol(result), ncol(data) + ncol(drug_annotation) - 1)
+  expect_equal(NCOL(result), NCOL(data) + NCOL(drug_annotation) - 1)
   expect_equal(result$DrugName, c("Drug 1", "Drug 2", "D3"))
 
   complex_data <- data.table::data.table(Gnumber = c("D1", "D2", "D3"), Gnumber_2 = c("D4", "D5", "D6"))
