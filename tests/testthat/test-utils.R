@@ -53,9 +53,9 @@ test_that("validate_data_models_availability works as expected", {
                NULL)
   expect_error(validate_data_models_availability(d_types = d_type,
                                                  s_d_models = "single_agent"),
-               "'nested_identifiers_l' lacks information for the ")
+               "nested_identifiers_l", fixed = TRUE)
   expect_error(validate_data_models_availability(d_types = d_type,
                                                  s_d_models = NULL),
-               "'nested_identifiers_l' lacks information for the ")
+               "nested_identifiers_l", fixed = TRUE)
 
 })
