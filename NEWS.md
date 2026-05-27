@@ -82,7 +82,7 @@
 * synchronize Bioconductor and GitHub versioning
 
 ## gDRcore 1.3.15 - 2024-10-30
-* hot fix for annotation colnames of cell lines
+* hotfix annotation colnames of cell lines
 
 ## gDRcore 1.3.14 - 2024-10-24
 * split and refactor annotation functions
@@ -148,7 +148,7 @@
 * remove unstable tests
 
 ## gDRcore 1.1.15 - 2024-03-14
-* cleanup package
+* clean up package
 
 ## gDRcore 1.1.14 - 2024-03-12
 * update function description
@@ -337,7 +337,7 @@
 * update maintainer
 
 ## gDRcore 0.99.1 - 2023-04-04
-* bugfix for the logic in 'cleanup_metadata'
+* fix the logic in 'cleanup_metadata'
 
 ## gDRcore 0.99.0 - 2023-03-24
 * make the package Bioc-compatible
@@ -614,8 +614,8 @@
 
 ## gDRcore 0.0.1.35 - 2021-01-14
 * update positional header calls to explicit identifier calls
-* minor changes to comply with gDRstyle
-* minor changes to use identifiers over hard coded DrugName requirements
+* apply minor changes to comply with gDRstyle
+* apply minor changes to use identifiers over hard coded DrugName requirements
 
 ## gDRcore 0.0.1.34 - 2021-01-12
 * update scripts related to annotation of drugs and cell lines
@@ -632,7 +632,7 @@
 * add initial tests for createSE function
 
 ## gDRcore 0.0.1.30 - 2020-12-21
-* minor clean-up
+* clean up minor issues
 
 ## gDRcore 0.0.1.29 - 2020-12-15
 * remove dplyr
