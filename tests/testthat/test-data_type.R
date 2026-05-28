@@ -3,32 +3,32 @@ test_that("identify_data_type and split_raw_data works as expected", {
     data.table::as.data.table(merge.data.frame(cell_lines[7:8, ], drugs[c(4:6), ], by = NULL))
   dt_layout <- gDRtestData::add_data_replicates(dt_layout)
   dt_layout <- gDRtestData::add_concentration(dt_layout, concentrations = 10 ^ (seq(-3, .5, .5)))
-  
+
   dt_2 <-
     data.table::as.data.table(merge.data.frame(
-      cell_lines[cell_lines$clid %in% dt_layout$clid, ], 
-      drugs[c(21, 26), ], 
+      cell_lines[cell_lines$clid %in% dt_layout$clid, ],
+      drugs[c(21, 26), ],
       by = NULL
     ))
   dt_2 <- gDRtestData::add_data_replicates(dt_2)
   dt_2 <- gDRtestData::add_concentration(dt_2, concentrations = 10 ^ (seq(-3, .5, .5)))
-  colnames(dt_2)[colnames(dt_2) %in% c(colnames(drugs), "Concentration")] <- 
+  colnames(dt_2)[colnames(dt_2) %in% c(colnames(drugs), "Concentration")] <-
     paste0(colnames(dt_2)[colnames(dt_2) %in% c(colnames(drugs), "Concentration")], "_2")
-  
+
   dt_layout_2 <- dt_layout[dt_2, on = intersect(names(dt_layout), names(dt_2)),
                            allow.cartesian = TRUE]
-  
+
   dt_merged_data <- gDRtestData::generate_response_data(dt_layout_2, 0)
   dt <- identify_data_type(dt_merged_data)
-  expect_equal(ncol(dt_merged_data), ncol(dt))
+  expect_equal(NCOL(dt_merged_data), NCOL(dt))
   expect_true("type" %in% names(dt))
-  
+
   dt_list <- split_raw_data(dt)
   expect_true(inherits(dt_list, "list"))
   expect_true(all(names(dt_list) %in% c(gDRutils::get_supported_experiments("combo"),
                                         gDRutils::get_supported_experiments("sa"))))
-  
-  
+
+
   dt2 <- data.table::data.table(Gnumber = c(rep("DrugA", 9), "DrugB"),
                                 DrugName = c(rep("DrugA", 9), "DrugB"),
                                 drug_moa = "unknown",
@@ -77,20 +77,20 @@ test_that("process_perturbations works as expected", {
     DrugName_2 = c("vehicle", "drugB", "drugB"),
     Concentration_2 = c(0, 20, 0)
   )
-  
+
   drugs_cotrt_ids <- c("DrugName", "DrugName_2")
   conc_cotrt_ids <- c("Concentration", "Concentration_2")
-  
+
   result <- process_perturbations(dt, drugs_cotrt_ids, conc_cotrt_ids)
-  
+
   expected <- data.table::data.table(
     drugA = c(0, 10, 0),
     drugB = c(0, 20, 0)
   )
-  
+
   expect_equal(result, expected)
-  
-  
+
+
   dt2 <- data.table::data.table(
     drug1 = c("vehicle", "drugA", "drugA"),
     conc1 = c(0, 10, 0),
@@ -99,20 +99,20 @@ test_that("process_perturbations works as expected", {
     drug3 = c("vehicle", "drugC", "drugC"),
     conc3 = c(0, 30, 0)
   )
-  
+
   drugs_cotrt_ids <- c("drug1", "drug2", "drug3")
   conc_cotrt_ids <- c("conc1", "conc2", "conc3")
-  
+
   result <- process_perturbations(dt2, drugs_cotrt_ids, conc_cotrt_ids)
-  
+
   expected <- data.table::data.table(
     drugA = c(0, 10, 0),
     drugB = c(0, 20, 0),
     drugC = c(0, 30, 0)
   )
   expect_equal(result, expected)
-  
-  
+
+
   dt3 <- data.table::data.table(
     drug1 = c("vehicle", "drugA", "drugB"),
     conc1 = c(0, 10, 2),
@@ -121,12 +121,12 @@ test_that("process_perturbations works as expected", {
     drug3 = c("vehicle", "drugC", "drugC"),
     conc3 = c(0, 30, 0)
   )
-  
+
   drugs_cotrt_ids <- c("drug1", "drug2", "drug3")
   conc_cotrt_ids <- c("conc1", "conc2", "conc3")
-  
+
   result <- process_perturbations(dt3, drugs_cotrt_ids, conc_cotrt_ids)
-  
+
   expected <- data.table::data.table(
     drug1 = c("vehicle", "drugA", "drugB"),
     conc1 = c(0, 10, 2),
@@ -134,8 +134,8 @@ test_that("process_perturbations works as expected", {
     drugC = c(0, 30, 0)
   )
   expect_equal(result, expected)
-  
-  
+
+
   dt4 <- data.table::data.table(
     Gnumber = c("vehicle", "drugA", "drugB"),
     Concentration = c(0, 10, 2),
@@ -144,12 +144,12 @@ test_that("process_perturbations works as expected", {
     drug_moa_2 = c("vehicle", "moa_A", "moa_A"),
     DrugName_2 = c("vehicle", "drugB", "drugB")
   )
-  
+
   drugs_cotrt_ids <- "Gnumber_2"
   conc_cotrt_ids <- "Concentration_2"
-  
+
   result <- process_perturbations(dt4, drugs_cotrt_ids, conc_cotrt_ids)
-  
+
   expected <- data.table::data.table(
     Gnumber = c("vehicle", "drugA", "drugB"),
     Concentration = c(0, 10, 2),

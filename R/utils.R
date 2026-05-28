@@ -2,21 +2,21 @@
 #' @keywords internal
 #'
 .create_mapping_factors <- function(rowdata, coldata) {
-  
+
   col_id <- rownames(coldata)
   row_id <- rownames(rowdata)
-  
+
   mapping_grid <- data.table::CJ(
     col_id = col_id,
     row_id = row_id
   )
-  
+
   rowdata_dt <- data.table::as.data.table(rowdata)
   coldata_dt <- data.table::as.data.table(coldata)
-  
+
   rowdata_dt[, row_id := row_id]
   coldata_dt[, col_id := col_id]
-  
+
   dt <- coldata_dt[rowdata_dt[mapping_grid, on = "row_id"], on = "col_id"]
   dt[, rn := as.character(.I)]
 }
@@ -44,27 +44,27 @@
 #' @export
 #'
 cleanup_metadata <- function(df_metadata) {
-  
+
   # Assertions:
   checkmate::assert_data_table(df_metadata)
 
-  # Round duration to 6 values. 
+  # Round duration to 6 values.
   duration_id <- gDRutils::get_env_identifiers("duration")
   df_metadata[[duration_id]] <- round(as.numeric(df_metadata[[duration_id]], 6))
-  
+
   if (!gDRutils::get_env_identifiers("cellline_name") %in% names(df_metadata)) {
     df_metadata <- annotate_dt_with_cell_line(df_metadata,
                                               cell_line_annotation = get_cell_line_annotation(df_metadata))
   }
-  
+
   drug_conc_cols <- unlist(
     gDRutils::get_env_identifiers(
       c(
-        "drug", 
-        "drug2", 
-        "drug3", 
-        "concentration", 
-        "concentration2", 
+        "drug",
+        "drug2",
+        "drug3",
+        "concentration",
+        "concentration2",
         "concentration3"
       ),
       simplify = FALSE
@@ -78,9 +78,9 @@ cleanup_metadata <- function(df_metadata) {
     names(x) <- gsub("[0-9]", "", names(x))
     x
   })
-  
+
   idfs_len <- vapply(drug_conc_cols_list, length, FUN.VALUE = numeric(1))
-  
+
   if (any(idfs_len != 2)) {
     df_metadata[, (intersect(unlist(gDRutils::get_env_identifiers(
       paste0(c("drug", "drug_name", "drug_moa", "concentration"),
@@ -88,23 +88,23 @@ cleanup_metadata <- function(df_metadata) {
       simplify = FALSE)), names(df_metadata))) := NULL]
     drug_conc_cols_list <- drug_conc_cols_list[-which(idfs_len != 2)]
   }
-  
+
   # clean up concentration fields
   for (i in drug_conc_cols_list) {
     conc_id <- i[["concentration"]]
     drug_id <- i[["drug"]]
     untrt_id <- gDRutils::get_env_identifiers("untreated_tag")
-    
+
     df_metadata[[conc_id]] <- ifelse(
       is.na(df_metadata[[conc_id]]),
       0,
       df_metadata[[conc_id]]
     )
-    
+
     # set all untreated to 0
     df_metadata[df_metadata[[drug_id]] %in% untrt_id, conc_id] <- 0
-    
-    df_metadata[[conc_id]] <- 
+
+    df_metadata[[conc_id]] <-
       10 ^ round(log10(as.numeric(df_metadata[[conc_id]])), 6)
     df_metadata[[drug_id]] <- ifelse(
       is.na(df_metadata[[drug_id]]) & df_metadata[[conc_id]] == 0,
@@ -112,7 +112,7 @@ cleanup_metadata <- function(df_metadata) {
       df_metadata[[drug_id]]
     )
   }
-  
+
   if (!gDRutils::get_env_identifiers("drug_name") %in% names(df_metadata)) {
     df_metadata <- annotate_dt_with_drug(df_metadata,
                                          drug_annotation = get_drug_annotation(df_metadata))
@@ -133,7 +133,7 @@ cleanup_metadata <- function(df_metadata) {
 order_result_df <- function(df_) {
 
   # Assertions:
-  
+
   checkmate::assert_data_table(df_)
 
   ordered_1 <- gDRutils::get_header("ordered_1")
@@ -143,20 +143,20 @@ order_result_df <- function(df_) {
     setdiff(colnames(df_), c(ordered_1, ordered_2)),
     ordered_2
   )
-  
+
   cols <- intersect(cols, colnames(df_))
 
   row_order_col <-
     unlist(intersect(
       c(
         gDRutils::get_env_identifiers(
-          c("cellline_name", "duration", "drug_name"), 
+          c("cellline_name", "duration", "drug_name"),
           simplify = FALSE
         ),
         "Concentration",
         paste0(
           c(
-            paste0(gDRutils::get_env_identifiers("drug_name"), "_"), 
+            paste0(gDRutils::get_env_identifiers("drug_name"), "_"),
             "Concentration_"
           ),
           sort(rep(2:10, 2))
@@ -165,7 +165,7 @@ order_result_df <- function(df_) {
       ),
       cols
     ))
-  
+
   cols <- unlist(cols)
   data.table::setorderv(df_, row_order_col)
   df_ <- df_[, cols, with = FALSE]
@@ -175,13 +175,13 @@ order_result_df <- function(df_) {
 
 #' Detect model of data
 #'
-#' @param x data.table with raw data or SummarizedExperiment object 
+#' @param x data.table with raw data or SummarizedExperiment object
 #'          with gDR assays
-#' 
-#' @examples 
+#'
+#' @examples
 #' data_model("single-agent")
-#' 
-#' @return string with the information of the raw data follows single-agent or 
+#'
+#' @return string with the information of the raw data follows single-agent or
 #' combination data model
 #' @keywords utils
 #' @export
@@ -192,22 +192,22 @@ data_model <- function(x) {
 
 #' Detect model of data in data.table
 #'
-#' @param x data.table of raw drug response data 
-#'          containing both treated and untreated values. 
+#' @param x data.table of raw drug response data
+#'          containing both treated and untreated values.
 #'
-#' @return string with the information of the raw data follows single-agent or 
+#' @return string with the information of the raw data follows single-agent or
 #' combination data model
 #' @keywords utils
 #' @export
 data_model.data.table <- function(x) {
-  
+
   checkmate::assert_data_table(x)
-  
+
   conc2 <- gDRutils::get_env_identifiers("concentration2")
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
   barcode_col <- gDRutils::get_env_identifiers("barcode")
   well_cols <- gDRutils::get_env_identifiers("well_position")
-  
+
   # Check for Time-Course: defined by multiple records per well (e.g. multiple timepoints)
   # We check for duplication in Barcode + Well identifiers
   id_cols <- intersect(c(barcode_col, well_cols), colnames(x))
@@ -230,21 +230,21 @@ data_model.data.table <- function(x) {
 #'
 #' @param x character with experiment name
 #'
-#' @return string with the information of the raw data follows single-agent or 
+#' @return string with the information of the raw data follows single-agent or
 #' combination data model
 #' @keywords utils
 #' @export
 data_model.character <- function(x) {
-  
+
   checkmate::assert_subset(x, gDRutils::get_supported_experiments())
-  
+
   exp_v <- gDRutils::get_experiment_groups()
   names(exp_v[grep(x, exp_v)])
 }
 
 
 #' Validate availability of data models
-#' 
+#'
 #' @param d_types character vector with experiment names in \code{MultiAssayExperiment} object
 #' @param s_d_models character vector with names of supported experiment
 #'
@@ -252,7 +252,7 @@ data_model.character <- function(x) {
 validate_data_models_availability <- function(d_types, s_d_models) {
   checkmate::assert_character(d_types)
   checkmate::assert_character(s_d_models, null.ok = TRUE)
-  
+
   dm_v <- gDRutils::get_experiment_groups()
 
   req_d_models <-
@@ -261,8 +261,7 @@ validate_data_models_availability <- function(d_types, s_d_models) {
   if (length(f_models)) {
     msg1 <-
       sprintf(
-        "'nested_identifiers_l' lacks information for the 
-        following data model(s): '%s'",
+        "'nested_identifiers_l' lacks information for the following data model(s): '%s'",
         toString(f_models)
       )
     stop(msg1)
@@ -271,15 +270,15 @@ validate_data_models_availability <- function(d_types, s_d_models) {
 
 #' Get default nested identifiers
 #'
-#' @param x data.table with raw data or \code{SummarizedExperiment} object 
+#' @param x data.table with raw data or \code{SummarizedExperiment} object
 #' with gDR assays
 #' @param data_model single-agent vs combination
-#' 
-#' @examples 
+#'
+#' @examples
 #' get_default_nested_identifiers(data.table::data.table())
-#' 
+#'
 #' @return vector of nested identifiers
-#' 
+#'
 #' @keywords utils
 #' @export
 get_default_nested_identifiers <- function(x, data_model = NULL) {
@@ -291,16 +290,16 @@ get_default_nested_identifiers <- function(x, data_model = NULL) {
 #' @keywords utils
 #' @rdname get_default_nested_identifiers
 get_default_nested_identifiers.data.table <- function(x, data_model = NULL) {
-  
+
   checkmate::assert_data_table(x)
   checkmate::assert_choice(
     data_model,
-    gDRutils::get_supported_experiments(), 
+    gDRutils::get_supported_experiments(),
     null.ok = TRUE
   )
-  
+
   .get_default_nested_identifiers(se = NULL, data_model = NULL)
-  
+
 }
 
 #' @export
@@ -309,18 +308,18 @@ get_default_nested_identifiers.data.table <- function(x, data_model = NULL) {
 get_default_nested_identifiers.SummarizedExperiment <- function(
     x,
     data_model = NULL) {
-  
+
   .get_default_nested_identifiers(x, data_model)
 }
 
 #' @keywords utils
 .get_default_nested_identifiers <- function(se = NULL, data_model = NULL) {
- 
+
   checkmate::assert_choice(
     data_model, gDRutils::get_supported_experiments(),
     null.ok = TRUE
   )
- 
+
   tc_name <- gDRutils::get_supported_experiments("time-course")
   sa_name <- gDRutils::get_supported_experiments("sa")
   combo_name <- gDRutils::get_supported_experiments("combo")
@@ -335,7 +334,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
   } else {
     ml[[data_model]]
   }
-  
+
 }
 
 #' @keywords utils
@@ -356,12 +355,12 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
     )
   } else {
     gDRutils::get_SE_identifiers(
-      se = se, 
+      se = se,
       id_type = c("concentration", "concentration2"),
       simplify = FALSE
     )
   }
-  
+
   as.character(unlist(identifiers))
 }
 
@@ -369,7 +368,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
 .catch_warnings <- function(x) {
   warn  <- unlist(unique(x$warning))
   if (!is.null(warn)) {
-    futile.logger::flog.warn(paste0(warn, collapse = "\n"))
+    futile.logger::flog.warn(paste(warn, collapse = "\n"))
   }
 }
 
@@ -378,7 +377,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
 rbindParallelList <- function(x, name) {
   S4Vectors::DataFrame(
     do.call(
-      rbind, 
+      rbind,
       c(lapply(x, function(x) {
         dt <- data.table::as.data.table("[[" (x, name))
         data.table::setorder(dt)
@@ -389,26 +388,26 @@ rbindParallelList <- function(x, name) {
 }
 
 #' Value Matching
-#' 
+#'
 #' Returns a lookup table or list of the positions of ALL matches of its first
 #' argument in its second and vice versa. Similar to \code{\link{match}}, though
 #' that function only returns the first match.
-#' 
+#'
 #' This behavior can be imitated by using joins to create lookup tables, but
 #' \code{matches} is simpler and faster: usually faster than the best joins in
 #' other packages and thousands of times faster than the built in
 #' \code{\link{merge}}.
-#' 
+#'
 #' \code{all.x/all.y} correspond to the four types of database joins in the
 #' following way:
-#' 
-#' \describe{ \item{left}{\code{all.x=TRUE}, \code{all.y=FALSE}} 
-#' \item{right}{\code{all.x=FALSE}, \code{all.y=TRUE}} 
-#' \item{inner}{\code{all.x=FALSE}, \code{all.y=FALSE}} 
+#'
+#' \describe{ \item{left}{\code{all.x=TRUE}, \code{all.y=FALSE}}
+#' \item{right}{\code{all.x=FALSE}, \code{all.y=TRUE}}
+#' \item{inner}{\code{all.x=FALSE}, \code{all.y=FALSE}}
 #' \item{full}{\code{all.x=TRUE}, \code{all.y=TRUE}} }
-#' 
+#'
 #' Note that \code{NA} values will match other \code{NA} values.
-#' 
+#'
 #' @param x vector.  The values to be matched.  Long vectors are not currently
 #'   supported.
 #' @param y vector.  The values to be matched.  Long vectors are not currently
@@ -427,10 +426,10 @@ rbindParallelList <- function(x, name) {
 #'   represented as \code{NA}.  If set to \code{NULL}, items with no match will
 #'   be set to an index value of \code{length+1}.  If \code{indexes=FALSE}, they will
 #'   default to \code{NA}.
-#' @details Source of the function: 
+#' @details Source of the function:
 #' https://github.com/cran/grr/blob/master/R/grr.R
-#' 
-#' @examples 
+#'
+#' @examples
 #' mat_elem <- data.table::data.table(
 #'   DrugName = rep(c("untreated", "drugA", "drugB", "untreated"), 2),
 #'   DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
@@ -445,31 +444,31 @@ rbindParallelList <- function(x, name) {
 #' treated <- mat_elem[-ref_idx, ]
 #' valid <- c("DrugName", "DrugName_2")
 #' trt <- lapply(valid, function(x) {
-#'   colnames <- c("clid", x) 
+#'   colnames <- c("clid", x)
 #'   treated[, colnames, with = FALSE]
 #' })
-#' trt <- do.call(paste, 
+#' trt <- do.call(paste,
 #'   do.call(rbind, lapply(trt, function(x) setNames(x, names(trt[[1]]))))
 #' )
 #' ref <- lapply(valid, function(x) {
-#'   colnames <- c("clid", x) 
+#'   colnames <- c("clid", x)
 #'   ref[, colnames, with = FALSE]
 #' })
-#' ref <- do.call(paste, 
+#' ref <- do.call(paste,
 #'   do.call(rbind, lapply(ref, function(x) setNames(x, names(ref[[1]]))))
 #' )
 #' grr_matches(trt, ref, list = FALSE, all.y = FALSE)
-#' 
+#'
 #' @return data.table
-#' 
+#'
 #' @keywords utils
 #' @export
-grr_matches <- function(x, 
-                    y, 
-                    all.x = TRUE, 
-                    all.y = TRUE, 
-                    list = FALSE, 
-                    indexes = TRUE, 
+grr_matches <- function(x,
+                    y,
+                    all.x = TRUE,
+                    all.y = TRUE,
+                    list = FALSE,
+                    indexes = TRUE,
                     nomatch = NA) {
   result <- .Call("matches", x, y)
   result <- data.table::data.table(x = result[[1]], y = result[[2]])
@@ -498,21 +497,21 @@ grr_matches <- function(x,
 #' get info about created/present assays in SE at the given pipeline step
 #' @param step string with pipeline step
 #' @param data_model single-agent vs combination
-#' @param status string return vector of assays created or present at the 
+#' @param status string return vector of assays created or present at the
 #' given step?
-#' 
+#'
 #' @keywords utils
 #' @return assay
-#' 
+#'
 get_assays_per_pipeline_step <-
   function(step,
            data_model,
            status = c("created", "present")) {
-    
+
     checkmate::assert_choice(step, get_pipeline_steps())
     checkmate::assert_choice(data_model, c("single-agent", "combination"))
     checkmate::assert_choice(status, c("created", "present"))
-    
+
     fit_se <- if (data_model == "single-agent") {
       "Metrics"
     } else {
@@ -530,7 +529,7 @@ get_assays_per_pipeline_step <-
       "average_SE" = "Averaged",
       "fit_SE" = fit_se
     )
-    
+
     ass <- if (status == "created") {
       as_map[[step]]
     } else {
@@ -542,25 +541,25 @@ get_assays_per_pipeline_step <-
 #' add intermediate data (qs2 files) for given MAE
 #' @param mae \code{MultiAssayExperiment} with dose-response data
 #' @param data_dir output directory
-#' @param steps character vector with pipeline steps for which 
+#' @param steps character vector with pipeline steps for which
 #'              intermediate data should be saved
-#' 
+#'
 #' @return \code{NULL}
-#' 
+#'
 #' @keywords internal
-#' 
+#'
 add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
-  
+
   checkmate::assert_class(mae, "MultiAssayExperiment")
   checkmate::assert_directory(data_dir, access = "rw")
   checkmate::assert_subset(steps, get_pipeline_steps())
-  
+
   for (data_type in names(mae)) {
     for (step in steps) {
       as_names <-
         get_assays_per_pipeline_step(
-          step, 
-          data_model(data_type), 
+          step,
+          data_model(data_type),
           status = "present"
         )
       se <- mae[[data_type]]
@@ -576,17 +575,17 @@ add_intermediate_data <- function(mae, data_dir, steps = get_pipeline_steps()) {
 }
 
 #' get mae dataset from intermediate data
-#' 
+#'
 #' @param data_dir directory with intermediate data
-#' 
+#'
 #' @return MAE object
-#' 
+#'
 #' @keywords internal
-#' 
+#'
 get_mae_from_intermediate_data <- function(data_dir) {
-  
+
   checkmate::assert_directory(data_dir)
-  
+
   if (!requireNamespace("qs2", quietly = TRUE)) {
     stop("Package 'qs2' is required to read intermediate data. Please install it.")
   }

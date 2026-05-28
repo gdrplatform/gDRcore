@@ -50,7 +50,7 @@ concentrations nested in the assay.
 fmae_cms <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
 
 se1 <- fmae_cms[[gDRutils::get_supported_experiments("combo")]]
-SummarizedExperiment::assays(se1) <- 
+SummarizedExperiment::assays(se1) <-
   SummarizedExperiment::assays(se1)["Averaged"]
 fit_SE.combinations(se1[1, 1])
 

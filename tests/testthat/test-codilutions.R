@@ -46,9 +46,9 @@ test_that("fit_codilution_series works as expected", {
     GR_0 = 1,
     normalization_type = "GR"
   )
-  
+
   expect_length(res$warnings, 4)
-  
+
   obs <- res$result
   expect_equal(dim(obs), c(1, 19))
   expect_true("ratio" %in% colnames(obs))

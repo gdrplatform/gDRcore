@@ -39,8 +39,8 @@ to reference.
 \examples{
 n <- 64
 md_df <- data.table::data.table(
-  Gnumber = rep(c("vehicle", "untreated", paste0("G", seq(2))), each = 16), 
-  DrugName = rep(c("vehicle", "untreated", paste0("GN", seq(2))), each = 16), 
+  Gnumber = rep(c("vehicle", "untreated", paste0("G", seq(2))), each = 16),
+  DrugName = rep(c("vehicle", "untreated", paste0("GN", seq(2))), each = 16),
   clid = paste0("C", rep_len(seq(4), n)),
   CellLineName = paste0("N", rep_len(seq(4), n)),
   replicates = rep_len(paste0("R", rep(seq(4), each = 4)), 64),

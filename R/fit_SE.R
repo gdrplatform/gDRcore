@@ -1,11 +1,11 @@
 #' @rdname runDrugResponseProcessingPipelineFxns
 #' @export
 #'
-fit_SE <- function(se, 
+fit_SE <- function(se,
                    data_type = "single-agent",
                    nested_identifiers = NULL,
-                   averaged_assay = "Averaged", 
-                   metrics_assay = "Metrics", 
+                   averaged_assay = "Averaged",
+                   metrics_assay = "Metrics",
                    n_point_cutoff = 4,
                    range_conc = c(5e-3, 5),
                    force_fit = FALSE,
@@ -29,21 +29,21 @@ fit_SE <- function(se,
   checkmate::assert_character(curve_type)
   checkmate::assert_true(all(curve_type %in% c("GR", "RV")))
   gDRutils::validate_se_assay_name(se, averaged_assay)
-  
+
   if (is.null(nested_identifiers)) {
     nested_identifiers <- get_default_nested_identifiers(
-      se, 
+      se,
       data_model(data_type)
     )
   }
-  
+
   metric_cols <- gDRutils::get_header("response_metrics")
-  
+
   conc <- gDRutils::get_env_identifiers("concentration")
-  
+
   se <- gDRutils::apply_bumpy_function(se = se,
                                        FUN = fit_FUN,
-                                       req_assay_name = averaged_assay, 
+                                       req_assay_name = averaged_assay,
                                        out_assay_name = metrics_assay,
                                        metric_cols = metric_cols,
                                        conc = conc,
@@ -54,8 +54,8 @@ fit_SE <- function(se,
                                        pcutoff = pcutoff,
                                        cap = cap,
                                        curve_type = curve_type)
-  
-  se <- gDRutils::set_SE_fit_parameters(se, 
+
+  se <- gDRutils::set_SE_fit_parameters(se,
     value = list(
       n_point_cutoff = n_point_cutoff,
       range_conc = range_conc,
@@ -70,13 +70,13 @@ fit_SE <- function(se,
       session_info = utils::sessionInfo()
     )
   )
-  
+
   se
 }
 
 
 #' @keywords internal
-fit_FUN <- function(x, 
+fit_FUN <- function(x,
                     metric_cols = gDRutils::get_header("response_metrics"),
                     conc = gDRutils::get_env_identifiers("concentration"),
                     nested_identifiers,
@@ -89,12 +89,12 @@ fit_FUN <- function(x,
   fit_df <- S4Vectors::DataFrame(matrix(NA, length(curve_type), length(metric_cols)))
   colnames(fit_df) <- metric_cols
   rownames(fit_df) <- c("RV", "GR")[c("RV", "GR") %in% curve_type]
-  
+
   if (!is.null(x) && all(dim(x) > 0)) {
     if (!all(is.na(x[[conc]]))) {
       x <- x[x[[conc]] != 0, ]
     }
-    
+
     fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(
       data.table::as.data.table(x),
       series_identifiers = nested_identifiers,

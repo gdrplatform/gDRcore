@@ -4,4 +4,3 @@
 
 # data.table awareness
 .datatable.aware <- TRUE
-

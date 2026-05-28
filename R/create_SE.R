@@ -1,20 +1,20 @@
 #' @examples
-#' 
+#'
 #' td <- gDRimport::get_test_data()
 #' l_tbl <- gDRimport::load_data(
-#'   manifest_file = gDRimport::manifest_path(td), 
-#'   df_template_files = gDRimport::template_path(td), 
+#'   manifest_file = gDRimport::manifest_path(td),
+#'   df_template_files = gDRimport::template_path(td),
 #'   results_file = gDRimport::result_path(td)
 #' )
 #' imported_data <- merge_data(
-#'   l_tbl$manifest, 
-#'   l_tbl$treatments, 
+#'   l_tbl$manifest,
+#'   l_tbl$treatments,
 #'   l_tbl$data
 #' )
 #'
 #' se <- purrr::quietly(create_SE)(imported_data, data_type = "single-agent")
-#' 
-#' 
+#'
+#'
 #' @export
 #' @rdname runDrugResponseProcessingPipelineFxns
 #'
@@ -24,7 +24,7 @@ create_SE <- function(df_,
                       nested_identifiers = NULL,
                       nested_confounders = intersect(names(df_), gDRutils::get_env_identifiers("barcode")),
                       override_untrt_controls = NULL) {
-  
+
   # Assertions:
   checkmate::assert_multi_class(df_, c("data.table", "DataFrame"))
   checkmate::assert_string(data_type)
@@ -32,20 +32,20 @@ create_SE <- function(df_,
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
-  
+
   tc_name <- gDRutils::get_supported_experiments("time-course")
-  
+
   if (length(nested_confounders) == 0) {
     nested_confounders <- NULL
   }
-  
+
   if (is.null(nested_identifiers)) {
     nested_identifiers <-
       get_default_nested_identifiers(df_)[[data_model(data_type)]]
   }
-  
+
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  
+
   nested_keys <- intersect(c(nested_identifiers, nested_confounders, "record_id"),
                            names(df_))
   identifiers <- gDRutils::get_env_identifiers()
@@ -56,14 +56,14 @@ create_SE <- function(df_,
     df_[, (identifiers$masked_tag) := NULL]
   }
 
-  # Remove background value from readout (at least 1e-10 to avoid artefactual 
+  # Remove background value from readout (at least 1e-10 to avoid artefactual
   # normalized values).
   if (any("BackgroundValue" == colnames(df_))) {
     df_[, CorrectedReadout := pmax(.SD[[readout]] - df_$BackgroundValue, 1e-10)]
   } else {
     df_[, CorrectedReadout := .SD[[readout]]]
   }
-  
+
   # overwrite "drug", "drug_name", "drug_moa"
   # with "untreated" if "concentration2" == 0
   if (any(gDRutils::get_env_identifiers("concentration2") == colnames(df_))) {
@@ -73,17 +73,17 @@ create_SE <- function(df_,
     drug1_col <- cols1[["drug"]]
     drug2_col <- cols2[["drug2"]]
     conc2_col <- cols2[["concentration2"]]
-    
+
     combo_idx <- df_[[conc2_col]] > 0 & !is.na(df_[[drug2_col]])
-    
+
     if (any(combo_idx) && (data_type != tc_name)) {
       freq_counts <- df_[combo_idx, .N, by = c(drug1_col)]
-      
+
       df_[, priority1 := freq_counts[.(df_[[drug1_col]]), on = drug1_col, x.N]]
       df_[, priority2 := freq_counts[.(df_[[drug2_col]]), on = drug1_col, x.N]]
       df_[is.na(priority1), priority1 := 0]
       df_[is.na(priority2), priority2 := 0]
-      
+
       swap_idx <- which(
         combo_idx &
           (
@@ -91,16 +91,16 @@ create_SE <- function(df_,
               (df_$priority1 == df_$priority2 & df_[[drug1_col]] > df_[[drug2_col]])
           )
       )
-      
+
       if (length(swap_idx) > 0) {
         temp <- df_[swap_idx, .SD, .SDcols = cols1]
         df_[swap_idx, (cols1) := df_[swap_idx, .SD, .SDcols = cols2]]
         df_[swap_idx, (cols2) := temp]
       }
-      
+
       df_[, c("priority1", "priority2") := NULL]
     }
-    
+
     single_agent_idx <-
       df_[[gDRutils::get_env_identifiers("concentration2")]] %in% 0
     drug_cols <- c("drug", "drug_name", "drug_moa")
@@ -112,8 +112,8 @@ create_SE <- function(df_,
     )
     df_[single_agent_idx, (drug2_var) := untreated_tag[1]]
   }
-  
-  
+
+
   df_[, (names(df_)) := lapply(.SD, function(x) {
     if (is.character(x)) {
       gsub(paste(untreated_tag, collapse = "|"), untreated_tag[1], x)
@@ -124,7 +124,7 @@ create_SE <- function(df_,
 
   # Identify treatments, conditions, and experiment metadata.
    md <- gDRutils::split_SE_components(df_, nested_keys = Keys$nested_keys)
-  
+
   coldata <- md$condition_md
   rowdata <- md$treatment_md
   exp_md <- md$experiment_md
@@ -144,96 +144,96 @@ create_SE <- function(df_,
       FALSE
     }
   }
-  
+
   treated <- mapping_entries[trt_conditions, ]
-  # not all entries are mapped on trt_conditions or sa_conditions 
+  # not all entries are mapped on trt_conditions or sa_conditions
   #   --> untreated should be mapped explicitely to avoid issues with treatments
   #       being considered as untreated in specific combination cases
   untreated <- mapping_entries[map_untreated(mapping_entries), ]
   ## Map controls.
-  
+
   controls <- list(untrt_Endpoint = "untrt_Endpoint", Day0 = "Day0")
-  
+
   ctl_maps <- gDRutils::loop(controls, function(ctl_type) {
     map_df(
-      treated, 
-      untreated, 
+      treated,
+      untreated,
       override_untrt_controls = override_untrt_controls,
-      ref_cols = Keys[[ctl_type]], 
+      ref_cols = Keys[[ctl_type]],
       ref_type = ctl_type
     )
   })
-  
+
   ## Combine all controls with respective treatments.
   # Merge raw data back with groupings.
   dfs <- mapping_entries[df_, on = c(colnames(rowdata), colnames(coldata)), allow.cartesian = TRUE]
   data.table::setkey(dfs, rn)
 
-  ## The mapping_entries contain all exhaustive combinations of treatments 
-  ## and cells. Not all conditions will actually exist in the data, so filter 
-  ## out those that do not exist. 
-  
+  ## The mapping_entries contain all exhaustive combinations of treatments
+  ## and cells. Not all conditions will actually exist in the data, so filter
+  ## out those that do not exist.
+
   untreated_rn <- unique(unlist(ctl_maps))
   treated_rows <- which(treated$rn %in% dfs$rn)
-  
+
   treated <- treated[treated_rows, ]
   untreated <- dfs[dfs$rn %in% untreated_rn, ]
-  
+
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
-  
-  out <- vector("list", length = nrow(treated))
-  out <- gDRutils::loop(seq_len(nrow(treated)), function(i) {
-    
+
+  out <- vector("list", length = NROW(treated))
+  out <- gDRutils::loop(seq_len(NROW(treated)), function(i) {
+
     trt <- treated$rn[i]
-    
+
     trt_df <- dfs[trt]
     row_id <- unique(trt_df[["row_id"]])
     refs_df <- dfs[refs[[trt]]]
-    
+
     if (data_type != tc_name) {
       trt_df <- validate_mapping(trt_df, refs_df, nested_confounders)
     }
- 
+
     selected_columns <- names(trt_df) %in% data_fields
     trt_df <- trt_df[, selected_columns, with = FALSE]
 
     # Override the row_id of the references.
     trt_df$row_id <- row_id
-    
+
     untrt_ref <- ctl_maps[["untrt_Endpoint"]][[trt]]
     untrt_cols <- intersect(c("CorrectedReadout", "record_id", nested_confounders), names(dfs))
     untrt_df <- untreated[untreated$rn == untrt_ref[1], untrt_cols, with = FALSE]
-    untrt_df <- if (nrow(untrt_df) == 0) {
+    untrt_df <- if (NROW(untrt_df) == 0) {
       data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
     } else {
       untrt_df
     }
     untrt_df$isDay0 <- FALSE
-    
+
     day0_ref <- ctl_maps[["Day0"]][[trt]]
     day0_df <- untreated[untreated$rn %chin% day0_ref]
     isDay0 <- day0_df[[gDRutils::get_env_identifiers("duration")]] %in% 0
-    
+
     day0_df <- day0_df[isDay0, untrt_cols, with = FALSE]
-    day0_df <- if (nrow(day0_df) == 0) {
+    day0_df <- if (NROW(day0_df) == 0) {
       data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
     } else {
       df <- day0_df
       df$isDay0 <- TRUE
       df
-    } 
-    
+    }
+
     ctl_df <- data.table::rbindlist(list(UntrtReadout = untrt_df,
                                          Day0Readout = day0_df),
                                     fill = TRUE,
                                     idcol = "control_type")
     ctl_df[is.na(isDay0), isDay0 := FALSE]
-    
+
     row_id <- unique(trt_df$row_id)
     col_id <- unique(trt_df$col_id)
     if (length(row_id) != 1L || length(col_id) != 1L) {
-      stop(sprintf("non-unique row_ids: '%s' and col_ids: '%s'", 
-                   paste0(row_id, collapse = ", "), paste0(col_id, collapse = ", ")))
+      stop(sprintf("non-unique row_ids: '%s' and col_ids: '%s'",
+                   toString(row_id), toString(col_id)))
     }
     ctl_df$row_id <- row_id
     ctl_df$col_id <- col_id
@@ -241,10 +241,10 @@ create_SE <- function(df_,
     list(ctl_df = ctl_df,
          trt_df = trt_df)
   })
-  
+
   trt_out <- rbindParallelList(out, "trt_df")
   ctl_out <- rbindParallelList(out, "ctl_df")
-  
+
   trt_keep <- !colnames(trt_out) %in% c("row_id", "col_id")
   ctl_keep <- !colnames(ctl_out) %in% c("row_id", "col_id")
 
@@ -259,15 +259,15 @@ create_SE <- function(df_,
   matsL <- list(RawTreated = trt_mat, Controls = ctl_mat)
 
   # Filter out to 'treated' conditions only.
-  trt_rowdata <- rowdata[rownames(trt_mat), , drop = FALSE] 
-  stopifnot(nrow(trt_rowdata) > 0)
-  stopifnot(nrow(trt_rowdata) == length(unique(trt_out$row_id)))
- 
+  trt_rowdata <- rowdata[rownames(trt_mat), , drop = FALSE]
+  stopifnot(NROW(trt_rowdata) > 0)
+  stopifnot(NROW(trt_rowdata) == length(unique(trt_out$row_id)))
+
   se <- SummarizedExperiment::SummarizedExperiment(assays = matsL,
     colData = coldata[match(colnames(trt_mat), rownames(coldata)), ],
     rowData = trt_rowdata,
     metadata = list())
-  
+
   # Capture important values in experiment metadata.
   se <- gDRutils::set_SE_identifiers(se, identifiers)
   se <- gDRutils::set_SE_experiment_metadata(se, exp_md)
@@ -279,26 +279,26 @@ create_SE <- function(df_,
 
 #' @keywords internal
 validate_mapping <- function(trt_df, refs_df, nested_confounders) {
-  
+
   if (!is.null(nested_confounders)) {
     matching_confounders <- refs_df[[nested_confounders]] %in% unique(trt_df[[nested_confounders]])
     if (any(matching_confounders)) {
       refs_df <- refs_df[matching_confounders, ]
     }
   }
-  
+
   drug_id <- gDRutils::get_env_identifiers("drug")
   drug2_id <- gDRutils::get_env_identifiers("drug2")
   conc2 <- gDRutils::get_env_identifiers("concentration2")
   untrt_tag <- gDRutils::get_env_identifiers("untreated_tag")
   trt_df <- rbind(
-    trt_df, 
+    trt_df,
     refs_df[
-      refs_df[[drug_id]] %in% 
-        c(unique(c(trt_df[[drug_id]], trt_df[[drug2_id]])), untrt_tag), 
+      refs_df[[drug_id]] %in%
+        c(unique(c(trt_df[[drug_id]], trt_df[[drug2_id]])), untrt_tag),
     ]
   )
-  
+
   # Swap concentrations for single-agent with drug2
   if (any(conc2 == colnames(trt_df))) {
     swap_idx <- trt_df[[drug_id]] %in%

@@ -1,3 +1,6 @@
+## gDRcore 1.11.4 - 2026-05-27
+* apply updated gDRstyle rules
+
 ## gDRcore 1.11.3 - 2026-05-05
 * update author email address
 
@@ -79,7 +82,7 @@
 * synchronize Bioconductor and GitHub versioning
 
 ## gDRcore 1.3.15 - 2024-10-30
-* hot fix for annotation colnames of cell lines
+* hotfix annotation colnames of cell lines
 
 ## gDRcore 1.3.14 - 2024-10-24
 * split and refactor annotation functions
@@ -145,7 +148,7 @@
 * remove unstable tests
 
 ## gDRcore 1.1.15 - 2024-03-14
-* cleanup package
+* clean up package
 
 ## gDRcore 1.1.14 - 2024-03-12
 * update function description
@@ -199,7 +202,7 @@
 * release Bioc 3.18
 
 ## gDRcore 1.0.0 - 2023-10-24
-* prerelease Bioc 3.18
+* prepare prerelease for Bioc 3.18
 
 ## gDRcore 0.99.43 - 2023-10-17
 * adjust NEWS to Bioc format
@@ -334,7 +337,7 @@
 * update maintainer
 
 ## gDRcore 0.99.1 - 2023-04-04
-* bugfix for the logic in 'cleanup_metadata'
+* fix the logic in 'cleanup_metadata'
 
 ## gDRcore 0.99.0 - 2023-03-24
 * make the package Bioc-compatible
@@ -506,7 +509,7 @@
 * refactor the logic for combo data
 
 ## gDRcore 0.1.1.8 - 2021-09-27
-* updated normalization_types in 'calculate_combo_matrix' and 'fit_SE'
+* update normalization_types in 'calculate_combo_matrix' and 'fit_SE'
 
 ## gDRcore 0.1.1.7 - 2021-09-21
 * calculate_GR_value by removing cl_name param
@@ -607,12 +610,12 @@
 * move df_to_assay and df_to_bm_assay to gDRutils
 
 ## gDRcore 0.0.1.36 - 2021-01-18
-* updated rowData and colData in SE with additional columns
+* update rowData and colData in SE with additional columns
 
 ## gDRcore 0.0.1.35 - 2021-01-14
 * update positional header calls to explicit identifier calls
-* minor changes to comply with gDRstyle
-* minor changes to use identifiers over hard coded DrugName requirements
+* apply minor changes to comply with gDRstyle
+* apply minor changes to use identifiers over hard coded DrugName requirements
 
 ## gDRcore 0.0.1.34 - 2021-01-12
 * update scripts related to annotation of drugs and cell lines
@@ -629,7 +632,7 @@
 * add initial tests for createSE function
 
 ## gDRcore 0.0.1.30 - 2020-12-21
-* minor clean-up
+* clean up minor issues
 
 ## gDRcore 0.0.1.29 - 2020-12-15
 * remove dplyr
@@ -656,7 +659,7 @@
 * scripts for processing and pushing QCS data on Rosalind
 
 ## gDRcore 0.0.1.23 - 2020-09-29
-* updated README.md
+* update README.md
 
 ## gDRcore 0.0.1.22 - 2020-09-22
 * bug in update_experiment_metadata

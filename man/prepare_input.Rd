@@ -25,17 +25,17 @@ Current steps
 \examples{
 td <- gDRimport::get_test_data()
 l_tbl <- gDRimport::load_data(
-  manifest_file = gDRimport::manifest_path(td), 
-  df_template_files = gDRimport::template_path(td), 
+  manifest_file = gDRimport::manifest_path(td),
+  df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
 df_ <- merge_data(
-  l_tbl$manifest, 
-  l_tbl$treatments, 
+  l_tbl$manifest,
+  l_tbl$treatments,
   l_tbl$data
 )
 nested_confounders = intersect(
-  names(df_), 
+  names(df_),
   gDRutils::get_env_identifiers("barcode")
 )
 prepare_input(df_, nested_confounders, NULL)
