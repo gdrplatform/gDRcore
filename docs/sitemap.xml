@@ -1,228 +1,78 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/404.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/PULL_REQUEST_TEMPLATE.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/articles/gDR-annotation.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/articles/gDR-data-model.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/articles/gDRcore.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/index.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/add_intermediate_data.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/annotate_dt_with_cell_line.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/annotate_dt_with_drug.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/annotate_mae_with_cell_line.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/annotate_mae_with_drug.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/annotate_se_with_cell_line.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/annotate_se_with_drug.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/assert_cell_line_annotation.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/assert_drug_annotation.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/calculate_GR_value.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/calculate_excess.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/calculate_score.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/cleanup_metadata.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/convert_mae_to_raw_data.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/convert_se_to_raw_data.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/data_model.character.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/data_model.data.table.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/data_model.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/do_skip_step.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/dot-get_untreated_tag_count.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/dot-map_references.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/gDRcore-package.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/generateCodilution.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/generateCodilutionSmall.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/generateComboMatrix.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/generateComboMatrixSmall.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/generateComboNoNoiseData.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/generateComboNoNoiseData2.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/generateComboNoNoiseData3.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/generateLigandData.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/generateMediumData.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/generateNoNoiseRawData.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/generateNoiseRawData.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/generateTripleComboMatrix.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/get_assays_per_pipeline_step.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/get_cell_line_annotation.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/get_cellline_annotation_from_dt.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/get_default_nested_identifiers.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/get_drug_annotation.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/get_drug_annotation_from_dt.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/get_mae_from_intermediate_data.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/get_pipeline_steps.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/get_relevant_ids.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/grr_matches.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/identify_data_type.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/identify_keys.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/is_preceding_step.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/map_df.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/map_ids_to_fits.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/map_untreated.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/merge_data.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/order_result_df.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/prepare_input.MultiAssayExperiment.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/prepare_input.data.table.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/prepare_input.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/process_perturbations.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/read_intermediate_data.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/replace_conc_with_standardized_conc.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/save_intermediate_data.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/split_raw_data.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/test_synthetic_data.html</loc>
-  </url>
-  <url>
-    <loc>https://gdrplatform.github.io/gDRcore/reference/validate_data_models_availability.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://gdrplatform.github.io/gDRcore/404.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/PULL_REQUEST_TEMPLATE.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/articles/gDR-annotation.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/articles/gDR-data-model.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/articles/gDRcore.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/articles/index.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/authors.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/index.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/news/index.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/add_intermediate_data.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/annotate_dt_with_cell_line.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/annotate_dt_with_drug.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/annotate_mae_with_cell_line.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/annotate_mae_with_drug.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/annotate_se_with_cell_line.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/annotate_se_with_drug.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/assert_cell_line_annotation.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/assert_drug_annotation.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/calculate_GR_value.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/calculate_excess.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/calculate_score.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/cleanup_metadata.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/convert_mae_to_raw_data.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/convert_se_to_raw_data.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/data_model.character.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/data_model.data.table.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/data_model.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/do_skip_step.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-get_untreated_tag_count.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-map_references.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/gDRcore-package.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/generateCodilution.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/generateCodilutionSmall.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/generateComboMatrix.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/generateComboMatrixSmall.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/generateComboNoNoiseData.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/generateComboNoNoiseData2.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/generateComboNoNoiseData3.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/generateLigandData.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/generateMediumData.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/generateNoNoiseRawData.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/generateNoiseRawData.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/generateTripleComboMatrix.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/get_assays_per_pipeline_step.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/get_cell_line_annotation.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/get_cellline_annotation_from_dt.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/get_default_nested_identifiers.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/get_drug_annotation.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/get_drug_annotation_from_dt.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/get_mae_from_intermediate_data.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/get_pipeline_steps.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/get_relevant_ids.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/grr_matches.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/identify_data_type.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/identify_keys.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/index.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/is_preceding_step.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/map_df.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/map_ids_to_fits.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/map_untreated.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/merge_data.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/order_result_df.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/prepare_input.MultiAssayExperiment.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/prepare_input.data.table.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/prepare_input.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/process_perturbations.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/read_intermediate_data.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/replace_conc_with_standardized_conc.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/save_intermediate_data.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/split_raw_data.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/test_synthetic_data.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/validate_data_models_availability.html</loc></url>
 </urlset>
+

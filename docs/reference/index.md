@@ -1,0 +1,129 @@
+# Package index
+
+## Pipeline
+
+Run different components of the gDR drug response processing pipeline.
+Either create a SummarizedExperiment and normalize raw treated and
+control data (create_and_normalize_SE), average data (average_SE), or
+fit the processed data (fit_SE).
+
+- [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
+  : fit_SE for combination screens
+- [`average_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
+  [`create_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
+  [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
+  [`normalize_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
+  [`create_and_normalize_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
+  [`runDrugResponseProcessingPipeline()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
+  : Run drug response processing pipeline
+
+## Merging data
+
+- [`merge_data()`](https://gdrplatform.github.io/gDRcore/reference/merge_data.md)
+  : merge_data
+
+## Combination helpers
+
+- [`calculate_excess()`](https://gdrplatform.github.io/gDRcore/reference/calculate_excess.md)
+  : Calculate the difference between values in two data.tables
+- [`calculate_HSA()`](https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.md)
+  [`calculate_Bliss()`](https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.md)
+  [`.calculate_matrix_metric()`](https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.md)
+  : Calculate a metric for combination data.
+- [`calculate_score()`](https://gdrplatform.github.io/gDRcore/reference/calculate_score.md)
+  : Calculate score for HSA and Bliss
+
+## Annotation
+
+- [`annotate_dt_with_cell_line()`](https://gdrplatform.github.io/gDRcore/reference/annotate_dt_with_cell_line.md)
+  : annotate_dt_with_cell_line
+- [`annotate_dt_with_drug()`](https://gdrplatform.github.io/gDRcore/reference/annotate_dt_with_drug.md)
+  : annotate_dt_with_drug
+- [`annotate_mae_with_cell_line()`](https://gdrplatform.github.io/gDRcore/reference/annotate_mae_with_cell_line.md)
+  : annotate_mae_with_cell_line
+- [`annotate_mae_with_drug()`](https://gdrplatform.github.io/gDRcore/reference/annotate_mae_with_drug.md)
+  : annotate_mae_with_drug
+- [`annotate_se_with_cell_line()`](https://gdrplatform.github.io/gDRcore/reference/annotate_se_with_cell_line.md)
+  : annotate_se_with_cell_line
+- [`annotate_se_with_drug()`](https://gdrplatform.github.io/gDRcore/reference/annotate_se_with_drug.md)
+  : annotate_se_with_drug
+- [`get_cell_line_annotation()`](https://gdrplatform.github.io/gDRcore/reference/get_cell_line_annotation.md)
+  : get_cell_line_annotation
+- [`get_cellline_annotation_from_dt()`](https://gdrplatform.github.io/gDRcore/reference/get_cellline_annotation_from_dt.md)
+  : Retrieve the cell line annotation from the annotated dt input
+- [`get_drug_annotation()`](https://gdrplatform.github.io/gDRcore/reference/get_drug_annotation.md)
+  : get_drug_annotation
+- [`get_drug_annotation_from_dt()`](https://gdrplatform.github.io/gDRcore/reference/get_drug_annotation_from_dt.md)
+  : Retrieve the drug annotation from the annotated dt input
+
+## Calculating GR
+
+- [`calculate_GR_value()`](https://gdrplatform.github.io/gDRcore/reference/calculate_GR_value.md)
+  [`calculate_time_dep_GR_value()`](https://gdrplatform.github.io/gDRcore/reference/calculate_GR_value.md)
+  [`calculate_endpt_GR_value()`](https://gdrplatform.github.io/gDRcore/reference/calculate_GR_value.md)
+  : Calculate a GR value.
+
+## Converting to raw data
+
+- [`convert_mae_to_raw_data()`](https://gdrplatform.github.io/gDRcore/reference/convert_mae_to_raw_data.md)
+  : Transform mae into raw data
+- [`convert_se_to_raw_data()`](https://gdrplatform.github.io/gDRcore/reference/convert_se_to_raw_data.md)
+  : Transform se into raw_data
+
+## Data type
+
+- [`identify_data_type()`](https://gdrplatform.github.io/gDRcore/reference/identify_data_type.md)
+  : Identify type of data
+- [`process_perturbations()`](https://gdrplatform.github.io/gDRcore/reference/process_perturbations.md)
+  : Cleanup additional perturbations in the data.table
+- [`split_raw_data()`](https://gdrplatform.github.io/gDRcore/reference/split_raw_data.md)
+  : Split raw data into list based on the data types
+
+## Preparing input
+
+- [`prepare_input(`*`<MultiAssayExperiment>`*`)`](https://gdrplatform.github.io/gDRcore/reference/prepare_input.MultiAssayExperiment.md)
+  : Prepare input data common for all experiments
+- [`prepare_input()`](https://gdrplatform.github.io/gDRcore/reference/prepare_input.md)
+  : Prepare input data common for all experiments
+- [`prepare_input(`*`<data.table>`*`)`](https://gdrplatform.github.io/gDRcore/reference/prepare_input.data.table.md)
+  : Prepare input data common for all experiments
+
+## Mappping
+
+- [`.map_references()`](https://gdrplatform.github.io/gDRcore/reference/dot-map_references.md)
+  : Map references
+- [`map_df()`](https://gdrplatform.github.io/gDRcore/reference/map_df.md)
+  : Map treated conditions to their respective references.
+- [`map_ids_to_fits()`](https://gdrplatform.github.io/gDRcore/reference/map_ids_to_fits.md)
+  : Get predicted values for a given fit and input.
+- [`map_untreated()`](https://gdrplatform.github.io/gDRcore/reference/map_untreated.md)
+  : Identify untreated rows based on Drug treatment alone
+
+## Utils
+
+- [`cleanup_metadata()`](https://gdrplatform.github.io/gDRcore/reference/cleanup_metadata.md)
+  : cleanup_metadata
+- [`data_model()`](https://gdrplatform.github.io/gDRcore/reference/data_model.md)
+  : Detect model of data
+- [`data_model(`*`<character>`*`)`](https://gdrplatform.github.io/gDRcore/reference/data_model.character.md)
+  : Detect model of data from experiment name
+- [`data_model(`*`<data.table>`*`)`](https://gdrplatform.github.io/gDRcore/reference/data_model.data.table.md)
+  : Detect model of data in data.table
+- [`get_assays_per_pipeline_step()`](https://gdrplatform.github.io/gDRcore/reference/get_assays_per_pipeline_step.md)
+  : get info about created/present assays in SE at the given pipeline
+  step
+- [`get_default_nested_identifiers()`](https://gdrplatform.github.io/gDRcore/reference/get_default_nested_identifiers.md)
+  : Get default nested identifiers
+- [`grr_matches()`](https://gdrplatform.github.io/gDRcore/reference/grr_matches.md)
+  : Value Matching
+- [`identify_keys()`](https://gdrplatform.github.io/gDRcore/reference/identify_keys.md)
+  : identify_keys
+- [`order_result_df()`](https://gdrplatform.github.io/gDRcore/reference/order_result_df.md)
+  : Order_result_df
+- [`replace_conc_with_standardized_conc()`](https://gdrplatform.github.io/gDRcore/reference/replace_conc_with_standardized_conc.md)
+  : Standardize concentrations.
+
+## Test utils
+
+- [`test_synthetic_data()`](https://gdrplatform.github.io/gDRcore/reference/test_synthetic_data.md)
+  : Testing synthetic data form gDRtestData package
