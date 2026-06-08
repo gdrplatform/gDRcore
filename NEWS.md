@@ -1,3 +1,6 @@
+## gDRcore 1.11.5 - 2026-06-08
+* allow custom annotations in `merge_data` and `cleanup_metadata`
+
 ## gDRcore 1.11.4 - 2026-05-27
 * apply updated gDRstyle rules
 
