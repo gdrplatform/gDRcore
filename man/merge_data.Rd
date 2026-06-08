@@ -4,7 +4,13 @@
 \alias{merge_data}
 \title{merge_data}
 \usage{
-merge_data(manifest, treatments, data)
+merge_data(
+  manifest,
+  treatments,
+  data,
+  cell_line_annotation = NULL,
+  drug_annotation = NULL
+)
 }
 \arguments{
 \item{manifest}{a data.table with a manifest info}
@@ -12,6 +18,12 @@ merge_data(manifest, treatments, data)
 \item{treatments}{a data.table with a treaatments info}
 
 \item{data}{a data.table with a raw data info}
+
+\item{cell_line_annotation}{optional data.table with cell line annotations;
+if NULL (default), annotations are looked up from gDRinternal or gDRtestData}
+
+\item{drug_annotation}{optional data.table with drug annotations;
+if NULL (default), annotations are looked up from gDRinternal or gDRtestData}
 }
 \value{
 a data.table with merged data and metadata.
