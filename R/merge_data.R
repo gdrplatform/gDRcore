@@ -33,6 +33,8 @@ merge_data <- function(manifest, treatments, data,
   # Assertions:
   checkmate::assert_data_table(manifest)
   checkmate::assert_data_table(treatments)
+  checkmate::assert_data_table(cell_line_annotation, null.ok = TRUE)
+  checkmate::assert_data_table(drug_annotation, null.ok = TRUE)
   checkmate::assert_data_table(data)
 
   futile.logger::flog.info("Merging data")

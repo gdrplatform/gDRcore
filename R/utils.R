@@ -53,6 +53,8 @@ cleanup_metadata <- function(df_metadata,
 
   # Assertions:
   checkmate::assert_data_table(df_metadata)
+  checkmate::assert_data_table(cell_line_annotation, null.ok = TRUE)
+  checkmate::assert_data_table(drug_annotation, null.ok = TRUE)
 
   # Round duration to 6 values.
   duration_id <- gDRutils::get_env_identifiers("duration")
