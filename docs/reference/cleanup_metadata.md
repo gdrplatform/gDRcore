@@ -5,7 +5,11 @@ Cleanup a data.table with metadata
 ## Usage
 
 ``` r
-cleanup_metadata(df_metadata)
+cleanup_metadata(
+  df_metadata,
+  cell_line_annotation = NULL,
+  drug_annotation = NULL
+)
 ```
 
 ## Arguments
@@ -13,6 +17,16 @@ cleanup_metadata(df_metadata)
 - df_metadata:
 
   a data.table with metadata
+
+- cell_line_annotation:
+
+  optional data.table with cell line annotations; if NULL (default),
+  annotations are looked up from gDRinternal or gDRtestData
+
+- drug_annotation:
+
+  optional data.table with drug annotations; if NULL (default),
+  annotations are looked up from gDRinternal or gDRtestData
 
 ## Value
 

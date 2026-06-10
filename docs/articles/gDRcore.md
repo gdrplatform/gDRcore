@@ -201,7 +201,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] gDRcore_1.11.4     gDRtestData_1.10.0 BiocStyle_2.40.0  
+#> [1] gDRcore_1.11.5     gDRtestData_1.10.0 BiocStyle_2.40.0  
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
@@ -222,7 +222,7 @@ sessionInfo()
 #> [31] stats4_4.6.0                scales_1.4.0               
 #> [33] MASS_7.3-65                 gtools_3.9.5               
 #> [35] MultiAssayExperiment_1.38.0 SummarizedExperiment_1.42.0
-#> [37] cli_3.6.6                   mvtnorm_1.4-0              
+#> [37] cli_3.6.6                   mvtnorm_1.4-1              
 #> [39] rmarkdown_2.31              ragg_1.5.2                 
 #> [41] generics_0.1.4              otel_0.2.0                 
 #> [43] readxl_1.5.0                cachem_1.1.0               
