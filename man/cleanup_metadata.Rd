@@ -4,10 +4,20 @@
 \alias{cleanup_metadata}
 \title{cleanup_metadata}
 \usage{
-cleanup_metadata(df_metadata)
+cleanup_metadata(
+  df_metadata,
+  cell_line_annotation = NULL,
+  drug_annotation = NULL
+)
 }
 \arguments{
 \item{df_metadata}{a data.table with metadata}
+
+\item{cell_line_annotation}{optional data.table with cell line annotations;
+if NULL (default), annotations are looked up from gDRinternal or gDRtestData}
+
+\item{drug_annotation}{optional data.table with drug annotations;
+if NULL (default), annotations are looked up from gDRinternal or gDRtestData}
 }
 \value{
 a data.table with cleaned metadata

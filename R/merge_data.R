@@ -5,6 +5,10 @@
 #' @param manifest a data.table with a manifest info
 #' @param treatments a data.table with a treaatments info
 #' @param data a data.table with a raw data info
+#' @param cell_line_annotation optional data.table with cell line annotations;
+#'   if NULL (default), annotations are looked up from gDRinternal or gDRtestData
+#' @param drug_annotation optional data.table with drug annotations;
+#'   if NULL (default), annotations are looked up from gDRinternal or gDRtestData
 #'
 #' @examples
 #' td <- gDRimport::get_test_data()
@@ -23,10 +27,14 @@
 #' @keywords merge_data
 #' @export
 #'
-merge_data <- function(manifest, treatments, data) {
+merge_data <- function(manifest, treatments, data,
+                       cell_line_annotation = NULL,
+                       drug_annotation = NULL) {
   # Assertions:
   checkmate::assert_data_table(manifest)
   checkmate::assert_data_table(treatments)
+  checkmate::assert_data_table(cell_line_annotation, null.ok = TRUE)
+  checkmate::assert_data_table(drug_annotation, null.ok = TRUE)
   checkmate::assert_data_table(data)
 
   futile.logger::flog.info("Merging data")
@@ -120,7 +128,9 @@ merge_data <- function(manifest, treatments, data) {
     mget(expected_headers))]
 
   # clean up the metadata
-  cleanedup_metadata <- cleanup_metadata(df_metadata_trimmed)
+  cleanedup_metadata <- cleanup_metadata(df_metadata_trimmed,
+                                          cell_line_annotation = cell_line_annotation,
+                                          drug_annotation = drug_annotation)
   # should not happen
   stopifnot(NROW(cleanedup_metadata) == NROW(df_metadata_trimmed))
 

@@ -27,6 +27,10 @@
 #' Cleanup a data.table with metadata
 #'
 #' @param df_metadata a data.table with metadata
+#' @param cell_line_annotation optional data.table with cell line annotations;
+#'   if NULL (default), annotations are looked up from gDRinternal or gDRtestData
+#' @param drug_annotation optional data.table with drug annotations;
+#'   if NULL (default), annotations are looked up from gDRinternal or gDRtestData
 #'
 #' @examples
 #'
@@ -43,18 +47,27 @@
 #' @keywords utils
 #' @export
 #'
-cleanup_metadata <- function(df_metadata) {
+cleanup_metadata <- function(df_metadata,
+                             cell_line_annotation = NULL,
+                             drug_annotation = NULL) {
 
   # Assertions:
   checkmate::assert_data_table(df_metadata)
+  checkmate::assert_data_table(cell_line_annotation, null.ok = TRUE)
+  checkmate::assert_data_table(drug_annotation, null.ok = TRUE)
 
   # Round duration to 6 values.
   duration_id <- gDRutils::get_env_identifiers("duration")
   df_metadata[[duration_id]] <- round(as.numeric(df_metadata[[duration_id]], 6))
 
   if (!gDRutils::get_env_identifiers("cellline_name") %in% names(df_metadata)) {
+    cl_ann <- if (!is.null(cell_line_annotation)) {
+      cell_line_annotation
+    } else {
+      get_cell_line_annotation(df_metadata)
+    }
     df_metadata <- annotate_dt_with_cell_line(df_metadata,
-                                              cell_line_annotation = get_cell_line_annotation(df_metadata))
+                                              cell_line_annotation = cl_ann)
   }
 
   drug_conc_cols <- unlist(
@@ -114,8 +127,13 @@ cleanup_metadata <- function(df_metadata) {
   }
 
   if (!gDRutils::get_env_identifiers("drug_name") %in% names(df_metadata)) {
+    dr_ann <- if (!is.null(drug_annotation)) {
+      drug_annotation
+    } else {
+      get_drug_annotation(df_metadata)
+    }
     df_metadata <- annotate_dt_with_drug(df_metadata,
-                                         drug_annotation = get_drug_annotation(df_metadata))
+                                         drug_annotation = dr_ann)
   }
   df_metadata
 }
