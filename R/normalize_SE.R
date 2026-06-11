@@ -324,11 +324,15 @@ normalize_SE_time_course <- function(se_tc) {
 
 #' @keywords internal
 fill_NA_by_mean <- function(dt, ref_df, cols) {
-  dt2 <- data.table::copy(dt)
   for (col in cols) {
-    dt2[is.na(dt2[[col]]), (col) := mean(ref_df[[col]], na.rm = TRUE)]
+    if (col %in% names(dt)) {
+      na_idx <- which(is.na(dt[[col]]))
+      if (length(na_idx)) {
+        data.table::set(dt, na_idx, col, mean(ref_df[[col]], na.rm = TRUE))
+      }
+    }
   }
-  dt2
+  dt
 }
 
 #' @keywords internal

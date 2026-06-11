@@ -78,8 +78,7 @@ fit_SE.combinations <- function(se,
 
   out <- gDRutils::loop(seq_len(NROW(iterator)), function(row) {
 
-    metrics <- all_iso_points <- isobolograms <- excess_full <- NULL
-    excess <- scores <-
+    scores <-
       data.table::data.table(normalization_type = normalization_types)
     x <- iterator[row, ]
     i <- x[["row"]]
@@ -139,12 +138,16 @@ fit_SE.combinations <- function(se,
     complete <- mean_avg_combo[complete, on = c(id, id2)]
 
 
-    for (norm_type in normalization_types) {
+    avg_combo_dt <- data.table::as.data.table(mean_avg_combo)
+    iso_points_list <- vector("list", length(normalization_types))
+    iso_curves_list <- vector("list", length(normalization_types))
+    metrics_list <- vector("list", length(normalization_types))
+    excess_list <- vector("list", length(normalization_types))
 
-      # use data.table with averaged concentration values
-      # (if some duplicates appeared after mapping to standardized concentrations)
-      avg_combo <- data.table::as.data.table(mean_avg_combo)
-      avg_subset <- avg_combo[normalization_type == norm_type]
+    for (nt_idx in seq_along(normalization_types)) {
+      norm_type <- normalization_types[[nt_idx]]
+
+      avg_subset <- avg_combo_dt[normalization_type == norm_type]
       complete_subset <- complete[normalization_type == norm_type | is.na(normalization_type)]
       complete_subset[is.na(normalization_type), normalization_type := norm_type]
 
@@ -346,28 +349,17 @@ fit_SE.combinations <- function(se,
       isobologram_out$df_all_iso_points$normalization_type <-
       isobologram_out$df_all_iso_curves$normalization_type <- norm_type
 
-      # check if it does not contain only ids
-      if (is.null(all_iso_points)) {
-        all_iso_points <- isobologram_out$df_all_iso_points
-      } else {
-        all_iso_points <- data.table::rbindlist(list(
-          all_iso_points,
-          isobologram_out$df_all_iso_points
-        ), fill = TRUE)
-      }
-
-      if (is.null(isobolograms)) {
-        isobolograms <- isobologram_out$df_all_iso_curves
-      } else {
-        isobolograms <- data.table::rbindlist(list(
-          isobolograms,
-          isobologram_out$df_all_iso_curves
-        ), fill = TRUE)
-      }
-
-      metrics <- data.table::rbindlist(list(metrics, metrics_merged), fill = TRUE)
-      excess_full <- data.table::rbindlist(list(excess_full, excess), fill = TRUE)
+      iso_points_list[[nt_idx]] <- isobologram_out$df_all_iso_points
+      iso_curves_list[[nt_idx]] <- isobologram_out$df_all_iso_curves
+      metrics_list[[nt_idx]] <- metrics_merged
+      excess_list[[nt_idx]] <- excess
     }
+
+    all_iso_points <- data.table::rbindlist(iso_points_list, fill = TRUE)
+    isobolograms <- data.table::rbindlist(iso_curves_list, fill = TRUE)
+    metrics <- data.table::rbindlist(metrics_list, fill = TRUE)
+    excess_full <- data.table::rbindlist(excess_list, fill = TRUE)
+
     list(metrics = metrics,
          all_iso_points = all_iso_points,
          isobolograms = isobolograms,
