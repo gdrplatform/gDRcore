@@ -29,20 +29,17 @@
 #' @export
 map_ids_to_fits <- function(pred, match_col, fittings, fitting_id_col) {
 
-  ridx <- S4Vectors::match(
+  ridx <- match(
     round(log10(match_col), 2), round(log10(fittings[[fitting_id_col]]), 2)
   )
-  colnames <- c(fitting_id_col, "x_inf", "x_0", "ec50", "h")
-  metrics <- fittings[ridx, colnames, with = FALSE]
-  # Extrapolate fitted values.
-  out <- gDRutils::predict_efficacy_from_conc(
+  metrics <- fittings[ridx, c(fitting_id_col, "x_inf", "x_0", "ec50", "h"), with = FALSE]
+  gDRutils::predict_efficacy_from_conc(
     pred,
     metrics$x_inf,
     metrics$x_0,
     metrics$ec50,
     metrics$h
   )
-  out
 }
 
 
@@ -96,18 +93,10 @@ calculate_excess <- function(metric,
                              series_identifiers,
                              metric_col,
                              measured_col) {
-  # TODO: Ensure same dims metric, measured
-  # TODO: Ensure there is a unique entry for series_id1, series_id2 and
-  # no repeats
-  # TODO: Check that there are no NAs
-  idx <- S4Vectors::match(
-    DataFrame(measured[, series_identifiers, with = FALSE]),
-    DataFrame(metric[, series_identifiers, with = FALSE])
-  )
-
-  out <- measured[, series_identifiers, with = FALSE]
-  excess <- metric[idx, metric_col, with = FALSE] - measured[, measured_col, with = FALSE]
-  excess[apply(as.matrix(out[, series_identifiers, with = FALSE]) == 0, 1, any)] <- NA
+  merged <- metric[measured, on = series_identifiers, nomatch = NA]
+  out <- merged[, series_identifiers, with = FALSE]
+  excess <- merged[[metric_col]] - merged[[measured_col]]
+  excess[rowSums(out[, series_identifiers, with = FALSE] == 0) > 0] <- NA
   out$x <- excess
   out
 }
