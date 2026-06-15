@@ -209,17 +209,16 @@ normalize_SE <- function(se,
     normalized <- cbind(all_readouts_df[, keep, with = FALSE], normalized)
     normalized$row_id <- i
     normalized$col_id <- j
-    normalized$id <- as.character(seq_len(NROW(normalized)))
+    n_rows <- NROW(normalized)
     normalized <- data.table::melt(normalized,
                                    measure.vars = norm_cols,
                                    variable.name = "normalization_type",
                                    value.name = "x")
     rownames <- paste(
-      normalized$id,
+      rep(seq_len(n_rows), length(norm_cols)),
       normalized$normalization_type,
       sep = "_"
     )
-    normalized$id <- NULL
     S4Vectors::DataFrame(normalized, row.names = rownames)
   })
 

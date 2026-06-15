@@ -393,16 +393,10 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
 #' @keywords internal
 #' @noRd
 rbindParallelList <- function(x, name) {
-  S4Vectors::DataFrame(
-    do.call(
-      rbind,
-      c(lapply(x, function(x) {
-        dt <- data.table::as.data.table("[[" (x, name))
-        data.table::setorder(dt)
-        dt
-      }), fill = TRUE)
-    )
-  )
+  dts <- lapply(x, function(elem) {
+    data.table::as.data.table(elem[[name]])
+  })
+  S4Vectors::DataFrame(data.table::rbindlist(dts, fill = TRUE))
 }
 
 #' Value Matching
