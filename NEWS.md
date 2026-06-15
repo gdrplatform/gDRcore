@@ -1,5 +1,5 @@
 ## gDRcore 1.11.6 - 2026-06-11
-* optimize pipeline performance: remove redundant data copies, enable parallel averaging, vectorize NA-filling
+* improve pipeline performance by removing redundant data copies, enabling parallel averaging, and vectorizing NA-filling
 
 ## gDRcore 1.11.5 - 2026-06-08
 * allow custom annotations in `merge_data` and `cleanup_metadata`
