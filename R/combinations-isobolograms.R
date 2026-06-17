@@ -114,22 +114,23 @@ calculate_Loewe <- function(
     )
 
     # perform the smoothing
+    fit_types_multi <- names(which(table(df_iso$fit_type) > 1))
+    n_xout <- length(isobol_x1)
+    interp_mat <- vapply(fit_types_multi, function(ft) {
+      idx <- df_iso$fit_type == ft
+      stats::approx(
+        x = df_iso$x1[idx],
+        y = df_iso$x2_off[idx],
+        xout = isobol_x1
+      )$y
+    }, numeric(n_xout))
+    if (!is.matrix(interp_mat)) {
+      interp_mat <- matrix(interp_mat, nrow = n_xout)
+    }
     df_iso_curve <- data.table::data.table(
       x1 = isobol_x1,
       x2_off = data.table::frollmean(
-        rowMeans(
-          do.call(
-            cbind,
-            lapply(names(which(table(df_iso$fit_type) > 1)), function(x) {
-              stats::approx(
-                x = df_iso$x1[df_iso$fit_type == x],
-                y = df_iso$x2_off[df_iso$fit_type == x],
-                xout = isobol_x1
-              )$y
-            })
-          ),
-          na.rm = TRUE
-        ),
+        rowMeans(interp_mat, na.rm = TRUE),
         5,
         fill = NA,
         align = "center"
