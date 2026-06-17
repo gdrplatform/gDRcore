@@ -274,7 +274,9 @@ unify_combination_data <- function(dt, cl, drug_ids) {
     if (length(duplicated_full_idx)) {
       duplicated_data <- x[duplicated_full_idx, ]
       drug_data <- duplicated_data[, drug_ids[c("drug_name", "drug_name2")], with = FALSE]
-      unique_rows <- drug_data[!duplicated(t(apply(drug_data, 1, sort))), ]
+      sorted_key <- paste(pmin(drug_data[[1]], drug_data[[2]]),
+                          pmax(drug_data[[1]], drug_data[[2]]))
+      unique_rows <- drug_data[!duplicated(sorted_key), ]
       idx_duplicated <- duplicated_full_idx[which(is.na(grr_matches(do.call(paste, unique_rows),
                                                                 do.call(paste, drug_data))$x))]
 

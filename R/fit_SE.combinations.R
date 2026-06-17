@@ -274,7 +274,10 @@ fit_SE.combinations <- function(se,
           measured_col = "smooth"
         )
         data.table::setnames(bliss_excess, "x", "bliss_excess")
-        excess <- Reduce(function(x, y) merge(x, y, all = TRUE), list(av_matrix, h_excess, bliss_excess))
+        excess <- data.table::merge.data.table(
+          data.table::merge.data.table(av_matrix, h_excess, all = TRUE),
+          bliss_excess, all = TRUE
+        )
       }
 
       # call calculate_Loewe and calculate_isobolograms:
