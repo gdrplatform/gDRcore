@@ -57,7 +57,7 @@ average_SE <- function(se,
                                  FUN = average_FUN,
                                  req_assay_name = normalized_assay,
                                  out_assay_name = averaged_assay,
-                                 parallelize = TRUE,
+                                 parallelize = FALSE,
                                  series_identifiers = series_identifiers,
                                  trt_keys = trt_keys)
 }
