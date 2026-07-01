@@ -180,7 +180,7 @@ these functionalities.
 
 ``` r
 sessionInfo()
-#> R version 4.6.0 (2026-04-24)
+#> R version 4.6.1 (2026-06-24)
 #> Platform: x86_64-pc-linux-gnu
 #> Running under: Ubuntu 24.04.4 LTS
 #> 
@@ -208,9 +208,9 @@ sessionInfo()
 #>  [3] BumpyMatrix_1.20.0          TH.data_1.1-5              
 #>  [5] digest_0.6.39               lifecycle_1.0.5            
 #>  [7] gDRutils_1.10.0             survival_3.8-6             
-#>  [9] magrittr_2.0.5              compiler_4.6.0             
+#>  [9] magrittr_2.0.5              compiler_4.6.1             
 #> [11] rlang_1.2.0                 sass_0.4.10                
-#> [13] drc_3.0-1                   tools_4.6.0                
+#> [13] drc_3.0-1                   tools_4.6.1                
 #> [15] plotrix_3.8-14              yaml_2.3.12                
 #> [17] data.table_1.18.4           knitr_1.51                 
 #> [19] lambda.r_1.2.4              S4Arrays_1.12.0            
@@ -218,22 +218,22 @@ sessionInfo()
 #> [23] RColorBrewer_1.1-3          abind_1.4-8                
 #> [25] multcomp_1.4-30             BiocParallel_1.46.0        
 #> [27] purrr_1.2.2                 BiocGenerics_0.58.1        
-#> [29] desc_1.4.3                  grid_4.6.0                 
-#> [31] stats4_4.6.0                scales_1.4.0               
+#> [29] desc_1.4.3                  grid_4.6.1                 
+#> [31] stats4_4.6.1                scales_1.4.0               
 #> [33] MASS_7.3-65                 gtools_3.9.5               
 #> [35] MultiAssayExperiment_1.38.0 SummarizedExperiment_1.42.0
 #> [37] cli_3.6.6                   mvtnorm_1.4-1              
 #> [39] rmarkdown_2.31              ragg_1.5.2                 
 #> [41] generics_0.1.4              otel_0.2.0                 
 #> [43] readxl_1.5.0                cachem_1.1.0               
-#> [45] stringr_1.6.0               splines_4.6.0              
+#> [45] stringr_1.6.0               splines_4.6.1              
 #> [47] gDRimport_1.10.0            assertthat_0.2.1           
-#> [49] parallel_4.6.0              formatR_1.14               
+#> [49] parallel_4.6.1              formatR_1.14               
 #> [51] BiocManager_1.30.27         cellranger_1.1.0           
 #> [53] XVector_0.52.0              matrixStats_1.5.0          
 #> [55] vctrs_0.7.3                 Matrix_1.7-5               
 #> [57] sandwich_3.1-1              jsonlite_2.0.0             
-#> [59] carData_3.0-6               bookdown_0.46              
+#> [59] carData_3.0-6               bookdown_0.47              
 #> [61] car_3.1-5                   IRanges_2.46.0             
 #> [63] S4Vectors_0.50.1            Formula_1.2-5              
 #> [65] systemfonts_1.3.2           testthat_3.3.2             
@@ -248,7 +248,7 @@ sessionInfo()
 #> [83] lattice_0.22-9              Biobase_2.72.0             
 #> [85] futile.options_1.0.1        backports_1.5.1            
 #> [87] bslib_0.11.0                SparseArray_1.12.2         
-#> [89] checkmate_2.3.4             xfun_0.58                  
+#> [89] checkmate_2.3.4             xfun_0.59                  
 #> [91] fs_2.1.0                    MatrixGenerics_1.24.0      
 #> [93] zoo_1.8-15                  pkgconfig_2.0.3
 ```
