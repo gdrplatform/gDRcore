@@ -181,6 +181,25 @@ create_SE <- function(df_,
 
   data_fields <- c(md$data_fields, "row_id", "col_id", "swap_sa")
 
+  # Pre-compute values used identically in every iteration.
+  untrt_cols <- intersect(c("CorrectedReadout", "record_id", nested_confounders), names(dfs))
+  duration_col <- gDRutils::get_env_identifiers("duration")
+  empty_untrt <- data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
+  empty_day0 <- data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
+
+  # Pre-filter day0 rows (duration == 0) once.
+  if (duration_col %in% names(untreated)) {
+    day0_eligible_rn <- untreated[get(duration_col) %in% 0, "rn"][[1L]]
+  } else {
+    day0_eligible_rn <- character(0)
+  }
+
+  # Index untreated by rn for fast subsetting.
+  data.table::setkey(untreated, rn)
+
+  untrt_map <- ctl_maps[["untrt_Endpoint"]]
+  day0_map <- ctl_maps[["Day0"]]
+
   out <- vector("list", length = NROW(treated))
   out <- gDRutils::loop(seq_len(NROW(treated)), function(i) {
 
@@ -200,27 +219,25 @@ create_SE <- function(df_,
     # Override the row_id of the references.
     trt_df$row_id <- row_id
 
-    untrt_ref <- ctl_maps[["untrt_Endpoint"]][[trt]]
-    untrt_cols <- intersect(c("CorrectedReadout", "record_id", nested_confounders), names(dfs))
-    untrt_df <- untreated[untreated$rn == untrt_ref[1], untrt_cols, with = FALSE]
-    untrt_df <- if (NROW(untrt_df) == 0) {
-      data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
+    untrt_ref <- untrt_map[[trt]]
+    untrt_df <- untreated[.(untrt_ref[1]), untrt_cols, with = FALSE, nomatch = NULL]
+    if (NROW(untrt_df) == 0) {
+      untrt_df <- data.table::copy(empty_untrt)
     } else {
-      untrt_df
+      untrt_df$isDay0 <- FALSE
     }
-    untrt_df$isDay0 <- FALSE
 
-    day0_ref <- ctl_maps[["Day0"]][[trt]]
-    day0_df <- untreated[untreated$rn %chin% day0_ref]
-    isDay0 <- day0_df[[gDRutils::get_env_identifiers("duration")]] %in% 0
-
-    day0_df <- day0_df[isDay0, untrt_cols, with = FALSE]
-    day0_df <- if (NROW(day0_df) == 0) {
-      data.table::data.table(CorrectedReadout = NA, isDay0 = FALSE)
+    day0_ref <- day0_map[[trt]]
+    day0_rn <- intersect(day0_ref, day0_eligible_rn)
+    day0_df <- if (length(day0_rn) > 0) {
+      untreated[.(day0_rn), untrt_cols, with = FALSE, nomatch = NULL]
     } else {
-      df <- day0_df
-      df$isDay0 <- TRUE
-      df
+      data.table::data.table()
+    }
+    if (NROW(day0_df) == 0) {
+      day0_df <- data.table::copy(empty_day0)
+    } else {
+      day0_df$isDay0 <- TRUE
     }
 
     ctl_df <- data.table::rbindlist(list(UntrtReadout = untrt_df,

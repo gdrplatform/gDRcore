@@ -155,6 +155,23 @@ normalize_SE <- function(se,
 
   # Column major order, so go down first.
 
+  # Pre-compute aggregated references per (row, column) to avoid redundant
+  # groupby+dcast inside the per-cell loop.
+  ref_agg_cache <- list()
+  for (iter_idx in seq_len(NROW(iterator))) {
+    xi <- iterator[iter_idx, ]
+    ri <- xi[["row"]]
+    ji <- xi[["column"]]
+    cache_key <- paste(ri, ji, sep = "_")
+    ref_subset <- refs[.(ri, ji)]
+    if (NROW(ref_subset) > 0) {
+      ref_agg_cache[[cache_key]] <- list(
+        agg = aggregate_ref(ref_subset, control_mean_fxn),
+        control_types = unique(ref_subset$control_type)
+      )
+    }
+  }
+
   out <- gDRutils::loop(seq_len(NROW(iterator)), function(row) {
 
     x <- iterator[row, ]
@@ -171,10 +188,11 @@ normalize_SE <- function(se,
     ref_df <- refs[.(i, j)]
     trt_df <- trt[.(i, j)]
 
-    all_readouts_df <- merge_trt_with_ref(ref_df,
-                                          trt_df,
-                                          nested_confounders,
-                                          control_mean_fxn)
+    cache_key <- paste(i, j, sep = "_")
+    cached <- ref_agg_cache[[cache_key]]
+    all_readouts_df <- merge_trt_with_cached_ref(cached,
+                                                 trt_df,
+                                                 nested_confounders)
     normalized <- data.table::data.table(
       matrix(NA, nrow = NROW(trt_df), ncol = length(norm_cols))
     )
@@ -209,17 +227,16 @@ normalize_SE <- function(se,
     normalized <- cbind(all_readouts_df[, keep, with = FALSE], normalized)
     normalized$row_id <- i
     normalized$col_id <- j
-    normalized$id <- as.character(seq_len(NROW(normalized)))
+    n_rows <- NROW(normalized)
     normalized <- data.table::melt(normalized,
                                    measure.vars = norm_cols,
                                    variable.name = "normalization_type",
                                    value.name = "x")
     rownames <- paste(
-      normalized$id,
+      rep(seq_len(n_rows), length(norm_cols)),
       normalized$normalization_type,
       sep = "_"
     )
-    normalized$id <- NULL
     S4Vectors::DataFrame(normalized, row.names = rownames)
   })
 
@@ -324,11 +341,15 @@ normalize_SE_time_course <- function(se_tc) {
 
 #' @keywords internal
 fill_NA_by_mean <- function(dt, ref_df, cols) {
-  dt2 <- data.table::copy(dt)
   for (col in cols) {
-    dt2[is.na(dt2[[col]]), (col) := mean(ref_df[[col]], na.rm = TRUE)]
+    if (col %in% names(dt)) {
+      na_idx <- which(is.na(dt[[col]]))
+      if (length(na_idx)) {
+        data.table::set(dt, na_idx, col, mean(ref_df[[col]], na.rm = TRUE))
+      }
+    }
   }
-  dt2
+  dt
 }
 
 #' @keywords internal
@@ -352,4 +373,28 @@ merge_trt_with_ref <- function(ref_df,
   # Backfill missing values when the `nested_keys` are not matching with an average.
   # This is necessary if a control is only present on another plate
   fill_NA_by_mean(all_readouts_df, ref_df, control_types)
+}
+
+#' @keywords internal
+merge_trt_with_cached_ref <- function(cached,
+                                      trt_df,
+                                      nested_confounders) {
+  if (is.null(cached)) {
+    return(merge_trt_with_ref(
+      data.table::data.table(control_type = character(0),
+                             CorrectedReadout = numeric(0)),
+      trt_df, nested_confounders, mean
+    ))
+  }
+
+  ref_agg <- cached$agg
+  control_types <- cached$control_types
+
+  all_readouts_df <- if (length(nested_confounders)) {
+    ref_agg[trt_df, on = nested_confounders]
+  } else {
+    cbind(trt_df, ref_agg)
+  }
+
+  fill_NA_by_mean(all_readouts_df, ref_agg, control_types)
 }
