@@ -208,7 +208,7 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
   maxlog10Concentration <- log10(max(conc, na.rm = TRUE))
 
   fit <- tryCatch(
-    drc::drm(x ~ conc, data = data.frame(x = x, conc = conc), # nolint
+    drc::drm(x ~ conc, data = data.table::data.table(x = x, conc = conc),
              fct = drc::LL.4(),
              start   = c(2, 0.4, 1, stats::median(conc)),
              control = drc::drmc(relTol = 1e-06, errorm = FALSE,
