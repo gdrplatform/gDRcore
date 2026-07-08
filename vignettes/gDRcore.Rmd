@@ -126,6 +126,38 @@ mae[["single-agent"]]
 ## Data extraction
 Extraction of the data from either `MultiAssayExperiment` or `SummarizedExperiment` objects into more user-friendly structures, as well as other data transformations, can be done using `gDRutils`. We encourage reading the `gDRutils` vignette to familiarize yourself with these functionalities.
 
+## Custom fitting with apply_fit_to_se
+
+The standard pipeline uses `fit_SE()` with a fixed 4-parameter log-logistic model. If you need a different fitting approach — alternative models, Bayesian fits, or custom metrics — you can use `apply_fit_to_se()` to plug in any fitting function without modifying the pipeline internals.
+
+`apply_fit_to_se()` iterates over all (drug × cell line × normalization_type) triplets in the Averaged assay, calls your function on each, and persists results into the Metrics assay alongside (or replacing) the standard metrics.
+
+```{r custom-fit-example, eval = FALSE}
+se <- mae[["single-agent"]]
+
+my_fit_fn <- function(avg_dt) {
+  list(
+    x_mean = mean(avg_dt$x, na.rm = TRUE),
+    x_sd = sd(avg_dt$x, na.rm = TRUE),
+    n_points = nrow(avg_dt)
+  )
+}
+
+se_with_custom <- apply_fit_to_se(
+  se,
+  fit_fn = my_fit_fn,
+  fit_source = "my_analysis"
+)
+```
+
+A reference implementation `fit_drug_response_metrics()` is provided that replicates the standard gDR Hill curve fitting — useful as a starting point for custom fit functions.
+
+Key features:
+
+- **`merge = "merge"`** (default): new metrics coexist with existing `fit_SE()` results, keyed by `fit_source` + `normalization_type`. Calling twice with the same `fit_source` is idempotent — no duplicate rows.
+- **`merge = "replace"`**: fully overwrites the Metrics assay.
+- **`on_error = "warn"`** (default): failed fits emit a warning and skip that entry. Use `"stop"` to halt on the first error.
+
 # SessionInfo {-}
 
 ```{r session-info}
