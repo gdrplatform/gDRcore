@@ -1,7 +1,6 @@
-## gDRcore 1.11.7 - 2026-07-08
+## gDRcore 1.11.6 - 2026-07-08
 * add `apply_fit_to_se()` generic fit-function interface and `fit_drug_response_metrics` reference implementation
-
-## gDRcore 1.11.6 - 2026-06-11
+* improve pipeline performance by removing redundant data copies, enabling parallel averaging, and vectorizing NA-filling
 * improve pipeline performance by removing redundant data copies, enabling parallel averaging, and vectorizing NA-filling
 
 ## gDRcore 1.11.5 - 2026-06-08
