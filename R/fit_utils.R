@@ -166,12 +166,13 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
   N_conc <- length(unique(conc))
   maxlog10Conc <- log10(max(conc, na.rm = TRUE))
 
+  x_inf_prior <- if (norm_type == "GR") 0.1 else 0.4
   controls <- drc::drmc(relTol = 1e-06, errorm = FALSE, noMessage = TRUE, rmNA = TRUE)
   fit <- tryCatch(
     drc::drm(x ~ conc,
              data = data.table::data.table(x = x, conc = conc),
              fct = drc::LL.4(),
-             start = c(2, 0.4, 1, stats::median(conc)),
+             start = c(2, x_inf_prior, 1, stats::median(conc)),
              control = controls),
     error = function(e) NULL
   )

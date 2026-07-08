@@ -88,16 +88,16 @@ test_that("apply_fit_to_se filters by normalization_type before calling fit_fn",
 test_that("apply_fit_to_se calls fit_fn exactly once per triplet on a fully-populated SE", {
   # Build a minimal SE where every (drug x cell line x norm_type) cell is
   # non-empty, so we can assert an exact call count rather than just an upper bound.
-  drug_ids   <- c("DRUG_A", "DRUG_B")
-  cl_ids     <- c("CL_1", "CL_2")
+  drug_ids <- c("DRUG_A", "DRUG_B")
+  cl_ids <- c("CL_1", "CL_2")
   norm_types <- c("GR", "RV")
-  conc_vals  <- c(0.1, 1.0, 10.0)
+  conc_vals <- c(0.1, 1.0, 10.0)
 
   avg_rows <- data.table::CJ(
-    row                = drug_ids,
-    column             = cl_ids,
+    row = drug_ids,
+    column = cl_ids,
     normalization_type = norm_types,
-    Concentration      = conc_vals
+    Concentration = conc_vals
   )
   set.seed(7L)
   avg_rows[, x := runif(.N)]
@@ -129,16 +129,16 @@ test_that("apply_fit_to_se calls fit_fn exactly once per triplet on a fully-popu
 test_that("apply_fit_to_se passes Averaged assay columns unmodified to fit_fn", {
   # Build a minimal SE with a known set of data columns so we can verify that
   # fit_fn receives exactly those columns (no extras, no omissions).
-  drug_ids   <- "DRUG_X"
-  cl_ids     <- "CL_X"
+  drug_ids <- "DRUG_X"
+  cl_ids <- "CL_X"
   norm_types <- c("GR", "RV")
-  conc_vals  <- c(0.01, 0.1, 1.0)
+  conc_vals <- c(0.01, 0.1, 1.0)
 
   avg_rows <- data.table::CJ(
-    row                = drug_ids,
-    column             = cl_ids,
+    row = drug_ids,
+    column = cl_ids,
     normalization_type = norm_types,
-    Concentration      = conc_vals
+    Concentration = conc_vals
   )
   avg_rows[, viability := seq(0.9, 0.5, length.out = .N)]
 
@@ -329,18 +329,18 @@ test_that("apply_fit_to_se creates Metrics assay when not present", {
 test_that("apply_fit_to_se end-to-end integration: minimal SE, trivial fit_fn, Metrics assay verified", {
   ## -- Step 1: construct a minimal SE with an Averaged BumpyMatrix assay -------
 
-  drug_ids   <- c("DRUG_A", "DRUG_B")
-  cl_ids     <- c("CL_1", "CL_2")
+  drug_ids <- c("DRUG_A", "DRUG_B")
+  cl_ids <- c("CL_1", "CL_2")
   norm_types <- c("GR", "RV")
-  conc_vals  <- c(0.1, 0.3, 1.0, 3.0, 10.0)
+  conc_vals <- c(0.1, 0.3, 1.0, 3.0, 10.0)
 
   # Create cross-join of all (drug × cell line × norm_type × concentration)
   # combinations and attach synthetic response values.
   avg_rows <- data.table::CJ(
-    row                = drug_ids,
-    column             = cl_ids,
+    row = drug_ids,
+    column = cl_ids,
     normalization_type = norm_types,
-    Concentration      = conc_vals
+    Concentration = conc_vals
   )
   set.seed(42)
   avg_rows[, x := runif(.N, min = 0.3, max = 1.0)]
