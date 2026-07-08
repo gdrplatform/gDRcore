@@ -1,56 +1,19 @@
 #' apply_fit_to_se
 #'
-#' Apply a user-supplied fit function once per (drug \eqn{\times} cell line
-#' \eqn{\times} normalization_type) triplet of the Averaged
-#' \linkS4class{BumpyMatrix} assay and persist the results into the Metrics
-#' assay with idempotent merge semantics and configurable error handling.
+#' Apply a user-supplied fit function per (drug x cell line x normalization_type)
+#' triplet and persist results into the Metrics assay.
 #'
 #' @param se \code{\link[SummarizedExperiment]{SummarizedExperiment}} with
-#'   response data.  Must contain the assay named by \code{averaged_assay}.
-#' @param fit_fn A function accepting a single \code{\link[data.table]{data.table}}
-#'   (the Averaged assay slice pre-filtered to one drug \eqn{\times} cell line
-#'   \eqn{\times} normalization_type triplet) and returning a named list of
-#'   scalar metric values.
-#' @param normalization_types Character vector of normalization types to iterate.
-#'   Defaults to \code{c("GR", "RV")}.
-#' @param averaged_assay String name of the averaged assay in \code{se}.
-#'   Defaults to \code{"Averaged"}.
-#' @param metrics_assay String name of the metrics assay in \code{se}.
-#'   Defaults to \code{"Metrics"}.
-#' @param merge String controlling how new results are combined with any
-#'   existing Metrics assay data.  \code{"merge"} (default) performs an
-#'   idempotent upsert keyed by (\code{fit_source} +
-#'   \code{normalization_type}): rows whose key already exists are replaced,
-#'   all other existing rows are preserved.  \code{"replace"} overwrites the
-#'   entire Metrics assay.
-#' @param on_error String controlling behaviour when \code{fit_fn} throws an
-#'   error for a given triplet.  \code{"warn"} (default) emits a warning and
-#'   skips that entry.  \code{"stop"} propagates the error immediately without
-#'   any partial write.
-#' @param fit_source String identifier recorded as the \code{fit_source}
-#'   column in the Metrics assay output.  Used as an upsert key together with
-#'   \code{normalization_type} when \code{merge = "merge"}.
-#'   Defaults to \code{"custom"}.
+#'   an Averaged assay
+#' @param fit_fn function taking a \code{data.table} and returning a named list
+#' @param normalization_types character vector of types to iterate
+#' @param averaged_assay name of the input assay
+#' @param metrics_assay name of the output assay
+#' @param merge \code{"merge"} (idempotent upsert) or \code{"replace"}
+#' @param on_error \code{"warn"} (skip + warning) or \code{"stop"}
+#' @param fit_source string recorded in the \code{fit_source} column
 #'
-#' @return \code{\link[SummarizedExperiment]{SummarizedExperiment}} with the
-#'   Metrics assay updated according to the \code{merge} strategy.
-#'
-#' @details
-#' For each (drug \eqn{\times} cell line \eqn{\times} normalization_type)
-#' triplet the function:
-#' \enumerate{
-#'   \item Extracts the Averaged assay slice for the given drug/cell line pair
-#'         (via \code{\link[gDRutils]{apply_bumpy_function}}).
-#'   \item Filters rows where the \code{normalization_type} column matches the
-#'         current normalization type (all rows are passed through unchanged
-#'         when the \code{normalization_type} column is absent).
-#'   \item Calls \code{fit_fn} on the resulting \code{data.table}.
-#'   \item Records \code{fit_source} and \code{normalization_type} metadata on
-#'         the returned list before converting it to a data.table row.
-#' }
-#' If \code{fit_fn} output is missing any column listed in
-#' \code{gDRutils::get_header("response_metrics")} a warning (not an error)
-#' is emitted once after all triplets are processed.
+#' @return updated \code{SummarizedExperiment}
 #'
 #' @keywords metrics
 #' @export
@@ -74,75 +37,30 @@ apply_fit_to_se <- function(se,
   checkmate::assert_string(fit_source)
 
   if (!averaged_assay %in% SummarizedExperiment::assayNames(se)) {
-    stop(sprintf(
-      "%s assay is required for %s()",
-      averaged_assay,
-      as.character(match.call()[[1]])
-    ))
+    stop(sprintf("%s assay is required", averaged_assay))
   }
 
   norm_col <- "normalization_type"
+  tmp_assay <- "__custom_fit_tmp__"
 
-  wrapper_fn <- function(avg_df) {
-    avg_dt <- data.table::as.data.table(avg_df)
-    results <- list()
+  wrapper_fn <- .make_fit_wrapper(
+    fit_fn, normalization_types, norm_col, on_error, fit_source
+  )
 
-    for (nt in normalization_types) {
-      if (norm_col %in% names(avg_dt)) {
-        sub_dt <- avg_dt[avg_dt[[norm_col]] == nt, ]
-      } else {
-        sub_dt <- avg_dt
-      }
-
-      if (NROW(sub_dt) == 0L) {
-        next
-      }
-
-      result_dt <- tryCatch({
-        res <- fit_fn(sub_dt)
-        data.table::as.data.table(as.list(res))
-      }, error = function(e) {
-        if (on_error == "stop") {
-          stop(e)
-        }
-        warning(sprintf(
-          "fit_fn failed for normalization_type=%s: %s",
-          nt, conditionMessage(e)
-        ))
-        NULL
-      })
-
-      if (is.null(result_dt)) {
-        next
-      }
-
-      result_dt$fit_source <- fit_source
-      result_dt$normalization_type <- nt
-      results[[length(results) + 1L]] <- result_dt
-    }
-
-    if (length(results) == 0L) {
-      return(data.table::data.table())
-    }
-    data.table::rbindlist(results, fill = TRUE)
-  }
-
-  se_with_new <- gDRutils::apply_bumpy_function(
+  se_out <- gDRutils::apply_bumpy_function(
     se = se,
     FUN = wrapper_fn,
     req_assay_name = averaged_assay,
-    out_assay_name = "__custom_fit_tmp__"
+    out_assay_name = tmp_assay
   )
 
-  tmp_assay_name <- "__custom_fit_tmp__"
-  if (!tmp_assay_name %in% SummarizedExperiment::assayNames(se_with_new)) {
+  if (!tmp_assay %in% SummarizedExperiment::assayNames(se_out)) {
     return(se)
   }
 
   new_df <- BumpyMatrix::unsplitAsDataFrame(
-    SummarizedExperiment::assay(se_with_new, tmp_assay_name),
-    row.field = "row",
-    column.field = "column"
+    SummarizedExperiment::assay(se_out, tmp_assay),
+    row.field = "row", column.field = "column"
   )
   new_metrics <- data.table::as.data.table(new_df)
 
@@ -150,120 +68,179 @@ apply_fit_to_se <- function(se,
     return(se)
   }
 
-  expected_metrics <- gDRutils::get_header("response_metrics")
-  missing_cols <- setdiff(expected_metrics, names(new_metrics))
-  if (length(missing_cols) > 0L) {
-    warning(sprintf(
-      "fit_fn output is missing response_metrics columns: %s",
-      paste(missing_cols, collapse = ", ")
-    ))
+  # Warn once for missing standard metric columns
+  expected <- gDRutils::get_header("response_metrics")
+  missing <- setdiff(expected, names(new_metrics))
+  if (length(missing) > 0L) {
+    warning(sprintf("fit_fn output missing columns: %s", paste(missing, collapse = ", ")))
   }
 
   .persist_metrics(se, new_metrics, merge, metrics_assay, "row", "column")
 }
 
 
+####
+# Internal helpers
+####
+
+#' Build wrapper function for apply_bumpy_function
+#'
+#' @param fit_fn user-supplied fit function
+#' @param normalization_types character vector
+#' @param norm_col column name for normalization type
+#' @param on_error error handling strategy
+#' @param fit_source label for fit_source column
+#'
+#' @return function suitable for apply_bumpy_function FUN
+#'
+#' @keywords internal
+.make_fit_wrapper <- function(fit_fn, normalization_types, norm_col,
+                              on_error, fit_source) {
+  function(avg_df) {
+    avg_dt <- data.table::as.data.table(avg_df)
+    results <- list()
+
+    for (nt in normalization_types) {
+      sub_dt <- if (norm_col %in% names(avg_dt)) {
+        avg_dt[avg_dt[[norm_col]] == nt, ]
+      } else {
+        avg_dt
+      }
+
+      if (NROW(sub_dt) == 0L) next
+
+      result_dt <- tryCatch({
+        res <- fit_fn(sub_dt)
+        data.table::as.data.table(as.list(res))
+      }, error = function(e) {
+        if (on_error == "stop") stop(e)
+        warning(sprintf("fit_fn failed for normalization_type=%s: %s",
+                        nt, conditionMessage(e)))
+        NULL
+      })
+
+      if (is.null(result_dt)) next
+
+      result_dt$fit_source <- fit_source
+      result_dt$normalization_type <- nt
+      results[[length(results) + 1L]] <- result_dt
+    }
+
+    if (length(results) == 0L) return(data.table::data.table())
+    data.table::rbindlist(results, fill = TRUE)
+  }
+}
+
+
+####
+# Reference fit function
+####
+
 #' fit_drug_response_metrics
 #'
-#' Reference fit function equivalent to current gDR RV/GR fitting.
-#' Replicates what \code{\link[gDRutils]{logisticFit}} + \code{fit_curves()}
-#' produce for one entry.
+#' Reference fit function replicating standard gDR Hill curve fitting.
 #'
-#' @param avg_dt \code{data.table} of averaged data for one triplet.
-#' @param capping_fold numeric capping fold. Defaults to \code{5}.
+#' @param avg_dt \code{data.table} of averaged data for one triplet
+#' @param capping_fold numeric capping fold
 #'
-#' @return Named list of metrics.
+#' @return Named list of metrics
 #'
 #' @export
 fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
   norm_type <- avg_dt$normalization_type[1]
-  conc_col  <- gDRutils::get_env_identifiers("concentration")
-  conc      <- avg_dt[[conc_col]]
-  x         <- avg_dt$x
+  conc_col <- gDRutils::get_env_identifiers("concentration")
+  conc <- avg_dt[[conc_col]]
+  x <- avg_dt$x
 
+  # Filter NAs to ensure alignment for r2 calculation
   keep <- !is.na(x) & !is.na(conc)
   x <- x[keep]
   conc <- conc[keep]
 
   if (length(x) == 0L) {
-    return(list(
-      fit_source            = "custom",
-      normalization_type    = norm_type,
-      x_mean                = NA_real_,
-      x_AOC                 = NA_real_,
-      N_conc                = 0L,
-      maxlog10Concentration = NA_real_,
-      xc50                  = NA_real_,
-      h                     = NA_real_,
-      r2                    = NA_real_,
-      x_0                   = NA_real_,
-      x_inf                 = NA_real_,
-      fit_type              = "DRCInvalidFitResult"
-    ))
+    return(.empty_fit_result(norm_type))
   }
 
-  x_mean                <- mean(x, na.rm = TRUE)
-  x_AOC                 <- 1 - x_mean
-  N_conc                <- length(unique(conc))
-  maxlog10Concentration <- log10(max(conc, na.rm = TRUE))
+  x_mean <- mean(x, na.rm = TRUE)
+  x_AOC <- 1 - x_mean
+  N_conc <- length(unique(conc))
+  maxlog10Conc <- log10(max(conc, na.rm = TRUE))
 
+  controls <- drc::drmc(relTol = 1e-06, errorm = FALSE, noMessage = TRUE, rmNA = TRUE)
   fit <- tryCatch(
-    drc::drm(x ~ conc, data = data.table::data.table(x = x, conc = conc),
+    drc::drm(x ~ conc,
+             data = data.table::data.table(x = x, conc = conc),
              fct = drc::LL.4(),
-             start   = c(2, 0.4, 1, stats::median(conc)),
-             control = drc::drmc(relTol = 1e-06, errorm = FALSE,
-                                 noMessage = TRUE, rmNA = TRUE)),
+             start = c(2, 0.4, 1, stats::median(conc)),
+             control = controls),
     error = function(e) NULL
   )
 
   if (!is.null(fit)) {
-    p        <- stats::coef(fit)
-    h <- p[1]
-    x_inf <- p[2]
-    x_0 <- p[3]
-    ec50 <- p[4]
-    xc50     <- gDRutils::cap_xc50(ec50, max(conc), capping_fold = capping_fold)
-    r2       <- 1 - sum(stats::residuals(fit)^2) / sum((x - mean(x))^2)
-    fit_type <- "DRC4pHillFitModel"
+    coefs <- stats::coef(fit)
+    r2 <- 1 - sum(stats::residuals(fit)^2) / sum((x - mean(x))^2)
+    out <- list(
+      fit_source = "custom", normalization_type = norm_type,
+      x_mean = x_mean, x_AOC = x_AOC, N_conc = N_conc,
+      maxlog10Concentration = maxlog10Conc,
+      xc50 = gDRutils::cap_xc50(coefs[4], max(conc), capping_fold = capping_fold),
+      h = coefs[1], r2 = r2, x_0 = coefs[3], x_inf = coefs[2],
+      fit_type = "DRC4pHillFitModel"
+    )
   } else {
-    h <- x_inf <- x_0 <- r2 <- NA_real_
-    if (all(x > 0.5, na.rm = TRUE)) {
-      xc50 <- Inf
-    } else if (all(x <= 0.5, na.rm = TRUE)) {
-      xc50 <- -Inf
-    } else {
-      xc50 <- NA
-    }
-    fit_type <- "DRCInvalidFitResult"
+    xc50 <- .estimate_xc50_fallback(x)
+    out <- list(
+      fit_source = "custom", normalization_type = norm_type,
+      x_mean = x_mean, x_AOC = x_AOC, N_conc = N_conc,
+      maxlog10Concentration = maxlog10Conc,
+      xc50 = xc50, h = NA_real_, r2 = NA_real_,
+      x_0 = NA_real_, x_inf = NA_real_,
+      fit_type = "DRCInvalidFitResult"
+    )
   }
 
+  out
+}
+
+
+#' @keywords internal
+.empty_fit_result <- function(norm_type) {
   list(
-    fit_source            = "custom",
-    normalization_type    = norm_type,
-    x_mean                = x_mean,
-    x_AOC                 = x_AOC,
-    N_conc                = N_conc,
-    maxlog10Concentration = maxlog10Concentration,
-    xc50                  = xc50,
-    h                     = h,
-    r2                    = r2,
-    x_0                   = x_0,
-    x_inf                 = x_inf,
-    fit_type              = fit_type
+    fit_source = "custom", normalization_type = norm_type,
+    x_mean = NA_real_, x_AOC = NA_real_, N_conc = 0L,
+    maxlog10Concentration = NA_real_, xc50 = NA_real_,
+    h = NA_real_, r2 = NA_real_, x_0 = NA_real_, x_inf = NA_real_,
+    fit_type = "DRCInvalidFitResult"
   )
 }
 
 
-#' Persist new metrics into the Metrics assay of a SummarizedExperiment
+#' @keywords internal
+.estimate_xc50_fallback <- function(x) {
+  if (all(x > 0.5, na.rm = TRUE)) {
+    Inf
+  } else if (all(x <= 0.5, na.rm = TRUE)) {
+    -Inf
+  } else {
+    NA
+  }
+}
+
+
+####
+# Metrics persistence
+####
+
+#' Persist new metrics into the Metrics assay
 #'
-#' @param se \code{SummarizedExperiment}.
-#' @param new_metrics \code{data.table} of new metrics.
-#' @param merge One of \code{"merge"} or \code{"replace"}.
-#' @param metrics_assay String naming the metrics assay.
-#' @param row Name of the row-index column.
-#' @param col Name of the column-index column.
+#' @param se SummarizedExperiment
+#' @param new_metrics data.table of new metrics
+#' @param merge \code{"merge"} or \code{"replace"}
+#' @param metrics_assay assay name
+#' @param row row index column name
+#' @param col column index column name
 #'
-#' @return Updated \code{SummarizedExperiment}.
+#' @return updated SummarizedExperiment
 #'
 #' @keywords internal
 .persist_metrics <- function(se, new_metrics, merge, metrics_assay, row, col) {
@@ -272,11 +249,11 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
   if (merge == "merge" && has_metrics) {
     existing_df <- BumpyMatrix::unsplitAsDataFrame(
       SummarizedExperiment::assay(se, metrics_assay),
-      row.field = row,
-      column.field = col
+      row.field = row, column.field = col
     )
     existing_dt <- data.table::as.data.table(existing_df)
 
+    # Ensure upsert keys exist in existing data
     if (!"fit_source" %in% names(existing_dt)) {
       existing_dt[, fit_source := "gDR"]
     }
@@ -284,20 +261,11 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
       existing_dt[, normalization_type := NA_character_]
     }
 
-    new_key <- paste(
-      new_metrics[["fit_source"]],
-      new_metrics[["normalization_type"]]
-    )
-    existing_key <- paste(
-      existing_dt[["fit_source"]],
-      existing_dt[["normalization_type"]]
-    )
+    new_key <- paste(new_metrics[["fit_source"]], new_metrics[["normalization_type"]])
+    existing_key <- paste(existing_dt[["fit_source"]], existing_dt[["normalization_type"]])
     existing_pruned <- existing_dt[!existing_key %in% unique(new_key), ]
 
-    metrics_merged <- data.table::rbindlist(
-      list(existing_pruned, new_metrics),
-      fill = TRUE
-    )
+    metrics_merged <- data.table::rbindlist(list(existing_pruned, new_metrics), fill = TRUE)
   } else {
     metrics_merged <- new_metrics
   }
@@ -305,8 +273,7 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
   data_cols <- names(metrics_merged)[!names(metrics_merged) %in% c(row, col)]
   metrics_mx <- BumpyMatrix::splitAsBumpyMatrix(
     metrics_merged[, data_cols, with = FALSE],
-    row = metrics_merged[[row]],
-    col = metrics_merged[[col]]
+    row = metrics_merged[[row]], col = metrics_merged[[col]]
   )
   SummarizedExperiment::assay(se, metrics_assay) <- metrics_mx
   se
