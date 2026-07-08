@@ -28,6 +28,7 @@ Imports:
     BumpyMatrix,
     BiocParallel,
     checkmate,
+    drc,
     futile.logger,
     gDRutils (>= 1.7.1),
     MultiAssayExperiment,
@@ -38,7 +39,6 @@ Imports:
     data.table
 Suggests:
     BiocStyle,
-    drc,
     gDRstyle (>= 1.7.1),
     gDRimport (>= 1.7.1),
     gDRtestData (>= 1.7.1),
