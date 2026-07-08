@@ -9,6 +9,34 @@ simple_fit_fn <- function(dt) {
   list(x_mean = mean(dt[["x"]], na.rm = TRUE), ec50 = 1e-6)
 }
 
+# Helper to build a minimal SE for testing — avoids repeating CJ + split + SE pattern
+.build_test_se <- function(drug_ids = "DRUG_A",
+                           cl_ids = "CL_1",
+                           norm_types = c("GR", "RV"),
+                           conc_vals = c(0.01, 0.1, 1.0),
+                           x_col = "x",
+                           seed = 42L) {
+  avg_rows <- data.table::CJ(
+    row = drug_ids,
+    column = cl_ids,
+    normalization_type = norm_types,
+    Concentration = conc_vals
+  )
+  set.seed(seed)
+  avg_rows[, (x_col) := runif(.N)]
+
+  data_cols <- setdiff(names(avg_rows), c("row", "column"))
+  bumpy <- BumpyMatrix::splitAsBumpyMatrix(
+    avg_rows[, data_cols, with = FALSE],
+    row = avg_rows[["row"]],
+    col = avg_rows[["column"]]
+  )
+  se <- SummarizedExperiment::SummarizedExperiment(
+    assays = list(Averaged = bumpy)
+  )
+  list(se = se, avg_rows = avg_rows)
+}
+
 
 test_that("apply_fit_to_se validates inputs correctly", {
   expect_error(
@@ -86,31 +114,11 @@ test_that("apply_fit_to_se filters by normalization_type before calling fit_fn",
 
 
 test_that("apply_fit_to_se calls fit_fn exactly once per triplet on a fully-populated SE", {
-  # Build a minimal SE where every (drug x cell line x norm_type) cell is
-  # non-empty, so we can assert an exact call count rather than just an upper bound.
   drug_ids <- c("DRUG_A", "DRUG_B")
   cl_ids <- c("CL_1", "CL_2")
   norm_types <- c("GR", "RV")
-  conc_vals <- c(0.1, 1.0, 10.0)
-
-  avg_rows <- data.table::CJ(
-    row = drug_ids,
-    column = cl_ids,
-    normalization_type = norm_types,
-    Concentration = conc_vals
-  )
-  set.seed(7L)
-  avg_rows[, x := runif(.N)]
-
-  data_cols <- setdiff(names(avg_rows), c("row", "column"))
-  ctrl_bumpy <- BumpyMatrix::splitAsBumpyMatrix(
-    avg_rows[, data_cols, with = FALSE],
-    row = avg_rows[["row"]],
-    col = avg_rows[["column"]]
-  )
-  ctrl_se <- SummarizedExperiment::SummarizedExperiment(
-    assays = list(Averaged = ctrl_bumpy)
-  )
+  built <- .build_test_se(drug_ids, cl_ids, norm_types, c(0.1, 1.0, 10.0), seed = 7L)
+  ctrl_se <- built$se
 
   call_count <- 0L
   count_fn <- function(dt) {
@@ -428,4 +436,94 @@ test_that("apply_fit_to_se end-to-end integration: minimal SE, trivial fit_fn, M
     ][["x_mean"]]
   )
   expect_equal(obs_mean_val, expected_mean_val, tolerance = 1e-10)
+})
+
+
+####
+# fit_drug_response_metrics tests
+####
+
+test_that("fit_drug_response_metrics returns named list with expected fields", {
+  dt <- data.table::data.table(
+    Concentration = c(0.001, 0.01, 0.1, 1, 10),
+    x = c(0.95, 0.8, 0.5, 0.2, 0.1),
+    normalization_type = "RV"
+  )
+  result <- fit_drug_response_metrics(dt)
+
+  expect_true(is.list(result))
+  expected_names <- c("fit_source", "normalization_type", "x_mean", "x_AOC",
+                      "N_conc", "maxlog10Concentration", "xc50", "h", "r2",
+                      "x_0", "x_inf", "fit_type")
+  expect_true(all(expected_names %in% names(result)))
+  expect_equal(result$normalization_type, "RV")
+  expect_equal(result$fit_source, "custom")
+  expect_equal(result$N_conc, 5L)
+})
+
+
+test_that("fit_drug_response_metrics returns NA metrics for all-NA input", {
+  dt <- data.table::data.table(
+    Concentration = c(0.1, 1, 10),
+    x = c(NA_real_, NA_real_, NA_real_),
+    normalization_type = "GR"
+  )
+  result <- fit_drug_response_metrics(dt)
+
+  expect_equal(result$fit_type, "DRCInvalidFitResult")
+  expect_true(is.na(result$xc50))
+  expect_true(is.na(result$h))
+  expect_equal(result$N_conc, 0L)
+})
+
+
+test_that("fit_drug_response_metrics uses GR priors for GR normalization", {
+  dt <- data.table::data.table(
+    Concentration = c(0.001, 0.01, 0.1, 1, 10),
+    x = c(0.95, 0.8, 0.5, 0.2, 0.1),
+    normalization_type = "GR"
+  )
+  result <- fit_drug_response_metrics(dt)
+
+  expect_equal(result$normalization_type, "GR")
+  expect_true(result$fit_type %in% c("DRC4pHillFitModel", "DRCInvalidFitResult"))
+})
+
+
+test_that("fit_drug_response_metrics computes correct x_mean and x_AOC", {
+  x_vals <- c(0.9, 0.7, 0.5, 0.3, 0.1)
+  dt <- data.table::data.table(
+    Concentration = c(0.001, 0.01, 0.1, 1, 10),
+    x = x_vals,
+    normalization_type = "RV"
+  )
+  result <- fit_drug_response_metrics(dt)
+
+  expect_equal(result$x_mean, mean(x_vals))
+  expect_equal(result$x_AOC, 1 - mean(x_vals))
+})
+
+
+test_that("fit_drug_response_metrics estimates xc50 fallback when fit fails", {
+  # All x > 0.5 — xc50 should be Inf (drug has no effect)
+  dt_high <- data.table::data.table(
+    Concentration = c(0.1, 1),
+    x = c(0.9, 0.8),
+    normalization_type = "RV"
+  )
+  result_high <- fit_drug_response_metrics(dt_high)
+  if (result_high$fit_type == "DRCInvalidFitResult") {
+    expect_equal(result_high$xc50, Inf)
+  }
+
+  # All x <= 0.5 — xc50 should be -Inf (drug very effective)
+  dt_low <- data.table::data.table(
+    Concentration = c(0.1, 1),
+    x = c(0.3, 0.1),
+    normalization_type = "RV"
+  )
+  result_low <- fit_drug_response_metrics(dt_low)
+  if (result_low$fit_type == "DRCInvalidFitResult") {
+    expect_equal(result_low$xc50, -Inf)
+  }
 })

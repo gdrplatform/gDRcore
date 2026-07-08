@@ -15,6 +15,12 @@
 #'
 #' @return updated \code{SummarizedExperiment}
 #'
+#' @examples
+#' mae <- gDRutils::get_synthetic_data("finalMAE_small.qs2")
+#' se <- mae[["single-agent"]]
+#' simple_fn <- function(dt) list(x_mean = mean(dt$x, na.rm = TRUE))
+#' se_out <- apply_fit_to_se(se, simple_fn, fit_source = "demo")
+#'
 #' @keywords metrics
 #' @export
 #'
@@ -144,6 +150,14 @@ apply_fit_to_se <- function(se,
 #' @param capping_fold numeric capping fold
 #'
 #' @return Named list of metrics
+#'
+#' @examples
+#' dt <- data.table::data.table(
+#'   Concentration = c(0.001, 0.01, 0.1, 1, 10),
+#'   x = c(0.95, 0.8, 0.5, 0.2, 0.1),
+#'   normalization_type = "RV"
+#' )
+#' fit_drug_response_metrics(dt)
 #'
 #' @export
 fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
