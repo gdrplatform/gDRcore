@@ -39,7 +39,8 @@
 #' For each (drug \eqn{\times} cell line \eqn{\times} normalization_type)
 #' triplet the function:
 #' \enumerate{
-#'   \item Extracts the Averaged assay slice for the given drug/cell line pair.
+#'   \item Extracts the Averaged assay slice for the given drug/cell line pair
+#'         (via \code{\link[gDRutils]{apply_bumpy_function}}).
 #'   \item Filters rows where the \code{normalization_type} column matches the
 #'         current normalization type (all rows are passed through unchanged
 #'         when the \code{normalization_type} column is absent).
@@ -80,79 +81,85 @@ apply_fit_to_se <- function(se,
     ))
   }
 
-  rdata <- SummarizedExperiment::rowData(se)
-  cdata <- SummarizedExperiment::colData(se)
-  averaged <- SummarizedExperiment::assay(se, averaged_assay)
-
-  row <- "row"
-  col <- "column"
+  expected_metrics <- gDRutils::get_header("response_metrics")
   norm_col <- "normalization_type"
 
-  expected_metrics <- gDRutils::get_header("response_metrics")
-  out <- vector("list", nrow(se) * ncol(se) * length(normalization_types))
-  count <- 0L
+  wrapper_fn <- function(avg_df) {
+    avg_dt <- data.table::as.data.table(avg_df)
+    results <- list()
 
-  for (i in rownames(rdata)) {
-    for (j in rownames(cdata)) {
-      avg_dt <- data.table::as.data.table(averaged[i, j][[1]])
+    for (nt in normalization_types) {
+      if (norm_col %in% names(avg_dt)) {
+        sub_dt <- avg_dt[avg_dt[[norm_col]] == nt, ]
+      } else {
+        sub_dt <- avg_dt
+      }
 
-      if (nrow(avg_dt) == 0L) {
+      if (NROW(sub_dt) == 0L) {
         next
       }
 
-      for (nt in normalization_types) {
-        if (norm_col %in% names(avg_dt)) {
-          sub_dt <- avg_dt[avg_dt[[norm_col]] == nt, ]
-        } else {
-          sub_dt <- avg_dt
+      result_dt <- tryCatch({
+        res <- fit_fn(sub_dt)
+        data.table::as.data.table(as.list(res))
+      }, error = function(e) {
+        if (on_error == "stop") {
+          stop(e)
         }
+        warning(sprintf(
+          "fit_fn failed for normalization_type=%s: %s",
+          nt, conditionMessage(e)
+        ))
+        NULL
+      })
 
-        if (nrow(sub_dt) == 0L) {
-          next
-        }
-
-        result_dt <- tryCatch({
-          res <- fit_fn(sub_dt)
-          res_dt <- data.table::as.data.table(as.list(res))
-          missing_cols <- setdiff(expected_metrics, names(res_dt))
-          if (length(missing_cols) > 0L) {
-            warning(sprintf(
-              "fit_fn output is missing response_metrics columns: %s",
-              paste(missing_cols, collapse = ", ")
-            ))
-          }
-          res_dt
-        }, error = function(e) {
-          if (on_error == "stop") {
-            stop(e)
-          }
-          warning(sprintf(
-            "fit_fn failed for row=%s col=%s normalization_type=%s: %s",
-            i, j, nt, conditionMessage(e)
-          ))
-          NULL
-        })
-
-        if (is.null(result_dt)) {
-          next
-        }
-
-        result_dt$fit_source <- fit_source
-        result_dt$normalization_type <- nt
-        result_dt[[row]] <- i
-        result_dt[[col]] <- j
-        count <- count + 1L
-        out[[count]] <- result_dt
+      if (is.null(result_dt)) {
+        next
       }
+
+      missing_cols <- setdiff(expected_metrics, names(result_dt))
+      if (length(missing_cols) > 0L) {
+        warning(sprintf(
+          "fit_fn output is missing response_metrics columns: %s",
+          paste(missing_cols, collapse = ", ")
+        ))
+      }
+
+      result_dt$fit_source <- fit_source
+      result_dt$normalization_type <- nt
+      results[[length(results) + 1L]] <- result_dt
     }
+
+    if (length(results) == 0L) {
+      return(data.table::data.table())
+    }
+    data.table::rbindlist(results, fill = TRUE)
   }
 
-  if (count == 0L) {
+  se_with_new <- gDRutils::apply_bumpy_function(
+    se = se,
+    FUN = wrapper_fn,
+    req_assay_name = averaged_assay,
+    out_assay_name = "__custom_fit_tmp__"
+  )
+
+  tmp_assay_name <- "__custom_fit_tmp__"
+  if (!tmp_assay_name %in% SummarizedExperiment::assayNames(se_with_new)) {
     return(se)
   }
 
-  new_metrics <- data.table::rbindlist(out[seq_len(count)], fill = TRUE)
-  .persist_metrics(se, new_metrics, merge, metrics_assay, row, col)
+  new_df <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se_with_new, tmp_assay_name),
+    row.field = "row",
+    column.field = "column"
+  )
+  new_metrics <- data.table::as.data.table(new_df)
+
+  if (NROW(new_metrics) == 0L) {
+    return(se)
+  }
+
+  .persist_metrics(se, new_metrics, merge, metrics_assay, "row", "column")
 }
 
 
