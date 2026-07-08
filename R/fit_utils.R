@@ -50,7 +50,7 @@
 #' }
 #' If \code{fit_fn} output is missing any column listed in
 #' \code{gDRutils::get_header("response_metrics")} a warning (not an error)
-#' is emitted.
+#' is emitted once after all triplets are processed.
 #'
 #' @keywords metrics
 #' @export
@@ -81,7 +81,6 @@ apply_fit_to_se <- function(se,
     ))
   }
 
-  expected_metrics <- gDRutils::get_header("response_metrics")
   norm_col <- "normalization_type"
 
   wrapper_fn <- function(avg_df) {
@@ -115,14 +114,6 @@ apply_fit_to_se <- function(se,
 
       if (is.null(result_dt)) {
         next
-      }
-
-      missing_cols <- setdiff(expected_metrics, names(result_dt))
-      if (length(missing_cols) > 0L) {
-        warning(sprintf(
-          "fit_fn output is missing response_metrics columns: %s",
-          paste(missing_cols, collapse = ", ")
-        ))
       }
 
       result_dt$fit_source <- fit_source
@@ -159,6 +150,15 @@ apply_fit_to_se <- function(se,
     return(se)
   }
 
+  expected_metrics <- gDRutils::get_header("response_metrics")
+  missing_cols <- setdiff(expected_metrics, names(new_metrics))
+  if (length(missing_cols) > 0L) {
+    warning(sprintf(
+      "fit_fn output is missing response_metrics columns: %s",
+      paste(missing_cols, collapse = ", ")
+    ))
+  }
+
   .persist_metrics(se, new_metrics, merge, metrics_assay, "row", "column")
 }
 
@@ -177,8 +177,30 @@ apply_fit_to_se <- function(se,
 #' @export
 fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
   norm_type <- avg_dt$normalization_type[1]
-  conc      <- avg_dt$concentration
+  conc_col  <- gDRutils::get_env_identifiers("concentration")
+  conc      <- avg_dt[[conc_col]]
   x         <- avg_dt$x
+
+  keep <- !is.na(x) & !is.na(conc)
+  x <- x[keep]
+  conc <- conc[keep]
+
+  if (length(x) == 0L) {
+    return(list(
+      fit_source            = "custom",
+      normalization_type    = norm_type,
+      x_mean                = NA_real_,
+      x_AOC                 = NA_real_,
+      N_conc                = 0L,
+      maxlog10Concentration = NA_real_,
+      xc50                  = NA_real_,
+      h                     = NA_real_,
+      r2                    = NA_real_,
+      x_0                   = NA_real_,
+      x_inf                 = NA_real_,
+      fit_type              = "DRCInvalidFitResult"
+    ))
+  }
 
   x_mean                <- mean(x, na.rm = TRUE)
   x_AOC                 <- 1 - x_mean
@@ -186,7 +208,8 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
   maxlog10Concentration <- log10(max(conc, na.rm = TRUE))
 
   fit <- tryCatch(
-    drc::drm(x ~ conc, fct = drc::LL.4(),
+    drc::drm(x ~ conc, data = data.frame(x = x, conc = conc),
+             fct = drc::LL.4(),
              start   = c(2, 0.4, 1, stats::median(conc)),
              control = drc::drmc(relTol = 1e-06, errorm = FALSE,
                                  noMessage = TRUE, rmNA = TRUE)),
@@ -204,9 +227,7 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
     fit_type <- "DRC4pHillFitModel"
   } else {
     h <- x_inf <- x_0 <- r2 <- NA_real_
-    if (all(is.na(x))) {
-      xc50 <- NA
-    } else if (all(x > 0.5, na.rm = TRUE)) {
+    if (all(x > 0.5, na.rm = TRUE)) {
       xc50 <- Inf
     } else if (all(x <= 0.5, na.rm = TRUE)) {
       xc50 <- -Inf
@@ -255,6 +276,13 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
       column.field = col
     )
     existing_dt <- data.table::as.data.table(existing_df)
+
+    if (!"fit_source" %in% names(existing_dt)) {
+      existing_dt[, fit_source := "gDR"]
+    }
+    if (!"normalization_type" %in% names(existing_dt)) {
+      existing_dt[, normalization_type := NA_character_]
+    }
 
     new_key <- paste(
       new_metrics[["fit_source"]],
