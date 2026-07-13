@@ -15,7 +15,9 @@ simple_fit_fn <- function(dt) {
                            norm_types = c("GR", "RV"),
                            conc_vals = c(0.01, 0.1, 1.0),
                            x_col = "x",
-                           seed = 42L) {
+                           seed = 42L,
+                           x_min = 0,
+                           x_max = 1) {
   avg_rows <- data.table::CJ(
     row = drug_ids,
     column = cl_ids,
@@ -23,7 +25,7 @@ simple_fit_fn <- function(dt) {
     Concentration = conc_vals
   )
   set.seed(seed)
-  avg_rows[, (x_col) := runif(.N)]
+  avg_rows[, (x_col) := runif(.N, min = x_min, max = x_max)]
 
   data_cols <- setdiff(names(avg_rows), c("row", "column"))
   bumpy <- BumpyMatrix::splitAsBumpyMatrix(
@@ -335,61 +337,32 @@ test_that("apply_fit_to_se creates Metrics assay when not present", {
 
 
 test_that("apply_fit_to_se end-to-end integration: minimal SE, trivial fit_fn, Metrics assay verified", {
-  ## -- Step 1: construct a minimal SE with an Averaged BumpyMatrix assay -------
-
   drug_ids <- c("DRUG_A", "DRUG_B")
   cl_ids <- c("CL_1", "CL_2")
   norm_types <- c("GR", "RV")
   conc_vals <- c(0.1, 0.3, 1.0, 3.0, 10.0)
 
-  # Create cross-join of all (drug × cell line × norm_type × concentration)
-  # combinations and attach synthetic response values.
-  avg_rows <- data.table::CJ(
-    row = drug_ids,
-    column = cl_ids,
-    normalization_type = norm_types,
-    Concentration = conc_vals
-  )
-  set.seed(42)
-  avg_rows[, x := runif(.N, min = 0.3, max = 1.0)]
+  built <- .build_test_se(drug_ids, cl_ids, norm_types, conc_vals,
+    seed = 42L, x_min = 0.3, x_max = 1.0)
+  minimal_se <- built$se
+  avg_rows <- built$avg_rows
 
-  # Build the BumpyMatrix from the data columns (exclude row/column index cols).
-  data_cols <- setdiff(names(avg_rows), c("row", "column"))
-  avg_bumpy <- BumpyMatrix::splitAsBumpyMatrix(
-    avg_rows[, data_cols, with = FALSE],
-    row = avg_rows[["row"]],
-    col = avg_rows[["column"]]
-  )
-
-  minimal_se <- SummarizedExperiment::SummarizedExperiment(
-    assays = list(Averaged = avg_bumpy)
-  )
-
-  ## -- Step 2: define a trivial fit_fn ------------------------------------------
-  # Returns two metrics: mean of x (computed from the data) and a fixed ec50.
   trivial_fit_fn <- function(dt) {
     list(x_mean = mean(dt[["x"]], na.rm = TRUE), ec50 = 1e-6)
   }
 
-  ## -- Step 3: run apply_fit_to_se -------------------------------------------------
-  # Suppress expected warnings about missing response_metrics columns
-  # (the trivial_fit_fn intentionally returns only two metrics).
   result_se <- suppressWarnings(
     apply_fit_to_se(
       minimal_se,
       trivial_fit_fn,
       normalization_types = norm_types,
-      fit_source          = "integration_test"
+      fit_source = "integration_test"
     )
   )
 
-  ## -- Step 4: function completed without error ---------------------------------
   expect_true(is(result_se, "SummarizedExperiment"))
-
-  ## -- Step 5: Metrics assay was created ----------------------------------------
   expect_true("Metrics" %in% SummarizedExperiment::assayNames(result_se))
 
-  ## -- Step 6: unpack Metrics and verify row count, metadata, and values --------
   metrics_df <- BumpyMatrix::unsplitAsDataFrame(
     SummarizedExperiment::assay(result_se, "Metrics"),
     row.field    = "row",
@@ -526,4 +499,86 @@ test_that("fit_drug_response_metrics estimates xc50 fallback when fit fails", {
   if (result_low$fit_type == "DRCInvalidFitResult") {
     expect_equal(result_low$xc50, -Inf)
   }
+})
+
+
+####
+# .persist_metrics tests
+####
+
+test_that(".persist_metrics creates Metrics assay from scratch", {
+  built <- .build_test_se(seed = 1L)
+  se <- built$se
+
+  new_metrics <- data.table::data.table(
+    row = "DRUG_A", column = "CL_1",
+    fit_source = "test", normalization_type = "GR",
+    x_mean = 0.5, ec50 = 1e-6
+  )
+
+  result <- gDRcore:::.persist_metrics(
+    se, new_metrics, "replace", "Metrics", "row", "column"
+  )
+  expect_true("Metrics" %in% SummarizedExperiment::assayNames(result))
+  df <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(result, "Metrics"),
+    row.field = "row", column.field = "column"
+  )
+  expect_equal(nrow(df), 1L)
+  expect_equal(df[["fit_source"]], "test")
+})
+
+
+test_that(".persist_metrics merge mode upserts by fit_source + normalization_type", {
+  built <- .build_test_se(seed = 2L)
+  se <- built$se
+
+  first <- data.table::data.table(
+    row = "DRUG_A", column = "CL_1",
+    fit_source = "gDR", normalization_type = "GR",
+    x_mean = 0.5
+  )
+  se <- gDRcore:::.persist_metrics(se, first, "replace", "Metrics", "row", "column")
+
+  second <- data.table::data.table(
+    row = "DRUG_A", column = "CL_1",
+    fit_source = "custom", normalization_type = "GR",
+    x_mean = 0.8
+  )
+  result <- gDRcore:::.persist_metrics(se, second, "merge", "Metrics", "row", "column")
+
+  df <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(result, "Metrics"),
+    row.field = "row", column.field = "column"
+  )
+  expect_equal(nrow(df), 2L)
+  expect_true("gDR" %in% df[["fit_source"]])
+  expect_true("custom" %in% df[["fit_source"]])
+})
+
+
+test_that(".persist_metrics merge mode replaces rows with matching fit_source", {
+  built <- .build_test_se(seed = 3L)
+  se <- built$se
+
+  first <- data.table::data.table(
+    row = "DRUG_A", column = "CL_1",
+    fit_source = "custom", normalization_type = "GR",
+    x_mean = 0.5
+  )
+  se <- gDRcore:::.persist_metrics(se, first, "replace", "Metrics", "row", "column")
+
+  updated <- data.table::data.table(
+    row = "DRUG_A", column = "CL_1",
+    fit_source = "custom", normalization_type = "GR",
+    x_mean = 0.9
+  )
+  result <- gDRcore:::.persist_metrics(se, updated, "merge", "Metrics", "row", "column")
+
+  df <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(result, "Metrics"),
+    row.field = "row", column.field = "column"
+  )
+  expect_equal(nrow(df), 1L)
+  expect_equal(as.numeric(df[["x_mean"]]), 0.9)
 })
