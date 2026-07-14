@@ -635,26 +635,26 @@ bliss_fit_fn <- function(avg_dt) {
     ))
   }
 
-  sa1_x <- sa1[order(sa1[[conc1_col]]), ][["x"]]
-  sa2_x <- sa2[order(sa2[[conc2_col]]), ][["x"]]
+  # Match SA responses to each combo point by concentration (per-point comparison)
+  combo_ordered <- combo[order(combo[[conc1_col]], combo[[conc2_col]]), ]
+  sa1_match <- sa1[["x"]][match(combo_ordered[[conc1_col]], sa1[[conc1_col]])]
+  sa2_match <- sa2[["x"]][match(combo_ordered[[conc2_col]], sa2[[conc2_col]])]
 
   expected <- if (norm_type == "RV") {
-    as.vector(outer(sa1_x, sa2_x, `*`))
+    sa1_match * sa2_match
   } else {
     # GR adaptation: Holbeck et al., Cancer Res 2017
-    as.vector(outer(log2(sa1_x + 1), log2(sa2_x + 1),
-                    function(a, b) 2^(a * b) - 1))
+    2^(log2(sa1_match + 1) * log2(sa2_match + 1)) - 1
   }
 
-  combo_x <- combo[["x"]]
-  excess <- expected - mean(combo_x, na.rm = TRUE)
+  excess <- expected - combo_ordered[["x"]]
   q90 <- stats::quantile(excess, 0.9, na.rm = TRUE)
 
   list(
     normalization_type = norm_type,
-    bliss_score        = mean(excess[excess >= q90], na.rm = TRUE),
-    bliss_excess_mean  = mean(excess, na.rm = TRUE),
-    n_combo_points     = n_combo
+    bliss_score = mean(excess[excess >= q90], na.rm = TRUE),
+    bliss_excess_mean = mean(excess, na.rm = TRUE),
+    n_combo_points = n_combo
   )
 }
 
@@ -700,13 +700,14 @@ hss_fit_fn <- function(avg_dt) {
     ))
   }
 
-  sa1_x <- sa1[order(sa1[[conc1_col]]), ][["x"]]
-  sa2_x <- sa2[order(sa2[[conc2_col]]), ][["x"]]
+  # Match SA responses to each combo point by concentration (per-point comparison)
+  combo_ordered <- combo[order(combo[[conc1_col]], combo[[conc2_col]]), ]
+  sa1_match <- sa1[["x"]][match(combo_ordered[[conc1_col]], sa1[[conc1_col]])]
+  sa2_match <- sa2[["x"]][match(combo_ordered[[conc2_col]], sa2[[conc2_col]])]
 
-  # HSA expected: the more potent single agent at each grid point
-  expected <- as.vector(outer(sa1_x, sa2_x, pmin))
-  combo_x <- combo[["x"]]
-  excess <- expected - mean(combo_x, na.rm = TRUE)
+  # HSA expected: the more potent single agent at each combo grid point
+  expected <- pmin(sa1_match, sa2_match)
+  excess <- expected - combo_ordered[["x"]]
   q90 <- stats::quantile(excess, 0.9, na.rm = TRUE)
 
   list(
@@ -807,12 +808,11 @@ hss_fit_fn <- function(avg_dt) {
 #' @keywords internal
 .apply_summary_fn <- function(se, fit_dt, summary_fn, summary_assay,
                               merge, fit_source, on_error) {
-  cell_pairs <- unique(fit_dt[, c("row", "column")])
+  cell_list <- split(fit_dt, by = c("row", "column"), sorted = FALSE)
 
-  summary_rows <- lapply(seq_len(NROW(cell_pairs)), function(i) {
-    r <- cell_pairs[["row"]][i]
-    cc <- cell_pairs[["column"]][i]
-    cell_fit <- fit_dt[fit_dt[["row"]] == r & fit_dt[["column"]] == cc, ]
+  summary_rows <- lapply(cell_list, function(cell_fit) {
+    r <- cell_fit[["row"]][1L]
+    cc <- cell_fit[["column"]][1L]
 
     result <- tryCatch({
       res <- summary_fn(cell_fit)
@@ -873,9 +873,8 @@ hss_fit_fn <- function(avg_dt) {
     }
 
     key_cols_present <- intersect(upsert_key_cols, names(new_dt))
-    new_key <- do.call(paste, new_dt[, key_cols_present, with = FALSE])
-    existing_key <- do.call(paste, existing_dt[, key_cols_present, with = FALSE])
-    existing_pruned <- existing_dt[!existing_key %in% unique(new_key), ]
+    # data.table anti-join: keep existing rows whose key is not in new_dt
+    existing_pruned <- existing_dt[!new_dt, on = key_cols_present]
 
     merged_dt <- data.table::rbindlist(list(existing_pruned, new_dt), fill = TRUE)
   } else {
@@ -913,12 +912,15 @@ hss_fit_fn <- function(avg_dt) {
 
 #' @keywords internal
 .estimate_xc50_fallback <- function(x) {
-  if (all(x > 0.5, na.rm = TRUE)) {
+  x_clean <- x[!is.na(x)]
+  if (length(x_clean) == 0L) {
+    NA_real_
+  } else if (all(x_clean > 0.5)) {
     Inf
-  } else if (all(x <= 0.5, na.rm = TRUE)) {
+  } else if (all(x_clean <= 0.5)) {
     -Inf
   } else {
-    NA
+    NA_real_
   }
 }
 
