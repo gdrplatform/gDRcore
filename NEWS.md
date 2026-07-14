@@ -1,3 +1,8 @@
+## gDRcore 1.11.7 - 2026-07-14
+* add `apply_custom_fit()` generic fit interface supporting single-agent, combination, and time-course data with arbitrary output assay names, optional `summary_fn`, and chainable calls
+* add `bliss_fit_fn()` and `hss_fit_fn()` reference implementations for combination synergy scoring
+* refactor `apply_fit_to_se()` as a thin wrapper around `apply_custom_fit()` for backward compatibility
+
 ## gDRcore 1.11.6 - 2026-07-08
 * add `apply_fit_to_se()` generic fit-function interface and `fit_drug_response_metrics` reference implementation
 * improve pipeline performance by removing redundant data copies, enabling parallel averaging, and vectorizing NA-filling

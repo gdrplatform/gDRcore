@@ -582,3 +582,307 @@ test_that(".persist_metrics merge mode replaces rows with matching fit_source", 
   expect_equal(nrow(df), 1L)
   expect_equal(as.numeric(df[["x_mean"]]), 0.9)
 })
+
+####
+# apply_custom_fit
+####
+
+# Helper for combination SE: 2 drugs x 1 cell line, 3x3 conc grid + SA edges
+.build_combo_se <- function(drug1 = "DRUG_A", drug2 = "DRUG_B",
+                            cl = "CL_1",
+                            norm_types = c("GR", "RV"),
+                            conc1 = c(0, 0.1, 1.0),
+                            conc2 = c(0, 0.1, 1.0),
+                            seed = 99L) {
+  dt <- data.table::CJ(
+    row    = drug1,
+    column = cl,
+    normalization_type = norm_types,
+    Concentration   = conc1,
+    Concentration_2 = conc2
+  )
+  set.seed(seed)
+  dt[, x := runif(.N, 0.1, 1.0)]
+
+  data_cols <- setdiff(names(dt), c("row", "column"))
+  bumpy <- BumpyMatrix::splitAsBumpyMatrix(
+    dt[, data_cols, with = FALSE],
+    row = dt[["row"]], col = dt[["column"]]
+  )
+  SummarizedExperiment::SummarizedExperiment(assays = list(Averaged = bumpy))
+}
+
+
+test_that("apply_custom_fit validates output_assay is provided", {
+  built <- .build_test_se()
+  se <- built$se
+  expect_error(
+    apply_custom_fit(se, simple_fit_fn, "single-agent", fit_source = "test"),
+    regexp = "output_assay"
+  )
+})
+
+test_that("apply_custom_fit requires summary_assay when summary_fn is provided", {
+  built <- .build_test_se()
+  se <- built$se
+  expect_error(
+    apply_custom_fit(se, simple_fit_fn, "single-agent",
+                     output_assay = "out",
+                     summary_fn = function(dt) list(n = nrow(dt)),
+                     fit_source = "test"),
+    regexp = "summary_assay"
+  )
+})
+
+test_that("apply_custom_fit single-agent produces same result as apply_fit_to_se", {
+  built <- .build_test_se(seed = 11L)
+  se <- built$se
+
+  via_old <- suppressWarnings(
+    apply_fit_to_se(se, simple_fit_fn, metrics_assay = "Metrics",
+                    fit_source = "test")
+  )
+  via_new <- apply_custom_fit(
+    se, simple_fit_fn, "single-agent",
+    output_assay = "Metrics",
+    fit_source   = "test"
+  )
+
+  df_old <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(via_old, "Metrics"),
+    row.field = "row", column.field = "column"
+  )
+  df_new <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(via_new, "Metrics"),
+    row.field = "row", column.field = "column"
+  )
+  expect_equal(sort(names(df_old)), sort(names(df_new)))
+  expect_equal(nrow(df_old), nrow(df_new))
+})
+
+test_that("apply_custom_fit writes to a custom-named assay", {
+  built <- .build_test_se(seed = 12L)
+  se <- built$se
+
+  se_out <- apply_custom_fit(
+    se, simple_fit_fn, "single-agent",
+    output_assay = "my_custom_metrics",
+    fit_source   = "test"
+  )
+  expect_true("my_custom_metrics" %in% SummarizedExperiment::assayNames(se_out))
+  expect_false("Metrics" %in% SummarizedExperiment::assayNames(se_out))
+})
+
+test_that("apply_custom_fit chaining adds two independent assays", {
+  built <- .build_test_se(drug_ids = c("D1", "D2"), cl_ids = c("CL1", "CL2"),
+                          seed = 13L)
+  se <- built$se
+
+  fn_a <- function(dt) list(metric_a = mean(dt$x, na.rm = TRUE))
+  fn_b <- function(dt) list(metric_b = sd(dt$x, na.rm = TRUE))
+
+  se_out <- se |>
+    apply_custom_fit(fn_a, "single-agent", output_assay = "out_a",
+                     fit_source = "src_a") |>
+    apply_custom_fit(fn_b, "single-agent", output_assay = "out_b",
+                     fit_source = "src_b")
+
+  expect_true("out_a" %in% SummarizedExperiment::assayNames(se_out))
+  expect_true("out_b" %in% SummarizedExperiment::assayNames(se_out))
+})
+
+test_that("apply_custom_fit summary_fn writes to summary_assay with one row per cell", {
+  built <- .build_test_se(drug_ids = c("D1", "D2"),
+                          cl_ids   = c("CL1", "CL2"),
+                          seed = 14L)
+  se <- built$se
+
+  sum_fn <- function(fit_dt) {
+    list(mean_x_mean = mean(fit_dt[["x_mean"]], na.rm = TRUE),
+         n_slices    = nrow(fit_dt))
+  }
+
+  se_out <- apply_custom_fit(
+    se, simple_fit_fn, "single-agent",
+    output_assay  = "out",
+    summary_fn    = sum_fn,
+    summary_assay = "out_summary",
+    fit_source    = "test"
+  )
+
+  expect_true("out_summary" %in% SummarizedExperiment::assayNames(se_out))
+  sumdf <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se_out, "out_summary"),
+    row.field = "row", column.field = "column"
+  )
+  # One summary row per (drug x cell line) cell — 2 x 2 = 4 cells
+  expect_equal(nrow(sumdf), 4L)
+  expect_true("mean_x_mean" %in% names(sumdf))
+  expect_true("n_slices" %in% names(sumdf))
+})
+
+test_that("apply_custom_fit explicit slicing_cols overrides data_type default", {
+  # Build SE where slicing column is "custom_group" instead of normalization_type
+  dt <- data.table::CJ(
+    row = "D1", column = "CL1",
+    custom_group = c("A", "B"),
+    Concentration = c(0.1, 1.0)
+  )
+  set.seed(77L)
+  dt[, x := runif(.N)]
+  bumpy <- BumpyMatrix::splitAsBumpyMatrix(
+    dt[, c("custom_group", "Concentration", "x")],
+    row = dt$row, col = dt$column
+  )
+  se <- SummarizedExperiment::SummarizedExperiment(assays = list(Averaged = bumpy))
+
+  fn <- function(d) list(n = nrow(d), grp = d$custom_group[1])
+  se_out <- apply_custom_fit(
+    se, fn, "single-agent",
+    slicing_cols   = "custom_group",
+    slicing_values = c("A", "B"),
+    output_assay   = "grouped_out",
+    fit_source     = "grp_test"
+  )
+
+  df <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se_out, "grouped_out"),
+    row.field = "row", column.field = "column"
+  )
+  expect_equal(nrow(df), 2L)          # one row per group
+  expect_setequal(df[["grp"]], c("A", "B"))
+})
+
+test_that("apply_custom_fit merge upsert replaces rows with matching fit_source + slice", {
+  built <- .build_test_se(seed = 15L)
+  se <- built$se
+
+  fn_first  <- function(dt) list(val = 1.0)
+  fn_second <- function(dt) list(val = 9.9)
+
+  se1 <- apply_custom_fit(se, fn_first,  "single-agent",
+                          output_assay = "out", fit_source = "src")
+  se2 <- apply_custom_fit(se1, fn_second, "single-agent",
+                          output_assay = "out", fit_source = "src", merge = "merge")
+
+  df <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se2, "out"),
+    row.field = "row", column.field = "column"
+  )
+  expect_true(all(as.numeric(df[["val"]]) == 9.9))
+})
+
+
+####
+# bliss_fit_fn
+####
+
+test_that("bliss_fit_fn returns expected columns for valid combo input", {
+  se <- .build_combo_se()
+  dt <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se, "Averaged"),
+    row.field = "row", column.field = "column"
+  )
+  dt <- data.table::as.data.table(dt)
+  sub_rv <- dt[dt$normalization_type == "RV", ]
+
+  result <- bliss_fit_fn(sub_rv)
+  expect_type(result, "list")
+  expect_named(result,
+    c("normalization_type", "bliss_score", "bliss_excess_mean", "n_combo_points"),
+    ignore.order = TRUE
+  )
+  expect_equal(result$normalization_type, "RV")
+  expect_gt(result$n_combo_points, 0L)
+})
+
+test_that("bliss_fit_fn returns NA when no combo points present", {
+  # Only single-agent rows (Concentration_2 == 0 or Concentration == 0)
+  dt <- data.table::data.table(
+    normalization_type = "RV",
+    Concentration   = c(0, 0.1, 1.0),
+    Concentration_2 = c(0, 0, 0),
+    x               = c(1.0, 0.8, 0.5)
+  )
+  result <- bliss_fit_fn(dt)
+  expect_true(is.na(result$bliss_score))
+  expect_equal(result$n_combo_points, 0L)
+})
+
+test_that("bliss_fit_fn integrates with apply_custom_fit on combination data", {
+  se <- .build_combo_se()
+  se_out <- apply_custom_fit(
+    se, bliss_fit_fn, "combination",
+    output_assay = "custom_bliss",
+    fit_source   = "bliss"
+  )
+  expect_true("custom_bliss" %in% SummarizedExperiment::assayNames(se_out))
+  df <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se_out, "custom_bliss"),
+    row.field = "row", column.field = "column"
+  )
+  expect_true("bliss_score" %in% names(df))
+  # Two norm types → two rows per (drug x cell line)
+  expect_equal(nrow(df), 2L)
+})
+
+
+####
+# hss_fit_fn
+####
+
+test_that("hss_fit_fn returns expected columns for valid combo input", {
+  se <- .build_combo_se()
+  dt <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se, "Averaged"),
+    row.field = "row", column.field = "column"
+  )
+  dt <- data.table::as.data.table(dt)
+  sub_rv <- dt[dt$normalization_type == "RV", ]
+
+  result <- hss_fit_fn(sub_rv)
+  expect_type(result, "list")
+  expect_named(result,
+    c("normalization_type", "hss_score", "hss_excess_mean", "n_combo_points"),
+    ignore.order = TRUE
+  )
+  expect_gt(result$n_combo_points, 0L)
+})
+
+test_that("hss_fit_fn returns NA when no combo points present", {
+  dt <- data.table::data.table(
+    normalization_type = "GR",
+    Concentration   = c(0, 0.1, 1.0),
+    Concentration_2 = c(0, 0, 0),
+    x               = c(1.0, 0.7, 0.4)
+  )
+  result <- hss_fit_fn(dt)
+  expect_true(is.na(result$hss_score))
+})
+
+test_that("hss_fit_fn integrates with apply_custom_fit on combination data", {
+  se <- .build_combo_se()
+  se_out <- apply_custom_fit(
+    se, hss_fit_fn, "combination",
+    output_assay = "custom_hss",
+    fit_source   = "hss"
+  )
+  expect_true("custom_hss" %in% SummarizedExperiment::assayNames(se_out))
+  df <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se_out, "custom_hss"),
+    row.field = "row", column.field = "column"
+  )
+  expect_true("hss_score" %in% names(df))
+})
+
+test_that("chaining bliss and hss on the same SE adds both assays independently", {
+  se <- .build_combo_se(seed = 200L)
+  se_out <- se |>
+    apply_custom_fit(bliss_fit_fn, "combination",
+                     output_assay = "custom_bliss", fit_source = "bliss") |>
+    apply_custom_fit(hss_fit_fn,   "combination",
+                     output_assay = "custom_hss",   fit_source = "hss")
+
+  expect_true("custom_bliss" %in% SummarizedExperiment::assayNames(se_out))
+  expect_true("custom_hss"   %in% SummarizedExperiment::assayNames(se_out))
+})
