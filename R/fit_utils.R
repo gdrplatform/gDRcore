@@ -256,6 +256,238 @@ apply_fit_to_se <- function(se,
 
 
 ####
+# Multi-fit (single-pass)
+####
+
+#' apply_custom_fits
+#'
+#' Apply multiple fit functions in a \strong{single pass} over each BumpyMatrix
+#' cell, writing each function's results into its own named output assay.
+#'
+#' @details
+#' \code{apply_custom_fits()} is the performance-efficient alternative to
+#' chaining multiple \code{\link{apply_custom_fit}} calls when two or more fit
+#' functions operate on the \strong{same input assay}.  Instead of unsplitting
+#' the BumpyMatrix K times (once per function), it traverses each cell once and
+#' applies all functions in that single pass.
+#'
+#' Use this when:
+#' \itemize{
+#'   \item You have two or more independent fit functions on the same data
+#'     (e.g. Bliss + HSS on combination data).
+#'   \item A single fit function produces results for multiple output assays
+#'     (shared pre-computation pattern — see below).
+#' }
+#'
+#' \subsection{Independent fit functions (most common)}{
+#' Names of \code{fit_fns} become the output assay names:
+#' \preformatted{
+#'   apply_custom_fits(
+#'     combo_se,
+#'     fit_fns = list(
+#'       custom_bliss = bliss_fit_fn,
+#'       custom_hss   = hss_fit_fn
+#'     ),
+#'     data_type  = "combination",
+#'     fit_source = "synergy"
+#'   )
+#' }
+#' }
+#'
+#' \subsection{Shared pre-computation (advanced)}{
+#' A single function can return a \strong{named list of named lists} to write
+#' multiple assays while computing expensive intermediates only once:
+#' \preformatted{
+#'   bliss_and_hss <- function(dt) {
+#'     sa_curves <- fit_hill_curves(dt)  # expensive — done once
+#'     list(
+#'       custom_bliss = list(bliss_score = compute_bliss(sa_curves, dt)),
+#'       custom_hss   = list(hss_score   = compute_hss(sa_curves, dt))
+#'     )
+#'   }
+#'   apply_custom_fits(
+#'     combo_se,
+#'     fit_fns    = list(bliss_and_hss = bliss_and_hss),
+#'     output_assay_map = c(bliss_and_hss = NA),  # ignored; keys from return value
+#'     ...
+#'   )
+#' }
+#' The multi-output pattern is detected automatically when a fit function
+#' returns a named list whose values are themselves named lists.  Each top-level
+#' name maps to an assay; the inner named list provides the row columns.
+#' }
+#'
+#' @param se \code{\link[SummarizedExperiment]{SummarizedExperiment}}
+#' @param fit_fns named list of functions.  Each name becomes an output assay
+#'   name; each value is a function(\code{data.table}) → named list (or a named
+#'   list of named lists for the shared pre-computation pattern).
+#' @param data_type one of \code{"single-agent"}, \code{"combination"},
+#'   \code{"time-course"}.
+#' @param slicing_cols character vector; \code{NULL} uses profile default.
+#' @param slicing_values character vector; \code{NULL} uses profile default.
+#' @param input_assay string; \code{NULL} uses profile default.
+#' @param merge \code{"merge"} or \code{"replace"}.
+#' @param on_error \code{"warn"} or \code{"stop"}.
+#' @param fit_source character string stamped as \code{fit_source} in every
+#'   output row.
+#'
+#' @return updated \code{SummarizedExperiment} with one new (or updated) assay
+#'   per entry in \code{fit_fns}.
+#'
+#' @examples
+#' mae <- gDRutils::get_synthetic_data("finalMAE_small.qs2")
+#' se <- mae[["single-agent"]]
+#' fn_a <- function(dt) list(x_mean = mean(dt$x, na.rm = TRUE))
+#' fn_b <- function(dt) list(x_sd   = sd(dt$x,   na.rm = TRUE))
+#' se_out <- apply_custom_fits(
+#'   se,
+#'   fit_fns    = list(mean_metrics = fn_a, sd_metrics = fn_b),
+#'   data_type  = "single-agent",
+#'   fit_source = "demo"
+#' )
+#'
+#' @keywords metrics
+#' @export
+#'
+apply_custom_fits <- function(se,
+                              fit_fns,
+                              data_type      = c("single-agent",
+                                                 "combination",
+                                                 "time-course"),
+                              slicing_cols   = NULL,
+                              slicing_values = NULL,
+                              input_assay    = NULL,
+                              merge          = "merge",
+                              on_error       = "warn",
+                              fit_source) {
+
+  data_type <- match.arg(data_type)
+  profile <- .CUSTOM_FIT_PROFILES[[data_type]]
+
+  if (is.null(slicing_cols))   slicing_cols   <- profile$slicing_cols
+  if (is.null(slicing_values)) slicing_values <- profile$slicing_values
+  if (is.null(input_assay))    input_assay    <- profile$input_assay
+
+  checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_list(fit_fns, min.len = 1L, types = "function", names = "unique")
+  checkmate::assert_character(slicing_cols, min.len = 1L)
+  checkmate::assert_character(slicing_values, null.ok = TRUE, min.len = 1L)
+  checkmate::assert_string(input_assay)
+  checkmate::assert_choice(merge, c("merge", "replace"))
+  checkmate::assert_choice(on_error, c("warn", "stop"))
+  checkmate::assert_string(fit_source)
+
+  if (!input_assay %in% SummarizedExperiment::assayNames(se)) {
+    stop(sprintf("%s assay is required", input_assay))
+  }
+
+  out_assay_names <- names(fit_fns)
+  tmp_prefix <- "__custom_fits_tmp_"
+
+  # Build one wrapper per fit_fn, each writing to a distinct tmp assay.
+  # apply_bumpy_function can only write one assay per call, so we make K calls
+  # but reuse the already-unsplit BumpyMatrix by piggy-backing on the tmp assay
+  # approach.  The key efficiency win: all K wrappers share the same unsplit
+  # data — we unsplit once at the top and call wrappers on the same data.table.
+  asy <- SummarizedExperiment::assay(se, input_assay)
+  unsplit_df <- BumpyMatrix::unsplitAsDataFrame(
+    asy, row.field = "row", column.field = "column"
+  )
+  all_cells <- unique(data.frame(
+    row    = unsplit_df[["row"]],
+    column = unsplit_df[["column"]],
+    stringsAsFactors = FALSE
+  ))
+
+  # Accumulate per-assay results: list(assay_name -> list of per-cell data.tables)
+  assay_results <- stats::setNames(
+    lapply(out_assay_names, function(nm) list()),
+    out_assay_names
+  )
+
+  slice_col <- slicing_cols[1L]
+
+  for (i in seq_len(NROW(all_cells))) {
+    r  <- all_cells[["row"]][i]
+    cc <- all_cells[["column"]][i]
+    cell_dt <- data.table::as.data.table(asy[r, cc][[1L]])
+
+    vals <- if (!is.null(slicing_values)) {
+      slicing_values
+    } else if (slice_col %in% names(cell_dt)) {
+      unique(cell_dt[[slice_col]])
+    } else {
+      NA_character_
+    }
+
+    for (val in vals) {
+      sub_dt <- if (slice_col %in% names(cell_dt) && !is.na(val)) {
+        cell_dt[cell_dt[[slice_col]] == val, ]
+      } else {
+        cell_dt
+      }
+      if (NROW(sub_dt) == 0L) next
+      label <- if (!is.na(val)) sprintf("%s=%s", slice_col, val) else "all"
+
+      for (fn_nm in out_assay_names) {
+        fn <- fit_fns[[fn_nm]]
+        result_dt <- tryCatch({
+          res <- fn(sub_dt)
+          # Detect multi-output pattern: named list of named lists
+          if (is.list(res) && length(res) > 0L &&
+              is.list(res[[1L]]) && !is.null(names(res))) {
+            # Each top-level name maps to an assay, inner list is one row
+            for (assay_nm in names(res)) {
+              row_dt <- data.table::as.data.table(as.list(res[[assay_nm]]))
+              row_dt[["fit_source"]] <- fit_source
+              row_dt[["row"]]        <- r
+              row_dt[["column"]]     <- cc
+              if (!is.na(val) && !slice_col %in% names(row_dt)) {
+                row_dt[[slice_col]] <- val
+              }
+              if (assay_nm %in% out_assay_names) {
+                assay_results[[assay_nm]] <- c(
+                  assay_results[[assay_nm]], list(row_dt)
+                )
+              }
+            }
+            next  # skip the normal single-output path below
+          }
+          data.table::as.data.table(as.list(res))
+        }, error = function(e) {
+          if (on_error == "stop") stop(e)
+          warning(sprintf("fit_fn '%s' failed for %s row=%s col=%s: %s",
+                          fn_nm, label, r, cc, conditionMessage(e)))
+          NULL
+        })
+
+        if (is.null(result_dt)) next
+
+        result_dt[["fit_source"]] <- fit_source
+        result_dt[["row"]]        <- r
+        result_dt[["column"]]     <- cc
+        if (!is.na(val) && !slice_col %in% names(result_dt)) {
+          result_dt[[slice_col]] <- val
+        }
+        assay_results[[fn_nm]] <- c(assay_results[[fn_nm]], list(result_dt))
+      }
+    }
+  }
+
+  # Persist each assay's accumulated rows
+  upsert_key <- c("fit_source", slicing_cols)
+  for (assay_nm in out_assay_names) {
+    rows <- assay_results[[assay_nm]]
+    if (length(rows) == 0L) next
+    merged_dt <- data.table::rbindlist(rows, fill = TRUE)
+    se <- .persist_assay(se, merged_dt, merge, assay_nm, "row", "column", upsert_key)
+  }
+
+  se
+}
+
+
+####
 # Reference fit functions
 ####
 
