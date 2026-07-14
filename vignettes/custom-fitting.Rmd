@@ -11,9 +11,9 @@ vignette: >
 ```{r knitr-config, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment  = "#>",
-  message  = FALSE,
-  warning  = FALSE
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
 )
 ```
 
@@ -105,8 +105,8 @@ by the generic layer — do not include it in the return value.
 summary_fn <- function(avg_dt) {
   list(
     x_mean = mean(avg_dt$x, na.rm = TRUE),
-    x_sd   = sd(avg_dt$x,   na.rm = TRUE),
-    n      = nrow(avg_dt)
+    x_sd = sd(avg_dt$x, na.rm = TRUE),
+    n = NROW(avg_dt)
   )
 }
 ```
@@ -121,10 +121,10 @@ triplet and write results to a custom assay named `"custom_summary"`.
 ```{r sa-basic}
 sa_out <- apply_custom_fit(
   sa_se,
-  fit_fn       = summary_fn,
-  data_type    = "single-agent",
+  fit_fn = summary_fn,
+  data_type = "single-agent",
   output_assay = "custom_summary",
-  fit_source   = "demo"
+  fit_source = "demo"
 )
 assayNames(sa_out)
 ```
@@ -146,7 +146,7 @@ Calling again with the same `fit_source` **replaces** those rows rather than
 appending:
 
 ```{r sa-idempotent}
-n_before <- nrow(BumpyMatrix::unsplitAsDataFrame(
+n_before <- NROW(BumpyMatrix::unsplitAsDataFrame(
   assay(sa_out, "custom_summary"),
   row.field = "row", column.field = "column"
 ))
@@ -154,12 +154,12 @@ n_before <- nrow(BumpyMatrix::unsplitAsDataFrame(
 # Call again — same fit_source, same data
 sa_out2 <- apply_custom_fit(
   sa_out,
-  fit_fn       = summary_fn,
-  data_type    = "single-agent",
+  fit_fn = summary_fn,
+  data_type = "single-agent",
   output_assay = "custom_summary",
-  fit_source   = "demo"
+  fit_source = "demo"
 )
-n_after <- nrow(BumpyMatrix::unsplitAsDataFrame(
+n_after <- NROW(BumpyMatrix::unsplitAsDataFrame(
   assay(sa_out2, "custom_summary"),
   row.field = "row", column.field = "column"
 ))
@@ -178,7 +178,7 @@ extra_fn <- function(avg_dt) list(x_max = max(avg_dt$x, na.rm = TRUE))
 sa_two <- sa_out |>
   apply_custom_fit(extra_fn, "single-agent",
                    output_assay = "custom_summary",
-                   fit_source   = "extremes")
+                   fit_source = "extremes")
 
 sources <- unique(BumpyMatrix::unsplitAsDataFrame(
   assay(sa_two, "custom_summary"),
@@ -199,10 +199,10 @@ your fit function produces consistent results.
 ```{r hill-ref}
 hill_out <- apply_custom_fit(
   sa_se,
-  fit_fn       = fit_drug_response_metrics,
-  data_type    = "single-agent",
+  fit_fn = fit_drug_response_metrics,
+  data_type = "single-agent",
   output_assay = "custom_hill",
-  fit_source   = "hill_ref"
+  fit_source = "hill_ref"
 )
 
 hill_df <- BumpyMatrix::unsplitAsDataFrame(
@@ -226,20 +226,20 @@ for example, whether the result is synergistic across both GR and RV.
 # Aggregate: mean xc50 and flag whether both norm types fitted successfully
 hill_summary_fn <- function(fit_dt) {
   list(
-    mean_xc50      = mean(fit_dt$xc50, na.rm = TRUE),
-    mean_r2        = mean(fit_dt$r2,   na.rm = TRUE),
-    all_converged  = all(fit_dt$fit_type == "DRC4pHillFitModel", na.rm = TRUE)
+    mean_xc50 = mean(fit_dt$xc50, na.rm = TRUE),
+    mean_r2 = mean(fit_dt$r2, na.rm = TRUE),
+    all_converged = all(fit_dt$fit_type == "DRC4pHillFitModel", na.rm = TRUE)
   )
 }
 
 hill_with_summary <- apply_custom_fit(
   sa_se,
-  fit_fn        = fit_drug_response_metrics,
-  data_type     = "single-agent",
-  output_assay  = "custom_hill",
-  summary_fn    = hill_summary_fn,
+  fit_fn = fit_drug_response_metrics,
+  data_type = "single-agent",
+  output_assay = "custom_hill",
+  summary_fn = hill_summary_fn,
   summary_assay = "custom_hill_summary",
-  fit_source    = "hill_ref"
+  fit_source = "hill_ref"
 )
 assayNames(hill_with_summary)
 ```
@@ -267,11 +267,11 @@ two most common combination synergy metrics.
 ```{r combo-se}
 # Build a synthetic 3x3 combination dose grid (0 = no drug = single-agent edge)
 combo_dt <- data.table::CJ(
-  row    = c("DrugA", "DrugB"),
+  row = c("DrugA", "DrugB"),
   column = "CellLine1",
   normalization_type = c("GR", "RV"),
-  Concentration      = c(0, 0.1, 1.0),
-  Concentration_2    = c(0, 0.1, 1.0)
+  Concentration = c(0, 0.1, 1.0),
+  Concentration_2 = c(0, 0.1, 1.0)
 )
 set.seed(42L)
 combo_dt[, x := pmax(0.05,
@@ -292,10 +292,10 @@ combo_se <- SummarizedExperiment(assays = list(Averaged = combo_bumpy))
 ```{r combo-bliss}
 bliss_out <- apply_custom_fit(
   combo_se,
-  fit_fn       = bliss_fit_fn,
-  data_type    = "combination",
+  fit_fn = bliss_fit_fn,
+  data_type = "combination",
   output_assay = "custom_bliss",
-  fit_source   = "bliss"
+  fit_source = "bliss"
 )
 
 bliss_df <- BumpyMatrix::unsplitAsDataFrame(
@@ -314,10 +314,10 @@ independence predicts); `bliss_score < 0` indicates antagonism.
 ```{r combo-hss}
 hss_out <- apply_custom_fit(
   combo_se,
-  fit_fn       = hss_fit_fn,
-  data_type    = "combination",
+  fit_fn = hss_fit_fn,
+  data_type = "combination",
   output_assay = "custom_hss",
-  fit_source   = "hss"
+  fit_source = "hss"
 )
 
 hss_df <- BumpyMatrix::unsplitAsDataFrame(
@@ -339,11 +339,11 @@ all functions in that single pass.
 ```{r multi-fit}
 combo_multi <- apply_custom_fits(
   combo_se,
-  fit_fns    = list(
+  fit_fns = list(
     custom_bliss = bliss_fit_fn,
-    custom_hss   = hss_fit_fn
+    custom_hss = hss_fit_fn
   ),
-  data_type  = "combination",
+  data_type = "combination",
   fit_source = "synergy_panel"
 )
 assayNames(combo_multi)
@@ -367,16 +367,16 @@ bliss_and_hss_combined <- function(dt) {
   sa2 <- dt[dt$Concentration == 0   & dt$Concentration_2 > 0, ]
 
   list(
-    custom_bliss = list(bliss_score = mean(sa1$x) - mean(sa2$x)),  # simplified
-    custom_hss   = list(hss_score   = min(c(sa1$x, sa2$x)))
+    custom_bliss = list(bliss_score = mean(sa1$x) - mean(sa2$x)), # simplified
+    custom_hss = list(hss_score = min(c(sa1$x, sa2$x)))
   )
 }
 
 apply_custom_fits(
   combo_se,
-  fit_fns    = list(custom_bliss = bliss_and_hss_combined,
-                    custom_hss   = bliss_and_hss_combined),
-  data_type  = "combination",
+  fit_fns = list(custom_bliss = bliss_and_hss_combined,
+                    custom_hss = bliss_and_hss_combined),
+  data_type = "combination",
   fit_source = "shared"
 )
 ```
@@ -391,15 +391,15 @@ The functions are pipe-friendly — each call returns the updated SE:
 result_se <- combo_se |>
   apply_custom_fit(bliss_fit_fn, "combination",
                    output_assay = "custom_bliss",
-                   fit_source   = "bliss") |>
-  apply_custom_fit(hss_fit_fn,   "combination",
+                   fit_source = "bliss") |>
+  apply_custom_fit(hss_fit_fn, "combination",
                    output_assay = "custom_hss",
-                   fit_source   = "hss") |>
+                   fit_source = "hss") |>
   apply_custom_fit(
-    function(dt) list(n_obs = nrow(dt)),
+    function(dt) list(n_obs = NROW(dt)),
     "combination",
     output_assay = "combo_diagnostics",
-    fit_source   = "qc"
+    fit_source = "qc"
   )
 
 assayNames(result_se)
@@ -423,8 +423,8 @@ se_partial <- withCallingHandlers(
   apply_custom_fit(
     sa_se, buggy_fn, "single-agent",
     output_assay = "rv_only",
-    fit_source   = "rv_fn",
-    on_error     = "warn"
+    fit_source = "rv_fn",
+    on_error = "warn"
   ),
   warning = function(w) {
     message("[caught] ", conditionMessage(w))
@@ -450,23 +450,23 @@ unique(rv_df$normalization_type)
 apply_custom_fit(
   se,
   fit_fn,
-  data_type      = "single-agent",   # or "combination", "time-course"
-  slicing_cols   = NULL,             # NULL → data_type default
-  slicing_values = NULL,             # NULL → all unique values found
-  input_assay    = NULL,             # NULL → data_type default ("Averaged")
-  output_assay,                      # REQUIRED — your assay name
-  summary_fn     = NULL,             # optional cell-level aggregator
-  summary_assay  = NULL,
-  merge          = "merge",          # or "replace"
-  on_error       = "warn",           # or "stop"
+  data_type = "single-agent", # or "combination", "time-course"
+  slicing_cols = NULL, # NULL → data_type default
+  slicing_values = NULL, # NULL → all unique values found
+  input_assay = NULL, # NULL → data_type default ("Averaged")
+  output_assay, # REQUIRED — your assay name
+  summary_fn = NULL, # optional cell-level aggregator
+  summary_assay = NULL,
+  merge = "merge", # or "replace"
+  on_error = "warn", # or "stop"
   fit_source                         # REQUIRED — upsert key tag
 )
 
 # Multiple fits → one BumpyMatrix pass
 apply_custom_fits(
   se,
-  fit_fns,       # named list: name = output assay, value = fit function
-  data_type      = "single-agent",
+  fit_fns, # named list: name = output assay, value = fit function
+  data_type = "single-agent",
   fit_source,
   ...
 )
