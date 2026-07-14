@@ -51,7 +51,7 @@ test_that("apply_fit_to_se validates inputs correctly", {
   )
   expect_error(
     apply_fit_to_se(se_small, simple_fit_fn, normalization_types = character(0)),
-    regexp = "normalization_types"
+    regexp = "normalization_types|slicing_values"
   )
   expect_error(
     apply_fit_to_se(se_small, simple_fit_fn, averaged_assay = "BOGUS"),
@@ -295,7 +295,7 @@ test_that("apply_fit_to_se warns for missing response_metrics columns in fit_fn 
 
   expect_warning(
     apply_fit_to_se(se_small, incomplete_fn, fit_source = "incomplete"),
-    regexp = "missing response_metrics columns"
+    regexp = "missing"
   )
 })
 

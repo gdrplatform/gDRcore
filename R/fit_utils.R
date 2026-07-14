@@ -148,11 +148,25 @@ apply_custom_fit <- function(se,
     fit_fn, slicing_cols, slicing_values, on_error, fit_source
   )
 
-  se_out <- gDRutils::apply_bumpy_function(
-    se             = se,
-    FUN            = wrapper_fn,
-    req_assay_name = input_assay,
-    out_assay_name = tmp_assay
+  se_out <- tryCatch(
+    gDRutils::apply_bumpy_function(
+      se             = se,
+      FUN            = wrapper_fn,
+      req_assay_name = input_assay,
+      out_assay_name = tmp_assay
+    ),
+    error = function(e) {
+      # apply_bumpy_function errors on SE dimnames mismatch when all cells
+      # return empty data.tables (nothing to split back into BumpyMatrix).
+      # Distinguish from user fit_fn errors propagated with on_error="stop".
+      msg <- conditionMessage(e)
+      if (grepl("rownames|colnames|dimnames|withDimnames", msg,
+                ignore.case = TRUE)) {
+        se   # treat as all-empty — return original SE
+      } else {
+        stop(e)
+      }
+    }
   )
 
   if (!tmp_assay %in% SummarizedExperiment::assayNames(se_out)) {
@@ -547,6 +561,7 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
     coefs <- stats::coef(fit)
     r2 <- 1 - sum(stats::residuals(fit)^2) / sum((x - mean(x))^2)
     list(
+      fit_source            = "custom",
       normalization_type    = norm_type,
       x_mean                = x_mean,
       x_AOC                 = x_AOC,
@@ -561,6 +576,7 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
     )
   } else {
     list(
+      fit_source            = "custom",
       normalization_type    = norm_type,
       x_mean                = x_mean,
       x_AOC                 = x_AOC,
@@ -879,6 +895,7 @@ hss_fit_fn <- function(avg_dt) {
 #' @keywords internal
 .empty_fit_result <- function(norm_type) {
   list(
+    fit_source            = "custom",
     normalization_type    = norm_type,
     x_mean                = NA_real_,
     x_AOC                 = NA_real_,
