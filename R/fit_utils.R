@@ -352,11 +352,11 @@ apply_fit_to_se <- function(se,
 #' mae <- gDRutils::get_synthetic_data("finalMAE_small.qs2")
 #' se <- mae[["single-agent"]]
 #' fn_a <- function(dt) list(x_mean = mean(dt$x, na.rm = TRUE))
-#' fn_b <- function(dt) list(x_sd   = sd(dt$x,   na.rm = TRUE))
+#' fn_b <- function(dt) list(x_sd = sd(dt$x, na.rm = TRUE))
 #' se_out <- apply_custom_fits(
 #'   se,
-#'   fit_fns    = list(mean_metrics = fn_a, sd_metrics = fn_b),
-#'   data_type  = "single-agent",
+#'   fit_fns = list(mean_metrics = fn_a, sd_metrics = fn_b),
+#'   data_type = "single-agent",
 #'   fit_source = "demo"
 #' )
 #'
