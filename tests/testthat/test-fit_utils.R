@@ -69,7 +69,7 @@ test_that("apply_fit_to_se validates inputs correctly", {
 
 
 test_that("apply_fit_to_se iterates over all (drug x cell line x normalization_type) triplets", {
-  n_drugs <- nrow(se_small)
+  n_drugs <- NROW(se_small)
   n_cls <- ncol(se_small)
   norm_types <- c("GR", "RV")
 
@@ -176,7 +176,7 @@ test_that("apply_fit_to_se records fit_source and normalization_type in output",
   new_rows <- metrics_df[
     !is.na(metrics_df[["fit_source"]]) & metrics_df[["fit_source"]] == "my_fit",
   ]
-  expect_true(nrow(new_rows) > 0L)
+  expect_true(NROW(new_rows) > 0L)
   expect_true(all(new_rows[["fit_source"]] == "my_fit"))
   expect_true(all(new_rows[["normalization_type"]] %in% c("GR", "RV")))
 })
@@ -232,7 +232,7 @@ test_that("apply_fit_to_se merge='merge' is idempotent for same fit_source+norma
     row.field = "row", column.field = "column"
   )
 
-  expect_equal(nrow(metrics1), nrow(metrics2))
+  expect_equal(NROW(metrics1), NROW(metrics2))
   test_rows1 <- metrics1[
     !is.na(metrics1[["fit_source"]]) &
       metrics1[["fit_source"]] == "idempotent_test",
@@ -241,7 +241,7 @@ test_that("apply_fit_to_se merge='merge' is idempotent for same fit_source+norma
     !is.na(metrics2[["fit_source"]]) &
       metrics2[["fit_source"]] == "idempotent_test",
   ]
-  expect_equal(nrow(test_rows1), nrow(test_rows2))
+  expect_equal(NROW(test_rows1), NROW(test_rows2))
 })
 
 
@@ -301,7 +301,7 @@ test_that("apply_fit_to_se returns unchanged se when no triplets produce results
     SummarizedExperiment::assay(result_se, "Metrics"),
     row.field = "row", column.field = "column"
   )
-  expect_equal(nrow(orig_metrics), nrow(result_metrics))
+  expect_equal(NROW(orig_metrics), NROW(result_metrics))
   expect_false("empty_test" %in% result_metrics[["fit_source"]])
 })
 
@@ -362,7 +362,7 @@ test_that("apply_fit_to_se end-to-end integration: minimal SE, trivial fit_fn, M
 
   # One row per (drug × cell line × normalization_type) triplet: 2×2×2 = 8
   n_expected <- length(drug_ids) * length(cl_ids) * length(norm_types)
-  expect_equal(nrow(our_rows), n_expected)
+  expect_equal(NROW(our_rows), n_expected)
 
   # fit_source correctly stamped on every row.
   expect_true(all(our_rows[["fit_source"]] == "integration_test"))
@@ -510,7 +510,7 @@ test_that(".persist_metrics creates Metrics assay from scratch", {
     SummarizedExperiment::assay(result, "Metrics"),
     row.field = "row", column.field = "column"
   )
-  expect_equal(nrow(df), 1L)
+  expect_equal(NROW(df), 1L)
   expect_equal(df[["fit_source"]], "test")
 })
 
@@ -537,7 +537,7 @@ test_that(".persist_metrics merge mode upserts by fit_source + normalization_typ
     SummarizedExperiment::assay(result, "Metrics"),
     row.field = "row", column.field = "column"
   )
-  expect_equal(nrow(df), 2L)
+  expect_equal(NROW(df), 2L)
   expect_true("gDR" %in% df[["fit_source"]])
   expect_true("custom" %in% df[["fit_source"]])
 })
@@ -565,7 +565,7 @@ test_that(".persist_metrics merge mode replaces rows with matching fit_source", 
     SummarizedExperiment::assay(result, "Metrics"),
     row.field = "row", column.field = "column"
   )
-  expect_equal(nrow(df), 1L)
+  expect_equal(NROW(df), 1L)
   expect_equal(as.numeric(df[["x_mean"]]), 0.9)
 })
 
@@ -614,7 +614,7 @@ test_that("apply_custom_fit requires summary_assay when summary_fn is provided",
   expect_error(
     apply_custom_fit(se, simple_fit_fn, "single-agent",
                      output_assay = "out",
-                     summary_fn = function(dt) list(n = nrow(dt)),
+                     summary_fn = function(dt) list(n = NROW(dt)),
                      fit_source = "test"),
     regexp = "summary_assay"
   )
@@ -643,7 +643,7 @@ test_that("apply_custom_fit single-agent produces same result as apply_fit_to_se
     row.field = "row", column.field = "column"
   )
   expect_equal(sort(names(df_old)), sort(names(df_new)))
-  expect_equal(nrow(df_old), nrow(df_new))
+  expect_equal(NROW(df_old), NROW(df_new))
 })
 
 test_that("apply_custom_fit writes to a custom-named assay", {
@@ -685,7 +685,7 @@ test_that("apply_custom_fit summary_fn writes to summary_assay with one row per 
 
   sum_fn <- function(fit_dt) {
     list(mean_x_mean = mean(fit_dt[["x_mean"]], na.rm = TRUE),
-         n_slices = nrow(fit_dt))
+         n_slices = NROW(fit_dt))
   }
 
   se_out <- apply_custom_fit(
@@ -702,7 +702,7 @@ test_that("apply_custom_fit summary_fn writes to summary_assay with one row per 
     row.field = "row", column.field = "column"
   )
   # One summary row per (drug x cell line) cell — 2 x 2 = 4 cells
-  expect_equal(nrow(sumdf), 4L)
+  expect_equal(NROW(sumdf), 4L)
   expect_true("mean_x_mean" %in% names(sumdf))
   expect_true("n_slices" %in% names(sumdf))
 })
@@ -722,7 +722,7 @@ test_that("apply_custom_fit explicit slicing_cols overrides data_type default", 
   )
   se <- SummarizedExperiment::SummarizedExperiment(assays = list(Averaged = bumpy))
 
-  fn <- function(d) list(n = nrow(d), grp = d$custom_group[1])
+  fn <- function(d) list(n = NROW(d), grp = d$custom_group[1])
   se_out <- apply_custom_fit(
     se, fn, "single-agent",
     slicing_cols = "custom_group",
@@ -735,7 +735,7 @@ test_that("apply_custom_fit explicit slicing_cols overrides data_type default", 
     SummarizedExperiment::assay(se_out, "grouped_out"),
     row.field = "row", column.field = "column"
   )
-  expect_equal(nrow(df), 2L)          # one row per group
+  expect_equal(NROW(df), 2L)          # one row per group
   expect_setequal(df[["grp"]], c("A", "B"))
 })
 
@@ -809,7 +809,7 @@ test_that("bliss_fit_fn integrates with apply_custom_fit on combination data", {
   )
   expect_true("bliss_score" %in% names(df))
   # Two norm types → two rows per (drug x cell line)
-  expect_equal(nrow(df), 2L)
+  expect_equal(NROW(df), 2L)
 })
 
 
@@ -997,8 +997,8 @@ test_that("apply_custom_fits on combination data: bliss + hss in one pass", {
   expect_true("bliss_score" %in% names(df_bliss))
   expect_true("hss_score" %in% names(df_hss))
   # Two normalization types → two rows per (drug x cell line)
-  expect_equal(nrow(df_bliss), 2L)
-  expect_equal(nrow(df_hss), 2L)
+  expect_equal(NROW(df_bliss), 2L)
+  expect_equal(NROW(df_hss), 2L)
 })
 
 test_that("apply_custom_fits on_error='warn' skips failing fn without stopping others", {
