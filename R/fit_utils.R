@@ -561,32 +561,32 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
     coefs <- stats::coef(fit)
     r2 <- 1 - sum(stats::residuals(fit)^2) / sum((x - mean(x))^2)
     list(
-      fit_source            = "custom",
-      normalization_type    = norm_type,
-      x_mean                = x_mean,
-      x_AOC                 = x_AOC,
-      N_conc                = N_conc,
+      fit_source = "custom",
+      normalization_type = norm_type,
+      x_mean = x_mean,
+      x_AOC = x_AOC,
+      N_conc = N_conc,
       maxlog10Concentration = maxlog10Conc,
-      xc50    = gDRutils::cap_xc50(coefs[4], max(conc), capping_fold = capping_fold),
-      h       = coefs[1],
-      r2      = r2,
-      x_0     = coefs[3],
-      x_inf   = coefs[2],
+      xc50 = gDRutils::cap_xc50(coefs[4], max(conc), capping_fold = capping_fold),
+      h = coefs[1],
+      r2 = r2,
+      x_0 = coefs[3],
+      x_inf = coefs[2],
       fit_type = "DRC4pHillFitModel"
     )
   } else {
     list(
-      fit_source            = "custom",
-      normalization_type    = norm_type,
-      x_mean                = x_mean,
-      x_AOC                 = x_AOC,
-      N_conc                = N_conc,
+      fit_source = "custom",
+      normalization_type = norm_type,
+      x_mean = x_mean,
+      x_AOC = x_AOC,
+      N_conc = N_conc,
       maxlog10Concentration = maxlog10Conc,
-      xc50     = .estimate_xc50_fallback(x),
-      h        = NA_real_,
-      r2       = NA_real_,
-      x_0      = NA_real_,
-      x_inf    = NA_real_,
+      xc50 = .estimate_xc50_fallback(x),
+      h = NA_real_,
+      r2 = NA_real_,
+      x_0 = NA_real_,
+      x_inf = NA_real_,
       fit_type = "DRCInvalidFitResult"
     )
   }
@@ -694,9 +694,9 @@ hss_fit_fn <- function(avg_dt) {
   if (n_combo == 0L || NROW(sa1) == 0L || NROW(sa2) == 0L) {
     return(list(
       normalization_type = norm_type,
-      hss_score          = NA_real_,
-      hss_excess_mean    = NA_real_,
-      n_combo_points     = n_combo
+      hss_score = NA_real_,
+      hss_excess_mean = NA_real_,
+      n_combo_points = n_combo
     ))
   }
 
@@ -711,9 +711,9 @@ hss_fit_fn <- function(avg_dt) {
 
   list(
     normalization_type = norm_type,
-    hss_score          = mean(excess[excess >= q90], na.rm = TRUE),
-    hss_excess_mean    = mean(excess, na.rm = TRUE),
-    n_combo_points     = n_combo
+    hss_score = mean(excess[excess >= q90], na.rm = TRUE),
+    hss_excess_mean = mean(excess, na.rm = TRUE),
+    n_combo_points = n_combo
   )
 }
 
@@ -895,18 +895,18 @@ hss_fit_fn <- function(avg_dt) {
 #' @keywords internal
 .empty_fit_result <- function(norm_type) {
   list(
-    fit_source            = "custom",
-    normalization_type    = norm_type,
-    x_mean                = NA_real_,
-    x_AOC                 = NA_real_,
-    N_conc                = 0L,
+    fit_source = "custom",
+    normalization_type = norm_type,
+    x_mean = NA_real_,
+    x_AOC = NA_real_,
+    N_conc = 0L,
     maxlog10Concentration = NA_real_,
-    xc50                  = NA_real_,
-    h                     = NA_real_,
-    r2                    = NA_real_,
-    x_0                   = NA_real_,
-    x_inf                 = NA_real_,
-    fit_type              = "DRCInvalidFitResult"
+    xc50 = NA_real_,
+    h = NA_real_,
+    r2 = NA_real_,
+    x_0 = NA_real_,
+    x_inf = NA_real_,
+    fit_type = "DRCInvalidFitResult"
   )
 }
 
