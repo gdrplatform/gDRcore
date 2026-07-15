@@ -138,7 +138,37 @@ head(summary_df)
 ```
 
 One row per (drug × cell line × normalization_type) triplet. The native
-`"Metrics"` assay is untouched.
+`"Metrics"` assay is untouched — because we chose a custom assay name.
+
+## Writing to the Metrics assay
+
+You can also write directly to `"Metrics"` — for example when replacing the
+standard gDR Hill fit with your own model:
+
+```{r sa-metrics}
+# SE straight from the pipeline — already has a native "Metrics" assay
+# (fit_source = "gDR")
+"Metrics" %in% assayNames(sa_se)
+
+# Apply a custom fit to the same assay, coexisting alongside gDR rows
+custom_hill <- apply_fit(
+  sa_se,
+  fit_fn = fit_drug_response_metrics,
+  data_type = "single-agent",
+  output_assay = "Metrics",
+  fit_source = "custom_hill"   # distinct key keeps native "gDR" rows intact
+)
+
+metrics_df <- BumpyMatrix::unsplitAsDataFrame(
+  assay(custom_hill, "Metrics"),
+  row.field = "row", column.field = "column"
+)
+unique(metrics_df$fit_source)   # both "gDR" and "custom_hill"
+```
+
+With `merge = "merge"` (default) the upsert key is `fit_source +
+normalization_type`, so native rows (`fit_source = "gDR"`) are preserved.
+Use `merge = "replace"` only if you intend to overwrite the whole assay.
 
 ## Idempotent merge
 

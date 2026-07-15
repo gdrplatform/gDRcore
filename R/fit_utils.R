@@ -76,6 +76,11 @@
 #' @param input_assay name of the source BumpyMatrix assay.  \code{NULL} uses
 #'   the profile default.
 #' @param output_assay name of the assay to write fit results into.  Required.
+#'   Any assay name is accepted, including the native \code{"Metrics"} assay.
+#'   With \code{merge = "merge"} (default), existing rows keyed by
+#'   \code{fit_source} are replaced while all other rows are preserved —
+#'   safe for co-existing alongside native gDR metrics.
+#'   With \code{merge = "replace"}, the entire assay is overwritten.
 #' @param summary_fn optional function(\code{data.table}) → named list called
 #'   once per (row x column) cell on all rows returned by \code{fit_fn} for
 #'   that cell.  Requires \code{summary_assay}.
