@@ -368,35 +368,26 @@ apply_fits <- function(se,
   }
 
   out_assay_names <- names(fit_fns)
-  tmp_prefix <- "__custom_fits_tmp_"
+  slice_col <- slicing_cols[1L]
 
-  # Build one wrapper per fit_fn, each writing to a distinct tmp assay.
-  # apply_bumpy_function can only write one assay per call, so we make K calls
-  # but reuse the already-unsplit BumpyMatrix by piggy-backing on the tmp assay
-  # approach.  The key efficiency win: all K wrappers share the same unsplit
-  # data — we unsplit once at the top and call wrappers on the same data.table.
+  # Unsplit the BumpyMatrix ONCE into a flat data.table, then split by
+  # (row × column) — avoids repeated S4 dispatch per cell that dominates
+  # wall-clock time when fit_fn is fast (e.g. Bliss, HSS, summary stats).
   asy <- SummarizedExperiment::assay(se, input_assay)
-  unsplit_df <- BumpyMatrix::unsplitAsDataFrame(
-    asy, row.field = "row", column.field = "column"
+  dt_all <- data.table::as.data.table(
+    BumpyMatrix::unsplitAsDataFrame(asy, row.field = "row", column.field = "column")
   )
-  all_cells <- unique(data.frame(
-    row    = unsplit_df[["row"]],
-    column = unsplit_df[["column"]],
-    stringsAsFactors = FALSE
-  ))
+  cell_list <- split(dt_all, by = c("row", "column"), sorted = FALSE)
 
-  # Accumulate per-assay results: list(assay_name -> list of per-cell data.tables)
+  # Accumulate per-assay results: list(assay_name -> list of row data.tables)
   assay_results <- stats::setNames(
     lapply(out_assay_names, function(nm) list()),
     out_assay_names
   )
 
-  slice_col <- slicing_cols[1L]
-
-  for (i in seq_len(NROW(all_cells))) {
-    r  <- all_cells[["row"]][i]
-    cc <- all_cells[["column"]][i]
-    cell_dt <- data.table::as.data.table(asy[r, cc][[1L]])
+  for (cell_dt in cell_list) {
+    r  <- cell_dt[["row"]][1L]
+    cc <- cell_dt[["column"]][1L]
 
     vals <- if (!is.null(slicing_values)) {
       slicing_values
@@ -422,7 +413,6 @@ apply_fits <- function(se,
           # Detect multi-output pattern: named list of named lists
           if (is.list(res) && length(res) > 0L &&
               is.list(res[[1L]]) && !is.null(names(res))) {
-            # Each top-level name maps to an assay, inner list is one row
             for (assay_nm in names(res)) {
               row_dt <- data.table::as.data.table(as.list(res[[assay_nm]]))
               row_dt[["fit_source"]] <- fit_source
@@ -437,7 +427,7 @@ apply_fits <- function(se,
                 )
               }
             }
-            next  # skip the normal single-output path below
+            next
           }
           data.table::as.data.table(as.list(res))
         }, error = function(e) {
