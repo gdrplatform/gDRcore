@@ -7,7 +7,7 @@
 # slicing_values: default values to iterate; NULL means "all unique values found in data".
 # input_assay:    default source assay name.
 #
-# Override any field by passing explicit arguments to apply_custom_fit().
+# Override any field by passing explicit arguments to apply_fit().
 .CUSTOM_FIT_PROFILES <- list(
   "single-agent" = list(
     slicing_cols   = "normalization_type",
@@ -31,7 +31,7 @@
 # Public API
 ####
 
-#' apply_custom_fit
+#' apply_fit
 #'
 #' Generic layer for applying a user-supplied fit function across all
 #' (row x column x slicing_col) triplets in a
@@ -53,9 +53,9 @@
 #' Use the pipe to apply several custom fits to the same SE:
 #' \preformatted{
 #'   se |>
-#'     apply_custom_fit(bliss_fn, "combination",
+#'     apply_fit(bliss_fn, "combination",
 #'                      output_assay = "custom_bliss", ...) |>
-#'     apply_custom_fit(musyc_fn,  "combination",
+#'     apply_fit(musyc_fn,  "combination",
 #'                      output_assay = "musyc_params",
 #'                      summary_fn   = musyc_summary_fn,
 #'                      summary_assay = "musyc_summary", ...)
@@ -95,7 +95,7 @@
 #' mae <- gDRutils::get_synthetic_data("finalMAE_small.qs2")
 #' se <- mae[["single-agent"]]
 #' mean_fn <- function(dt) list(x_mean = mean(dt$x, na.rm = TRUE))
-#' se_out <- apply_custom_fit(
+#' se_out <- apply_fit(
 #'   se, mean_fn, "single-agent",
 #'   output_assay = "custom_mean", fit_source = "demo"
 #' )
@@ -103,7 +103,7 @@
 #' @keywords metrics
 #' @export
 #'
-apply_custom_fit <- function(se,
+apply_fit <- function(se,
                              fit_fn,
                              data_type      = c("single-agent",
                                                 "combination",
@@ -201,7 +201,7 @@ apply_custom_fit <- function(se,
 #' Apply a user-supplied fit function per (drug x cell line x normalization_type)
 #' triplet and persist results into the Metrics assay.
 #'
-#' This is a convenience wrapper around \code{\link{apply_custom_fit}} for the
+#' This is a convenience wrapper around \code{\link{apply_fit}} for the
 #' single-agent use case with the standard Metrics assay.
 #'
 #' @param se \code{\link[SummarizedExperiment]{SummarizedExperiment}} with
@@ -235,8 +235,8 @@ apply_fit_to_se <- function(se,
                             fit_source = "custom") {
 
   # Warn for missing standard metric columns before delegating
-  # (apply_custom_fit does not impose column expectations on custom assays)
-  result <- apply_custom_fit(
+  # (apply_fit does not impose column expectations on custom assays)
+  result <- apply_fit(
     se             = se,
     fit_fn         = fit_fn,
     data_type      = "single-agent",
@@ -273,14 +273,14 @@ apply_fit_to_se <- function(se,
 # Multi-fit (single-pass)
 ####
 
-#' apply_custom_fits
+#' apply_fits
 #'
 #' Apply multiple fit functions in a \strong{single pass} over each BumpyMatrix
 #' cell, writing each function's results into its own named output assay.
 #'
 #' @details
-#' \code{apply_custom_fits()} is the performance-efficient alternative to
-#' chaining multiple \code{\link{apply_custom_fit}} calls when two or more fit
+#' \code{apply_fits()} is the performance-efficient alternative to
+#' chaining multiple \code{\link{apply_fit}} calls when two or more fit
 #' functions operate on the \strong{same input assay}.  Instead of unsplitting
 #' the BumpyMatrix K times (once per function), it traverses each cell once and
 #' applies all functions in that single pass.
@@ -296,7 +296,7 @@ apply_fit_to_se <- function(se,
 #' \subsection{Independent fit functions (most common)}{
 #' Names of \code{fit_fns} become the output assay names:
 #' \preformatted{
-#'   apply_custom_fits(
+#'   apply_fits(
 #'     combo_se,
 #'     fit_fns = list(
 #'       custom_bliss = bliss_fit_fn,
@@ -319,7 +319,7 @@ apply_fit_to_se <- function(se,
 #'       custom_hss   = list(hss_score   = compute_hss(sa_curves, dt))
 #'     )
 #'   }
-#'   apply_custom_fits(
+#'   apply_fits(
 #'     combo_se,
 #'     fit_fns    = list(bliss_and_hss = bliss_and_hss),
 #'     output_assay_map = c(bliss_and_hss = NA),  # ignored; keys from return value
@@ -353,7 +353,7 @@ apply_fit_to_se <- function(se,
 #' se <- mae[["single-agent"]]
 #' fn_a <- function(dt) list(x_mean = mean(dt$x, na.rm = TRUE))
 #' fn_b <- function(dt) list(x_sd = sd(dt$x, na.rm = TRUE))
-#' se_out <- apply_custom_fits(
+#' se_out <- apply_fits(
 #'   se,
 #'   fit_fns = list(mean_metrics = fn_a, sd_metrics = fn_b),
 #'   data_type = "single-agent",
@@ -363,7 +363,7 @@ apply_fit_to_se <- function(se,
 #' @keywords metrics
 #' @export
 #'
-apply_custom_fits <- function(se,
+apply_fits <- function(se,
                               fit_fns,
                               data_type      = c("single-agent",
                                                  "combination",
@@ -508,7 +508,7 @@ apply_custom_fits <- function(se,
 #' fit_drug_response_metrics
 #'
 #' Reference fit function replicating standard gDR Hill curve fitting.
-#' For use with \code{\link{apply_fit_to_se}} or \code{\link{apply_custom_fit}}
+#' For use with \code{\link{apply_fit_to_se}} or \code{\link{apply_fit}}
 #' on single-agent data.
 #'
 #' @param avg_dt \code{data.table} of averaged data for one
@@ -599,10 +599,10 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
 #' data.  Computes Bliss-expected response from single-agent edges and derives
 #' excess and score from raw averaged data.
 #'
-#' Intended for use with \code{\link{apply_custom_fit}} on combination SEs:
+#' Intended for use with \code{\link{apply_fit}} on combination SEs:
 #'
 #' \preformatted{
-#'   apply_custom_fit(
+#'   apply_fit(
 #'     combo_se, bliss_fit_fn, "combination",
 #'     output_assay = "custom_bliss", fit_source = "bliss"
 #'   )
@@ -664,10 +664,10 @@ bliss_fit_fn <- function(avg_dt) {
 #' Reference fit function for Highest Single Agent (HSA) synergy scoring on
 #' combination data.  Uses raw averaged single-agent edges.
 #'
-#' Intended for use with \code{\link{apply_custom_fit}} on combination SEs:
+#' Intended for use with \code{\link{apply_fit}} on combination SEs:
 #'
 #' \preformatted{
-#'   apply_custom_fit(
+#'   apply_fit(
 #'     combo_se, hss_fit_fn, "combination",
 #'     output_assay = "custom_hss", fit_source = "hss"
 #'   )
@@ -926,8 +926,24 @@ hss_fit_fn <- function(avg_dt) {
 
 
 ####
-# Deprecated alias — kept only until .persist_metrics callers are updated
+# Deprecated aliases
 ####
+
+#' @rdname apply_fit
+#' @export
+#' @keywords internal
+apply_custom_fit <- function(...) {
+  .Deprecated("apply_fit")
+  apply_fit(...)
+}
+
+#' @rdname apply_fits
+#' @export
+#' @keywords internal
+apply_custom_fits <- function(...) {
+  .Deprecated("apply_fits")
+  apply_fits(...)
+}
 
 #' @keywords internal
 .persist_metrics <- function(se, new_metrics, merge, metrics_assay, row, col) {

@@ -570,7 +570,7 @@ test_that(".persist_metrics merge mode replaces rows with matching fit_source", 
 })
 
 ####
-# apply_custom_fit
+# apply_fit
 ####
 
 # Helper for combination SE: 2 drugs x 1 cell line, 3x3 conc grid + SA edges
@@ -599,20 +599,20 @@ test_that(".persist_metrics merge mode replaces rows with matching fit_source", 
 }
 
 
-test_that("apply_custom_fit validates output_assay is provided", {
+test_that("apply_fit validates output_assay is provided", {
   built <- .build_test_se()
   se <- built$se
   expect_error(
-    apply_custom_fit(se, simple_fit_fn, "single-agent", fit_source = "test"),
+    apply_fit(se, simple_fit_fn, "single-agent", fit_source = "test"),
     regexp = "output_assay"
   )
 })
 
-test_that("apply_custom_fit requires summary_assay when summary_fn is provided", {
+test_that("apply_fit requires summary_assay when summary_fn is provided", {
   built <- .build_test_se()
   se <- built$se
   expect_error(
-    apply_custom_fit(se, simple_fit_fn, "single-agent",
+    apply_fit(se, simple_fit_fn, "single-agent",
                      output_assay = "out",
                      summary_fn = function(dt) list(n = NROW(dt)),
                      fit_source = "test"),
@@ -620,7 +620,7 @@ test_that("apply_custom_fit requires summary_assay when summary_fn is provided",
   )
 })
 
-test_that("apply_custom_fit single-agent produces same result as apply_fit_to_se", {
+test_that("apply_fit single-agent produces same result as apply_fit_to_se", {
   built <- .build_test_se(seed = 11L)
   se <- built$se
 
@@ -628,7 +628,7 @@ test_that("apply_custom_fit single-agent produces same result as apply_fit_to_se
     apply_fit_to_se(se, simple_fit_fn, metrics_assay = "Metrics",
                     fit_source = "test")
   )
-  via_new <- apply_custom_fit(
+  via_new <- apply_fit(
     se, simple_fit_fn, "single-agent",
     output_assay = "Metrics",
     fit_source = "test"
@@ -646,11 +646,11 @@ test_that("apply_custom_fit single-agent produces same result as apply_fit_to_se
   expect_equal(NROW(df_old), NROW(df_new))
 })
 
-test_that("apply_custom_fit writes to a custom-named assay", {
+test_that("apply_fit writes to a custom-named assay", {
   built <- .build_test_se(seed = 12L)
   se <- built$se
 
-  se_out <- apply_custom_fit(
+  se_out <- apply_fit(
     se, simple_fit_fn, "single-agent",
     output_assay = "my_custom_metrics",
     fit_source = "test"
@@ -659,7 +659,7 @@ test_that("apply_custom_fit writes to a custom-named assay", {
   expect_false("Metrics" %in% SummarizedExperiment::assayNames(se_out))
 })
 
-test_that("apply_custom_fit chaining adds two independent assays", {
+test_that("apply_fit chaining adds two independent assays", {
   built <- .build_test_se(drug_ids = c("D1", "D2"), cl_ids = c("CL1", "CL2"),
                           seed = 13L)
   se <- built$se
@@ -668,16 +668,16 @@ test_that("apply_custom_fit chaining adds two independent assays", {
   fn_b <- function(dt) list(metric_b = sd(dt$x, na.rm = TRUE))
 
   se_out <- se |>
-    apply_custom_fit(fn_a, "single-agent", output_assay = "out_a",
+    apply_fit(fn_a, "single-agent", output_assay = "out_a",
                      fit_source = "src_a") |>
-    apply_custom_fit(fn_b, "single-agent", output_assay = "out_b",
+    apply_fit(fn_b, "single-agent", output_assay = "out_b",
                      fit_source = "src_b")
 
   expect_true("out_a" %in% SummarizedExperiment::assayNames(se_out))
   expect_true("out_b" %in% SummarizedExperiment::assayNames(se_out))
 })
 
-test_that("apply_custom_fit summary_fn writes to summary_assay with one row per cell", {
+test_that("apply_fit summary_fn writes to summary_assay with one row per cell", {
   built <- .build_test_se(drug_ids = c("D1", "D2"),
                           cl_ids = c("CL1", "CL2"),
                           seed = 14L)
@@ -688,7 +688,7 @@ test_that("apply_custom_fit summary_fn writes to summary_assay with one row per 
          n_slices = NROW(fit_dt))
   }
 
-  se_out <- apply_custom_fit(
+  se_out <- apply_fit(
     se, simple_fit_fn, "single-agent",
     output_assay = "out",
     summary_fn = sum_fn,
@@ -707,7 +707,7 @@ test_that("apply_custom_fit summary_fn writes to summary_assay with one row per 
   expect_true("n_slices" %in% names(sumdf))
 })
 
-test_that("apply_custom_fit explicit slicing_cols overrides data_type default", {
+test_that("apply_fit explicit slicing_cols overrides data_type default", {
   # Build SE where slicing column is "custom_group" instead of normalization_type
   dt <- data.table::CJ(
     row = "D1", column = "CL1",
@@ -723,7 +723,7 @@ test_that("apply_custom_fit explicit slicing_cols overrides data_type default", 
   se <- SummarizedExperiment::SummarizedExperiment(assays = list(Averaged = bumpy))
 
   fn <- function(d) list(n = NROW(d), grp = d$custom_group[1])
-  se_out <- apply_custom_fit(
+  se_out <- apply_fit(
     se, fn, "single-agent",
     slicing_cols = "custom_group",
     slicing_values = c("A", "B"),
@@ -739,16 +739,16 @@ test_that("apply_custom_fit explicit slicing_cols overrides data_type default", 
   expect_setequal(df[["grp"]], c("A", "B"))
 })
 
-test_that("apply_custom_fit merge upsert replaces rows with matching fit_source + slice", {
+test_that("apply_fit merge upsert replaces rows with matching fit_source + slice", {
   built <- .build_test_se(seed = 15L)
   se <- built$se
 
   fn_first  <- function(dt) list(val = 1.0)
   fn_second <- function(dt) list(val = 9.9)
 
-  se1 <- apply_custom_fit(se, fn_first,  "single-agent",
+  se1 <- apply_fit(se, fn_first,  "single-agent",
                           output_assay = "out", fit_source = "src")
-  se2 <- apply_custom_fit(se1, fn_second, "single-agent",
+  se2 <- apply_fit(se1, fn_second, "single-agent",
                           output_assay = "out", fit_source = "src", merge = "merge")
 
   df <- BumpyMatrix::unsplitAsDataFrame(
@@ -795,9 +795,9 @@ test_that("bliss_fit_fn returns NA when no combo points present", {
   expect_equal(result$n_combo_points, 0L)
 })
 
-test_that("bliss_fit_fn integrates with apply_custom_fit on combination data", {
+test_that("bliss_fit_fn integrates with apply_fit on combination data", {
   se <- .build_combo_se()
-  se_out <- apply_custom_fit(
+  se_out <- apply_fit(
     se, bliss_fit_fn, "combination",
     output_assay = "custom_bliss",
     fit_source = "bliss"
@@ -846,9 +846,9 @@ test_that("hss_fit_fn returns NA when no combo points present", {
   expect_true(is.na(result$hss_score))
 })
 
-test_that("hss_fit_fn integrates with apply_custom_fit on combination data", {
+test_that("hss_fit_fn integrates with apply_fit on combination data", {
   se <- .build_combo_se()
-  se_out <- apply_custom_fit(
+  se_out <- apply_fit(
     se, hss_fit_fn, "combination",
     output_assay = "custom_hss",
     fit_source = "hss"
@@ -864,9 +864,9 @@ test_that("hss_fit_fn integrates with apply_custom_fit on combination data", {
 test_that("chaining bliss and hss on the same SE adds both assays independently", {
   se <- .build_combo_se(seed = 200L)
   se_out <- se |>
-    apply_custom_fit(bliss_fit_fn, "combination",
+    apply_fit(bliss_fit_fn, "combination",
                      output_assay = "custom_bliss", fit_source = "bliss") |>
-    apply_custom_fit(hss_fit_fn,   "combination",
+    apply_fit(hss_fit_fn,   "combination",
                      output_assay = "custom_hss",   fit_source = "hss")
 
   expect_true("custom_bliss" %in% SummarizedExperiment::assayNames(se_out))
@@ -875,25 +875,25 @@ test_that("chaining bliss and hss on the same SE adds both assays independently"
 
 
 ####
-# apply_custom_fits (single-pass multi-fit)
+# apply_fits (single-pass multi-fit)
 ####
 
-test_that("apply_custom_fits requires named fit_fns list", {
+test_that("apply_fits requires named fit_fns list", {
   built <- .build_test_se(seed = 30L)
   se <- built$se
   expect_error(
-    apply_custom_fits(se, list(simple_fit_fn), "single-agent", fit_source = "t"),
+    apply_fits(se, list(simple_fit_fn), "single-agent", fit_source = "t"),
     regexp = "names"
   )
 })
 
-test_that("apply_custom_fits produces one assay per fit_fn name", {
+test_that("apply_fits produces one assay per fit_fn name", {
   built <- .build_test_se(seed = 31L)
   se <- built$se
   fn_a <- function(dt) list(metric_a = mean(dt$x, na.rm = TRUE))
   fn_b <- function(dt) list(metric_b = sd(dt$x, na.rm = TRUE))
 
-  se_out <- apply_custom_fits(
+  se_out <- apply_fits(
     se,
     fit_fns = list(assay_a = fn_a, assay_b = fn_b),
     data_type = "single-agent",
@@ -903,7 +903,7 @@ test_that("apply_custom_fits produces one assay per fit_fn name", {
   expect_true("assay_b" %in% SummarizedExperiment::assayNames(se_out))
 })
 
-test_that("apply_custom_fits results match chained apply_custom_fit", {
+test_that("apply_fits results match chained apply_fit", {
   built <- .build_test_se(drug_ids = c("D1", "D2"), cl_ids = c("CL1", "CL2"),
                           seed = 32L)
   se <- built$se
@@ -911,15 +911,15 @@ test_that("apply_custom_fits results match chained apply_custom_fit", {
   fn_b <- function(dt) list(x_sd = sd(dt$x, na.rm = TRUE))
 
   # single-pass
-  se_multi <- apply_custom_fits(
+  se_multi <- apply_fits(
     se, fit_fns = list(out_a = fn_a, out_b = fn_b),
     data_type = "single-agent", fit_source = "src"
   )
 
   # chained
   se_chain <- se |>
-    apply_custom_fit(fn_a, "single-agent", output_assay = "out_a", fit_source = "src") |>
-    apply_custom_fit(fn_b, "single-agent", output_assay = "out_b", fit_source = "src")
+    apply_fit(fn_a, "single-agent", output_assay = "out_a", fit_source = "src") |>
+    apply_fit(fn_b, "single-agent", output_assay = "out_b", fit_source = "src")
 
   extract <- function(s, nm) {
     data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
@@ -939,7 +939,7 @@ test_that("apply_custom_fits results match chained apply_custom_fit", {
                sort(as.numeric(df_b_chain$x_sd)))
 })
 
-test_that("apply_custom_fits multi-output pattern: one fn writes two assays", {
+test_that("apply_fits multi-output pattern: one fn writes two assays", {
   built <- .build_test_se(seed = 33L)
   se <- built$se
 
@@ -951,7 +951,7 @@ test_that("apply_custom_fits multi-output pattern: one fn writes two assays", {
     )
   }
 
-  se_out <- apply_custom_fits(
+  se_out <- apply_fits(
     se,
     fit_fns = list(assay_mean = combo_fn, assay_sd = combo_fn),
     data_type = "single-agent",
@@ -973,10 +973,10 @@ test_that("apply_custom_fits multi-output pattern: one fn writes two assays", {
   expect_true("x_sd"   %in% names(df_sd))
 })
 
-test_that("apply_custom_fits on combination data: bliss + hss in one pass", {
+test_that("apply_fits on combination data: bliss + hss in one pass", {
   se <- .build_combo_se(seed = 34L)
 
-  se_out <- apply_custom_fits(
+  se_out <- apply_fits(
     se,
     fit_fns = list(custom_bliss = bliss_fit_fn, custom_hss = hss_fit_fn),
     data_type = "combination",
@@ -1001,7 +1001,7 @@ test_that("apply_custom_fits on combination data: bliss + hss in one pass", {
   expect_equal(NROW(df_hss), 2L)
 })
 
-test_that("apply_custom_fits on_error='warn' skips failing fn without stopping others", {
+test_that("apply_fits on_error='warn' skips failing fn without stopping others", {
   built <- .build_test_se(seed = 35L)
   se <- built$se
 
@@ -1009,7 +1009,7 @@ test_that("apply_custom_fits on_error='warn' skips failing fn without stopping o
   error_fn <- function(dt) stop("deliberate failure")
 
   expect_warning(
-    se_out <- apply_custom_fits(
+    se_out <- apply_fits(
       se,
       fit_fns = list(good_assay = good_fn, bad_assay = error_fn),
       data_type = "single-agent",

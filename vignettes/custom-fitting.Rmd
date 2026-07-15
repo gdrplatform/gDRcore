@@ -1,9 +1,9 @@
 ---
-title: "Custom fitting with apply_custom_fit()"
+title: "Custom fitting with apply_fit()"
 author: "gDR team"
 output: BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{Custom fitting with apply_custom_fit()}
+  %\VignetteIndexEntry{Custom fitting with apply_fit()}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -33,7 +33,7 @@ The standard gDR pipeline fits dose-response curves using a fixed
 different: an alternative curve model, custom synergy metrics, Bayesian
 estimates, or bespoke pharmacology metrics for your assay.
 
-`apply_custom_fit()` and `apply_custom_fits()` let you plug **any R function**
+`apply_fit()` and `apply_fits()` let you plug **any R function**
 into the gDR SE/MAE pipeline without touching the pipeline internals.
 
 Key properties:
@@ -43,7 +43,7 @@ Key properties:
   native gDR assays (`"Metrics"`, `"scores"`, `"excess"`, …).
 - Results are **idempotent**: calling twice with the same `fit_source`
   overwrites rather than duplicates.
-- `apply_custom_fits()` applies N fit functions in a **single** BumpyMatrix
+- `apply_fits()` applies N fit functions in a **single** BumpyMatrix
   traversal — efficient when you have several metrics to compute on the same
   data.
 
@@ -113,13 +113,13 @@ summary_fn <- function(avg_dt) {
 
 ---
 
-# Single-agent: apply_custom_fit()
+# Single-agent: apply_fit()
 
 Apply the summary function to every (drug × cell line × normalization_type)
 triplet and write results to a custom assay named `"custom_summary"`.
 
 ```{r sa-basic}
-sa_out <- apply_custom_fit(
+sa_out <- apply_fit(
   sa_se,
   fit_fn = summary_fn,
   data_type = "single-agent",
@@ -152,7 +152,7 @@ n_before <- NROW(BumpyMatrix::unsplitAsDataFrame(
 ))
 
 # Call again — same fit_source, same data
-sa_out2 <- apply_custom_fit(
+sa_out2 <- apply_fit(
   sa_out,
   fit_fn = summary_fn,
   data_type = "single-agent",
@@ -176,7 +176,7 @@ Different `fit_source` values live **side by side** in the same assay:
 extra_fn <- function(avg_dt) list(x_max = max(avg_dt$x, na.rm = TRUE))
 
 sa_two <- sa_out |>
-  apply_custom_fit(extra_fn, "single-agent",
+  apply_fit(extra_fn, "single-agent",
                    output_assay = "custom_summary",
                    fit_source = "extremes")
 
@@ -197,7 +197,7 @@ Use it as a starting point for custom Hill-like models or to validate that
 your fit function produces consistent results.
 
 ```{r hill-ref}
-hill_out <- apply_custom_fit(
+hill_out <- apply_fit(
   sa_se,
   fit_fn = fit_drug_response_metrics,
   data_type = "single-agent",
@@ -232,7 +232,7 @@ hill_summary_fn <- function(fit_dt) {
   )
 }
 
-hill_with_summary <- apply_custom_fit(
+hill_with_summary <- apply_fit(
   sa_se,
   fit_fn = fit_drug_response_metrics,
   data_type = "single-agent",
@@ -290,7 +290,7 @@ combo_se <- SummarizedExperiment(assays = list(Averaged = combo_bumpy))
 ## Bliss independence score
 
 ```{r combo-bliss}
-bliss_out <- apply_custom_fit(
+bliss_out <- apply_fit(
   combo_se,
   fit_fn = bliss_fit_fn,
   data_type = "combination",
@@ -312,7 +312,7 @@ independence predicts); `bliss_score < 0` indicates antagonism.
 ## Highest Single Agent score
 
 ```{r combo-hss}
-hss_out <- apply_custom_fit(
+hss_out <- apply_fit(
   combo_se,
   fit_fn = hss_fit_fn,
   data_type = "combination",
@@ -330,14 +330,14 @@ hss_df[, c("row", "column", "normalization_type",
 
 ---
 
-# Efficient multi-fit: apply_custom_fits()
+# Efficient multi-fit: apply_fits()
 
 When several fit functions operate on the **same input assay**, use
-`apply_custom_fits()` to traverse each BumpyMatrix cell **once** and apply
+`apply_fits()` to traverse each BumpyMatrix cell **once** and apply
 all functions in that single pass.
 
 ```{r multi-fit}
-combo_multi <- apply_custom_fits(
+combo_multi <- apply_fits(
   combo_se,
   fit_fns = list(
     custom_bliss = bliss_fit_fn,
@@ -350,7 +350,7 @@ assayNames(combo_multi)
 ```
 
 Both assays are written in one traversal — equivalent to chaining two
-`apply_custom_fit()` calls but without the overhead of a second unsplit +
+`apply_fit()` calls but without the overhead of a second unsplit +
 iteration.
 
 ## Shared pre-computation pattern
@@ -372,7 +372,7 @@ bliss_and_hss_combined <- function(dt) {
   )
 }
 
-apply_custom_fits(
+apply_fits(
   combo_se,
   fit_fns = list(custom_bliss = bliss_and_hss_combined,
                     custom_hss = bliss_and_hss_combined),
@@ -389,13 +389,13 @@ The functions are pipe-friendly — each call returns the updated SE:
 
 ```{r pipe-chain}
 result_se <- combo_se |>
-  apply_custom_fit(bliss_fit_fn, "combination",
+  apply_fit(bliss_fit_fn, "combination",
                    output_assay = "custom_bliss",
                    fit_source = "bliss") |>
-  apply_custom_fit(hss_fit_fn, "combination",
+  apply_fit(hss_fit_fn, "combination",
                    output_assay = "custom_hss",
                    fit_source = "hss") |>
-  apply_custom_fit(
+  apply_fit(
     function(dt) list(n_obs = NROW(dt)),
     "combination",
     output_assay = "combo_diagnostics",
@@ -420,7 +420,7 @@ buggy_fn <- function(dt) {
 }
 
 se_partial <- withCallingHandlers(
-  apply_custom_fit(
+  apply_fit(
     sa_se, buggy_fn, "single-agent",
     output_assay = "rv_only",
     fit_source = "rv_fn",
@@ -447,7 +447,7 @@ unique(rv_df$normalization_type)
 
 ```{r quick-ref, eval = FALSE}
 # Single fit → one output assay
-apply_custom_fit(
+apply_fit(
   se,
   fit_fn,
   data_type = "single-agent", # or "combination", "time-course"
@@ -463,7 +463,7 @@ apply_custom_fit(
 )
 
 # Multiple fits → one BumpyMatrix pass
-apply_custom_fits(
+apply_fits(
   se,
   fit_fns, # named list: name = output assay, value = fit function
   data_type = "single-agent",
