@@ -31,6 +31,7 @@ Imports:
     drc,
     futile.logger,
     gDRutils (>= 1.7.1),
+    jsonlite,
     MultiAssayExperiment,
     purrr,
     stringr,    

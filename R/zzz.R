@@ -39,6 +39,9 @@ patterns <- NULL
   utils::assignInNamespace(".untreated_tag_patterns", untreated_tag_patterns, ns = pkgname)
   utils::assignInNamespace(".untreatedDrugNameRegex", paste(untreated_tag_patterns, collapse = "|"), ns = pkgname)
 
+  # Fit profiles — load from inst/extdata/fit_profiles.json
+  .load_fit_profiles()
+
   # data.table compatible
   utils::assignInNamespace("patterns", data.table:::patterns, ns = pkgname)
   utils::globalVariables(

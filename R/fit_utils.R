@@ -1,33 +1,4 @@
 ####
-# Data-type profiles
-####
-
-# Default slicing configuration per experiment type.
-# slicing_cols:   column(s) in the Averaged assay that define sub-experiment slices.
-# slicing_values: default values to iterate; NULL means "all unique values found in data".
-# input_assay:    default source assay name.
-#
-# Override any field by passing explicit arguments to apply_fit().
-.CUSTOM_FIT_PROFILES <- list(
-  "single-agent" = list(
-    slicing_cols   = "normalization_type",
-    slicing_values = c("GR", "RV"),
-    input_assay    = "Averaged"
-  ),
-  "combination" = list(
-    slicing_cols   = "normalization_type",
-    slicing_values = c("GR", "RV"),
-    input_assay    = "Averaged"
-  ),
-  "time-course" = list(
-    slicing_cols   = "normalization_type",
-    slicing_values = c("GR", "RV"),
-    input_assay    = "Averaged"
-  )
-)
-
-
-####
 # Public API
 ####
 
@@ -110,9 +81,7 @@
 #'
 apply_fit <- function(se,
                              fit_fn,
-                             data_type      = c("single-agent",
-                                                "combination",
-                                                "time-course"),
+                             data_type,
                              slicing_cols   = NULL,
                              slicing_values = NULL,
                              input_assay    = NULL,
@@ -123,8 +92,8 @@ apply_fit <- function(se,
                              on_error       = "warn",
                              fit_source) {
 
-  data_type <- match.arg(data_type)
-  profile <- .CUSTOM_FIT_PROFILES[[data_type]]
+  checkmate::assert_string(data_type)
+  profile <- get_fit_profile(data_type)  # errors with list of valid profiles if unknown
 
   if (is.null(slicing_cols))   slicing_cols   <- profile$slicing_cols
   if (is.null(slicing_values)) slicing_values <- profile$slicing_values
@@ -370,9 +339,7 @@ apply_fit_to_se <- function(se,
 #'
 apply_fits <- function(se,
                               fit_fns,
-                              data_type      = c("single-agent",
-                                                 "combination",
-                                                 "time-course"),
+                              data_type,
                               slicing_cols   = NULL,
                               slicing_values = NULL,
                               input_assay    = NULL,
@@ -380,8 +347,8 @@ apply_fits <- function(se,
                               on_error       = "warn",
                               fit_source) {
 
-  data_type <- match.arg(data_type)
-  profile <- .CUSTOM_FIT_PROFILES[[data_type]]
+  checkmate::assert_string(data_type)
+  profile <- get_fit_profile(data_type)
 
   if (is.null(slicing_cols))   slicing_cols   <- profile$slicing_cols
   if (is.null(slicing_values)) slicing_values <- profile$slicing_values
