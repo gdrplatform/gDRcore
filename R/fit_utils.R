@@ -1340,15 +1340,46 @@ apply_combo_scores <- function(se,
                                scores_assay = "scores",
                                averaged_assay = "Averaged",
                                metrics_assay = "Metrics",
+                               excess_assay = NULL,
                                normalization_types = c("GR", "RV"),
                                fit_source = "gDR") {
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_string(scores_assay)
   checkmate::assert_string(averaged_assay)
   checkmate::assert_string(metrics_assay)
+  checkmate::assert_string(excess_assay, null.ok = TRUE)
   checkmate::assert_character(normalization_types, min.len = 1L)
   gDRutils::validate_se_assay_name(se, averaged_assay)
   gDRutils::validate_se_assay_name(se, metrics_assay)
+
+  # Fast path: if excess assay already exists, score directly from it.
+  # This gives results numerically identical to fit_SE.combinations()
+  # because both use the same excess values computed in apply_combo_excess().
+  if (!is.null(excess_assay) && excess_assay %in% SummarizedExperiment::assayNames(se)) {
+    exc <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
+      SummarizedExperiment::assay(se, excess_assay),
+      row.field = "row", column.field = "column"
+    ))
+    score_rows <- lapply(
+      split(exc, by = c("row", "column", "normalization_type"), sorted = TRUE),
+      function(dt) {
+        data.table::data.table(
+          row = dt$row[1L],
+          column = dt$column[1L],
+          normalization_type = dt$normalization_type[1L],
+          fit_source = fit_source,
+          bliss_score = if (all(is.na(dt$bliss_excess))) NA_real_ else
+            calculate_score(dt$bliss_excess),
+          hsa_score = if (all(is.na(dt$hsa_excess))) NA_real_ else
+            calculate_score(dt$hsa_excess)
+        )
+      }
+    )
+    scores_dt <- data.table::rbindlist(score_rows)
+    se <- .persist_assay(se, scores_dt, "replace", scores_assay, "row", "column",
+                         upsert_key = c("fit_source", "normalization_type"))
+    return(se)
+  }
 
   conc1_col <- gDRutils::get_env_identifiers("concentration")
   conc2_col <- gDRutils::get_env_identifiers("concentration2")
