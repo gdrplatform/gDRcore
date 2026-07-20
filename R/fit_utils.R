@@ -755,6 +755,194 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
 
 
 ####
+# apply_combo_sa_fits — Step 1+2 of fit_SE.combinations: SA fits → Metrics assay
+####
+
+#' apply_combo_sa_fits
+#'
+#' Fit single-agent dose-response curves for each co-treatment concentration
+#' in a combination SE and store the results in the \code{Metrics} assay.
+#' This is \strong{step 1+2} of the \code{\link{fit_SE.combinations}} pipeline:
+#'
+#' \enumerate{
+#'   \item Standardise concentrations and build the complete dose-response matrix.
+#'   \item Fit SA curves per co-treatment concentration via
+#'     \code{fit_combo_cotreatments()} and \code{fit_combo_codilutions()}.
+#'   \item Compute \strong{smooth} SA predictions at every combo point via
+#'     \code{map_ids_to_fits()} and store them together with the SA fit parameters.
+#' }
+#'
+#' The resulting \code{Metrics} assay contains \code{dilution_drug},
+#' \code{cotrt_value}, \code{ec50}, \code{h}, \code{x_inf}, \code{x_0},
+#' and \code{normalization_type} — the same schema as produced by
+#' \code{fit_SE.combinations()}.
+#'
+#' @param se \code{\link[SummarizedExperiment]{SummarizedExperiment}} with
+#'   an \code{Averaged} assay (combination experiment).
+#' @param series_identifiers character vector of length 2: column names for the
+#'   two concentration axes (e.g. \code{c("Concentration", "Concentration_2")}).
+#'   Defaults to \code{get_default_nested_identifiers(se, data_model("combination"))}.
+#' @param normalization_types character vector of normalization types to process.
+#'   Default \code{c("GR", "RV")}.
+#' @param averaged_assay string; name of the input assay. Default \code{"Averaged"}.
+#' @param metrics_assay string; name of the output assay. Default \code{"Metrics"}.
+#' @param fit_source string recorded in the \code{fit_source} column. Default \code{"gDR"}.
+#'
+#' @return Updated \code{SummarizedExperiment} with a \code{metrics_assay}
+#'   assay containing SA fit parameters per co-treatment concentration.
+#'
+#' @seealso \code{\link{apply_combo_excess}}, \code{\link{apply_combo_isobolograms}},
+#'   \code{\link{apply_combo_scores}}, \code{\link{fit_SE.combinations}}
+#'
+#' @examples
+#' mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+#' combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
+#' SummarizedExperiment::assays(combo_se) <-
+#'   SummarizedExperiment::assays(combo_se)["Averaged"]
+#' combo_se_fitted <- apply_combo_sa_fits(combo_se[1, 1])
+#' "Metrics" %in% SummarizedExperiment::assayNames(combo_se_fitted)
+#'
+#' @importFrom checkmate assert_class assert_string assert_character
+#' @export
+apply_combo_sa_fits <- function(se,
+                                series_identifiers = NULL,
+                                normalization_types = c("GR", "RV"),
+                                averaged_assay = "Averaged",
+                                metrics_assay = "Metrics",
+                                fit_source = "gDR") {
+  checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_character(series_identifiers, null.ok = TRUE, len = 2L)
+  checkmate::assert_character(normalization_types, min.len = 1L)
+  checkmate::assert_string(averaged_assay)
+  checkmate::assert_string(metrics_assay)
+  checkmate::assert_string(fit_source)
+  gDRutils::validate_se_assay_name(se, averaged_assay)
+
+  if (is.null(series_identifiers)) {
+    series_identifiers <- get_default_nested_identifiers(
+      se, data_model(gDRutils::get_supported_experiments("combo"))
+    )
+  }
+
+  id <- series_identifiers[1]
+  id2 <- series_identifiers[2]
+
+  avg <- BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se, averaged_assay)
+  )
+  iterator <- unique(avg[, c("column", "row")])
+
+  out_list <- gDRutils::loop(seq_len(NROW(iterator)), function(row_idx) {
+    # Each list element must be named "metrics" for rbindParallelList compatibility
+    x <- iterator[row_idx, ]
+    i <- x[["row"]]
+    j <- x[["column"]]
+
+    avg_combo <- data.table::as.data.table(
+      avg[avg[["row"]] == i & avg[["column"]] == j, ]
+    )
+
+    if (all(is.na(avg_combo[, -c("row", "column", "normalization_type")]))) {
+      return(list(metrics = data.table::data.table(row_id = i, col_id = j)))
+    }
+
+    # Standardise concentrations (handles numeric precision mismatches)
+    conc_map <- gDRutils::map_conc_to_standardized_conc(avg_combo[[id]], avg_combo[[id2]])
+    avg_combo[[id]] <- replace_conc_with_standardized_conc(avg_combo[[id]], conc_map, "concs", "rconcs")
+    avg_combo[[id2]] <- replace_conc_with_standardized_conc(avg_combo[[id2]], conc_map, "concs", "rconcs")
+
+    mean_avg_combo <- avg_combo[, lapply(.SD, mean),
+                                by = c(id, id2, "normalization_type"),
+                                .SDcols = c("x", "x_std")]
+
+    # Build complete concentration matrix
+    conc1 <- table(avg_combo[[id]])
+    conc1 <- sort(as.numeric(names(conc1)[conc1 > (max(conc1[names(conc1) != "0"]) / 2)]))
+    conc2 <- table(avg_combo[[id2]])
+    conc2 <- sort(as.numeric(names(conc2)[conc2 > (max(conc2[names(conc2) != "0"]) / 2)]))
+    complete_cj <- data.table::CJ(unique(c(0, conc1)), unique(c(0, conc2)))
+    data.table::setnames(complete_cj, c(id, id2))
+    complete <- mean_avg_combo[complete_cj, on = c(id, id2)]
+
+    avg_combo_dt <- data.table::as.data.table(mean_avg_combo)
+    metrics_list <- vector("list", length(normalization_types))
+
+    for (nt_idx in seq_along(normalization_types)) {
+      norm_type <- normalization_types[[nt_idx]]
+      avg_subset <- avg_combo_dt[normalization_type == norm_type]
+      complete_subset <- complete[normalization_type == norm_type | is.na(normalization_type)]
+      complete_subset[is.na(normalization_type), normalization_type := norm_type]
+
+      # SA fits per co-treatment concentration (drug_1: series=conc1, cotrt=conc2)
+      drug_1 <- fit_combo_cotreatments(avg_subset, series_id = id, cotrt_id = id2, norm_type)
+      drug_1 <- if (all(is.na(drug_1$fit_type))) {
+        x_tmp <- drug_1[1, ]; x_tmp[, "cotrt_value"] <- NA; x_tmp
+      } else {
+        na.omit(drug_1, col = "fit_type")
+      }
+
+      # SA fits per co-treatment concentration (drug_2: series=conc2, cotrt=conc1)
+      drug_2 <- na.omit(
+        fit_combo_cotreatments(avg_subset, series_id = id2, cotrt_id = id, norm_type),
+        col = "fit_type"
+      )
+
+      # Codilution fits (diagonal)
+      codilution <- na.omit(
+        fit_combo_codilutions(avg_subset, series_identifiers, norm_type),
+        col = "fit_type"
+      )
+
+      metrics_names <- c("drug_1", "drug_2")
+
+      # Smooth SA predictions at every combo concentration
+      complete_subset$col_values <- map_ids_to_fits(
+        pred = complete_subset[[id]], match_col = complete_subset[[id2]],
+        drug_1, "cotrt_value"
+      )
+      complete_subset$row_values <- map_ids_to_fits(
+        pred = complete_subset[[id2]], match_col = complete_subset[[id]],
+        drug_2, "cotrt_value"
+      )
+      if (!is.null(codilution)) {
+        complete_subset$codil_values <- map_ids_to_fits(
+          pred = complete_subset[[id2]] + complete_subset[[id]],
+          match_col = gDRutils::round_concentration(complete_subset[[id2]] / complete_subset[[id]], 1),
+          codilution, "ratio"
+        )
+        metrics_names <- c(metrics_names, "codilution")
+      }
+
+      metrics_merged <- data.table::rbindlist(mget(metrics_names), fill = TRUE)
+      metrics_merged$dilution_drug <- rep(
+        metrics_names,
+        vapply(mget(metrics_names), NROW, numeric(1))
+      )
+      metrics_merged <- metrics_merged[
+        !(metrics_merged$fit_type %in% c("DRCInvalidFitResult", "DRCTooFewPointsToFit")), ]
+      if (NROW(metrics_merged) == 0L) {
+        metrics_merged <- metrics_merged[, lapply(.SD, function(x) NA)]
+        metrics_merged[, `:=`(normalization_type = norm_type, fit_source = fit_source)]
+      } else {
+        metrics_merged[, fit_source := fit_source]
+      }
+
+      metrics_merged$row_id <- i
+      metrics_merged$col_id <- j
+      metrics_list[[nt_idx]] <- metrics_merged
+    }
+
+    list(metrics = data.table::rbindlist(metrics_list, fill = TRUE))
+  })
+
+  all_metrics <- rbindParallelList(out_list, "metrics")
+  SummarizedExperiment::assays(se)[[metrics_assay]] <-
+    convertDFtoBumpyMatrixUsingIds(all_metrics)
+  se
+}
+
+
+####
 # apply_combo_scores — high-level wrapper replicating fit_SE.combinations scoring
 ####
 
