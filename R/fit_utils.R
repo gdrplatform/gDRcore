@@ -705,7 +705,23 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
       N_conc = N_conc,
       maxlog10Concentration = maxlog10Conc,
       ec50 = ec50_val,
-      xc50 = gDRutils::cap_xc50(ec50_val, max(conc), capping_fold = capping_fold),
+      xc50 = {
+        # xc50 = concentration at which response = 0.5
+        # (not ec50 — matches .calculate_xc50 + .extendWithXc50 in gDRutils/fit_curves.R)
+        xc50_raw <- tryCatch(
+          gDRutils::predict_conc_from_efficacy(0.5, x_inf_val, x_0_val, ec50_val, coefs[1]),
+          error = function(e) NA_real_
+        )
+        if (is.na(xc50_raw)) {
+          gDRutils::cap_xc50(ec50_val, max_conc,
+                             min_conc = min(conc[conc > 0]),
+                             capping_fold = capping_fold)
+        } else {
+          gDRutils::cap_xc50(xc50_raw, max_conc,
+                             min_conc = min(conc[conc > 0]),
+                             capping_fold = capping_fold)
+        }
+      },
       h = coefs[1],
       r2 = r2,
       rss = rss,
