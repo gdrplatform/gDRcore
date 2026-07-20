@@ -507,10 +507,16 @@ apply_fits <- function(se,
 #'
 #' @export
 fit_drug_response_metrics <- function(avg_dt, capping_fold = 5,
-                                      range_conc = c(5e-3, 5)) {
+                                      range_conc = c(5e-3, 5),
+                                      pcutoff = 0.05,
+                                      n_point_cutoff = 4L,
+                                      force_fit = FALSE) {
   .fit_drug_response_metrics_impl(avg_dt, x_0 = 1,
                                   capping_fold = capping_fold,
-                                  range_conc = range_conc)
+                                  range_conc = range_conc,
+                                  pcutoff = pcutoff,
+                                  n_point_cutoff = n_point_cutoff,
+                                  force_fit = force_fit)
 }
 
 
@@ -539,16 +545,25 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5,
 #'
 #' @export
 fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
-                                         range_conc = c(5e-3, 5)) {
+                                         range_conc = c(5e-3, 5),
+                                         pcutoff = 0.05,
+                                         n_point_cutoff = 4L,
+                                         force_fit = FALSE) {
   .fit_drug_response_metrics_impl(avg_dt, x_0 = NA_real_,
                                   capping_fold = capping_fold,
-                                  range_conc = range_conc)
+                                  range_conc = range_conc,
+                                  pcutoff = pcutoff,
+                                  n_point_cutoff = n_point_cutoff,
+                                  force_fit = force_fit)
 }
 
 
 #' @keywords internal
 .fit_drug_response_metrics_impl <- function(avg_dt, x_0 = 1, capping_fold = 5,
-                                            range_conc = c(5e-3, 5)) {
+                                            range_conc = c(5e-3, 5),
+                                            pcutoff = 0.05,
+                                            n_point_cutoff = 4L,
+                                            force_fit = FALSE) {
   norm_type <- avg_dt$normalization_type[1]
   conc_col <- gDRutils::get_env_identifiers("concentration")
   conc <- avg_dt[[conc_col]]
@@ -560,8 +575,14 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
   x <- x[keep]
   conc <- conc[keep]
 
+  # All-NA input → empty/invalid result (no data at all)
   if (length(x) == 0L) {
     return(.empty_fit_result(norm_type))
+  }
+
+  # n_point_cutoff: too few unique concentrations → constant fit (matches logisticFit)
+  if (length(unique(conc)) < n_point_cutoff) {
+    return(.constant_fit_result(norm_type, x, conc, x_std, x_0, range_conc))
   }
 
   x_mean_obs <- mean(x, na.rm = TRUE)
@@ -632,6 +653,12 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
     df2 <- length(x) - n_param + 1L
     f_value <- ((rss1 - rss) / df1) / (rss / df2)
     p_value <- stats::pf(f_value, df1, df2, lower.tail = FALSE)
+
+    # pcutoff: if fit is not statistically significant, fall back to constant fit
+    # (matches logisticFit behaviour: set_constant_fit_params when p >= pcutoff)
+    if (!force_fit && !is.na(p_value) && p_value >= pcutoff) {
+      return(.constant_fit_result(norm_type, x, conc, x_std, x_0, range_conc))
+    }
 
     # Helper: mean of model predictions over a concentration range
     .predict_mean <- function(model, lo, hi) {
@@ -1201,6 +1228,41 @@ hss_fit_fn <- function(avg_dt) {
   )
   SummarizedExperiment::assay(se, assay_name) <- mx
   se
+}
+
+
+# Constant fit: p_value >= pcutoff or too few points — matches set_constant_fit_params()
+# in gDRutils/fit_curves.R (ec50=0, h=0.0001, r2=0, x_mean=x_inf=x_0=mean(x))
+#' @keywords internal
+.constant_fit_result <- function(norm_type, x, conc, x_std, x_0, range_conc) {
+  mn <- mean(x, na.rm = TRUE)
+  N_conc <- length(unique(conc))
+  maxlog10Conc <- if (length(conc) > 0L) log10(max(conc)) else NA_real_
+  conc_ord <- order(conc)
+  x_ordered <- x[conc_ord]
+  n_x <- length(x_ordered)
+  x_max_val <- if (n_x >= 2L) min(x_ordered[(n_x - 1L):n_x]) else if (n_x == 1L) x_ordered else NA_real_
+  max_conc_safe <- if (length(conc) > 0L && !all(is.na(conc))) max(conc, na.rm = TRUE) else 1
+  xc50_val <- gDRutils::cap_xc50(0, max_conc_safe)
+  list(
+    normalization_type = norm_type,
+    x_mean = mn,
+    x_AOC = 1 - mn,
+    x_AOC_range = 1 - mn,
+    x_max = x_max_val,
+    x_sd_avg = mean(x_std, na.rm = TRUE),
+    N_conc = N_conc,
+    maxlog10Concentration = maxlog10Conc,
+    ec50 = 0,
+    xc50 = xc50_val,
+    h = 0.0001,
+    r2 = 0,
+    rss = NA_real_,
+    p_value = NA_real_,
+    x_0 = if (is.na(x_0)) mn else x_0,
+    x_inf = mn,
+    fit_type = "DRCConstantFitResult"
+  )
 }
 
 
