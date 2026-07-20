@@ -241,7 +241,28 @@ fit_SE.combinations <- function(se,
       # store the values from the Averaged assay for reference
       complete_subset$av_values <- complete_subset$x
       # and replace by the Smoothed values
-      complete_subset$smooth <- rowMeans(mat, na.rm = TRUE)
+      smooth_values <- rowMeans(mat, na.rm = TRUE)
+
+      # On the single-agent arms use only the fit run ALONG that arm. The
+      # perpendicular fit contributes its intercept (x_0) at the arm, which is
+      # an unreliable extrapolation: when the orthogonal series is not
+      # statistically significant, fit_curves collapses it to a constant equal
+      # to the row/column mean and overrides the intended reference. These
+      # collapsed intercepts vary non-monotonically along the arm and, once
+      # averaged into 'smooth', produce a checkerboard/zig-zag response surface
+      # (most visible on flat/shallow curves). Restricting each arm to its
+      # parallel fit removes the artifact and leaves the matrix interior
+      # unchanged. Falls back to the averaged value where the parallel fit is
+      # unavailable (NA).
+      if ("col_values" %in% colnames(complete_subset)) {
+        on_arm_1 <- complete_subset[[id2]] == 0 & !is.na(complete_subset$col_values)
+        smooth_values[on_arm_1] <- complete_subset$col_values[on_arm_1]
+      }
+      if ("row_values" %in% colnames(complete_subset)) {
+        on_arm_2 <- complete_subset[[id]] == 0 & !is.na(complete_subset$row_values)
+        smooth_values[on_arm_2] <- complete_subset$row_values[on_arm_2]
+      }
+      complete_subset$smooth <- smooth_values
 
       # just keep the relevant columns and change to the metric name
       cols <- c(id, id2, "smooth")

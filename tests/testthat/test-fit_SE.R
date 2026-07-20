@@ -63,3 +63,31 @@ test_that("fit_SE.combinations works as expected", {
     BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(new_se1$result, "all_iso_points"))
   expect_true(all(dim(aip_df) > 0))
 })
+
+test_that("fit_SE.combinations single-agent arms are monotonic (no checkerboard)", {
+
+  fmae_cms <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+  se1 <- fmae_cms[[gDRutils::get_supported_experiments("combo")]]
+  SummarizedExperiment::assays(se1) <- SummarizedExperiment::assays(se1)["Averaged"]
+
+  fit <- purrr::quietly(fit_SE.combinations)(se1[1, 1])$result
+  ex <- data.table::as.data.table(
+    BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(fit, "excess")))
+
+  # On each single-agent arm the smoothed response must be monotonically
+  # non-increasing with concentration. Averaging the perpendicular fit's
+  # intercept into 'smooth' (it collapses to the row/column mean when the
+  # orthogonal series is not significant) used to make the arm zig-zag -
+  # the "checkerboard" artifact. Each arm now uses only its parallel fit.
+  tol <- 1e-6
+  for (nt in unique(ex$normalization_type)) {
+    arm1 <- ex[Concentration_2 == 0 & normalization_type == nt & !is.na(smooth)][
+      order(Concentration)]
+    arm2 <- ex[Concentration == 0 & normalization_type == nt & !is.na(smooth)][
+      order(Concentration_2)]
+    expect_true(all(diff(arm1$smooth) <= tol),
+                info = paste("drug_1 single-agent arm not monotonic for", nt))
+    expect_true(all(diff(arm2$smooth) <= tol),
+                info = paste("drug_2 single-agent arm not monotonic for", nt))
+  }
+})
