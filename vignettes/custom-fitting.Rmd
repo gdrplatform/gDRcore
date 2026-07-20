@@ -229,7 +229,33 @@ replicates the standard `fit_SE()` / `logisticFit()` output exactly.
 | Model | 3-parameter log-logistic (`drc::LL.3u`, `x_0` fixed at 1) |
 | Equivalent to | `fit_SE()` / `gDRutils::logisticFit()` |
 | `x_mean` | Predicted from fitted curve (matches `logisticFit` behaviour) |
-| `fit_type` value | `"DRC3pHillFitModelFixS0"` |
+| `fit_type` value | `"DRC3pHillFitModelFixS0"` or `"DRCConstantFitResult"` |
+| Output columns | Full `Metrics` assay schema including `p_value`, `rss`, `x_AOC_range`, `x_max`, `x_sd_avg` |
+
+## Numerical equivalence with fit_SE()
+
+`fit_drug_response_metrics()` is **numerically identical** to `fit_SE()`.
+The fit is deterministic — `drc::drm` does not use random number generation,
+so `set.seed()` has no effect.  Differences between the two are purely
+algorithmic:
+
+- Same `drc::LL.3u` model, `x_0 = 1`, identical priors and concentration bounds
+- Same `x_mean`: predicted from the fitted curve over the observed concentration range
+- Same `pcutoff = 0.05` fallback: when the F-test gives `p_value ≥ pcutoff`, the
+  result is replaced by a flat `DRCConstantFitResult` (same as `logisticFit()`)
+- Same `n_point_cutoff = 4`: fewer unique concentrations → constant fit without
+  attempting the sigmoidal model
+- All output columns present in the native `"Metrics"` assay
+
+These parameters can be overridden if your data requires it:
+
+```{r hill-params, eval = FALSE}
+# Loosen the significance threshold or force the sigmoidal fit
+fit_drug_response_metrics(avg_dt, pcutoff = 0.1)
+fit_drug_response_metrics(avg_dt, force_fit = TRUE)
+# Different range for x_AOC_range computation
+fit_drug_response_metrics(avg_dt, range_conc = c(1e-3, 10))
+```
 
 ```{r hill-ref}
 hill_out <- apply_fit(
