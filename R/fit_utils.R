@@ -648,6 +648,190 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5) {
 }
 
 
+####
+# apply_combo_scores — high-level wrapper replicating fit_SE.combinations scoring
+####
+
+#' apply_combo_scores
+#'
+#' Compute Bliss and HSA synergy scores for a combination SE, replicating the
+#' exact scoring logic of \code{\link{fit_SE.combinations}}.
+#'
+#' Unlike the low-level \code{\link{bliss_fit_fn}} and \code{\link{hss_fit_fn}}
+#' (which work on raw Averaged data per triplet), this function uses the SA fit
+#' parameters from the \code{Metrics} assay to generate curve-smoothed single-agent
+#' responses via \code{\link[gDRutils]{predict_efficacy_from_conc}} before computing
+#' excess.  This produces results numerically identical to \code{fit_SE.combinations}.
+#'
+#' @details
+#' The function requires a \code{Metrics} assay containing columns
+#' \code{dilution_drug}, \code{cotrt_value}, \code{ec50}, \code{h},
+#' \code{x_inf}, \code{x_0}, and \code{normalization_type} — as produced by
+#' \code{fit_SE.combinations} or \code{\link{apply_fit_to_se}} with
+#' \code{fit_drug_response_metrics}.
+#'
+#' Scoring steps (per drug-combo × cell-line × normalization_type):
+#' \enumerate{
+#'   \item Predict smooth SA responses at every combo concentration using
+#'     \code{predict_efficacy_from_conc} on \code{drug_1} and \code{drug_2}
+#'     parameter sets from \code{Metrics}.
+#'   \item Average \code{col_values} (drug-1-along-conc1) and
+#'     \code{row_values} (drug-2-along-conc2) → \code{smooth}.
+#'   \item Compute Bliss-expected using \code{\link{calculate_Bliss}} and
+#'     HSA-expected using \code{\link{calculate_HSA}} on the smooth SA edges.
+#'   \item Compute excess via \code{\link{calculate_excess}}.
+#'   \item Score = mean of top 10-percentile excess via \code{\link{calculate_score}}.
+#' }
+#'
+#' @param se \code{\link[SummarizedExperiment]{SummarizedExperiment}} with
+#'   \code{"Averaged"} and \code{"Metrics"} assays (combination experiment).
+#' @param scores_assay string; name of the output assay to write scores into.
+#'   Default \code{"scores"}.
+#' @param averaged_assay string; name of the input assay. Default \code{"Averaged"}.
+#' @param metrics_assay string; name of the assay containing SA fit parameters.
+#'   Default \code{"Metrics"}.
+#' @param normalization_types character vector of normalization types to process.
+#'   Default \code{c("GR", "RV")}.
+#' @param fit_source string recorded in the \code{fit_source} column. Default
+#'   \code{"gDR"}.
+#'
+#' @return Updated \code{SummarizedExperiment} with a \code{scores_assay}
+#'   assay containing \code{bliss_score} and \code{hsa_score} per triplet.
+#'
+#' @seealso \code{\link{bliss_fit_fn}}, \code{\link{hss_fit_fn}} for the
+#'   simplified raw-data variants.
+#'
+#' @examples
+#' mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+#' combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
+#' combo_se_out <- apply_combo_scores(combo_se)
+#' "scores" %in% SummarizedExperiment::assayNames(combo_se_out)
+#'
+#' @importFrom checkmate assert_class assert_string assert_character
+#' @export
+apply_combo_scores <- function(se,
+                               scores_assay = "scores",
+                               averaged_assay = "Averaged",
+                               metrics_assay = "Metrics",
+                               normalization_types = c("GR", "RV"),
+                               fit_source = "gDR") {
+  checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_string(scores_assay)
+  checkmate::assert_string(averaged_assay)
+  checkmate::assert_string(metrics_assay)
+  checkmate::assert_character(normalization_types, min.len = 1L)
+  gDRutils::validate_se_assay_name(se, averaged_assay)
+  gDRutils::validate_se_assay_name(se, metrics_assay)
+
+  conc1_col <- gDRutils::get_env_identifiers("concentration")
+  conc2_col <- gDRutils::get_env_identifiers("concentration2")
+  series_identifiers <- c(conc1_col, conc2_col)
+
+  avg_bm <- SummarizedExperiment::assay(se, averaged_assay)
+  met_bm <- SummarizedExperiment::assay(se, metrics_assay)
+
+  # Iterate over each (drug-combo × cell-line) BumpyMatrix cell
+  score_rows <- vector("list", prod(dim(se)) * length(normalization_types))
+  idx <- 0L
+
+  for (ri in seq_len(nrow(se))) {
+    for (ci in seq_len(ncol(se))) {
+      avg_dt <- as.data.table(avg_bm[ri, ci][[1L]])
+      met_dt <- as.data.table(met_bm[ri, ci][[1L]])
+
+      if (NROW(avg_dt) == 0L || NROW(met_dt) == 0L) next
+
+      row_nm <- rownames(se)[ri]
+      col_nm <- colnames(se)[ci]
+
+      for (norm_type in normalization_types) {
+        avg_sub <- avg_dt[avg_dt$normalization_type == norm_type, ]
+        met_sub <- met_dt[met_dt$normalization_type == norm_type, ]
+        if (NROW(avg_sub) == 0L || NROW(met_sub) == 0L) next
+
+        # Smooth SA predictions for every point in the averaged combo data
+        # drug_1 params: SA along conc1 for each cotrt conc2 value
+        drug1_params <- met_sub[met_sub$dilution_drug == "drug_1", ]
+        drug2_params <- met_sub[met_sub$dilution_drug == "drug_2", ]
+
+        if (NROW(drug1_params) == 0L || NROW(drug2_params) == 0L) next
+
+        # col_values: predict drug-1 response at conc1 for each cotrt conc2
+        avg_sub$col_values <- vapply(seq_len(NROW(avg_sub)), function(i) {
+          cotrt <- avg_sub[[conc2_col]][i]
+          conc <- avg_sub[[conc1_col]][i]
+          p <- drug1_params[abs(drug1_params$cotrt_value - cotrt) ==
+                              min(abs(drug1_params$cotrt_value - cotrt)), ][1L, ]
+          if (NROW(p) == 0L || any(is.na(c(p$ec50, p$h, p$x_inf, p$x_0)))) return(NA_real_)
+          gDRutils::predict_efficacy_from_conc(conc, p$x_inf, p$x_0, p$ec50, p$h)
+        }, numeric(1))
+
+        # row_values: predict drug-2 response at conc2 for each cotrt conc1
+        avg_sub$row_values <- vapply(seq_len(NROW(avg_sub)), function(i) {
+          cotrt <- avg_sub[[conc1_col]][i]
+          conc <- avg_sub[[conc2_col]][i]
+          p <- drug2_params[abs(drug2_params$cotrt_value - cotrt) ==
+                              min(abs(drug2_params$cotrt_value - cotrt)), ][1L, ]
+          if (NROW(p) == 0L || any(is.na(c(p$ec50, p$h, p$x_inf, p$x_0)))) return(NA_real_)
+          gDRutils::predict_efficacy_from_conc(conc, p$x_inf, p$x_0, p$ec50, p$h)
+        }, numeric(1))
+
+        avg_sub$smooth <- rowMeans(
+          avg_sub[, c("col_values", "row_values"), with = FALSE],
+          na.rm = TRUE
+        )
+        avg_sub[avg_sub[[conc1_col]] == 0 & avg_sub[[conc2_col]] == 0, smooth := 1]
+
+        # SA edges for calculate_HSA / calculate_Bliss
+        sa1 <- avg_sub[avg_sub[[conc2_col]] == 0, c(series_identifiers, "smooth"), with = FALSE]
+        sa2 <- avg_sub[avg_sub[[conc1_col]] == 0, c(series_identifiers, "smooth"), with = FALSE]
+
+        if (NROW(sa1) == 0L || NROW(sa2) == 0L) next
+
+        # HSA score
+        hsa_expected <- calculate_HSA(sa1, conc1_col, sa2, conc2_col, norm_type)
+        h_excess <- calculate_excess(
+          hsa_expected, avg_sub,
+          series_identifiers = series_identifiers,
+          metric_col = "metric", measured_col = "smooth"
+        )
+        hsa_score <- if (all(is.na(h_excess$x))) NA_real_ else
+          calculate_score(h_excess$x)
+
+        # Bliss score
+        bliss_expected <- calculate_Bliss(sa1, conc1_col, sa2, conc2_col, norm_type)
+        bliss_excess <- calculate_excess(
+          bliss_expected, avg_sub,
+          series_identifiers = series_identifiers,
+          metric_col = "metric", measured_col = "smooth"
+        )
+        bliss_score <- if (all(is.na(bliss_excess$x))) NA_real_ else
+          calculate_score(bliss_excess$x)
+
+        idx <- idx + 1L
+        score_rows[[idx]] <- data.table::data.table(
+          row = row_nm,
+          column = col_nm,
+          normalization_type = norm_type,
+          fit_source = fit_source,
+          bliss_score = bliss_score,
+          hsa_score = hsa_score
+        )
+      }
+    }
+  }
+
+  if (idx == 0L) {
+    return(se)
+  }
+
+  scores_dt <- data.table::rbindlist(score_rows[seq_len(idx)])
+  se <- .persist_assay(se, scores_dt, "replace", scores_assay, "row", "column",
+                       upsert_key = c("fit_source", "normalization_type"))
+  se
+}
+
+
 #' bliss_fit_fn
 #'
 #' Reference fit function for Bliss independence synergy scoring on combination
