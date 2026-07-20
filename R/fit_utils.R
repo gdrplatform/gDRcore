@@ -469,7 +469,9 @@ apply_fits <- function(se,
 
 #' fit_drug_response_metrics
 #'
-#' Reference fit function replicating standard gDR Hill curve fitting.
+#' Reference fit function replicating standard gDR Hill curve fitting
+#' (3-parameter model, \code{x_0} fixed at 1).  Produces results comparable
+#' to \code{\link[gDRcore]{fit_SE}} and \code{\link[gDRutils]{logisticFit}}.
 #' For use with \code{\link{apply_fit_to_se}} or \code{\link{apply_fit}}
 #' on single-agent data.
 #'
@@ -478,7 +480,11 @@ apply_fits <- function(se,
 #' @param capping_fold numeric capping fold passed to
 #'   \code{\link[gDRutils]{cap_xc50}}
 #'
-#' @return Named list of fit metrics
+#' @return Named list of fit metrics compatible with the standard gDR
+#'   \code{Metrics} assay schema.
+#'
+#' @seealso \code{\link{fit_drug_response_metrics_4p}} for a 4-parameter
+#'   variant that fits \code{x_0} freely.
 #'
 #' @examples
 #' dt <- data.table::data.table(
@@ -490,6 +496,41 @@ apply_fits <- function(se,
 #'
 #' @export
 fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
+  .fit_drug_response_metrics_impl(avg_dt, x_0 = 1, capping_fold = capping_fold)
+}
+
+
+#' fit_drug_response_metrics_4p
+#'
+#' Variant of \code{\link{fit_drug_response_metrics}} using a 4-parameter
+#' Hill model — \code{x_0} is fitted freely rather than fixed at 1.
+#' Useful when the upper asymptote is expected to deviate from 1 (e.g.
+#' partial agonists, non-standard assay readouts).
+#'
+#' @inheritParams fit_drug_response_metrics
+#'
+#' @return Named list of fit metrics.  \code{fit_type} will be
+#'   \code{"DRC4pHillFitModel"} on success.
+#'
+#' @seealso \code{\link{fit_drug_response_metrics}} for the default
+#'   3-parameter variant that matches \code{fit_SE()} output.
+#'
+#' @examples
+#' dt <- data.table::data.table(
+#'   Concentration = c(0.001, 0.01, 0.1, 1, 10),
+#'   x = c(0.95, 0.8, 0.5, 0.2, 0.1),
+#'   normalization_type = "RV"
+#' )
+#' fit_drug_response_metrics_4p(dt)
+#'
+#' @export
+fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5) {
+  .fit_drug_response_metrics_impl(avg_dt, x_0 = NA_real_, capping_fold = capping_fold)
+}
+
+
+#' @keywords internal
+.fit_drug_response_metrics_impl <- function(avg_dt, x_0 = 1, capping_fold = 5) {
   norm_type <- avg_dt$normalization_type[1]
   conc_col <- gDRutils::get_env_identifiers("concentration")
   conc <- avg_dt[[conc_col]]
@@ -503,51 +544,78 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
     return(.empty_fit_result(norm_type))
   }
 
-  x_mean <- mean(x, na.rm = TRUE)
-  x_AOC <- 1 - x_mean
+  x_mean_obs <- mean(x, na.rm = TRUE)
   N_conc <- length(unique(conc))
   maxlog10Conc <- log10(max(conc, na.rm = TRUE))
 
   x_inf_prior <- if (norm_type == "GR") 0.1 else 0.4
-  controls <- drc::drmc(relTol = 1e-06, errorm = FALSE, noMessage = TRUE, rmNA = TRUE)
+  controls <- drc::drmc(relTol = 1e-04, errorm = FALSE, noMessage = TRUE, rmNA = TRUE)
+
+  four_param <- is.na(x_0)
+  fct <- if (four_param) drc::LL.4() else drc::LL.3()
+  start <- if (four_param) {
+    c(2, x_inf_prior, 1, stats::median(conc))
+  } else {
+    c(2, x_inf_prior, stats::median(conc))
+  }
+
   fit <- tryCatch(
     drc::drm(x ~ conc,
              data = data.table::data.table(x = x, conc = conc),
-             fct = drc::LL.4(),
-             start = c(2, x_inf_prior, 1, stats::median(conc)),
+             fct = fct,
+             start = start,
              control = controls),
     error = function(e) NULL
   )
 
   if (!is.null(fit)) {
     coefs <- stats::coef(fit)
-    r2 <- 1 - sum(stats::residuals(fit)^2) / sum((x - mean(x))^2)
+    rss <- sum(stats::residuals(fit)^2, na.rm = TRUE)
+    r2 <- 1 - rss / sum((x - x_mean_obs)^2)
+    # x_mean from model prediction (matches fit_SE / logisticFit behaviour)
+    x_mean_model <- mean(
+      stats::predict(fit, data.table::data.table(
+        conc = 10^seq(log10(min(conc)), log10(max(conc)), length.out = 101L)
+      )),
+      na.rm = TRUE
+    )
+    if (four_param) {
+      ec50_val <- coefs[4]
+      x_0_val <- coefs[3]
+      x_inf_val <- coefs[2]
+      fit_type <- "DRC4pHillFitModel"
+    } else {
+      ec50_val <- coefs[3]
+      x_0_val <- x_0
+      x_inf_val <- coefs[2]
+      fit_type <- "DRC3pHillFitModelFixS0"
+    }
     list(
-      fit_source = "custom",
       normalization_type = norm_type,
-      x_mean = x_mean,
-      x_AOC = x_AOC,
+      x_mean = x_mean_model,
+      x_AOC = 1 - x_mean_model,
       N_conc = N_conc,
       maxlog10Concentration = maxlog10Conc,
-      xc50 = gDRutils::cap_xc50(coefs[4], max(conc), capping_fold = capping_fold),
+      ec50 = ec50_val,
+      xc50 = gDRutils::cap_xc50(ec50_val, max(conc), capping_fold = capping_fold),
       h = coefs[1],
       r2 = r2,
-      x_0 = coefs[3],
-      x_inf = coefs[2],
-      fit_type = "DRC4pHillFitModel"
+      x_0 = x_0_val,
+      x_inf = x_inf_val,
+      fit_type = fit_type
     )
   } else {
     list(
-      fit_source = "custom",
       normalization_type = norm_type,
-      x_mean = x_mean,
-      x_AOC = x_AOC,
+      x_mean = x_mean_obs,
+      x_AOC = 1 - x_mean_obs,
       N_conc = N_conc,
       maxlog10Concentration = maxlog10Conc,
+      ec50 = NA_real_,
       xc50 = .estimate_xc50_fallback(x),
       h = NA_real_,
       r2 = NA_real_,
-      x_0 = NA_real_,
+      x_0 = if (four_param) NA_real_ else x_0,
       x_inf = NA_real_,
       fit_type = "DRCInvalidFitResult"
     )

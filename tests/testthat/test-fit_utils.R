@@ -411,13 +411,15 @@ test_that("fit_drug_response_metrics returns named list with expected fields", {
   result <- fit_drug_response_metrics(dt)
 
   expect_true(is.list(result))
-  expected_names <- c("fit_source", "normalization_type", "x_mean", "x_AOC",
-                      "N_conc", "maxlog10Concentration", "xc50", "h", "r2",
-                      "x_0", "x_inf", "fit_type")
+  expected_names <- c("normalization_type", "x_mean", "x_AOC",
+                      "N_conc", "maxlog10Concentration", "ec50", "xc50",
+                      "h", "r2", "x_0", "x_inf", "fit_type")
   expect_true(all(expected_names %in% names(result)))
   expect_equal(result$normalization_type, "RV")
-  expect_equal(result$fit_source, "custom")
   expect_equal(result$N_conc, 5L)
+  # 3-param model: x_0 fixed at 1, fit_type matches fit_SE
+  expect_equal(result$x_0, 1)
+  expect_equal(result$fit_type, "DRC3pHillFitModelFixS0")
 })
 
 
@@ -445,11 +447,31 @@ test_that("fit_drug_response_metrics uses GR priors for GR normalization", {
   result <- fit_drug_response_metrics(dt)
 
   expect_equal(result$normalization_type, "GR")
-  expect_true(result$fit_type %in% c("DRC4pHillFitModel", "DRCInvalidFitResult"))
+  expect_true(result$fit_type %in% c("DRC3pHillFitModelFixS0", "DRCInvalidFitResult"))
 })
 
 
-test_that("fit_drug_response_metrics computes correct x_mean and x_AOC", {
+test_that("fit_drug_response_metrics_4p uses 4-param model (x_0 free)", {
+  dt <- data.table::data.table(
+    Concentration = c(0.001, 0.01, 0.1, 1, 10),
+    x = c(0.95, 0.8, 0.5, 0.2, 0.1),
+    normalization_type = "RV"
+  )
+  result3 <- fit_drug_response_metrics(dt)
+  result4 <- fit_drug_response_metrics_4p(dt)
+
+  expect_equal(result3$fit_type, "DRC3pHillFitModelFixS0")
+  expect_equal(result4$fit_type, "DRC4pHillFitModel")
+  # 3-param: x_0 fixed; 4-param: x_0 fitted (may differ from 1)
+  expect_equal(result3$x_0, 1)
+  expect_true(is.numeric(result4$x_0))
+  # Both should have same data-derived columns
+  expect_equal(result3$N_conc, result4$N_conc)
+  expect_equal(result3$maxlog10Concentration, result4$maxlog10Concentration)
+})
+
+
+test_that("fit_drug_response_metrics x_mean is model-predicted (not arithmetic mean)", {
   x_vals <- c(0.9, 0.7, 0.5, 0.3, 0.1)
   dt <- data.table::data.table(
     Concentration = c(0.001, 0.01, 0.1, 1, 10),
@@ -458,8 +480,11 @@ test_that("fit_drug_response_metrics computes correct x_mean and x_AOC", {
   )
   result <- fit_drug_response_metrics(dt)
 
-  expect_equal(result$x_mean, mean(x_vals))
-  expect_equal(result$x_AOC, 1 - mean(x_vals))
+  # x_mean is predicted from the fitted curve (matches fit_SE / logisticFit)
+  expect_true(is.numeric(result$x_mean))
+  expect_equal(result$x_AOC, 1 - result$x_mean)
+  # Should be close to arithmetic mean but not necessarily identical
+  expect_lt(abs(result$x_mean - mean(x_vals)), 0.3)
 })
 
 
