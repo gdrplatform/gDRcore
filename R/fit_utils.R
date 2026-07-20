@@ -1117,6 +1117,165 @@ apply_combo_excess <- function(se,
 
 
 ####
+# apply_combo_isobolograms — Step 4 of fit_SE.combinations: Loewe CI → isobolograms assay
+####
+
+#' apply_combo_isobolograms
+#'
+#' Compute Loewe combination index isobolograms for a combination SE,
+#' writing results to the \code{isobolograms} and \code{all_iso_points} assays.
+#' This is \strong{step 4} of the \code{\link{fit_SE.combinations}} pipeline.
+#'
+#' Requires the \code{Averaged} and \code{Metrics} assays (as produced by
+#' \code{\link{apply_combo_sa_fits}} or \code{fit_SE.combinations}).
+#' Isobologram analysis is only performed when at least 9 combo concentration
+#' points are available — otherwise \code{NA} is written, matching
+#' \code{fit_SE.combinations} behaviour.
+#'
+#' @param se \code{\link[SummarizedExperiment]{SummarizedExperiment}} with
+#'   \code{Averaged} and \code{Metrics} assays.
+#' @param series_identifiers character vector of length 2. Defaults to
+#'   \code{get_default_nested_identifiers(se, ...)}.
+#' @param normalization_types character vector. Default \code{c("GR", "RV")}.
+#' @param averaged_assay string. Default \code{"Averaged"}.
+#' @param metrics_assay string. Default \code{"Metrics"}.
+#' @param isobolograms_assay string; name of the Loewe curves output assay.
+#'   Default \code{"isobolograms"}.
+#' @param iso_points_assay string; name of the iso points output assay.
+#'   Default \code{"all_iso_points"}.
+#'
+#' @return Updated SE with \code{isobolograms_assay} and \code{iso_points_assay}
+#'   assays.
+#'
+#' @seealso \code{\link{apply_combo_sa_fits}}, \code{\link{apply_combo_excess}},
+#'   \code{\link{apply_combo_scores}}, \code{\link{fit_SE.combinations}}
+#'
+#' @examples
+#' mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+#' combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
+#' combo_se_iso <- apply_combo_isobolograms(combo_se[1, 1])
+#' "isobolograms" %in% SummarizedExperiment::assayNames(combo_se_iso)
+#'
+#' @importFrom checkmate assert_class assert_string assert_character
+#' @export
+apply_combo_isobolograms <- function(se,
+                                     series_identifiers = NULL,
+                                     normalization_types = c("GR", "RV"),
+                                     averaged_assay = "Averaged",
+                                     metrics_assay = "Metrics",
+                                     isobolograms_assay = "isobolograms",
+                                     iso_points_assay = "all_iso_points") {
+  checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_character(series_identifiers, null.ok = TRUE, len = 2L)
+  checkmate::assert_character(normalization_types, min.len = 1L)
+  checkmate::assert_string(averaged_assay)
+  checkmate::assert_string(metrics_assay)
+  checkmate::assert_string(isobolograms_assay)
+  checkmate::assert_string(iso_points_assay)
+  gDRutils::validate_se_assay_name(se, averaged_assay)
+  gDRutils::validate_se_assay_name(se, metrics_assay)
+
+  if (is.null(series_identifiers)) {
+    series_identifiers <- get_default_nested_identifiers(
+      se, data_model(gDRutils::get_supported_experiments("combo"))
+    )
+  }
+  id <- series_identifiers[1]
+  id2 <- series_identifiers[2]
+
+  avg <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se, averaged_assay)
+  ))
+  met <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se, metrics_assay),
+    row.field = "row", column.field = "column"
+  ))
+  iterator <- unique(avg[, c("column", "row")])
+
+  out_list <- gDRutils::loop(seq_len(NROW(iterator)), function(row_idx) {
+    i <- iterator[row_idx, "row"][[1L]]
+    j <- iterator[row_idx, "column"][[1L]]
+    avg_combo <- avg[avg$row == i & avg$column == j, ]
+    met_cell  <- met[met$row == i & met$column == j, ]
+
+    if (all(is.na(avg_combo[, -c("row", "column", "normalization_type")]))) {
+      return(list(
+        isobolograms = data.table::data.table(row_id = i, col_id = j),
+        iso_points   = data.table::data.table(row_id = i, col_id = j)
+      ))
+    }
+
+    iso_curves_list <- vector("list", length(normalization_types))
+    iso_points_list <- vector("list", length(normalization_types))
+
+    for (nt_idx in seq_along(normalization_types)) {
+      norm_type <- normalization_types[[nt_idx]]
+
+      av_matrix <- .compute_smooth_matrix(avg_combo, met_cell, id, id2, norm_type)
+      if (is.null(av_matrix) || NROW(av_matrix) == 0L) next
+
+      drug1_p <- met_cell[met_cell$normalization_type == norm_type &
+                          met_cell$dilution_drug == "drug_1", ]
+      drug2_p <- met_cell[met_cell$normalization_type == norm_type &
+                          met_cell$dilution_drug == "drug_2", ]
+      codil_p <- met_cell[met_cell$normalization_type == norm_type &
+                          met_cell$dilution_drug == "codilution", ]
+      if (NROW(codil_p) == 0L) codil_p <- NULL
+
+      # Determine whether enough dense combo points exist for Loewe
+      discard1 <- names(which(
+        table(av_matrix[!is.na(av_matrix$smooth), id, with = FALSE]) < 3
+      ))
+      discard2 <- names(which(
+        table(av_matrix[!is.na(av_matrix$smooth), id2, with = FALSE]) < 3
+      ))
+      av_dense <- av_matrix[
+        !(av_matrix[[id]] %in% discard1) & !(av_matrix[[id2]] %in% discard2), ]
+
+      isobologram_out <- if (
+        sum((av_dense[[id]] * av_dense[[id2]]) > 0) > 9 &&
+        NROW(drug2_p) > 0L && min(drug2_p$cotrt_value, na.rm = TRUE) == 0
+      ) {
+        calculate_Loewe(
+          av_matrix, drug2_p, drug1_p, codil_p,
+          series_identifiers = c(id, id2),
+          normalization_type = norm_type
+        )
+      } else {
+        list(
+          df_all_iso_points = data.table::data.table(row_id = NA, col_id = NA),
+          df_all_iso_curves = data.table::data.table(row_id = NA, col_id = NA)
+        )
+      }
+
+      isobologram_out$df_all_iso_points$row_id <- i
+      isobologram_out$df_all_iso_points$col_id <- j
+      isobologram_out$df_all_iso_curves$row_id <- i
+      isobologram_out$df_all_iso_curves$col_id <- j
+      isobologram_out$df_all_iso_points$normalization_type <- norm_type
+      isobologram_out$df_all_iso_curves$normalization_type <- norm_type
+
+      iso_points_list[[nt_idx]] <- isobologram_out$df_all_iso_points
+      iso_curves_list[[nt_idx]] <- isobologram_out$df_all_iso_curves
+    }
+
+    list(
+      isobolograms = data.table::rbindlist(iso_curves_list, fill = TRUE),
+      iso_points   = data.table::rbindlist(iso_points_list, fill = TRUE)
+    )
+  })
+
+  all_isobolograms <- rbindParallelList(out_list, "isobolograms")
+  all_iso_points   <- rbindParallelList(out_list, "iso_points")
+  SummarizedExperiment::assays(se)[[isobolograms_assay]] <-
+    convertDFtoBumpyMatrixUsingIds(all_isobolograms)
+  SummarizedExperiment::assays(se)[[iso_points_assay]] <-
+    convertDFtoBumpyMatrixUsingIds(all_iso_points)
+  se
+}
+
+
+####
 # apply_combo_scores — high-level wrapper replicating fit_SE.combinations scoring
 ####
 
