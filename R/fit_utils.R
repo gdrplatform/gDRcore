@@ -510,13 +510,15 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5,
                                       range_conc = c(5e-3, 5),
                                       pcutoff = 0.05,
                                       n_point_cutoff = 4L,
-                                      force_fit = FALSE) {
+                                      force_fit = FALSE,
+                                      cap = 0.1) {
   .fit_drug_response_metrics_impl(avg_dt, x_0 = 1,
                                   capping_fold = capping_fold,
                                   range_conc = range_conc,
                                   pcutoff = pcutoff,
                                   n_point_cutoff = n_point_cutoff,
-                                  force_fit = force_fit)
+                                  force_fit = force_fit,
+                                  cap = cap)
 }
 
 
@@ -548,13 +550,15 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
                                          range_conc = c(5e-3, 5),
                                          pcutoff = 0.05,
                                          n_point_cutoff = 4L,
-                                         force_fit = FALSE) {
+                                         force_fit = FALSE,
+                                         cap = 0.1) {
   .fit_drug_response_metrics_impl(avg_dt, x_0 = NA_real_,
                                   capping_fold = capping_fold,
                                   range_conc = range_conc,
                                   pcutoff = pcutoff,
                                   n_point_cutoff = n_point_cutoff,
-                                  force_fit = force_fit)
+                                  force_fit = force_fit,
+                                  cap = cap)
 }
 
 
@@ -563,7 +567,8 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
                                             range_conc = c(5e-3, 5),
                                             pcutoff = 0.05,
                                             n_point_cutoff = 4L,
-                                            force_fit = FALSE) {
+                                            force_fit = FALSE,
+                                            cap = 0.1) {
   norm_type <- avg_dt$normalization_type[1]
   conc_col <- gDRutils::get_env_identifiers("concentration")
   conc <- avg_dt[[conc_col]]
@@ -606,7 +611,7 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
   min_conc <- min(conc)
   max_conc <- max(conc)
   controls <- drc::drmc(relTol = 1e-04, errorm = FALSE, noMessage = TRUE, rmNA = TRUE)
-  cap <- 0.1  # same default as fit_SE / logisticFit
+  checkmate::assert_number(cap, lower = 0)
 
   # Cap x values as logisticFit does (pmin to x_0 + cap)
   x_cap_limit <- if (is.na(x_0)) 1 + cap else x_0 + cap

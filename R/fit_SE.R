@@ -37,37 +37,56 @@ fit_SE <- function(se,
     )
   }
 
-  metric_cols <- gDRutils::get_header("response_metrics")
+  # Build a fit_fn closure that forwards all fit_SE parameters.
+  # slicing_values = curve_type filters to only the requested normalization types.
+  fit_fn <- function(avg_dt) {
+    fit_drug_response_metrics(
+      avg_dt,
+      capping_fold   = 5,
+      range_conc     = range_conc,
+      pcutoff        = pcutoff,
+      n_point_cutoff = n_point_cutoff,
+      force_fit      = force_fit,
+      cap            = cap
+    )
+  }
 
-  conc <- gDRutils::get_env_identifiers("concentration")
+  # slicing_cols: use nested_identifiers only when they extend beyond the default
+  # "normalization_type" (e.g. co-dilution adds "ratio"). For standard SA data
+  # the profile default ("normalization_type") is used.
+  default_nested <- get_default_nested_identifiers(se, data_model(data_type))
+  slicing_cols <- if (identical(nested_identifiers, default_nested)) {
+    NULL  # let apply_fit use the profile default (normalization_type)
+  } else {
+    nested_identifiers
+  }
 
-  se <- gDRutils::apply_bumpy_function(se = se,
-                                       FUN = fit_FUN,
-                                       req_assay_name = averaged_assay,
-                                       out_assay_name = metrics_assay,
-                                       metric_cols = metric_cols,
-                                       conc = conc,
-                                       nested_identifiers = nested_identifiers,
-                                       n_point_cutoff = n_point_cutoff,
-                                       range_conc = range_conc,
-                                       force_fit = force_fit,
-                                       pcutoff = pcutoff,
-                                       cap = cap,
-                                       curve_type = curve_type)
+  se <- apply_fit(
+    se             = se,
+    fit_fn         = fit_fn,
+    data_type      = data_type,
+    slicing_cols   = slicing_cols,
+    slicing_values = curve_type,
+    input_assay    = averaged_assay,
+    output_assay   = metrics_assay,
+    merge          = "replace",
+    on_error       = "warn",
+    fit_source     = "gDR"
+  )
 
   se <- gDRutils::set_SE_fit_parameters(se,
     value = list(
       n_point_cutoff = n_point_cutoff,
-      range_conc = range_conc,
-      force_fit = force_fit,
-      pcutoff = pcutoff,
-      cap = cap)
+      range_conc     = range_conc,
+      force_fit      = force_fit,
+      pcutoff        = pcutoff,
+      cap            = cap)
   )
   se <- gDRutils::set_SE_processing_metadata(
     se,
     value = list(
       date_processed = Sys.Date(),
-      session_info = utils::sessionInfo()
+      session_info   = utils::sessionInfo()
     )
   )
 
