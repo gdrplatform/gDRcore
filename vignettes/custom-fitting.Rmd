@@ -327,6 +327,34 @@ were fitted.
 
 # Combination data: synergy scores
 
+## What fit_SE.combinations() does internally
+
+Before describing the new extension API, it helps to understand what the
+standard `fit_SE.combinations()` function does.  It is a single loop over
+each (drug-combo × cell-line) pair that executes **five sequential steps**,
+each writing to a separate assay:
+
+| Step | Key functions | Output assay | Description |
+|---|---|---|---|
+| 1 | `fit_combo_cotreatments()`, `fit_combo_codilutions()` | `Metrics` | Fit SA dose-response curves at each co-treatment concentration; produces `ec50`, `h`, `x_inf`, `x_0` per SA series |
+| 2 | `map_ids_to_fits()` | *(internal)* | Predict **smooth** single-agent responses at every combo concentration using the SA fits from step 1; average col/row/codilution predictions |
+| 3 | `calculate_HSA()`, `calculate_Bliss()`, `calculate_excess()` | `excess` | Compute expected response (HSA = min of SAs; Bliss = product/GR formula); compute per-point excess = expected − observed |
+| 4 | `calculate_Loewe()` | `isobolograms`, `all_iso_points` | Compute combination index (CI) via isobologram analysis; CI < 1 = synergy |
+| 5 | `calculate_score()` | `scores` | Reduce per-point excess to a scalar: mean of top-10-percentile values → `bliss_score`, `hsa_score`, `CIScore_50`, `CIScore_80` |
+
+**The key insight:** step 2 (smooth) depends on step 1 (SA fits), and steps 3–5
+all depend on step 2.  The boundaries between steps are clean, which means
+they can be extracted as independent public functions.
+
+**Roadmap (GDR-3486):** a future refactoring will expose each step as a
+standalone `apply_combo_*()` function, making `fit_SE.combinations()` a
+thin wrapper over them.  `apply_combo_scores()` (step 5) is already
+available as part of GDR-3352.
+
+---
+
+## Two approaches for combination scoring in the new API
+
 Two approaches are available, depending on whether you have SA fits or only
 raw averaged data.
 
