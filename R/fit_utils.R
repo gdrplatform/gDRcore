@@ -943,6 +943,180 @@ apply_combo_sa_fits <- function(se,
 
 
 ####
+# .compute_smooth_matrix — shared helper: rebuild smooth values from Metrics SA fits
+####
+
+# Rebuild the smooth-values matrix for one (drug-combo × cell-line × norm_type)
+# cell from the SA fit parameters stored in the Metrics assay.
+# Returns a data.table with columns: id, id2, normalization_type, smooth.
+#' @keywords internal
+.compute_smooth_matrix <- function(avg_combo, met_dt, id, id2, norm_type) {
+  avg_sub <- avg_combo[avg_combo$normalization_type == norm_type, ]
+  met_sub <- met_dt[met_dt$normalization_type == norm_type, ]
+  if (NROW(avg_sub) == 0L || NROW(met_sub) == 0L) return(NULL)
+
+  # Standardize concentrations
+  conc_map <- gDRutils::map_conc_to_standardized_conc(avg_sub[[id]], avg_sub[[id2]])
+  avg_sub[[id]]  <- replace_conc_with_standardized_conc(avg_sub[[id]],  conc_map, "concs", "rconcs")
+  avg_sub[[id2]] <- replace_conc_with_standardized_conc(avg_sub[[id2]], conc_map, "concs", "rconcs")
+  mean_avg <- avg_sub[, lapply(.SD, mean),
+                      by = c(id, id2, "normalization_type"), .SDcols = c("x", "x_std")]
+
+  conc1 <- table(avg_sub[[id]])
+  conc1 <- sort(as.numeric(names(conc1)[conc1 > (max(conc1[names(conc1) != "0"]) / 2)]))
+  conc2 <- table(avg_sub[[id2]])
+  conc2 <- sort(as.numeric(names(conc2)[conc2 > (max(conc2[names(conc2) != "0"]) / 2)]))
+  complete_cj <- data.table::CJ(unique(c(0, conc1)), unique(c(0, conc2)))
+  data.table::setnames(complete_cj, c(id, id2))
+  complete_sub <- mean_avg[complete_cj, on = c(id, id2)]
+  complete_sub[is.na(normalization_type), normalization_type := norm_type]
+
+  drug1_p <- met_sub[met_sub$dilution_drug == "drug_1", ]
+  drug2_p <- met_sub[met_sub$dilution_drug == "drug_2", ]
+  codil_p <- met_sub[met_sub$dilution_drug == "codilution", ]
+
+  complete_sub$col_values <- map_ids_to_fits(complete_sub[[id]], complete_sub[[id2]], drug1_p, "cotrt_value")
+  complete_sub$row_values <- map_ids_to_fits(complete_sub[[id2]], complete_sub[[id]], drug2_p, "cotrt_value")
+  if (NROW(codil_p) > 0L) {
+    complete_sub$codil_values <- map_ids_to_fits(
+      complete_sub[[id2]] + complete_sub[[id]],
+      gDRutils::round_concentration(complete_sub[[id2]] / complete_sub[[id]], 1),
+      codil_p, "ratio"
+    )
+  }
+
+  keep <- intersect(colnames(complete_sub), c("x", "row_values", "col_values", "codil_values"))
+  mat <- as.matrix(complete_sub[, keep, with = FALSE])
+  complete_sub$smooth <- rowMeans(mat, na.rm = TRUE)
+  av_matrix <- complete_sub[, c(id, id2, "smooth"), with = FALSE]
+  av_matrix[, normalization_type := norm_type]
+  av_matrix[get(id) == 0 & get(id2) == 0, smooth := 1]
+  av_matrix
+}
+
+
+####
+# apply_combo_excess — Step 3 of fit_SE.combinations: smooth → excess assay
+####
+
+#' apply_combo_excess
+#'
+#' Compute per-point HSA and Bliss excess values for a combination SE,
+#' writing the result to the \code{excess} assay.
+#' This is \strong{step 3} of the \code{\link{fit_SE.combinations}} pipeline.
+#'
+#' Requires the \code{Averaged} and \code{Metrics} assays to be present
+#' (the latter as produced by \code{\link{apply_combo_sa_fits}} or
+#' \code{fit_SE.combinations}).
+#'
+#' @param se \code{\link[SummarizedExperiment]{SummarizedExperiment}} with
+#'   \code{Averaged} and \code{Metrics} assays.
+#' @param series_identifiers character vector of length 2: concentration column
+#'   names. Defaults to \code{get_default_nested_identifiers(se, ...)}.
+#' @param normalization_types character vector. Default \code{c("GR", "RV")}.
+#' @param averaged_assay string. Default \code{"Averaged"}.
+#' @param metrics_assay string. Default \code{"Metrics"}.
+#' @param excess_assay string; name of the output assay. Default \code{"excess"}.
+#'
+#' @return Updated SE with an \code{excess_assay} assay containing per-point
+#'   \code{smooth}, \code{hsa_excess}, and \code{bliss_excess} columns.
+#'
+#' @seealso \code{\link{apply_combo_sa_fits}}, \code{\link{apply_combo_isobolograms}},
+#'   \code{\link{apply_combo_scores}}, \code{\link{fit_SE.combinations}}
+#'
+#' @examples
+#' mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+#' combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
+#' combo_se_excess <- apply_combo_excess(combo_se[1, 1])
+#' "excess" %in% SummarizedExperiment::assayNames(combo_se_excess)
+#'
+#' @importFrom checkmate assert_class assert_string assert_character
+#' @export
+apply_combo_excess <- function(se,
+                               series_identifiers = NULL,
+                               normalization_types = c("GR", "RV"),
+                               averaged_assay = "Averaged",
+                               metrics_assay = "Metrics",
+                               excess_assay = "excess") {
+  checkmate::assert_class(se, "SummarizedExperiment")
+  checkmate::assert_character(series_identifiers, null.ok = TRUE, len = 2L)
+  checkmate::assert_character(normalization_types, min.len = 1L)
+  checkmate::assert_string(averaged_assay)
+  checkmate::assert_string(metrics_assay)
+  checkmate::assert_string(excess_assay)
+  gDRutils::validate_se_assay_name(se, averaged_assay)
+  gDRutils::validate_se_assay_name(se, metrics_assay)
+
+  if (is.null(series_identifiers)) {
+    series_identifiers <- get_default_nested_identifiers(
+      se, data_model(gDRutils::get_supported_experiments("combo"))
+    )
+  }
+  id <- series_identifiers[1]
+  id2 <- series_identifiers[2]
+
+  avg <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se, averaged_assay)
+  ))
+  met <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se, metrics_assay),
+    row.field = "row", column.field = "column"
+  ))
+  iterator <- unique(avg[, c("column", "row")])
+
+  out_list <- gDRutils::loop(seq_len(NROW(iterator)), function(row_idx) {
+    i <- iterator[row_idx, "row"][[1L]]
+    j <- iterator[row_idx, "column"][[1L]]
+    avg_combo <- avg[avg$row == i & avg$column == j, ]
+    met_cell  <- met[met$row == i & met$column == j, ]
+
+    if (all(is.na(avg_combo[, -c("row", "column", "normalization_type")]))) {
+      return(list(excess = data.table::data.table(row_id = i, col_id = j)))
+    }
+
+    excess_list <- vector("list", length(normalization_types))
+    for (nt_idx in seq_along(normalization_types)) {
+      norm_type <- normalization_types[[nt_idx]]
+
+      av_matrix <- .compute_smooth_matrix(avg_combo, met_cell, id, id2, norm_type)
+      if (is.null(av_matrix) || NROW(av_matrix) == 0L) next
+
+      cols <- c(id, id2, "smooth")
+      sa1 <- av_matrix[av_matrix[[id2]] == 0, cols, with = FALSE]
+      sa2 <- av_matrix[av_matrix[[id]]  == 0, cols, with = FALSE]
+
+      hsa <- calculate_HSA(sa1, id, sa2, id2, norm_type)
+      h_excess <- calculate_excess(hsa, av_matrix,
+                                   series_identifiers = c(id, id2),
+                                   metric_col = "metric", measured_col = "smooth")
+      data.table::setnames(h_excess, "x", "hsa_excess")
+
+      bliss <- calculate_Bliss(sa1, id, sa2, id2, norm_type)
+      bliss_excess <- calculate_excess(bliss, av_matrix,
+                                       series_identifiers = c(id, id2),
+                                       metric_col = "metric", measured_col = "smooth")
+      data.table::setnames(bliss_excess, "x", "bliss_excess")
+
+      excess <- data.table::merge.data.table(
+        data.table::merge.data.table(av_matrix, h_excess, all = TRUE),
+        bliss_excess, all = TRUE
+      )
+      excess$row_id <- i
+      excess$col_id <- j
+      excess_list[[nt_idx]] <- excess
+    }
+
+    list(excess = data.table::rbindlist(excess_list, fill = TRUE))
+  })
+
+  all_excess <- rbindParallelList(out_list, "excess")
+  SummarizedExperiment::assays(se)[[excess_assay]] <-
+    convertDFtoBumpyMatrixUsingIds(all_excess)
+  se
+}
+
+
+####
 # apply_combo_scores — high-level wrapper replicating fit_SE.combinations scoring
 ####
 
