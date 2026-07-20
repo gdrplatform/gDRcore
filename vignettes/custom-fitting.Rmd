@@ -221,10 +221,15 @@ message("fit_source values in assay: ", paste(sources, collapse = ", "))
 
 # Reference Hill fit: fit_drug_response_metrics()
 
-A reference implementation that replicates what `fit_SE()` computes internally
-(LL.4 Hill model via `drc`) is provided as `fit_drug_response_metrics()`.
-Use it as a starting point for custom Hill-like models or to validate that
-your fit function produces consistent results.
+`fit_drug_response_metrics()` is a reference single-agent fit function that
+replicates the standard `fit_SE()` / `logisticFit()` output exactly.
+
+| Property | Value |
+|---|---|
+| Model | 3-parameter log-logistic (`drc::LL.3u`, `x_0` fixed at 1) |
+| Equivalent to | `fit_SE()` / `gDRutils::logisticFit()` |
+| `x_mean` | Predicted from fitted curve (matches `logisticFit` behaviour) |
+| `fit_type` value | `"DRC3pHillFitModelFixS0"` |
 
 ```{r hill-ref}
 hill_out <- apply_fit(
@@ -240,7 +245,40 @@ hill_df <- BumpyMatrix::unsplitAsDataFrame(
   row.field = "row", column.field = "column"
 )
 head(hill_df[, c("row", "column", "normalization_type",
-                  "xc50", "h", "r2", "fit_type")])
+                  "ec50", "xc50", "h", "r2", "fit_type")])
+```
+
+`ec50` is the raw model parameter (concentration at half-maximal effect);
+`xc50` is the capped version (capped at `capping_fold × max(Concentration)`)
+as reported in the native `"Metrics"` assay.
+
+## 4-parameter variant
+
+`fit_drug_response_metrics_4p()` uses a 4-parameter model (`drc::LL.4`,
+`x_0` fitted freely) for cases where the upper asymptote is not expected
+to be 1 — for example partial agonists or non-standard assay readouts.
+
+| Property | Value |
+|---|---|
+| Model | 4-parameter log-logistic (`drc::LL.4`, `x_0` free) |
+| `fit_type` value | `"DRC4pHillFitModel"` |
+| Use when | Upper asymptote deviates from 1 |
+
+```{r hill-4p}
+hill_4p_out <- apply_fit(
+  sa_se,
+  fit_fn = fit_drug_response_metrics_4p,
+  data_type = "single-agent",
+  output_assay = "custom_hill_4p",
+  fit_source = "hill_4p"
+)
+
+hill_4p_df <- BumpyMatrix::unsplitAsDataFrame(
+  assay(hill_4p_out, "custom_hill_4p"),
+  row.field = "row", column.field = "column"
+)
+# x_0 is now a fitted parameter, not fixed at 1
+head(hill_4p_df[, c("normalization_type", "x_0", "h", "r2", "fit_type")])
 ```
 
 ---
@@ -258,7 +296,7 @@ hill_summary_fn <- function(fit_dt) {
   list(
     mean_xc50 = mean(fit_dt$xc50, na.rm = TRUE),
     mean_r2 = mean(fit_dt$r2, na.rm = TRUE),
-    all_converged = all(fit_dt$fit_type == "DRC4pHillFitModel", na.rm = TRUE)
+    all_converged = all(fit_dt$fit_type == "DRC3pHillFitModelFixS0", na.rm = TRUE)
   )
 }
 
@@ -287,15 +325,59 @@ were fitted.
 
 ---
 
-# Combination data: Bliss and HSS
+# Combination data: synergy scores
 
-`bliss_fit_fn()` and `hss_fit_fn()` are reference implementations for the
-two most common combination synergy metrics.
+Two approaches are available, depending on whether you have SA fits or only
+raw averaged data.
 
-## Building a minimal combination SE
+## Approach 1: apply_combo_scores() — replicate fit_SE.combinations exactly
+
+`apply_combo_scores()` is a high-level function that reproduces the Bliss and
+HSA scoring logic of `fit_SE.combinations()` exactly, using fitted SA curves
+from the `Metrics` assay to generate smooth single-agent predictions.
+
+| Property | Value |
+|---|---|
+| Requires | `Averaged` + `Metrics` assay (with `dilution_drug`, `ec50`, `h`, …) |
+| Equivalent to | `fit_SE.combinations()` Bliss and HSA scores |
+| Accuracy | cor > 0.998 with `fit_SE.combinations` on real data |
+| Use when | Replacing or extending `fit_SE.combinations` for standard data |
+
+```{r combo-apply-combo-scores}
+# Use the small synthetic combo dataset which has both Averaged and Metrics
+combo_mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+combo_name <- gDRutils::get_supported_experiments("combo")
+combo_se_full <- combo_mae[[combo_name]]
+
+# combo_se_full already has Metrics from fit_SE.combinations
+combo_scored <- apply_combo_scores(combo_se_full)
+assayNames(combo_scored)
+```
+
+```{r combo-apply-combo-scores-inspect}
+scores_df <- BumpyMatrix::unsplitAsDataFrame(
+  assay(combo_scored, "scores"),
+  row.field = "row", column.field = "column"
+)
+scores_df[, c("row", "column", "normalization_type", "bliss_score", "hsa_score")]
+```
+
+`bliss_score > 0` and `hsa_score > 0` indicate synergy.
+
+## Approach 2: bliss_fit_fn / hss_fit_fn — simplified, no SA fits needed
+
+`bliss_fit_fn()` and `hss_fit_fn()` are lower-level fit functions for
+`apply_fit()` that compute synergy scores directly from the raw Averaged data,
+without requiring prior SA curve fits.
+
+| Property | Value |
+|---|---|
+| Requires | `Averaged` assay only |
+| SA response | Raw single-agent edge points (no curve smoothing) |
+| Use when | Prototyping, custom models, or when SA fits are unavailable |
 
 ```{r combo-se}
-# Build a synthetic 3x3 combination dose grid (0 = no drug = single-agent edge)
+# Build a minimal synthetic combination SE (Averaged only, no Metrics needed)
 combo_dt <- data.table::CJ(
   row = c("DrugA", "DrugB"),
   column = "CellLine1",
@@ -317,8 +399,6 @@ combo_bumpy <- BumpyMatrix::splitAsBumpyMatrix(
 combo_se <- SummarizedExperiment(assays = list(Averaged = combo_bumpy))
 ```
 
-## Bliss independence score
-
 ```{r combo-bliss}
 bliss_out <- apply_fit(
   combo_se,
@@ -335,11 +415,6 @@ bliss_df <- BumpyMatrix::unsplitAsDataFrame(
 bliss_df[, c("row", "column", "normalization_type",
              "bliss_score", "bliss_excess_mean", "n_combo_points")]
 ```
-
-`bliss_score > 0` indicates synergy (combination is more potent than Bliss
-independence predicts); `bliss_score < 0` indicates antagonism.
-
-## Highest Single Agent score
 
 ```{r combo-hss}
 hss_out <- apply_fit(
@@ -521,11 +596,26 @@ apply_fits(
 
 ## Reference implementations
 
-| Function | Data type | Key output columns |
-|---|---|---|
-| `fit_drug_response_metrics()` | single-agent | `xc50`, `h`, `r2`, `x_mean`, `x_AOC`, `fit_type` |
-| `bliss_fit_fn()` | combination | `bliss_score`, `bliss_excess_mean`, `n_combo_points` |
-| `hss_fit_fn()` | combination | `hss_score`, `hss_excess_mean`, `n_combo_points` |
+### Single-agent fit functions (for `apply_fit()`)
+
+| Function | Model | Equivalent to | Key output columns |
+|---|---|---|---|
+| `fit_drug_response_metrics()` | 3p LL.3u, `x_0 = 1` | `fit_SE()` / `logisticFit()` | `ec50`, `xc50`, `h`, `r2`, `x_mean`, `x_AOC`, `fit_type = "DRC3pHillFitModelFixS0"` |
+| `fit_drug_response_metrics_4p()` | 4p LL.4, `x_0` free | — (extended variant) | `ec50`, `xc50`, `h`, `r2`, `x_0`, `x_mean`, `fit_type = "DRC4pHillFitModel"` |
+
+### Combination scoring
+
+| Function | Level | Requires | Equivalent to | Key output columns |
+|---|---|---|---|---|
+| `apply_combo_scores(se)` | SE-level (recommended) | `Averaged` + `Metrics` | `fit_SE.combinations()` Bliss & HSA | `bliss_score`, `hsa_score` |
+| `bliss_fit_fn()` | triplet `fit_fn` | `Averaged` only | — (simplified, no SA fits) | `bliss_score`, `bliss_excess_mean`, `n_combo_points` |
+| `hss_fit_fn()` | triplet `fit_fn` | `Averaged` only | — (simplified, no SA fits) | `hss_score`, `hss_excess_mean`, `n_combo_points` |
+
+**When to use which:**
+- Use `apply_combo_scores()` when you have a fully fitted SE (after `fit_SE.combinations()` or
+  `apply_fit_to_se()`) and want scores numerically consistent with the standard gDR pipeline.
+- Use `bliss_fit_fn()` / `hss_fit_fn()` when prototyping a new scoring approach,
+  when SA fits are unavailable, or when embedding score computation inside a larger custom `fit_fn`.
 
 ---
 
