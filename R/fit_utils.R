@@ -548,23 +548,48 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5) {
   N_conc <- length(unique(conc))
   maxlog10Conc <- log10(max(conc, na.rm = TRUE))
 
+  # Parameters matching logisticFit() in gDRutils (fit_curves.R:113-131):
+  #   RV: priors c(2, 0.4, 1, med), lower c(0.1,  0,  0, min/10)
+  #   GR: priors c(2, 0.1, 1, med), lower c(0.1, -1, -1, min/10)
   x_inf_prior <- if (norm_type == "GR") 0.1 else 0.4
+  lower_x_inf <- if (norm_type == "GR") -1 else 0
+  lower_x_0   <- if (norm_type == "GR") -1 else 0
+  med_conc <- stats::median(conc)
+  min_conc <- min(conc)
+  max_conc <- max(conc)
   controls <- drc::drmc(relTol = 1e-04, errorm = FALSE, noMessage = TRUE, rmNA = TRUE)
+  cap <- 0.1  # same default as fit_SE / logisticFit
+
+  # Cap x values as logisticFit does (pmin to x_0 + cap)
+  x_cap_limit <- if (is.na(x_0)) 1 + cap else x_0 + cap
+  x <- pmin(x, x_cap_limit)
 
   four_param <- is.na(x_0)
-  fct <- if (four_param) drc::LL.4() else drc::LL.3()
-  start <- if (four_param) {
-    c(2, x_inf_prior, 1, stats::median(conc))
+  fit_param <- c("h", "x_inf", "x_0", "ec50")
+
+  if (four_param) {
+    fct <- drc::LL.4(names = fit_param)
+    start  <- c(2, x_inf_prior, 1, med_conc)
+    lowerl <- c(0.1, lower_x_inf, lower_x_0, min_conc / 10)
+    upperl <- c(5, 1, 1 + cap, max_conc * 10)
   } else {
-    c(2, x_inf_prior, stats::median(conc))
+    fit_param_3p <- fit_param[-3]   # drop x_0
+    fct <- drc::LL.3u(upper = x_0, names = fit_param_3p)
+    start  <- c(2, x_inf_prior, med_conc)
+    lowerl <- c(0.1, lower_x_inf, min_conc / 10)
+    upperl <- c(5, min(x_0 + cap, 1), max_conc * 10)
   }
 
   fit <- tryCatch(
     drc::drm(x ~ conc,
              data = data.table::data.table(x = x, conc = conc),
+             logDose = NULL,
              fct = fct,
              start = start,
-             control = controls),
+             lowerl = lowerl,
+             upperl = upperl,
+             control = controls,
+             na.action = stats::na.omit),
     error = function(e) NULL
   )
 
@@ -580,14 +605,14 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5) {
       na.rm = TRUE
     )
     if (four_param) {
-      ec50_val <- coefs[4]
-      x_0_val <- coefs[3]
-      x_inf_val <- coefs[2]
+      ec50_val <- coefs[["ec50:(Intercept)"]]
+      x_0_val <- coefs[["x_0:(Intercept)"]]
+      x_inf_val <- coefs[["x_inf:(Intercept)"]]
       fit_type <- "DRC4pHillFitModel"
     } else {
-      ec50_val <- coefs[3]
+      ec50_val <- coefs[["ec50:(Intercept)"]]
       x_0_val <- x_0
-      x_inf_val <- coefs[2]
+      x_inf_val <- coefs[["x_inf:(Intercept)"]]
       fit_type <- "DRC3pHillFitModelFixS0"
     }
     list(
