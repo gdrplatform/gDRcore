@@ -470,18 +470,29 @@ apply_fits <- function(se,
 #' fit_drug_response_metrics
 #'
 #' Reference fit function replicating standard gDR Hill curve fitting
-#' (3-parameter model, \code{x_0} fixed at 1).  Produces results comparable
-#' to \code{\link[gDRcore]{fit_SE}} and \code{\link[gDRutils]{logisticFit}}.
+#' (3-parameter model, \code{x_0} fixed at 1).  Produces output
+#' column-compatible with \code{\link[gDRcore]{fit_SE}} and
+#' \code{\link[gDRutils]{logisticFit}}, including \code{p_value},
+#' \code{rss}, \code{x_AOC_range}, \code{x_max}, and \code{x_sd_avg}.
 #' For use with \code{\link{apply_fit_to_se}} or \code{\link{apply_fit}}
 #' on single-agent data.
 #'
 #' @param avg_dt \code{data.table} of averaged data for one
-#'   (drug x cell line x normalization_type) triplet
+#'   (drug x cell line x normalization_type) triplet.  Should contain
+#'   columns \code{Concentration}, \code{x}, \code{normalization_type},
+#'   and optionally \code{x_std} (used for \code{x_sd_avg}).
 #' @param capping_fold numeric capping fold passed to
 #'   \code{\link[gDRutils]{cap_xc50}}
+#' @param range_conc numeric vector of length 2 specifying the concentration
+#'   range used to compute \code{x_AOC_range}. Default \code{c(5e-3, 5)},
+#'   matching the \code{fit_SE()} default.
 #'
-#' @return Named list of fit metrics compatible with the standard gDR
-#'   \code{Metrics} assay schema.
+#' @return Named list of fit metrics fully compatible with the standard gDR
+#'   \code{Metrics} assay schema: \code{ec50}, \code{xc50}, \code{h},
+#'   \code{x_inf}, \code{x_0}, \code{r2}, \code{rss}, \code{p_value},
+#'   \code{x_mean}, \code{x_AOC}, \code{x_AOC_range}, \code{x_max},
+#'   \code{x_sd_avg}, \code{N_conc}, \code{maxlog10Concentration},
+#'   \code{fit_type}, \code{normalization_type}.
 #'
 #' @seealso \code{\link{fit_drug_response_metrics_4p}} for a 4-parameter
 #'   variant that fits \code{x_0} freely.
@@ -495,8 +506,11 @@ apply_fits <- function(se,
 #' fit_drug_response_metrics(dt)
 #'
 #' @export
-fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
-  .fit_drug_response_metrics_impl(avg_dt, x_0 = 1, capping_fold = capping_fold)
+fit_drug_response_metrics <- function(avg_dt, capping_fold = 5,
+                                      range_conc = c(5e-3, 5)) {
+  .fit_drug_response_metrics_impl(avg_dt, x_0 = 1,
+                                  capping_fold = capping_fold,
+                                  range_conc = range_conc)
 }
 
 
@@ -524,19 +538,25 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
 #' fit_drug_response_metrics_4p(dt)
 #'
 #' @export
-fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5) {
-  .fit_drug_response_metrics_impl(avg_dt, x_0 = NA_real_, capping_fold = capping_fold)
+fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
+                                         range_conc = c(5e-3, 5)) {
+  .fit_drug_response_metrics_impl(avg_dt, x_0 = NA_real_,
+                                  capping_fold = capping_fold,
+                                  range_conc = range_conc)
 }
 
 
 #' @keywords internal
-.fit_drug_response_metrics_impl <- function(avg_dt, x_0 = 1, capping_fold = 5) {
+.fit_drug_response_metrics_impl <- function(avg_dt, x_0 = 1, capping_fold = 5,
+                                            range_conc = c(5e-3, 5)) {
   norm_type <- avg_dt$normalization_type[1]
   conc_col <- gDRutils::get_env_identifiers("concentration")
   conc <- avg_dt[[conc_col]]
   x <- avg_dt$x
+  x_std <- if ("x_std" %in% names(avg_dt)) avg_dt$x_std else rep(NA_real_, length(x))
 
   keep <- !is.na(x) & !is.na(conc)
+  x_std <- x_std[keep]
   x <- x[keep]
   conc <- conc[keep]
 
@@ -545,8 +565,15 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5) {
   }
 
   x_mean_obs <- mean(x, na.rm = TRUE)
+  x_sd_avg <- mean(x_std, na.rm = TRUE)         # matches logisticFit line 239
   N_conc <- length(unique(conc))
   maxlog10Conc <- log10(max(conc, na.rm = TRUE))
+
+  # x_max: min of the two highest-concentration x values (matches .calculate_x_max)
+  conc_ord <- order(conc)
+  x_ordered <- x[conc_ord]
+  n_x <- length(x_ordered)
+  x_max <- if (n_x >= 2L) min(x_ordered[(n_x - 1L):n_x]) else x_ordered[n_x]
 
   # Parameters matching logisticFit() in gDRutils (fit_curves.R:113-131):
   #   RV: priors c(2, 0.4, 1, med), lower c(0.1,  0,  0, min/10)
@@ -596,14 +623,35 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5) {
   if (!is.null(fit)) {
     coefs <- stats::coef(fit)
     rss <- sum(stats::residuals(fit)^2, na.rm = TRUE)
-    r2 <- 1 - rss / sum((x - x_mean_obs)^2)
-    # x_mean from model prediction (matches fit_SE / logisticFit behaviour)
-    x_mean_model <- mean(
-      stats::predict(fit, data.table::data.table(
-        conc = 10^seq(log10(min(conc)), log10(max(conc)), length.out = 101L)
-      )),
-      na.rm = TRUE
-    )
+    rss1 <- sum((x - x_mean_obs)^2)
+    r2 <- 1 - rss / rss1
+
+    # F-test p-value (matches .calculate_f_pval in gDRutils/fit_curves.R)
+    n_param <- if (four_param) 4L else 3L
+    df1 <- n_param - 1L
+    df2 <- length(x) - n_param + 1L
+    f_value <- ((rss1 - rss) / df1) / (rss / df2)
+    p_value <- stats::pf(f_value, df1, df2, lower.tail = FALSE)
+
+    # Helper: mean of model predictions over a concentration range
+    .predict_mean <- function(model, lo, hi) {
+      mean(stats::predict(model, data.table::data.table(
+        conc = 10^seq(log10(lo), log10(hi), length.out = 101L)
+      )), na.rm = TRUE)
+    }
+
+    # x_mean: model-predicted mean over observed range (matches logisticFit)
+    x_mean_model <- .predict_mean(fit, min(conc), max(conc))
+
+    # x_AOC_range: model-predicted mean over standard range (matches logisticFit)
+    rc_lo <- max(range_conc[1], min(conc))
+    rc_hi <- min(range_conc[2], max(conc))
+    x_AOC_range <- if (rc_lo < rc_hi) {
+      1 - .predict_mean(fit, rc_lo, rc_hi)
+    } else {
+      1 - x_mean_model
+    }
+
     if (four_param) {
       ec50_val <- coefs[["ec50:(Intercept)"]]
       x_0_val <- coefs[["x_0:(Intercept)"]]
@@ -619,12 +667,17 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5) {
       normalization_type = norm_type,
       x_mean = x_mean_model,
       x_AOC = 1 - x_mean_model,
+      x_AOC_range = x_AOC_range,
+      x_max = x_max,
+      x_sd_avg = x_sd_avg,
       N_conc = N_conc,
       maxlog10Concentration = maxlog10Conc,
       ec50 = ec50_val,
       xc50 = gDRutils::cap_xc50(ec50_val, max(conc), capping_fold = capping_fold),
       h = coefs[1],
       r2 = r2,
+      rss = rss,
+      p_value = p_value,
       x_0 = x_0_val,
       x_inf = x_inf_val,
       fit_type = fit_type
@@ -634,12 +687,17 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5) {
       normalization_type = norm_type,
       x_mean = x_mean_obs,
       x_AOC = 1 - x_mean_obs,
+      x_AOC_range = 1 - x_mean_obs,
+      x_max = x_max,
+      x_sd_avg = x_sd_avg,
       N_conc = N_conc,
       maxlog10Concentration = maxlog10Conc,
       ec50 = NA_real_,
       xc50 = .estimate_xc50_fallback(x),
       h = NA_real_,
       r2 = NA_real_,
+      rss = NA_real_,
+      p_value = NA_real_,
       x_0 = if (four_param) NA_real_ else x_0,
       x_inf = NA_real_,
       fit_type = "DRCInvalidFitResult"
@@ -1149,15 +1207,20 @@ hss_fit_fn <- function(avg_dt) {
 #' @keywords internal
 .empty_fit_result <- function(norm_type) {
   list(
-    fit_source = "custom",
     normalization_type = norm_type,
     x_mean = NA_real_,
     x_AOC = NA_real_,
+    x_AOC_range = NA_real_,
+    x_max = NA_real_,
+    x_sd_avg = NA_real_,
     N_conc = 0L,
     maxlog10Concentration = NA_real_,
+    ec50 = NA_real_,
     xc50 = NA_real_,
     h = NA_real_,
     r2 = NA_real_,
+    rss = NA_real_,
+    p_value = NA_real_,
     x_0 = NA_real_,
     x_inf = NA_real_,
     fit_type = "DRCInvalidFitResult"
