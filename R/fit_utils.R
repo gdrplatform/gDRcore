@@ -80,24 +80,24 @@
 #' @export
 #'
 apply_fit <- function(se,
-                             fit_fn,
-                             data_type,
-                             slicing_cols   = NULL,
-                             slicing_values = NULL,
-                             input_assay    = NULL,
-                             output_assay,
-                             summary_fn     = NULL,
-                             summary_assay  = NULL,
-                             merge          = "merge",
-                             on_error       = "warn",
-                             fit_source) {
+                      fit_fn,
+                      data_type,
+                      slicing_cols = NULL,
+                      slicing_values = NULL,
+                      input_assay = NULL,
+                      output_assay,
+                      summary_fn = NULL,
+                      summary_assay = NULL,
+                      merge = "merge",
+                      on_error = "warn",
+                      fit_source) {
 
   checkmate::assert_string(data_type)
   profile <- get_fit_profile(data_type)  # errors with list of valid profiles if unknown
 
-  if (is.null(slicing_cols))   slicing_cols   <- profile$slicing_cols
+  if (is.null(slicing_cols)) slicing_cols <- profile$slicing_cols
   if (is.null(slicing_values)) slicing_values <- profile$slicing_values
-  if (is.null(input_assay))    input_assay    <- profile$input_assay
+  if (is.null(input_assay)) input_assay <- profile$input_assay
 
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_function(fit_fn)
@@ -338,21 +338,21 @@ apply_fit_to_se <- function(se,
 #' @export
 #'
 apply_fits <- function(se,
-                              fit_fns,
-                              data_type,
-                              slicing_cols   = NULL,
-                              slicing_values = NULL,
-                              input_assay    = NULL,
-                              merge          = "merge",
-                              on_error       = "warn",
-                              fit_source) {
+                       fit_fns,
+                       data_type,
+                       slicing_cols = NULL,
+                       slicing_values = NULL,
+                       input_assay = NULL,
+                       merge = "merge",
+                       on_error = "warn",
+                       fit_source) {
 
   checkmate::assert_string(data_type)
   profile <- get_fit_profile(data_type)
 
-  if (is.null(slicing_cols))   slicing_cols   <- profile$slicing_cols
+  if (is.null(slicing_cols)) slicing_cols <- profile$slicing_cols
   if (is.null(slicing_values)) slicing_values <- profile$slicing_values
-  if (is.null(input_assay))    input_assay    <- profile$input_assay
+  if (is.null(input_assay)) input_assay <- profile$input_assay
 
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_list(fit_fns, min.len = 1L, types = "function", names = "unique")
@@ -386,7 +386,7 @@ apply_fits <- function(se,
   )
 
   for (cell_dt in cell_list) {
-    r  <- cell_dt[["row"]][1L]
+    r <- cell_dt[["row"]][1L]
     cc <- cell_dt[["column"]][1L]
 
     vals <- if (!is.null(slicing_values)) {
@@ -416,8 +416,8 @@ apply_fits <- function(se,
             for (assay_nm in names(res)) {
               row_dt <- data.table::as.data.table(as.list(res[[assay_nm]]))
               row_dt[["fit_source"]] <- fit_source
-              row_dt[["row"]]        <- r
-              row_dt[["column"]]     <- cc
+              row_dt[["row"]] <- r
+              row_dt[["column"]] <- cc
               if (!is.na(val) && !slice_col %in% names(row_dt)) {
                 row_dt[[slice_col]] <- val
               }
@@ -440,8 +440,8 @@ apply_fits <- function(se,
         if (is.null(result_dt)) next
 
         result_dt[["fit_source"]] <- fit_source
-        result_dt[["row"]]        <- r
-        result_dt[["column"]]     <- cc
+        result_dt[["row"]] <- r
+        result_dt[["column"]] <- cc
         if (!is.na(val) && !slice_col %in% names(result_dt)) {
           result_dt[[slice_col]] <- val
         }
@@ -577,14 +577,22 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5) {
 #' @return Named list with \code{bliss_score}, \code{bliss_excess_mean},
 #'   \code{n_combo_points}, and \code{normalization_type}.
 #'
+#' @examples
+#' mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+#' combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
+#' combo_se_out <- apply_fit(
+#'   combo_se, bliss_fit_fn, "combination",
+#'   output_assay = "custom_bliss", fit_source = "bliss"
+#' )
+#'
 #' @export
 bliss_fit_fn <- function(avg_dt) {
-  norm_type   <- avg_dt$normalization_type[1]
-  conc1_col   <- gDRutils::get_env_identifiers("concentration")
-  conc2_col   <- gDRutils::get_env_identifiers("concentration2")
+  norm_type <- avg_dt$normalization_type[1]
+  conc1_col <- gDRutils::get_env_identifiers("concentration")
+  conc2_col <- gDRutils::get_env_identifiers("concentration2")
 
-  sa1   <- avg_dt[avg_dt[[conc2_col]] == 0 & avg_dt[[conc1_col]] > 0, ]
-  sa2   <- avg_dt[avg_dt[[conc1_col]] == 0 & avg_dt[[conc2_col]] > 0, ]
+  sa1 <- avg_dt[avg_dt[[conc2_col]] == 0 & avg_dt[[conc1_col]] > 0, ]
+  sa2 <- avg_dt[avg_dt[[conc1_col]] == 0 & avg_dt[[conc2_col]] > 0, ]
   combo <- avg_dt[avg_dt[[conc1_col]] > 0 & avg_dt[[conc2_col]] > 0, ]
 
   n_combo <- NROW(combo)
@@ -642,14 +650,22 @@ bliss_fit_fn <- function(avg_dt) {
 #' @return Named list with \code{hss_score}, \code{hss_excess_mean},
 #'   \code{n_combo_points}, and \code{normalization_type}.
 #'
+#' @examples
+#' mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+#' combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
+#' combo_se_out <- apply_fit(
+#'   combo_se, hss_fit_fn, "combination",
+#'   output_assay = "custom_hss", fit_source = "hss"
+#' )
+#'
 #' @export
 hss_fit_fn <- function(avg_dt) {
   norm_type <- avg_dt$normalization_type[1]
   conc1_col <- gDRutils::get_env_identifiers("concentration")
   conc2_col <- gDRutils::get_env_identifiers("concentration2")
 
-  sa1   <- avg_dt[avg_dt[[conc2_col]] == 0 & avg_dt[[conc1_col]] > 0, ]
-  sa2   <- avg_dt[avg_dt[[conc1_col]] == 0 & avg_dt[[conc2_col]] > 0, ]
+  sa1 <- avg_dt[avg_dt[[conc2_col]] == 0 & avg_dt[[conc1_col]] > 0, ]
+  sa2 <- avg_dt[avg_dt[[conc1_col]] == 0 & avg_dt[[conc2_col]] > 0, ]
   combo <- avg_dt[avg_dt[[conc1_col]] > 0 & avg_dt[[conc2_col]] > 0, ]
 
   n_combo <- NROW(combo)
