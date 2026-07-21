@@ -842,7 +842,7 @@ apply_combo_sa_fits <- function(se,
       avg[avg[["row"]] == i & avg[["column"]] == j, ]
     )
 
-    if (all(is.na(avg_combo[, -c("row", "column", "normalization_type")]))) {
+    if (all(is.na(avg_combo[, .SD, .SDcols = !c("row", "column", "normalization_type")]))) {
       return(list(metrics = data.table::data.table(row_id = i, col_id = j)))
     }
 
@@ -1070,7 +1070,7 @@ apply_combo_excess <- function(se,
     avg_combo <- avg[avg$row == i & avg$column == j, ]
     met_cell  <- met[met$row == i & met$column == j, ]
 
-    if (all(is.na(avg_combo[, -c("row", "column", "normalization_type")]))) {
+    if (all(is.na(avg_combo[, .SD, .SDcols = !c("row", "column", "normalization_type")]))) {
       return(list(excess = data.table::data.table(row_id = i, col_id = j)))
     }
 
@@ -1198,7 +1198,7 @@ apply_combo_isobolograms <- function(se,
     avg_combo <- avg[avg$row == i & avg$column == j, ]
     met_cell  <- met[met$row == i & met$column == j, ]
 
-    if (all(is.na(avg_combo[, -c("row", "column", "normalization_type")]))) {
+    if (all(is.na(avg_combo[, .SD, .SDcols = !c("row", "column", "normalization_type")]))) {
       return(list(
         isobolograms = data.table::data.table(row_id = i, col_id = j),
         iso_points   = data.table::data.table(row_id = i, col_id = j)
@@ -1234,7 +1234,7 @@ apply_combo_isobolograms <- function(se,
 
       isobologram_out <- if (
         sum((av_dense[[id]] * av_dense[[id2]]) > 0) > 9 &&
-        NROW(drug2_p) > 0L && min(drug2_p$cotrt_value, na.rm = TRUE) == 0
+        NROW(drug2_p) > 0L && any(drug2_p$cotrt_value == 0, na.rm = TRUE)
       ) {
         calculate_Loewe(
           av_matrix, drug2_p, drug1_p, codil_p,
