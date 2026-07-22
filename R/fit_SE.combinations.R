@@ -63,6 +63,61 @@ fit_SE.combinations <- function(se,
     )
   }
 
+  # Delegate to composable apply_combo_*() steps (GDR-3486):
+  #   Step 1+2: SA fits → Metrics
+  #   Step 3:   smooth → excess
+  #   Step 4:   Loewe CI → isobolograms + all_iso_points
+  #   Step 5:   scores (read from excess for numerical identity)
+  se <- apply_combo_sa_fits(
+    se,
+    series_identifiers  = series_identifiers,
+    normalization_types = normalization_types,
+    averaged_assay      = averaged_assay,
+    metrics_assay       = metrics_assay,
+    fit_source          = "gDR"
+  )
+  se <- apply_combo_excess(
+    se,
+    series_identifiers  = series_identifiers,
+    normalization_types = normalization_types,
+    averaged_assay      = averaged_assay,
+    metrics_assay       = metrics_assay,
+    excess_assay        = "excess"
+  )
+  se <- apply_combo_isobolograms(
+    se,
+    series_identifiers  = series_identifiers,
+    normalization_types = normalization_types,
+    averaged_assay      = averaged_assay,
+    metrics_assay       = metrics_assay,
+    isobolograms_assay  = "isobolograms",
+    iso_points_assay    = "all_iso_points"
+  )
+  se <- apply_combo_scores(
+    se,
+    scores_assay        = "scores",
+    averaged_assay      = averaged_assay,
+    metrics_assay       = metrics_assay,
+    excess_assay        = "excess",
+    normalization_types = normalization_types,
+    fit_source          = "gDR"
+  )
+  se
+}
+
+
+# Legacy implementation preserved as .fit_SE_combinations_impl() for reference.
+# Not exported — use fit_SE.combinations() which delegates to apply_combo_*().
+#' @keywords internal
+.fit_SE_combinations_impl <- function(se,
+                                data_type = gDRutils::get_supported_experiments("combo"),
+                                series_identifiers = NULL,
+                                normalization_types = c("GR", "RV"),
+                                averaged_assay = "Averaged",
+                                metrics_assay = "Metrics",
+                                score_FUN = calculate_score
+                                ) {
+
   avg <- BumpyMatrix::unsplitAsDataFrame(
     SummarizedExperiment::assay(se, averaged_assay)
   )

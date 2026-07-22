@@ -1,3 +1,10 @@
+## gDRcore 1.11.8 - 2026-07-20
+* refactor `fit_SE.combinations()` as a wrapper over composable `apply_combo_*()` steps
+* add `apply_combo_sa_fits()` — step 1+2: SA curve fits per co-treatment concentration → Metrics assay
+* add `apply_combo_excess()` — step 3: smooth SA predictions + HSA/Bliss excess grid → excess assay
+* add `apply_combo_isobolograms()` — step 4: Loewe CI isobologram analysis → isobolograms + all_iso_points assays
+* extend `apply_combo_scores()` with `excess_assay` parameter for numerically identical scores to `fit_SE.combinations()`
+
 ## gDRcore 1.11.7 - 2026-07-14
 * add `apply_custom_fit()` generic fit interface supporting single-agent, combination, and time-course data with arbitrary output assay names, optional `summary_fn`, and chainable calls
 * add `apply_custom_fits()` (plural) for single-pass multi-fit: applies N fit functions in one BumpyMatrix traversal, writing each to its own named assay; supports shared pre-computation pattern via multi-output fit functions
