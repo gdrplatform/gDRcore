@@ -74,6 +74,22 @@ fit_SE <- function(se,
     fit_source     = "gDR"
   )
 
+  # Ensure the Metrics assay always exists after fitting, even when apply_fit
+  # returns the original SE without it (all-empty results scenario where
+  # apply_bumpy_function errors on dimnames mismatch).
+  if (!metrics_assay %in% SummarizedExperiment::assayNames(se)) {
+    # Build an empty BumpyDataFrameMatrix with the correct SE dimensions so
+    # that downstream validate_SE() finds the assay even when no fits succeeded.
+    nr <- NROW(se); nc <- NCOL(se)
+    empty_bm <- BumpyMatrix::splitAsBumpyMatrix(
+      S4Vectors::DataFrame(),
+      row    = rep(seq_len(nr), nc),
+      column = rep(seq_len(nc), each = nr)
+    )
+    dimnames(empty_bm) <- dimnames(se)
+    SummarizedExperiment::assay(se, metrics_assay, withDimnames = FALSE) <- empty_bm
+  }
+
   se <- gDRutils::set_SE_fit_parameters(se,
     value = list(
       n_point_cutoff = n_point_cutoff,
