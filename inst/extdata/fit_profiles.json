@@ -1,0 +1,20 @@
+{
+  "single-agent": {
+    "slicing_cols": ["normalization_type"],
+    "slicing_values": ["GR", "RV"],
+    "input_assay": "Averaged",
+    "description": "1D dose-response curve; one fit per normalization type"
+  },
+  "combination": {
+    "slicing_cols": ["normalization_type"],
+    "slicing_values": ["GR", "RV"],
+    "input_assay": "Averaged",
+    "description": "2D concentration grid; single-agent edges + combination points"
+  },
+  "time-course": {
+    "slicing_cols": ["normalization_type"],
+    "slicing_values": ["GR", "RV"],
+    "input_assay": "Averaged",
+    "description": "Time-series per dose; fit_fn receives all time points for one dose"
+  }
+}

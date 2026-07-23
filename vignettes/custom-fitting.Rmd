@@ -1,0 +1,680 @@
+---
+title: "Custom fitting with apply_fit()"
+author: "gDR team"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{Custom fitting with apply_fit()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r knitr-config, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r setup}
+library(gDRcore)
+library(gDRtestData)
+library(gDRutils)
+library(SummarizedExperiment)
+library(BumpyMatrix)
+library(data.table)
+```
+
+# Overview
+
+The standard gDR pipeline fits dose-response curves using a fixed
+4-parameter log-logistic model (`fit_SE()`).  Sometimes you need something
+different: an alternative curve model, custom synergy metrics, Bayesian
+estimates, or bespoke pharmacology metrics for your assay.
+
+`apply_fit()` and `apply_fits()` let you plug **any R function**
+into the gDR SE/MAE pipeline without touching the pipeline internals.
+
+Key properties:
+
+- Works with **single-agent**, **combination**, and **time-course** data.
+- Each fit function writes to its **own named assay** — no risk of overwriting
+  native gDR assays (`"Metrics"`, `"scores"`, `"excess"`, …).
+- Results are **idempotent**: calling twice with the same `fit_source`
+  overwrites rather than duplicates.
+- `apply_fits()` applies N fit functions in a **single** BumpyMatrix
+  traversal — efficient when you have several metrics to compute on the same
+  data.
+
+---
+
+# Data setup
+
+We use a small synthetic single-agent SE from `gDRtestData`.
+
+```{r load-data}
+mae <- gDRutils::get_synthetic_data("finalMAE_small.qs2")
+sa_se <- mae[["single-agent"]]
+sa_se
+```
+
+The `Averaged` assay is the input to custom fit functions.  Each cell of the
+BumpyMatrix contains one data.table per (drug × cell line) pair:
+
+```{r inspect-averaged}
+avg_cell <- BumpyMatrix::unsplitAsDataFrame(
+  assay(sa_se, "Averaged"),
+  row.field = "row", column.field = "column"
+)
+head(avg_cell[avg_cell$row == avg_cell$row[1] &
+              avg_cell$column == avg_cell$column[1], ])
+```
+
+Each cell has four columns:
+
+| Column | Description |
+|---|---|
+| `normalization_type` | `"GR"` or `"RV"` |
+| `Concentration` | drug concentration (µM) |
+| `x` | averaged normalized response (GR value or relative viability) |
+| `x_std` | standard deviation across replicates |
+
+---
+
+# The fit_fn contract
+
+A fit function must satisfy this interface:
+
+```
+fit_fn(avg_dt) -> named list (or single-row data.frame / data.table)
+```
+
+`avg_dt` is a **data.table** containing the rows for **one** combination of
+slicing column values (by default: one `normalization_type`) for one
+(drug × cell line) cell.
+
+The returned named list becomes one row in the output assay.  Column names
+are the names of the list elements.  `fit_source` is stamped automatically
+by the generic layer — do not include it in the return value.
+
+## Minimal example
+
+```{r minimal-fn}
+# The simplest possible fit_fn: compute mean and SD of the response
+summary_fn <- function(avg_dt) {
+  list(
+    x_mean = mean(avg_dt$x, na.rm = TRUE),
+    x_sd = sd(avg_dt$x, na.rm = TRUE),
+    n = NROW(avg_dt)
+  )
+}
+```
+
+---
+
+# Single-agent: apply_fit()
+
+Apply the summary function to every (drug × cell line × normalization_type)
+triplet and write results to a custom assay named `"custom_summary"`.
+
+```{r sa-basic}
+sa_out <- apply_fit(
+  sa_se,
+  fit_fn = summary_fn,
+  data_type = "single-agent",
+  output_assay = "custom_summary",
+  fit_source = "demo"
+)
+assayNames(sa_out)
+```
+
+```{r sa-inspect}
+summary_df <- BumpyMatrix::unsplitAsDataFrame(
+  assay(sa_out, "custom_summary"),
+  row.field = "row", column.field = "column"
+)
+head(summary_df)
+```
+
+One row per (drug × cell line × normalization_type) triplet. The native
+`"Metrics"` assay is untouched — because we chose a custom assay name.
+
+## Writing to the Metrics assay
+
+You can also write directly to `"Metrics"` — for example when replacing the
+standard gDR Hill fit with your own model:
+
+```{r sa-metrics}
+# SE straight from the pipeline — already has a native "Metrics" assay
+# (fit_source = "gDR")
+"Metrics" %in% assayNames(sa_se)
+
+# Apply a custom fit to the same assay, coexisting alongside gDR rows
+custom_hill <- apply_fit(
+  sa_se,
+  fit_fn = fit_drug_response_metrics,
+  data_type = "single-agent",
+  output_assay = "Metrics",
+  fit_source = "custom_hill"   # distinct key keeps native "gDR" rows intact
+)
+
+metrics_df <- BumpyMatrix::unsplitAsDataFrame(
+  assay(custom_hill, "Metrics"),
+  row.field = "row", column.field = "column"
+)
+unique(metrics_df$fit_source)   # both "gDR" and "custom_hill"
+```
+
+With `merge = "merge"` (default) the upsert key is `fit_source +
+normalization_type`, so native rows (`fit_source = "gDR"`) are preserved.
+Use `merge = "replace"` only if you intend to overwrite the whole assay.
+
+## Idempotent merge
+
+Calling again with the same `fit_source` **replaces** those rows rather than
+appending:
+
+```{r sa-idempotent}
+n_before <- NROW(BumpyMatrix::unsplitAsDataFrame(
+  assay(sa_out, "custom_summary"),
+  row.field = "row", column.field = "column"
+))
+
+# Call again — same fit_source, same data
+sa_out2 <- apply_fit(
+  sa_out,
+  fit_fn = summary_fn,
+  data_type = "single-agent",
+  output_assay = "custom_summary",
+  fit_source = "demo"
+)
+n_after <- NROW(BumpyMatrix::unsplitAsDataFrame(
+  assay(sa_out2, "custom_summary"),
+  row.field = "row", column.field = "column"
+))
+
+stopifnot(n_before == n_after)   # no duplicate rows
+message("Row count before: ", n_before, " — after: ", n_after, " (no change)")
+```
+
+## Coexisting fit sources
+
+Different `fit_source` values live **side by side** in the same assay:
+
+```{r sa-coexist}
+extra_fn <- function(avg_dt) list(x_max = max(avg_dt$x, na.rm = TRUE))
+
+sa_two <- sa_out |>
+  apply_fit(extra_fn, "single-agent",
+                   output_assay = "custom_summary",
+                   fit_source = "extremes")
+
+sources <- unique(BumpyMatrix::unsplitAsDataFrame(
+  assay(sa_two, "custom_summary"),
+  row.field = "row", column.field = "column"
+)$fit_source)
+message("fit_source values in assay: ", paste(sources, collapse = ", "))
+```
+
+---
+
+# Reference Hill fit: fit_drug_response_metrics()
+
+`fit_drug_response_metrics()` is a reference single-agent fit function that
+replicates the standard `fit_SE()` / `logisticFit()` output exactly.
+
+| Property | Value |
+|---|---|
+| Model | 3-parameter log-logistic (`drc::LL.3u`, `x_0` fixed at 1) |
+| Equivalent to | `fit_SE()` / `gDRutils::logisticFit()` |
+| `x_mean` | Predicted from fitted curve (matches `logisticFit` behaviour) |
+| `fit_type` value | `"DRC3pHillFitModelFixS0"` or `"DRCConstantFitResult"` |
+| Output columns | Full `Metrics` assay schema including `p_value`, `rss`, `x_AOC_range`, `x_max`, `x_sd_avg` |
+
+## Numerical equivalence with fit_SE()
+
+`fit_drug_response_metrics()` is **numerically identical** to `fit_SE()`.
+The fit is deterministic — `drc::drm` does not use random number generation,
+so `set.seed()` has no effect.  Differences between the two are purely
+algorithmic:
+
+- Same `drc::LL.3u` model, `x_0 = 1`, identical priors and concentration bounds
+- Same `x_mean`: predicted from the fitted curve over the observed concentration range
+- Same `pcutoff = 0.05` fallback: when the F-test gives `p_value ≥ pcutoff`, the
+  result is replaced by a flat `DRCConstantFitResult` (same as `logisticFit()`)
+- Same `n_point_cutoff = 4`: fewer unique concentrations → constant fit without
+  attempting the sigmoidal model
+- All output columns present in the native `"Metrics"` assay
+
+These parameters can be overridden if your data requires it:
+
+```{r hill-params, eval = FALSE}
+# Loosen the significance threshold or force the sigmoidal fit
+fit_drug_response_metrics(avg_dt, pcutoff = 0.1)
+fit_drug_response_metrics(avg_dt, force_fit = TRUE)
+# Different range for x_AOC_range computation
+fit_drug_response_metrics(avg_dt, range_conc = c(1e-3, 10))
+```
+
+```{r hill-ref}
+hill_out <- apply_fit(
+  sa_se,
+  fit_fn = fit_drug_response_metrics,
+  data_type = "single-agent",
+  output_assay = "custom_hill",
+  fit_source = "hill_ref"
+)
+
+hill_df <- BumpyMatrix::unsplitAsDataFrame(
+  assay(hill_out, "custom_hill"),
+  row.field = "row", column.field = "column"
+)
+head(hill_df[, c("row", "column", "normalization_type",
+                  "ec50", "xc50", "h", "r2", "fit_type")])
+```
+
+`ec50` is the raw model parameter (concentration at half-maximal effect);
+`xc50` is the capped version (capped at `capping_fold × max(Concentration)`)
+as reported in the native `"Metrics"` assay.
+
+## 4-parameter variant
+
+`fit_drug_response_metrics_4p()` uses a 4-parameter model (`drc::LL.4`,
+`x_0` fitted freely) for cases where the upper asymptote is not expected
+to be 1 — for example partial agonists or non-standard assay readouts.
+
+| Property | Value |
+|---|---|
+| Model | 4-parameter log-logistic (`drc::LL.4`, `x_0` free) |
+| `fit_type` value | `"DRC4pHillFitModel"` |
+| Use when | Upper asymptote deviates from 1 |
+
+```{r hill-4p}
+hill_4p_out <- apply_fit(
+  sa_se,
+  fit_fn = fit_drug_response_metrics_4p,
+  data_type = "single-agent",
+  output_assay = "custom_hill_4p",
+  fit_source = "hill_4p"
+)
+
+hill_4p_df <- BumpyMatrix::unsplitAsDataFrame(
+  assay(hill_4p_out, "custom_hill_4p"),
+  row.field = "row", column.field = "column"
+)
+# x_0 is now a fitted parameter, not fixed at 1
+head(hill_4p_df[, c("normalization_type", "x_0", "h", "r2", "fit_type")])
+```
+
+---
+
+# summary_fn: cell-level aggregation
+
+An optional `summary_fn` is called **once per (drug × cell line) cell** on
+all rows produced by `fit_fn` for that cell (one row per normalization type).
+It is the right place for metrics that aggregate across normalization types —
+for example, whether the result is synergistic across both GR and RV.
+
+```{r summary-fn}
+# Aggregate: mean xc50 and flag whether both norm types fitted successfully
+hill_summary_fn <- function(fit_dt) {
+  list(
+    mean_xc50 = mean(fit_dt$xc50, na.rm = TRUE),
+    mean_r2 = mean(fit_dt$r2, na.rm = TRUE),
+    all_converged = all(fit_dt$fit_type == "DRC3pHillFitModelFixS0", na.rm = TRUE)
+  )
+}
+
+hill_with_summary <- apply_fit(
+  sa_se,
+  fit_fn = fit_drug_response_metrics,
+  data_type = "single-agent",
+  output_assay = "custom_hill",
+  summary_fn = hill_summary_fn,
+  summary_assay = "custom_hill_summary",
+  fit_source = "hill_ref"
+)
+assayNames(hill_with_summary)
+```
+
+```{r summary-fn-inspect}
+sumdf <- BumpyMatrix::unsplitAsDataFrame(
+  assay(hill_with_summary, "custom_hill_summary"),
+  row.field = "row", column.field = "column"
+)
+head(sumdf[, c("row", "column", "mean_xc50", "mean_r2", "all_converged")])
+```
+
+One row per (drug × cell line) — regardless of how many normalization types
+were fitted.
+
+---
+
+# Combination data: synergy scores
+
+## What fit_SE.combinations() does internally
+
+Before describing the new extension API, it helps to understand what the
+standard `fit_SE.combinations()` function does.  It is a single loop over
+each (drug-combo × cell-line) pair that executes **five sequential steps**,
+each writing to a separate assay:
+
+| Step | Key functions | Output assay | Description |
+|---|---|---|---|
+| 1 | `fit_combo_cotreatments()`, `fit_combo_codilutions()` | `Metrics` | Fit SA dose-response curves at each co-treatment concentration; produces `ec50`, `h`, `x_inf`, `x_0` per SA series |
+| 2 | `map_ids_to_fits()` | *(internal)* | Predict **smooth** single-agent responses at every combo concentration using the SA fits from step 1; average col/row/codilution predictions |
+| 3 | `calculate_HSA()`, `calculate_Bliss()`, `calculate_excess()` | `excess` | Compute expected response (HSA = min of SAs; Bliss = product/GR formula); compute per-point excess = expected − observed |
+| 4 | `calculate_Loewe()` | `isobolograms`, `all_iso_points` | Compute combination index (CI) via isobologram analysis; CI < 1 = synergy |
+| 5 | `calculate_score()` | `scores` | Reduce per-point excess to a scalar: mean of top-10-percentile values → `bliss_score`, `hsa_score`, `CIScore_50`, `CIScore_80` |
+
+**The key insight:** step 2 (smooth) depends on step 1 (SA fits), and steps 3–5
+all depend on step 2.  The boundaries between steps are clean, which means
+they can be extracted as independent public functions.
+
+**Roadmap (GDR-3486):** a future refactoring will expose each step as a
+standalone `apply_combo_*()` function, making `fit_SE.combinations()` a
+thin wrapper over them.  `apply_combo_scores()` (step 5) is already
+available as part of GDR-3352.
+
+---
+
+## Two approaches for combination scoring in the new API
+
+Two approaches are available, depending on whether you have SA fits or only
+raw averaged data.
+
+## Approach 1: apply_combo_scores() — replicate fit_SE.combinations exactly
+
+`apply_combo_scores()` is a high-level function that reproduces the Bliss and
+HSA scoring logic of `fit_SE.combinations()` exactly, using fitted SA curves
+from the `Metrics` assay to generate smooth single-agent predictions.
+
+| Property | Value |
+|---|---|
+| Requires | `Averaged` + `Metrics` assay (with `dilution_drug`, `ec50`, `h`, …) |
+| Equivalent to | `fit_SE.combinations()` Bliss and HSA scores |
+| Accuracy | cor > 0.998 with `fit_SE.combinations` on real data |
+| Use when | Replacing or extending `fit_SE.combinations` for standard data |
+
+```{r combo-apply-combo-scores}
+# Use the small synthetic combo dataset which has both Averaged and Metrics
+combo_mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+combo_name <- gDRutils::get_supported_experiments("combo")
+combo_se_full <- combo_mae[[combo_name]]
+
+# combo_se_full already has Metrics from fit_SE.combinations
+combo_scored <- apply_combo_scores(combo_se_full)
+assayNames(combo_scored)
+```
+
+```{r combo-apply-combo-scores-inspect}
+scores_df <- BumpyMatrix::unsplitAsDataFrame(
+  assay(combo_scored, "scores"),
+  row.field = "row", column.field = "column"
+)
+scores_df[, c("row", "column", "normalization_type", "bliss_score", "hsa_score")]
+```
+
+`bliss_score > 0` and `hsa_score > 0` indicate synergy.
+
+## Approach 2: bliss_fit_fn / hss_fit_fn — simplified, no SA fits needed
+
+`bliss_fit_fn()` and `hss_fit_fn()` are lower-level fit functions for
+`apply_fit()` that compute synergy scores directly from the raw Averaged data,
+without requiring prior SA curve fits.
+
+| Property | Value |
+|---|---|
+| Requires | `Averaged` assay only |
+| SA response | Raw single-agent edge points (no curve smoothing) |
+| Use when | Prototyping, custom models, or when SA fits are unavailable |
+
+```{r combo-se}
+# Build a minimal synthetic combination SE (Averaged only, no Metrics needed)
+combo_dt <- data.table::CJ(
+  row = c("DrugA", "DrugB"),
+  column = "CellLine1",
+  normalization_type = c("GR", "RV"),
+  Concentration = c(0, 0.1, 1.0),
+  Concentration_2 = c(0, 0.1, 1.0)
+)
+set.seed(42L)
+combo_dt[, x := pmax(0.05,
+  1 - 0.3 * Concentration / (Concentration + 0.5) -
+      0.2 * Concentration_2 / (Concentration_2 + 0.5) +
+      rnorm(.N, 0, 0.03))]
+
+data_cols <- setdiff(names(combo_dt), c("row", "column"))
+combo_bumpy <- BumpyMatrix::splitAsBumpyMatrix(
+  combo_dt[, data_cols, with = FALSE],
+  row = combo_dt$row, col = combo_dt$column
+)
+combo_se <- SummarizedExperiment(assays = list(Averaged = combo_bumpy))
+```
+
+```{r combo-bliss}
+bliss_out <- apply_fit(
+  combo_se,
+  fit_fn = bliss_fit_fn,
+  data_type = "combination",
+  output_assay = "custom_bliss",
+  fit_source = "bliss"
+)
+
+bliss_df <- BumpyMatrix::unsplitAsDataFrame(
+  assay(bliss_out, "custom_bliss"),
+  row.field = "row", column.field = "column"
+)
+bliss_df[, c("row", "column", "normalization_type",
+             "bliss_score", "bliss_excess_mean", "n_combo_points")]
+```
+
+```{r combo-hss}
+hss_out <- apply_fit(
+  combo_se,
+  fit_fn = hss_fit_fn,
+  data_type = "combination",
+  output_assay = "custom_hss",
+  fit_source = "hss"
+)
+
+hss_df <- BumpyMatrix::unsplitAsDataFrame(
+  assay(hss_out, "custom_hss"),
+  row.field = "row", column.field = "column"
+)
+hss_df[, c("row", "column", "normalization_type",
+           "hss_score", "hss_excess_mean")]
+```
+
+---
+
+# Efficient multi-fit: apply_fits()
+
+When several fit functions operate on the **same input assay**, use
+`apply_fits()` to traverse each BumpyMatrix cell **once** and apply
+all functions in that single pass.
+
+```{r multi-fit}
+combo_multi <- apply_fits(
+  combo_se,
+  fit_fns = list(
+    custom_bliss = bliss_fit_fn,
+    custom_hss = hss_fit_fn
+  ),
+  data_type = "combination",
+  fit_source = "synergy_panel"
+)
+assayNames(combo_multi)
+```
+
+Both assays are written in one traversal — equivalent to chaining two
+`apply_fit()` calls but without the overhead of a second unsplit +
+iteration.
+
+## Shared pre-computation pattern
+
+When two metrics share an expensive intermediate (e.g. fitted single-agent
+curves), a single fit function can return a **named list of named lists**
+to populate multiple assays from one computation:
+
+```{r shared-precompute, eval = FALSE}
+# Each top-level name maps to an output assay; inner lists are the rows
+bliss_and_hss_combined <- function(dt) {
+  # Expensive step done ONCE per cell
+  sa1 <- dt[dt$Concentration_2 == 0 & dt$Concentration > 0, ]
+  sa2 <- dt[dt$Concentration == 0   & dt$Concentration_2 > 0, ]
+
+  list(
+    custom_bliss = list(bliss_score = mean(sa1$x) - mean(sa2$x)), # simplified
+    custom_hss = list(hss_score = min(c(sa1$x, sa2$x)))
+  )
+}
+
+apply_fits(
+  combo_se,
+  fit_fns = list(custom_bliss = bliss_and_hss_combined,
+                    custom_hss = bliss_and_hss_combined),
+  data_type = "combination",
+  fit_source = "shared"
+)
+```
+
+---
+
+# Chaining with pipe
+
+The functions are pipe-friendly — each call returns the updated SE:
+
+```{r pipe-chain}
+result_se <- combo_se |>
+  apply_fit(bliss_fit_fn, "combination",
+                   output_assay = "custom_bliss",
+                   fit_source = "bliss") |>
+  apply_fit(hss_fit_fn, "combination",
+                   output_assay = "custom_hss",
+                   fit_source = "hss") |>
+  apply_fit(
+    function(dt) list(n_obs = NROW(dt)),
+    "combination",
+    output_assay = "combo_diagnostics",
+    fit_source = "qc"
+  )
+
+assayNames(result_se)
+```
+
+---
+
+# Error handling
+
+By default, a failed cell emits a warning and is skipped
+(`on_error = "warn"`).  Use `on_error = "stop"` to halt immediately and
+propagate the error — useful when debugging a new fit function.
+
+```{r error-warn}
+buggy_fn <- function(dt) {
+  if (dt$normalization_type[1] == "GR") stop("GR not supported")
+  list(x_rv = mean(dt$x, na.rm = TRUE))
+}
+
+se_partial <- withCallingHandlers(
+  apply_fit(
+    sa_se, buggy_fn, "single-agent",
+    output_assay = "rv_only",
+    fit_source = "rv_fn",
+    on_error = "warn"
+  ),
+  warning = function(w) {
+    message("[caught] ", conditionMessage(w))
+    invokeRestart("muffleWarning")
+  }
+)
+# Only RV rows are written; GR cells were skipped with a warning
+rv_df <- BumpyMatrix::unsplitAsDataFrame(
+  assay(se_partial, "rv_only"),
+  row.field = "row", column.field = "column"
+)
+unique(rv_df$normalization_type)
+```
+
+---
+
+# Quick reference
+
+## Function signatures
+
+```{r quick-ref, eval = FALSE}
+# Single fit → one output assay
+apply_fit(
+  se,
+  fit_fn,
+  data_type = "single-agent", # or "combination", "time-course"
+  slicing_cols = NULL, # NULL → data_type default
+  slicing_values = NULL, # NULL → all unique values found
+  input_assay = NULL, # NULL → data_type default ("Averaged")
+  output_assay, # REQUIRED — your assay name
+  summary_fn = NULL, # optional cell-level aggregator
+  summary_assay = NULL,
+  merge = "merge", # or "replace"
+  on_error = "warn", # or "stop"
+  fit_source                         # REQUIRED — upsert key tag
+)
+
+# Multiple fits → one BumpyMatrix pass
+apply_fits(
+  se,
+  fit_fns, # named list: name = output assay, value = fit function
+  data_type = "single-agent",
+  fit_source,
+  ...
+)
+```
+
+## fit_fn contract
+
+| | |
+|---|---|
+| **Input** | `data.table` — one BumpyMatrix cell, filtered to one `slicing_cols` value |
+| **Output** | Named list → one row in `output_assay`; or named list of named lists for multi-assay pattern |
+| **fit_source** | Stamped by the generic layer — do **not** include in the return value |
+| **slicing columns** | The caller's value (e.g. `normalization_type`) IS available in the data.table — no need to filter again |
+
+## summary_fn contract
+
+| | |
+|---|---|
+| **Input** | `data.table` — all rows written by `fit_fn` for one (row × column) cell |
+| **Output** | Named list → one row in `summary_assay` |
+| **When to use** | Aggregated metrics that span normalization types (e.g. "converged in at least one type?") |
+
+## Reference implementations
+
+### Single-agent fit functions (for `apply_fit()`)
+
+| Function | Model | Equivalent to | Key output columns |
+|---|---|---|---|
+| `fit_drug_response_metrics()` | 3p LL.3u, `x_0 = 1` | `fit_SE()` / `logisticFit()` | `ec50`, `xc50`, `h`, `r2`, `x_mean`, `x_AOC`, `fit_type = "DRC3pHillFitModelFixS0"` |
+| `fit_drug_response_metrics_4p()` | 4p LL.4, `x_0` free | — (extended variant) | `ec50`, `xc50`, `h`, `r2`, `x_0`, `x_mean`, `fit_type = "DRC4pHillFitModel"` |
+
+### Combination scoring
+
+| Function | Level | Requires | Equivalent to | Key output columns |
+|---|---|---|---|---|
+| `apply_combo_scores(se)` | SE-level (recommended) | `Averaged` + `Metrics` | `fit_SE.combinations()` Bliss & HSA | `bliss_score`, `hsa_score` |
+| `bliss_fit_fn()` | triplet `fit_fn` | `Averaged` only | — (simplified, no SA fits) | `bliss_score`, `bliss_excess_mean`, `n_combo_points` |
+| `hss_fit_fn()` | triplet `fit_fn` | `Averaged` only | — (simplified, no SA fits) | `hss_score`, `hss_excess_mean`, `n_combo_points` |
+
+**When to use which:**
+- Use `apply_combo_scores()` when you have a fully fitted SE (after `fit_SE.combinations()` or
+  `apply_fit_to_se()`) and want scores numerically consistent with the standard gDR pipeline.
+- Use `bliss_fit_fn()` / `hss_fit_fn()` when prototyping a new scoring approach,
+  when SA fits are unavailable, or when embedding score computation inside a larger custom `fit_fn`.
+
+---
+
+# SessionInfo {-}
+
+```{r session-info}
+sessionInfo()
+```
