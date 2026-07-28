@@ -933,7 +933,9 @@ apply_combo_sa_fits <- function(se,
       # SA fits per co-treatment concentration (drug_1: series=conc1, cotrt=conc2)
       drug_1 <- fit_combo_cotreatments(avg_subset, series_id = id, cotrt_id = id2, norm_type)
       drug_1 <- if (all(is.na(drug_1$fit_type))) {
-        x_tmp <- drug_1[1, ]; x_tmp[, "cotrt_value"] <- NA; x_tmp
+        x_tmp <- drug_1[1, ]
+        x_tmp[, "cotrt_value"] <- NA
+        x_tmp
       } else {
         na.omit(drug_1, col = "fit_type")
       }
