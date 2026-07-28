@@ -62,16 +62,16 @@ fit_SE <- function(se,
   }
 
   se <- apply_fit(
-    se             = se,
-    fit_fn         = fit_fn,
-    data_type      = data_type,
-    slicing_cols   = slicing_cols,
+    se = se,
+    fit_fn = fit_fn,
+    data_type = data_type,
+    slicing_cols = slicing_cols,
     slicing_values = curve_type,
-    input_assay    = averaged_assay,
-    output_assay   = metrics_assay,
-    merge          = "replace",
-    on_error       = "warn",
-    fit_source     = "gDR"
+    input_assay = averaged_assay,
+    output_assay = metrics_assay,
+    merge = "replace",
+    on_error = "warn",
+    fit_source = "gDR"
   )
 
   # Ensure the Metrics assay always exists after fitting, even when apply_fit
@@ -93,10 +93,10 @@ fit_SE <- function(se,
   se <- gDRutils::set_SE_fit_parameters(se,
     value = list(
       n_point_cutoff = n_point_cutoff,
-      range_conc     = range_conc,
-      force_fit      = force_fit,
-      pcutoff        = pcutoff,
-      cap            = cap)
+      range_conc = range_conc,
+      force_fit = force_fit,
+      pcutoff = pcutoff,
+      cap = cap)
   )
   se <- gDRutils::set_SE_processing_metadata(
     se,

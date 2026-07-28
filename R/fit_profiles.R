@@ -117,7 +117,6 @@ get_fit_profile <- function(name) {
 #' )
 #' get_fit_profile("biochemical")
 #'
-#' @importFrom checkmate assert_string assert_character
 #' @export
 register_fit_profile <- function(name,
                                  slicing_cols,
