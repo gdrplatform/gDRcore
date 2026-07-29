@@ -27,18 +27,22 @@
     "extdata", "fit_profiles.json",
     package = "gDRcore", mustWork = TRUE
   )
-  profiles <- jsonlite::read_json(json_path, simplifyVector = TRUE)
+  # Use read_json; extract each field by numeric index to avoid partial
+  # matching on named lists. Field order must match fit_profiles.json keys:
+  # slicing_cols, slicing_values, input_assay, nested_cols, nested_cols_note, description
+  profiles <- jsonlite::read_json(json_path)
   for (nm in names(profiles)) {
     p <- profiles[[nm]]
-    # slicing_values may be null in JSON → keep as NULL in R
-    sv <- if (length(p$slicing_values) == 0L) NULL else p$slicing_values
+    field <- function(key) unlist(p[[which(names(p) == key)]])
+    sv_raw <- p[[which(names(p) == "slicing_values")]]
+    sv <- if (length(sv_raw) == 0L) NULL else unlist(sv_raw)
     .fit_profile_env[[nm]] <- list(
-      slicing_cols      = p$slicing_cols,
+      slicing_cols      = field("slicing_cols"),
       slicing_values    = sv,
-      input_assay       = p$input_assay,
-      nested_cols       = p$nested_cols %||% character(0),
-      nested_cols_note  = p$nested_cols_note %||% "",
-      description       = p$description %||% ""
+      input_assay       = field("input_assay"),
+      nested_cols       = field("nested_cols") %||% character(0),
+      nested_cols_note  = field("nested_cols_note") %||% "",
+      description       = field("description") %||% ""
     )
   }
   invisible(NULL)
