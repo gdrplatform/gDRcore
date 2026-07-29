@@ -1,11 +1,10 @@
-## gDRcore 1.11.7 - 2026-07-14
-* add `apply_custom_fit()` generic fit interface supporting single-agent, combination, and time-course data with arbitrary output assay names, optional `summary_fn`, and chainable calls
-* add `apply_custom_fits()` (plural) for single-pass multi-fit: applies N fit functions in one BumpyMatrix traversal, writing each to its own named assay; supports shared pre-computation pattern via multi-output fit functions
-* add `bliss_fit_fn()` and `hss_fit_fn()` reference implementations for combination synergy scoring
-* refactor `apply_fit_to_se()` as a thin wrapper around `apply_custom_fit()` for backward compatibility
+## gDRcore 1.11.7 - 2026-07-29
+* add `apply_custom_fit()`, `apply_custom_fits()`, `bliss_fit_fn()`, `hss_fit_fn()`, `apply_combo_scores()` and composable `apply_combo_*()` steps refactoring `fit_SE.combinations()`
+* add fit profile registry (`get_fit_profile()`, `register_fit_profile()`) with `nested_cols` documenting BumpyMatrix row structure per experiment type
+* refactor `fit_SE()` and `fit_SE.combinations()` as wrappers around generic `apply_fit()` interface
 
-## gDRcore 1.11.6 - 2026-07-08
-* add `apply_fit_to_se()` generic fit-function interface and `fit_drug_response_metrics` reference implementation
+## gDRcore 1.11.6 - 2026-07-14
+* add `apply_fit_to_se()` generic fit-function interface and `fit_drug_response_metrics()` 3-parameter Hill model matching `fit_SE()` output
 * improve pipeline performance by removing redundant data copies, enabling parallel averaging, and vectorizing NA-filling
 
 ## gDRcore 1.11.5 - 2026-06-08
