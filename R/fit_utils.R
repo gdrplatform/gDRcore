@@ -230,7 +230,7 @@ apply_fit_to_se <- function(se,
     if (length(missing) > 0L) {
       warning(sprintf(
         "fit_fn output missing columns: %s",
-        paste(missing, collapse = ", ")
+        toString(missing)
       ))
     }
   }
@@ -855,8 +855,8 @@ apply_combo_scores <- function(se,
   score_rows <- vector("list", prod(dim(se)) * length(normalization_types))
   idx <- 0L
 
-  for (ri in seq_len(nrow(se))) {
-    for (ci in seq_len(ncol(se))) {
+  for (ri in seq_len(NROW(se))) {
+    for (ci in seq_len(NCOL(se))) {
       avg_dt <- as.data.table(avg_bm[ri, ci][[1L]])
       met_dt <- as.data.table(met_bm[ri, ci][[1L]])
 

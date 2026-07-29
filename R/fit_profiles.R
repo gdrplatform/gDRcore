@@ -83,7 +83,7 @@ get_fit_profile <- function(name) {
   if (is.null(p)) {
     stop(sprintf(
       "Unknown fit profile '%s'. Available: %s",
-      name, paste(ls(.fit_profile_env), collapse = ", ")
+      name, toString(ls(.fit_profile_env))
     ))
   }
   p

@@ -80,7 +80,8 @@ fit_SE <- function(se,
   if (!metrics_assay %in% SummarizedExperiment::assayNames(se)) {
     # Build an empty BumpyDataFrameMatrix with the correct SE dimensions so
     # that downstream validate_SE() finds the assay even when no fits succeeded.
-    nr <- NROW(se); nc <- NCOL(se)
+    nr <- NROW(se)
+    nc <- NCOL(se)
     empty_bm <- BumpyMatrix::splitAsBumpyMatrix(
       S4Vectors::DataFrame(),
       row    = rep(seq_len(nr), nc),

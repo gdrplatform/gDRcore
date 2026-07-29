@@ -70,7 +70,7 @@ test_that("apply_fit_to_se validates inputs correctly", {
 
 test_that("apply_fit_to_se iterates over all (drug x cell line x normalization_type) triplets", {
   n_drugs <- NROW(se_small)
-  n_cls <- ncol(se_small)
+  n_cls <- NCOL(se_small)
   norm_types <- c("GR", "RV")
 
   call_log <- list()
@@ -692,10 +692,9 @@ test_that("apply_fit chaining adds two independent assays", {
   fn_a <- function(dt) list(metric_a = mean(dt$x, na.rm = TRUE))
   fn_b <- function(dt) list(metric_b = sd(dt$x, na.rm = TRUE))
 
-  se_out <- se |>
-    apply_fit(fn_a, "single-agent", output_assay = "out_a",
-                     fit_source = "src_a") |>
-    apply_fit(fn_b, "single-agent", output_assay = "out_b",
+  se_out <- apply_fit(se, fn_a, "single-agent", output_assay = "out_a",
+                     fit_source = "src_a")
+  se_out <- apply_fit(se_out, fn_b, "single-agent", output_assay = "out_b",
                      fit_source = "src_b")
 
   expect_true("out_a" %in% SummarizedExperiment::assayNames(se_out))
@@ -888,11 +887,10 @@ test_that("hss_fit_fn integrates with apply_fit on combination data", {
 
 test_that("chaining bliss and hss on the same SE adds both assays independently", {
   se <- .build_combo_se(seed = 200L)
-  se_out <- se |>
-    apply_fit(bliss_fit_fn, "combination",
-                     output_assay = "custom_bliss", fit_source = "bliss") |>
-    apply_fit(hss_fit_fn,   "combination",
-                     output_assay = "custom_hss",   fit_source = "hss")
+  se_out <- apply_fit(se, bliss_fit_fn, "combination",
+                     output_assay = "custom_bliss", fit_source = "bliss")
+  se_out <- apply_fit(se_out, hss_fit_fn, "combination",
+                     output_assay = "custom_hss", fit_source = "hss")
 
   expect_true("custom_bliss" %in% SummarizedExperiment::assayNames(se_out))
   expect_true("custom_hss"   %in% SummarizedExperiment::assayNames(se_out))
@@ -942,9 +940,8 @@ test_that("apply_fits results match chained apply_fit", {
   )
 
   # chained
-  se_chain <- se |>
-    apply_fit(fn_a, "single-agent", output_assay = "out_a", fit_source = "src") |>
-    apply_fit(fn_b, "single-agent", output_assay = "out_b", fit_source = "src")
+  se_chain <- apply_fit(se, fn_a, "single-agent", output_assay = "out_a", fit_source = "src")
+  se_chain <- apply_fit(se_chain, fn_b, "single-agent", output_assay = "out_b", fit_source = "src")
 
   extract <- function(s, nm) {
     data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
