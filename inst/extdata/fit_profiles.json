@@ -3,18 +3,24 @@
     "slicing_cols": ["normalization_type"],
     "slicing_values": ["GR", "RV"],
     "input_assay": "Averaged",
-    "description": "1D dose-response curve; one fit per normalization type"
+    "nested_cols": ["Concentration"],
+    "nested_cols_note": "resolved at runtime via gDRutils::get_env_identifiers('concentration') — may differ in custom environments",
+    "description": "1D dose-response curve; fit_fn receives one data.table per normalization_type slice, rows indexed by Concentration"
   },
   "combination": {
     "slicing_cols": ["normalization_type"],
     "slicing_values": ["GR", "RV"],
     "input_assay": "Averaged",
-    "description": "2D concentration grid; single-agent edges + combination points"
+    "nested_cols": ["Concentration", "Concentration_2"],
+    "nested_cols_note": "resolved at runtime via gDRutils::get_env_identifiers(c('concentration','concentration2')) — may differ in custom environments",
+    "description": "2D concentration grid; fit_fn receives one data.table per normalization_type slice, rows indexed by Concentration x Concentration_2"
   },
   "time-course": {
     "slicing_cols": ["normalization_type"],
     "slicing_values": ["GR", "RV"],
     "input_assay": "Averaged",
-    "description": "Time-series per dose; fit_fn receives all time points for one dose"
+    "nested_cols": ["Concentration", "Concentration_2"],
+    "nested_cols_note": "resolved at runtime via gDRutils::get_env_identifiers(c('concentration','concentration2')) — may differ in custom environments",
+    "description": "Time-series per dose; fit_fn receives one data.table per normalization_type slice, rows indexed by Concentration x Concentration_2 (time axis)"
   }
 }

@@ -33,10 +33,12 @@
     # slicing_values may be null in JSON → keep as NULL in R
     sv <- if (length(p$slicing_values) == 0L) NULL else p$slicing_values
     .fit_profile_env[[nm]] <- list(
-      slicing_cols   = p$slicing_cols,
-      slicing_values = sv,
-      input_assay    = p$input_assay,
-      description    = p$description %||% ""
+      slicing_cols      = p$slicing_cols,
+      slicing_values    = sv,
+      input_assay       = p$input_assay,
+      nested_cols       = p$nested_cols %||% character(0),
+      nested_cols_note  = p$nested_cols_note %||% "",
+      description       = p$description %||% ""
     )
   }
   invisible(NULL)
@@ -69,9 +71,25 @@ get_fit_profiles <- function() {
 #'
 #' @param name string; profile name (e.g. \code{"single-agent"}).
 #'
-#' @return Named list with \code{slicing_cols}, \code{slicing_values},
-#'   \code{input_assay}, and \code{description}.  Stops if the profile
-#'   does not exist.
+#' @return Named list with the following fields:
+#' \describe{
+#'   \item{\code{slicing_cols}}{Column(s) used to split each BumpyMatrix cell
+#'     into sub-experiments before calling \code{fit_fn} (e.g.
+#'     \code{"normalization_type"}).}
+#'   \item{\code{slicing_values}}{Values of \code{slicing_cols} to iterate;
+#'     \code{NULL} means all unique values found in each cell.}
+#'   \item{\code{input_assay}}{Default source assay name.}
+#'   \item{\code{nested_cols}}{Informational: the column(s) that index rows
+#'     \emph{inside} each BumpyMatrix cell (i.e., what \code{fit_fn}
+#'     receives as row structure).  Values are the canonical default
+#'     identifiers resolved by
+#'     \code{gDRutils::get_env_identifiers()} at package load — they may
+#'     differ if identifiers are customised at runtime.}
+#'   \item{\code{nested_cols_note}}{Human-readable note about how
+#'     \code{nested_cols} are resolved.}
+#'   \item{\code{description}}{Human-readable description of the profile.}
+#' }
+#'   Stops if the profile does not exist.
 #'
 #' @examples
 #' get_fit_profile("single-agent")
