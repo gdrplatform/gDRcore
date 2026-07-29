@@ -143,27 +143,23 @@ apply_fit <- function(se,
     }
   )
 
-  if (!tmp_assay %in% SummarizedExperiment::assayNames(se_out)) {
-    return(se)
-  }
-
-  new_df <- BumpyMatrix::unsplitAsDataFrame(
-    SummarizedExperiment::assay(se_out, tmp_assay),
-    row.field = "row", column.field = "column"
-  )
-  new_metrics <- data.table::as.data.table(new_df)
-
-  if (NROW(new_metrics) == 0L) {
-    return(se)
-  }
-
-  upsert_key <- c("fit_source", slicing_cols)
-  se <- .persist_assay(se, new_metrics, merge, output_assay, "row", "column", upsert_key)
-
-  if (!is.null(summary_fn)) {
-    se <- .apply_summary_fn(
-      se, new_metrics, summary_fn, summary_assay, merge, fit_source, on_error
+  if (tmp_assay %in% SummarizedExperiment::assayNames(se_out)) {
+    new_df <- BumpyMatrix::unsplitAsDataFrame(
+      SummarizedExperiment::assay(se_out, tmp_assay),
+      row.field = "row", column.field = "column"
     )
+    new_metrics <- data.table::as.data.table(new_df)
+
+    if (NROW(new_metrics) > 0L) {
+      upsert_key <- c("fit_source", slicing_cols)
+      se <- .persist_assay(se, new_metrics, merge, output_assay, "row", "column", upsert_key)
+
+      if (!is.null(summary_fn)) {
+        se <- .apply_summary_fn(
+          se, new_metrics, summary_fn, summary_assay, merge, fit_source, on_error
+        )
+      }
+    }
   }
 
   se
@@ -582,15 +578,12 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
 
   # All-NA input → empty/invalid result (no data at all)
   if (length(x) == 0L) {
-    return(.empty_fit_result(norm_type))
-  }
+    .empty_fit_result(norm_type)
+  } else if (length(unique(conc)) < n_point_cutoff) {
+    # n_point_cutoff: too few unique concentrations → constant fit (matches logisticFit)
+    .constant_fit_result(norm_type, x, conc, x_std, x_0, range_conc)
+  } else {
 
-  # n_point_cutoff: too few unique concentrations → constant fit (matches logisticFit)
-  if (length(unique(conc)) < n_point_cutoff) {
-    return(.constant_fit_result(norm_type, x, conc, x_std, x_0, range_conc))
-  }
-
-  x_mean_obs <- mean(x, na.rm = TRUE)
   x_sd_avg <- mean(x_std, na.rm = TRUE)         # matches logisticFit line 239
   N_conc <- length(unique(conc))
   maxlog10Conc <- log10(max(conc, na.rm = TRUE))
@@ -599,14 +592,24 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
   conc_ord <- order(conc)
   x_ordered <- x[conc_ord]
   n_x <- length(x_ordered)
-  x_max <- if (n_x >= 2L) min(x_ordered[(n_x - 1L):n_x]) else x_ordered[n_x]
+  if (n_x >= 2L) {
+    x_max <- min(x_ordered[(n_x - 1L):n_x])
+  } else {
+    x_max <- x_ordered[n_x]
+  }
 
   # Parameters matching logisticFit() in gDRutils (fit_curves.R:113-131):
   #   RV: priors c(2, 0.4, 1, med), lower c(0.1,  0,  0, min/10)
   #   GR: priors c(2, 0.1, 1, med), lower c(0.1, -1, -1, min/10)
-  x_inf_prior <- if (norm_type == "GR") 0.1 else 0.4
-  lower_x_inf <- if (norm_type == "GR") -1 else 0
-  lower_x_0   <- if (norm_type == "GR") -1 else 0
+  if (norm_type == "GR") {
+    x_inf_prior <- 0.1
+    lower_x_inf <- -1
+    lower_x_0 <- -1
+  } else {
+    x_inf_prior <- 0.4
+    lower_x_inf <- 0
+    lower_x_0 <- 0
+  }
   med_conc <- stats::median(conc)
   min_conc <- min(conc)
   max_conc <- max(conc)
@@ -614,8 +617,15 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
   checkmate::assert_number(cap, lower = 0)
 
   # Cap x values as logisticFit does (pmin to x_0 + cap)
-  x_cap_limit <- if (is.na(x_0)) 1 + cap else x_0 + cap
+  if (is.na(x_0)) {
+    x_cap_limit <- 1 + cap
+  } else {
+    x_cap_limit <- x_0 + cap
+  }
   x <- pmin(x, x_cap_limit)
+
+  # Compute mean on capped x (must be after capping so rss1 uses consistent data)
+  x_mean_obs <- mean(x, na.rm = TRUE)
 
   four_param <- is.na(x_0)
   fit_param <- c("h", "x_inf", "x_0", "ec50")
@@ -653,7 +663,11 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
     r2 <- 1 - rss / rss1
 
     # F-test p-value (matches .calculate_f_pval in gDRutils/fit_curves.R)
-    n_param <- if (four_param) 4L else 3L
+    if (four_param) {
+      n_param <- 4L
+    } else {
+      n_param <- 3L
+    }
     df1 <- n_param - 1L
     df2 <- length(x) - n_param + 1L
     f_value <- ((rss1 - rss) / df1) / (rss / df2)
@@ -662,74 +676,74 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
     # pcutoff: if fit is not statistically significant, fall back to constant fit
     # (matches logisticFit behaviour: set_constant_fit_params when p >= pcutoff)
     if (!force_fit && !is.na(p_value) && p_value >= pcutoff) {
-      return(.constant_fit_result(norm_type, x, conc, x_std, x_0, range_conc))
-    }
-
-    # Helper: mean of model predictions over a concentration range
-    .predict_mean <- function(model, lo, hi) {
-      mean(stats::predict(model, data.table::data.table(
-        conc = 10^seq(log10(lo), log10(hi), length.out = 101L)
-      )), na.rm = TRUE)
-    }
-
-    # x_mean: model-predicted mean over observed range (matches logisticFit)
-    x_mean_model <- .predict_mean(fit, min(conc), max(conc))
-
-    # x_AOC_range: model-predicted mean over standard range (matches logisticFit)
-    rc_lo <- max(range_conc[1], min(conc))
-    rc_hi <- min(range_conc[2], max(conc))
-    x_AOC_range <- if (rc_lo < rc_hi) {
-      1 - .predict_mean(fit, rc_lo, rc_hi)
+      .constant_fit_result(norm_type, x, conc, x_std, x_0, range_conc)
     } else {
-      1 - x_mean_model
-    }
+      # Helper: mean of model predictions over a concentration range
+      .predict_mean <- function(model, lo, hi) {
+        mean(stats::predict(model, data.table::data.table(
+          conc = 10^seq(log10(lo), log10(hi), length.out = 101L)
+        )), na.rm = TRUE)
+      }
 
-    if (four_param) {
-      ec50_val <- coefs[["ec50:(Intercept)"]]
-      x_0_val <- coefs[["x_0:(Intercept)"]]
-      x_inf_val <- coefs[["x_inf:(Intercept)"]]
-      fit_type <- "DRC4pHillFitModel"
-    } else {
-      ec50_val <- coefs[["ec50:(Intercept)"]]
-      x_0_val <- x_0
-      x_inf_val <- coefs[["x_inf:(Intercept)"]]
-      fit_type <- "DRC3pHillFitModelFixS0"
+      # x_mean: model-predicted mean over observed range (matches logisticFit)
+      x_mean_model <- .predict_mean(fit, min(conc), max(conc))
+
+      # x_AOC_range: model-predicted mean over standard range (matches logisticFit)
+      rc_lo <- max(range_conc[1], min(conc))
+      rc_hi <- min(range_conc[2], max(conc))
+      if (rc_lo < rc_hi) {
+        x_AOC_range <- 1 - .predict_mean(fit, rc_lo, rc_hi)
+      } else {
+        x_AOC_range <- 1 - x_mean_model
+      }
+
+      if (four_param) {
+        ec50_val <- coefs[["ec50:(Intercept)"]]
+        x_0_val <- coefs[["x_0:(Intercept)"]]
+        x_inf_val <- coefs[["x_inf:(Intercept)"]]
+        fit_type <- "DRC4pHillFitModel"
+      } else {
+        ec50_val <- coefs[["ec50:(Intercept)"]]
+        x_0_val <- x_0
+        x_inf_val <- coefs[["x_inf:(Intercept)"]]
+        fit_type <- "DRC3pHillFitModelFixS0"
+      }
+      list(
+        normalization_type = norm_type,
+        x_mean = x_mean_model,
+        x_AOC = 1 - x_mean_model,
+        x_AOC_range = x_AOC_range,
+        x_max = x_max,
+        x_sd_avg = x_sd_avg,
+        N_conc = N_conc,
+        maxlog10Concentration = maxlog10Conc,
+        ec50 = ec50_val,
+        xc50 = {
+          # xc50 = concentration at which response = 0.5
+          # (not ec50 — matches .calculate_xc50 + .extendWithXc50 in gDRutils/fit_curves.R)
+          xc50_raw <- tryCatch(
+            gDRutils::predict_conc_from_efficacy(0.5, x_inf_val, x_0_val, ec50_val, coefs[1]),
+            error = function(e) NA_real_
+          )
+          if (is.na(xc50_raw)) {
+            gDRutils::cap_xc50(ec50_val, max_conc,
+                               min_conc = min(conc[conc > 0]),
+                               capping_fold = capping_fold)
+          } else {
+            gDRutils::cap_xc50(xc50_raw, max_conc,
+                               min_conc = min(conc[conc > 0]),
+                               capping_fold = capping_fold)
+          }
+        },
+        h = coefs[1],
+        r2 = r2,
+        rss = rss,
+        p_value = p_value,
+        x_0 = x_0_val,
+        x_inf = x_inf_val,
+        fit_type = fit_type
+      )
     }
-    list(
-      normalization_type = norm_type,
-      x_mean = x_mean_model,
-      x_AOC = 1 - x_mean_model,
-      x_AOC_range = x_AOC_range,
-      x_max = x_max,
-      x_sd_avg = x_sd_avg,
-      N_conc = N_conc,
-      maxlog10Concentration = maxlog10Conc,
-      ec50 = ec50_val,
-      xc50 = {
-        # xc50 = concentration at which response = 0.5
-        # (not ec50 — matches .calculate_xc50 + .extendWithXc50 in gDRutils/fit_curves.R)
-        xc50_raw <- tryCatch(
-          gDRutils::predict_conc_from_efficacy(0.5, x_inf_val, x_0_val, ec50_val, coefs[1]),
-          error = function(e) NA_real_
-        )
-        if (is.na(xc50_raw)) {
-          gDRutils::cap_xc50(ec50_val, max_conc,
-                             min_conc = min(conc[conc > 0]),
-                             capping_fold = capping_fold)
-        } else {
-          gDRutils::cap_xc50(xc50_raw, max_conc,
-                             min_conc = min(conc[conc > 0]),
-                             capping_fold = capping_fold)
-        }
-      },
-      h = coefs[1],
-      r2 = r2,
-      rss = rss,
-      p_value = p_value,
-      x_0 = x_0_val,
-      x_inf = x_inf_val,
-      fit_type = fit_type
-    )
   } else {
     list(
       normalization_type = norm_type,
@@ -751,6 +765,7 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
       fit_type = "DRCInvalidFitResult"
     )
   }
+  } # end else (enough conc points)
 }
 
 
@@ -868,8 +883,11 @@ apply_combo_scores <- function(se,
           conc <- avg_sub[[conc1_col]][i]
           p <- drug1_params[abs(drug1_params$cotrt_value - cotrt) ==
                               min(abs(drug1_params$cotrt_value - cotrt)), ][1L, ]
-          if (NROW(p) == 0L || any(is.na(c(p$ec50, p$h, p$x_inf, p$x_0)))) return(NA_real_)
-          gDRutils::predict_efficacy_from_conc(conc, p$x_inf, p$x_0, p$ec50, p$h)
+          if (NROW(p) == 0L || any(is.na(c(p$ec50, p$h, p$x_inf, p$x_0)))) {
+            NA_real_
+          } else {
+            gDRutils::predict_efficacy_from_conc(conc, p$x_inf, p$x_0, p$ec50, p$h)
+          }
         }, numeric(1))
 
         # row_values: predict drug-2 response at conc2 for each cotrt conc1
@@ -878,8 +896,11 @@ apply_combo_scores <- function(se,
           conc <- avg_sub[[conc2_col]][i]
           p <- drug2_params[abs(drug2_params$cotrt_value - cotrt) ==
                               min(abs(drug2_params$cotrt_value - cotrt)), ][1L, ]
-          if (NROW(p) == 0L || any(is.na(c(p$ec50, p$h, p$x_inf, p$x_0)))) return(NA_real_)
-          gDRutils::predict_efficacy_from_conc(conc, p$x_inf, p$x_0, p$ec50, p$h)
+          if (NROW(p) == 0L || any(is.na(c(p$ec50, p$h, p$x_inf, p$x_0)))) {
+            NA_real_
+          } else {
+            gDRutils::predict_efficacy_from_conc(conc, p$x_inf, p$x_0, p$ec50, p$h)
+          }
         }, numeric(1))
 
         avg_sub$smooth <- rowMeans(
@@ -901,8 +922,11 @@ apply_combo_scores <- function(se,
           series_identifiers = series_identifiers,
           metric_col = "metric", measured_col = "smooth"
         )
-        hsa_score <- if (all(is.na(h_excess$x))) NA_real_ else
-          calculate_score(h_excess$x)
+        if (all(is.na(h_excess$x))) {
+          hsa_score <- NA_real_
+        } else {
+          hsa_score <- calculate_score(h_excess$x)
+        }
 
         # Bliss score
         bliss_expected <- calculate_Bliss(sa1, conc1_col, sa2, conc2_col, norm_type)
@@ -911,8 +935,11 @@ apply_combo_scores <- function(se,
           series_identifiers = series_identifiers,
           metric_col = "metric", measured_col = "smooth"
         )
-        bliss_score <- if (all(is.na(bliss_excess$x))) NA_real_ else
-          calculate_score(bliss_excess$x)
+        if (all(is.na(bliss_excess$x))) {
+          bliss_score <- NA_real_
+        } else {
+          bliss_score <- calculate_score(bliss_excess$x)
+        }
 
         idx <- idx + 1L
         score_rows[[idx]] <- data.table::data.table(
@@ -927,13 +954,11 @@ apply_combo_scores <- function(se,
     }
   }
 
-  if (idx == 0L) {
-    return(se)
+  if (idx > 0L) {
+    scores_dt <- data.table::rbindlist(score_rows[seq_len(idx)])
+    se <- .persist_assay(se, scores_dt, "replace", scores_assay, "row", "column",
+                         upsert_key = c("fit_source", "normalization_type"))
   }
-
-  scores_dt <- data.table::rbindlist(score_rows[seq_len(idx)])
-  se <- .persist_assay(se, scores_dt, "replace", scores_assay, "row", "column",
-                       upsert_key = c("fit_source", "normalization_type"))
   se
 }
 
@@ -980,35 +1005,41 @@ bliss_fit_fn <- function(avg_dt) {
 
   n_combo <- NROW(combo)
   if (n_combo == 0L || NROW(sa1) == 0L || NROW(sa2) == 0L) {
-    return(list(
+    list(
       normalization_type = norm_type,
       bliss_score        = NA_real_,
       bliss_excess_mean  = NA_real_,
       n_combo_points     = n_combo
-    ))
-  }
-
-  # Match SA responses to each combo point by concentration (per-point comparison)
-  combo_ordered <- combo[order(combo[[conc1_col]], combo[[conc2_col]]), ]
-  sa1_match <- sa1[["x"]][match(combo_ordered[[conc1_col]], sa1[[conc1_col]])]
-  sa2_match <- sa2[["x"]][match(combo_ordered[[conc2_col]], sa2[[conc2_col]])]
-
-  expected <- if (norm_type == "RV") {
-    sa1_match * sa2_match
+    )
   } else {
-    # GR adaptation: Holbeck et al., Cancer Res 2017
-    2^(log2(sa1_match + 1) * log2(sa2_match + 1)) - 1
+    # Match SA responses to each combo point by concentration (per-point comparison)
+    combo_ordered <- combo[order(combo[[conc1_col]], combo[[conc2_col]]), ]
+    sa1_match <- sa1[["x"]][match(combo_ordered[[conc1_col]], sa1[[conc1_col]])]
+    sa2_match <- sa2[["x"]][match(combo_ordered[[conc2_col]], sa2[[conc2_col]])]
+
+    if (norm_type == "RV") {
+      expected <- sa1_match * sa2_match
+    } else {
+      # GR adaptation: Holbeck et al., Cancer Res 2017
+      # Guard for cytotoxic drugs where GR < 0: negative log2 inputs produce a
+      # positive product → false synergy.  Use pmin (more toxic agent) instead.
+      expected <- ifelse(
+        sa1_match < 0 | sa2_match < 0,
+        pmin(sa1_match, sa2_match),
+        2^(log2(sa1_match + 1) * log2(sa2_match + 1)) - 1
+      )
+    }
+
+    excess <- expected - combo_ordered[["x"]]
+    q90 <- stats::quantile(excess, 0.9, na.rm = TRUE)
+
+    list(
+      normalization_type = norm_type,
+      bliss_score = mean(excess[excess >= q90], na.rm = TRUE),
+      bliss_excess_mean = mean(excess, na.rm = TRUE),
+      n_combo_points = n_combo
+    )
   }
-
-  excess <- expected - combo_ordered[["x"]]
-  q90 <- stats::quantile(excess, 0.9, na.rm = TRUE)
-
-  list(
-    normalization_type = norm_type,
-    bliss_score = mean(excess[excess >= q90], na.rm = TRUE),
-    bliss_excess_mean = mean(excess, na.rm = TRUE),
-    n_combo_points = n_combo
-  )
 }
 
 
@@ -1053,30 +1084,30 @@ hss_fit_fn <- function(avg_dt) {
 
   n_combo <- NROW(combo)
   if (n_combo == 0L || NROW(sa1) == 0L || NROW(sa2) == 0L) {
-    return(list(
+    list(
       normalization_type = norm_type,
       hss_score = NA_real_,
       hss_excess_mean = NA_real_,
       n_combo_points = n_combo
-    ))
+    )
+  } else {
+    # Match SA responses to each combo point by concentration (per-point comparison)
+    combo_ordered <- combo[order(combo[[conc1_col]], combo[[conc2_col]]), ]
+    sa1_match <- sa1[["x"]][match(combo_ordered[[conc1_col]], sa1[[conc1_col]])]
+    sa2_match <- sa2[["x"]][match(combo_ordered[[conc2_col]], sa2[[conc2_col]])]
+
+    # HSA expected: the more potent single agent at each combo grid point
+    expected <- pmin(sa1_match, sa2_match)
+    excess <- expected - combo_ordered[["x"]]
+    q90 <- stats::quantile(excess, 0.9, na.rm = TRUE)
+
+    list(
+      normalization_type = norm_type,
+      hss_score = mean(excess[excess >= q90], na.rm = TRUE),
+      hss_excess_mean = mean(excess, na.rm = TRUE),
+      n_combo_points = n_combo
+    )
   }
-
-  # Match SA responses to each combo point by concentration (per-point comparison)
-  combo_ordered <- combo[order(combo[[conc1_col]], combo[[conc2_col]]), ]
-  sa1_match <- sa1[["x"]][match(combo_ordered[[conc1_col]], sa1[[conc1_col]])]
-  sa2_match <- sa2[["x"]][match(combo_ordered[[conc2_col]], sa2[[conc2_col]])]
-
-  # HSA expected: the more potent single agent at each combo grid point
-  expected <- pmin(sa1_match, sa2_match)
-  excess <- expected - combo_ordered[["x"]]
-  q90 <- stats::quantile(excess, 0.9, na.rm = TRUE)
-
-  list(
-    normalization_type = norm_type,
-    hss_score = mean(excess[excess >= q90], na.rm = TRUE),
-    hss_excess_mean = mean(excess, na.rm = TRUE),
-    n_combo_points = n_combo
-  )
 }
 
 
@@ -1148,8 +1179,11 @@ hss_fit_fn <- function(avg_dt) {
       results[[length(results) + 1L]] <- result_dt
     }
 
-    if (length(results) == 0L) return(data.table::data.table())
-    data.table::rbindlist(results, fill = TRUE)
+    if (length(results) == 0L) {
+      data.table::data.table()
+    } else {
+      data.table::rbindlist(results, fill = TRUE)
+    }
   }
 }
 
@@ -1186,18 +1220,20 @@ hss_fit_fn <- function(avg_dt) {
       NULL
     })
 
-    if (is.null(result)) return(NULL)
-    result[["row"]] <- r
-    result[["column"]] <- cc
-    result[["fit_source"]] <- fit_source
+    if (!is.null(result)) {
+      result[["row"]] <- r
+      result[["column"]] <- cc
+      result[["fit_source"]] <- fit_source
+    }
     result
   })
 
   summary_rows <- Filter(Negate(is.null), summary_rows)
-  if (length(summary_rows) == 0L) return(se)
-
-  summary_dt <- data.table::rbindlist(summary_rows, fill = TRUE)
-  .persist_assay(se, summary_dt, merge, summary_assay, "row", "column", "fit_source")
+  if (length(summary_rows) > 0L) {
+    summary_dt <- data.table::rbindlist(summary_rows, fill = TRUE)
+    se <- .persist_assay(se, summary_dt, merge, summary_assay, "row", "column", "fit_source")
+  }
+  se
 }
 
 
@@ -1247,6 +1283,20 @@ hss_fit_fn <- function(avg_dt) {
     merged_dt[, data_cols, with = FALSE],
     row = merged_dt[[row]], col = merged_dt[[col]]
   )
+  # Reindex to full SE dimensions — splitAsBumpyMatrix only includes rows/cols
+  # present in merged_dt; if some cells returned no results (partial SE), mx
+  # has fewer dimensions than se and assay<- would throw "rownames not identical".
+  se_rows <- rownames(se)
+  se_cols <- colnames(se)
+  missing_rows <- setdiff(se_rows, rownames(mx))
+  missing_cols <- setdiff(se_cols, colnames(mx))
+  if (length(missing_rows) > 0L || length(missing_cols) > 0L) {
+    mx <- mx[
+      c(intersect(se_rows, rownames(mx)), missing_rows),
+      c(intersect(se_cols, colnames(mx)), missing_cols)
+    ]
+    mx <- mx[se_rows, se_cols]
+  }
   SummarizedExperiment::assay(se, assay_name) <- mx
   se
 }

@@ -55,10 +55,10 @@ fit_SE <- function(se,
   # "normalization_type" (e.g. co-dilution adds "ratio"). For standard SA data
   # the profile default ("normalization_type") is used.
   default_nested <- get_default_nested_identifiers(se, data_model(data_type))
-  slicing_cols <- if (identical(nested_identifiers, default_nested)) {
-    NULL  # let apply_fit use the profile default (normalization_type)
+  if (identical(nested_identifiers, default_nested)) {
+    slicing_cols <- NULL  # let apply_fit use the profile default (normalization_type)
   } else {
-    nested_identifiers
+    slicing_cols <- nested_identifiers
   }
 
   se <- apply_fit(
