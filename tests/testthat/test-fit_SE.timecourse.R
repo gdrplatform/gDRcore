@@ -107,6 +107,27 @@ test_that(".compute_growth_rates: NormalizedGrowthRate is numeric, finite for tr
 })
 
 
+test_that(".compute_growth_rates 'None' keeps raw GrowthRate, not DMSO-normalised", {
+  # early = "None" → NormalizedGrowthRate == GrowthRate (no division by DMSO)
+  # late  = "early" → NormalizedGrowthRate == GrowthRate / DMSO_rate[early]
+  gr <- gDRcore:::.compute_growth_rates(
+    se_tc_small, periods_std, norm_map_std, "LogFoldChange"
+  )
+  early_dmso <- gr[period == "early" & DrugName == "DMSO"]
+  early_drug  <- gr[period == "early" & DrugName == "DrugA" & Concentration == 1]
+  # For "None" period: NormalizedGrowthRate must equal GrowthRate exactly
+  expect_equal(early_dmso$NormalizedGrowthRate, early_dmso$GrowthRate)
+  expect_equal(early_drug$NormalizedGrowthRate,  early_drug$GrowthRate)
+
+  # For "early"-referenced late period: NGR = GrowthRate / DMSO_early_rate
+  late_drug <- gr[period == "late" & DrugName == "DrugA" & Concentration == 1]
+  dmso_early_rate <- gr[period == "early" & DrugName == "DMSO"]$GrowthRate
+  expect_equal(late_drug$NormalizedGrowthRate,
+               late_drug$GrowthRate / dmso_early_rate,
+               tolerance = 1e-10)
+})
+
+
 test_that(".compute_growth_rates returns empty data.table when no rows in window", {
   # Period range that has no data
   empty_periods <- list(impossible = c(1000, 2000))

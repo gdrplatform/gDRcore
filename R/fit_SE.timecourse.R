@@ -236,32 +236,46 @@ fit_SE.timecourse <- function(se,
     return(av_rates)
   }
 
-  # Apply normalization_map: each period normalized to the DMSO rate of its
-  # reference period. "None" means normalize to the DMSO rate of the same period.
+  # Apply normalization_map.
+  # "None" → NormalizedGrowthRate = GrowthRate (raw doublings/day, no DMSO division).
+  # Any other value (e.g. "early") → NormalizedGrowthRate = GrowthRate / DMSO_rate[ref_period].
   norm_dt <- data.table::data.table(
     period      = names(normalization_map),
     norm_target = unname(normalization_map)
   )
-  # "None" → use that period's own DMSO as reference
-  norm_dt[norm_target == "None", norm_target := period]
 
   av_rates <- merge(av_rates, norm_dt, by = "period", all.x = TRUE)
 
-  # Join DMSO baseline keyed by (CellLineName, norm_target period)
-  av_rates <- merge(
-    av_rates,
-    data.table::setnames(
-      data.table::copy(dmso_baselines),
-      c("CellLineName", "norm_period", "rate_0")
-    ),
-    by.x = c(cl_col, "norm_target"),
-    by.y = c("CellLineName", "norm_period"),
-    all.x = TRUE
-  )
+  # Rows where normalization is requested (norm_target != "None")
+  needs_norm <- av_rates$norm_target != "None"
 
-  av_rates[, NormalizedGrowthRate := GrowthRate / rate_0]
+  if (any(needs_norm, na.rm = TRUE)) {
+    av_norm <- av_rates[needs_norm == TRUE]
+    av_norm <- merge(
+      av_norm,
+      data.table::setnames(
+        data.table::copy(dmso_baselines),
+        c("CellLineName", "norm_period", "rate_0")
+      ),
+      by.x = c(cl_col, "norm_target"),
+      by.y = c("CellLineName", "norm_period"),
+      all.x = TRUE
+    )
+    av_norm[, NormalizedGrowthRate := GrowthRate / rate_0]
+    av_rates <- data.table::rbindlist(
+      list(
+        av_norm,
+        av_rates[needs_norm == FALSE][, NormalizedGrowthRate := GrowthRate][, rate_0 := NA_real_]
+      ),
+      fill = TRUE
+    )
+  } else {
+    # All periods are "None" — keep raw growth rate
+    av_rates[, NormalizedGrowthRate := GrowthRate]
+    av_rates[, rate_0 := NA_real_]
+  }
 
-  # normalization_type = "GR" (growth-rate normalised, analogous to GR metric)
+  # normalization_type = "GR" (growth-rate metric)
   av_rates[, normalization_type := "GR"]
   av_rates
 }
