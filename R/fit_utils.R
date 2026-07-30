@@ -471,12 +471,17 @@ apply_fits <- function(se,
 #' \code{\link[gDRutils]{logisticFit}}, including \code{p_value},
 #' \code{rss}, \code{x_AOC_range}, \code{x_max}, and \code{x_sd_avg}.
 #' For use with \code{\link{apply_fit_to_se}} or \code{\link{apply_fit}}
-#' on single-agent data.
+#' on single-agent or time-course data.
 #'
 #' @param avg_dt \code{data.table} of averaged data for one
 #'   (drug x cell line x normalization_type) triplet.  Should contain
-#'   columns \code{Concentration}, \code{x}, \code{normalization_type},
-#'   and optionally \code{x_std} (used for \code{x_sd_avg}).
+#'   columns \code{Concentration}, the response column named by \code{x_col},
+#'   \code{normalization_type}, and optionally \code{x_std}
+#'   (used for \code{x_sd_avg}).
+#' @param x_col string; name of the response column in \code{avg_dt}.
+#'   Defaults to \code{"x"} (the standard \code{Averaged} assay column name).
+#'   Set to e.g. \code{"NormalizedGrowthRate"} when fitting time-course
+#'   growth-rate data.
 #' @param capping_fold numeric capping fold passed to
 #'   \code{\link[gDRutils]{cap_xc50}}
 #' @param range_conc numeric vector of length 2 specifying the concentration
@@ -501,14 +506,24 @@ apply_fits <- function(se,
 #' )
 #' fit_drug_response_metrics(dt)
 #'
+#' # Custom response column (e.g. time-course growth rates):
+#' dt2 <- data.table::data.table(
+#'   Concentration = c(0.001, 0.01, 0.1, 1, 10),
+#'   NormalizedGrowthRate = c(0.98, 0.82, 0.55, 0.21, 0.09),
+#'   normalization_type = "GR"
+#' )
+#' fit_drug_response_metrics(dt2, x_col = "NormalizedGrowthRate")
+#'
 #' @export
-fit_drug_response_metrics <- function(avg_dt, capping_fold = 5,
+fit_drug_response_metrics <- function(avg_dt, x_col = "x",
+                                      capping_fold = 5,
                                       range_conc = c(5e-3, 5),
                                       pcutoff = 0.05,
                                       n_point_cutoff = 4L,
                                       force_fit = FALSE,
                                       cap = 0.1) {
   .fit_drug_response_metrics_impl(avg_dt, x_0 = 1,
+                                  x_col = x_col,
                                   capping_fold = capping_fold,
                                   range_conc = range_conc,
                                   pcutoff = pcutoff,
@@ -542,13 +557,15 @@ fit_drug_response_metrics <- function(avg_dt, capping_fold = 5,
 #' fit_drug_response_metrics_4p(dt)
 #'
 #' @export
-fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
+fit_drug_response_metrics_4p <- function(avg_dt, x_col = "x",
+                                         capping_fold = 5,
                                          range_conc = c(5e-3, 5),
                                          pcutoff = 0.05,
                                          n_point_cutoff = 4L,
                                          force_fit = FALSE,
                                          cap = 0.1) {
   .fit_drug_response_metrics_impl(avg_dt, x_0 = NA_real_,
+                                  x_col = x_col,
                                   capping_fold = capping_fold,
                                   range_conc = range_conc,
                                   pcutoff = pcutoff,
@@ -559,16 +576,22 @@ fit_drug_response_metrics_4p <- function(avg_dt, capping_fold = 5,
 
 
 #' @keywords internal
-.fit_drug_response_metrics_impl <- function(avg_dt, x_0 = 1, capping_fold = 5,
+.fit_drug_response_metrics_impl <- function(avg_dt, x_0 = 1, x_col = "x",
+                                            capping_fold = 5,
                                             range_conc = c(5e-3, 5),
                                             pcutoff = 0.05,
                                             n_point_cutoff = 4L,
                                             force_fit = FALSE,
                                             cap = 0.1) {
+  checkmate::assert_string(x_col)
+  if (!x_col %in% names(avg_dt)) {
+    stop(sprintf("Column '%s' not found in avg_dt. Available: %s",
+                 x_col, toString(names(avg_dt))))
+  }
   norm_type <- avg_dt$normalization_type[1]
   conc_col <- gDRutils::get_env_identifiers("concentration")
   conc <- avg_dt[[conc_col]]
-  x <- avg_dt$x
+  x <- avg_dt[[x_col]]
   x_std <- if ("x_std" %in% names(avg_dt)) avg_dt$x_std else rep(NA_real_, length(x))
 
   keep <- !is.na(x) & !is.na(conc)

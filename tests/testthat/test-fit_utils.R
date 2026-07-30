@@ -513,6 +513,49 @@ test_that("fit_drug_response_metrics estimates xc50 fallback when fit fails", {
 })
 
 
+test_that("fit_drug_response_metrics respects x_col parameter", {
+  dt <- data.table::data.table(
+    Concentration = c(0.001, 0.01, 0.1, 1, 10),
+    NormalizedGrowthRate = c(0.98, 0.82, 0.55, 0.21, 0.09),
+    normalization_type = "GR"
+  )
+  result <- fit_drug_response_metrics(dt, x_col = "NormalizedGrowthRate")
+  expect_true(is.list(result))
+  expect_equal(result$normalization_type, "GR")
+  expect_equal(result$N_conc, 5L)
+  expect_true(is.numeric(result$ec50))
+})
+
+
+test_that("fit_drug_response_metrics with x_col gives same result as default col 'x'", {
+  dt_x <- data.table::data.table(
+    Concentration = c(0.001, 0.01, 0.1, 1, 10),
+    x = c(0.95, 0.8, 0.5, 0.2, 0.1),
+    normalization_type = "RV"
+  )
+  dt_custom <- data.table::copy(dt_x)
+  data.table::setnames(dt_custom, "x", "RelViab")
+  result_default <- fit_drug_response_metrics(dt_x)
+  result_custom  <- fit_drug_response_metrics(dt_custom, x_col = "RelViab")
+  expect_equal(result_default$ec50, result_custom$ec50)
+  expect_equal(result_default$r2,   result_custom$r2)
+  expect_equal(result_default$h,    result_custom$h)
+})
+
+
+test_that("fit_drug_response_metrics errors informatively on missing x_col", {
+  dt <- data.table::data.table(
+    Concentration = c(0.01, 0.1, 1, 10),
+    x = c(0.9, 0.6, 0.3, 0.1),
+    normalization_type = "RV"
+  )
+  expect_error(
+    fit_drug_response_metrics(dt, x_col = "NonExistent"),
+    "Column 'NonExistent' not found in avg_dt"
+  )
+})
+
+
 ####
 # .persist_metrics tests
 ####
