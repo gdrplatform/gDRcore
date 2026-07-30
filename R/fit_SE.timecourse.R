@@ -321,6 +321,10 @@ fit_SE.timecourse <- function(se,
   cl_col   <- gDRutils::get_env_identifiers("cellline_name")
   drug_col <- gDRutils::get_env_identifiers("drug_name")
   conc_col <- gDRutils::get_env_identifiers("concentration")
+  conc_col2 <- tryCatch(gDRutils::get_env_identifiers("concentration2"),
+                        error = function(e) NULL)
+  drug_col2 <- tryCatch(gDRutils::get_env_identifiers("drug_name2"),
+                        error = function(e) NULL)
 
   # Exclude DMSO and zero-concentration rows from fitting
   conc_gt0 <- growth_dt[[conc_col]] > 0
@@ -332,11 +336,25 @@ fit_SE.timecourse <- function(se,
     stop(".growth_dt_to_se: no treated rows with Concentration > 0 remain after filtering.")
   }
 
-  # row = DrugName|CellLineName key; col = period
-  fit_dt[, row    := paste0(get(drug_col), "|", get(cl_col))]
+  # row key: DrugName|DrugName_2|CellLineName
+  # Must include partner drug so SA (DrugName2=vehicle) and combo (DrugName2=RealDrug)
+  # land in separate BumpyMatrix rows and are fitted independently.
+  has_drug2 <- !is.null(drug_col2) && drug_col2 %in% names(fit_dt)
+  if (has_drug2) {
+    fit_dt[, row := paste0(get(drug_col), "|",
+                           get(drug_col2), "|",
+                           get(cl_col))]
+  } else {
+    fit_dt[, row := paste0(get(drug_col), "|", get(cl_col))]
+  }
   fit_dt[, column := period]
 
-  assay_cols <- c(conc_col, "NormalizedGrowthRate", "normalization_type")
+  # Assay columns: primary concentration + partner concentration (if present) +
+  # response + normalization label.
+  assay_cols <- intersect(
+    c(conc_col, conc_col2, "NormalizedGrowthRate", "normalization_type"),
+    names(fit_dt)
+  )
   assay_dt   <- fit_dt[, assay_cols, with = FALSE]
 
   bm <- BumpyMatrix::splitAsBumpyMatrix(
