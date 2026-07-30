@@ -126,14 +126,12 @@ fit_SE.timecourse <- function(se,
   }
 
   # Each column of se_gr IS one period (the BumpyMatrix col dimension).
-  # Within each cell, slicing is by normalization_type = "GR" (single value).
-  # apply_fit iterates rows × cols (drug × period) and slices by norm_type.
+  # Stage 2 uses the "time-course-metrics" profile (slicing by normalization_type="GR",
+  # input_assay="GrowthRates", nested_cols=["concentration"]).
   se_gr <- apply_fit(
     se             = se_gr,
     fit_fn         = fit_fn,
-    data_type      = "time-course",
-    slicing_cols   = "normalization_type",
-    slicing_values = "GR",
+    data_type      = "time-course-metrics",
     input_assay    = "GrowthRates",
     output_assay   = metrics_assay,
     merge          = "replace",
