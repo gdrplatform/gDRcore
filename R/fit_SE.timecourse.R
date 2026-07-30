@@ -254,7 +254,7 @@ fit_SE.timecourse <- function(se,
   if (NROW(dmso_baselines) == 0L) {
     warning(".compute_growth_rates: no DMSO/vehicle rows found; NormalizedGrowthRate will be NA.")
     av_rates[, NormalizedGrowthRate := NA_real_]
-    av_rates[, normalization_type   := "GR"]
+    av_rates[, normalization_type   := "NGR"]
     return(av_rates)
   }
 
@@ -297,8 +297,9 @@ fit_SE.timecourse <- function(se,
     av_rates[, rate_0 := NA_real_]
   }
 
-  # normalization_type = "GR" (growth-rate metric)
-  av_rates[, normalization_type := "GR"]
+  # normalization_type = "NGR" (NormalizedGrowthRate) — not to be confused with
+  # single-agent "GR" (GR value from gDRutils). Time-course has no RV/GR split.
+  av_rates[, normalization_type := "NGR"]
   av_rates
 }
 
