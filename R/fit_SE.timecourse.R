@@ -177,20 +177,27 @@ fit_SE.timecourse <- function(se,
   cl_col   <- gDRutils::get_env_identifiers("cellline_name")
   drug_col <- gDRutils::get_env_identifiers("drug_name")
 
-  # Partner drug/conc identifiers (present in combo experiments, NA in single-agent)
-  conc_col2 <- tryCatch(gDRutils::get_env_identifiers("concentration2"),
-                        error = function(e) NULL)
-  drug_col2 <- tryCatch(gDRutils::get_env_identifiers("drug_name2"),
-                        error = function(e) NULL)
+  # Partner drug/conc identifiers for all slots (2, 3, ...).
+  # Include every slot present in the data so that doublet (DrugName3=vehicle)
+  # and triplet (DrugName3=RealDrug) combos are treated as distinct treatments
+  # and not pooled together in the per-well lm or replicate aggregation.
+  partner_drug_ids  <- c("drug_name2",  "drug_name3")
+  partner_conc_ids  <- c("concentration2", "concentration3")
+  partner_drug_cols <- unlist(lapply(partner_drug_ids,
+                          function(k) tryCatch(gDRutils::get_env_identifiers(k),
+                                               error = function(e) NULL)))
+  partner_conc_cols <- unlist(lapply(partner_conc_ids,
+                          function(k) tryCatch(gDRutils::get_env_identifiers(k),
+                                               error = function(e) NULL)))
 
   # Well-level keys for lm grouping.
-  # Include partner drug/conc so SA and combo wells are kept separate —
-  # the same DrugA at the same Concentration appears in both SA rows
-  # (DrugName2=NA) and combo rows (DrugName2=DrugB), which must not be pooled.
+  # Include all partner drug/conc slots so SA and every combo arm
+  # (doublet vs triplet, different partner concentrations) stay separate.
   barcode_col <- gDRutils::get_env_identifiers("barcode")[1L]
   well_cols   <- gDRutils::get_env_identifiers("well_position")
   lm_by <- intersect(
-    c(barcode_col, well_cols, cl_col, drug_col, conc_col, drug_col2, conc_col2),
+    c(barcode_col, well_cols, cl_col, drug_col, conc_col,
+      partner_drug_cols, partner_conc_cols),
     names(all_data)
   )
 
@@ -219,9 +226,9 @@ fit_SE.timecourse <- function(se,
   all_rates[, rate := rate * 24]
 
   # --- Stage 1b: aggregate replicates ---
-  # Include partner drug/conc in aggregation key so SA vs combo are distinct rows
+  # Include all partner drug/conc slots so each combo arm aggregates separately
   agg_by <- intersect(
-    c(cl_col, drug_col, conc_col, drug_col2, conc_col2, "period"),
+    c(cl_col, drug_col, conc_col, partner_drug_cols, partner_conc_cols, "period"),
     names(all_rates)
   )
   av_rates <- all_rates[,
@@ -236,12 +243,14 @@ fit_SE.timecourse <- function(se,
   dmso_tag <- gDRutils::get_env_identifiers("untreated_tag")
   is_primary_ctrl <- av_rates[[drug_col]] %in% c(dmso_tag, "DMSO", "vehicle") |
                      av_rates[[conc_col]] == 0
-  # Exclude rows that have a real partner drug (combo with one arm being vehicle)
-  has_partner <- if (!is.null(drug_col2) && drug_col2 %in% names(av_rates)) {
-    !is.na(av_rates[[drug_col2]]) &
-    !av_rates[[drug_col2]] %in% c(dmso_tag, "DMSO", "vehicle", NA_character_)
-  } else {
-    rep(FALSE, NROW(av_rates))
+  # Exclude rows that have any real partner drug in any slot (doublet or triplet)
+  ctrl_tags <- c(dmso_tag, "DMSO", "vehicle", NA_character_)
+  has_partner <- Reduce("|", lapply(partner_drug_cols, function(dc) {
+    if (!dc %in% names(av_rates)) return(rep(FALSE, NROW(av_rates)))
+    !is.na(av_rates[[dc]]) & !av_rates[[dc]] %in% ctrl_tags
+  }), accumulate = FALSE)
+  if (is.logical(has_partner) && length(has_partner) == 0L) {
+    has_partner <- rep(FALSE, NROW(av_rates))
   }
   is_dmso <- is_primary_ctrl & !has_partner
 
@@ -321,10 +330,18 @@ fit_SE.timecourse <- function(se,
   cl_col   <- gDRutils::get_env_identifiers("cellline_name")
   drug_col <- gDRutils::get_env_identifiers("drug_name")
   conc_col <- gDRutils::get_env_identifiers("concentration")
-  conc_col2 <- tryCatch(gDRutils::get_env_identifiers("concentration2"),
-                        error = function(e) NULL)
-  drug_col2 <- tryCatch(gDRutils::get_env_identifiers("drug_name2"),
-                        error = function(e) NULL)
+
+  # Resolve all partner drug/conc slots (2, 3, ...) that exist in the data
+  partner_drug_ids  <- c("drug_name2",  "drug_name3")
+  partner_conc_ids  <- c("concentration2", "concentration3")
+  partner_drug_cols <- unlist(lapply(partner_drug_ids,
+                          function(k) tryCatch(gDRutils::get_env_identifiers(k),
+                                               error = function(e) NULL)))
+  partner_conc_cols <- unlist(lapply(partner_conc_ids,
+                          function(k) tryCatch(gDRutils::get_env_identifiers(k),
+                                               error = function(e) NULL)))
+  partner_drug_cols <- intersect(partner_drug_cols, names(growth_dt))
+  partner_conc_cols <- intersect(partner_conc_cols, names(growth_dt))
 
   # Exclude DMSO and zero-concentration rows from fitting
   conc_gt0 <- growth_dt[[conc_col]] > 0
@@ -336,35 +353,32 @@ fit_SE.timecourse <- function(se,
     stop(".growth_dt_to_se: no treated rows with Concentration > 0 remain after filtering.")
   }
 
-  # row key: DrugName|DrugName_2|Concentration_2|CellLineName
-  # Must include both partner drug AND partner concentration so that:
-  #   SA            (DrugName2=vehicle, Conc2=0)      → own row
-  #   combo @ 0.4µM (DrugName2=Ribociclib, Conc2=0.4) → own row
-  #   combo @ 0.8µM (DrugName2=Ribociclib, Conc2=0.8) → own row
-  # Without Conc2 in the key, different partner concentrations would be pooled
-  # into one fit — biologically meaningless.
-  has_drug2 <- !is.null(drug_col2) && drug_col2 %in% names(fit_dt)
-  has_conc2 <- !is.null(conc_col2) && conc_col2 %in% names(fit_dt)
-  if (has_drug2) {
-    conc2_key <- if (has_conc2) {
-      # Round to 4 sig figs to avoid floating-point label divergence
-      sprintf("%.4g", fit_dt[[conc_col2]])
-    } else {
-      rep("0", NROW(fit_dt))
-    }
-    fit_dt[, row := paste0(get(drug_col), "|",
-                           get(drug_col2), "|",
-                           conc2_key, "|",
-                           get(cl_col))]
-  } else {
-    fit_dt[, row := paste0(get(drug_col), "|", get(cl_col))]
+  # row key: DrugName | all_partner_drugs | all_partner_concs | CellLineName
+  # Includes all slots (2, 3, ...) so that:
+  #   SA            (DrugName2=vehicle, DrugName3=vehicle)      → own row
+  #   doublet        (DrugName2=DrugB,   DrugName3=vehicle)      → own row
+  #   triplet        (DrugName2=DrugB,   DrugName3=DrugC)        → own row
+  #   doublet @ 0.4µM vs 0.8µM partner conc                     → two separate rows
+  key_parts <- c(drug_col)
+  for (dc in partner_drug_cols) key_parts <- c(key_parts, dc)
+  for (cc in partner_conc_cols) {
+    key_parts <- c(key_parts, cc)
   }
+  key_parts <- c(key_parts, cl_col)
+  key_parts <- intersect(key_parts, names(fit_dt))
+
+  fit_dt[, row := do.call(paste, c(
+    lapply(key_parts, function(k) {
+      v <- fit_dt[[k]]
+      if (is.numeric(v)) sprintf("%.4g", v) else as.character(v)
+    }),
+    sep = "|"
+  ))]
   fit_dt[, column := period]
 
-  # Assay columns: primary concentration + partner concentration (if present) +
-  # response + normalization label.
+  # Assay columns: primary + all partner concentrations + response + label
   assay_cols <- intersect(
-    c(conc_col, conc_col2, "NormalizedGrowthRate", "normalization_type"),
+    c(conc_col, partner_conc_cols, "NormalizedGrowthRate", "normalization_type"),
     names(fit_dt)
   )
   assay_dt   <- fit_dt[, assay_cols, with = FALSE]
