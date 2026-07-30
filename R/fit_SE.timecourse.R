@@ -240,14 +240,15 @@ fit_SE.timecourse <- function(se,
   # --- Stage 1c: DMSO normalization ---
   # A row is DMSO/vehicle only when DrugName is a control tag AND either
   # Concentration == 0 or both partner slots are also absent/zero.
-  dmso_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  is_primary_ctrl <- av_rates[[drug_col]] %in% c(dmso_tag, "DMSO", "vehicle") |
+  # untreated_tag = c("vehicle", "untreated") by default — the canonical list of
+  # control drug name values in gDRutils; no need to hardcode "DMSO"/"vehicle".
+  untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
+  is_primary_ctrl <- av_rates[[drug_col]] %in% untreated_tag |
                      av_rates[[conc_col]] == 0
   # Exclude rows that have any real partner drug in any slot (doublet or triplet)
-  ctrl_tags <- c(dmso_tag, "DMSO", "vehicle", NA_character_)
   has_partner <- Reduce("|", lapply(partner_drug_cols, function(dc) {
     if (!dc %in% names(av_rates)) return(rep(FALSE, NROW(av_rates)))
-    !is.na(av_rates[[dc]]) & !av_rates[[dc]] %in% ctrl_tags
+    !is.na(av_rates[[dc]]) & !av_rates[[dc]] %in% untreated_tag
   }), accumulate = FALSE)
   if (is.logical(has_partner) && length(has_partner) == 0L) {
     has_partner <- rep(FALSE, NROW(av_rates))
@@ -343,10 +344,10 @@ fit_SE.timecourse <- function(se,
   partner_drug_cols <- intersect(partner_drug_cols, names(growth_dt))
   partner_conc_cols <- intersect(partner_conc_cols, names(growth_dt))
 
-  # Exclude DMSO and zero-concentration rows from fitting
-  conc_gt0 <- growth_dt[[conc_col]] > 0
+  # Exclude control (vehicle/untreated) and zero-concentration rows from fitting
+  conc_gt0     <- growth_dt[[conc_col]] > 0
   drug_not_ctrl <- !growth_dt[[drug_col]] %in%
-    c(gDRutils::get_env_identifiers("untreated_tag"), "DMSO", "vehicle")
+    gDRutils::get_env_identifiers("untreated_tag")
   fit_dt <- growth_dt[conc_gt0 & drug_not_ctrl]
 
   if (NROW(fit_dt) == 0L) {
