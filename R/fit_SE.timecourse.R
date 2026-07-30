@@ -336,13 +336,25 @@ fit_SE.timecourse <- function(se,
     stop(".growth_dt_to_se: no treated rows with Concentration > 0 remain after filtering.")
   }
 
-  # row key: DrugName|DrugName_2|CellLineName
-  # Must include partner drug so SA (DrugName2=vehicle) and combo (DrugName2=RealDrug)
-  # land in separate BumpyMatrix rows and are fitted independently.
+  # row key: DrugName|DrugName_2|Concentration_2|CellLineName
+  # Must include both partner drug AND partner concentration so that:
+  #   SA            (DrugName2=vehicle, Conc2=0)      → own row
+  #   combo @ 0.4µM (DrugName2=Ribociclib, Conc2=0.4) → own row
+  #   combo @ 0.8µM (DrugName2=Ribociclib, Conc2=0.8) → own row
+  # Without Conc2 in the key, different partner concentrations would be pooled
+  # into one fit — biologically meaningless.
   has_drug2 <- !is.null(drug_col2) && drug_col2 %in% names(fit_dt)
+  has_conc2 <- !is.null(conc_col2) && conc_col2 %in% names(fit_dt)
   if (has_drug2) {
+    conc2_key <- if (has_conc2) {
+      # Round to 4 sig figs to avoid floating-point label divergence
+      sprintf("%.4g", fit_dt[[conc_col2]])
+    } else {
+      rep("0", NROW(fit_dt))
+    }
     fit_dt[, row := paste0(get(drug_col), "|",
                            get(drug_col2), "|",
+                           conc2_key, "|",
                            get(cl_col))]
   } else {
     fit_dt[, row := paste0(get(drug_col), "|", get(cl_col))]
