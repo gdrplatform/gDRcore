@@ -179,11 +179,22 @@ fit_SE.timecourse <- function(se,
   cl_col   <- gDRutils::get_env_identifiers("cellline_name")
   drug_col <- gDRutils::get_env_identifiers("drug_name")
 
-  # Well-level keys used for lm grouping
+  # Partner drug/conc identifiers (present in combo experiments, NA in single-agent)
+  conc_col2 <- tryCatch(gDRutils::get_env_identifiers("concentration2"),
+                        error = function(e) NULL)
+  drug_col2 <- tryCatch(gDRutils::get_env_identifiers("drug_name2"),
+                        error = function(e) NULL)
+
+  # Well-level keys for lm grouping.
+  # Include partner drug/conc so SA and combo wells are kept separate —
+  # the same DrugA at the same Concentration appears in both SA rows
+  # (DrugName2=NA) and combo rows (DrugName2=DrugB), which must not be pooled.
   barcode_col <- gDRutils::get_env_identifiers("barcode")[1L]
   well_cols   <- gDRutils::get_env_identifiers("well_position")
-  lm_by       <- intersect(c(barcode_col, well_cols, cl_col, drug_col, conc_col),
-                           names(all_data))
+  lm_by <- intersect(
+    c(barcode_col, well_cols, cl_col, drug_col, conc_col, drug_col2, conc_col2),
+    names(all_data)
+  )
 
   # --- Stage 1a: per-well lm slope per period ---
   all_rates <- data.table::rbindlist(lapply(names(periods), function(period_name) {
@@ -210,7 +221,11 @@ fit_SE.timecourse <- function(se,
   all_rates[, rate := rate * 24]
 
   # --- Stage 1b: aggregate replicates ---
-  agg_by <- c(cl_col, drug_col, conc_col, "period")
+  # Include partner drug/conc in aggregation key so SA vs combo are distinct rows
+  agg_by <- intersect(
+    c(cl_col, drug_col, conc_col, drug_col2, conc_col2, "period"),
+    names(all_rates)
+  )
   av_rates <- all_rates[,
     .(GrowthRate = mean(rate, na.rm = TRUE),
       sd_GrowthRate = stats::sd(rate, na.rm = TRUE)),
@@ -218,10 +233,19 @@ fit_SE.timecourse <- function(se,
   ]
 
   # --- Stage 1c: DMSO normalization ---
-  # Identify DMSO rows (Concentration == 0 or DrugName == "DMSO")
+  # A row is DMSO/vehicle only when DrugName is a control tag AND either
+  # Concentration == 0 or both partner slots are also absent/zero.
   dmso_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  is_dmso <- av_rates[[drug_col]] %in% c(dmso_tag, "DMSO", "vehicle") |
-             av_rates[[conc_col]] == 0
+  is_primary_ctrl <- av_rates[[drug_col]] %in% c(dmso_tag, "DMSO", "vehicle") |
+                     av_rates[[conc_col]] == 0
+  # Exclude rows that have a real partner drug (combo with one arm being vehicle)
+  has_partner <- if (!is.null(drug_col2) && drug_col2 %in% names(av_rates)) {
+    !is.na(av_rates[[drug_col2]]) &
+    !av_rates[[drug_col2]] %in% c(dmso_tag, "DMSO", "vehicle", NA_character_)
+  } else {
+    rep(FALSE, NROW(av_rates))
+  }
+  is_dmso <- is_primary_ctrl & !has_partner
 
   dmso_baselines <- av_rates[is_dmso, .(
     CellLineName = get(cl_col),
