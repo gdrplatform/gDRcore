@@ -254,12 +254,14 @@ fit_SE.combinations <- function(se,
       # parallel fit removes the artifact and leaves the matrix interior
       # unchanged. Falls back to the averaged value where the parallel fit is
       # unavailable (NA).
+      # use which() so any NA in the concentration column is dropped rather
+      # than producing NA subscripts (illegal on the LHS of an assignment)
       if ("col_values" %in% colnames(complete_subset)) {
-        on_arm_1 <- complete_subset[[id2]] == 0 & !is.na(complete_subset$col_values)
+        on_arm_1 <- which(complete_subset[[id2]] == 0 & !is.na(complete_subset$col_values))
         smooth_values[on_arm_1] <- complete_subset$col_values[on_arm_1]
       }
       if ("row_values" %in% colnames(complete_subset)) {
-        on_arm_2 <- complete_subset[[id]] == 0 & !is.na(complete_subset$row_values)
+        on_arm_2 <- which(complete_subset[[id]] == 0 & !is.na(complete_subset$row_values))
         smooth_values[on_arm_2] <- complete_subset$row_values[on_arm_2]
       }
       complete_subset$smooth <- smooth_values
