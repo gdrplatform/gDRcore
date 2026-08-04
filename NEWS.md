@@ -1,3 +1,6 @@
+## gDRcore 1.11.8 - 2026-08-04
+* skip pipeline integration test when `qs2` is not installed (GDR-3512)
+
 ## gDRcore 1.11.7 - 2026-07-20
 * fix non-monotonic ("checkerboard") response on combo single-agent arms by using only the parallel fit
 

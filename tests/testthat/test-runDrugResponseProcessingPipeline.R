@@ -10,6 +10,7 @@ test_that("paste_warnings works as expected", {
 
 
 test_that("main pipeline functions works as expected", {
+  testthat::skip_if_not_installed("qs2")
   p_dir <- file.path(tempdir(), "pcheck")
   suppressWarnings(dir.create(p_dir))
   on.exit(unlink(p_dir, TRUE))
