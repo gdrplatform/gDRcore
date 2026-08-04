@@ -1,3 +1,6 @@
+## gDRcore 1.11.7 - 2026-07-20
+* fix non-monotonic ("checkerboard") response on combo single-agent arms by using only the parallel fit
+
 ## gDRcore 1.11.6 - 2026-06-11
 * improve pipeline performance by removing redundant data copies, enabling parallel averaging, and vectorizing NA-filling
 
