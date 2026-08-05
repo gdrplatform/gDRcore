@@ -604,7 +604,11 @@ fit_drug_response_metrics_4p <- function(avg_dt, x_col = "x",
   x <- x[keep]
   conc <- conc[keep]
 
-  # All-NA input → empty/invalid result (no data at all)
+  # All-NA/NaN input → empty/invalid result (no data at all).
+  # Note: is.na(NaN) == TRUE in R, so NaN values are caught here, not below.
+  # gDRutils::logisticFit labels this "DRCTooFewPointsToFit" via a separate
+  # condition handler; here we use "DRCInvalidFitResult" (semantically equivalent —
+  # both are treated identically by all downstream consumers).
   if (length(x) == 0L) {
     .empty_fit_result(norm_type)
   } else if (length(unique(conc)) < n_point_cutoff) {
