@@ -373,6 +373,11 @@ apply_fits <- function(se,
   dt_all <- data.table::as.data.table(
     BumpyMatrix::unsplitAsDataFrame(asy, row.field = "row", column.field = "column")
   )
+  # BumpyMatrix may store slicing_col (e.g. normalization_type) as a factor;
+  # coerce to character so downstream comparisons and labels are always strings.
+  if (slice_col %in% names(dt_all) && is.factor(dt_all[[slice_col]])) {
+    dt_all[, (slice_col) := as.character(get(slice_col))]
+  }
   cell_list <- split(dt_all, by = c("row", "column"), sorted = FALSE)
 
   # Accumulate per-assay results: list(assay_name -> list of row data.tables)
@@ -388,7 +393,7 @@ apply_fits <- function(se,
     vals <- if (!is.null(slicing_values)) {
       slicing_values
     } else if (slice_col %in% names(cell_dt)) {
-      unique(cell_dt[[slice_col]])
+      as.character(unique(cell_dt[[slice_col]]))
     } else {
       NA_character_
     }
@@ -1164,6 +1169,12 @@ hss_fit_fn <- function(avg_dt) {
     # profiles always supply a single slicing column.
     slice_col <- slicing_cols[1L]
 
+    # BumpyMatrix may store slicing columns (e.g. normalization_type) as factors.
+    # Coerce to character so subset comparisons and output labels are always strings.
+    if (slice_col %in% names(avg_dt) && is.factor(avg_dt[[slice_col]])) {
+      avg_dt[, (slice_col) := as.character(get(slice_col))]
+    }
+
     vals <- if (!is.null(slicing_values)) {
       slicing_values
     } else if (slice_col %in% names(avg_dt)) {
@@ -1286,6 +1297,14 @@ hss_fit_fn <- function(avg_dt) {
       row.field = row, column.field = col
     )
     existing_dt <- data.table::as.data.table(existing_df)
+
+    # BumpyMatrix may store character columns as factors; coerce key columns
+    # to character so rbindlist does not silently coerce new character values.
+    for (kc in upsert_key_cols) {
+      if (kc %in% names(existing_dt) && is.factor(existing_dt[[kc]])) {
+        existing_dt[, (kc) := as.character(get(kc))]
+      }
+    }
 
     # Ensure all key columns exist in existing data (fill with NA if absent)
     for (kc in upsert_key_cols) {

@@ -451,6 +451,19 @@ test_that("fit_drug_response_metrics uses GR priors for GR normalization", {
 })
 
 
+test_that("fit_drug_response_metrics handles factor normalization_type (regression: GDR-3352)", {
+  # Averaged assay stores normalization_type as a factor; reading [1] from a factor
+  # returns the integer level code, not the label. as.character() prevents this.
+  dt <- data.table::data.table(
+    Concentration = c(0.001, 0.01, 0.1, 1, 10),
+    x = c(0.95, 0.8, 0.5, 0.2, 0.1),
+    normalization_type = factor("GR", levels = c("RV", "GR"))
+  )
+  result <- fit_drug_response_metrics(dt)
+  expect_equal(result$normalization_type, "GR")
+})
+
+
 test_that("fit_drug_response_metrics_4p uses 4-param model (x_0 free)", {
   dt <- data.table::data.table(
     Concentration = c(0.001, 0.01, 0.1, 1, 10),
