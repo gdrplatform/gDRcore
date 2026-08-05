@@ -716,11 +716,11 @@ fit_drug_response_metrics_4p <- function(avg_dt, x_col = "x",
       # x_mean: model-predicted mean over observed range (matches logisticFit)
       x_mean_model <- .predict_mean(fit, min(conc), max(conc))
 
-      # x_AOC_range: model-predicted mean over standard range (matches logisticFit)
-      rc_lo <- max(range_conc[1], min(conc))
-      rc_hi <- min(range_conc[2], max(conc))
-      if (rc_lo < rc_hi) {
-        x_AOC_range <- 1 - .predict_mean(fit, rc_lo, rc_hi)
+      # x_AOC_range: model-predicted mean over full range_conc (matches logisticFit line 290)
+      # gDRutils::logisticFit integrates over [range_conc[1], range_conc[2]] without
+      # clamping to the observed concentration range — we must do the same for parity.
+      if (range_conc[1] < range_conc[2]) {
+        x_AOC_range <- 1 - .predict_mean(fit, range_conc[1], range_conc[2])
       } else {
         x_AOC_range <- 1 - x_mean_model
       }
