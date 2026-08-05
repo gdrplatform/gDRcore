@@ -47,6 +47,19 @@ test_synthetic_data <- function(original,
                 dt_reprocessed[, (masked_tag) := NULL]
               }
 
+              # BumpyMatrix serializes character columns (e.g. normalization_type,
+              # fit_source) as factors; coerce to character in both tables so that
+              # mode differences do not cause spurious test failures.
+              .coerce_factors <- function(dt) {
+                factor_cols <- names(dt)[sapply(dt, is.factor)]
+                for (col in factor_cols) {
+                  dt[, (col) := as.character(get(col))]
+                }
+                dt
+              }
+              dt_original    <- .coerce_factors(dt_original)
+              dt_reprocessed <- .coerce_factors(dt_reprocessed)
+
               data.table::setcolorder(dt_original, names(dt_reprocessed))
               data.table::setorderv(dt_original, names(dt_original))
               data.table::setorderv(dt_reprocessed, names(dt_reprocessed))
