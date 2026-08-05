@@ -588,7 +588,7 @@ fit_drug_response_metrics_4p <- function(avg_dt, x_col = "x",
     stop(sprintf("Column '%s' not found in avg_dt. Available: %s",
                  x_col, toString(names(avg_dt))))
   }
-  norm_type <- avg_dt$normalization_type[1]
+  norm_type <- as.character(avg_dt$normalization_type[1])
   conc_col <- gDRutils::get_env_identifiers("concentration")
   conc <- avg_dt[[conc_col]]
   x <- avg_dt[[x_col]]
@@ -1018,7 +1018,7 @@ apply_combo_scores <- function(se,
 #'
 #' @export
 bliss_fit_fn <- function(avg_dt) {
-  norm_type <- avg_dt$normalization_type[1]
+  norm_type <- as.character(avg_dt$normalization_type[1])
   conc1_col <- gDRutils::get_env_identifiers("concentration")
   conc2_col <- gDRutils::get_env_identifiers("concentration2")
 
@@ -1097,7 +1097,7 @@ bliss_fit_fn <- function(avg_dt) {
 #'
 #' @export
 hss_fit_fn <- function(avg_dt) {
-  norm_type <- avg_dt$normalization_type[1]
+  norm_type <- as.character(avg_dt$normalization_type[1])
   conc1_col <- gDRutils::get_env_identifiers("concentration")
   conc2_col <- gDRutils::get_env_identifiers("concentration2")
 
