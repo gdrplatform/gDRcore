@@ -287,8 +287,8 @@ test_that("apply_fit_to_se warns for missing response_metrics columns in fit_fn 
 test_that("apply_fit_to_se returns unchanged se when no triplets produce results", {
   # Use a normalization_type that does not exist in the data so all sub_dt
   # are empty and the function returns the SE unchanged.
-  result_se <- apply_fit_to_se(se_small, simple_fit_fn,
-    normalization_types = "NONEXISTENT", fit_source = "empty_test")
+  result_se <- suppressWarnings(apply_fit_to_se(se_small, simple_fit_fn,
+    normalization_types = "NONEXISTENT", fit_source = "empty_test"))
 
   # Metrics assay should be identical to the original (no new rows written)
   orig_metrics <- BumpyMatrix::unsplitAsDataFrame(
