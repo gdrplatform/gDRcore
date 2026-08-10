@@ -51,7 +51,7 @@ test_synthetic_data <- function(original,
               # fit_source) as factors; coerce to character in both tables so that
               # mode differences do not cause spurious test failures.
               .coerce_factors <- function(dt) {
-                factor_cols <- names(dt)[sapply(dt, is.factor)]
+                factor_cols <- names(dt)[vapply(dt, is.factor, logical(1L))]
                 for (col in factor_cols) {
                   dt[, (col) := as.character(get(col))]
                 }
