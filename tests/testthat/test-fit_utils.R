@@ -87,10 +87,8 @@ test_that("apply_fit_to_se iterates over all (drug x cell line x normalization_t
   # Each call received only one normalization_type value
   lapply(call_log, function(nt) expect_length(nt, 1L))
 
-  metrics_df <- BumpyMatrix::unsplitAsDataFrame(
-    SummarizedExperiment::assay(result_se, "Metrics"),
-    row.field = "row", column.field = "column"
-  )
+  metrics_df <- gDRutils::convert_se_assay_to_dt(result_se, "Metrics",
+    include_metadata = FALSE)
   new_rows <- metrics_df[metrics_df[["fit_source"]] == "test", ]
   # One row per norm_type per non-empty triplet
   expect_equal(
