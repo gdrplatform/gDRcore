@@ -218,7 +218,10 @@ apply_fit_to_se <- function(se,
     fit_source     = fit_source
   )
 
-  if (metrics_assay %in% SummarizedExperiment::assayNames(result)) {
+  # Warn only for the standard Metrics assay — custom assays (e.g. "musyc_params")
+  # intentionally use a different column schema and should not be checked here.
+  if (metrics_assay == "Metrics" &&
+      metrics_assay %in% SummarizedExperiment::assayNames(result)) {
     new_df <- BumpyMatrix::unsplitAsDataFrame(
       SummarizedExperiment::assay(result, metrics_assay),
       row.field = "row", column.field = "column"
