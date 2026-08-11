@@ -278,35 +278,6 @@ head(hill_df[, c("row", "column", "normalization_type",
 `xc50` is the capped version (capped at `capping_fold × max(Concentration)`)
 as reported in the native `"Metrics"` assay.
 
-## 4-parameter variant
-
-`fit_drug_response_metrics_4p()` uses a 4-parameter model (`drc::LL.4`,
-`x_0` fitted freely) for cases where the upper asymptote is not expected
-to be 1 — for example partial agonists or non-standard assay readouts.
-
-| Property | Value |
-|---|---|
-| Model | 4-parameter log-logistic (`drc::LL.4`, `x_0` free) |
-| `fit_type` value | `"DRC4pHillFitModel"` |
-| Use when | Upper asymptote deviates from 1 |
-
-```{r hill-4p}
-hill_4p_out <- apply_fit(
-  sa_se,
-  fit_fn = fit_drug_response_metrics_4p,
-  data_type = "single-agent",
-  output_assay = "custom_hill_4p",
-  fit_source = "hill_4p"
-)
-
-hill_4p_df <- BumpyMatrix::unsplitAsDataFrame(
-  assay(hill_4p_out, "custom_hill_4p"),
-  row.field = "row", column.field = "column"
-)
-# x_0 is now a fitted parameter, not fixed at 1
-head(hill_4p_df[, c("normalization_type", "x_0", "h", "r2", "fit_type")])
-```
-
 ---
 
 # summary_fn: cell-level aggregation
