@@ -602,7 +602,7 @@ fit_drug_response_metrics_4p <- function(avg_dt, x_col = "x",
   x <- avg_dt[[x_col]]
   x_std <- if ("x_std" %in% names(avg_dt)) avg_dt$x_std else rep(NA_real_, length(x))
 
-  keep <- !is.na(x) & !is.na(conc)
+  keep <- !is.na(x) & !is.na(conc) & conc != 0
   x_std <- x_std[keep]
   x <- x[keep]
   conc <- conc[keep]
