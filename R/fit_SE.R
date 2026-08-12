@@ -37,23 +37,66 @@ fit_SE <- function(se,
     )
   }
 
-  metric_cols <- gDRutils::get_header("response_metrics")
+  # Build a fit_fn closure that forwards all fit_SE parameters.
+  # slicing_values = curve_type filters to only the requested normalization types.
+  fit_fn <- function(avg_dt) {
+    fit_drug_response_metrics(
+      avg_dt,
+      capping_fold   = 5,
+      range_conc     = range_conc,
+      pcutoff        = pcutoff,
+      n_point_cutoff = n_point_cutoff,
+      force_fit      = force_fit,
+      cap            = cap
+    )
+  }
 
-  conc <- gDRutils::get_env_identifiers("concentration")
+  # slicing_cols: use nested_identifiers only when they extend beyond the default
+  # "normalization_type" (e.g. co-dilution adds "ratio"). For standard SA data
+  # the profile default ("normalization_type") is used.
+  default_nested <- get_default_nested_identifiers(se, data_model(data_type))
+  if (identical(nested_identifiers, default_nested)) {
+    slicing_cols <- NULL  # let apply_fit use the profile default (normalization_type)
+  } else {
+    slicing_cols <- nested_identifiers
+  }
 
-  se <- gDRutils::apply_bumpy_function(se = se,
-                                       FUN = fit_FUN,
-                                       req_assay_name = averaged_assay,
-                                       out_assay_name = metrics_assay,
-                                       metric_cols = metric_cols,
-                                       conc = conc,
-                                       nested_identifiers = nested_identifiers,
-                                       n_point_cutoff = n_point_cutoff,
-                                       range_conc = range_conc,
-                                       force_fit = force_fit,
-                                       pcutoff = pcutoff,
-                                       cap = cap,
-                                       curve_type = curve_type)
+  se <- apply_fit(
+    se = se,
+    fit_fn = fit_fn,
+    data_type = data_type,
+    slicing_cols = slicing_cols,
+    slicing_values = curve_type,
+    input_assay = averaged_assay,
+    output_assay = metrics_assay,
+    merge = "replace",
+    on_error = "warn",
+    fit_source = "gDR"
+  )
+
+  # Ensure the Metrics assay always exists after fitting, even when apply_fit
+  # returns the original SE without it (all-empty results scenario where
+  # apply_bumpy_function errors on dimnames mismatch).
+  if (!metrics_assay %in% SummarizedExperiment::assayNames(se)) {
+    # Build an empty BumpyDataFrameMatrix with the full Metrics column schema
+    # so that validate_SE() can verify normalization_type and fit_source are
+    # present even when no fits succeeded.
+    nr <- NROW(se)
+    nc <- NCOL(se)
+    metric_cols <- c(gDRutils::get_header("response_metrics"), "normalization_type", "fit_source")
+    empty_df <- S4Vectors::DataFrame(
+      matrix(character(0), nrow = 0, ncol = length(metric_cols)),
+      check.names = FALSE
+    )
+    names(empty_df) <- metric_cols
+    empty_bm <- BumpyMatrix::splitAsBumpyMatrix(
+      empty_df,
+      row    = rep(seq_len(nr), nc),
+      column = rep(seq_len(nc), each = nr)
+    )
+    dimnames(empty_bm) <- dimnames(se)
+    SummarizedExperiment::assay(se, metrics_assay, withDimnames = FALSE) <- empty_bm
+  }
 
   se <- gDRutils::set_SE_fit_parameters(se,
     value = list(
@@ -67,7 +110,7 @@ fit_SE <- function(se,
     se,
     value = list(
       date_processed = Sys.Date(),
-      session_info = utils::sessionInfo()
+      session_info   = utils::sessionInfo()
     )
   )
 

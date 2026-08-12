@@ -345,7 +345,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
   ml <- list()
   ml[[sa_name]] <- .get_default_single_agent_nested_identifiers(se)
   ml[[combo_name]] <- .get_default_combination_nested_identifiers(se)
-  ml[[tc_name]] <- .get_default_combination_nested_identifiers(se)
+  ml[[tc_name]] <- .get_default_time_course_nested_identifiers(se)
 
   if (is.null(data_model)) {
     ml
@@ -375,6 +375,24 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
     gDRutils::get_SE_identifiers(
       se = se,
       id_type = c("concentration", "concentration2"),
+      simplify = FALSE
+    )
+  }
+
+  as.character(unlist(identifiers))
+}
+
+#' @keywords utils
+.get_default_time_course_nested_identifiers <- function(se = NULL) {
+  identifiers <- if (is.null(se)) {
+    gDRutils::get_env_identifiers(
+      k = c("concentration", "duration"),
+      simplify = FALSE
+    )
+  } else {
+    gDRutils::get_SE_identifiers(
+      se = se,
+      id_type = c("concentration", "duration"),
       simplify = FALSE
     )
   }

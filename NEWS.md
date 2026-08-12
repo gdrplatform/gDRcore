@@ -1,8 +1,16 @@
-## gDRcore 1.11.7 - 2026-07-20
-* fix non-monotonic ("checkerboard") response on combo single-agent arms by using only the parallel fit
+## gDRcore 1.11.8 - 2026-08-05
+* add `apply_custom_fit()`, `apply_custom_fits()`, `bliss_fit_fn()`, `hss_fit_fn()`,
+  `apply_combo_scores()` and composable `apply_combo_*()` steps
+* add fit profile registry (`get_fit_profile()`, `register_fit_profile()`) with
+  `nested_cols` documenting BumpyMatrix row structure per experiment type
+* refactor `fit_SE()` and `fit_SE.combinations()` as wrappers around `apply_fit()`;
+  fix non-monotonic ("checkerboard") response on combo single-agent arms
 
-## gDRcore 1.11.6 - 2026-06-11
-* improve pipeline performance by removing redundant data copies, enabling parallel averaging, and vectorizing NA-filling
+## gDRcore 1.11.7 - 2026-07-29
+* add `apply_fit_to_se()` generic fit-function interface and `fit_drug_response_metrics()`
+  3-parameter Hill model matching `fit_SE()` output
+* improve pipeline performance by removing redundant data copies, enabling parallel
+  averaging, and vectorizing NA-filling
 
 ## gDRcore 1.11.5 - 2026-06-08
 * allow custom annotations in `merge_data` and `cleanup_metadata`

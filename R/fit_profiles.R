@@ -1,0 +1,162 @@
+####
+# Fit profile registry
+####
+#
+# Profiles define the default slicing behaviour for each experiment type.
+# They are loaded from inst/extdata/fit_profiles.json at package load time
+# and held in a package-local environment so users can extend them at runtime.
+#
+# Fields per profile:
+#   slicing_cols   — character vector; columns used to split each BumpyMatrix
+#                    cell into sub-experiments (e.g. "normalization_type")
+#   slicing_values — character vector or null; values to iterate; null = all
+#                    unique values found in each cell
+#   input_assay    — string; default source assay name
+#   description    — string; human-readable description (optional)
+#
+# Public API:
+#   get_fit_profiles()         — list all registered profiles
+#   get_fit_profile(name)      — retrieve one profile
+#   register_fit_profile(name, ...) — add or update a profile at runtime
+
+.fit_profile_env <- new.env(parent = emptyenv())
+
+#' @keywords internal
+.load_fit_profiles <- function() {
+  json_path <- system.file(
+    "extdata", "fit_profiles.json",
+    package = "gDRcore", mustWork = TRUE
+  )
+  # Use read_json; extract each field by numeric index to avoid partial
+  # matching on named lists. Field order must match fit_profiles.json keys:
+  # slicing_cols, slicing_values, input_assay, nested_cols, nested_cols_note, description
+  profiles <- jsonlite::read_json(json_path)
+  for (nm in names(profiles)) {
+    p <- profiles[[nm]]
+    field <- function(key) unlist(p[[which(names(p) == key)]])
+    sv_raw <- p[[which(names(p) == "slicing_values")]]
+    sv <- if (length(sv_raw) == 0L) NULL else unlist(sv_raw)
+    .fit_profile_env[[nm]] <- list(
+      slicing_cols      = field("slicing_cols"),
+      slicing_values    = sv,
+      input_assay       = field("input_assay"),
+      nested_cols       = field("nested_cols") %||% character(0),
+      nested_cols_note  = field("nested_cols_note") %||% "",
+      description       = field("description") %||% ""
+    )
+  }
+  invisible(NULL)
+}
+
+# Tiny helper — R has no built-in %||%
+`%||%` <- function(x, y) if (is.null(x)) y else x
+
+
+#' Get all registered fit profiles
+#'
+#' Returns the list of all experiment-type profiles used by
+#' \code{\link{apply_fit}} and \code{\link{apply_fits}} to resolve default
+#' slicing configuration.
+#'
+#' @return Named list of profile definitions. Each element contains
+#'   \code{slicing_cols}, \code{slicing_values}, \code{input_assay}, and
+#'   \code{description}.
+#'
+#' @examples
+#' get_fit_profiles()
+#'
+#' @export
+get_fit_profiles <- function() {
+  as.list(.fit_profile_env)
+}
+
+
+#' Get a single fit profile by name
+#'
+#' @param name string; profile name (e.g. \code{"single-agent"}).
+#'
+#' @return Named list with the following fields:
+#' \describe{
+#'   \item{\code{slicing_cols}}{Column(s) used to split each BumpyMatrix cell
+#'     into sub-experiments before calling \code{fit_fn} (e.g.
+#'     \code{"normalization_type"}).}
+#'   \item{\code{slicing_values}}{Values of \code{slicing_cols} to iterate;
+#'     \code{NULL} means all unique values found in each cell.}
+#'   \item{\code{input_assay}}{Default source assay name.}
+#'   \item{\code{nested_cols}}{Informational: the column(s) that index rows
+#'     \emph{inside} each BumpyMatrix cell (i.e., what \code{fit_fn}
+#'     receives as row structure).  Values are the canonical default
+#'     identifiers resolved by
+#'     \code{gDRutils::get_env_identifiers()} at package load — they may
+#'     differ if identifiers are customised at runtime.}
+#'   \item{\code{nested_cols_note}}{Human-readable note about how
+#'     \code{nested_cols} are resolved.}
+#'   \item{\code{description}}{Human-readable description of the profile.}
+#' }
+#'   Stops if the profile does not exist.
+#'
+#' @examples
+#' get_fit_profile("single-agent")
+#'
+#' @export
+get_fit_profile <- function(name) {
+  checkmate::assert_string(name)
+  p <- .fit_profile_env[[name]]
+  if (is.null(p)) {
+    stop(sprintf(
+      "Unknown fit profile '%s'. Available: %s",
+      name, toString(ls(.fit_profile_env))
+    ))
+  }
+  p
+}
+
+
+#' Register or update a fit profile
+#'
+#' Adds a new experiment-type profile or overwrites an existing one.
+#' The profile is available immediately in the current R session and is
+#' picked up by \code{\link{apply_fit}} and \code{\link{apply_fits}}.
+#'
+#' @param name string; unique profile identifier (e.g.
+#'   \code{"biochemical"}).
+#' @param slicing_cols character vector of column names used to split each
+#'   BumpyMatrix cell into sub-experiments.
+#' @param slicing_values character vector of values to iterate, or
+#'   \code{NULL} to iterate all unique values found in each cell.
+#' @param input_assay string; name of the default source assay.
+#' @param description string; human-readable description (optional).
+#'
+#' @return Invisibly returns the registered profile list.
+#'
+#' @examples
+#' register_fit_profile(
+#'   "biochemical",
+#'   slicing_cols   = "assay_type",
+#'   slicing_values = c("Ki", "IC50"),
+#'   input_assay    = "Biochemical",
+#'   description    = "Biochemical activity assay (Ki / IC50)"
+#' )
+#' get_fit_profile("biochemical")
+#'
+#' @export
+register_fit_profile <- function(name,
+                                 slicing_cols,
+                                 slicing_values = NULL,
+                                 input_assay,
+                                 description = "") {
+  checkmate::assert_string(name)
+  checkmate::assert_character(slicing_cols, min.len = 1L)
+  checkmate::assert_character(slicing_values, null.ok = TRUE, min.len = 1L)
+  checkmate::assert_string(input_assay)
+  checkmate::assert_string(description)
+
+  profile <- list(
+    slicing_cols   = slicing_cols,
+    slicing_values = slicing_values,
+    input_assay    = input_assay,
+    description    = description
+  )
+  .fit_profile_env[[name]] <- profile
+  invisible(profile)
+}
