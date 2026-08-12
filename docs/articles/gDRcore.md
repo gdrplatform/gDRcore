@@ -176,6 +176,111 @@ well as other data transformations, can be done using `gDRutils`. We
 encourage reading the `gDRutils` vignette to familiarize yourself with
 these functionalities.
 
+### Custom fitting
+
+The standard pipeline uses
+[`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
+with a fixed 4-parameter log-logistic model. If you need a different
+fitting approach — alternative models, Bayesian fits, or custom metrics
+— the
+[`apply_custom_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+family lets you plug in any fitting function without modifying the
+pipeline internals.
+
+#### apply_custom_fit() — generic interface
+
+[`apply_custom_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+is the primary entry point. It applies a user-supplied `fit_fn` to every
+(row × column × normalization_type) triplet in the input assay and
+persists results into any named output assay. Experiment type is
+declared via `data_type`, which resolves default slicing behaviour.
+
+``` r
+se <- mae[["single-agent"]]
+
+my_fit_fn <- function(avg_dt) {
+  list(
+    x_mean   = mean(avg_dt$x, na.rm = TRUE),
+    x_sd     = sd(avg_dt$x, na.rm = TRUE),
+    n_points = nrow(avg_dt)
+  )
+}
+
+# Results go into a custom-named assay — no collision with gDR native "Metrics"
+se_out <- apply_custom_fit(
+  se,
+  fit_fn       = my_fit_fn,
+  data_type    = "single-agent",
+  output_assay = "custom_summary",
+  fit_source   = "my_analysis"
+)
+assayNames(se_out)   # includes "custom_summary"
+```
+
+Multiple fit functions can be applied by chaining calls:
+
+``` r
+combo_se_out <- combo_se |>
+  apply_custom_fit(bliss_fit_fn, "combination",
+                   output_assay = "custom_bliss", fit_source = "bliss") |>
+  apply_custom_fit(hss_fit_fn,   "combination",
+                   output_assay = "custom_hss",   fit_source = "hss")
+```
+
+An optional `summary_fn` can aggregate across normalization types for a
+cell-level summary:
+
+``` r
+synergy_summary <- function(fit_dt) {
+  list(
+    mean_bliss_score = mean(fit_dt$bliss_score, na.rm = TRUE),
+    any_synergistic  = any(fit_dt$bliss_score > 0, na.rm = TRUE)
+  )
+}
+
+combo_se_out <- apply_custom_fit(
+  combo_se, bliss_fit_fn, "combination",
+  output_assay  = "custom_bliss",
+  summary_fn    = synergy_summary,
+  summary_assay = "custom_bliss_summary",
+  fit_source    = "bliss"
+)
+```
+
+#### apply_fit_to_se() — single-agent convenience wrapper
+
+[`apply_fit_to_se()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit_to_se.md)
+is a convenience wrapper for the single-agent case that writes into the
+standard Metrics assay:
+
+``` r
+se_out <- apply_fit_to_se(
+  mae[["single-agent"]],
+  fit_fn     = fit_drug_response_metrics,
+  fit_source = "hill_custom"
+)
+```
+
+#### Key features
+
+- **`merge = "merge"`** (default): new metrics coexist with existing
+  rows, keyed by `fit_source` + slicing column values. Calling twice
+  with the same `fit_source` is idempotent.
+- **`merge = "replace"`**: fully overwrites the output assay.
+- **`on_error = "warn"`** (default): failed cells emit a warning and are
+  skipped. Use `"stop"` to halt on the first error.
+- **Named output assays**: each `fit_fn` owns its own assay name — no
+  risk of overwriting gDR native assays (`"Metrics"`, `"scores"`,
+  `"excess"`, etc.).
+
+#### Reference implementations
+
+| Function                                                                                                      | Data type    | Output assay | What it computes                        |
+|---------------------------------------------------------------------------------------------------------------|--------------|--------------|-----------------------------------------|
+| [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.md) | single-agent | any          | 4-parameter Hill fit (mirrors `fit_SE`) |
+| [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md)                           | combination  | any          | Bliss independence score and excess     |
+| [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md)                               | combination  | any          | Highest Single Agent score and excess   |
+
 ## SessionInfo
 
 ``` r
@@ -201,7 +306,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] gDRcore_1.11.7     gDRtestData_1.10.0 BiocStyle_2.40.0  
+#> [1] gDRcore_1.11.8     gDRtestData_1.10.0 BiocStyle_2.40.0  
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
@@ -239,7 +344,7 @@ sessionInfo()
 #> [65] systemfonts_1.3.2           testthat_3.3.2             
 #> [67] jquerylib_0.1.4             rematch_2.0.0              
 #> [69] glue_1.8.1                  pkgdown_2.2.1              
-#> [71] codetools_0.2-20            stringi_1.8.7              
+#> [71] codetools_0.2-20            stringi_1.8.9              
 #> [73] futile.logger_1.4.9         GenomicRanges_1.64.0       
 #> [75] tibble_3.3.1                pillar_1.11.1              
 #> [77] htmltools_0.5.9             Seqinfo_1.2.0              

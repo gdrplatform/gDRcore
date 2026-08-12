@@ -127,3 +127,34 @@ fit the processed data (fit_SE).
 
 - [`test_synthetic_data()`](https://gdrplatform.github.io/gDRcore/reference/test_synthetic_data.md)
   : Testing synthetic data form gDRtestData package
+
+## Custom fit interface
+
+Generic interface for applying custom fit functions to
+SummarizedExperiment objects, and reference implementations for drug
+response metrics and combination synergy scoring.
+
+- [`apply_fit_to_se()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit_to_se.md)
+  : apply_fit_to_se
+- [`apply_combo_scores()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.md)
+  : apply_combo_scores
+- [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.md)
+  : fit_drug_response_metrics
+- [`fit_drug_response_metrics_4p()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics_4p.md)
+  : fit_drug_response_metrics_4p
+- [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md)
+  : bliss_fit_fn
+- [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md)
+  : hss_fit_fn
+
+## Fit profile registry
+
+Register and retrieve fit profiles that define slicing behaviour for
+each experiment type.
+
+- [`get_fit_profiles()`](https://gdrplatform.github.io/gDRcore/reference/get_fit_profiles.md)
+  : Get all registered fit profiles
+- [`get_fit_profile()`](https://gdrplatform.github.io/gDRcore/reference/get_fit_profile.md)
+  : Get a single fit profile by name
+- [`register_fit_profile()`](https://gdrplatform.github.io/gDRcore/reference/register_fit_profile.md)
+  : Register or update a fit profile

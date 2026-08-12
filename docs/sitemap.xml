@@ -1,6 +1,7 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://gdrplatform.github.io/gDRcore/404.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/PULL_REQUEST_TEMPLATE.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/articles/custom-fitting.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/articles/gDR-annotation.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/articles/gDR-data-model.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/articles/gDRcore.html</loc></url>
@@ -15,8 +16,13 @@
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/annotate_mae_with_drug.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/annotate_se_with_cell_line.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/annotate_se_with_drug.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/apply_fit.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/apply_fit_to_se.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/apply_fits.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/assert_cell_line_annotation.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/assert_drug_annotation.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/calculate_GR_value.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/calculate_excess.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.html</loc></url>
@@ -28,9 +34,14 @@
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/data_model.data.table.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/data_model.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/do_skip_step.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-apply_summary_fn.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-get_untreated_tag_count.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-make_fit_wrapper.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-map_references.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-persist_assay.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics_4p.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/gDRcore-package.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/generateCodilution.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/generateCodilutionSmall.html</loc></url>
@@ -50,10 +61,13 @@
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/get_default_nested_identifiers.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/get_drug_annotation.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/get_drug_annotation_from_dt.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/get_fit_profile.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/get_fit_profiles.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/get_mae_from_intermediate_data.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/get_pipeline_steps.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/get_relevant_ids.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/grr_matches.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/identify_data_type.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/identify_keys.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/index.html</loc></url>
@@ -68,6 +82,7 @@
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/prepare_input.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/process_perturbations.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/read_intermediate_data.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/register_fit_profile.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/replace_conc_with_standardized_conc.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/save_intermediate_data.html</loc></url>

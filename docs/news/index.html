@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,7 +19,8 @@
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/gDR-annotation.html">gDR annotation</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/custom-fitting.html">Custom fitting with apply_fit()</a></li>
+    <li><a class="dropdown-item" href="../articles/gDR-annotation.html">gDR annotation</a></li>
     <li><a class="dropdown-item" href="../articles/gDR-data-model.html">gDR -- data model</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -39,12 +40,15 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.11.7" id="gdrcore-1117---2026-07-20">gDRcore 1.11.7 - 2026-07-20<a class="anchor" aria-label="anchor" href="#gdrcore-1117---2026-07-20"></a></h2>
-<ul><li>fix non-monotonic (“checkerboard”) response on combo single-agent arms by using only the parallel fit</li>
+<h2 class="pkg-version" data-toc-text="1.11.8" id="gdrcore-1118---2026-08-05">gDRcore 1.11.8 - 2026-08-05<a class="anchor" aria-label="anchor" href="#gdrcore-1118---2026-08-05"></a></h2>
+<ul><li>add <code><a href="../reference/apply_fit.html">apply_custom_fit()</a></code>, <code><a href="../reference/apply_fits.html">apply_custom_fits()</a></code>, <code><a href="../reference/bliss_fit_fn.html">bliss_fit_fn()</a></code>, <code><a href="../reference/hss_fit_fn.html">hss_fit_fn()</a></code>, <code><a href="../reference/apply_combo_scores.html">apply_combo_scores()</a></code> and composable <code>apply_combo_*()</code> steps</li>
+<li>add fit profile registry (<code><a href="../reference/get_fit_profile.html">get_fit_profile()</a></code>, <code><a href="../reference/register_fit_profile.html">register_fit_profile()</a></code>) with <code>nested_cols</code> documenting BumpyMatrix row structure per experiment type</li>
+<li>refactor <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code> and <code><a href="../reference/fit_SE.combinations.html">fit_SE.combinations()</a></code> as wrappers around <code><a href="../reference/apply_fit.html">apply_fit()</a></code>; fix non-monotonic (“checkerboard”) response on combo single-agent arms</li>
 </ul></div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.11.6" id="gdrcore-1116---2026-06-11">gDRcore 1.11.6 - 2026-06-11<a class="anchor" aria-label="anchor" href="#gdrcore-1116---2026-06-11"></a></h2>
-<ul><li>improve pipeline performance by removing redundant data copies, enabling parallel averaging, and vectorizing NA-filling</li>
+<h2 class="pkg-version" data-toc-text="1.11.7" id="gdrcore-1117---2026-07-29">gDRcore 1.11.7 - 2026-07-29<a class="anchor" aria-label="anchor" href="#gdrcore-1117---2026-07-29"></a></h2>
+<ul><li>add <code><a href="../reference/apply_fit_to_se.html">apply_fit_to_se()</a></code> generic fit-function interface and <code><a href="../reference/fit_drug_response_metrics.html">fit_drug_response_metrics()</a></code> 3-parameter Hill model matching <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code> output</li>
+<li>improve pipeline performance by removing redundant data copies, enabling parallel averaging, and vectorizing NA-filling</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.11.5" id="gdrcore-1115---2026-06-08">gDRcore 1.11.5 - 2026-06-08<a class="anchor" aria-label="anchor" href="#gdrcore-1115---2026-06-08"></a></h2>

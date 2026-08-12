@@ -305,13 +305,13 @@ l_tbl <- gDRimport::load_data(
   df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
-#> INFO [2026-08-04 10:27:24] Manifest loaded successfully
-#> INFO [2026-08-04 10:27:24] Reading Template_7daytreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-04 10:27:24] Reading Template_Untreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-04 10:27:24] Loading Template_7daytreated.xlsx
-#> INFO [2026-08-04 10:27:24] Loading Template_Untreated.xlsx
-#> INFO [2026-08-04 10:27:24] Templates loaded successfully!
-#> INFO [2026-08-04 10:27:24] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-12 11:39:25] Manifest loaded successfully
+#> INFO [2026-08-12 11:39:25] Reading Template_7daytreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-12 11:39:25] Reading Template_Untreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-12 11:39:25] Loading Template_7daytreated.xlsx
+#> INFO [2026-08-12 11:39:25] Loading Template_Untreated.xlsx
+#> INFO [2026-08-12 11:39:25] Templates loaded successfully!
+#> INFO [2026-08-12 11:39:26] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -338,14 +338,14 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-04 10:27:25] Plate 201904190a read; 384 wells
-#> INFO [2026-08-04 10:27:25] Plate 201904190b read; 384 wells
-#> INFO [2026-08-04 10:27:25] Plate 201904190c read; 384 wells
-#> INFO [2026-08-04 10:27:25] Plate 201904190d read; 384 wells
-#> INFO [2026-08-04 10:27:25] Plate 201904190e read; 384 wells
-#> INFO [2026-08-04 10:27:25] Plate 201904190f read; 384 wells
-#> INFO [2026-08-04 10:27:25] File done
-#> INFO [2026-08-04 10:27:25] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-12 11:39:26] Plate 201904190a read; 384 wells
+#> INFO [2026-08-12 11:39:26] Plate 201904190b read; 384 wells
+#> INFO [2026-08-12 11:39:26] Plate 201904190c read; 384 wells
+#> INFO [2026-08-12 11:39:26] Plate 201904190d read; 384 wells
+#> INFO [2026-08-12 11:39:26] Plate 201904190e read; 384 wells
+#> INFO [2026-08-12 11:39:26] Plate 201904190f read; 384 wells
+#> INFO [2026-08-12 11:39:26] File done
+#> INFO [2026-08-12 11:39:26] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -372,21 +372,21 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-04 10:27:25] Plate 201904197a read; 384 wells
-#> INFO [2026-08-04 10:27:25] Plate 201904197b read; 384 wells
-#> INFO [2026-08-04 10:27:25] Plate 201904197c read; 384 wells
-#> INFO [2026-08-04 10:27:25] Plate 201904197d read; 384 wells
-#> INFO [2026-08-04 10:27:25] Plate 201904197e read; 384 wells
-#> INFO [2026-08-04 10:27:25] Plate 201904197f read; 384 wells
-#> INFO [2026-08-04 10:27:25] File done
+#> INFO [2026-08-12 11:39:26] Plate 201904197a read; 384 wells
+#> INFO [2026-08-12 11:39:26] Plate 201904197b read; 384 wells
+#> INFO [2026-08-12 11:39:26] Plate 201904197c read; 384 wells
+#> INFO [2026-08-12 11:39:26] Plate 201904197d read; 384 wells
+#> INFO [2026-08-12 11:39:26] Plate 201904197e read; 384 wells
+#> INFO [2026-08-12 11:39:26] Plate 201904197f read; 384 wells
+#> INFO [2026-08-12 11:39:26] File done
 imported_data <- merge_data(
   l_tbl$manifest,
   l_tbl$treatments,
   l_tbl$data
 )
-#> INFO [2026-08-04 10:27:25] Merging data
-#> INFO [2026-08-04 10:27:25] Merging the metadata (manifest and treatment files)
-#> WARN [2026-08-04 10:27:25] 4608 well loaded, 768 wells discarded for lack of annotation,
+#> INFO [2026-08-12 11:39:26] Merging data
+#> INFO [2026-08-12 11:39:26] Merging the metadata (manifest and treatment files)
+#> WARN [2026-08-12 11:39:26] 4608 well loaded, 768 wells discarded for lack of annotation,
 #>     3840 data point selected
 
 se <- purrr::quietly(create_SE)(imported_data, data_type = "single-agent")
@@ -398,13 +398,13 @@ l_tbl <- gDRimport::load_data(
   df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
-#> INFO [2026-08-04 10:27:25] Manifest loaded successfully
-#> INFO [2026-08-04 10:27:25] Reading Template_7daytreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-04 10:27:25] Reading Template_Untreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-04 10:27:25] Loading Template_7daytreated.xlsx
-#> INFO [2026-08-04 10:27:25] Loading Template_Untreated.xlsx
-#> INFO [2026-08-04 10:27:25] Templates loaded successfully!
-#> INFO [2026-08-04 10:27:25] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-12 11:39:26] Manifest loaded successfully
+#> INFO [2026-08-12 11:39:26] Reading Template_7daytreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-12 11:39:26] Reading Template_Untreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-12 11:39:26] Loading Template_7daytreated.xlsx
+#> INFO [2026-08-12 11:39:26] Loading Template_Untreated.xlsx
+#> INFO [2026-08-12 11:39:26] Templates loaded successfully!
+#> INFO [2026-08-12 11:39:26] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -431,14 +431,14 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-04 10:27:26] Plate 201904190a read; 384 wells
-#> INFO [2026-08-04 10:27:26] Plate 201904190b read; 384 wells
-#> INFO [2026-08-04 10:27:26] Plate 201904190c read; 384 wells
-#> INFO [2026-08-04 10:27:26] Plate 201904190d read; 384 wells
-#> INFO [2026-08-04 10:27:26] Plate 201904190e read; 384 wells
-#> INFO [2026-08-04 10:27:26] Plate 201904190f read; 384 wells
-#> INFO [2026-08-04 10:27:26] File done
-#> INFO [2026-08-04 10:27:26] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-12 11:39:26] Plate 201904190a read; 384 wells
+#> INFO [2026-08-12 11:39:27] Plate 201904190b read; 384 wells
+#> INFO [2026-08-12 11:39:27] Plate 201904190c read; 384 wells
+#> INFO [2026-08-12 11:39:27] Plate 201904190d read; 384 wells
+#> INFO [2026-08-12 11:39:27] Plate 201904190e read; 384 wells
+#> INFO [2026-08-12 11:39:27] Plate 201904190f read; 384 wells
+#> INFO [2026-08-12 11:39:27] File done
+#> INFO [2026-08-12 11:39:27] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -465,21 +465,21 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-04 10:27:26] Plate 201904197a read; 384 wells
-#> INFO [2026-08-04 10:27:26] Plate 201904197b read; 384 wells
-#> INFO [2026-08-04 10:27:26] Plate 201904197c read; 384 wells
-#> INFO [2026-08-04 10:27:26] Plate 201904197d read; 384 wells
-#> INFO [2026-08-04 10:27:26] Plate 201904197e read; 384 wells
-#> INFO [2026-08-04 10:27:26] Plate 201904197f read; 384 wells
-#> INFO [2026-08-04 10:27:26] File done
+#> INFO [2026-08-12 11:39:27] Plate 201904197a read; 384 wells
+#> INFO [2026-08-12 11:39:27] Plate 201904197b read; 384 wells
+#> INFO [2026-08-12 11:39:27] Plate 201904197c read; 384 wells
+#> INFO [2026-08-12 11:39:27] Plate 201904197d read; 384 wells
+#> INFO [2026-08-12 11:39:27] Plate 201904197e read; 384 wells
+#> INFO [2026-08-12 11:39:27] Plate 201904197f read; 384 wells
+#> INFO [2026-08-12 11:39:27] File done
 imported_data <- merge_data(
   l_tbl$manifest,
   l_tbl$treatments,
   l_tbl$data
 )
-#> INFO [2026-08-04 10:27:26] Merging data
-#> INFO [2026-08-04 10:27:26] Merging the metadata (manifest and treatment files)
-#> WARN [2026-08-04 10:27:26] 4608 well loaded, 768 wells discarded for lack of annotation,
+#> INFO [2026-08-12 11:39:27] Merging data
+#> INFO [2026-08-12 11:39:27] Merging the metadata (manifest and treatment files)
+#> WARN [2026-08-12 11:39:27] 4608 well loaded, 768 wells discarded for lack of annotation,
 #>     3840 data point selected
 
 inl <- prepare_input(imported_data)
@@ -511,13 +511,13 @@ l_tbl <- gDRimport::load_data(
   df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
-#> INFO [2026-08-04 10:27:27] Manifest loaded successfully
-#> INFO [2026-08-04 10:27:27] Reading Template_7daytreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-04 10:27:27] Reading Template_Untreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-04 10:27:27] Loading Template_7daytreated.xlsx
-#> INFO [2026-08-04 10:27:27] Loading Template_Untreated.xlsx
-#> INFO [2026-08-04 10:27:27] Templates loaded successfully!
-#> INFO [2026-08-04 10:27:27] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-12 11:39:27] Manifest loaded successfully
+#> INFO [2026-08-12 11:39:27] Reading Template_7daytreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-12 11:39:27] Reading Template_Untreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-12 11:39:27] Loading Template_7daytreated.xlsx
+#> INFO [2026-08-12 11:39:27] Loading Template_Untreated.xlsx
+#> INFO [2026-08-12 11:39:27] Templates loaded successfully!
+#> INFO [2026-08-12 11:39:27] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -544,14 +544,14 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-04 10:27:27] Plate 201904190a read; 384 wells
-#> INFO [2026-08-04 10:27:27] Plate 201904190b read; 384 wells
-#> INFO [2026-08-04 10:27:27] Plate 201904190c read; 384 wells
-#> INFO [2026-08-04 10:27:27] Plate 201904190d read; 384 wells
-#> INFO [2026-08-04 10:27:27] Plate 201904190e read; 384 wells
-#> INFO [2026-08-04 10:27:27] Plate 201904190f read; 384 wells
-#> INFO [2026-08-04 10:27:27] File done
-#> INFO [2026-08-04 10:27:27] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-12 11:39:28] Plate 201904190a read; 384 wells
+#> INFO [2026-08-12 11:39:28] Plate 201904190b read; 384 wells
+#> INFO [2026-08-12 11:39:28] Plate 201904190c read; 384 wells
+#> INFO [2026-08-12 11:39:28] Plate 201904190d read; 384 wells
+#> INFO [2026-08-12 11:39:28] Plate 201904190e read; 384 wells
+#> INFO [2026-08-12 11:39:28] Plate 201904190f read; 384 wells
+#> INFO [2026-08-12 11:39:28] File done
+#> INFO [2026-08-12 11:39:28] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -578,21 +578,21 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-04 10:27:27] Plate 201904197a read; 384 wells
-#> INFO [2026-08-04 10:27:27] Plate 201904197b read; 384 wells
-#> INFO [2026-08-04 10:27:27] Plate 201904197c read; 384 wells
-#> INFO [2026-08-04 10:27:27] Plate 201904197d read; 384 wells
-#> INFO [2026-08-04 10:27:27] Plate 201904197e read; 384 wells
-#> INFO [2026-08-04 10:27:27] Plate 201904197f read; 384 wells
-#> INFO [2026-08-04 10:27:27] File done
+#> INFO [2026-08-12 11:39:28] Plate 201904197a read; 384 wells
+#> INFO [2026-08-12 11:39:28] Plate 201904197b read; 384 wells
+#> INFO [2026-08-12 11:39:28] Plate 201904197c read; 384 wells
+#> INFO [2026-08-12 11:39:28] Plate 201904197d read; 384 wells
+#> INFO [2026-08-12 11:39:28] Plate 201904197e read; 384 wells
+#> INFO [2026-08-12 11:39:28] Plate 201904197f read; 384 wells
+#> INFO [2026-08-12 11:39:28] File done
 imported_data <- merge_data(
   l_tbl$manifest,
   l_tbl$treatments,
   l_tbl$data
 )
-#> INFO [2026-08-04 10:27:27] Merging data
-#> INFO [2026-08-04 10:27:27] Merging the metadata (manifest and treatment files)
-#> WARN [2026-08-04 10:27:27] 4608 well loaded, 768 wells discarded for lack of annotation,
+#> INFO [2026-08-12 11:39:28] Merging data
+#> INFO [2026-08-12 11:39:28] Merging the metadata (manifest and treatment files)
+#> WARN [2026-08-12 11:39:28] 4608 well loaded, 768 wells discarded for lack of annotation,
 #>     3840 data point selected
 runDrugResponseProcessingPipeline(
   imported_data,
@@ -757,42 +757,26 @@ runDrugResponseProcessingPipeline(
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> NaNs produced
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> overriding original x_0 argument '1' with '1.08355555555556' (fit is not statistically significant (p=1.00), setting constant fit)
-#> overriding original x_0 argument '1' with '1.1' (only 1 normalized value detected, setting constant fit)
-#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> overriding original x_0 argument '1' with '1.09306666666667' (fit is not statistically significant (p=1.00), setting constant fit)
-#> overriding original x_0 argument '1' with '1.1' (only 1 normalized value detected, setting constant fit)
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> NaNs produced
-#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> A MultiAssayExperiment object of 2 listed
 #>  experiments with user-defined names and respective classes.
 #>  Containing an ExperimentList class object of length 2:

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,7 +19,8 @@
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/gDR-annotation.html">gDR annotation</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/custom-fitting.html">Custom fitting with apply_fit()</a></li>
+    <li><a class="dropdown-item" href="../articles/gDR-annotation.html">gDR annotation</a></li>
     <li><a class="dropdown-item" href="../articles/gDR-data-model.html">gDR -- data model</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -416,6 +417,87 @@
 
         </dt>
         <dd>Testing synthetic data form gDRtestData package</dd>
+      </dl></div><div class="section level2">
+      <h2 id="custom-fit-interface">Custom fit interface<a class="anchor" aria-label="anchor" href="#custom-fit-interface"></a></h2>
+
+      <div class="section-desc"><p>Generic interface for applying custom fit functions to SummarizedExperiment objects, and reference implementations for drug response metrics and combination synergy scoring.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="apply_fit_to_se.html">apply_fit_to_se()</a></code>
+
+        </dt>
+        <dd>apply_fit_to_se</dd>
+
+        <dt>
+
+          <code><a href="apply_combo_scores.html">apply_combo_scores()</a></code>
+
+        </dt>
+        <dd>apply_combo_scores</dd>
+
+        <dt>
+
+          <code><a href="fit_drug_response_metrics.html">fit_drug_response_metrics()</a></code>
+
+        </dt>
+        <dd>fit_drug_response_metrics</dd>
+
+        <dt>
+
+          <code><a href="fit_drug_response_metrics_4p.html">fit_drug_response_metrics_4p()</a></code>
+
+        </dt>
+        <dd>fit_drug_response_metrics_4p</dd>
+
+        <dt>
+
+          <code><a href="bliss_fit_fn.html">bliss_fit_fn()</a></code>
+
+        </dt>
+        <dd>bliss_fit_fn</dd>
+
+        <dt>
+
+          <code><a href="hss_fit_fn.html">hss_fit_fn()</a></code>
+
+        </dt>
+        <dd>hss_fit_fn</dd>
+      </dl></div><div class="section level2">
+      <h2 id="fit-profile-registry">Fit profile registry<a class="anchor" aria-label="anchor" href="#fit-profile-registry"></a></h2>
+
+      <div class="section-desc"><p>Register and retrieve fit profiles that define slicing behaviour for each experiment type.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="get_fit_profiles.html">get_fit_profiles()</a></code>
+
+        </dt>
+        <dd>Get all registered fit profiles</dd>
+
+        <dt>
+
+          <code><a href="get_fit_profile.html">get_fit_profile()</a></code>
+
+        </dt>
+        <dd>Get a single fit profile by name</dd>
+
+        <dt>
+
+          <code><a href="register_fit_profile.html">register_fit_profile()</a></code>
+
+        </dt>
+        <dd>Register or update a fit profile</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

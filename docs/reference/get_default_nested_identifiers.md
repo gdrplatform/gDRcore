@@ -40,6 +40,6 @@ get_default_nested_identifiers(data.table::data.table())
 #> [1] "Concentration"   "Concentration_2"
 #> 
 #> $`time-course`
-#> [1] "Concentration"   "Concentration_2"
+#> [1] "Concentration" "Duration"     
 #> 
 ```

@@ -31,12 +31,12 @@ Source:
 Czech B, Gladki A, Hafner M, Piatkowski P, Potocka N, Scigocki D, Smola
 J, Mocanu S, Kamianowski M, Vuong A (2026). *gDRcore: Processing
 functions and interface to process and analyze drug dose-response data*.
-R package version 1.11.7, <https://github.com/gdrplatform/gDRcore>.
+R package version 1.11.8, <https://github.com/gdrplatform/gDRcore>.
 
     @Manual{,
       title = {gDRcore: Processing functions and interface to process and analyze drug dose-response data},
       author = {Bartosz Czech and Arkadiusz Gladki and Marc Hafner and Pawel Piatkowski and Natalia Potocka and Dariusz Scigocki and Janina Smola and Sergiu Mocanu and Marcin Kamianowski and Allison Vuong},
       year = {2026},
-      note = {R package version 1.11.7},
+      note = {R package version 1.11.8},
       url = {https://github.com/gdrplatform/gDRcore},
     }

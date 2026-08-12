@@ -24,7 +24,6 @@ data.table with raw data
 ``` r
 mae <- gDRutils::get_synthetic_data("finalMAE_small")
 convert_mae_to_raw_data(mae)
-#> Loading required namespace: BumpyMatrix
 #>       Barcode Concentration ReadoutValue Gnumber DrugName drug_moa Duration
 #>        <char>         <num>        <num>  <char>   <char>   <char>    <num>
 #>    1: plate_1             0         95.7 vehicle  vehicle  vehicle       72
