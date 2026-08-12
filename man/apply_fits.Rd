@@ -8,7 +8,7 @@
 apply_fits(
   se,
   fit_fns,
-  data_type = c("single-agent", "combination", "time-course"),
+  data_type,
   slicing_cols = NULL,
   slicing_values = NULL,
   input_assay = NULL,
