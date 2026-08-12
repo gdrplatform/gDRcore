@@ -33,6 +33,17 @@ growth-rate data.}
 \item{range_conc}{numeric vector of length 2 specifying the concentration
 range used to compute \code{x_AOC_range}. Default \code{c(5e-3, 5)},
 matching the \code{fit_SE()} default.}
+
+\item{pcutoff}{numeric p-value cutoff for the fit. Default \code{0.05}.}
+
+\item{n_point_cutoff}{integer minimum number of concentration points required
+to attempt fitting. Default \code{4L}.}
+
+\item{force_fit}{logical; if \code{TRUE}, force fitting even when the number
+of points is below \code{n_point_cutoff}. Default \code{FALSE}.}
+
+\item{cap}{numeric; upper cap on \code{xc50} relative to the concentration
+range. Default \code{0.1}.}
 }
 \value{
 Named list of fit metrics.  \code{fit_type} will be
