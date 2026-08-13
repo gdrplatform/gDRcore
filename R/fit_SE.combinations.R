@@ -68,6 +68,7 @@ fit_SE.combinations <- function(se,
   #   Step 3:   smooth → excess
   #   Step 4:   Loewe CI → isobolograms + all_iso_points
   #   Step 5:   scores (read from excess for numerical identity)
+  excess_assay <- "excess"
   se <- apply_combo_sa_fits(
     se,
     series_identifiers = series_identifiers,
@@ -82,7 +83,7 @@ fit_SE.combinations <- function(se,
     normalization_types = normalization_types,
     averaged_assay = averaged_assay,
     metrics_assay = metrics_assay,
-    excess_assay = "excess"
+    excess_assay = excess_assay
   )
   se <- apply_combo_isobolograms(
     se,
@@ -98,7 +99,7 @@ fit_SE.combinations <- function(se,
     scores_assay = "scores",
     averaged_assay = averaged_assay,
     metrics_assay = metrics_assay,
-    excess_assay = "excess",
+    excess_assay = excess_assay,
     normalization_types = normalization_types,
     fit_source = "gDR"
   )
