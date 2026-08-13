@@ -179,22 +179,22 @@ test_that(".growth_dt_to_se GrowthRates cells contain NormalizedGrowthRate colum
 # ---------------------------------------------------------------------------
 
 test_that("fit_SE.timecourse returns a SummarizedExperiment with Metrics assay", {
-  se_fit <- fit_SE.timecourse(
+  se_fit <- suppressWarnings(fit_SE.timecourse(
     se_tc_small,
     periods          = periods_std,
     normalization_map = norm_map_std
-  )
+  ))
   expect_s4_class(se_fit, "SummarizedExperiment")
   expect_true("Metrics" %in% SummarizedExperiment::assayNames(se_fit))
 })
 
 
 test_that("fit_SE.timecourse Metrics contains expected fit columns", {
-  se_fit <- fit_SE.timecourse(
+  se_fit <- suppressWarnings(fit_SE.timecourse(
     se_tc_small,
     periods          = periods_std,
     normalization_map = norm_map_std
-  )
+  ))
   metrics_dt <- data.table::as.data.table(
     BumpyMatrix::unsplitAsDataFrame(
       SummarizedExperiment::assay(se_fit, "Metrics"),
@@ -209,22 +209,22 @@ test_that("fit_SE.timecourse Metrics contains expected fit columns", {
 
 
 test_that("fit_SE.timecourse columns = period names", {
-  se_fit <- fit_SE.timecourse(
+  se_fit <- suppressWarnings(fit_SE.timecourse(
     se_tc_small,
     periods          = periods_std,
     normalization_map = norm_map_std
-  )
+  ))
   expect_setequal(colnames(se_fit), names(periods_std))
 })
 
 
 test_that("fit_SE.timecourse: custom metrics_assay name is honoured", {
-  se_fit <- fit_SE.timecourse(
+  se_fit <- suppressWarnings(fit_SE.timecourse(
     se_tc_small,
     periods          = periods_std,
     normalization_map = norm_map_std,
     metrics_assay    = "TC_Metrics"
-  )
+  ))
   expect_true("TC_Metrics" %in% SummarizedExperiment::assayNames(se_fit))
   expect_false("Metrics" %in% SummarizedExperiment::assayNames(se_fit))
 })

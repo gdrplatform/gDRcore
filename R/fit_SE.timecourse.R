@@ -157,6 +157,7 @@ fit_SE.timecourse <- function(se,
 #' @return list with elements \code{drug} and \code{conc}, each a character
 #'   vector of resolved column names present in \code{x}.
 #' @keywords internal
+#' @noRd
 .resolve_partner_cols <- function(x) {
   ids_drug <- c("drug_name2", "drug_name3")
   ids_conc <- c("concentration2", "concentration3")
@@ -191,6 +192,7 @@ fit_SE.timecourse <- function(se,
 #'   \code{period}, \code{GrowthRate}, \code{sd_GrowthRate},
 #'   \code{NormalizedGrowthRate}, \code{normalization_type}.
 #' @keywords internal
+#' @noRd
 .compute_growth_rates <- function(se, periods, normalization_map, lfc_assay) {
 
   all_data <- gDRutils::convert_se_assay_to_dt(se, lfc_assay)
@@ -346,6 +348,7 @@ fit_SE.timecourse <- function(se,
 #' @param se original time-course SE (used only for column name resolution).
 #' @return \code{SummarizedExperiment}.
 #' @keywords internal
+#' @noRd
 .growth_dt_to_se <- function(growth_dt, se) {
 
   cl_col   <- gDRutils::get_env_identifiers("cellline_name")
