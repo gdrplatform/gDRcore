@@ -126,7 +126,7 @@ fit_SE.timecourse <- function(se,
   }
 
   # Each column of se_gr IS one period (the BumpyMatrix col dimension).
-  # Stage 2 uses the "time-course-metrics" profile (slicing by normalization_type="GR",
+  # Stage 2 uses the "time-course-metrics" profile (slicing by normalization_type="NGR",
   # input_assay="GrowthRates", nested_cols=["concentration"]).
   se_gr <- apply_fit(
     se             = se_gr,
@@ -146,6 +146,30 @@ fit_SE.timecourse <- function(se,
 ####
 # Internal helpers
 ####
+
+#' Resolve partner drug/concentration column names present in a data object
+#'
+#' Queries \code{gDRutils::get_env_identifiers()} for slots 2 and 3 and
+#' returns only those that actually appear in \code{names(x)}.
+#'
+#' @param x named object (\code{data.table}, \code{data.frame}, etc.) whose
+#'   column names are tested for presence.
+#' @return list with elements \code{drug} and \code{conc}, each a character
+#'   vector of resolved column names present in \code{x}.
+#' @keywords internal
+.resolve_partner_cols <- function(x) {
+  ids_drug <- c("drug_name2", "drug_name3")
+  ids_conc <- c("concentration2", "concentration3")
+  drug_cols <- unlist(lapply(ids_drug,
+    function(k) tryCatch(gDRutils::get_env_identifiers(k), error = function(e) NULL)))
+  conc_cols <- unlist(lapply(ids_conc,
+    function(k) tryCatch(gDRutils::get_env_identifiers(k), error = function(e) NULL)))
+  list(
+    drug = intersect(drug_cols, names(x)),
+    conc = intersect(conc_cols, names(x))
+  )
+}
+
 
 #' Compute per-period growth rates from a LogFoldChange SE
 #'
@@ -181,14 +205,9 @@ fit_SE.timecourse <- function(se,
   # Include every slot present in the data so that doublet (DrugName3=vehicle)
   # and triplet (DrugName3=RealDrug) combos are treated as distinct treatments
   # and not pooled together in the per-well lm or replicate aggregation.
-  partner_drug_ids  <- c("drug_name2",  "drug_name3")
-  partner_conc_ids  <- c("concentration2", "concentration3")
-  partner_drug_cols <- unlist(lapply(partner_drug_ids,
-                          function(k) tryCatch(gDRutils::get_env_identifiers(k),
-                                               error = function(e) NULL)))
-  partner_conc_cols <- unlist(lapply(partner_conc_ids,
-                          function(k) tryCatch(gDRutils::get_env_identifiers(k),
-                                               error = function(e) NULL)))
+  partner_cols      <- .resolve_partner_cols(all_data)
+  partner_drug_cols <- partner_cols$drug
+  partner_conc_cols <- partner_cols$conc
 
   # Well-level keys for lm grouping.
   # Include all partner drug/conc slots so SA and every combo arm
@@ -208,9 +227,10 @@ fit_SE.timecourse <- function(se,
     if (NROW(window) == 0L) {
       return(data.table::data.table())
     }
+    lm_formula <- stats::as.formula(paste(lfc_assay, "~", dur_col))
     rates <- window[,
       .(rate = if (.N >= 2L) {
-          stats::coef(stats::lm(LogFoldChange ~ Duration))[2L]
+          stats::coef(stats::lm(lm_formula, data = .SD))[2L]
         } else {
           NA_real_
         }),
@@ -333,16 +353,9 @@ fit_SE.timecourse <- function(se,
   conc_col <- gDRutils::get_env_identifiers("concentration")
 
   # Resolve all partner drug/conc slots (2, 3, ...) that exist in the data
-  partner_drug_ids  <- c("drug_name2",  "drug_name3")
-  partner_conc_ids  <- c("concentration2", "concentration3")
-  partner_drug_cols <- unlist(lapply(partner_drug_ids,
-                          function(k) tryCatch(gDRutils::get_env_identifiers(k),
-                                               error = function(e) NULL)))
-  partner_conc_cols <- unlist(lapply(partner_conc_ids,
-                          function(k) tryCatch(gDRutils::get_env_identifiers(k),
-                                               error = function(e) NULL)))
-  partner_drug_cols <- intersect(partner_drug_cols, names(growth_dt))
-  partner_conc_cols <- intersect(partner_conc_cols, names(growth_dt))
+  partner_cols      <- .resolve_partner_cols(growth_dt)
+  partner_drug_cols <- partner_cols$drug
+  partner_conc_cols <- partner_cols$conc
 
   # Exclude control (vehicle/untreated) and zero-concentration rows from fitting
   conc_gt0     <- growth_dt[[conc_col]] > 0
