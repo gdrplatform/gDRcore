@@ -85,7 +85,7 @@ test_that(".compute_growth_rates returns one row per (Drug, Conc, CellLine, peri
     se_tc_small, periods_std, norm_map_std, "LogFoldChange"
   )
   key_cols <- c("DrugName", "Concentration", "CellLineName", "period")
-  expect_equal(nrow(gr), data.table::uniqueN(gr, by = key_cols))
+  expect_equal(NROW(gr), data.table::uniqueN(gr, by = key_cols))
 })
 
 
@@ -135,7 +135,7 @@ test_that(".compute_growth_rates returns empty data.table when no rows in window
   gr <- gDRcore:::.compute_growth_rates(
     se_tc_small, empty_periods, empty_map, "LogFoldChange"
   )
-  expect_equal(nrow(gr), 0L)
+  expect_equal(NROW(gr), 0L)
 })
 
 
