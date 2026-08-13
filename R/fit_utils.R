@@ -1440,7 +1440,7 @@ apply_combo_scores <- function(se,
     )
     scores_dt <- data.table::rbindlist(score_rows)
     se <- .persist_assay(se, scores_dt, "replace", scores_assay, "row", "column",
-                         upsert_key = c("fit_source", "normalization_type"))
+                         upsert_key_cols = c("fit_source", "normalization_type"))
     return(se)
   }
 
@@ -1557,7 +1557,7 @@ apply_combo_scores <- function(se,
   if (idx > 0L) {
     scores_dt <- data.table::rbindlist(score_rows[seq_len(idx)])
     se <- .persist_assay(se, scores_dt, "replace", scores_assay, "row", "column",
-                         upsert_key = c("fit_source", "normalization_type"))
+                         upsert_key_cols = c("fit_source", "normalization_type"))
   }
   se
 }
