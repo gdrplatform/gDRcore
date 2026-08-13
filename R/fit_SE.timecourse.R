@@ -266,12 +266,12 @@ fit_SE.timecourse <- function(se,
   is_primary_ctrl <- av_rates[[drug_col]] %in% untreated_tag |
                      av_rates[[conc_col]] == 0
   # Exclude rows that have any real partner drug in any slot (doublet or triplet)
-  has_partner <- Reduce("|", lapply(partner_drug_cols, function(dc) {
-    if (!dc %in% names(av_rates)) return(rep(FALSE, NROW(av_rates)))
-    !is.na(av_rates[[dc]]) & !av_rates[[dc]] %in% untreated_tag
-  }), accumulate = FALSE)
-  if (is.logical(has_partner) && length(has_partner) == 0L) {
-    has_partner <- rep(FALSE, NROW(av_rates))
+  has_partner <- if (length(partner_drug_cols) == 0L) {
+    rep(FALSE, NROW(av_rates))
+  } else {
+    Reduce("|", lapply(partner_drug_cols, function(dc) {
+      !is.na(av_rates[[dc]]) & !av_rates[[dc]] %in% untreated_tag
+    }))
   }
   is_dmso <- is_primary_ctrl & !has_partner
 
