@@ -63,7 +63,7 @@ fit_SE.combinations <- function(se,
     )
   }
 
-  # Delegate to composable apply_combo_*() steps (GDR-3486):
+  # Delegate to composable apply_combo_*() steps:
   #   Step 1+2: SA fits → Metrics
   #   Step 3:   smooth → excess
   #   Step 4:   Loewe CI → isobolograms + all_iso_points
