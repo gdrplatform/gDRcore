@@ -70,37 +70,37 @@ fit_SE.combinations <- function(se,
   #   Step 5:   scores (read from excess for numerical identity)
   se <- apply_combo_sa_fits(
     se,
-    series_identifiers  = series_identifiers,
+    series_identifiers = series_identifiers,
     normalization_types = normalization_types,
-    averaged_assay      = averaged_assay,
-    metrics_assay       = metrics_assay,
-    fit_source          = "gDR"
+    averaged_assay = averaged_assay,
+    metrics_assay = metrics_assay,
+    fit_source = "gDR"
   )
   se <- apply_combo_excess(
     se,
-    series_identifiers  = series_identifiers,
+    series_identifiers = series_identifiers,
     normalization_types = normalization_types,
-    averaged_assay      = averaged_assay,
-    metrics_assay       = metrics_assay,
-    excess_assay        = "excess"
+    averaged_assay = averaged_assay,
+    metrics_assay = metrics_assay,
+    excess_assay = "excess"
   )
   se <- apply_combo_isobolograms(
     se,
-    series_identifiers  = series_identifiers,
+    series_identifiers = series_identifiers,
     normalization_types = normalization_types,
-    averaged_assay      = averaged_assay,
-    metrics_assay       = metrics_assay,
-    isobolograms_assay  = "isobolograms",
-    iso_points_assay    = "all_iso_points"
+    averaged_assay = averaged_assay,
+    metrics_assay = metrics_assay,
+    isobolograms_assay = "isobolograms",
+    iso_points_assay = "all_iso_points"
   )
   se <- apply_combo_scores(
     se,
-    scores_assay        = "scores",
-    averaged_assay      = averaged_assay,
-    metrics_assay       = metrics_assay,
-    excess_assay        = "excess",
+    scores_assay = "scores",
+    averaged_assay = averaged_assay,
+    metrics_assay = metrics_assay,
+    excess_assay = "excess",
     normalization_types = normalization_types,
-    fit_source          = "gDR"
+    fit_source = "gDR"
   )
   se
 }
