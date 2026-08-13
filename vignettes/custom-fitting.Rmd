@@ -571,6 +571,72 @@ unique(rv_df$normalization_type)
 
 ***
 
+# Time-course data: `fit_SE.timecourse()`
+
+Live-cell imaging experiments (e.g. Incucyte) produce per-well cell counts at
+multiple time points rather than endpoint readouts.  The standard `fit_SE()`
+pipeline is not appropriate for this layout.  `fit_SE.timecourse()` provides a
+dedicated two-stage pipeline:
+
+| Stage | What it does | Output |
+|---|---|---|
+| 1 | `lm(LogFoldChange ~ Duration)` per well per time window → mean growth rate (doublings/day) across replicates | `GrowthRates` assay |
+| 2 | Logistic Hill fit on `NormalizedGrowthRate ~ log10(Concentration)` per `(Drug, CellLine, period)` | `Metrics` assay |
+
+## Inputs
+
+`fit_SE.timecourse()` expects a `SummarizedExperiment` with a `LogFoldChange`
+assay — the output of `normalize_SE(se, data_type = "time-course")`:
+
+```{r timecourse-setup, eval = FALSE}
+# periods: named list of c(start_hour, end_hour) windows
+periods <- list(
+  early = c(0, 48),
+  late  = c(48, 96)
+)
+
+# normalization_map: per-period DMSO reference
+#   "None"  → keep raw growth rate (doublings/day)
+#   "early" → divide by DMSO rate from the "early" period
+norm_map <- c(early = "None", late = "early")
+
+se_fit <- fit_SE.timecourse(
+  se_tc,                          # SE with LogFoldChange assay
+  periods           = periods,
+  normalization_map = norm_map
+)
+```
+
+## Output structure
+
+The result is a `SummarizedExperiment` where **columns = period names**:
+
+```{r timecourse-output, eval = FALSE}
+# One column per period
+colnames(se_fit)   # c("early", "late")
+
+# Metrics assay: fitted parameters per (Drug × CellLine × period)
+metrics_dt <- gDRutils::convert_se_assay_to_dt(se_fit, "Metrics")
+head(metrics_dt[, c("DrugName", "CellLineName", "ec50", "xc50", "r2",
+                     "x_inf", "x_0", "N_conc")])
+```
+
+Each row is one dose-response curve for a `(Drug, CellLine, period)`
+combination, with the same fit columns as `fit_SE()`: `ec50`, `xc50`, `h`,
+`r2`, `x_mean`, `x_AOC`, `N_conc`, `fit_type`, etc.
+
+## Key design notes
+
+- **`normalization_type = "NGR"`** (NormalizedGrowthRate) — distinct from
+  `"GR"` (GR value) and `"RV"` (Relative Viability) used in single-agent
+  screens.  Time-course data has no RV/GR split.
+- **All partner-drug slots in the row key** — each combination arm at each
+  partner concentration gets its own dose-response curve.
+- **`untreated_tag` from `gDRutils`** — DMSO detection uses
+  `get_env_identifiers("untreated_tag")` rather than hardcoded strings.
+
+***
+
 # Quick reference
 
 ## Function signatures
