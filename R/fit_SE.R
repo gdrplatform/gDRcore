@@ -78,12 +78,19 @@ fit_SE <- function(se,
   # returns the original SE without it (all-empty results scenario where
   # apply_bumpy_function errors on dimnames mismatch).
   if (!metrics_assay %in% SummarizedExperiment::assayNames(se)) {
-    # Build an empty BumpyDataFrameMatrix with the correct SE dimensions so
-    # that downstream validate_SE() finds the assay even when no fits succeeded.
+    # Build an empty BumpyDataFrameMatrix with the full Metrics column schema
+    # so that validate_SE() can verify normalization_type and fit_source are
+    # present even when no fits succeeded.
     nr <- NROW(se)
     nc <- NCOL(se)
+    metric_cols <- c(gDRutils::get_header("response_metrics"), "normalization_type", "fit_source")
+    empty_df <- S4Vectors::DataFrame(
+      matrix(character(0), nrow = 0, ncol = length(metric_cols)),
+      check.names = FALSE
+    )
+    names(empty_df) <- metric_cols
     empty_bm <- BumpyMatrix::splitAsBumpyMatrix(
-      S4Vectors::DataFrame(),
+      empty_df,
       row    = rep(seq_len(nr), nc),
       column = rep(seq_len(nc), each = nr)
     )

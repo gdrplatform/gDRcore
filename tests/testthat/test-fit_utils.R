@@ -87,10 +87,8 @@ test_that("apply_fit_to_se iterates over all (drug x cell line x normalization_t
   # Each call received only one normalization_type value
   lapply(call_log, function(nt) expect_length(nt, 1L))
 
-  metrics_df <- BumpyMatrix::unsplitAsDataFrame(
-    SummarizedExperiment::assay(result_se, "Metrics"),
-    row.field = "row", column.field = "column"
-  )
+  metrics_df <- gDRutils::convert_se_assay_to_dt(result_se, "Metrics",
+    include_metadata = FALSE)
   new_rows <- metrics_df[metrics_df[["fit_source"]] == "test", ]
   # One row per norm_type per non-empty triplet
   expect_equal(
@@ -289,8 +287,8 @@ test_that("apply_fit_to_se warns for missing response_metrics columns in fit_fn 
 test_that("apply_fit_to_se returns unchanged se when no triplets produce results", {
   # Use a normalization_type that does not exist in the data so all sub_dt
   # are empty and the function returns the SE unchanged.
-  result_se <- apply_fit_to_se(se_small, simple_fit_fn,
-    normalization_types = "NONEXISTENT", fit_source = "empty_test")
+  result_se <- suppressWarnings(apply_fit_to_se(se_small, simple_fit_fn,
+    normalization_types = "NONEXISTENT", fit_source = "empty_test"))
 
   # Metrics assay should be identical to the original (no new rows written)
   orig_metrics <- BumpyMatrix::unsplitAsDataFrame(
@@ -448,6 +446,19 @@ test_that("fit_drug_response_metrics uses GR priors for GR normalization", {
 
   expect_equal(result$normalization_type, "GR")
   expect_true(result$fit_type %in% c("DRC3pHillFitModelFixS0", "DRCInvalidFitResult"))
+})
+
+
+test_that("fit_drug_response_metrics handles factor normalization_type (regression: GDR-3352)", {
+  # Averaged assay stores normalization_type as a factor; reading [1] from a factor
+  # returns the integer level code, not the label. as.character() prevents this.
+  dt <- data.table::data.table(
+    Concentration = c(0.001, 0.01, 0.1, 1, 10),
+    x = c(0.95, 0.8, 0.5, 0.2, 0.1),
+    normalization_type = factor("GR", levels = c("RV", "GR"))
+  )
+  result <- fit_drug_response_metrics(dt)
+  expect_equal(result$normalization_type, "GR")
 })
 
 

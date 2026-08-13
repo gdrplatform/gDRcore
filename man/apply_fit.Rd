@@ -8,7 +8,7 @@
 apply_fit(
   se,
   fit_fn,
-  data_type = c("single-agent", "combination", "time-course"),
+  data_type,
   slicing_cols = NULL,
   slicing_values = NULL,
   input_assay = NULL,
@@ -43,7 +43,12 @@ each cell.}
 \item{input_assay}{name of the source BumpyMatrix assay.  \code{NULL} uses
 the profile default.}
 
-\item{output_assay}{name of the assay to write fit results into.  Required.}
+\item{output_assay}{name of the assay to write fit results into.  Required.
+Any assay name is accepted, including the native \code{"Metrics"} assay.
+With \code{merge = "merge"} (default), existing rows keyed by
+\code{fit_source} are replaced while all other rows are preserved —
+safe for co-existing alongside native gDR metrics.
+With \code{merge = "replace"}, the entire assay is overwritten.}
 
 \item{summary_fn}{optional function(\code{data.table}) → named list called
 once per (row x column) cell on all rows returned by \code{fit_fn} for

@@ -218,7 +218,10 @@ apply_fit_to_se <- function(se,
     fit_source     = fit_source
   )
 
-  if (metrics_assay %in% SummarizedExperiment::assayNames(result)) {
+  # Warn only for the standard Metrics assay — custom assays (e.g. "musyc_params")
+  # intentionally use a different column schema and should not be checked here.
+  if (metrics_assay == "Metrics" &&
+      metrics_assay %in% SummarizedExperiment::assayNames(result)) {
     new_df <- BumpyMatrix::unsplitAsDataFrame(
       SummarizedExperiment::assay(result, metrics_assay),
       row.field = "row", column.field = "column"
@@ -373,6 +376,11 @@ apply_fits <- function(se,
   dt_all <- data.table::as.data.table(
     BumpyMatrix::unsplitAsDataFrame(asy, row.field = "row", column.field = "column")
   )
+  # BumpyMatrix may store slicing_col (e.g. normalization_type) as a factor;
+  # coerce to character so downstream comparisons and labels are always strings.
+  if (slice_col %in% names(dt_all) && is.factor(dt_all[[slice_col]])) {
+    dt_all[, (slice_col) := as.character(get(slice_col))]
+  }
   cell_list <- split(dt_all, by = c("row", "column"), sorted = FALSE)
 
   # Accumulate per-assay results: list(assay_name -> list of row data.tables)
@@ -388,7 +396,7 @@ apply_fits <- function(se,
     vals <- if (!is.null(slicing_values)) {
       slicing_values
     } else if (slice_col %in% names(cell_dt)) {
-      unique(cell_dt[[slice_col]])
+      as.character(unique(cell_dt[[slice_col]]))
     } else {
       NA_character_
     }
@@ -487,6 +495,13 @@ apply_fits <- function(se,
 #' @param range_conc numeric vector of length 2 specifying the concentration
 #'   range used to compute \code{x_AOC_range}. Default \code{c(5e-3, 5)},
 #'   matching the \code{fit_SE()} default.
+#' @param pcutoff numeric p-value cutoff for the fit. Default \code{0.05}.
+#' @param n_point_cutoff integer minimum number of concentration points required
+#'   to attempt fitting. Default \code{4L}.
+#' @param force_fit logical; if \code{TRUE}, force fitting even when the number
+#'   of points is below \code{n_point_cutoff}. Default \code{FALSE}.
+#' @param cap numeric; upper cap on \code{xc50} relative to the concentration
+#'   range. Default \code{0.1}.
 #'
 #' @return Named list of fit metrics fully compatible with the standard gDR
 #'   \code{Metrics} assay schema: \code{ec50}, \code{xc50}, \code{h},
@@ -588,18 +603,22 @@ fit_drug_response_metrics_4p <- function(avg_dt, x_col = "x",
     stop(sprintf("Column '%s' not found in avg_dt. Available: %s",
                  x_col, toString(names(avg_dt))))
   }
-  norm_type <- avg_dt$normalization_type[1]
+  norm_type <- as.character(avg_dt$normalization_type[1])
   conc_col <- gDRutils::get_env_identifiers("concentration")
   conc <- avg_dt[[conc_col]]
   x <- avg_dt[[x_col]]
   x_std <- if ("x_std" %in% names(avg_dt)) avg_dt$x_std else rep(NA_real_, length(x))
 
-  keep <- !is.na(x) & !is.na(conc)
+  keep <- !is.na(x) & !is.na(conc) & conc != 0
   x_std <- x_std[keep]
   x <- x[keep]
   conc <- conc[keep]
 
-  # All-NA input → empty/invalid result (no data at all)
+  # All-NA/NaN input → empty/invalid result (no data at all).
+  # Note: is.na(NaN) == TRUE in R, so NaN values are caught here, not below.
+  # gDRutils::logisticFit labels this "DRCTooFewPointsToFit" via a separate
+  # condition handler; here we use "DRCInvalidFitResult" (semantically equivalent —
+  # both are treated identically by all downstream consumers).
   if (length(x) == 0L) {
     .empty_fit_result(norm_type)
   } else if (length(unique(conc)) < n_point_cutoff) {
@@ -711,11 +730,11 @@ fit_drug_response_metrics_4p <- function(avg_dt, x_col = "x",
       # x_mean: model-predicted mean over observed range (matches logisticFit)
       x_mean_model <- .predict_mean(fit, min(conc), max(conc))
 
-      # x_AOC_range: model-predicted mean over standard range (matches logisticFit)
-      rc_lo <- max(range_conc[1], min(conc))
-      rc_hi <- min(range_conc[2], max(conc))
-      if (rc_lo < rc_hi) {
-        x_AOC_range <- 1 - .predict_mean(fit, rc_lo, rc_hi)
+      # x_AOC_range: model-predicted mean over full range_conc (matches logisticFit line 290)
+      # gDRutils::logisticFit integrates over [range_conc[1], range_conc[2]] without
+      # clamping to the observed concentration range — we must do the same for parity.
+      if (range_conc[1] < range_conc[2]) {
+        x_AOC_range <- 1 - .predict_mean(fit, range_conc[1], range_conc[2])
       } else {
         x_AOC_range <- 1 - x_mean_model
       }
@@ -880,8 +899,8 @@ apply_combo_scores <- function(se,
 
   for (ri in seq_len(NROW(se))) {
     for (ci in seq_len(NCOL(se))) {
-      avg_dt <- as.data.table(avg_bm[ri, ci][[1L]])
-      met_dt <- as.data.table(met_bm[ri, ci][[1L]])
+      avg_dt <- data.table::as.data.table(avg_bm[ri, ci][[1L]])
+      met_dt <- data.table::as.data.table(met_bm[ri, ci][[1L]])
 
       if (NROW(avg_dt) == 0L || NROW(met_dt) == 0L) next
 
@@ -1018,7 +1037,7 @@ apply_combo_scores <- function(se,
 #'
 #' @export
 bliss_fit_fn <- function(avg_dt) {
-  norm_type <- avg_dt$normalization_type[1]
+  norm_type <- as.character(avg_dt$normalization_type[1])
   conc1_col <- gDRutils::get_env_identifiers("concentration")
   conc2_col <- gDRutils::get_env_identifiers("concentration2")
 
@@ -1097,7 +1116,7 @@ bliss_fit_fn <- function(avg_dt) {
 #'
 #' @export
 hss_fit_fn <- function(avg_dt) {
-  norm_type <- avg_dt$normalization_type[1]
+  norm_type <- as.character(avg_dt$normalization_type[1])
   conc1_col <- gDRutils::get_env_identifiers("concentration")
   conc2_col <- gDRutils::get_env_identifiers("concentration2")
 
@@ -1163,6 +1182,12 @@ hss_fit_fn <- function(avg_dt) {
     # Multi-column slicing is deferred to a future iteration; for the POC the
     # profiles always supply a single slicing column.
     slice_col <- slicing_cols[1L]
+
+    # BumpyMatrix may store slicing columns (e.g. normalization_type) as factors.
+    # Coerce to character so subset comparisons and output labels are always strings.
+    if (slice_col %in% names(avg_dt) && is.factor(avg_dt[[slice_col]])) {
+      avg_dt[, (slice_col) := as.character(get(slice_col))]
+    }
 
     vals <- if (!is.null(slicing_values)) {
       slicing_values
@@ -1286,6 +1311,14 @@ hss_fit_fn <- function(avg_dt) {
       row.field = row, column.field = col
     )
     existing_dt <- data.table::as.data.table(existing_df)
+
+    # BumpyMatrix may store character columns as factors; coerce key columns
+    # to character so rbindlist does not silently coerce new character values.
+    for (kc in upsert_key_cols) {
+      if (kc %in% names(existing_dt) && is.factor(existing_dt[[kc]])) {
+        existing_dt[, (kc) := as.character(get(kc))]
+      }
+    }
 
     # Ensure all key columns exist in existing data (fill with NA if absent)
     for (kc in upsert_key_cols) {
