@@ -1016,7 +1016,7 @@ apply_combo_sa_fits <- function(se,
 
   # Standardize concentrations
   conc_map <- gDRutils::map_conc_to_standardized_conc(avg_sub[[id]], avg_sub[[id2]])
-  avg_sub[[id]]  <- replace_conc_with_standardized_conc(avg_sub[[id]],  conc_map, "concs", "rconcs")
+  avg_sub[[id]] <- replace_conc_with_standardized_conc(avg_sub[[id]], conc_map, "concs", "rconcs")
   avg_sub[[id2]] <- replace_conc_with_standardized_conc(avg_sub[[id2]], conc_map, "concs", "rconcs")
   mean_avg <- avg_sub[, lapply(.SD, mean),
                       by = c(id, id2, "normalization_type"), .SDcols = c("x", "x_std")]
