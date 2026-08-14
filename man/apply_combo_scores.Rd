@@ -11,7 +11,8 @@ apply_combo_scores(
   metrics_assay = "Metrics",
   excess_assay = NULL,
   normalization_types = c("GR", "RV"),
-  fit_source = "gDR"
+  fit_source = "gDR",
+  score_FUN = calculate_score
 )
 }
 \arguments{
@@ -36,6 +37,9 @@ Default \code{c("GR", "RV")}.}
 
 \item{fit_source}{string recorded in the \code{fit_source} column. Default
 \code{"gDR"}.}
+
+\item{score_FUN}{function to reduce per-point excess values to a scalar
+score. Default \code{\link{calculate_score}} (mean of top 10-percentile).}
 }
 \value{
 Updated \code{SummarizedExperiment} with a \code{scores_assay}

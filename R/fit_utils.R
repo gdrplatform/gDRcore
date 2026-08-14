@@ -1127,7 +1127,7 @@ apply_combo_excess <- function(se,
     i <- iterator[row_idx, "row"][[1L]]
     j <- iterator[row_idx, "column"][[1L]]
     avg_combo <- avg[avg$row == i & avg$column == j, ]
-    met_cell  <- met[met$row == i & met$column == j, ]
+    met_cell <- met[met$row == i & met$column == j, ]
 
     if (all(is.na(avg_combo[, .SD, .SDcols = !c("row", "column", "normalization_type")]))) {
       return(list(excess = data.table::data.table(row_id = i, col_id = j)))
@@ -1142,7 +1142,7 @@ apply_combo_excess <- function(se,
 
       cols <- c(id, id2, "smooth")
       sa1 <- av_matrix[av_matrix[[id2]] == 0, cols, with = FALSE]
-      sa2 <- av_matrix[av_matrix[[id]]  == 0, cols, with = FALSE]
+      sa2 <- av_matrix[av_matrix[[id]] == 0, cols, with = FALSE]
 
       hsa <- calculate_HSA(sa1, id, sa2, id2, norm_type)
       h_excess <- calculate_excess(hsa, av_matrix,
@@ -1255,12 +1255,12 @@ apply_combo_isobolograms <- function(se,
     i <- iterator[row_idx, "row"][[1L]]
     j <- iterator[row_idx, "column"][[1L]]
     avg_combo <- avg[avg$row == i & avg$column == j, ]
-    met_cell  <- met[met$row == i & met$column == j, ]
+    met_cell <- met[met$row == i & met$column == j, ]
 
     if (all(is.na(avg_combo[, .SD, .SDcols = !c("row", "column", "normalization_type")]))) {
       return(list(
         isobolograms = data.table::data.table(row_id = i, col_id = j),
-        iso_points   = data.table::data.table(row_id = i, col_id = j)
+        iso_points = data.table::data.table(row_id = i, col_id = j)
       ))
     }
 
@@ -1320,12 +1320,12 @@ apply_combo_isobolograms <- function(se,
 
     list(
       isobolograms = data.table::rbindlist(iso_curves_list, fill = TRUE),
-      iso_points   = data.table::rbindlist(iso_points_list, fill = TRUE)
+      iso_points = data.table::rbindlist(iso_points_list, fill = TRUE)
     )
   })
 
   all_isobolograms <- rbindParallelList(out_list, "isobolograms")
-  all_iso_points   <- rbindParallelList(out_list, "iso_points")
+  all_iso_points <- rbindParallelList(out_list, "iso_points")
   SummarizedExperiment::assays(se)[[isobolograms_assay]] <-
     convertDFtoBumpyMatrixUsingIds(all_isobolograms)
   SummarizedExperiment::assays(se)[[iso_points_assay]] <-
@@ -1384,6 +1384,8 @@ apply_combo_isobolograms <- function(se,
 #'   Default \code{c("GR", "RV")}.
 #' @param fit_source string recorded in the \code{fit_source} column. Default
 #'   \code{"gDR"}.
+#' @param score_FUN function to reduce per-point excess values to a scalar
+#'   score. Default \code{\link{calculate_score}} (mean of top 10-percentile).
 #'
 #' @return Updated \code{SummarizedExperiment} with a \code{scores_assay}
 #'   assay containing \code{bliss_score} and \code{hsa_score} per triplet.
@@ -1397,7 +1399,7 @@ apply_combo_isobolograms <- function(se,
 #' combo_se_out <- apply_combo_scores(combo_se)
 #' "scores" %in% SummarizedExperiment::assayNames(combo_se_out)
 #'
-#' @importFrom checkmate assert_class assert_string assert_character
+#' @importFrom checkmate assert_class assert_string assert_character assert_function
 #' @export
 apply_combo_scores <- function(se,
                                scores_assay = "scores",
@@ -1405,13 +1407,15 @@ apply_combo_scores <- function(se,
                                metrics_assay = "Metrics",
                                excess_assay = NULL,
                                normalization_types = c("GR", "RV"),
-                               fit_source = "gDR") {
+                               fit_source = "gDR",
+                               score_FUN = calculate_score) {
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_string(scores_assay)
   checkmate::assert_string(averaged_assay)
   checkmate::assert_string(metrics_assay)
   checkmate::assert_string(excess_assay, null.ok = TRUE)
   checkmate::assert_character(normalization_types, min.len = 1L)
+  checkmate::assert_function(score_FUN)
   gDRutils::validate_se_assay_name(se, averaged_assay)
   gDRutils::validate_se_assay_name(se, metrics_assay)
 
@@ -1432,9 +1436,9 @@ apply_combo_scores <- function(se,
           normalization_type = dt$normalization_type[1L],
           fit_source = fit_source,
           bliss_score = if (all(is.na(dt$bliss_excess))) NA_real_ else
-            calculate_score(dt$bliss_excess),
+            score_FUN(dt$bliss_excess),
           hsa_score = if (all(is.na(dt$hsa_excess))) NA_real_ else
-            calculate_score(dt$hsa_excess)
+            score_FUN(dt$hsa_excess)
         )
       }
     )
@@ -1525,7 +1529,7 @@ apply_combo_scores <- function(se,
         if (all(is.na(h_excess$x))) {
           hsa_score <- NA_real_
         } else {
-          hsa_score <- calculate_score(h_excess$x)
+          hsa_score <- score_FUN(h_excess$x)
         }
 
         # Bliss score
@@ -1538,7 +1542,7 @@ apply_combo_scores <- function(se,
         if (all(is.na(bliss_excess$x))) {
           bliss_score <- NA_real_
         } else {
-          bliss_score <- calculate_score(bliss_excess$x)
+          bliss_score <- score_FUN(bliss_excess$x)
         }
 
         idx <- idx + 1L

@@ -343,8 +343,7 @@ each writing to a separate assay:
 all depend on step 2.  The boundaries between steps are clean, which means
 they can be extracted as independent public functions.
 
-**All five steps are now available as independent public functions
-(GDR-3486):**
+**All five steps are now available as independent public functions:**
 
 | Step | Public function | Output assay |
 |---|---|---|
@@ -675,7 +674,7 @@ apply_fits(
 
 ### Combination scoring
 
-#### Composable step functions (GDR-3486)
+#### Composable step functions
 
 | Function | Step | Output assay | Description |
 |---|---|---|---|

@@ -91,7 +91,7 @@ test_that("fit_SE.combinations single-agent arms are monotonic (no checkerboard)
 })
 
 
-#### Composable apply_combo_*() steps — GDR-3486 ####
+#### Composable apply_combo_*() steps ####
 
 .make_combo_se_averaged_only <- function() {
   fmae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
@@ -196,5 +196,21 @@ test_that("apply_combo_scores with excess_assay gives scores matching fit_SE.com
                 suffixes = c("_ref", "_new"))
   expect_equal(NROW(comp), NROW(ref_scores))
   expect_lt(max(abs(comp$bliss_score_ref - comp$bliss_score_new), na.rm = TRUE), 1e-10)
-  expect_lt(max(abs(comp$hsa_score_ref   - comp$hsa_score_new),   na.rm = TRUE), 1e-10)
+  expect_lt(max(abs(comp$hsa_score_ref - comp$hsa_score_new), na.rm = TRUE), 1e-10)
+})
+
+test_that("fit_SE.combinations passes score_FUN to apply_combo_scores", {
+  fmae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+  se <- fmae[[gDRutils::get_supported_experiments("combo")]][1, 1]
+  SummarizedExperiment::assays(se) <- SummarizedExperiment::assays(se)["Averaged"]
+
+  constant_score <- function(x) 42
+  se_out <- suppressWarnings(fit_SE.combinations(se, score_FUN = constant_score))
+
+  scores <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se_out, "scores"),
+    row.field = "row", column.field = "column"
+  ))
+  expect_true(all(scores$bliss_score == 42 | is.na(scores$bliss_score)))
+  expect_true(all(scores$hsa_score == 42 | is.na(scores$hsa_score)))
 })
