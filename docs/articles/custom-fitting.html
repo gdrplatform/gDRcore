@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -585,12 +585,82 @@ values → <code>bliss_score</code>, <code>hsa_score</code>,
 (SA fits), and steps 3–5 all depend on step 2. The boundaries between
 steps are clean, which means they can be extracted as independent public
 functions.</p>
-<p><strong>Roadmap (GDR-3486):</strong> a future refactoring will expose
-each step as a standalone <code>apply_combo_*()</code> function, making
-<code><a href="../reference/fit_SE.combinations.html">fit_SE.combinations()</a></code> a thin wrapper over them.
-<code><a href="../reference/apply_combo_scores.html">apply_combo_scores()</a></code> (step 5) is already available as part
-of GDR-3352.</p>
+<p><strong>All five steps are now available as independent public
+functions:</strong></p>
+<table class="table">
+<thead><tr class="header">
+<th>Step</th>
+<th>Public function</th>
+<th>Output assay</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>1+2</td>
+<td><code><a href="../reference/apply_combo_sa_fits.html">apply_combo_sa_fits()</a></code></td>
+<td><code>Metrics</code></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><code><a href="../reference/apply_combo_excess.html">apply_combo_excess()</a></code></td>
+<td><code>excess</code></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><code><a href="../reference/apply_combo_isobolograms.html">apply_combo_isobolograms()</a></code></td>
+<td>
+<code>isobolograms</code>, <code>all_iso_points</code>
+</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><code><a href="../reference/apply_combo_scores.html">apply_combo_scores()</a></code></td>
+<td><code>scores</code></td>
+</tr>
+</tbody>
+</table>
+<p><code><a href="../reference/fit_SE.combinations.html">fit_SE.combinations()</a></code> is now a thin wrapper that calls
+these four functions in sequence. You can run any subset, swap out a
+step, or pass a pre-computed assay from a previous step to the next
+one.</p>
+<div class="section level4">
+<h4 id="running-all-steps-individually">Running all steps individually<a class="anchor" aria-label="anchor" href="#running-all-steps-individually"></a>
+</h4>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Start from an Averaged-only SE</span></span>
+<span><span class="va">combo_mae</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/get_synthetic_data.html" class="external-link">get_synthetic_data</a></span><span class="op">(</span><span class="st">"finalMAE_combo_matrix_small"</span><span class="op">)</span></span>
+<span><span class="va">combo_name</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/get_supported_experiments.html" class="external-link">get_supported_experiments</a></span><span class="op">(</span><span class="st">"combo"</span><span class="op">)</span></span>
+<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="va">combo_mae</span><span class="op">[[</span><span class="va">combo_name</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assays</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assays</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">[</span><span class="st">"Averaged"</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># Step 1+2: SA fits → Metrics</span></span>
+<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_combo_sa_fits.html">apply_combo_sa_fits</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span></span>
+<span><span class="co"># Step 3: smooth → excess</span></span>
+<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_combo_excess.html">apply_combo_excess</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span></span>
+<span><span class="co"># Step 4: Loewe CI → isobolograms</span></span>
+<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_combo_isobolograms.html">apply_combo_isobolograms</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span></span>
+<span><span class="co"># Step 5: scores</span></span>
+<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_combo_scores.html">apply_combo_scores</a></span><span class="op">(</span><span class="va">se</span>, excess_assay <span class="op">=</span> <span class="st">"excess"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assayNames</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "Averaged"       "Metrics"        "excess"         "isobolograms"  </span></span>
+<span><span class="co">#&gt; [5] "all_iso_points" "scores"</span></span></code></pre></div>
+<p>This produces identical results to
+<code><a href="../reference/fit_SE.combinations.html">fit_SE.combinations()</a></code>.</p>
+</div>
+<div class="section level4">
+<h4 id="skipping-a-step">Skipping a step<a class="anchor" aria-label="anchor" href="#skipping-a-step"></a>
+</h4>
+<p>If you only need SA fits and scores (skipping isobolograms):</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">se2</span> <span class="op">&lt;-</span> <span class="va">combo_mae</span><span class="op">[[</span><span class="va">combo_name</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assays</a></span><span class="op">(</span><span class="va">se2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assays</a></span><span class="op">(</span><span class="va">se2</span><span class="op">)</span><span class="op">[</span><span class="st">"Averaged"</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">se2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_combo_sa_fits.html">apply_combo_sa_fits</a></span><span class="op">(</span><span class="va">se2</span><span class="op">)</span></span>
+<span><span class="va">se2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_combo_excess.html">apply_combo_excess</a></span><span class="op">(</span><span class="va">se2</span><span class="op">)</span></span>
+<span><span class="va">se2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_combo_scores.html">apply_combo_scores</a></span><span class="op">(</span><span class="va">se2</span>, excess_assay <span class="op">=</span> <span class="st">"excess"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assayNames</a></span><span class="op">(</span><span class="va">se2</span><span class="op">)</span>  <span class="co"># no "isobolograms" or "all_iso_points"</span></span>
+<span><span class="co">#&gt; [1] "Averaged" "Metrics"  "excess"   "scores"</span></span></code></pre></div>
 <hr>
+</div>
 </div>
 <div class="section level3">
 <h3 id="two-approaches-for-combination-scoring-in-the-new-api">Two approaches for combination scoring in the new API<a class="anchor" aria-label="anchor" href="#two-approaches-for-combination-scoring-in-the-new-api"></a>
@@ -640,7 +710,7 @@ data</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Use the small synthetic combo dataset which has both Averaged and Metrics</span></span>
 <span><span class="va">combo_mae</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/get_synthetic_data.html" class="external-link">get_synthetic_data</a></span><span class="op">(</span><span class="st">"finalMAE_combo_matrix_small"</span><span class="op">)</span></span>
 <span><span class="va">combo_name</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/get_supported_experiments.html" class="external-link">get_supported_experiments</a></span><span class="op">(</span><span class="st">"combo"</span><span class="op">)</span></span>
@@ -652,7 +722,7 @@ data</td>
 <span><span class="co">#&gt; [1] "RawTreated"     "Controls"       "Normalized"     "Averaged"      </span></span>
 <span><span class="co">#&gt; [5] "excess"         "all_iso_points" "isobolograms"   "scores"        </span></span>
 <span><span class="co">#&gt; [9] "Metrics"</span></span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">scores_df</span> <span class="op">&lt;-</span> <span class="fu">BumpyMatrix</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BumpyMatrix/man/unsplitAsDataFrame.html" class="external-link">unsplitAsDataFrame</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">combo_scored</span>, <span class="st">"scores"</span><span class="op">)</span>,</span>
 <span>  row.field <span class="op">=</span> <span class="st">"row"</span>, column.field <span class="op">=</span> <span class="st">"column"</span></span>
@@ -721,7 +791,7 @@ prior SA curve fits.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Build a minimal synthetic combination SE (Averaged only, no Metrics needed)</span></span>
 <span><span class="va">combo_dt</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/data.table/man/J.html" class="external-link">CJ</a></span><span class="op">(</span></span>
 <span>  row <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DrugA"</span>, <span class="st">"DrugB"</span><span class="op">)</span>,</span>
@@ -742,7 +812,7 @@ prior SA curve fits.</p>
 <span>  row <span class="op">=</span> <span class="va">combo_dt</span><span class="op">$</span><span class="va">row</span>, col <span class="op">=</span> <span class="va">combo_dt</span><span class="op">$</span><span class="va">column</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">combo_se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></span><span class="op">(</span>assays <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Averaged <span class="op">=</span> <span class="va">combo_bumpy</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bliss_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">combo_se</span>,</span>
 <span>  fit_fn <span class="op">=</span> <span class="va">bliss_fit_fn</span>,</span>
@@ -770,7 +840,7 @@ prior SA curve fits.</p>
 <span><span class="co">#&gt; 2              4</span></span>
 <span><span class="co">#&gt; 3              4</span></span>
 <span><span class="co">#&gt; 4              4</span></span></code></pre></div>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hss_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">combo_se</span>,</span>
 <span>  fit_fn <span class="op">=</span> <span class="va">hss_fit_fn</span>,</span>
@@ -802,7 +872,7 @@ prior SA curve fits.</p>
 assay</strong>, use <code><a href="../reference/apply_fits.html">apply_fits()</a></code> to traverse each
 BumpyMatrix cell <strong>once</strong> and apply all functions in that
 single pass.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">combo_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_fits.html">apply_fits</a></span><span class="op">(</span></span>
 <span>  <span class="va">combo_se</span>,</span>
 <span>  fit_fns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -824,7 +894,7 @@ unsplit + iteration.</p>
 single-agent curves), a single fit function can return a <strong>named
 list of named lists</strong> to populate multiple assays from one
 computation:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Each top-level name maps to an output assay; inner lists are the rows</span></span>
 <span><span class="va">bliss_and_hss_combined</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dt</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="co"># Expensive step done ONCE per cell</span></span>
@@ -852,7 +922,7 @@ computation:</p>
 </h2>
 <p>The functions are pipe-friendly — each call returns the updated
 SE:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result_se</span> <span class="op">&lt;-</span> <span class="va">combo_se</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span><span class="va">bliss_fit_fn</span>, <span class="st">"combination"</span>,</span>
 <span>                   output_assay <span class="op">=</span> <span class="st">"custom_bliss"</span>,</span>
@@ -879,7 +949,7 @@ SE:</p>
 (<code>on_error = "warn"</code>). Use <code>on_error = "stop"</code> to
 halt immediately and propagate the error — useful when debugging a new
 fit function.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">buggy_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dt</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="va">dt</span><span class="op">$</span><span class="va">normalization_type</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">==</span> <span class="st">"GR"</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"GR not supported"</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x_rv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">dt</span><span class="op">$</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
@@ -912,7 +982,7 @@ fit function.</p>
 <div class="section level3">
 <h3 id="function-signatures">Function signatures<a class="anchor" aria-label="anchor" href="#function-signatures"></a>
 </h3>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Single fit → one output assay</span></span>
 <span><span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">se</span>,</span>
@@ -1048,6 +1118,57 @@ at least one type?”)</td>
 <div class="section level4">
 <h4 id="combination-scoring">Combination scoring<a class="anchor" aria-label="anchor" href="#combination-scoring"></a>
 </h4>
+<div class="section level5">
+<h5 id="composable-step-functions">Composable step functions<a class="anchor" aria-label="anchor" href="#composable-step-functions"></a>
+</h5>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Function</th>
+<th>Step</th>
+<th>Output assay</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>apply_combo_sa_fits(se)</code></td>
+<td>1+2</td>
+<td><code>Metrics</code></td>
+<td>SA curve fits + smooth predictions</td>
+</tr>
+<tr class="even">
+<td><code>apply_combo_excess(se)</code></td>
+<td>3</td>
+<td><code>excess</code></td>
+<td>HSA/Bliss excess per combo point</td>
+</tr>
+<tr class="odd">
+<td><code>apply_combo_isobolograms(se)</code></td>
+<td>4</td>
+<td>
+<code>isobolograms</code>, <code>all_iso_points</code>
+</td>
+<td>Loewe CI isobologram</td>
+</tr>
+<tr class="even">
+<td><code>apply_combo_scores(se)</code></td>
+<td>5</td>
+<td><code>scores</code></td>
+<td>Bliss/HSA scalar scores</td>
+</tr>
+</tbody>
+</table>
+<p><code><a href="../reference/fit_SE.combinations.html">fit_SE.combinations()</a></code> is a thin wrapper that calls all
+four in order.</p>
+</div>
+<div class="section level5">
+<h5 id="lower-level-scoring-functions-for-apply_fit">Lower-level scoring functions (for <code>apply_fit()</code>)<a class="anchor" aria-label="anchor" href="#lower-level-scoring-functions-for-apply_fit"></a>
+</h5>
 <table class="table">
 <colgroup>
 <col width="20%">
@@ -1114,10 +1235,11 @@ when embedding score computation inside a larger custom
 </div>
 </div>
 </div>
+</div>
 <div class="section level2">
 <h2 class="unnumbered" id="sessioninfo">SessionInfo<a class="anchor" aria-label="anchor" href="#sessioninfo"></a>
 </h2>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -1148,42 +1270,44 @@ when embedding score computation inside a larger custom
 <span><span class="co">#&gt;  [9] BiocGenerics_0.58.1         generics_0.1.4             </span></span>
 <span><span class="co">#&gt; [11] MatrixGenerics_1.24.0       matrixStats_1.5.0          </span></span>
 <span><span class="co">#&gt; [13] gDRutils_1.10.0             gDRtestData_1.10.0         </span></span>
-<span><span class="co">#&gt; [15] gDRcore_1.11.8              BiocStyle_2.40.0           </span></span>
+<span><span class="co">#&gt; [15] gDRcore_1.11.9              BiocStyle_2.40.0           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] xfun_0.60                   bslib_0.12.0               </span></span>
-<span><span class="co">#&gt;  [3] htmlwidgets_1.6.4           lattice_0.22-9             </span></span>
-<span><span class="co">#&gt;  [5] tools_4.6.1                 sandwich_3.1-3             </span></span>
-<span><span class="co">#&gt;  [7] parallel_4.6.1              drc_3.0-1                  </span></span>
-<span><span class="co">#&gt;  [9] Matrix_1.7-5                checkmate_2.3.4            </span></span>
-<span><span class="co">#&gt; [11] RColorBrewer_1.1-3          desc_1.4.3                 </span></span>
-<span><span class="co">#&gt; [13] RcppParallel_6.2.0          lifecycle_1.0.5            </span></span>
-<span><span class="co">#&gt; [15] farver_2.1.2                compiler_4.6.1             </span></span>
-<span><span class="co">#&gt; [17] textshaping_1.0.5           codetools_0.2-20           </span></span>
-<span><span class="co">#&gt; [19] carData_3.0-6               htmltools_0.5.9            </span></span>
-<span><span class="co">#&gt; [21] sass_0.4.10                 yaml_2.3.12                </span></span>
-<span><span class="co">#&gt; [23] Formula_1.2-6               pkgdown_2.2.1              </span></span>
-<span><span class="co">#&gt; [25] car_3.1-5                   jquerylib_0.1.4            </span></span>
-<span><span class="co">#&gt; [27] MASS_7.3-65                 BiocParallel_1.46.0        </span></span>
-<span><span class="co">#&gt; [29] DelayedArray_0.38.2         cachem_1.1.0               </span></span>
-<span><span class="co">#&gt; [31] abind_1.4-8                 multcomp_1.4-31            </span></span>
-<span><span class="co">#&gt; [33] qs2_0.2.2                   gtools_3.9.5               </span></span>
-<span><span class="co">#&gt; [35] digest_0.6.39               mvtnorm_1.4-2              </span></span>
-<span><span class="co">#&gt; [37] bookdown_0.47               splines_4.6.1              </span></span>
-<span><span class="co">#&gt; [39] fastmap_1.2.0               grid_4.6.1                 </span></span>
-<span><span class="co">#&gt; [41] cli_3.6.6                   SparseArray_1.12.2         </span></span>
-<span><span class="co">#&gt; [43] S4Arrays_1.12.0             survival_3.8-6             </span></span>
-<span><span class="co">#&gt; [45] TH.data_1.1-5               scales_1.4.0               </span></span>
-<span><span class="co">#&gt; [47] backports_1.5.1             plotrix_3.8-14             </span></span>
-<span><span class="co">#&gt; [49] rmarkdown_2.31              XVector_0.52.0             </span></span>
-<span><span class="co">#&gt; [51] otel_0.2.0                  zoo_1.9-0                  </span></span>
-<span><span class="co">#&gt; [53] ragg_1.5.2                  stringfish_0.19.2          </span></span>
-<span><span class="co">#&gt; [55] evaluate_1.0.5              knitr_1.51                 </span></span>
-<span><span class="co">#&gt; [57] MultiAssayExperiment_1.38.0 rlang_1.3.0                </span></span>
-<span><span class="co">#&gt; [59] Rcpp_1.1.2                  glue_1.8.1                 </span></span>
-<span><span class="co">#&gt; [61] BiocManager_1.30.27         jsonlite_2.0.0             </span></span>
-<span><span class="co">#&gt; [63] R6_2.6.1                    systemfonts_1.3.2          </span></span>
-<span><span class="co">#&gt; [65] fs_2.1.0</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] farver_2.1.2                fastmap_1.2.0              </span></span>
+<span><span class="co">#&gt;  [3] TH.data_1.1-5               stringfish_0.19.2          </span></span>
+<span><span class="co">#&gt;  [5] digest_0.6.39               lifecycle_1.0.5            </span></span>
+<span><span class="co">#&gt;  [7] survival_3.8-6              compiler_4.6.1             </span></span>
+<span><span class="co">#&gt;  [9] rlang_1.3.0                 sass_0.4.10                </span></span>
+<span><span class="co">#&gt; [11] drc_3.0-1                   tools_4.6.1                </span></span>
+<span><span class="co">#&gt; [13] plotrix_3.8-14              yaml_2.3.12                </span></span>
+<span><span class="co">#&gt; [15] knitr_1.51                  lambda.r_1.2.4             </span></span>
+<span><span class="co">#&gt; [17] S4Arrays_1.12.0             htmlwidgets_1.6.4          </span></span>
+<span><span class="co">#&gt; [19] DelayedArray_0.38.2         RColorBrewer_1.1-3         </span></span>
+<span><span class="co">#&gt; [21] multcomp_1.4-31             abind_1.4-8                </span></span>
+<span><span class="co">#&gt; [23] BiocParallel_1.46.0         desc_1.4.3                 </span></span>
+<span><span class="co">#&gt; [25] grid_4.6.1                  scales_1.4.0               </span></span>
+<span><span class="co">#&gt; [27] gtools_3.9.5                MASS_7.3-65                </span></span>
+<span><span class="co">#&gt; [29] MultiAssayExperiment_1.38.0 cli_3.6.6                  </span></span>
+<span><span class="co">#&gt; [31] mvtnorm_1.4-2               rmarkdown_2.31             </span></span>
+<span><span class="co">#&gt; [33] ragg_1.5.2                  otel_0.2.0                 </span></span>
+<span><span class="co">#&gt; [35] RcppParallel_6.2.0          cachem_1.1.0               </span></span>
+<span><span class="co">#&gt; [37] splines_4.6.1               parallel_4.6.1             </span></span>
+<span><span class="co">#&gt; [39] BiocManager_1.30.27         formatR_1.14               </span></span>
+<span><span class="co">#&gt; [41] XVector_0.52.0              Matrix_1.7-5               </span></span>
+<span><span class="co">#&gt; [43] sandwich_3.1-3              jsonlite_2.0.0             </span></span>
+<span><span class="co">#&gt; [45] carData_3.0-6               bookdown_0.47              </span></span>
+<span><span class="co">#&gt; [47] car_3.1-5                   Formula_1.2-6              </span></span>
+<span><span class="co">#&gt; [49] systemfonts_1.3.2           jquerylib_0.1.4            </span></span>
+<span><span class="co">#&gt; [51] glue_1.8.1                  pkgdown_2.2.1              </span></span>
+<span><span class="co">#&gt; [53] codetools_0.2-20            futile.logger_1.4.9        </span></span>
+<span><span class="co">#&gt; [55] htmltools_0.5.9             R6_2.6.1                   </span></span>
+<span><span class="co">#&gt; [57] textshaping_1.0.5           evaluate_1.0.5             </span></span>
+<span><span class="co">#&gt; [59] lattice_0.22-9              futile.options_1.0.1       </span></span>
+<span><span class="co">#&gt; [61] backports_1.5.1             bslib_0.12.0               </span></span>
+<span><span class="co">#&gt; [63] Rcpp_1.1.2                  SparseArray_1.12.2         </span></span>
+<span><span class="co">#&gt; [65] checkmate_2.3.4             qs2_0.2.2                  </span></span>
+<span><span class="co">#&gt; [67] xfun_0.60                   fs_2.1.0                   </span></span>
+<span><span class="co">#&gt; [69] zoo_1.9-0</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

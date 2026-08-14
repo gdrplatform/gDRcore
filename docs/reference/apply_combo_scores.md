@@ -12,8 +12,10 @@ apply_combo_scores(
   scores_assay = "scores",
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
+  excess_assay = NULL,
   normalization_types = c("GR", "RV"),
-  fit_source = "gDR"
+  fit_source = "gDR",
+  score_FUN = calculate_score
 )
 ```
 
@@ -38,6 +40,14 @@ apply_combo_scores(
   string; name of the assay containing SA fit parameters. Default
   `"Metrics"`.
 
+- excess_assay:
+
+  string or `NULL`; if the SE already contains a pre-computed excess
+  assay (e.g. from
+  [`apply_combo_excess`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_excess.md)),
+  pass its name here to skip excess re-computation and score directly
+  from it. Default `NULL` (excess is computed internally).
+
 - normalization_types:
 
   character vector of normalization types to process. Default
@@ -46,6 +56,12 @@ apply_combo_scores(
 - fit_source:
 
   string recorded in the `fit_source` column. Default `"gDR"`.
+
+- score_FUN:
+
+  function to reduce per-point excess values to a scalar score. Default
+  [`calculate_score`](https://gdrplatform.github.io/gDRcore/reference/calculate_score.md)
+  (mean of top 10-percentile).
 
 ## Value
 
@@ -104,7 +120,6 @@ for the simplified raw-data variants.
 mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
 combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
 combo_se_out <- apply_combo_scores(combo_se)
-#> Loading required namespace: BumpyMatrix
 "scores" %in% SummarizedExperiment::assayNames(combo_se_out)
 #> [1] TRUE
 ```

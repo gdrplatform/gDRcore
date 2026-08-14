@@ -51,13 +51,13 @@ l_tbl <- gDRimport::load_data(
   df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
-#> INFO [2026-08-12 11:39:23] Manifest loaded successfully
-#> INFO [2026-08-12 11:39:23] Reading Template_7daytreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-12 11:39:23] Reading Template_Untreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-12 11:39:23] Loading Template_7daytreated.xlsx
-#> INFO [2026-08-12 11:39:23] Loading Template_Untreated.xlsx
-#> INFO [2026-08-12 11:39:23] Templates loaded successfully!
-#> INFO [2026-08-12 11:39:23] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-14 13:42:31] Manifest loaded successfully
+#> INFO [2026-08-14 13:42:31] Reading Template_7daytreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-14 13:42:31] Reading Template_Untreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-14 13:42:31] Loading Template_7daytreated.xlsx
+#> INFO [2026-08-14 13:42:31] Loading Template_Untreated.xlsx
+#> INFO [2026-08-14 13:42:32] Templates loaded successfully!
+#> INFO [2026-08-14 13:42:32] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -84,14 +84,14 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-12 11:39:23] Plate 201904190a read; 384 wells
-#> INFO [2026-08-12 11:39:23] Plate 201904190b read; 384 wells
-#> INFO [2026-08-12 11:39:23] Plate 201904190c read; 384 wells
-#> INFO [2026-08-12 11:39:23] Plate 201904190d read; 384 wells
-#> INFO [2026-08-12 11:39:23] Plate 201904190e read; 384 wells
-#> INFO [2026-08-12 11:39:23] Plate 201904190f read; 384 wells
-#> INFO [2026-08-12 11:39:23] File done
-#> INFO [2026-08-12 11:39:23] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-14 13:42:32] Plate 201904190a read; 384 wells
+#> INFO [2026-08-14 13:42:32] Plate 201904190b read; 384 wells
+#> INFO [2026-08-14 13:42:32] Plate 201904190c read; 384 wells
+#> INFO [2026-08-14 13:42:32] Plate 201904190d read; 384 wells
+#> INFO [2026-08-14 13:42:32] Plate 201904190e read; 384 wells
+#> INFO [2026-08-14 13:42:32] Plate 201904190f read; 384 wells
+#> INFO [2026-08-14 13:42:32] File done
+#> INFO [2026-08-14 13:42:32] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -118,21 +118,21 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-12 11:39:23] Plate 201904197a read; 384 wells
-#> INFO [2026-08-12 11:39:23] Plate 201904197b read; 384 wells
-#> INFO [2026-08-12 11:39:23] Plate 201904197c read; 384 wells
-#> INFO [2026-08-12 11:39:23] Plate 201904197d read; 384 wells
-#> INFO [2026-08-12 11:39:23] Plate 201904197e read; 384 wells
-#> INFO [2026-08-12 11:39:23] Plate 201904197f read; 384 wells
-#> INFO [2026-08-12 11:39:23] File done
+#> INFO [2026-08-14 13:42:32] Plate 201904197a read; 384 wells
+#> INFO [2026-08-14 13:42:32] Plate 201904197b read; 384 wells
+#> INFO [2026-08-14 13:42:32] Plate 201904197c read; 384 wells
+#> INFO [2026-08-14 13:42:32] Plate 201904197d read; 384 wells
+#> INFO [2026-08-14 13:42:32] Plate 201904197e read; 384 wells
+#> INFO [2026-08-14 13:42:32] Plate 201904197f read; 384 wells
+#> INFO [2026-08-14 13:42:32] File done
 merge_data(
   l_tbl$manifest,
   l_tbl$treatments,
   l_tbl$data
 )
-#> INFO [2026-08-12 11:39:23] Merging data
-#> INFO [2026-08-12 11:39:23] Merging the metadata (manifest and treatment files)
-#> WARN [2026-08-12 11:39:23] 4608 well loaded, 768 wells discarded for lack of annotation,
+#> INFO [2026-08-14 13:42:32] Merging data
+#> INFO [2026-08-14 13:42:32] Merging the metadata (manifest and treatment files)
+#> WARN [2026-08-14 13:42:32] 4608 well loaded, 768 wells discarded for lack of annotation,
 #>     3840 data point selected
 #>       CellLineName Tissue Duration DrugName Concentration DrugName_2
 #>             <char> <char>    <num>   <char>         <num>     <char>

@@ -436,12 +436,59 @@ assay:
 steps 3–5 all depend on step 2. The boundaries between steps are clean,
 which means they can be extracted as independent public functions.
 
-**Roadmap (GDR-3486):** a future refactoring will expose each step as a
-standalone `apply_combo_*()` function, making
+**All five steps are now available as independent public functions:**
+
+| Step | Public function                                                                                             | Output assay                     |
+|------|-------------------------------------------------------------------------------------------------------------|----------------------------------|
+| 1+2  | [`apply_combo_sa_fits()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_sa_fits.md)           | `Metrics`                        |
+| 3    | [`apply_combo_excess()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_excess.md)             | `excess`                         |
+| 4    | [`apply_combo_isobolograms()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_isobolograms.md) | `isobolograms`, `all_iso_points` |
+| 5    | [`apply_combo_scores()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.md)             | `scores`                         |
+
 [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
-a thin wrapper over them.
-[`apply_combo_scores()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.md)
-(step 5) is already available as part of GDR-3352.
+is now a thin wrapper that calls these four functions in sequence. You
+can run any subset, swap out a step, or pass a pre-computed assay from a
+previous step to the next one.
+
+#### Running all steps individually
+
+``` r
+# Start from an Averaged-only SE
+combo_mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+combo_name <- gDRutils::get_supported_experiments("combo")
+se <- combo_mae[[combo_name]]
+SummarizedExperiment::assays(se) <- SummarizedExperiment::assays(se)["Averaged"]
+
+# Step 1+2: SA fits → Metrics
+se <- apply_combo_sa_fits(se)
+# Step 3: smooth → excess
+se <- apply_combo_excess(se)
+# Step 4: Loewe CI → isobolograms
+se <- apply_combo_isobolograms(se)
+# Step 5: scores
+se <- apply_combo_scores(se, excess_assay = "excess")
+assayNames(se)
+#> [1] "Averaged"       "Metrics"        "excess"         "isobolograms"  
+#> [5] "all_iso_points" "scores"
+```
+
+This produces identical results to
+[`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md).
+
+#### Skipping a step
+
+If you only need SA fits and scores (skipping isobolograms):
+
+``` r
+se2 <- combo_mae[[combo_name]]
+SummarizedExperiment::assays(se2) <- SummarizedExperiment::assays(se2)["Averaged"]
+
+se2 <- apply_combo_sa_fits(se2)
+se2 <- apply_combo_excess(se2)
+se2 <- apply_combo_scores(se2, excess_assay = "excess")
+assayNames(se2)  # no "isobolograms" or "all_iso_points"
+#> [1] "Averaged" "Metrics"  "excess"   "scores"
+```
 
 ------------------------------------------------------------------------
 
@@ -787,6 +834,20 @@ apply_fits(
 
 #### Combination scoring
 
+##### Composable step functions
+
+| Function                       | Step | Output assay                     | Description                        |
+|--------------------------------|------|----------------------------------|------------------------------------|
+| `apply_combo_sa_fits(se)`      | 1+2  | `Metrics`                        | SA curve fits + smooth predictions |
+| `apply_combo_excess(se)`       | 3    | `excess`                         | HSA/Bliss excess per combo point   |
+| `apply_combo_isobolograms(se)` | 4    | `isobolograms`, `all_iso_points` | Loewe CI isobologram               |
+| `apply_combo_scores(se)`       | 5    | `scores`                         | Bliss/HSA scalar scores            |
+
+[`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
+is a thin wrapper that calls all four in order.
+
+##### Lower-level scoring functions (for `apply_fit()`)
+
 | Function                                                                            | Level                  | Requires               | Equivalent to                                                                                                 | Key output columns                                   |
 |-------------------------------------------------------------------------------------|------------------------|------------------------|---------------------------------------------------------------------------------------------------------------|------------------------------------------------------|
 | `apply_combo_scores(se)`                                                            | SE-level (recommended) | `Averaged` + `Metrics` | [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md) Bliss & HSA | `bliss_score`, `hsa_score`                           |
@@ -842,40 +903,42 @@ sessionInfo()
 #>  [9] BiocGenerics_0.58.1         generics_0.1.4             
 #> [11] MatrixGenerics_1.24.0       matrixStats_1.5.0          
 #> [13] gDRutils_1.10.0             gDRtestData_1.10.0         
-#> [15] gDRcore_1.11.8              BiocStyle_2.40.0           
+#> [15] gDRcore_1.11.9              BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] xfun_0.60                   bslib_0.12.0               
-#>  [3] htmlwidgets_1.6.4           lattice_0.22-9             
-#>  [5] tools_4.6.1                 sandwich_3.1-3             
-#>  [7] parallel_4.6.1              drc_3.0-1                  
-#>  [9] Matrix_1.7-5                checkmate_2.3.4            
-#> [11] RColorBrewer_1.1-3          desc_1.4.3                 
-#> [13] RcppParallel_6.2.0          lifecycle_1.0.5            
-#> [15] farver_2.1.2                compiler_4.6.1             
-#> [17] textshaping_1.0.5           codetools_0.2-20           
-#> [19] carData_3.0-6               htmltools_0.5.9            
-#> [21] sass_0.4.10                 yaml_2.3.12                
-#> [23] Formula_1.2-6               pkgdown_2.2.1              
-#> [25] car_3.1-5                   jquerylib_0.1.4            
-#> [27] MASS_7.3-65                 BiocParallel_1.46.0        
-#> [29] DelayedArray_0.38.2         cachem_1.1.0               
-#> [31] abind_1.4-8                 multcomp_1.4-31            
-#> [33] qs2_0.2.2                   gtools_3.9.5               
-#> [35] digest_0.6.39               mvtnorm_1.4-2              
-#> [37] bookdown_0.47               splines_4.6.1              
-#> [39] fastmap_1.2.0               grid_4.6.1                 
-#> [41] cli_3.6.6                   SparseArray_1.12.2         
-#> [43] S4Arrays_1.12.0             survival_3.8-6             
-#> [45] TH.data_1.1-5               scales_1.4.0               
-#> [47] backports_1.5.1             plotrix_3.8-14             
-#> [49] rmarkdown_2.31              XVector_0.52.0             
-#> [51] otel_0.2.0                  zoo_1.9-0                  
-#> [53] ragg_1.5.2                  stringfish_0.19.2          
-#> [55] evaluate_1.0.5              knitr_1.51                 
-#> [57] MultiAssayExperiment_1.38.0 rlang_1.3.0                
-#> [59] Rcpp_1.1.2                  glue_1.8.1                 
-#> [61] BiocManager_1.30.27         jsonlite_2.0.0             
-#> [63] R6_2.6.1                    systemfonts_1.3.2          
-#> [65] fs_2.1.0
+#>  [1] farver_2.1.2                fastmap_1.2.0              
+#>  [3] TH.data_1.1-5               stringfish_0.19.2          
+#>  [5] digest_0.6.39               lifecycle_1.0.5            
+#>  [7] survival_3.8-6              compiler_4.6.1             
+#>  [9] rlang_1.3.0                 sass_0.4.10                
+#> [11] drc_3.0-1                   tools_4.6.1                
+#> [13] plotrix_3.8-14              yaml_2.3.12                
+#> [15] knitr_1.51                  lambda.r_1.2.4             
+#> [17] S4Arrays_1.12.0             htmlwidgets_1.6.4          
+#> [19] DelayedArray_0.38.2         RColorBrewer_1.1-3         
+#> [21] multcomp_1.4-31             abind_1.4-8                
+#> [23] BiocParallel_1.46.0         desc_1.4.3                 
+#> [25] grid_4.6.1                  scales_1.4.0               
+#> [27] gtools_3.9.5                MASS_7.3-65                
+#> [29] MultiAssayExperiment_1.38.0 cli_3.6.6                  
+#> [31] mvtnorm_1.4-2               rmarkdown_2.31             
+#> [33] ragg_1.5.2                  otel_0.2.0                 
+#> [35] RcppParallel_6.2.0          cachem_1.1.0               
+#> [37] splines_4.6.1               parallel_4.6.1             
+#> [39] BiocManager_1.30.27         formatR_1.14               
+#> [41] XVector_0.52.0              Matrix_1.7-5               
+#> [43] sandwich_3.1-3              jsonlite_2.0.0             
+#> [45] carData_3.0-6               bookdown_0.47              
+#> [47] car_3.1-5                   Formula_1.2-6              
+#> [49] systemfonts_1.3.2           jquerylib_0.1.4            
+#> [51] glue_1.8.1                  pkgdown_2.2.1              
+#> [53] codetools_0.2-20            futile.logger_1.4.9        
+#> [55] htmltools_0.5.9             R6_2.6.1                   
+#> [57] textshaping_1.0.5           evaluate_1.0.5             
+#> [59] lattice_0.22-9              futile.options_1.0.1       
+#> [61] backports_1.5.1             bslib_0.12.0               
+#> [63] Rcpp_1.1.2                  SparseArray_1.12.2         
+#> [65] checkmate_2.3.4             qs2_0.2.2                  
+#> [67] xfun_0.60                   fs_2.1.0                   
+#> [69] zoo_1.9-0
 ```

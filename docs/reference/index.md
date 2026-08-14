@@ -136,6 +136,12 @@ response metrics and combination synergy scoring.
 
 - [`apply_fit_to_se()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit_to_se.md)
   : apply_fit_to_se
+- [`apply_combo_sa_fits()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_sa_fits.md)
+  : apply_combo_sa_fits
+- [`apply_combo_excess()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_excess.md)
+  : apply_combo_excess
+- [`apply_combo_isobolograms()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_isobolograms.md)
+  : apply_combo_isobolograms
 - [`apply_combo_scores()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.md)
   : apply_combo_scores
 - [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.md)

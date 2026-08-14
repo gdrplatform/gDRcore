@@ -1,18 +1,21 @@
-# fit_SE for combination screens
+# apply_combo_sa_fits
 
-Perform fittings for combination screens.
+Fit single-agent dose-response curves for each co-treatment
+concentration in a combination SE and store the results in the `Metrics`
+assay. This is **step 1+2** of the
+[`fit_SE.combinations`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
+pipeline:
 
 ## Usage
 
 ``` r
-fit_SE.combinations(
+apply_combo_sa_fits(
   se,
-  data_type = gDRutils::get_supported_experiments("combo"),
   series_identifiers = NULL,
   normalization_types = c("GR", "RV"),
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
-  score_FUN = calculate_score
+  fit_source = "gDR"
 )
 ```
 
@@ -20,56 +23,69 @@ fit_SE.combinations(
 
 - se:
 
-  `SummarizedExperiment` object with a BumpyMatrix assay containing
-  averaged data.
-
-- data_type:
-
-  single-agent vs combination
+  [`SummarizedExperiment`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)
+  with an `Averaged` assay (combination experiment).
 
 - series_identifiers:
 
-  character vector of the column names in the nested `DFrame`
-  corresponding to nested identifiers.
+  character vector of length 2: column names for the two concentration
+  axes (e.g. `c("Concentration", "Concentration_2")`). Defaults to
+  `get_default_nested_identifiers(se, data_model("combination"))`.
 
 - normalization_types:
 
-  character vector of normalization types used for calculating combo
-  matrix.
+  character vector of normalization types to process. Default
+  `c("GR", "RV")`.
 
 - averaged_assay:
 
-  string of the name of the averaged assay to use as input. in the `se`.
+  string; name of the input assay. Default `"Averaged"`.
 
 - metrics_assay:
 
-  string of the name of the metrics assay to output in the returned
-  SummarizedExperiment. whose combination represents a unique series for
-  which to fit curves.
+  string; name of the output assay. Default `"Metrics"`.
 
-- score_FUN:
+- fit_source:
 
-  function used to calculate score for HSA and Bliss
+  string recorded in the `fit_source` column. Default `"gDR"`.
 
 ## Value
 
-A `SummarizedExperiment` object with an additional assay containing the
-combination metrics.
+Updated `SummarizedExperiment` with a `metrics_assay` assay containing
+SA fit parameters per co-treatment concentration.
 
 ## Details
 
-This function assumes that the combination is set up with both
-concentrations nested in the assay.
+1.  Standardise concentrations and build the complete dose-response
+    matrix.
+
+2.  Fit SA curves per co-treatment concentration via
+    `fit_combo_cotreatments()` and `fit_combo_codilutions()`.
+
+3.  Compute **smooth** SA predictions at every combo point via
+    [`map_ids_to_fits()`](https://gdrplatform.github.io/gDRcore/reference/map_ids_to_fits.md)
+    and store them together with the SA fit parameters.
+
+The resulting `Metrics` assay contains `dilution_drug`, `cotrt_value`,
+`ec50`, `h`, `x_inf`, `x_0`, and `normalization_type` — the same schema
+as produced by
+[`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md).
+
+## See also
+
+[`apply_combo_excess`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_excess.md),
+[`apply_combo_isobolograms`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_isobolograms.md),
+[`apply_combo_scores`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.md),
+[`fit_SE.combinations`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
 
 ## Examples
 
 ``` r
-fmae_cms <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
-
-se1 <- fmae_cms[[gDRutils::get_supported_experiments("combo")]]
-SummarizedExperiment::assays(se1) <-
-  SummarizedExperiment::assays(se1)["Averaged"]
-fit_SE.combinations(se1[1, 1])
+mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
+SummarizedExperiment::assays(combo_se) <-
+  SummarizedExperiment::assays(combo_se)["Averaged"]
+combo_se_fitted <- apply_combo_sa_fits(combo_se[1, 1])
 #> Warning: overriding original x_0 argument '1' with '1' (only 1 normalized value detected, setting constant fit)
 #> Warning: overriding original x_0 argument '1' with '1' (only 1 normalized value detected, setting constant fit)
 #> Warning: overriding original x_0 argument '0.93772095952509' with '0.9563' (only 1 normalized value detected, setting constant fit)
@@ -102,12 +118,6 @@ fit_SE.combinations(se1[1, 1])
 #> Warning: NaNs produced
 #> Warning: NaNs produced
 #> Warning: NaNs produced
-#> class: SummarizedExperiment 
-#> dim: 1 1 
-#> metadata(3): identifiers experiment_metadata Keys
-#> assays(6): Averaged Metrics ... all_iso_points scores
-#> rownames(1): G00004_drug_004_moa_A_G00021_drug_021_moa_D_72
-#> rowData names(7): Gnumber DrugName ... drug_moa_2 Duration
-#> colnames(1): CL00016_cellline_GB_tissue_y_46
-#> colData names(4): clid CellLineName Tissue ReferenceDivisionTime
+"Metrics" %in% SummarizedExperiment::assayNames(combo_se_fitted)
+#> [1] TRUE
 ```
