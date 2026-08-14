@@ -105,4 +105,3 @@ fit_SE.combinations <- function(se,
   )
   se
 }
-
