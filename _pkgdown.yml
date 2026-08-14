@@ -48,6 +48,9 @@ reference:
     combination synergy scoring.
 - contents:
   - apply_fit_to_se
+  - apply_combo_sa_fits
+  - apply_combo_excess
+  - apply_combo_isobolograms
   - apply_combo_scores
   - fit_drug_response_metrics
   - fit_drug_response_metrics_4p
