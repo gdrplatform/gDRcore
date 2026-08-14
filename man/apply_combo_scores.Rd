@@ -9,8 +9,10 @@ apply_combo_scores(
   scores_assay = "scores",
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
+  excess_assay = NULL,
   normalization_types = c("GR", "RV"),
-  fit_source = "gDR"
+  fit_source = "gDR",
+  score_FUN = calculate_score
 )
 }
 \arguments{
@@ -25,11 +27,19 @@ Default \code{"scores"}.}
 \item{metrics_assay}{string; name of the assay containing SA fit parameters.
 Default \code{"Metrics"}.}
 
+\item{excess_assay}{string or \code{NULL}; if the SE already contains a
+pre-computed excess assay (e.g. from \code{\link{apply_combo_excess}}),
+pass its name here to skip excess re-computation and score directly from it.
+Default \code{NULL} (excess is computed internally).}
+
 \item{normalization_types}{character vector of normalization types to process.
 Default \code{c("GR", "RV")}.}
 
 \item{fit_source}{string recorded in the \code{fit_source} column. Default
 \code{"gDR"}.}
+
+\item{score_FUN}{function to reduce per-point excess values to a scalar
+score. Default \code{\link{calculate_score}} (mean of top 10-percentile).}
 }
 \value{
 Updated \code{SummarizedExperiment} with a \code{scores_assay}

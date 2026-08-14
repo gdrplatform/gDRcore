@@ -343,10 +343,54 @@ each writing to a separate assay:
 all depend on step 2.  The boundaries between steps are clean, which means
 they can be extracted as independent public functions.
 
-**Roadmap (GDR-3486):** a future refactoring will expose each step as a
-standalone `apply_combo_*()` function, making `fit_SE.combinations()` a
-thin wrapper over them.  `apply_combo_scores()` (step 5) is already
-available as part of GDR-3352.
+**All five steps are now available as independent public functions:**
+
+| Step | Public function | Output assay |
+|---|---|---|
+| 1+2 | `apply_combo_sa_fits()` | `Metrics` |
+| 3 | `apply_combo_excess()` | `excess` |
+| 4 | `apply_combo_isobolograms()` | `isobolograms`, `all_iso_points` |
+| 5 | `apply_combo_scores()` | `scores` |
+
+`fit_SE.combinations()` is now a thin wrapper that calls these four functions
+in sequence.  You can run any subset, swap out a step, or pass a pre-computed
+assay from a previous step to the next one.
+
+### Running all steps individually
+
+```{r combo-composable-steps}
+# Start from an Averaged-only SE
+combo_mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+combo_name <- gDRutils::get_supported_experiments("combo")
+se <- combo_mae[[combo_name]]
+SummarizedExperiment::assays(se) <- SummarizedExperiment::assays(se)["Averaged"]
+
+# Step 1+2: SA fits → Metrics
+se <- apply_combo_sa_fits(se)
+# Step 3: smooth → excess
+se <- apply_combo_excess(se)
+# Step 4: Loewe CI → isobolograms
+se <- apply_combo_isobolograms(se)
+# Step 5: scores
+se <- apply_combo_scores(se, excess_assay = "excess")
+assayNames(se)
+```
+
+This produces identical results to `fit_SE.combinations()`.
+
+### Skipping a step
+
+If you only need SA fits and scores (skipping isobolograms):
+
+```{r combo-skip-step}
+se2 <- combo_mae[[combo_name]]
+SummarizedExperiment::assays(se2) <- SummarizedExperiment::assays(se2)["Averaged"]
+
+se2 <- apply_combo_sa_fits(se2)
+se2 <- apply_combo_excess(se2)
+se2 <- apply_combo_scores(se2, excess_assay = "excess")
+assayNames(se2)  # no "isobolograms" or "all_iso_points"
+```
 
 ***
 
@@ -629,6 +673,19 @@ apply_fits(
 | `fit_drug_response_metrics_4p()` | 4p LL.4, `x_0` free | — (extended variant) | `ec50`, `xc50`, `h`, `r2`, `x_0`, `x_mean`, `fit_type = "DRC4pHillFitModel"` |
 
 ### Combination scoring
+
+#### Composable step functions
+
+| Function | Step | Output assay | Description |
+|---|---|---|---|
+| `apply_combo_sa_fits(se)` | 1+2 | `Metrics` | SA curve fits + smooth predictions |
+| `apply_combo_excess(se)` | 3 | `excess` | HSA/Bliss excess per combo point |
+| `apply_combo_isobolograms(se)` | 4 | `isobolograms`, `all_iso_points` | Loewe CI isobologram |
+| `apply_combo_scores(se)` | 5 | `scores` | Bliss/HSA scalar scores |
+
+`fit_SE.combinations()` is a thin wrapper that calls all four in order.
+
+#### Lower-level scoring functions (for `apply_fit()`)
 
 | Function | Level | Requires | Equivalent to | Key output columns |
 |---|---|---|---|---|

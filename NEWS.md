@@ -1,3 +1,6 @@
+## gDRcore 1.11.9 - 2026-08-12
+* refactor fit_SE.combinations() into composable apply_combo_*() steps
+
 ## gDRcore 1.11.8 - 2026-08-05
 * add `apply_custom_fit()`, `apply_custom_fits()`, `bliss_fit_fn()`, `hss_fit_fn()`,
   `apply_combo_scores()` and composable `apply_combo_*()` steps
