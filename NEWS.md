@@ -2,6 +2,10 @@
 * remove alignment whitespace flagged by the gDRstyle linter
 * mark internal helper functions with @keywords internal
 
+## gDRcore 1.11.10 - 2026-08-17
+* fix `create_SE()` for time-course data, where the duration is a nested identifier
+  and therefore absent from the control metadata
+
 ## gDRcore 1.11.9 - 2026-08-12
 * refactor fit_SE.combinations() into composable apply_combo_*() steps
 
