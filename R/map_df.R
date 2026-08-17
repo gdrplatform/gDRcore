@@ -60,8 +60,16 @@ map_df <- function(trt_md,
     simplify = FALSE
   ))
 
+  # Day0 controls are the reference rows measured at Duration == 0. For
+  # time-course data the duration is a nested identifier, so it never reaches
+  # the reference metadata and no Day0 control can be selected from it.
+  has_duration <- duration_col %in% names(ref_md)
   if (ref_type == "Day0") {
-    ref_md <- ref_md[get(duration_col) %in% 0, ]
+    if (has_duration) {
+      ref_md <- ref_md[get(duration_col) %in% 0, ]
+    } else {
+      ref_md <- ref_md[0L, ]
+    }
   }
 
   conc <- cbind(array(0, NROW(ref_md)),
@@ -69,7 +77,12 @@ map_df <- function(trt_md,
   is_ref_conc <- rowSums(conc == 0) == NCOL(conc)
 
   if (ref_type == "Day0") {
-    matching_list <- list(T0 = ref_md[[duration_col]] %in% 0, conc = is_ref_conc)
+    if (has_duration) {
+      is_t0 <- ref_md[[duration_col]] %in% 0
+    } else {
+      is_t0 <- logical(NROW(ref_md))
+    }
+    matching_list <- list(T0 = is_t0, conc = is_ref_conc)
     matchFactor <- "T0"
   } else if (ref_type == "untrt_Endpoint") {
     matching_list <- list(conc = is_ref_conc)
