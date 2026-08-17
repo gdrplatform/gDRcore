@@ -633,20 +633,21 @@ dedicated two-stage pipeline:
 assay — the output of `normalize_SE(se, data_type = "time-course")`:
 
 ```{r timecourse-setup, eval = FALSE}
-# periods: named list of c(start_hour, end_hour) windows
+# periods: named list of half-open c(start_hour, end_hour) windows,
+# i.e. a timepoint is used when start_hour <= Duration < end_hour
 periods <- list(
   early = c(0, 48),
-  late  = c(48, 96)
+  late = c(48, 96)
 )
 
-# normalization_map: per-period DMSO reference
+# normalization_map: per-period DMSO reference; must name every period
 #   "None"  → keep raw growth rate (doublings/day)
 #   "early" → divide by DMSO rate from the "early" period
 norm_map <- c(early = "None", late = "early")
 
 se_fit <- fit_SE.timecourse(
   se_tc,                          # SE with LogFoldChange assay
-  periods           = periods,
+  periods = periods,
   normalization_map = norm_map
 )
 ```
@@ -674,6 +675,9 @@ combination, with the same fit columns as `fit_SE()`: `ec50`, `xc50`, `h`,
 - **`normalization_type = "NGR"`** (NormalizedGrowthRate) — distinct from
   `"GR"` (GR value) and `"RV"` (Relative Viability) used in single-agent
   screens.  Time-course data has no RV/GR split.
+- **Half-open windows `[start, end)`** — contiguous periods partition the
+  time-course: the shared boundary belongs to the later window and `t = 0` is
+  kept.
 - **All partner-drug slots in the row key** — each combination arm at each
   partner concentration gets its own dose-response curve.
 - **`untreated_tag` from `gDRutils`** — DMSO detection uses

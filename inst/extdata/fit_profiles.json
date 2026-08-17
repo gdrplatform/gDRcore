@@ -17,10 +17,10 @@
   },
   "time-course": {
     "slicing_cols": ["normalization_type"],
-    "slicing_values": ["GR", "RV"],
+    "slicing_values": null,
     "input_assay": "LogFoldChange",
     "nested_cols": ["concentration", "duration"],
-    "nested_cols_note": "Stage 1 of fit_SE.timecourse(): .compute_growth_rates() reads this assay and fits lm(LogFoldChange ~ Duration) per well per time window. Duration is consumed here — it does not appear in Stage 2. identifier keys resolved at runtime via gDRutils::get_env_identifiers()",
+    "nested_cols_note": "Stage 1 of fit_SE.timecourse(): .compute_growth_rates() reads this assay and fits lm(LogFoldChange ~ Duration) per well per half-open time window [start, end). Duration is consumed here — it does not appear in Stage 2. Stage 1 does not go through apply_fit(), so this profile documents the input contract rather than driving slicing; slicing_values is null (all values found) because LogFoldChange carries no GR/RV split. identifier keys resolved at runtime via gDRutils::get_env_identifiers()",
     "description": "Time-course Stage 1: log2 fold-change time-series; .compute_growth_rates() iterates rows indexed by concentration x duration to compute per-well growth rates. Output is the 'time-course-metrics' GrowthRates assay."
   },
   "time-course-metrics": {
@@ -28,7 +28,7 @@
     "slicing_values": ["NGR"],
     "input_assay": "GrowthRates",
     "nested_cols": ["concentration"],
-    "nested_cols_note": "Stage 2 of fit_SE.timecourse(): apply_fit() reads GrowthRates (produced by Stage 1) and fits a logistic curve on NormalizedGrowthRate ~ log10(Concentration). normalization_type='NGR' (NormalizedGrowthRate) — distinct from single-agent 'GR' (GR value) and 'RV' (Relative Viability): time-course has no RV/GR split, only a single rate-based metric. BumpyMatrix row key = DrugName|DrugName_2|Concentration_2|CellLineName so that SA and each combo arm (same DrugA at different DrugB concentrations) are fitted as separate curves. Concentration_2 is present in GrowthRates cells alongside Concentration. identifier keys resolved at runtime via gDRutils::get_env_identifiers()",
+    "nested_cols_note": "Stage 2 of fit_SE.timecourse(): apply_fit() reads GrowthRates (produced by Stage 1) and fits a logistic curve on NormalizedGrowthRate ~ log10(Concentration). normalization_type='NGR' (NormalizedGrowthRate) — distinct from single-agent 'GR' (GR value) and 'RV' (Relative Viability): time-course has no RV/GR split, only a single rate-based metric. BumpyMatrix row key = DrugName|partner drug slots|partner concentration slots|CellLineName — every slot present in the data is used (DrugName_2/Concentration_2 for doublets, DrugName_3/Concentration_3 for triplets), so SA and each combo arm (same DrugA at different partner concentrations) are fitted as separate curves. The partner concentrations are present in GrowthRates cells alongside Concentration. identifier keys resolved at runtime via gDRutils::get_env_identifiers()",
     "description": "Time-course Stage 2: dose-response logistic fit on NormalizedGrowthRate ~ log10(Concentration) per (Drug, CellLine, [DrugName_2, Concentration_2], period) combination. fit_fn receives one data.table per normalization_type='NGR' slice, rows indexed by concentration (x axis) with Concentration_2 as additional context."
   }
 }
