@@ -115,3 +115,32 @@ test_that(".get_untreated_tag_count helper and assertions work", {
   expect_error(.get_untreated_tag_count(dt_valid, drug_identifier_keys = "drug"),
                "None of the drug")
 })
+
+test_that("map_df tolerates reference metadata without a duration column", {
+  # Time-course data keeps the duration inside the BumpyMatrix cells, so it is
+  # a nested identifier and never reaches the reference metadata. Day0 controls
+  # cannot be selected in that case, but mapping must not fail.
+  md_df <- data.table::data.table(
+    Gnumber = rep(c("vehicle", "G1"), each = 4),
+    DrugName = rep(c("vehicle", "GN1"), each = 4),
+    clid = paste0("C", rep_len(seq(2), 8)),
+    CellLineName = paste0("N", rep_len(seq(2), 8)),
+    Concentration = rep(c(0, 1), each = 4),
+    rn = as.character(seq_len(8))
+  )
+  ref_df <- md_df[Gnumber == "vehicle", ]
+  trt_df <- md_df[Gnumber != "vehicle", ]
+  ref_cols <- c("clid", "CellLineName")
+
+  expect_error(
+    day0 <- map_df(trt_df, ref_df, ref_cols = ref_cols, ref_type = "Day0"),
+    NA
+  )
+  expect_equal(length(day0), NROW(trt_df))
+  expect_true(all(lengths(day0) == 0L))
+
+  # The endpoint controls do not depend on the duration column at all
+  endpoint <- map_df(trt_df, ref_df, ref_cols = ref_cols, ref_type = "untrt_Endpoint")
+  expect_equal(length(endpoint), NROW(trt_df))
+  expect_true(any(lengths(endpoint) > 0L))
+})
