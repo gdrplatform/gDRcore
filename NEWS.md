@@ -1,4 +1,4 @@
-## gDRcore 1.11.10 - 2026-08-14
+## gDRcore 1.11.10 - 2026-08-17
 * add `fit_SE.timecourse()` two-stage growth-rate fitting for time-course (Incucyte) screens
 
 ## gDRcore 1.11.9 - 2026-08-12
