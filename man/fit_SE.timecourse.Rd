@@ -23,13 +23,17 @@ fit_SE.timecourse(
 \code{data_type = "time-course"}).}
 
 \item{periods}{named list of numeric vectors of length 2; each element
-defines a time window \code{c(start_hour, end_hour)} used for growth-rate
-calculation.  At minimum \code{periods$early} must be provided.
+defines a half-open time window \code{c(start_hour, end_hour)} used for
+growth-rate calculation: a timepoint is used when
+\code{start_hour <= Duration < end_hour}, so contiguous windows partition
+the time-course without dropping the shared boundary.
+At minimum \code{periods$early} must be provided.
 Example: \code{list(early = c(0, 48), mid = c(48, 96), late = c(96, 144))}.}
 
-\item{normalization_map}{named character vector mapping each period name to
-the reference period for DMSO normalization, or \code{"None"} to keep
-the raw growth rate.
+\item{normalization_map}{named character vector mapping \emph{every} period
+name to the reference period for DMSO normalization, or \code{"None"} to
+keep the raw growth rate.  Its names must match \code{names(periods)}
+exactly and its values must be \code{"None"} or an existing period name.
 Example: \code{c(early = "None", mid = "early", late = "early")}.}
 
 \item{lfc_assay}{string; name of the log-fold-change assay in \code{se}.
@@ -77,10 +81,10 @@ The \code{LogFoldChange} assay consumed by this function is produced by
 \examples{
 \dontrun{
 # After normalize_SE(se_tc, data_type = "time-course"):
-periods  <- list(early = c(0, 48), mid = c(48, 96), late = c(96, 144))
+periods <- list(early = c(0, 48), mid = c(48, 96), late = c(96, 144))
 norm_map <- c(early = "None", mid = "early", late = "early")
-se_fit   <- fit_SE.timecourse(se_tc, periods = periods,
-                              normalization_map = norm_map)
+se_fit <- fit_SE.timecourse(se_tc, periods = periods,
+                            normalization_map = norm_map)
 gDRutils::convert_se_assay_to_dt(se_fit, "Metrics")
 }
 
