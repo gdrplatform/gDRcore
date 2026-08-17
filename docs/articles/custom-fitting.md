@@ -903,7 +903,7 @@ sessionInfo()
 #>  [9] BiocGenerics_0.58.1         generics_0.1.4             
 #> [11] MatrixGenerics_1.24.0       matrixStats_1.5.0          
 #> [13] gDRutils_1.10.0             gDRtestData_1.10.0         
-#> [15] gDRcore_1.11.9              BiocStyle_2.40.0           
+#> [15] gDRcore_1.11.10             BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              

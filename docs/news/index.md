@@ -1,5 +1,12 @@
 # Changelog
 
+## gDRcore 1.11.10 - 2026-08-17
+
+- fix
+  [`create_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
+  for time-course data, where the duration is a nested identifier and
+  therefore absent from the control metadata
+
 ## gDRcore 1.11.9 - 2026-08-12
 
 - refactor fit_SE.combinations() into composable apply_combo\_\*() steps

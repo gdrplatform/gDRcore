@@ -305,13 +305,13 @@ l_tbl <- gDRimport::load_data(
   df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
-#> INFO [2026-08-14 13:42:35] Manifest loaded successfully
-#> INFO [2026-08-14 13:42:35] Reading Template_7daytreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-14 13:42:35] Reading Template_Untreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-14 13:42:35] Loading Template_7daytreated.xlsx
-#> INFO [2026-08-14 13:42:35] Loading Template_Untreated.xlsx
-#> INFO [2026-08-14 13:42:35] Templates loaded successfully!
-#> INFO [2026-08-14 13:42:35] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-17 12:28:02] Manifest loaded successfully
+#> INFO [2026-08-17 12:28:02] Reading Template_7daytreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-17 12:28:02] Reading Template_Untreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-17 12:28:02] Loading Template_7daytreated.xlsx
+#> INFO [2026-08-17 12:28:02] Loading Template_Untreated.xlsx
+#> INFO [2026-08-17 12:28:02] Templates loaded successfully!
+#> INFO [2026-08-17 12:28:02] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -338,14 +338,14 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-14 13:42:35] Plate 201904190a read; 384 wells
-#> INFO [2026-08-14 13:42:35] Plate 201904190b read; 384 wells
-#> INFO [2026-08-14 13:42:35] Plate 201904190c read; 384 wells
-#> INFO [2026-08-14 13:42:35] Plate 201904190d read; 384 wells
-#> INFO [2026-08-14 13:42:35] Plate 201904190e read; 384 wells
-#> INFO [2026-08-14 13:42:35] Plate 201904190f read; 384 wells
-#> INFO [2026-08-14 13:42:35] File done
-#> INFO [2026-08-14 13:42:35] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-17 12:28:02] Plate 201904190a read; 384 wells
+#> INFO [2026-08-17 12:28:02] Plate 201904190b read; 384 wells
+#> INFO [2026-08-17 12:28:02] Plate 201904190c read; 384 wells
+#> INFO [2026-08-17 12:28:02] Plate 201904190d read; 384 wells
+#> INFO [2026-08-17 12:28:02] Plate 201904190e read; 384 wells
+#> INFO [2026-08-17 12:28:02] Plate 201904190f read; 384 wells
+#> INFO [2026-08-17 12:28:02] File done
+#> INFO [2026-08-17 12:28:02] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -372,21 +372,21 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-14 13:42:35] Plate 201904197a read; 384 wells
-#> INFO [2026-08-14 13:42:35] Plate 201904197b read; 384 wells
-#> INFO [2026-08-14 13:42:35] Plate 201904197c read; 384 wells
-#> INFO [2026-08-14 13:42:35] Plate 201904197d read; 384 wells
-#> INFO [2026-08-14 13:42:35] Plate 201904197e read; 384 wells
-#> INFO [2026-08-14 13:42:35] Plate 201904197f read; 384 wells
-#> INFO [2026-08-14 13:42:35] File done
+#> INFO [2026-08-17 12:28:02] Plate 201904197a read; 384 wells
+#> INFO [2026-08-17 12:28:02] Plate 201904197b read; 384 wells
+#> INFO [2026-08-17 12:28:02] Plate 201904197c read; 384 wells
+#> INFO [2026-08-17 12:28:02] Plate 201904197d read; 384 wells
+#> INFO [2026-08-17 12:28:02] Plate 201904197e read; 384 wells
+#> INFO [2026-08-17 12:28:02] Plate 201904197f read; 384 wells
+#> INFO [2026-08-17 12:28:02] File done
 imported_data <- merge_data(
   l_tbl$manifest,
   l_tbl$treatments,
   l_tbl$data
 )
-#> INFO [2026-08-14 13:42:35] Merging data
-#> INFO [2026-08-14 13:42:35] Merging the metadata (manifest and treatment files)
-#> WARN [2026-08-14 13:42:35] 4608 well loaded, 768 wells discarded for lack of annotation,
+#> INFO [2026-08-17 12:28:02] Merging data
+#> INFO [2026-08-17 12:28:02] Merging the metadata (manifest and treatment files)
+#> WARN [2026-08-17 12:28:02] 4608 well loaded, 768 wells discarded for lack of annotation,
 #>     3840 data point selected
 
 se <- purrr::quietly(create_SE)(imported_data, data_type = "single-agent")
@@ -398,13 +398,13 @@ l_tbl <- gDRimport::load_data(
   df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
-#> INFO [2026-08-14 13:42:36] Manifest loaded successfully
-#> INFO [2026-08-14 13:42:36] Reading Template_7daytreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-14 13:42:36] Reading Template_Untreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-14 13:42:36] Loading Template_7daytreated.xlsx
-#> INFO [2026-08-14 13:42:36] Loading Template_Untreated.xlsx
-#> INFO [2026-08-14 13:42:36] Templates loaded successfully!
-#> INFO [2026-08-14 13:42:36] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-17 12:28:03] Manifest loaded successfully
+#> INFO [2026-08-17 12:28:03] Reading Template_7daytreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-17 12:28:03] Reading Template_Untreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-17 12:28:03] Loading Template_7daytreated.xlsx
+#> INFO [2026-08-17 12:28:03] Loading Template_Untreated.xlsx
+#> INFO [2026-08-17 12:28:03] Templates loaded successfully!
+#> INFO [2026-08-17 12:28:03] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -431,14 +431,14 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-14 13:42:36] Plate 201904190a read; 384 wells
-#> INFO [2026-08-14 13:42:36] Plate 201904190b read; 384 wells
-#> INFO [2026-08-14 13:42:36] Plate 201904190c read; 384 wells
-#> INFO [2026-08-14 13:42:36] Plate 201904190d read; 384 wells
-#> INFO [2026-08-14 13:42:36] Plate 201904190e read; 384 wells
-#> INFO [2026-08-14 13:42:36] Plate 201904190f read; 384 wells
-#> INFO [2026-08-14 13:42:36] File done
-#> INFO [2026-08-14 13:42:36] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-17 12:28:03] Plate 201904190a read; 384 wells
+#> INFO [2026-08-17 12:28:03] Plate 201904190b read; 384 wells
+#> INFO [2026-08-17 12:28:03] Plate 201904190c read; 384 wells
+#> INFO [2026-08-17 12:28:03] Plate 201904190d read; 384 wells
+#> INFO [2026-08-17 12:28:03] Plate 201904190e read; 384 wells
+#> INFO [2026-08-17 12:28:03] Plate 201904190f read; 384 wells
+#> INFO [2026-08-17 12:28:03] File done
+#> INFO [2026-08-17 12:28:03] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -465,21 +465,21 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-14 13:42:36] Plate 201904197a read; 384 wells
-#> INFO [2026-08-14 13:42:36] Plate 201904197b read; 384 wells
-#> INFO [2026-08-14 13:42:36] Plate 201904197c read; 384 wells
-#> INFO [2026-08-14 13:42:36] Plate 201904197d read; 384 wells
-#> INFO [2026-08-14 13:42:36] Plate 201904197e read; 384 wells
-#> INFO [2026-08-14 13:42:36] Plate 201904197f read; 384 wells
-#> INFO [2026-08-14 13:42:36] File done
+#> INFO [2026-08-17 12:28:03] Plate 201904197a read; 384 wells
+#> INFO [2026-08-17 12:28:03] Plate 201904197b read; 384 wells
+#> INFO [2026-08-17 12:28:03] Plate 201904197c read; 384 wells
+#> INFO [2026-08-17 12:28:03] Plate 201904197d read; 384 wells
+#> INFO [2026-08-17 12:28:03] Plate 201904197e read; 384 wells
+#> INFO [2026-08-17 12:28:03] Plate 201904197f read; 384 wells
+#> INFO [2026-08-17 12:28:03] File done
 imported_data <- merge_data(
   l_tbl$manifest,
   l_tbl$treatments,
   l_tbl$data
 )
-#> INFO [2026-08-14 13:42:36] Merging data
-#> INFO [2026-08-14 13:42:36] Merging the metadata (manifest and treatment files)
-#> WARN [2026-08-14 13:42:36] 4608 well loaded, 768 wells discarded for lack of annotation,
+#> INFO [2026-08-17 12:28:03] Merging data
+#> INFO [2026-08-17 12:28:03] Merging the metadata (manifest and treatment files)
+#> WARN [2026-08-17 12:28:03] 4608 well loaded, 768 wells discarded for lack of annotation,
 #>     3840 data point selected
 
 inl <- prepare_input(imported_data)
@@ -511,13 +511,13 @@ l_tbl <- gDRimport::load_data(
   df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
-#> INFO [2026-08-14 13:42:37] Manifest loaded successfully
-#> INFO [2026-08-14 13:42:37] Reading Template_7daytreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-14 13:42:37] Reading Template_Untreated.xlsx with load_templates_xlsx
-#> INFO [2026-08-14 13:42:37] Loading Template_7daytreated.xlsx
-#> INFO [2026-08-14 13:42:37] Loading Template_Untreated.xlsx
-#> INFO [2026-08-14 13:42:37] Templates loaded successfully!
-#> INFO [2026-08-14 13:42:37] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-17 12:28:04] Manifest loaded successfully
+#> INFO [2026-08-17 12:28:04] Reading Template_7daytreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-17 12:28:04] Reading Template_Untreated.xlsx with load_templates_xlsx
+#> INFO [2026-08-17 12:28:04] Loading Template_7daytreated.xlsx
+#> INFO [2026-08-17 12:28:04] Loading Template_Untreated.xlsx
+#> INFO [2026-08-17 12:28:04] Templates loaded successfully!
+#> INFO [2026-08-17 12:28:04] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -544,14 +544,14 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-14 13:42:37] Plate 201904190a read; 384 wells
-#> INFO [2026-08-14 13:42:37] Plate 201904190b read; 384 wells
-#> INFO [2026-08-14 13:42:37] Plate 201904190c read; 384 wells
-#> INFO [2026-08-14 13:42:37] Plate 201904190d read; 384 wells
-#> INFO [2026-08-14 13:42:37] Plate 201904190e read; 384 wells
-#> INFO [2026-08-14 13:42:37] Plate 201904190f read; 384 wells
-#> INFO [2026-08-14 13:42:37] File done
-#> INFO [2026-08-14 13:42:37] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-08-17 12:28:04] Plate 201904190a read; 384 wells
+#> INFO [2026-08-17 12:28:04] Plate 201904190b read; 384 wells
+#> INFO [2026-08-17 12:28:04] Plate 201904190c read; 384 wells
+#> INFO [2026-08-17 12:28:04] Plate 201904190d read; 384 wells
+#> INFO [2026-08-17 12:28:04] Plate 201904190e read; 384 wells
+#> INFO [2026-08-17 12:28:04] Plate 201904190f read; 384 wells
+#> INFO [2026-08-17 12:28:04] File done
+#> INFO [2026-08-17 12:28:04] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -578,21 +578,21 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-08-14 13:42:38] Plate 201904197a read; 384 wells
-#> INFO [2026-08-14 13:42:38] Plate 201904197b read; 384 wells
-#> INFO [2026-08-14 13:42:38] Plate 201904197c read; 384 wells
-#> INFO [2026-08-14 13:42:38] Plate 201904197d read; 384 wells
-#> INFO [2026-08-14 13:42:38] Plate 201904197e read; 384 wells
-#> INFO [2026-08-14 13:42:38] Plate 201904197f read; 384 wells
-#> INFO [2026-08-14 13:42:38] File done
+#> INFO [2026-08-17 12:28:05] Plate 201904197a read; 384 wells
+#> INFO [2026-08-17 12:28:05] Plate 201904197b read; 384 wells
+#> INFO [2026-08-17 12:28:05] Plate 201904197c read; 384 wells
+#> INFO [2026-08-17 12:28:05] Plate 201904197d read; 384 wells
+#> INFO [2026-08-17 12:28:05] Plate 201904197e read; 384 wells
+#> INFO [2026-08-17 12:28:05] Plate 201904197f read; 384 wells
+#> INFO [2026-08-17 12:28:05] File done
 imported_data <- merge_data(
   l_tbl$manifest,
   l_tbl$treatments,
   l_tbl$data
 )
-#> INFO [2026-08-14 13:42:38] Merging data
-#> INFO [2026-08-14 13:42:38] Merging the metadata (manifest and treatment files)
-#> WARN [2026-08-14 13:42:38] 4608 well loaded, 768 wells discarded for lack of annotation,
+#> INFO [2026-08-17 12:28:05] Merging data
+#> INFO [2026-08-17 12:28:05] Merging the metadata (manifest and treatment files)
+#> WARN [2026-08-17 12:28:05] 4608 well loaded, 768 wells discarded for lack of annotation,
 #>     3840 data point selected
 runDrugResponseProcessingPipeline(
   imported_data,
