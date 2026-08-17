@@ -162,9 +162,9 @@ calculate_Loewe <- function(
     # cap the concentrations for the reference
     over_edge <-
       pmax(0, (-df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) +
-             min(axis_1$pos_y) -  (max(axis_1$pos_y) + conc_margin)) +
+             min(axis_1$pos_y) - (max(axis_1$pos_y) + conc_margin)) +
       pmax(0, (df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) +
-             min(axis_2$pos_x) -  (max(axis_2$pos_x) + conc_margin))
+             min(axis_2$pos_x) - (max(axis_2$pos_x) + conc_margin))
     df_iso_curve$x2_ref_cap <- df_iso_curve$x2_ref - over_edge * sqrt(2)
 
     # rotate back the reference

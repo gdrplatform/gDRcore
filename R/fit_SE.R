@@ -42,12 +42,12 @@ fit_SE <- function(se,
   fit_fn <- function(avg_dt) {
     fit_drug_response_metrics(
       avg_dt,
-      capping_fold   = 5,
-      range_conc     = range_conc,
-      pcutoff        = pcutoff,
+      capping_fold = 5,
+      range_conc = range_conc,
+      pcutoff = pcutoff,
       n_point_cutoff = n_point_cutoff,
-      force_fit      = force_fit,
-      cap            = cap
+      force_fit = force_fit,
+      cap = cap
     )
   }
 
@@ -91,7 +91,7 @@ fit_SE <- function(se,
     names(empty_df) <- metric_cols
     empty_bm <- BumpyMatrix::splitAsBumpyMatrix(
       empty_df,
-      row    = rep(seq_len(nr), nc),
+      row = rep(seq_len(nr), nc),
       column = rep(seq_len(nc), each = nr)
     )
     dimnames(empty_bm) <- dimnames(se)
@@ -110,7 +110,7 @@ fit_SE <- function(se,
     se,
     value = list(
       date_processed = Sys.Date(),
-      session_info   = utils::sessionInfo()
+      session_info = utils::sessionInfo()
     )
   )
 

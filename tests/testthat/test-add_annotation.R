@@ -86,7 +86,7 @@ test_that("get_cellline_annotation_from_dt works as expected", {
   dt_example <- data.table::data.table(ReadoutValue = runif(5),
                                        clid = paste0("CL", 1:5),
                                        CellLineName = paste0("RandomName", 1:5),
-                                       Tissue =  paste0("Tissue", 1:5),
+                                       Tissue = paste0("Tissue", 1:5),
                                        ReferenceDivisionTime = 1:5,
                                        parental_identifier = 1:5,
                                        subtype = "subtype",

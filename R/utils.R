@@ -402,7 +402,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
 
 #' @keywords utils
 .catch_warnings <- function(x) {
-  warn  <- unlist(unique(x$warning))
+  warn <- unlist(unique(x$warning))
   if (!is.null(warn)) {
     futile.logger::flog.warn(paste(warn, collapse = "\n"))
   }

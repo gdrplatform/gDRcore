@@ -373,7 +373,7 @@ test_that("apply_fit_to_se end-to-end integration: minimal SE, trivial fit_fn, M
 
   # fit_fn output columns are present.
   expect_true("x_mean" %in% names(our_rows))
-  expect_true("ec50"   %in% names(our_rows))
+  expect_true("ec50" %in% names(our_rows))
 
   # ec50 is always 1e-6; x_mean is non-NA.
   expect_true(all(!is.na(our_rows[["x_mean"]])))
@@ -547,10 +547,10 @@ test_that("fit_drug_response_metrics with x_col gives same result as default col
   dt_custom <- data.table::copy(dt_x)
   data.table::setnames(dt_custom, "x", "RelViab")
   result_default <- fit_drug_response_metrics(dt_x)
-  result_custom  <- fit_drug_response_metrics(dt_custom, x_col = "RelViab")
+  result_custom <- fit_drug_response_metrics(dt_custom, x_col = "RelViab")
   expect_equal(result_default$ec50, result_custom$ec50)
-  expect_equal(result_default$r2,   result_custom$r2)
-  expect_equal(result_default$h,    result_custom$h)
+  expect_equal(result_default$r2, result_custom$r2)
+  expect_equal(result_default$h, result_custom$h)
 })
 
 
@@ -821,10 +821,10 @@ test_that("apply_fit merge upsert replaces rows with matching fit_source + slice
   built <- .build_test_se(seed = 15L)
   se <- built$se
 
-  fn_first  <- function(dt) list(val = 1.0)
+  fn_first <- function(dt) list(val = 1.0)
   fn_second <- function(dt) list(val = 9.9)
 
-  se1 <- apply_fit(se, fn_first,  "single-agent",
+  se1 <- apply_fit(se, fn_first, "single-agent",
                           output_assay = "out", fit_source = "src")
   se2 <- apply_fit(se1, fn_second, "single-agent",
                           output_assay = "out", fit_source = "src", merge = "merge")
@@ -947,7 +947,7 @@ test_that("chaining bliss and hss on the same SE adds both assays independently"
                      output_assay = "custom_hss", fit_source = "hss")
 
   expect_true("custom_bliss" %in% SummarizedExperiment::assayNames(se_out))
-  expect_true("custom_hss"   %in% SummarizedExperiment::assayNames(se_out))
+  expect_true("custom_hss" %in% SummarizedExperiment::assayNames(se_out))
 })
 
 
@@ -1046,7 +1046,7 @@ test_that("apply_fits multi-output pattern: one fn writes two assays", {
     row.field = "row", column.field = "column"
   )
   expect_true("x_mean" %in% names(df_mean))
-  expect_true("x_sd"   %in% names(df_sd))
+  expect_true("x_sd" %in% names(df_sd))
 })
 
 test_that("apply_fits on combination data: bliss + hss in one pass", {

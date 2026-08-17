@@ -57,7 +57,7 @@ test_synthetic_data <- function(original,
                 }
                 dt
               }
-              dt_original    <- .coerce_factors(dt_original)
+              dt_original <- .coerce_factors(dt_original)
               dt_reprocessed <- .coerce_factors(dt_reprocessed)
 
               data.table::setcolorder(dt_original, names(dt_reprocessed))
