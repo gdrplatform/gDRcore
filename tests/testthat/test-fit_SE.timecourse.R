@@ -390,11 +390,25 @@ test_that(".growth_dt_to_se gives every combo arm its own row", {
 # compute_growth_rates — public stage 1
 # ---------------------------------------------------------------------------
 
-test_that("compute_growth_rates returns the GrowthRates SE of stage 1", {
-  se_gr <- compute_growth_rates(se_tc_small, periods_std, norm_map_std)
+test_that("compute_growth_rates returns the growth rate table, controls included", {
+  growth_dt <- compute_growth_rates(se_tc_small, periods_std, norm_map_std)
+  expect_s3_class(growth_dt, "data.table")
+  expect_true(all(c("GrowthRate", "sd_GrowthRate", "rate_0",
+                    "NormalizedGrowthRate", "normalization_type", "period")
+                  %in% names(growth_dt)))
+  # Controls are kept here — they are only dropped when building the stage 2 SE
+  expect_true(any(growth_dt$DrugName == "DMSO"))
+  expect_setequal(unique(growth_dt$period), names(periods_std))
+})
+
+
+test_that("growth_rates_to_se builds the stage 2 SE and drops controls", {
+  growth_dt <- compute_growth_rates(se_tc_small, periods_std, norm_map_std)
+  se_gr <- growth_rates_to_se(growth_dt)
   expect_s4_class(se_gr, "SummarizedExperiment")
   expect_equal(SummarizedExperiment::assayNames(se_gr), "GrowthRates")
   expect_setequal(colnames(se_gr), names(periods_std))
+  expect_false(any(grepl("^DMSO\\|", rownames(se_gr))))
 })
 
 
@@ -404,12 +418,7 @@ test_that("compute_growth_rates takes the input assay from the time-course profi
   from_profile <- compute_growth_rates(se_tc_small, periods_std, norm_map_std)
   explicit <- compute_growth_rates(se_tc_small, periods_std, norm_map_std,
                                    lfc_assay = "LogFoldChange")
-  expect_equal(
-    data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
-      SummarizedExperiment::assay(from_profile, "GrowthRates"))),
-    data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
-      SummarizedExperiment::assay(explicit, "GrowthRates")))
-  )
+  expect_equal(from_profile, explicit)
 })
 
 
@@ -457,7 +466,9 @@ test_that("compute_growth_rates rejects a rate_fn that is not one value per well
 test_that("compute_growth_rates output feeds apply_fit with a custom fit function", {
   # The two-step workflow available for single-agent and combination data:
   # stage 1 → apply_fit(data_type = "time-course-metrics", fit_fn = <custom>)
-  se_gr <- compute_growth_rates(se_tc_small, periods_std, norm_map_std)
+  se_gr <- growth_rates_to_se(
+    compute_growth_rates(se_tc_small, periods_std, norm_map_std)
+  )
   mean_fn <- function(dt) {
     data.table::data.table(mean_ngr = mean(dt$NormalizedGrowthRate, na.rm = TRUE))
   }

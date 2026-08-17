@@ -99,8 +99,8 @@ The \code{LogFoldChange} assay consumed by this function is produced by
 Both stages accept a replacement function, so custom fitting works for
 time-course data the same way it does for single-agent and combination
 screens.  The two stages can also be run separately:
-\code{\link{compute_growth_rates}} returns the intermediate
-\code{GrowthRates} SummarizedExperiment, which can be passed to
+\code{\link{compute_growth_rates}} returns the growth rate table (controls
+included) and \code{\link{growth_rates_to_se}} turns it into the input of
 \code{\link{apply_fit}} with \code{data_type = "time-course-metrics"}.
 }
 \examples{

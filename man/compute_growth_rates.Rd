@@ -33,17 +33,19 @@ return a single numeric value: the growth rate in doublings per day.
 \code{NULL} uses the slope of \code{lm(LogFoldChange ~ Duration)}.}
 }
 \value{
-A \code{SummarizedExperiment} where rows = (Drug, CellLine, combo arm)
-and columns = period names, with a \code{GrowthRates} assay holding
-\code{Concentration}, the partner concentrations, \code{NormalizedGrowthRate}
-and \code{normalization_type} per cell.
+A \code{data.table} with one row per
+\code{(CellLine, Drug, Concentration, partner slots, period)} — controls
+included — holding \code{GrowthRate} (doublings/day), \code{sd_GrowthRate}
+across replicate wells, \code{rate_0} (the control baseline used),
+\code{NormalizedGrowthRate} and \code{normalization_type}.
 }
 \description{
 Stage 1 of the time-course pipeline: fits a growth rate per well within each
 time window, aggregates replicates, and normalises the rates to the control
-wells of a reference period.  The result is the input of stage 2 — pass it to
-\code{\link{apply_fit}} with \code{data_type = "time-course-metrics"} to fit
-dose-response curves with an arbitrary fit function, or use
+wells of a reference period.  The returned table keeps every treatment,
+controls included, together with the raw rate and its standard deviation, so
+it can be reported on directly.  Pass it through
+\code{\link{growth_rates_to_se}} to obtain the stage 2 input, or use
 \code{\link{fit_SE.timecourse}} to run both stages at once.
 }
 \details{
@@ -57,11 +59,11 @@ single baseline per \code{(CellLine, period)} is used for normalization.
 \dontrun{
 periods <- list(early = c(0, 48), late = c(48, 96))
 norm_map <- c(early = "None", late = "early")
-se_gr <- compute_growth_rates(se_tc, periods, norm_map)
+growth_dt <- compute_growth_rates(se_tc, periods, norm_map)
 
 # Stage 2 with any custom fit function:
 se_fit <- apply_fit(
-  se_gr,
+  growth_rates_to_se(growth_dt),
   fit_fn = my_fit_fn,
   data_type = "time-course-metrics",
   output_assay = "Metrics",
@@ -72,6 +74,7 @@ se_fit <- apply_fit(
 
 }
 \seealso{
-\code{\link{fit_SE.timecourse}}, \code{\link{apply_fit}}
+\code{\link{growth_rates_to_se}}, \code{\link{fit_SE.timecourse}},
+\code{\link{apply_fit}}
 }
 \keyword{runDrugResponseProcessingPipeline}

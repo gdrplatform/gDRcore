@@ -714,13 +714,16 @@ se_fit <- fit_SE.timecourse(
 
 The stages can also be run separately, which is the same two-step workflow as
 `average_SE()` → `apply_fit()` for single-agent data.  `compute_growth_rates()`
-returns the intermediate `GrowthRates` SummarizedExperiment:
+returns the growth rate table — one row per `(CellLine, Drug, Concentration,
+partner slots, period)`, **controls included**, with `GrowthRate`,
+`sd_GrowthRate` and `rate_0` — and `growth_rates_to_se()` turns it into the
+stage 2 input:
 
 ```{r timecourse-two-step, eval = FALSE}
-se_gr <- compute_growth_rates(se_tc, periods, norm_map, rate_fn = endpoint_rate_fn)
+growth_dt <- compute_growth_rates(se_tc, periods, norm_map, rate_fn = endpoint_rate_fn)
 
 se_fit <- apply_fit(
-  se_gr,
+  growth_rates_to_se(growth_dt),
   fit_fn = auc_fn,
   data_type = "time-course-metrics", # profile supplies input_assay = "GrowthRates"
   output_assay = "Metrics",

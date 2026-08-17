@@ -31,8 +31,8 @@
 #' Both stages accept a replacement function, so custom fitting works for
 #' time-course data the same way it does for single-agent and combination
 #' screens.  The two stages can also be run separately:
-#' \code{\link{compute_growth_rates}} returns the intermediate
-#' \code{GrowthRates} SummarizedExperiment, which can be passed to
+#' \code{\link{compute_growth_rates}} returns the growth rate table (controls
+#' included) and \code{\link{growth_rates_to_se}} turns it into the input of
 #' \code{\link{apply_fit}} with \code{data_type = "time-course-metrics"}.
 #'
 #' @param se \code{\link[SummarizedExperiment]{SummarizedExperiment}} with a
@@ -137,12 +137,14 @@ fit_SE.timecourse <- function(se,
   checkmate::assert_number(cap, lower = 0)
 
   # --- Stage 1: growth rates ---
-  se_gr <- compute_growth_rates(
-    se,
-    periods = periods,
-    normalization_map = normalization_map,
-    lfc_assay = lfc_assay,
-    rate_fn = rate_fn
+  se_gr <- growth_rates_to_se(
+    compute_growth_rates(
+      se,
+      periods = periods,
+      normalization_map = normalization_map,
+      lfc_assay = lfc_assay,
+      rate_fn = rate_fn
+    )
   )
 
   # --- Stage 2: dose-response fit via apply_fit ---
@@ -185,9 +187,10 @@ fit_SE.timecourse <- function(se,
 #'
 #' Stage 1 of the time-course pipeline: fits a growth rate per well within each
 #' time window, aggregates replicates, and normalises the rates to the control
-#' wells of a reference period.  The result is the input of stage 2 — pass it to
-#' \code{\link{apply_fit}} with \code{data_type = "time-course-metrics"} to fit
-#' dose-response curves with an arbitrary fit function, or use
+#' wells of a reference period.  The returned table keeps every treatment,
+#' controls included, together with the raw rate and its standard deviation, so
+#' it can be reported on directly.  Pass it through
+#' \code{\link{growth_rates_to_se}} to obtain the stage 2 input, or use
 #' \code{\link{fit_SE.timecourse}} to run both stages at once.
 #'
 #' Growth rates are computed per \code{(Barcode, WellRow, WellColumn, CellLine,
@@ -211,20 +214,21 @@ fit_SE.timecourse <- function(se,
 #'   return a single numeric value: the growth rate in doublings per day.
 #'   \code{NULL} uses the slope of \code{lm(LogFoldChange ~ Duration)}.
 #'
-#' @return A \code{SummarizedExperiment} where rows = (Drug, CellLine, combo arm)
-#'   and columns = period names, with a \code{GrowthRates} assay holding
-#'   \code{Concentration}, the partner concentrations, \code{NormalizedGrowthRate}
-#'   and \code{normalization_type} per cell.
+#' @return A \code{data.table} with one row per
+#'   \code{(CellLine, Drug, Concentration, partner slots, period)} — controls
+#'   included — holding \code{GrowthRate} (doublings/day), \code{sd_GrowthRate}
+#'   across replicate wells, \code{rate_0} (the control baseline used),
+#'   \code{NormalizedGrowthRate} and \code{normalization_type}.
 #'
 #' @examples
 #' \dontrun{
 #' periods <- list(early = c(0, 48), late = c(48, 96))
 #' norm_map <- c(early = "None", late = "early")
-#' se_gr <- compute_growth_rates(se_tc, periods, norm_map)
+#' growth_dt <- compute_growth_rates(se_tc, periods, norm_map)
 #'
 #' # Stage 2 with any custom fit function:
 #' se_fit <- apply_fit(
-#'   se_gr,
+#'   growth_rates_to_se(growth_dt),
 #'   fit_fn = my_fit_fn,
 #'   data_type = "time-course-metrics",
 #'   output_assay = "Metrics",
@@ -233,7 +237,8 @@ fit_SE.timecourse <- function(se,
 #' )
 #' }
 #'
-#' @seealso \code{\link{fit_SE.timecourse}}, \code{\link{apply_fit}}
+#' @seealso \code{\link{growth_rates_to_se}}, \code{\link{fit_SE.timecourse}},
+#'   \code{\link{apply_fit}}
 #'
 #' @keywords runDrugResponseProcessingPipeline
 #' @export
@@ -278,6 +283,38 @@ compute_growth_rates <- function(se,
          "overlap the durations present in the '", lfc_assay, "' assay.")
   }
 
+  growth_dt
+}
+
+
+#' Convert a growth rate table into the stage 2 SummarizedExperiment
+#'
+#' Builds the \code{GrowthRates} SummarizedExperiment consumed by
+#' \code{\link{apply_fit}} with \code{data_type = "time-course-metrics"}: rows
+#' are \code{(Drug, partner drug/concentration slots, CellLine)} — so every
+#' combination arm is fitted as its own dose-response curve — and columns are
+#' the period names.  Control and zero-concentration rows are dropped, since
+#' they carry no dose-response information.
+#'
+#' @param growth_dt \code{data.table}; output of
+#'   \code{\link{compute_growth_rates}}.
+#'
+#' @return A \code{SummarizedExperiment} with a \code{GrowthRates} assay holding
+#'   \code{Concentration}, the partner concentrations,
+#'   \code{NormalizedGrowthRate} and \code{normalization_type} per cell.
+#'
+#' @examples
+#' \dontrun{
+#' growth_dt <- compute_growth_rates(se_tc, periods, norm_map)
+#' se_gr <- growth_rates_to_se(growth_dt)
+#' }
+#'
+#' @seealso \code{\link{compute_growth_rates}}, \code{\link{fit_SE.timecourse}}
+#'
+#' @keywords runDrugResponseProcessingPipeline
+#' @export
+growth_rates_to_se <- function(growth_dt) {
+  checkmate::assert_data_table(growth_dt, min.rows = 1L)
   .growth_dt_to_se(growth_dt)
 }
 
