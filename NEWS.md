@@ -1,6 +1,6 @@
-## gDRcore 1.11.10 - 2026-08-17
-
+## gDRcore 1.11.11 - 2026-08-17
 * remove alignment whitespace flagged by the gDRstyle linter
+* mark internal helper functions with @keywords internal
 
 ## gDRcore 1.11.9 - 2026-08-12
 * refactor fit_SE.combinations() into composable apply_combo_*() steps

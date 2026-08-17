@@ -77,3 +77,4 @@ sa2 <- data.table::data.table(conc = rep(0, n), conc2 = seq(n), smooth = seq(n))
 calculate_Bliss(sa1, "conc", sa2, "conc2", "smooth")
 }
 \keyword{combinations}
+\keyword{internal}

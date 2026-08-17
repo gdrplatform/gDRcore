@@ -1,4 +1,5 @@
 #' @keywords combinations
+#' @keywords internal
 calculate_Loewe <- function(
     df_mean,
     drug_2,
@@ -298,6 +299,7 @@ calculate_Loewe <- function(
 
 
 #' @keywords combinations
+#' @keywords internal
 get_isocutoffs <- function(df_mean, normalization_type) {
   if (min(df_mean[normalization_type == normalization_type, smooth], na.rm = TRUE) > 0.7) {
     iso_cutoffs <- NULL
@@ -324,6 +326,7 @@ get_isocutoffs <- function(df_mean, normalization_type) {
 
 
 #' @keywords combinations
+#' @keywords internal
 calculate_isobolograms <- function(drug_2,
                                    drug_1,
                                    codilution,

@@ -1,4 +1,5 @@
 #' @keywords pipeline
+#' @keywords internal
 create_SE_step <- function(inl,
                            exp,
                            data_type,
@@ -34,6 +35,7 @@ create_SE_step <- function(inl,
 }
 
 #' @keywords pipeline
+#' @keywords internal
 run_pipeline_step <- function(run_vars,
                               step,
                               se,

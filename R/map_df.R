@@ -173,6 +173,7 @@ map_df <- function(trt_md,
 #' to identify and map reference treatments.
 #' @keywords map_df
 #' @return list
+#' @keywords internal
 .map_references <- function(mat_elem,
                             rowData_colnames = c(gDRutils::get_env_identifiers("duration"),
                                                  paste0(c("drug", "drug_name", "drug_moa"), "3"))) {
