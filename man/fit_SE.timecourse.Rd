@@ -8,8 +8,11 @@ fit_SE.timecourse(
   se,
   periods,
   normalization_map,
-  lfc_assay = "LogFoldChange",
+  lfc_assay = NULL,
   metrics_assay = "Metrics",
+  rate_fn = NULL,
+  fit_fn = NULL,
+  fit_source = NULL,
   n_point_cutoff = 4L,
   range_conc = c(0.005, 5),
   force_fit = FALSE,
@@ -37,10 +40,25 @@ exactly and its values must be \code{"None"} or an existing period name.
 Example: \code{c(early = "None", mid = "early", late = "early")}.}
 
 \item{lfc_assay}{string; name of the log-fold-change assay in \code{se}.
-Default \code{"LogFoldChange"}.}
+Defaults to the \code{input_assay} of the \code{"time-course"} fit profile.}
 
 \item{metrics_assay}{string; name of the output metrics assay.
 Default \code{"Metrics"}.}
+
+\item{rate_fn}{function or \code{NULL}; growth-rate estimator passed to
+\code{\link{compute_growth_rates}}.  \code{NULL} uses the default
+\code{lm(LogFoldChange ~ Duration)} slope.}
+
+\item{fit_fn}{function or \code{NULL}; dose-response fit applied to each
+\code{normalization_type} slice of the \code{GrowthRates} assay.
+\code{NULL} uses \code{\link{fit_drug_response_metrics}} on
+\code{NormalizedGrowthRate}.  When a custom function is supplied,
+\code{n_point_cutoff}, \code{range_conc}, \code{force_fit},
+\code{pcutoff} and \code{cap} are not used.}
+
+\item{fit_source}{string or \code{NULL}; value recorded in the
+\code{fit_source} column.  \code{NULL} records \code{"gDR"} for the default
+fit and \code{"custom"} for a user-supplied \code{fit_fn}.}
 
 \item{n_point_cutoff}{integer; minimum number of unique concentrations
 required to attempt a curve fit. Default \code{4L}.}
@@ -57,18 +75,18 @@ statistically significant. Default \code{FALSE}.}
 }
 \value{
 A new \code{SummarizedExperiment} where rows = (Drug, CellLine) and
-columns = period names.  The \code{Metrics} assay (or \code{metrics_assay})
-holds the fitted parameters: \code{ec50}, \code{xc50}, \code{h},
-\code{x_inf}, \code{x_0}, \code{r2}, \code{x_mean}, \code{x_AOC},
+columns = period names, holding the \code{GrowthRates} assay from stage 1
+and the \code{Metrics} assay (or \code{metrics_assay}) from stage 2.  With
+the default \code{fit_fn} the metrics are: \code{ec50}, \code{xc50},
+\code{h}, \code{x_inf}, \code{x_0}, \code{r2}, \code{x_mean}, \code{x_AOC},
 \code{x_AOC_range}, \code{x_max}, \code{fit_type}, \code{N_conc},
 \code{maxlog10Concentration}, and \code{period}.
 }
 \description{
 Two-stage pipeline for time-course dose-response data:
 \enumerate{
-\item Compute log2 growth rates per user-defined time window via a linear
-model (\code{lm(LogFoldChange ~ Duration)}) and normalise to the
-DMSO control of the reference period.
+\item Compute growth rates per user-defined time window and normalise them
+to the control of the reference period (\code{\link{compute_growth_rates}}).
 \item Fit a 3-parameter Hill (logistic) curve on the
 \code{NormalizedGrowthRate ~ log10(Concentration)} dose-response for
 each \code{(Drug, CellLine, period)} combination.
@@ -77,6 +95,13 @@ each \code{(Drug, CellLine, period)} combination.
 \details{
 The \code{LogFoldChange} assay consumed by this function is produced by
 \code{\link[gDRcore]{normalize_SE}} when \code{data_type = "time-course"}.
+
+Both stages accept a replacement function, so custom fitting works for
+time-course data the same way it does for single-agent and combination
+screens.  The two stages can also be run separately:
+\code{\link{compute_growth_rates}} returns the intermediate
+\code{GrowthRates} SummarizedExperiment, which can be passed to
+\code{\link{apply_fit}} with \code{data_type = "time-course-metrics"}.
 }
 \examples{
 \dontrun{
@@ -86,10 +111,21 @@ norm_map <- c(early = "None", mid = "early", late = "early")
 se_fit <- fit_SE.timecourse(se_tc, periods = periods,
                             normalization_map = norm_map)
 gDRutils::convert_se_assay_to_dt(se_fit, "Metrics")
+
+# Custom growth-rate estimator and custom dose-response fit:
+se_custom <- fit_SE.timecourse(
+  se_tc,
+  periods = periods,
+  normalization_map = norm_map,
+  rate_fn = function(dt) 24 * stats::median(diff(dt$LogFoldChange) /
+                                            diff(dt$Duration)),
+  fit_fn = function(dt) data.table::data.table(x_mean = mean(dt$NormalizedGrowthRate))
+)
 }
 
 }
 \seealso{
+\code{\link{compute_growth_rates}} for stage 1 on its own,
 \code{\link{fit_SE}} for single-agent fitting,
 \code{\link{fit_SE.combinations}} for combination screens,
 \code{\link{apply_fit}} for the generic fitting engine.

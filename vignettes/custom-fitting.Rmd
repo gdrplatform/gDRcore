@@ -670,6 +670,69 @@ Each row is one dose-response curve for a `(Drug, CellLine, period)`
 combination, with the same fit columns as `fit_SE()`: `ec50`, `xc50`, `h`,
 `r2`, `x_mean`, `x_AOC`, `N_conc`, `fit_type`, etc.
 
+## Custom fitting for time-course data
+
+Both stages are pluggable, so the custom fit interface covers time-course data
+the same way it covers single-agent and combination screens.
+
+Stage 2 takes a `fit_fn` with the usual contract — it receives one
+`normalization_type = "NGR"` slice of the `GrowthRates` assay, with
+`NormalizedGrowthRate` as the response and `Concentration` as the x axis:
+
+```{r timecourse-custom-fit, eval = FALSE}
+auc_fn <- function(dt) {
+  list(auc_ngr = mean(dt$NormalizedGrowthRate, na.rm = TRUE))
+}
+
+se_fit <- fit_SE.timecourse(
+  se_tc,
+  periods = periods,
+  normalization_map = norm_map,
+  fit_fn = auc_fn                 # fit_source defaults to "custom"
+)
+```
+
+Stage 1 takes a `rate_fn`, which receives the timepoints of a single well
+within a single window and returns one growth rate in doublings per day.
+Replace it when the default `lm(LogFoldChange ~ Duration)` slope is not the
+right estimator — for example for screens with only two usable timepoints, or
+when the growth phase has to be selected per well:
+
+```{r timecourse-custom-rate, eval = FALSE}
+endpoint_rate_fn <- function(dt) {
+  ord <- order(dt$Duration)
+  24 * diff(range(dt$LogFoldChange[ord])) / diff(range(dt$Duration[ord]))
+}
+
+se_fit <- fit_SE.timecourse(
+  se_tc,
+  periods = periods,
+  normalization_map = norm_map,
+  rate_fn = endpoint_rate_fn
+)
+```
+
+The stages can also be run separately, which is the same two-step workflow as
+`average_SE()` → `apply_fit()` for single-agent data.  `compute_growth_rates()`
+returns the intermediate `GrowthRates` SummarizedExperiment:
+
+```{r timecourse-two-step, eval = FALSE}
+se_gr <- compute_growth_rates(se_tc, periods, norm_map, rate_fn = endpoint_rate_fn)
+
+se_fit <- apply_fit(
+  se_gr,
+  fit_fn = auc_fn,
+  data_type = "time-course-metrics", # profile supplies input_assay = "GrowthRates"
+  output_assay = "Metrics",
+  merge = "replace",
+  fit_source = "custom"
+)
+```
+
+Note that `fit_SE.timecourse()` keeps the `GrowthRates` assay in its output, so
+an already-fitted object can be re-fitted with a different `fit_fn` without
+recomputing stage 1.
+
 ## Key design notes
 
 - **`normalization_type = "NGR"`** (NormalizedGrowthRate) — distinct from
@@ -682,6 +745,12 @@ combination, with the same fit columns as `fit_SE()`: `ec50`, `xc50`, `h`,
   partner concentration gets its own dose-response curve.
 - **`untreated_tag` from `gDRutils`** — DMSO detection uses
   `get_env_identifiers("untreated_tag")` rather than hardcoded strings.
+- **Two profiles, one `apply_fit()` pass** — `"time-course"` supplies the
+  default input assay of stage 1, `"time-course-metrics"` drives the stage 2
+  slicing.  Stage 1 aggregates replicates and normalises against control wells
+  that live in *other* BumpyMatrix cells, so it cannot be expressed as an
+  `apply_fit()` pass; that is why it is pluggable through `rate_fn` instead.
+  See GDR-3506 for the planned multi-stage profile model.
 
 ***
 
@@ -694,7 +763,7 @@ combination, with the same fit columns as `fit_SE()`: `ec50`, `xc50`, `h`,
 apply_fit(
   se,
   fit_fn,
-  data_type = "single-agent", # or "combination", "time-course"
+  data_type = "single-agent", # or "combination", "time-course-metrics"
   slicing_cols = NULL, # NULL → data_type default
   slicing_values = NULL, # NULL → all unique values found
   input_assay = NULL, # NULL → data_type default ("Averaged")

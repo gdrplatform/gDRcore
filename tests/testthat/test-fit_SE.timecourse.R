@@ -387,6 +387,99 @@ test_that(".growth_dt_to_se gives every combo arm its own row", {
 
 
 # ---------------------------------------------------------------------------
+# compute_growth_rates — public stage 1
+# ---------------------------------------------------------------------------
+
+test_that("compute_growth_rates returns the GrowthRates SE of stage 1", {
+  se_gr <- compute_growth_rates(se_tc_small, periods_std, norm_map_std)
+  expect_s4_class(se_gr, "SummarizedExperiment")
+  expect_equal(SummarizedExperiment::assayNames(se_gr), "GrowthRates")
+  expect_setequal(colnames(se_gr), names(periods_std))
+})
+
+
+test_that("compute_growth_rates takes the input assay from the time-course profile", {
+  # lfc_assay = NULL resolves to get_fit_profile("time-course")$input_assay
+  expect_equal(get_fit_profile("time-course")$input_assay, "LogFoldChange")
+  from_profile <- compute_growth_rates(se_tc_small, periods_std, norm_map_std)
+  explicit <- compute_growth_rates(se_tc_small, periods_std, norm_map_std,
+                                   lfc_assay = "LogFoldChange")
+  expect_equal(
+    data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
+      SummarizedExperiment::assay(from_profile, "GrowthRates"))),
+    data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
+      SummarizedExperiment::assay(explicit, "GrowthRates")))
+  )
+})
+
+
+test_that("compute_growth_rates accepts a custom rate_fn", {
+  # Rate from the first and last timepoint only, in doublings per day
+  endpoint_rate_fn <- function(dt) {
+    ord <- order(dt$Duration)
+    lfc <- dt$LogFoldChange[ord]
+    dur <- dt$Duration[ord]
+    24 * (lfc[length(lfc)] - lfc[1L]) / (dur[length(dur)] - dur[1L])
+  }
+  gr_custom <- gDRcore:::.compute_growth_rates(
+    se_tc_small, periods_std, norm_map_std, "LogFoldChange",
+    rate_fn = endpoint_rate_fn
+  )
+  gr_default <- gDRcore:::.compute_growth_rates(
+    se_tc_small, periods_std, norm_map_std, "LogFoldChange"
+  )
+  expect_equal(NROW(gr_custom), NROW(gr_default))
+  expect_true(all(is.finite(gr_custom$GrowthRate)))
+  # A different estimator must give different rates on noisy data
+  expect_false(isTRUE(all.equal(gr_custom$GrowthRate, gr_default$GrowthRate)))
+
+  # On a noiseless linear profile both estimators agree
+  se_linear <- .make_tc_se(noise_sd = 0)
+  expect_equal(
+    gDRcore:::.compute_growth_rates(se_linear, periods_std, norm_map_std,
+                                    "LogFoldChange", rate_fn = endpoint_rate_fn)$GrowthRate,
+    gDRcore:::.compute_growth_rates(se_linear, periods_std, norm_map_std,
+                                    "LogFoldChange")$GrowthRate,
+    tolerance = 1e-10
+  )
+})
+
+
+test_that("compute_growth_rates rejects a rate_fn that is not one value per well", {
+  expect_error(
+    compute_growth_rates(se_tc_small, periods_std, norm_map_std,
+                         rate_fn = function(dt) c(1, 2)),
+    regexp = "single growth rate"
+  )
+})
+
+
+test_that("compute_growth_rates output feeds apply_fit with a custom fit function", {
+  # The two-step workflow available for single-agent and combination data:
+  # stage 1 → apply_fit(data_type = "time-course-metrics", fit_fn = <custom>)
+  se_gr <- compute_growth_rates(se_tc_small, periods_std, norm_map_std)
+  mean_fn <- function(dt) {
+    data.table::data.table(mean_ngr = mean(dt$NormalizedGrowthRate, na.rm = TRUE))
+  }
+  se_custom <- apply_fit(
+    se_gr,
+    fit_fn = mean_fn,
+    data_type = "time-course-metrics",
+    output_assay = "CustomMetrics",
+    merge = "replace",
+    fit_source = "custom"
+  )
+  metrics_dt <- data.table::as.data.table(
+    BumpyMatrix::unsplitAsDataFrame(
+      SummarizedExperiment::assay(se_custom, "CustomMetrics")
+    )
+  )
+  expect_true("mean_ngr" %in% names(metrics_dt))
+  expect_true(all(metrics_dt$fit_source == "custom"))
+})
+
+
+# ---------------------------------------------------------------------------
 # fit_SE.timecourse — full pipeline
 # ---------------------------------------------------------------------------
 
@@ -471,6 +564,81 @@ test_that("fit_SE.timecourse fits every combo arm", {
     )
   )
   expect_equal(data.table::uniqueN(metrics_dt, by = c("row", "column")), NROW(metrics_dt))
+})
+
+
+test_that("fit_SE.timecourse keeps the intermediate GrowthRates assay", {
+  se_fit <- suppressWarnings(fit_SE.timecourse(
+    se_tc_small,
+    periods = periods_std,
+    normalization_map = norm_map_std
+  ))
+  expect_setequal(SummarizedExperiment::assayNames(se_fit),
+                  c("GrowthRates", "Metrics"))
+})
+
+
+test_that("fit_SE.timecourse accepts a custom fit_fn and records fit_source", {
+  mean_fn <- function(dt) {
+    data.table::data.table(mean_ngr = mean(dt$NormalizedGrowthRate, na.rm = TRUE))
+  }
+  se_fit <- suppressWarnings(fit_SE.timecourse(
+    se_tc_small,
+    periods = periods_std,
+    normalization_map = norm_map_std,
+    fit_fn = mean_fn
+  ))
+  metrics_dt <- data.table::as.data.table(
+    BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se_fit, "Metrics"))
+  )
+  expect_true("mean_ngr" %in% names(metrics_dt))
+  # A user-supplied fit defaults to fit_source = "custom"
+  expect_true(all(metrics_dt$fit_source == "custom"))
+  expect_false("ec50" %in% names(metrics_dt))
+})
+
+
+test_that("fit_SE.timecourse honours an explicit fit_source", {
+  se_fit <- suppressWarnings(fit_SE.timecourse(
+    se_tc_small,
+    periods = periods_std,
+    normalization_map = norm_map_std,
+    fit_fn = function(dt) data.table::data.table(x_mean = mean(dt$NormalizedGrowthRate)),
+    fit_source = "my_model"
+  ))
+  metrics_dt <- data.table::as.data.table(
+    BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se_fit, "Metrics"))
+  )
+  expect_true(all(metrics_dt$fit_source == "my_model"))
+})
+
+
+test_that("fit_SE.timecourse default fit records fit_source 'gDR'", {
+  se_fit <- suppressWarnings(fit_SE.timecourse(
+    se_tc_small,
+    periods = periods_std,
+    normalization_map = norm_map_std
+  ))
+  metrics_dt <- data.table::as.data.table(
+    BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se_fit, "Metrics"))
+  )
+  expect_true(all(metrics_dt$fit_source == "gDR"))
+})
+
+
+test_that("fit_SE.timecourse forwards rate_fn to stage 1", {
+  constant_rate_fn <- function(dt) 1.5
+  se_fit <- suppressWarnings(fit_SE.timecourse(
+    se_tc_small,
+    periods = periods_std,
+    normalization_map = norm_map_std,
+    rate_fn = constant_rate_fn
+  ))
+  growth_dt <- data.table::as.data.table(
+    BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se_fit, "GrowthRates"))
+  )
+  # Every rate is 1.5, so every normalised rate is 1.5 ("None") or 1 (ratio)
+  expect_setequal(round(growth_dt$NormalizedGrowthRate, 10), c(1.5, 1))
 })
 
 

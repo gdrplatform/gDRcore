@@ -20,8 +20,8 @@
     "slicing_values": null,
     "input_assay": "LogFoldChange",
     "nested_cols": ["concentration", "duration"],
-    "nested_cols_note": "Stage 1 of fit_SE.timecourse(): .compute_growth_rates() reads this assay and fits lm(LogFoldChange ~ Duration) per well per half-open time window [start, end). Duration is consumed here — it does not appear in Stage 2. Stage 1 does not go through apply_fit(), so this profile documents the input contract rather than driving slicing; slicing_values is null (all values found) because LogFoldChange carries no GR/RV split. identifier keys resolved at runtime via gDRutils::get_env_identifiers()",
-    "description": "Time-course Stage 1: log2 fold-change time-series; .compute_growth_rates() iterates rows indexed by concentration x duration to compute per-well growth rates. Output is the 'time-course-metrics' GrowthRates assay."
+    "nested_cols_note": "Stage 1 of fit_SE.timecourse(): compute_growth_rates() reads this assay — it is the default value of the lfc_assay argument — and applies rate_fn (by default the slope of lm(LogFoldChange ~ Duration)) per well per half-open time window [start, end). Duration is consumed here; it does not appear in Stage 2. Stage 1 aggregates and normalises across cells, so it does not go through apply_fit() and slicing_values is null: LogFoldChange carries no GR/RV split. identifier keys resolved at runtime via gDRutils::get_env_identifiers()",
+    "description": "Time-course Stage 1: log2 fold-change time-series; compute_growth_rates() iterates rows indexed by concentration x duration to compute per-well growth rates, pluggable via rate_fn. Output is the 'time-course-metrics' GrowthRates assay."
   },
   "time-course-metrics": {
     "slicing_cols": ["normalization_type"],

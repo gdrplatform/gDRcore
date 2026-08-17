@@ -1,5 +1,7 @@
 ## gDRcore 1.11.10 - 2026-08-17
 * add `fit_SE.timecourse()` two-stage growth-rate fitting for time-course (Incucyte) screens
+* add `compute_growth_rates()` as a standalone stage, with `rate_fn` and `fit_fn` hooks,
+  so the custom fit interface covers time-course data as well
 
 ## gDRcore 1.11.9 - 2026-08-12
 * refactor fit_SE.combinations() into composable apply_combo_*() steps
