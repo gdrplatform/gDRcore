@@ -36,8 +36,11 @@ return a single numeric value: the growth rate in doublings per day.
 A \code{data.table} with one row per
 \code{(CellLine, Drug, Concentration, partner slots, period)} — controls
 included — holding \code{GrowthRate} (doublings/day), \code{sd_GrowthRate}
-across replicate wells, \code{rate_0} (the control baseline used),
-\code{NormalizedGrowthRate} and \code{normalization_type}.
+across replicate wells, \code{rate_0} (the control baseline used, \code{NA}
+for periods mapped to \code{"None"} and when no control rows are present),
+\code{NormalizedGrowthRate} and \code{normalization_type}.  All of these
+columns are always present, whatever the normalization map or the
+availability of controls.
 }
 \description{
 Stage 1 of the time-course pipeline: fits a growth rate per well within each

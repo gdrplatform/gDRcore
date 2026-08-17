@@ -217,8 +217,11 @@ fit_SE.timecourse <- function(se,
 #' @return A \code{data.table} with one row per
 #'   \code{(CellLine, Drug, Concentration, partner slots, period)} — controls
 #'   included — holding \code{GrowthRate} (doublings/day), \code{sd_GrowthRate}
-#'   across replicate wells, \code{rate_0} (the control baseline used),
-#'   \code{NormalizedGrowthRate} and \code{normalization_type}.
+#'   across replicate wells, \code{rate_0} (the control baseline used, \code{NA}
+#'   for periods mapped to \code{"None"} and when no control rows are present),
+#'   \code{NormalizedGrowthRate} and \code{normalization_type}.  All of these
+#'   columns are always present, whatever the normalization map or the
+#'   availability of controls.
 #'
 #' @examples
 #' \dontrun{
@@ -485,6 +488,9 @@ growth_rates_to_se <- function(growth_dt) {
 
   if (NROW(dmso_baselines) == 0L) {
     warning(".compute_growth_rates: no DMSO/vehicle rows found; NormalizedGrowthRate will be NA.")
+    # rate_0 is part of the documented output, so it must be present on every
+    # path - callers should not have to guard against a missing column.
+    av_rates[, rate_0 := NA_real_]
     av_rates[, NormalizedGrowthRate := NA_real_]
     av_rates[, normalization_type := "NGR"]
     return(av_rates)

@@ -402,6 +402,22 @@ test_that("compute_growth_rates returns the growth rate table, controls included
 })
 
 
+test_that("compute_growth_rates returns rate_0 even when no controls are present", {
+  se_no_ctrl <- se_tc_small[!grepl("^DMSO\\|", rownames(se_tc_small)), ]
+  expect_warning(
+    growth_dt <- compute_growth_rates(se_no_ctrl, periods_std, norm_map_std),
+    "no DMSO/vehicle rows found"
+  )
+  # The column set is part of the contract — callers must not have to guard
+  # against a missing rate_0 on the no-control path.
+  expect_true(all(c("GrowthRate", "sd_GrowthRate", "rate_0",
+                    "NormalizedGrowthRate", "normalization_type", "period")
+                  %in% names(growth_dt)))
+  expect_true(all(is.na(growth_dt$rate_0)))
+  expect_true(all(is.na(growth_dt$NormalizedGrowthRate)))
+})
+
+
 test_that("growth_rates_to_se builds the stage 2 SE and drops controls", {
   growth_dt <- compute_growth_rates(se_tc_small, periods_std, norm_map_std)
   se_gr <- growth_rates_to_se(growth_dt)
