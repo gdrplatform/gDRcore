@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -977,17 +977,199 @@ fit function.</p>
 <hr>
 </div>
 <div class="section level2">
+<h2 id="time-course-data-fit_se-timecourse">Time-course data: <code>fit_SE.timecourse()</code><a class="anchor" aria-label="anchor" href="#time-course-data-fit_se-timecourse"></a>
+</h2>
+<p>Live-cell imaging experiments (e.g. Incucyte) produce per-well cell
+counts at multiple time points rather than endpoint readouts. The
+standard <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code> pipeline is not appropriate for this
+layout. <code><a href="../reference/fit_SE.timecourse.html">fit_SE.timecourse()</a></code> provides a dedicated two-stage
+pipeline:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Stage</th>
+<th>What it does</th>
+<th>Output</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>
+<code>lm(LogFoldChange ~ Duration)</code> per well per time window →
+mean growth rate (doublings/day) across replicates</td>
+<td>
+<code>GrowthRates</code> assay</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Logistic Hill fit on
+<code>NormalizedGrowthRate ~ log10(Concentration)</code> per
+<code>(Drug, CellLine, period)</code>
+</td>
+<td>
+<code>Metrics</code> assay</td>
+</tr>
+</tbody>
+</table>
+<div class="section level3">
+<h3 id="inputs">Inputs<a class="anchor" aria-label="anchor" href="#inputs"></a>
+</h3>
+<p><code><a href="../reference/fit_SE.timecourse.html">fit_SE.timecourse()</a></code> expects a
+<code>SummarizedExperiment</code> with a <code>LogFoldChange</code>
+assay — the output of
+<code>normalize_SE(se, data_type = "time-course")</code>:</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># periods: named list of half-open c(start_hour, end_hour) windows,</span></span>
+<span><span class="co"># i.e. a timepoint is used when start_hour &lt;= Duration &lt; end_hour</span></span>
+<span><span class="va">periods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  early <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">48</span><span class="op">)</span>,</span>
+<span>  late <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">48</span>, <span class="fl">96</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># normalization_map: per-period DMSO reference; must name every period</span></span>
+<span><span class="co">#   "None"  → keep raw growth rate (doublings/day)</span></span>
+<span><span class="co">#   "early" → divide by DMSO rate from the "early" period</span></span>
+<span><span class="va">norm_map</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>early <span class="op">=</span> <span class="st">"None"</span>, late <span class="op">=</span> <span class="st">"early"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">se_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_SE.timecourse.html">fit_SE.timecourse</a></span><span class="op">(</span></span>
+<span>  <span class="va">se_tc</span>,                          <span class="co"># SE with LogFoldChange assay</span></span>
+<span>  periods <span class="op">=</span> <span class="va">periods</span>,</span>
+<span>  normalization_map <span class="op">=</span> <span class="va">norm_map</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="output-structure">Output structure<a class="anchor" aria-label="anchor" href="#output-structure"></a>
+</h3>
+<p>The result is a <code>SummarizedExperiment</code> where
+<strong>columns = period names</strong>:</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># One column per period</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">se_fit</span><span class="op">)</span>   <span class="co"># c("early", "late")</span></span>
+<span></span>
+<span><span class="co"># Metrics assay: fitted parameters per (Drug × CellLine × period)</span></span>
+<span><span class="va">metrics_dt</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/convert_se_assay_to_dt.html" class="external-link">convert_se_assay_to_dt</a></span><span class="op">(</span><span class="va">se_fit</span>, <span class="st">"Metrics"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">metrics_dt</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DrugName"</span>, <span class="st">"CellLineName"</span>, <span class="st">"ec50"</span>, <span class="st">"xc50"</span>, <span class="st">"r2"</span>,</span>
+<span>                     <span class="st">"x_inf"</span>, <span class="st">"x_0"</span>, <span class="st">"N_conc"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p>Each row is one dose-response curve for a
+<code>(Drug, CellLine, period)</code> combination, with the same fit
+columns as <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code>: <code>ec50</code>, <code>xc50</code>,
+<code>h</code>, <code>r2</code>, <code>x_mean</code>,
+<code>x_AOC</code>, <code>N_conc</code>, <code>fit_type</code>, etc.</p>
+</div>
+<div class="section level3">
+<h3 id="custom-fitting-for-time-course-data">Custom fitting for time-course data<a class="anchor" aria-label="anchor" href="#custom-fitting-for-time-course-data"></a>
+</h3>
+<p>Both stages are pluggable, so the custom fit interface covers
+time-course data the same way it covers single-agent and combination
+screens.</p>
+<p>Stage 2 takes a <code>fit_fn</code> with the usual contract — it
+receives one <code>normalization_type = "NGR"</code> slice of the
+<code>GrowthRates</code> assay, with <code>NormalizedGrowthRate</code>
+as the response and <code>Concentration</code> as the x axis:</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">auc_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dt</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>auc_ngr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">dt</span><span class="op">$</span><span class="va">NormalizedGrowthRate</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">se_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_SE.timecourse.html">fit_SE.timecourse</a></span><span class="op">(</span></span>
+<span>  <span class="va">se_tc</span>,</span>
+<span>  periods <span class="op">=</span> <span class="va">periods</span>,</span>
+<span>  normalization_map <span class="op">=</span> <span class="va">norm_map</span>,</span>
+<span>  fit_fn <span class="op">=</span> <span class="va">auc_fn</span>                 <span class="co"># fit_source defaults to "custom"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Stage 1 takes a <code>rate_fn</code>, which receives the timepoints
+of a single well within a single window and returns one growth rate in
+doublings per day. Replace it when the default
+<code>lm(LogFoldChange ~ Duration)</code> slope is not the right
+estimator — for example for screens with only two usable timepoints, or
+when the growth phase has to be selected per well:</p>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">endpoint_rate_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dt</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">ord</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">dt</span><span class="op">$</span><span class="va">Duration</span><span class="op">)</span></span>
+<span>  <span class="fl">24</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">dt</span><span class="op">$</span><span class="va">LogFoldChange</span><span class="op">[</span><span class="va">ord</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">dt</span><span class="op">$</span><span class="va">Duration</span><span class="op">[</span><span class="va">ord</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">se_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_SE.timecourse.html">fit_SE.timecourse</a></span><span class="op">(</span></span>
+<span>  <span class="va">se_tc</span>,</span>
+<span>  periods <span class="op">=</span> <span class="va">periods</span>,</span>
+<span>  normalization_map <span class="op">=</span> <span class="va">norm_map</span>,</span>
+<span>  rate_fn <span class="op">=</span> <span class="va">endpoint_rate_fn</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>The stages can also be run separately, which is the same two-step
+workflow as <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">average_SE()</a></code> → <code><a href="../reference/apply_fit.html">apply_fit()</a></code> for
+single-agent data. <code><a href="../reference/compute_growth_rates.html">compute_growth_rates()</a></code> returns the
+growth rate table — one row per
+<code>(CellLine, Drug, Concentration, partner slots, period)</code>,
+<strong>controls included</strong>, with <code>GrowthRate</code>,
+<code>sd_GrowthRate</code> and <code>rate_0</code> — and
+<code><a href="../reference/growth_rates_to_se.html">growth_rates_to_se()</a></code> turns it into the stage 2 input:</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">growth_dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_growth_rates.html">compute_growth_rates</a></span><span class="op">(</span><span class="va">se_tc</span>, <span class="va">periods</span>, <span class="va">norm_map</span>, rate_fn <span class="op">=</span> <span class="va">endpoint_rate_fn</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">se_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/growth_rates_to_se.html">growth_rates_to_se</a></span><span class="op">(</span><span class="va">growth_dt</span><span class="op">)</span>,</span>
+<span>  fit_fn <span class="op">=</span> <span class="va">auc_fn</span>,</span>
+<span>  data_type <span class="op">=</span> <span class="st">"time-course-metrics"</span>, <span class="co"># profile supplies input_assay = "GrowthRates"</span></span>
+<span>  output_assay <span class="op">=</span> <span class="st">"Metrics"</span>,</span>
+<span>  merge <span class="op">=</span> <span class="st">"replace"</span>,</span>
+<span>  fit_source <span class="op">=</span> <span class="st">"custom"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Note that <code><a href="../reference/fit_SE.timecourse.html">fit_SE.timecourse()</a></code> keeps the
+<code>GrowthRates</code> assay in its output, so an already-fitted
+object can be re-fitted with a different <code>fit_fn</code> without
+recomputing stage 1.</p>
+</div>
+<div class="section level3">
+<h3 id="key-design-notes">Key design notes<a class="anchor" aria-label="anchor" href="#key-design-notes"></a>
+</h3>
+<ul>
+<li>
+<strong><code>normalization_type = "NGR"</code></strong>
+(NormalizedGrowthRate) — distinct from <code>"GR"</code> (GR value) and
+<code>"RV"</code> (Relative Viability) used in single-agent screens.
+Time-course data has no RV/GR split.</li>
+<li>
+<strong>Half-open windows <code>[start, end)</code></strong> —
+contiguous periods partition the time-course: the shared boundary
+belongs to the later window and <code>t = 0</code> is kept.</li>
+<li>
+<strong>All partner-drug slots in the row key</strong> — each
+combination arm at each partner concentration gets its own dose-response
+curve.</li>
+<li>
+<strong><code>untreated_tag</code> from
+<code>gDRutils</code></strong> — DMSO detection uses
+<code>get_env_identifiers("untreated_tag")</code> rather than hardcoded
+strings.</li>
+<li>
+<strong>Two profiles, one <code><a href="../reference/apply_fit.html">apply_fit()</a></code> pass</strong> —
+<code>"time-course"</code> supplies the default input assay of stage 1,
+<code>"time-course-metrics"</code> drives the stage 2 slicing. Stage 1
+aggregates replicates and normalises against control wells that live in
+<em>other</em> BumpyMatrix cells, so it cannot be expressed as an
+<code><a href="../reference/apply_fit.html">apply_fit()</a></code> pass; that is why it is pluggable through
+<code>rate_fn</code> instead. See GDR-3506 for the planned multi-stage
+profile model.</li>
+</ul>
+<hr>
+</div>
+</div>
+<div class="section level2">
 <h2 id="quick-reference">Quick reference<a class="anchor" aria-label="anchor" href="#quick-reference"></a>
 </h2>
 <div class="section level3">
 <h3 id="function-signatures">Function signatures<a class="anchor" aria-label="anchor" href="#function-signatures"></a>
 </h3>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Single fit → one output assay</span></span>
 <span><span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">se</span>,</span>
 <span>  <span class="va">fit_fn</span>,</span>
-<span>  data_type <span class="op">=</span> <span class="st">"single-agent"</span>, <span class="co"># or "combination", "time-course"</span></span>
+<span>  data_type <span class="op">=</span> <span class="st">"single-agent"</span>, <span class="co"># or "combination", "time-course-metrics"</span></span>
 <span>  slicing_cols <span class="op">=</span> <span class="cn">NULL</span>, <span class="co"># NULL → data_type default</span></span>
 <span>  slicing_values <span class="op">=</span> <span class="cn">NULL</span>, <span class="co"># NULL → all unique values found</span></span>
 <span>  input_assay <span class="op">=</span> <span class="cn">NULL</span>, <span class="co"># NULL → data_type default ("Averaged")</span></span>
@@ -1239,7 +1421,7 @@ when embedding score computation inside a larger custom
 <div class="section level2">
 <h2 class="unnumbered" id="sessioninfo">SessionInfo<a class="anchor" aria-label="anchor" href="#sessioninfo"></a>
 </h2>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -1270,7 +1452,7 @@ when embedding score computation inside a larger custom
 <span><span class="co">#&gt;  [9] BiocGenerics_0.58.1         generics_0.1.4             </span></span>
 <span><span class="co">#&gt; [11] MatrixGenerics_1.24.0       matrixStats_1.5.0          </span></span>
 <span><span class="co">#&gt; [13] gDRutils_1.10.0             gDRtestData_1.10.0         </span></span>
-<span><span class="co">#&gt; [15] gDRcore_1.11.10             BiocStyle_2.40.0           </span></span>
+<span><span class="co">#&gt; [15] gDRcore_1.11.11             BiocStyle_2.40.0           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] farver_2.1.2                fastmap_1.2.0              </span></span>

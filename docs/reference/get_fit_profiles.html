@@ -11,7 +11,7 @@ slicing configuration."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -90,19 +90,19 @@ slicing configuration.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "normalization_type"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`time-course`$slicing_values</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "GR" "RV"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`time-course`$input_assay</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Averaged"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "LogFoldChange"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`time-course`$nested_cols</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "concentration" "duration"     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`time-course`$nested_cols_note</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "identifier keys resolved at runtime via gDRutils::get_env_identifiers() — actual column names may differ in custom environments"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Stage 1 of fit_SE.timecourse(): compute_growth_rates() reads this assay — it is the default value of the lfc_assay argument — and applies rate_fn (by default the slope of lm(LogFoldChange ~ Duration)) per well per half-open time window [start, end). Duration is consumed here; it does not appear in Stage 2. Stage 1 aggregates and normalises across cells, so it does not go through apply_fit() and slicing_values is null: LogFoldChange carries no GR/RV split. identifier keys resolved at runtime via gDRutils::get_env_identifiers()"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`time-course`$description</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time-series per dose; fit_fn receives one data.table per normalization_type slice, rows indexed by concentration x duration (time axis)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time-course Stage 1: log2 fold-change time-series; compute_growth_rates() iterates rows indexed by concentration x duration to compute per-well growth rates, pluggable via rate_fn. Output is the 'time-course-metrics' GrowthRates assay."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $combination</span>
@@ -123,6 +123,26 @@ slicing configuration.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $combination$description</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2D concentration grid; fit_fn receives one data.table per normalization_type slice, rows indexed by concentration x concentration2"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`time-course-metrics`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`time-course-metrics`$slicing_cols</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "normalization_type"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`time-course-metrics`$slicing_values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "NGR"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`time-course-metrics`$input_assay</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "GrowthRates"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`time-course-metrics`$nested_cols</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "concentration"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`time-course-metrics`$nested_cols_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Stage 2 of fit_SE.timecourse(): apply_fit() reads GrowthRates (produced by Stage 1) and fits a logistic curve on NormalizedGrowthRate ~ log10(Concentration). normalization_type='NGR' (NormalizedGrowthRate) — distinct from single-agent 'GR' (GR value) and 'RV' (Relative Viability): time-course has no RV/GR split, only a single rate-based metric. BumpyMatrix row key = DrugName|partner drug slots|partner concentration slots|CellLineName — every slot present in the data is used (DrugName_2/Concentration_2 for doublets, DrugName_3/Concentration_3 for triplets), so SA and each combo arm (same DrugA at different partner concentrations) are fitted as separate curves. The partner concentrations are present in GrowthRates cells alongside Concentration. identifier keys resolved at runtime via gDRutils::get_env_identifiers()"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`time-course-metrics`$description</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time-course Stage 2: dose-response logistic fit on NormalizedGrowthRate ~ log10(Concentration) per (Drug, CellLine, [DrugName_2, Concentration_2], period) combination. fit_fn receives one data.table per normalization_type='NGR' slice, rows indexed by concentration (x axis) with Concentration_2 as additional context."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>

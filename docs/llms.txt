@@ -18,8 +18,14 @@ Either create a SummarizedExperiment and normalize raw treated and
 control data (create_and_normalize_SE), average data (average_SE), or
 fit the processed data (fit_SE).
 
+- [`compute_growth_rates()`](https://gdrplatform.github.io/gDRcore/reference/compute_growth_rates.md)
+  : Compute per-period growth rates for time-course screens
 - [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
   : fit_SE for combination screens
+- [`fit_SE.timecourse()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.timecourse.md)
+  : fit_SE for time-course (Incucyte) screens
+- [`growth_rates_to_se()`](https://gdrplatform.github.io/gDRcore/reference/growth_rates_to_se.md)
+  : Convert a growth rate table into the stage 2 SummarizedExperiment
 - [`average_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
   [`create_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
   [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)

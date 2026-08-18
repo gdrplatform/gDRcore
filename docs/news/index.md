@@ -1,5 +1,21 @@
 # Changelog
 
+## gDRcore 1.11.11 - 2026-08-17
+
+- add
+  [`fit_SE.timecourse()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.timecourse.md)
+  two-stage growth-rate fitting for time-course (Incucyte) screens
+- add
+  [`compute_growth_rates()`](https://gdrplatform.github.io/gDRcore/reference/compute_growth_rates.md)
+  and
+  [`growth_rates_to_se()`](https://gdrplatform.github.io/gDRcore/reference/growth_rates_to_se.md)
+  as standalone stages, with `rate_fn` and `fit_fn` hooks, so the custom
+  fit interface covers time-course data as well
+- ensure
+  [`compute_growth_rates()`](https://gdrplatform.github.io/gDRcore/reference/compute_growth_rates.md)
+  returns `rate_0` on every path, including screens with no control
+  wells, so callers do not have to guard against a missing column
+
 ## gDRcore 1.11.10 - 2026-08-17
 
 - fix
