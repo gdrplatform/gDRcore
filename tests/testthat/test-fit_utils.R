@@ -449,7 +449,9 @@ test_that("fit_drug_response_metrics uses GR priors for GR normalization", {
 })
 
 
-test_that("fit_drug_response_metrics handles factor normalization_type (regression test)", {
+# nolint start: ticket_ref_linter.
+test_that("fit_drug_response_metrics handles factor normalization_type (regression: GDR-3352)", {
+# nolint end
   # Averaged assay stores normalization_type as a factor; reading [1] from a factor
   # returns the integer level code, not the label. as.character() prevents this.
   dt <- data.table::data.table(
