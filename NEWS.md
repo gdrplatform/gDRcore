@@ -1,6 +1,6 @@
 ## gDRcore 1.11.11 - 2026-08-17
 * remove alignment whitespace flagged by the gDRstyle linter
-* mark internal helper functions with @keywords internal
+* add @keywords internal to internal helper functions
 
 ## gDRcore 1.11.10 - 2026-08-17
 * fix `create_SE()` for time-course data, where the duration is a nested identifier
