@@ -1,4 +1,5 @@
 #' @keywords combinations
+#' @keywords internal
 calculate_Loewe <- function(
     df_mean,
     drug_2,
@@ -162,9 +163,9 @@ calculate_Loewe <- function(
     # cap the concentrations for the reference
     over_edge <-
       pmax(0, (-df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) +
-             min(axis_1$pos_y) -  (max(axis_1$pos_y) + conc_margin)) +
+             min(axis_1$pos_y) - (max(axis_1$pos_y) + conc_margin)) +
       pmax(0, (df_iso_curve$x1 + df_iso_curve$x2_ref) / sqrt(2) +
-             min(axis_2$pos_x) -  (max(axis_2$pos_x) + conc_margin))
+             min(axis_2$pos_x) - (max(axis_2$pos_x) + conc_margin))
     df_iso_curve$x2_ref_cap <- df_iso_curve$x2_ref - over_edge * sqrt(2)
 
     # rotate back the reference
@@ -298,6 +299,7 @@ calculate_Loewe <- function(
 
 
 #' @keywords combinations
+#' @keywords internal
 get_isocutoffs <- function(df_mean, normalization_type) {
   if (min(df_mean[normalization_type == normalization_type, smooth], na.rm = TRUE) > 0.7) {
     iso_cutoffs <- NULL
@@ -324,6 +326,7 @@ get_isocutoffs <- function(df_mean, normalization_type) {
 
 
 #' @keywords combinations
+#' @keywords internal
 calculate_isobolograms <- function(drug_2,
                                    drug_1,
                                    codilution,

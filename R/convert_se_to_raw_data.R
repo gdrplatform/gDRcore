@@ -108,7 +108,7 @@ convert_se_to_raw_data <- function(se) {
 
   # Merge and adjust the data
   merged_df <- data.table::rbindlist(list(trt, ctrl), fill = TRUE)
-  merged_df$rId <- merged_df$cId <-  merged_df$ReadoutValue <- NULL
+  merged_df$rId <- merged_df$cId <- merged_df$ReadoutValue <- NULL
   data.table::setnames(merged_df, "CorrectedReadout", "ReadoutValue")
 
   exp_metadata <- gDRutils::get_SE_experiment_metadata(se)

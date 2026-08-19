@@ -124,8 +124,8 @@ apply_fit <- function(se,
 
   se_out <- tryCatch(
     gDRutils::apply_bumpy_function(
-      se             = se,
-      FUN            = wrapper_fn,
+      se = se,
+      FUN = wrapper_fn,
       req_assay_name = input_assay,
       out_assay_name = tmp_assay
     ),
@@ -207,15 +207,15 @@ apply_fit_to_se <- function(se,
   # Warn for missing standard metric columns before delegating
   # (apply_fit does not impose column expectations on custom assays)
   result <- apply_fit(
-    se             = se,
-    fit_fn         = fit_fn,
-    data_type      = "single-agent",
+    se = se,
+    fit_fn = fit_fn,
+    data_type = "single-agent",
     slicing_values = normalization_types,
-    input_assay    = averaged_assay,
-    output_assay   = metrics_assay,
-    merge          = merge,
-    on_error       = on_error,
-    fit_source     = fit_source
+    input_assay = averaged_assay,
+    output_assay = metrics_assay,
+    merge = merge,
+    on_error = on_error,
+    fit_source = fit_source
   )
 
   # Warn only for the standard Metrics assay — custom assays (e.g. "musyc_params")
@@ -674,13 +674,13 @@ fit_drug_response_metrics_4p <- function(avg_dt, x_col = "x",
 
   if (four_param) {
     fct <- drc::LL.4(names = fit_param)
-    start  <- c(2, x_inf_prior, 1, med_conc)
+    start <- c(2, x_inf_prior, 1, med_conc)
     lowerl <- c(0.1, lower_x_inf, lower_x_0, min_conc / 10)
     upperl <- c(5, 1, 1 + cap, max_conc * 10)
   } else {
     fit_param_3p <- fit_param[-3]   # drop x_0
     fct <- drc::LL.3u(upper = x_0, names = fit_param_3p)
-    start  <- c(2, x_inf_prior, med_conc)
+    start <- c(2, x_inf_prior, med_conc)
     lowerl <- c(0.1, lower_x_inf, min_conc / 10)
     upperl <- c(5, min(x_0 + cap, 1), max_conc * 10)
   }
@@ -1611,9 +1611,9 @@ bliss_fit_fn <- function(avg_dt) {
   if (n_combo == 0L || NROW(sa1) == 0L || NROW(sa2) == 0L) {
     list(
       normalization_type = norm_type,
-      bliss_score        = NA_real_,
-      bliss_excess_mean  = NA_real_,
-      n_combo_points     = n_combo
+      bliss_score = NA_real_,
+      bliss_excess_mean = NA_real_,
+      n_combo_points = n_combo
     )
   } else {
     # Match SA responses to each combo point by concentration (per-point comparison)
