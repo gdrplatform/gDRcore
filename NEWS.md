@@ -1,3 +1,7 @@
+## gDRcore 1.11.12 - 2026-08-19
+* add `get_period_timepoints()` reporting which measurement timepoints enter each growth-rate
+  window, so downstream reports can state the data used instead of only the window bounds
+
 ## gDRcore 1.11.11 - 2026-08-17
 * add `fit_SE.timecourse()` two-stage growth-rate fitting for time-course (Incucyte) screens
 * add `compute_growth_rates()` and `growth_rates_to_se()` as standalone stages, with

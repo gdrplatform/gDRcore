@@ -760,3 +760,49 @@ test_that("fit_SE.timecourse errors when no timepoint falls into any window", {
     regexp = "no growth rates could be computed"
   )
 })
+
+# ---------------------------------------------------------------------------
+# get_period_timepoints
+# ---------------------------------------------------------------------------
+
+test_that("get_period_timepoints lists the timepoints inside each window", {
+  se_curved <- .make_tc_curved_se(c(0, 12, 24, 36, 48))
+  tp <- get_period_timepoints(se_curved, list(early = c(0, 24), late = c(24, 48)),
+                              "LogFoldChange")
+  expect_equal(tp$period, c("early", "late"))
+  expect_equal(tp$window, c("0 - 24", "24 - 48"))
+  expect_equal(tp$n, c(2L, 2L))
+  expect_equal(tp$timepoints, c("0, 12", "24, 36"))
+})
+
+
+test_that("get_period_timepoints agrees with the points .compute_growth_rates fits", {
+  # The whole point of the listing is that it cannot drift from the rates.
+  durs <- c(0, 12, 24, 36)
+  se_curved <- .make_tc_curved_se(durs)
+  periods <- list(early = c(0, 24), late = c(24, 48))
+  tp <- get_period_timepoints(se_curved, periods, "LogFoldChange")
+  gr <- gDRcore:::.compute_growth_rates(
+    se_curved, periods, c(early = "None", late = "None"), "LogFoldChange"
+  )
+  treated <- gr[DrugName == "DrugA"]
+  for (p in c("early", "late")) {
+    listed <- as.numeric(strsplit(tp[period == p]$timepoints, ", ")[[1L]])
+    expect_equal(treated[period == p]$GrowthRate,
+                 .expected_curved_rate(listed), tolerance = 1e-10,
+                 info = sprintf("period '%s'", p))
+  }
+})
+
+
+test_that("get_period_timepoints reports a window with no measurements as n = 0", {
+  tp <- get_period_timepoints(se_tc_small, list(nope = c(1000, 2000)), "LogFoldChange")
+  expect_equal(tp$n, 0L)
+  expect_equal(tp$timepoints, "")
+})
+
+
+test_that("get_period_timepoints rejects malformed periods", {
+  expect_error(get_period_timepoints(se_tc_small, list(bad = c(48, 24)), "LogFoldChange"))
+  expect_error(get_period_timepoints(se_tc_small, list(c(0, 24)), "LogFoldChange"))
+})
