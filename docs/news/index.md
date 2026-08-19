@@ -1,5 +1,11 @@
 # Changelog
 
+## gDRcore 1.11.12 - 2026-08-18
+
+- remove alignment whitespace flagged by the gDRstyle linter
+- add [@keywords](https://github.com/keywords) internal to internal
+  helper functions
+
 ## gDRcore 1.11.11 - 2026-08-17
 
 - add
