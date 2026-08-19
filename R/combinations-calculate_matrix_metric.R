@@ -101,6 +101,7 @@ calculate_Bliss <- function(sa1,
 
 #' @rdname calculate_matrix_metric
 #' @keywords combinations
+#' @keywords internal
 .calculate_matrix_metric <- function(sa1,
                                      series_id1,
                                      sa2,

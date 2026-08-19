@@ -2,7 +2,7 @@ test_that("fit_combo_cotreatments works as expected", {
   n <- 10
   concs <- seq(0, n, 1)
   start <- gDRutils::predict_efficacy_from_conc(concs, x_inf = 0.1, x_0 = 1, ec50 = 0.5, h = 2)
-  vals  <- NULL
+  vals <- NULL
   for (i in seq(n)) {
     vals <- c(vals, start + i * concs)
   }
@@ -28,7 +28,7 @@ test_that("fit_cotreatment_series works as expected", {
   n <- 10
   concs <- seq(1, n, 1)
   start <- gDRutils::predict_efficacy_from_conc(concs, x_inf = 0.1, x_0 = 1, ec50 = 0.5, h = 2)
-  vals  <- NULL
+  vals <- NULL
   for (i in seq(n)) {
     vals <- c(vals, start + i * concs)
   }

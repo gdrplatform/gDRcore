@@ -15,4 +15,5 @@ a ordered data.table with results
 \description{
 Order a data.table with results
 }
+\keyword{internal}
 \keyword{utils}

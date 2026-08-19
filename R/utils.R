@@ -148,6 +148,7 @@ cleanup_metadata <- function(df_metadata,
 #' @keywords utils
 #' @return a ordered data.table with results
 #'
+#' @keywords internal
 order_result_df <- function(df_) {
 
   # Assertions:
@@ -331,6 +332,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
 }
 
 #' @keywords utils
+#' @keywords internal
 .get_default_nested_identifiers <- function(se = NULL, data_model = NULL) {
 
   checkmate::assert_choice(
@@ -356,6 +358,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
 }
 
 #' @keywords utils
+#' @keywords internal
 .get_default_single_agent_nested_identifiers <- function(se = NULL) {
   if (is.null(se)) {
     gDRutils::get_env_identifiers("concentration")
@@ -365,6 +368,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
 }
 
 #' @keywords utils
+#' @keywords internal
 .get_default_combination_nested_identifiers <- function(se = NULL) {
   identifiers <- if (is.null(se)) {
     gDRutils::get_env_identifiers(
@@ -383,6 +387,7 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
 }
 
 #' @keywords utils
+#' @keywords internal
 .get_default_time_course_nested_identifiers <- function(se = NULL) {
   identifiers <- if (is.null(se)) {
     gDRutils::get_env_identifiers(
@@ -401,8 +406,9 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
 }
 
 #' @keywords utils
+#' @keywords internal
 .catch_warnings <- function(x) {
-  warn  <- unlist(unique(x$warning))
+  warn <- unlist(unique(x$warning))
   if (!is.null(warn)) {
     futile.logger::flog.warn(paste(warn, collapse = "\n"))
   }

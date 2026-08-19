@@ -175,6 +175,7 @@ prepare_input.MultiAssayExperiment <-
   }
 
 #' @keywords prepare_input
+#' @keywords internal
 .set_nested_confounders <- function(nested_confounders, df) {
   x_names <- names(df)
   # Some experiment can have nested_confounders = NULL that is appropriate
@@ -206,6 +207,7 @@ prepare_input.MultiAssayExperiment <-
 }
 
 #' @keywords prepare_input
+#' @keywords internal
 .set_nested_identifiers <- function(nested_identifiers_l, args = list()) {
   if (is.null(nested_identifiers_l)) {
     do.call(.get_default_nested_identifiers, args)
@@ -215,6 +217,7 @@ prepare_input.MultiAssayExperiment <-
 }
 
 #' @keywords prepare_input
+#' @keywords internal
 .set_exps <- function(df_list) {
   df_names <- names(df_list)
   exps <- lapply(df_names, function(x) NULL)

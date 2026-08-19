@@ -186,6 +186,7 @@ map_df <- function(trt_md,
 #' to identify and map reference treatments.
 #' @keywords map_df
 #' @return list
+#' @keywords internal
 .map_references <- function(mat_elem,
                             rowData_colnames = c(gDRutils::get_env_identifiers("duration"),
                                                  paste0(c("drug", "drug_name", "drug_moa"), "3"))) {
@@ -201,7 +202,7 @@ map_df <- function(trt_md,
   valid <- tag_info$valid_cols
 
   is_untrt <- tag_info$ntag == tag_info$num_cols
-  is_ref   <- tag_info$ntag != 0L & !is_untrt
+  is_ref <- tag_info$ntag != 0L & !is_untrt
 
   cotrt_var <- setdiff(rowData_colnames,
                        gDRutils::get_env_identifiers(

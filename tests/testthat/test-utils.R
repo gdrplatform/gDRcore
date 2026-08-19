@@ -4,7 +4,7 @@ test_that("grr_matches works as expected", {
                                      DrugName_2 = rep(c("untreated", "vehicle", "drugA", "drugB"), 2),
                                      clid = rep(c("C1", "C2"), each = 4))
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  ref_idx <- which(mat_elem$DrugName %in% untreated_tag |  mat_elem$DrugName_2 %in% untreated_tag)
+  ref_idx <- which(mat_elem$DrugName %in% untreated_tag | mat_elem$DrugName_2 %in% untreated_tag)
   ref <- mat_elem[ref_idx, ]
   treated <- mat_elem[-ref_idx, ]
   valid <- c("DrugName", "DrugName_2")

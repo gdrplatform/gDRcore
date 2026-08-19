@@ -37,12 +37,12 @@
     sv_raw <- p[[which(names(p) == "slicing_values")]]
     sv <- if (length(sv_raw) == 0L) NULL else unlist(sv_raw)
     .fit_profile_env[[nm]] <- list(
-      slicing_cols      = field("slicing_cols"),
-      slicing_values    = sv,
-      input_assay       = field("input_assay"),
-      nested_cols       = field("nested_cols") %||% character(0),
-      nested_cols_note  = field("nested_cols_note") %||% "",
-      description       = field("description") %||% ""
+      slicing_cols = field("slicing_cols"),
+      slicing_values = sv,
+      input_assay = field("input_assay"),
+      nested_cols = field("nested_cols") %||% character(0),
+      nested_cols_note = field("nested_cols_note") %||% "",
+      description = field("description") %||% ""
     )
   }
   invisible(NULL)
@@ -152,10 +152,10 @@ register_fit_profile <- function(name,
   checkmate::assert_string(description)
 
   profile <- list(
-    slicing_cols   = slicing_cols,
+    slicing_cols = slicing_cols,
     slicing_values = slicing_values,
-    input_assay    = input_assay,
-    description    = description
+    input_assay = input_assay,
+    description = description
   )
   .fit_profile_env[[name]] <- profile
   invisible(profile)

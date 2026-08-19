@@ -1,3 +1,7 @@
+## gDRcore 1.11.12 - 2026-08-18
+* remove alignment whitespace flagged by the gDRstyle linter
+* add @keywords internal to internal helper functions
+
 ## gDRcore 1.11.11 - 2026-08-17
 * add `fit_SE.timecourse()` two-stage growth-rate fitting for time-course (Incucyte) screens
 * add `compute_growth_rates()` and `growth_rates_to_se()` as standalone stages, with
