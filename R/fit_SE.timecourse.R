@@ -252,7 +252,7 @@ compute_growth_rates <- function(se,
                                  rate_fn = NULL) {
 
   checkmate::assert_class(se, "SummarizedExperiment")
-  checkmate::assert_list(periods, min.len = 1L, types = "numeric", names = "named")
+  .assert_periods(periods)
   checkmate::assert_character(normalization_map, min.len = 1L, names = "named",
                               any.missing = FALSE)
   # Both directions: a period absent from the map would get no normalization
@@ -262,13 +262,6 @@ compute_growth_rates <- function(se,
   checkmate::assert_subset(unname(normalization_map), c("None", names(periods)))
   checkmate::assert_string(lfc_assay, null.ok = TRUE)
   checkmate::assert_function(rate_fn, null.ok = TRUE)
-
-  invisible(lapply(names(periods), function(period_name) {
-    window <- periods[[period_name]]
-    checkmate::assert_numeric(window, len = 2L, any.missing = FALSE, finite = TRUE,
-                              .var.name = sprintf("periods[['%s']]", period_name))
-    checkmate::assert_true(window[1L] < window[2L])
-  }))
 
   if (is.null(lfc_assay)) {
     lfc_assay <- get_fit_profile("time-course")$input_assay
@@ -371,6 +364,27 @@ growth_rates_to_se <- function(growth_dt) {
 }
 
 
+#' Validate a named list of time windows
+#'
+#' Every entry must be a finite numeric pair with \code{start < end}.  Kept next
+#' to \code{\link{.in_period}} so that the rule for what counts as a valid window
+#' cannot drift between the functions that consume one.
+#'
+#' @param periods named list of two-element numeric windows.
+#' @return \code{NULL}, invisibly; called for the assertions.
+#' @keywords internal
+#' @noRd
+.assert_periods <- function(periods) {
+  checkmate::assert_list(periods, min.len = 1L, types = "numeric", names = "named")
+  invisible(lapply(names(periods), function(period_name) {
+    window <- periods[[period_name]]
+    checkmate::assert_numeric(window, len = 2L, any.missing = FALSE, finite = TRUE,
+                              .var.name = sprintf("periods[['%s']]", period_name))
+    checkmate::assert_true(window[1L] < window[2L])
+  }))
+}
+
+
 #' Test which durations fall inside a time window
 #'
 #' Windows are half-open \code{[start, end)}: a timepoint on the boundary
@@ -411,6 +425,12 @@ growth_rates_to_se <- function(growth_dt) {
 #'   distinct timepoints) and \code{timepoints} (those timepoints, sorted,
 #'   comma-separated).  Periods matching no measurement yield \code{n = 0}.
 #'
+#'   \code{timepoints} is the union of the durations present anywhere in
+#'   \code{se}, not a per-plate or per-well listing.  On a uniform sampling grid
+#'   the two coincide; if plates were read on different schedules, a duration
+#'   contributed by only one barcode still appears here, and \code{n} is
+#'   therefore an upper bound on what any single well contributed to the fit.
+#'
 #' @examples
 #' \dontrun{
 #' get_period_timepoints(se_tc, list(early = c(44, 92), late = c(92, 140)))
@@ -422,15 +442,8 @@ growth_rates_to_se <- function(growth_dt) {
 #' @export
 get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
   checkmate::assert_class(se, "SummarizedExperiment")
-  checkmate::assert_list(periods, min.len = 1L, types = "numeric", names = "named")
+  .assert_periods(periods)
   checkmate::assert_string(lfc_assay, null.ok = TRUE)
-
-  invisible(lapply(names(periods), function(period_name) {
-    window <- periods[[period_name]]
-    checkmate::assert_numeric(window, len = 2L, any.missing = FALSE, finite = TRUE,
-                              .var.name = sprintf("periods[['%s']]", period_name))
-    checkmate::assert_true(window[1L] < window[2L])
-  }))
 
   if (is.null(lfc_assay)) {
     lfc_assay <- get_fit_profile("time-course")$input_assay

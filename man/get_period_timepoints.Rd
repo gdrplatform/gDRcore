@@ -20,6 +20,12 @@ default input assay of the \code{"time-course"} fit profile.}
 \code{window} (the bounds as \code{"start - end"}), \code{n} (number of
 distinct timepoints) and \code{timepoints} (those timepoints, sorted,
 comma-separated).  Periods matching no measurement yield \code{n = 0}.
+
+\code{timepoints} is the union of the durations present anywhere in
+\code{se}, not a per-plate or per-well listing.  On a uniform sampling grid
+the two coincide; if plates were read on different schedules, a duration
+contributed by only one barcode still appears here, and \code{n} is
+therefore an upper bound on what any single well contributed to the fit.
 }
 \description{
 Reports which durations actually go into the fit for every period, so that a

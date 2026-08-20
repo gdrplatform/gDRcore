@@ -802,7 +802,18 @@ test_that("get_period_timepoints reports a window with no measurements as n = 0"
 })
 
 
+test_that("get_period_timepoints defaults lfc_assay to the time-course profile", {
+  # The two-argument form is what the incucyte report calls, so it must be covered.
+  expected <- get_period_timepoints(se_tc_small, periods_std, "LogFoldChange")
+  expect_equal(get_period_timepoints(se_tc_small, periods_std), expected)
+})
+
+
 test_that("get_period_timepoints rejects malformed periods", {
-  expect_error(get_period_timepoints(se_tc_small, list(bad = c(48, 24)), "LogFoldChange"))
-  expect_error(get_period_timepoints(se_tc_small, list(c(0, 24)), "LogFoldChange"))
+  expect_error(get_period_timepoints(se_tc_small, list(bad = c(48, 24)), "LogFoldChange"),
+               regexp = "window\\[1L\\] < window\\[2L\\]")
+  expect_error(get_period_timepoints(se_tc_small, list(c(0, 24)), "LogFoldChange"),
+               regexp = "names")
+  expect_error(get_period_timepoints(se_tc_small, list(bad = c(0, Inf)), "LogFoldChange"),
+               regexp = "finite")
 })
