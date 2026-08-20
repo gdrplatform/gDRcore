@@ -252,7 +252,7 @@ compute_growth_rates <- function(se,
                                  rate_fn = NULL) {
 
   checkmate::assert_class(se, "SummarizedExperiment")
-  checkmate::assert_list(periods, min.len = 1L, types = "numeric", names = "named")
+  .assert_periods(periods)
   checkmate::assert_character(normalization_map, min.len = 1L, names = "named",
                               any.missing = FALSE)
   # Both directions: a period absent from the map would get no normalization
@@ -262,13 +262,6 @@ compute_growth_rates <- function(se,
   checkmate::assert_subset(unname(normalization_map), c("None", names(periods)))
   checkmate::assert_string(lfc_assay, null.ok = TRUE)
   checkmate::assert_function(rate_fn, null.ok = TRUE)
-
-  invisible(lapply(names(periods), function(period_name) {
-    window <- periods[[period_name]]
-    checkmate::assert_numeric(window, len = 2L, any.missing = FALSE, finite = TRUE,
-                              .var.name = sprintf("periods[['%s']]", period_name))
-    checkmate::assert_true(window[1L] < window[2L])
-  }))
 
   if (is.null(lfc_assay)) {
     lfc_assay <- get_fit_profile("time-course")$input_assay
@@ -371,6 +364,109 @@ growth_rates_to_se <- function(growth_dt) {
 }
 
 
+#' Validate a named list of time windows
+#'
+#' Every entry must be a finite numeric pair with \code{start < end}.  Kept next
+#' to \code{\link{.in_period}} so that the rule for what counts as a valid window
+#' cannot drift between the functions that consume one.
+#'
+#' @param periods named list of two-element numeric windows.
+#' @return \code{NULL}, invisibly; called for the assertions.
+#' @keywords internal
+#' @noRd
+.assert_periods <- function(periods) {
+  checkmate::assert_list(periods, min.len = 1L, types = "numeric", names = "named")
+  invisible(lapply(names(periods), function(period_name) {
+    window <- periods[[period_name]]
+    checkmate::assert_numeric(window, len = 2L, any.missing = FALSE, finite = TRUE,
+                              .var.name = sprintf("periods[['%s']]", period_name))
+    checkmate::assert_true(window[1L] < window[2L])
+  }))
+}
+
+
+#' Test which durations fall inside a time window
+#'
+#' Windows are half-open \code{[start, end)}: a timepoint on the boundary
+#' between two contiguous windows belongs to the later one, and \code{t = 0} is
+#' not dropped.  Kept as a single definition so that everything reporting on a
+#' window agrees with what was actually fitted.
+#'
+#' @param duration numeric vector of measurement times.
+#' @param window numeric of length 2, the window bounds.
+#' @return logical vector, \code{TRUE} where \code{duration} is inside.
+#' @keywords internal
+#' @noRd
+.in_period <- function(duration, window) {
+  duration >= window[1L] & duration < window[2L]
+}
+
+
+#' List the measurement timepoints entering each growth-rate window
+#'
+#' Reports which durations actually go into the fit for every period, so that a
+#' report or a log can state the measurements it used rather than only the
+#' window bounds.  The bounds alone are ambiguous: whether a timepoint sitting
+#' exactly on a boundary is included depends on the window convention, and a
+#' window may silently contain far fewer points than intended.
+#'
+#' Uses the same half-open \code{[start, end)} rule as
+#' \code{\link{compute_growth_rates}}, so the answer always matches what was
+#' fitted.
+#'
+#' @param se \code{SummarizedExperiment} with \code{lfc_assay}.
+#' @param periods named list of two-element numeric windows, as passed to
+#'   \code{\link{compute_growth_rates}}.
+#' @param lfc_assay string; assay to read durations from. \code{NULL} uses the
+#'   default input assay of the \code{"time-course"} fit profile.
+#'
+#' @return \code{data.table} with one row per period: \code{period},
+#'   \code{window} (the bounds as \code{"start - end"}), \code{n} (number of
+#'   distinct timepoints) and \code{timepoints} (those timepoints, sorted,
+#'   comma-separated).  Periods matching no measurement yield \code{n = 0}.
+#'
+#'   \code{timepoints} is the union of the durations present anywhere in
+#'   \code{se}, not a per-plate or per-well listing.  On a uniform sampling grid
+#'   the two coincide; if plates were read on different schedules, a duration
+#'   contributed by only one barcode still appears here, and \code{n} is
+#'   therefore an upper bound on what any single well contributed to the fit.
+#'
+#' @examples
+#' \dontrun{
+#' get_period_timepoints(se_tc, list(early = c(44, 92), late = c(92, 140)))
+#' }
+#'
+#' @seealso \code{\link{compute_growth_rates}}, \code{\link{fit_SE.timecourse}}
+#'
+#' @keywords runDrugResponseProcessingPipeline
+#' @export
+get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
+  checkmate::assert_class(se, "SummarizedExperiment")
+  .assert_periods(periods)
+  checkmate::assert_string(lfc_assay, null.ok = TRUE)
+
+  if (is.null(lfc_assay)) {
+    lfc_assay <- get_fit_profile("time-course")$input_assay
+  }
+  gDRutils::validate_se_assay_name(se, lfc_assay)
+
+  all_data <- gDRutils::convert_se_assay_to_dt(se, lfc_assay)
+  data.table::setDT(all_data)
+  durations <- sort(unique(all_data[[gDRutils::get_env_identifiers("duration")]]))
+
+  data.table::rbindlist(lapply(names(periods), function(period_name) {
+    window <- as.numeric(periods[[period_name]])
+    inside <- durations[.in_period(durations, window)]
+    data.table::data.table(
+      period = period_name,
+      window = paste(window, collapse = " - "),
+      n = length(inside),
+      timepoints = toString(inside)
+    )
+  }))
+}
+
+
 #' Compute per-period growth rates from a LogFoldChange SE
 #'
 #' For each \code{(Barcode, WellRow, WellColumn)} within each half-open time
@@ -428,11 +524,9 @@ growth_rates_to_se <- function(growth_dt) {
   )
 
   # --- Stage 1a: per-well growth rate per period ---
-  # Windows are half-open [start, end): a timepoint on the boundary between two
-  # contiguous windows belongs to the later one, and t = 0 is not dropped.
   all_rates <- data.table::rbindlist(lapply(names(periods), function(period_name) {
     cutoff <- as.numeric(periods[[period_name]])
-    window <- all_data[get(dur_col) >= cutoff[1L] & get(dur_col) < cutoff[2L]]
+    window <- all_data[.in_period(get(dur_col), cutoff)]
     if (NROW(window) == 0L) {
       return(data.table::data.table())
     }

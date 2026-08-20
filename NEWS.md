@@ -1,3 +1,7 @@
+## gDRcore 1.11.13 - 2026-08-19
+* add `get_period_timepoints()` reporting which measurement timepoints enter each growth-rate
+  window, so downstream reports can state the data used instead of only the window bounds
+
 ## gDRcore 1.11.12 - 2026-08-18
 * remove alignment whitespace flagged by the gDRstyle linter
 * add @keywords internal to internal helper functions
