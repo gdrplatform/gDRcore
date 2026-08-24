@@ -1062,7 +1062,7 @@ sessionInfo()
 #>  [9] BiocGenerics_0.58.1         generics_0.1.4             
 #> [11] MatrixGenerics_1.24.0       matrixStats_1.5.0          
 #> [13] gDRutils_1.10.0             gDRtestData_1.10.0         
-#> [15] gDRcore_1.11.12             BiocStyle_2.40.0           
+#> [15] gDRcore_1.11.13             BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
@@ -1075,7 +1075,7 @@ sessionInfo()
 #> [15] knitr_1.51                  lambda.r_1.2.4             
 #> [17] S4Arrays_1.12.0             htmlwidgets_1.6.4          
 #> [19] DelayedArray_0.38.2         RColorBrewer_1.1-3         
-#> [21] multcomp_1.4-31             abind_1.4-8                
+#> [21] multcomp_1.4-32             abind_1.4-8                
 #> [23] BiocParallel_1.46.0         desc_1.4.3                 
 #> [25] grid_4.6.1                  scales_1.4.0               
 #> [27] gtools_3.9.5                MASS_7.3-65                
@@ -1097,7 +1097,7 @@ sessionInfo()
 #> [59] lattice_0.22-9              futile.options_1.0.1       
 #> [61] backports_1.5.1             bslib_0.12.0               
 #> [63] Rcpp_1.1.2                  SparseArray_1.12.2         
-#> [65] checkmate_2.3.4             qs2_0.2.2                  
+#> [65] checkmate_2.3.4             qs2_0.3.1                  
 #> [67] xfun_0.60                   fs_2.1.0                   
 #> [69] zoo_1.9-0
 ```

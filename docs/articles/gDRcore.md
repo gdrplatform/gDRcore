@@ -306,7 +306,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] gDRcore_1.11.12    gDRtestData_1.10.0 BiocStyle_2.40.0  
+#> [1] gDRcore_1.11.13    gDRtestData_1.10.0 BiocStyle_2.40.0  
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
@@ -321,7 +321,7 @@ sessionInfo()
 #> [19] lambda.r_1.2.4              S4Arrays_1.12.0            
 #> [21] htmlwidgets_1.6.4           DelayedArray_0.38.2        
 #> [23] RColorBrewer_1.1-3          abind_1.4-8                
-#> [25] multcomp_1.4-31             BiocParallel_1.46.0        
+#> [25] multcomp_1.4-32             BiocParallel_1.46.0        
 #> [27] purrr_1.2.2                 BiocGenerics_0.58.1        
 #> [29] desc_1.4.3                  grid_4.6.1                 
 #> [31] stats4_4.6.1                scales_1.4.0               

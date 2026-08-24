@@ -24,6 +24,8 @@ fit the processed data (fit_SE).
   : fit_SE for combination screens
 - [`fit_SE.timecourse()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.timecourse.md)
   : fit_SE for time-course (Incucyte) screens
+- [`get_period_timepoints()`](https://gdrplatform.github.io/gDRcore/reference/get_period_timepoints.md)
+  : List the measurement timepoints entering each growth-rate window
 - [`growth_rates_to_se()`](https://gdrplatform.github.io/gDRcore/reference/growth_rates_to_se.md)
   : Convert a growth rate table into the stage 2 SummarizedExperiment
 - [`average_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
