@@ -502,27 +502,68 @@ test_that("fit_drug_response_metrics x_mean is model-predicted (not arithmetic m
 
 
 test_that("fit_drug_response_metrics estimates xc50 fallback when fit fails", {
-  # All x > 0.5 — xc50 should be Inf (drug has no effect)
+  # Fewer unique concentrations than n_point_cutoff — constant fit, not a curve
   dt_high <- data.table::data.table(
     Concentration = c(0.1, 1),
     x = c(0.9, 0.8),
     normalization_type = "RV"
   )
   result_high <- fit_drug_response_metrics(dt_high)
-  if (result_high$fit_type == "DRCInvalidFitResult") {
-    expect_equal(result_high$xc50, Inf)
-  }
+  expect_equal(result_high$fit_type, "DRCConstantFitResult")
+  # All x > 0.5 — the curve never reaches 50%, so xc50 is +Inf
+  expect_equal(result_high$xc50, Inf)
 
-  # All x <= 0.5 — xc50 should be -Inf (drug very effective)
   dt_low <- data.table::data.table(
     Concentration = c(0.1, 1),
     x = c(0.3, 0.1),
     normalization_type = "RV"
   )
   result_low <- fit_drug_response_metrics(dt_low)
-  if (result_low$fit_type == "DRCInvalidFitResult") {
-    expect_equal(result_low$xc50, -Inf)
+  expect_equal(result_low$fit_type, "DRCConstantFitResult")
+  # All x <= 0.5 — already past 50% at the lowest dose, so xc50 is -Inf
+  expect_equal(result_low$xc50, -Inf)
+})
+
+
+test_that("constant fit derives the xc50 sign from the mean, matching logisticFit", {
+  # Same contract as gDRutils .set_mean_params(): sign follows the mean normalized
+  # value. A flat, inactive response must not be reported as maximally potent.
+  constant_fit_xc50 <- function(x_vals) {
+    dt <- data.table::data.table(
+      Concentration = c(0.1, 1),
+      x = x_vals,
+      normalization_type = "RV"
+    )
+    res <- fit_drug_response_metrics(dt)
+    expect_equal(res$fit_type, "DRCConstantFitResult")
+    res$xc50
   }
+
+  expect_equal(constant_fit_xc50(c(1, 1)), Inf)
+  expect_equal(constant_fit_xc50(c(0.51, 0.51)), Inf)
+  # boundary: 0.5 counts as reached, so the sign flips here and not above
+  expect_equal(constant_fit_xc50(c(0.5, 0.5)), -Inf)
+  expect_equal(constant_fit_xc50(c(0.49, 0.49)), -Inf)
+  expect_equal(constant_fit_xc50(c(0, 0)), -Inf)
+  # the sign follows the mean, not the individual values: mean(0.9, 0.2) is 0.55
+  expect_equal(constant_fit_xc50(c(0.9, 0.2)), Inf)
+  expect_equal(constant_fit_xc50(c(0.8, 0.1)), -Inf)
+})
+
+
+test_that("a flat response above 0.5 with enough points also yields xc50 = Inf", {
+  # Second route into the constant fit: enough concentrations to attempt a curve,
+  # but the fit is not significant (p >= pcutoff), so it falls back to constant.
+  dt <- data.table::data.table(
+    Concentration = c(0.001, 0.01, 0.1, 1, 10),
+    x = c(0.97, 0.98, 0.97, 0.98, 0.97),
+    normalization_type = "RV"
+  )
+  result <- fit_drug_response_metrics(dt)
+
+  expect_equal(result$fit_type, "DRCConstantFitResult")
+  expect_equal(result$xc50, Inf)
+  expect_false(is.nan(log10(result$xc50)))
 })
 
 

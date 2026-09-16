@@ -1931,8 +1931,10 @@ hss_fit_fn <- function(avg_dt) {
   x_ordered <- x[conc_ord]
   n_x <- length(x_ordered)
   x_max_val <- if (n_x >= 2L) min(x_ordered[(n_x - 1L):n_x]) else if (n_x == 1L) x_ordered else NA_real_
-  max_conc_safe <- if (length(conc) > 0L && !all(is.na(conc))) max(conc, na.rm = TRUE) else 1
-  xc50_val <- gDRutils::cap_xc50(0, max_conc_safe)
+  # xc50 sign follows the mean normalized value, as .set_mean_params() does in
+  # gDRutils/fit_curves.R: above 0.5 the curve never reaches 50% (Inf), at or below
+  # it is already past 50% at the lowest dose (-Inf)
+  xc50_val <- .estimate_xc50_fallback(mn)
   list(
     normalization_type = norm_type,
     x_mean = mn,
