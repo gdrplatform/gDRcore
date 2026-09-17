@@ -1140,3 +1140,196 @@ test_that("apply_fits on_error='warn' skips failing fn without stopping others",
   expect_true("good_assay" %in% SummarizedExperiment::assayNames(se_out))
   expect_false("bad_assay" %in% SummarizedExperiment::assayNames(se_out))
 })
+
+
+#### Parity with gDRutils::logisticFit ####
+
+# fit_drug_response_metrics() reimplements the fit that gDRutils::logisticFit()
+# owns, and nothing keeps the two in step. These tests compare them directly on a
+# grid of curve shapes so that drift fails here instead of downstream.
+#
+# Infinities are compared exactly rather than within a tolerance: when the two
+# implementations last diverged, every finite value still agreed to ~1e-12 and
+# only the sign of an infinite xc50 moved, so a tolerance-only check would have
+# stayed green.
+
+.logistic_fit_reference <- function(conc, x, x_std = NA, norm_type = "RV", x_0 = 1) {
+  # Priors and bounds live in the unexported gDRutils:::.applyLogisticFit(); they are
+  # restated here so both sides are fitted with the same configuration and only the
+  # fit math is under test.
+  if (norm_type == "GR") {
+    priors <- c(2, 0.1, 1, stats::median(conc))
+    lower <- c(0.1, -1, -1, min(conc) / 10)
+  } else {
+    priors <- c(2, 0.4, 1, stats::median(conc))
+    lower <- c(0.1, 0, 0, min(conc) / 10)
+  }
+  gDRutils::logisticFit(conc, x, x_std, priors = priors, lower = lower, x_0 = x_0)
+}
+
+.fit_parity_mismatches <- function(got, ref, cols, tolerance = 1e-6) {
+  drifted <- character(0)
+  for (col in cols) {
+    a <- got[[col]]
+    b <- ref[[col]]
+    if (is.na(a) || is.na(b)) {
+      ok <- is.na(a) && is.na(b)
+    } else if (!is.finite(a) || !is.finite(b)) {
+      ok <- identical(as.numeric(a), as.numeric(b))
+    } else {
+      ok <- isTRUE(all.equal(as.numeric(a), as.numeric(b), tolerance = tolerance))
+    }
+    if (!ok) {
+      drifted <- c(drifted, sprintf("%s: gDRcore=%s gDRutils=%s", col, a, b))
+    }
+  }
+  drifted
+}
+
+.parity_metric_cols <- c("ec50", "xc50", "h", "x_inf", "x_0", "r2", "rss", "p_value",
+                         "x_mean", "x_AOC", "x_AOC_range", "x_max", "x_sd_avg",
+                         "N_conc", "maxlog10Concentration")
+
+# Columns the constant-fit branch is known to disagree on; pinned in their own test.
+.parity_constant_fit_gaps <- c("x_0", "rss", "p_value")
+
+.parity_conc <- 10 ^ seq(-3, 1, length.out = 8)
+
+.parity_fitted_shapes <- list(
+  "ordinary sigmoid" = c(0.98, 0.95, 0.88, 0.70, 0.45, 0.25, 0.14, 0.10),
+  "shallow response, fitted but never reaching half" =
+    c(0.99, 0.97, 0.96, 0.94, 0.93, 0.91, 0.90, 0.88)
+)
+
+# Flat but noisy: the significance test routes these to the constant-fit branch, which
+# is where the sign of an infinite xc50 is decided. Both signs are covered.
+.parity_constant_shapes <- list(
+  "noisy flat response above half" = c(0.96, 0.94, 0.95, 0.93, 0.96, 0.94, 0.95, 0.93),
+  "noisy flat response below half" = c(0.11, 0.09, 0.10, 0.12, 0.09, 0.11, 0.10, 0.09)
+)
+
+.parity_avg_dt <- function(x, norm_type) {
+  data.table::data.table(
+    Concentration = .parity_conc,
+    x = x,
+    x_std = rep(0.02, length(x)),
+    normalization_type = norm_type
+  )
+}
+
+for (norm_type in c("RV", "GR")) {
+  for (shape_nm in names(.parity_fitted_shapes)) {
+    test_that(sprintf("fit_drug_response_metrics agrees with logisticFit: %s, %s",
+                      shape_nm, norm_type), {
+      x <- .parity_fitted_shapes[[shape_nm]]
+      got <- suppressWarnings(fit_drug_response_metrics(.parity_avg_dt(x, norm_type)))
+      ref <- suppressWarnings(
+        .logistic_fit_reference(.parity_conc, x, rep(0.02, length(x)), norm_type = norm_type)
+      )
+
+      expect_equal(got$fit_type, ref$fit_type)
+      expect_equal(.fit_parity_mismatches(got, ref, .parity_metric_cols), character(0))
+    })
+  }
+
+  for (shape_nm in names(.parity_constant_shapes)) {
+    test_that(sprintf("fit_drug_response_metrics agrees with logisticFit: %s, %s",
+                      shape_nm, norm_type), {
+      x <- .parity_constant_shapes[[shape_nm]]
+      got <- suppressWarnings(fit_drug_response_metrics(.parity_avg_dt(x, norm_type)))
+      ref <- suppressWarnings(
+        .logistic_fit_reference(.parity_conc, x, rep(0.02, length(x)), norm_type = norm_type)
+      )
+
+      expect_equal(got$fit_type, "DRCConstantFitResult")
+      expect_equal(ref$fit_type, "DRCConstantFitResult")
+      expect_equal(
+        .fit_parity_mismatches(
+          got, ref, setdiff(.parity_metric_cols, .parity_constant_fit_gaps)
+        ),
+        character(0)
+      )
+    })
+  }
+}
+
+
+test_that("the constant-fit branch drops the statistics that produced it", {
+  # gDRutils keeps the rss and p_value of the attempted fit and overrides x_0 with the
+  # plateau; this implementation returns NA for the first two and keeps the x_0 it was
+  # given. A consumer cannot tell from our output how far the fit was from significance.
+  x <- .parity_constant_shapes[["noisy flat response above half"]]
+  got <- suppressWarnings(fit_drug_response_metrics(.parity_avg_dt(x, "RV")))
+  ref <- suppressWarnings(.logistic_fit_reference(.parity_conc, x, rep(0.02, length(x))))
+
+  expect_equal(got$x_0, 1)
+  expect_equal(ref$x_0, mean(x))
+  expect_true(is.na(got$rss) && is.finite(ref$rss))
+  expect_true(is.na(got$p_value) && is.finite(ref$p_value))
+})
+
+# The four cases below are known differences, not agreements. They are pinned so
+# that unifying the two implementations fails here and has to be decided on, rather
+# than changing fit_type or the averaging behaviour for downstream consumers by
+# accident.
+
+test_that("a response with no variance is an invalid fit here and a constant fit upstream", {
+  # With every response identical, drc::drm() has nothing to fit and errors, so this
+  # implementation falls to its invalid-fit branch while gDRutils classifies the same
+  # data as a constant fit. xc50 agrees; ec50, h, x_inf, x_0 and r2 do not. A flat
+  # response reaches this branch only at exactly zero variance: with any noise the
+  # significance test routes it to .constant_fit_result() and the two agree, as the
+  # tests above show.
+  x <- rep(0.95, 8)
+  got <- suppressWarnings(fit_drug_response_metrics(.parity_avg_dt(x, "RV")))
+  ref <- suppressWarnings(.logistic_fit_reference(.parity_conc, x, rep(0.02, length(x))))
+
+  expect_equal(got$fit_type, "DRCInvalidFitResult")
+  expect_equal(ref$fit_type, "DRCConstantFitResult")
+  # The sign of the infinity, which is what this change fixes, agrees regardless.
+  expect_equal(got$xc50, ref$xc50)
+  expect_true(all(is.na(c(got$ec50, got$h, got$x_inf, got$r2))))
+  expect_equal(c(ref$ec50, ref$x_inf, ref$r2), c(0, mean(x), 0))
+})
+
+
+test_that("the two implementations label too-few-points input differently", {
+  conc <- c(0.1, 1, 10)
+  x <- c(0.9, 0.6, 0.3)
+  dt <- data.table::data.table(Concentration = conc, x = x, normalization_type = "RV")
+
+  got <- suppressWarnings(fit_drug_response_metrics(dt))
+  ref <- suppressWarnings(.logistic_fit_reference(conc, x))
+
+  expect_equal(got$fit_type, "DRCConstantFitResult")
+  expect_equal(ref$fit_type, "DRCTooFewPointsToFit")
+})
+
+
+test_that("the two implementations apply the point cutoff to different quantities", {
+  # Five measurements at two unique concentrations: gDRcore counts unique
+  # concentrations and falls back to a constant fit, gDRutils counts non-NA
+  # responses, clears the cutoff and attempts a fit.
+  conc <- c(0.1, 0.1, 0.1, 10, 10)
+  x <- c(0.92, 0.90, 0.88, 0.22, 0.20)
+  dt <- data.table::data.table(Concentration = conc, x = x, normalization_type = "RV")
+
+  got <- suppressWarnings(fit_drug_response_metrics(dt))
+  ref <- suppressWarnings(.logistic_fit_reference(conc, x))
+
+  expect_equal(got$fit_type, "DRCConstantFitResult")
+  expect_false(identical(ref$fit_type, "DRCConstantFitResult"))
+})
+
+
+test_that("all-NA input yields an invalid fit here and a too-few-points fit upstream", {
+  conc <- c(0.1, 1, 10)
+  x <- rep(NA_real_, 3)
+  dt <- data.table::data.table(Concentration = conc, x = x, normalization_type = "GR")
+
+  got <- suppressWarnings(fit_drug_response_metrics(dt))
+  ref <- suppressWarnings(.logistic_fit_reference(conc, x, norm_type = "GR"))
+
+  expect_equal(got$fit_type, "DRCInvalidFitResult")
+  expect_equal(ref$fit_type, "DRCTooFewPointsToFit")
+})
