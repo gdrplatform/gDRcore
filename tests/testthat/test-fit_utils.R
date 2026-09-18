@@ -522,11 +522,14 @@ test_that("fit_drug_response_metrics estimates xc50 fallback when fit fails", {
   expect_equal(result_low$fit_type, "DRCConstantFitResult")
   # All x <= 0.5 — already past 50% at the lowest dose, so xc50 is -Inf
   expect_equal(result_low$xc50, -Inf)
+
+  # The invalid-fit path is a different branch and keeps xc50 as NA; it is covered
+  # by "returns NA metrics for all-NA input" above. Neither input here can reach it.
 })
 
 
 test_that("constant fit derives the xc50 sign from the mean, matching logisticFit", {
-  # Same contract as gDRutils .set_mean_params(): sign follows the mean normalized
+  # Same contract as gDRutils:::.set_mean_params(): sign follows the mean normalized
   # value. A flat, inactive response must not be reported as maximally potent.
   constant_fit_xc50 <- function(x_vals) {
     dt <- data.table::data.table(
