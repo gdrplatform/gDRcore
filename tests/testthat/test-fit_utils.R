@@ -1157,16 +1157,18 @@ test_that("apply_fits on_error='warn' skips failing fn without stopping others",
 # stayed green.
 
 .logistic_fit_reference <- function(conc, x, x_std = NA, norm_type = "RV", x_0 = 1) {
-  # Priors and bounds live in the unexported gDRutils:::.applyLogisticFit(); they are
+  # Priors and bounds live in the unexported gDRutils:::.applyLogisticFit() for RV and
+  # GR; NGR has no counterpart there and is configured only in gDRcore. All three are
   # restated here so both sides are fitted with the same configuration and only the
   # fit math is under test.
-  if (norm_type == "GR") {
-    priors <- c(2, 0.1, 1, stats::median(conc))
-    lower <- c(0.1, -1, -1, min(conc) / 10)
-  } else {
-    priors <- c(2, 0.4, 1, stats::median(conc))
-    lower <- c(0.1, 0, 0, min(conc) / 10)
-  }
+  cfg <- switch(
+    norm_type,
+    GR = list(prior = 0.1, lower = -1),
+    NGR = list(prior = 0.1, lower = -10),
+    list(prior = 0.4, lower = 0)
+  )
+  priors <- c(2, cfg$prior, 1, stats::median(conc))
+  lower <- c(0.1, cfg$lower, cfg$lower, min(conc) / 10)
   gDRutils::logisticFit(conc, x, x_std, priors = priors, lower = lower, x_0 = x_0)
 }
 
@@ -1201,7 +1203,14 @@ test_that("apply_fits on_error='warn' skips failing fn without stopping others",
 .parity_fitted_shapes <- list(
   "ordinary sigmoid" = c(0.98, 0.95, 0.88, 0.70, 0.45, 0.25, 0.14, 0.10),
   "shallow response, fitted but never reaching half" =
-    c(0.99, 0.97, 0.96, 0.94, 0.93, 0.91, 0.90, 0.88)
+    c(0.99, 0.97, 0.96, 0.94, 0.93, 0.91, 0.90, 0.88),
+  # Plateaus below zero. Only GR and NGR are allowed to follow it there; under RV
+  # bounds both sides clip the asymptote to zero, which is still parity.
+  "response plateauing below zero" =
+    c(0.98, 0.90, 0.60, 0.10, -0.30, -0.55, -0.62, -0.62),
+  # Below -1, where the GR floor starts to bind and the NGR one does not.
+  "response plateauing below minus one" =
+    c(0.98, 0.80, 0.30, -0.40, -1.20, -1.70, -1.85, -1.88)
 )
 
 # Flat but noisy: the significance test routes these to the constant-fit branch, which
@@ -1220,7 +1229,7 @@ test_that("apply_fits on_error='warn' skips failing fn without stopping others",
   )
 }
 
-for (norm_type in c("RV", "GR")) {
+for (norm_type in c("RV", "GR", "NGR")) {
   for (shape_nm in names(.parity_fitted_shapes)) {
     test_that(sprintf("fit_drug_response_metrics agrees with logisticFit: %s, %s",
                       shape_nm, norm_type), {
@@ -1230,8 +1239,17 @@ for (norm_type in c("RV", "GR")) {
         .logistic_fit_reference(.parity_conc, x, rep(0.02, length(x)), norm_type = norm_type)
       )
 
+      # Whether a shape is fitted at all depends on the normalization type: one that
+      # plateaus outside that type's bounds cannot be followed, fails the significance
+      # test and is routed to the constant-fit branch by both sides. Both sides must
+      # still agree on which branch was taken.
       expect_equal(got$fit_type, ref$fit_type)
-      expect_equal(.fit_parity_mismatches(got, ref, .parity_metric_cols), character(0))
+      cols <- if (identical(got$fit_type, "DRCConstantFitResult")) {
+        setdiff(.parity_metric_cols, .parity_constant_fit_gaps)
+      } else {
+        .parity_metric_cols
+      }
+      expect_equal(.fit_parity_mismatches(got, ref, cols), character(0))
     })
   }
 
@@ -1255,6 +1273,60 @@ for (norm_type in c("RV", "GR")) {
     })
   }
 }
+
+
+test_that("time-course NGR is not fitted with relative-viability bounds", {
+  # normalization_type "NGR" is not "GR", so before this was configured it fell into
+  # the else branch and was fitted with a lower bound of 0 on the asymptote. Normalized
+  # growth rate is routinely negative, so the plateau was clipped away and the whole
+  # curve shifted: on this input the clipped fit reports ec50 0.0165 against 0.0441.
+  x <- .parity_fitted_shapes[["response plateauing below zero"]]
+  ngr <- suppressWarnings(fit_drug_response_metrics(.parity_avg_dt(x, "NGR")))
+  rv <- suppressWarnings(fit_drug_response_metrics(.parity_avg_dt(x, "RV")))
+  gr <- suppressWarnings(fit_drug_response_metrics(.parity_avg_dt(x, "GR")))
+
+  expect_lt(ngr$x_inf, 0)
+  expect_equal(rv$x_inf, 0)
+  expect_false(isTRUE(all.equal(ngr$ec50, rv$ec50)))
+  # The -1 floor does not bind a plateau this shallow, so NGR and GR land on the same
+  # estimate. The two are optimised under different bounds, so they agree to within
+  # optimiser noise rather than exactly — four orders of magnitude tighter than the
+  # 0.63 the clipped RV fit is out by, which is what this is guarding.
+  expect_equal(ngr$x_inf, gr$x_inf, tolerance = 1e-4)
+})
+
+
+test_that("NGR follows the data past minus one, where the GR floor clips", {
+  # NGR is GrowthRate / rate_0, a ratio of slopes — not Hafner's 2^(ratio) - 1, which
+  # is what makes -1 meaningful for GR. A compound killing faster than the control
+  # grows plateaus below -1, and only the open floor can represent it.
+  x <- .parity_fitted_shapes[["response plateauing below minus one"]]
+  ngr <- suppressWarnings(fit_drug_response_metrics(.parity_avg_dt(x, "NGR")))
+  gr <- suppressWarnings(fit_drug_response_metrics(.parity_avg_dt(x, "GR")))
+
+  expect_lt(ngr$x_inf, -1)
+  expect_equal(gr$x_inf, -1)
+  expect_gt(ngr$r2, gr$r2)
+})
+
+
+test_that("an unregistered normalization type keeps the relative-viability bounds", {
+  # Custom profiles may register their own slicing values; they get what they got
+  # before the bounds were tabulated.
+  x <- .parity_fitted_shapes[["response plateauing below zero"]]
+  custom <- suppressWarnings(fit_drug_response_metrics(.parity_avg_dt(x, "Ki")))
+  rv <- suppressWarnings(fit_drug_response_metrics(.parity_avg_dt(x, "RV")))
+
+  expect_equal(custom$x_inf, rv$x_inf)
+  expect_equal(custom$ec50, rv$ec50)
+})
+
+
+test_that("a missing normalization type is rejected by name", {
+  x <- .parity_fitted_shapes[["ordinary sigmoid"]]
+  dt <- .parity_avg_dt(x, NA_character_)
+  expect_error(fit_drug_response_metrics(dt), "normalization_type")
+})
 
 
 test_that("the constant-fit branch drops the statistics that produced it", {
