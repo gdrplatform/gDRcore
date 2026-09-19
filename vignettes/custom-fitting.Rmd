@@ -36,6 +36,11 @@ estimates, or bespoke pharmacology metrics for your assay.
 `apply_fit()` and `apply_fits()` let you plug **any R function**
 into the gDR SE/MAE pipeline without touching the pipeline internals.
 
+These functions, the fit profile registry and `fit_drug_response_metrics()` now
+live in **gDRutils**, next to the curve-fitting maths they are built on.  gDRcore
+re-exports them for one release cycle, so the code below keeps working as written;
+call them as `gDRutils::apply_fit()` in new code.
+
 Key properties:
 
 - Works with **single-agent**, **combination**, and **time-course** data.

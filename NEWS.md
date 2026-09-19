@@ -1,3 +1,7 @@
+## gDRcore 1.11.16 - 2026-09-19
+* move the generic fitting layer to gDRutils, re-exporting it here for one release cycle
+* remove the unused `fit_FUN()` and `.persist_metrics()` helpers
+
 ## gDRcore 1.11.15 - 2026-09-19
 * fix time-course fits being bounded as relative viability, which clipped negative
   normalized growth-rate asymptotes to zero

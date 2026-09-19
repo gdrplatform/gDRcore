@@ -24,7 +24,7 @@ excess and score from raw averaged data.
 Intended for use with \code{\link{apply_fit}} on combination SEs:
 
 \preformatted{
-  apply_fit(
+  gDRutils::apply_fit(
     combo_se, bliss_fit_fn, "combination",
     output_assay = "custom_bliss", fit_source = "bliss"
   )
@@ -33,7 +33,7 @@ Intended for use with \code{\link{apply_fit}} on combination SEs:
 \examples{
 mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
 combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
-combo_se_out <- apply_fit(
+combo_se_out <- gDRutils::apply_fit(
   combo_se, bliss_fit_fn, "combination",
   output_assay = "custom_bliss", fit_source = "bliss"
 )

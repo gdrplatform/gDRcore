@@ -150,7 +150,7 @@ fit_SE.timecourse <- function(se,
   # --- Stage 2: dose-response fit via apply_fit ---
   if (is.null(fit_fn)) {
     fit_fn <- function(dt) {
-      fit_drug_response_metrics(
+      gDRutils::fit_drug_response_metrics(
         dt,
         x_col = "NormalizedGrowthRate",
         n_point_cutoff = n_point_cutoff,
@@ -171,7 +171,7 @@ fit_SE.timecourse <- function(se,
   # Each column of se_gr IS one period (the BumpyMatrix col dimension).
   # Stage 2 uses the "time-course-metrics" profile (slicing by normalization_type="NGR",
   # input_assay="GrowthRates", nested_cols=["concentration"]).
-  apply_fit(
+  gDRutils::apply_fit(
     se = se_gr,
     fit_fn = fit_fn,
     data_type = "time-course-metrics",
@@ -230,7 +230,7 @@ fit_SE.timecourse <- function(se,
 #' growth_dt <- compute_growth_rates(se_tc, periods, norm_map)
 #'
 #' # Stage 2 with any custom fit function:
-#' se_fit <- apply_fit(
+#' se_fit <- gDRutils::apply_fit(
 #'   growth_rates_to_se(growth_dt),
 #'   fit_fn = my_fit_fn,
 #'   data_type = "time-course-metrics",
@@ -264,7 +264,7 @@ compute_growth_rates <- function(se,
   checkmate::assert_function(rate_fn, null.ok = TRUE)
 
   if (is.null(lfc_assay)) {
-    lfc_assay <- get_fit_profile("time-course")$input_assay
+    lfc_assay <- gDRutils::get_fit_profile("time-course")$input_assay
   }
   gDRutils::validate_se_assay_name(se, lfc_assay)
 
@@ -446,7 +446,7 @@ get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
   checkmate::assert_string(lfc_assay, null.ok = TRUE)
 
   if (is.null(lfc_assay)) {
-    lfc_assay <- get_fit_profile("time-course")$input_assay
+    lfc_assay <- gDRutils::get_fit_profile("time-course")$input_assay
   }
   gDRutils::validate_se_assay_name(se, lfc_assay)
 
