@@ -1,5 +1,15 @@
 # Changelog
 
+## gDRcore 1.11.14 - 2026-09-17
+
+- fix constant fits reporting `xc50 = -Inf` regardless of the response
+  level, which made inactive compounds read as maximally potent
+- add parity tests comparing
+  [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.md)
+  against
+  [`gDRutils::logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html),
+  pinning the branches where the two are known to differ
+
 ## gDRcore 1.11.13 - 2026-08-19
 
 - add

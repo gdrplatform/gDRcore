@@ -287,7 +287,7 @@ se_out <- apply_fit_to_se(
 sessionInfo()
 #> R version 4.6.1 (2026-06-24)
 #> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.4 LTS
+#> Running under: Ubuntu 24.04.5 LTS
 #> 
 #> Matrix products: default
 #> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
@@ -306,7 +306,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] gDRcore_1.11.13    gDRtestData_1.10.0 BiocStyle_2.40.0  
+#> [1] gDRcore_1.11.14    gDRtestData_1.10.0 BiocStyle_2.40.0  
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
@@ -317,7 +317,7 @@ sessionInfo()
 #> [11] rlang_1.3.0                 sass_0.4.10                
 #> [13] drc_3.0-1                   tools_4.6.1                
 #> [15] plotrix_3.8-14              yaml_2.3.12                
-#> [17] data.table_1.18.4           knitr_1.51                 
+#> [17] data.table_1.18.6.1         knitr_1.52                 
 #> [19] lambda.r_1.2.4              S4Arrays_1.12.0            
 #> [21] htmlwidgets_1.6.4           DelayedArray_0.38.2        
 #> [23] RColorBrewer_1.1-3          abind_1.4-8                
@@ -328,9 +328,9 @@ sessionInfo()
 #> [33] MASS_7.3-65                 gtools_3.9.5               
 #> [35] MultiAssayExperiment_1.38.0 SummarizedExperiment_1.42.0
 #> [37] cli_3.6.6                   mvtnorm_1.4-2              
-#> [39] rmarkdown_2.31              ragg_1.5.2                 
+#> [39] rmarkdown_2.32              ragg_1.5.2                 
 #> [41] generics_0.1.4              otel_0.2.0                 
-#> [43] readxl_1.5.0                cachem_1.1.0               
+#> [43] readxl_1.5.0.1              cachem_1.1.0               
 #> [45] stringr_1.6.0               splines_4.6.1              
 #> [47] gDRimport_1.10.0            assertthat_0.2.1           
 #> [49] parallel_4.6.1              formatR_1.14               
@@ -338,9 +338,9 @@ sessionInfo()
 #> [53] XVector_0.52.0              matrixStats_1.5.0          
 #> [55] vctrs_0.7.3                 Matrix_1.7-5               
 #> [57] sandwich_3.1-3              jsonlite_2.0.0             
-#> [59] carData_3.0-6               bookdown_0.47              
+#> [59] carData_3.0-6               bookdown_0.48              
 #> [61] car_3.1-5                   IRanges_2.46.0             
-#> [63] S4Vectors_0.50.1            Formula_1.2-6              
+#> [63] S4Vectors_0.50.3            Formula_1.2-6              
 #> [65] systemfonts_1.3.2           testthat_3.3.2             
 #> [67] jquerylib_0.1.4             rematch_2.0.0              
 #> [69] glue_1.8.1                  pkgdown_2.2.1              
@@ -353,7 +353,7 @@ sessionInfo()
 #> [83] lattice_0.22-9              Biobase_2.72.0             
 #> [85] futile.options_1.0.1        backports_1.5.1            
 #> [87] bslib_0.12.0                SparseArray_1.12.2         
-#> [89] checkmate_2.3.4             xfun_0.60                  
+#> [89] checkmate_2.3.4             xfun_0.61                  
 #> [91] fs_2.1.0                    MatrixGenerics_1.24.0      
 #> [93] zoo_1.9-0                   pkgconfig_2.0.3
 ```

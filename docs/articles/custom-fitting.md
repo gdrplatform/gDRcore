@@ -1035,7 +1035,7 @@ or when embedding score computation inside a larger custom `fit_fn`.
 sessionInfo()
 #> R version 4.6.1 (2026-06-24)
 #> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.4 LTS
+#> Running under: Ubuntu 24.04.5 LTS
 #> 
 #> Matrix products: default
 #> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
@@ -1055,14 +1055,14 @@ sessionInfo()
 #> [8] base     
 #> 
 #> other attached packages:
-#>  [1] data.table_1.18.4           BumpyMatrix_1.20.0         
+#>  [1] data.table_1.18.6.1         BumpyMatrix_1.20.0         
 #>  [3] SummarizedExperiment_1.42.0 Biobase_2.72.0             
 #>  [5] GenomicRanges_1.64.0        Seqinfo_1.2.0              
-#>  [7] IRanges_2.46.0              S4Vectors_0.50.1           
+#>  [7] IRanges_2.46.0              S4Vectors_0.50.3           
 #>  [9] BiocGenerics_0.58.1         generics_0.1.4             
 #> [11] MatrixGenerics_1.24.0       matrixStats_1.5.0          
 #> [13] gDRutils_1.10.0             gDRtestData_1.10.0         
-#> [15] gDRcore_1.11.13             BiocStyle_2.40.0           
+#> [15] gDRcore_1.11.14             BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
@@ -1072,7 +1072,7 @@ sessionInfo()
 #>  [9] rlang_1.3.0                 sass_0.4.10                
 #> [11] drc_3.0-1                   tools_4.6.1                
 #> [13] plotrix_3.8-14              yaml_2.3.12                
-#> [15] knitr_1.51                  lambda.r_1.2.4             
+#> [15] knitr_1.52                  lambda.r_1.2.4             
 #> [17] S4Arrays_1.12.0             htmlwidgets_1.6.4          
 #> [19] DelayedArray_0.38.2         RColorBrewer_1.1-3         
 #> [21] multcomp_1.4-32             abind_1.4-8                
@@ -1080,14 +1080,14 @@ sessionInfo()
 #> [25] grid_4.6.1                  scales_1.4.0               
 #> [27] gtools_3.9.5                MASS_7.3-65                
 #> [29] MultiAssayExperiment_1.38.0 cli_3.6.6                  
-#> [31] mvtnorm_1.4-2               rmarkdown_2.31             
+#> [31] mvtnorm_1.4-2               rmarkdown_2.32             
 #> [33] ragg_1.5.2                  otel_0.2.0                 
-#> [35] RcppParallel_6.2.0          cachem_1.1.0               
+#> [35] RcppParallel_6.2.1          cachem_1.1.0               
 #> [37] splines_4.6.1               parallel_4.6.1             
 #> [39] BiocManager_1.30.27         formatR_1.14               
 #> [41] XVector_0.52.0              Matrix_1.7-5               
 #> [43] sandwich_3.1-3              jsonlite_2.0.0             
-#> [45] carData_3.0-6               bookdown_0.47              
+#> [45] carData_3.0-6               bookdown_0.48              
 #> [47] car_3.1-5                   Formula_1.2-6              
 #> [49] systemfonts_1.3.2           jquerylib_0.1.4            
 #> [51] glue_1.8.1                  pkgdown_2.2.1              
@@ -1098,6 +1098,6 @@ sessionInfo()
 #> [61] backports_1.5.1             bslib_0.12.0               
 #> [63] Rcpp_1.1.2                  SparseArray_1.12.2         
 #> [65] checkmate_2.3.4             qs2_0.3.1                  
-#> [67] xfun_0.60                   fs_2.1.0                   
+#> [67] xfun_0.61                   fs_2.1.0                   
 #> [69] zoo_1.9-0
 ```
