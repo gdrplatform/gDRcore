@@ -65,7 +65,7 @@ norm_map <- c(early = "None", late = "early")
 growth_dt <- compute_growth_rates(se_tc, periods, norm_map)
 
 # Stage 2 with any custom fit function:
-se_fit <- apply_fit(
+se_fit <- gDRutils::apply_fit(
   growth_rates_to_se(growth_dt),
   fit_fn = my_fit_fn,
   data_type = "time-course-metrics",

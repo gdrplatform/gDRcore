@@ -41,26 +41,23 @@ reference:
 - title: Test utils
 - contents:
   - has_keyword("test_utils")
-- title: Custom fit interface
+- title: Combination fit interface
   desc: >
-    Generic interface for applying custom fit functions to SummarizedExperiment
-    objects, and reference implementations for drug response metrics and
-    combination synergy scoring.
+    Reference implementations for combination synergy scoring, applied through
+    the generic fit interface in gDRutils.
 - contents:
-  - apply_fit_to_se
   - apply_combo_sa_fits
   - apply_combo_excess
   - apply_combo_isobolograms
   - apply_combo_scores
-  - fit_drug_response_metrics
-  - fit_drug_response_metrics_4p
   - bliss_fit_fn
   - hss_fit_fn
-- title: Fit profile registry
+- title: Moved to gDRutils
   desc: >
-    Register and retrieve fit profiles that define slicing behaviour
-    for each experiment type.
+    The generic fit interface and the fit profile registry now live in gDRutils.
+    They are re-exported here for one release cycle, together with the two
+    deprecated aliases.
 - contents:
-  - get_fit_profiles
-  - get_fit_profile
-  - register_fit_profile
+  - reexports
+  - apply_custom_fit
+  - apply_custom_fits

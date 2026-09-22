@@ -40,7 +40,7 @@ fit_SE <- function(se,
   # Build a fit_fn closure that forwards all fit_SE parameters.
   # slicing_values = curve_type filters to only the requested normalization types.
   fit_fn <- function(avg_dt) {
-    fit_drug_response_metrics(
+    gDRutils::fit_drug_response_metrics(
       avg_dt,
       capping_fold = 5,
       range_conc = range_conc,
@@ -61,7 +61,7 @@ fit_SE <- function(se,
     slicing_cols <- nested_identifiers
   }
 
-  se <- apply_fit(
+  se <- gDRutils::apply_fit(
     se = se,
     fit_fn = fit_fn,
     data_type = data_type,
@@ -115,40 +115,4 @@ fit_SE <- function(se,
   )
 
   se
-}
-
-
-#' @keywords internal
-fit_FUN <- function(x,
-                    metric_cols = gDRutils::get_header("response_metrics"),
-                    conc = gDRutils::get_env_identifiers("concentration"),
-                    nested_identifiers,
-                    n_point_cutoff,
-                    range_conc,
-                    force_fit,
-                    pcutoff,
-                    cap,
-                    curve_type) {
-  fit_df <- S4Vectors::DataFrame(matrix(NA, length(curve_type), length(metric_cols)))
-  colnames(fit_df) <- metric_cols
-  rownames(fit_df) <- c("RV", "GR")[c("RV", "GR") %in% curve_type]
-
-  if (!is.null(x) && all(dim(x) > 0)) {
-    if (!all(is.na(x[[conc]]))) {
-      x <- x[x[[conc]] != 0, ]
-    }
-
-    fit_df <- S4Vectors::DataFrame(gDRutils::fit_curves(
-      data.table::as.data.table(x),
-      series_identifiers = nested_identifiers,
-      e_0 = 1,
-      GR_0 = 1,
-      n_point_cutoff = n_point_cutoff,
-      range_conc = range_conc,
-      force_fit = force_fit,
-      pcutoff = pcutoff,
-      cap = cap,
-      normalization_type = curve_type))
-  }
-  fit_df
 }
