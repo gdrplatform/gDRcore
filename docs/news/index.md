@@ -1,5 +1,12 @@
 # Changelog
 
+## gDRcore 1.11.15 - 2026-09-19
+
+- fix time-course fits being bounded as relative viability, which
+  clipped negative normalized growth-rate asymptotes to zero
+- add per-normalization-type priors and asymptote bounds, replacing the
+  GR/else branch
+
 ## gDRcore 1.11.14 - 2026-09-17
 
 - fix constant fits reporting `xc50 = -Inf` regardless of the response
