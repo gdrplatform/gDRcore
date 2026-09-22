@@ -2,8 +2,8 @@ Type: Package
 Package: gDRcore
 Title: Processing functions and interface to process and analyze drug
     dose-response data
-Version: 1.11.14
-Date: 2026-09-17
+Version: 1.11.15
+Date: 2026-09-19
 Authors@R: c(
     person("Bartosz", "Czech", , "czech.bartosz@external.gene.com", role = "aut",
            comment = c(ORCID = "0000-0002-9908-3007")),
@@ -62,3 +62,4 @@ NeedsCompilation: yes
 Roxygen: list(markdown = TRUE) 
 SwitchrLibrary: gDRcore
 Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.1
