@@ -1,3 +1,6 @@
+## gDRcore 1.11.17 - 2026-09-24
+* prevent normalizing a time-course growth rate against a control that is not growing
+
 ## gDRcore 1.11.16 - 2026-09-19
 * move the generic fitting layer to gDRutils, re-exporting it here for one release cycle
 * remove the unused `fit_FUN()` and `.persist_metrics()` helpers

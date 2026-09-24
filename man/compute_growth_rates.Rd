@@ -40,7 +40,10 @@ across replicate wells, \code{rate_0} (the control baseline used, \code{NA}
 for periods mapped to \code{"None"} and when no control rows are present),
 \code{NormalizedGrowthRate} and \code{normalization_type}.  All of these
 columns are always present, whatever the normalization map or the
-availability of controls.
+availability of controls.  \code{NormalizedGrowthRate} is \code{NA} where
+the control baseline is not positive: a window in which the untreated arm
+is not growing gives a denominator that inverts the sign of the ratio
+rather than scaling it, and a warning names the cell line and period.
 }
 \description{
 Stage 1 of the time-course pipeline: fits a growth rate per well within each
