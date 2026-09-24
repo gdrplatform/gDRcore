@@ -221,7 +221,10 @@ fit_SE.timecourse <- function(se,
 #'   for periods mapped to \code{"None"} and when no control rows are present),
 #'   \code{NormalizedGrowthRate} and \code{normalization_type}.  All of these
 #'   columns are always present, whatever the normalization map or the
-#'   availability of controls.
+#'   availability of controls.  \code{NormalizedGrowthRate} is \code{NA} where
+#'   the control baseline is not positive: a window in which the untreated arm
+#'   is not growing gives a denominator that inverts the sign of the ratio
+#'   rather than scaling it, and a warning names the cell line and period.
 #'
 #' @examples
 #' \dontrun{
@@ -615,7 +618,24 @@ get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
       by.y = c(cl_col, "norm_period"),
       all.x = TRUE
     )
+    # A control that is not growing cannot serve as a growth denominator. Dividing by a
+    # non-positive rate_0 does not merely inflate the ratio, it inverts its sign: a treated arm
+    # growing at +0.09 against a control at -0.005 reads as -19, which is the scale on which a
+    # reader looks for cell death. Refusing to produce that number is the only honest option, and
+    # it is per (cell line, period) rather than fatal, because the other lines of the same run are
+    # usually fine. Note a small but positive rate_0 inflates the ratio without this sign flip;
+    # catching that needs the control's own peak rate, which this function does not see.
+    unusable <- !is.na(av_norm$rate_0) & av_norm$rate_0 <= 0
+    if (any(unusable)) {
+      offenders <- unique(av_norm[unusable, c(cl_col, "period"), with = FALSE])
+      warning(sprintf(
+        paste("The control growth rate is not positive for %s, so NormalizedGrowthRate is NA",
+              "there; the window does not capture growth of the untreated arm."),
+        toString(sprintf("'%s' in period '%s'", offenders[[cl_col]], offenders[["period"]]))
+      ))
+    }
     av_norm[, NormalizedGrowthRate := GrowthRate / rate_0]
+    av_norm[unusable, NormalizedGrowthRate := NA_real_]
     av_rates <- data.table::rbindlist(
       list(
         av_norm,
