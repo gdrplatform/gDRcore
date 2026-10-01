@@ -1,5 +1,7 @@
-## gDRcore 1.11.17 - 2026-09-24
+## gDRcore 1.11.17 - 2026-10-01
 * prevent normalizing a time-course growth rate against a control that is not growing
+* fix the growth-rate guard to reject a plateaued control, whose fitted rate is near zero but positive
+* ensure the default rate function fails clearly when the assay provides no column of its name
 
 ## gDRcore 1.11.16 - 2026-09-19
 * move the generic fitting layer to gDRutils, re-exporting it here for one release cycle

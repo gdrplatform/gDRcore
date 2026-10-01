@@ -222,9 +222,11 @@ fit_SE.timecourse <- function(se,
 #'   \code{NormalizedGrowthRate} and \code{normalization_type}.  All of these
 #'   columns are always present, whatever the normalization map or the
 #'   availability of controls.  \code{NormalizedGrowthRate} is \code{NA} where
-#'   the control baseline is not positive: a window in which the untreated arm
-#'   is not growing gives a denominator that inverts the sign of the ratio
-#'   rather than scaling it, and a warning names the cell line and period.
+#'   the control baseline is not meaningfully positive: such a denominator
+#'   either inverts the sign of the ratio (when negative) or leaves it undefined
+#'   (when zero, within fitting tolerance) rather than scaling it, so no
+#'   meaningful normalized rate exists.  A warning names the cell line and
+#'   period.
 #'
 #' @examples
 #' \dontrun{
@@ -504,6 +506,15 @@ get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
   drug_col <- gDRutils::get_env_identifiers("drug_name")
 
   if (is.null(rate_fn)) {
+    # convert_se_assay_to_dt() names the value column after the assay, so the assay name doubles
+    # as the column name here. Assert it rather than letting lm() fail on a missing object.
+    if (!lfc_assay %in% names(all_data)) {
+      stop(sprintf(
+        paste("The '%s' assay does not provide a column of the same name, so the default rate",
+              "function cannot be built; pass an explicit 'rate_fn'."),
+        lfc_assay
+      ))
+    }
     rate_fn <- .default_rate_fn(dur_col, lfc_assay)
   }
 
@@ -618,14 +629,15 @@ get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
       by.y = c(cl_col, "norm_period"),
       all.x = TRUE
     )
-    # A control that is not growing cannot serve as a growth denominator. Dividing by a
-    # non-positive rate_0 does not merely inflate the ratio, it inverts its sign: a treated arm
-    # growing at +0.09 against a control at -0.005 reads as -19, which is the scale on which a
-    # reader looks for cell death. Refusing to produce that number is the only honest option, and
-    # it is per (cell line, period) rather than fatal, because the other lines of the same run are
-    # usually fine. Note a small but positive rate_0 inflates the ratio without this sign flip;
-    # catching that needs the control's own peak rate, which this function does not see.
-    unusable <- !is.na(av_norm$rate_0) & av_norm$rate_0 <= 0
+    # A control rate that is not positive is not a valid denominator: dividing by it inverts the
+    # sign of the ratio (rate_0 < 0) or leaves it undefined (rate_0 == 0) rather than scaling it.
+    # Set NA per (cell line, period) - not fatal, as other lines of the same run usually fit fine.
+    # The comparison carries a tolerance because a plateaued control never fits to exactly zero:
+    # lm() on a flat window returns a slope of order 1e-16, which is positive and would divide a
+    # healthy treated rate into ~1e15. Note a small but genuinely positive rate_0 still inflates
+    # the ratio without a sign flip; catching that needs the control's own peak rate, which this
+    # function does not see.
+    unusable <- !is.na(av_norm$rate_0) & av_norm$rate_0 <= sqrt(.Machine$double.eps)
     if (any(unusable)) {
       offenders <- unique(av_norm[unusable, c(cl_col, "period"), with = FALSE])
       warning(sprintf(
@@ -700,6 +712,9 @@ get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
     names(fit_dt)
   )
 
+  # Numeric key parts are formatted to 4 significant figures, which assumes partner
+  # concentrations on a dose ladder are separated by more than that. Two concentrations differing
+  # only beyond the 4th significant figure would share a key and be pooled into one row.
   fit_dt[, row := do.call(paste, c(
     lapply(key_parts, function(k) {
       v <- fit_dt[[k]]

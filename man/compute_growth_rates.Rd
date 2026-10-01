@@ -41,9 +41,11 @@ for periods mapped to \code{"None"} and when no control rows are present),
 \code{NormalizedGrowthRate} and \code{normalization_type}.  All of these
 columns are always present, whatever the normalization map or the
 availability of controls.  \code{NormalizedGrowthRate} is \code{NA} where
-the control baseline is not positive: a window in which the untreated arm
-is not growing gives a denominator that inverts the sign of the ratio
-rather than scaling it, and a warning names the cell line and period.
+the control baseline is not meaningfully positive: such a denominator
+either inverts the sign of the ratio (when negative) or leaves it undefined
+(when zero, within fitting tolerance) rather than scaling it, so no
+meaningful normalized rate exists.  A warning names the cell line and
+period.
 }
 \description{
 Stage 1 of the time-course pipeline: fits a growth rate per well within each
