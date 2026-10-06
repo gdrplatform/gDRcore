@@ -167,6 +167,41 @@
 
 
 se_tc_small <- .make_tc_se()
+# ---------------------------------------------------------------------------
+# Helper: a control that grows early and then stops growing, so that the late
+# window yields a non-positive denominator while the early window is healthy.
+# late_slope < 0 declines (rate_0 < 0); late_slope = 0 plateaus (rate_0 == 0).
+# ---------------------------------------------------------------------------
+.make_tc_declining_ctrl_se <- function(durs = c(0, 12, 24, 36, 48, 60, 72, 84, 96),
+                                       late_slope = -0.01) {
+  rows <- data.table::CJ(
+    DrugName = c("DMSO", "DrugA"),
+    Duration = durs,
+    CellLineName = "MCF7",
+    Barcode = "PL01",
+    WellRow = "A",
+    WellColumn = "1"
+  )
+  rows[, Concentration := data.table::fifelse(DrugName == "DMSO", 0, 1)]
+  # The control saturates at 48 h; the treated arm keeps growing slowly.
+  rows[, LogFoldChange := data.table::fifelse(
+    DrugName == "DMSO",
+    data.table::fifelse(Duration <= 48, 0.03 * Duration, 1.44 + late_slope * (Duration - 48)),
+    0.012 * Duration
+  )]
+  rows[, row_id := paste0(DrugName, "|", CellLineName)]
+  rows[, col_id := Barcode]
+
+  assay_cols <- c("DrugName", "Concentration", "Duration", "CellLineName",
+                  "Barcode", "WellRow", "WellColumn", "LogFoldChange")
+  SummarizedExperiment::SummarizedExperiment(
+    assays = list(LogFoldChange = BumpyMatrix::splitAsBumpyMatrix(
+      rows[, assay_cols, with = FALSE], row = rows$row_id, col = rows$col_id
+    ))
+  )
+}
+
+
 # Periods are half-open [start, end).
 # With durs = c(0,12,24,36,48,60,72,84,96):
 #   early: [0, 48)  → 0, 12, 24, 36    ≥ 2 pts per group ✓
@@ -816,4 +851,60 @@ test_that("get_period_timepoints rejects malformed periods", {
                regexp = "names")
   expect_error(get_period_timepoints(se_tc_small, list(bad = c(0, Inf)), "LogFoldChange"),
                regexp = "finite")
+})
+
+
+test_that("compute_growth_rates refuses to normalize against a control that is not growing", {
+  se <- .make_tc_declining_ctrl_se()
+  periods <- list(early = c(0, 48), late = c(48, 96))
+  norm_map <- c(early = "early", late = "late")
+
+  expect_warning(
+    res <- compute_growth_rates(se, periods = periods, normalization_map = norm_map),
+    "not positive"
+  )
+  res <- data.table::as.data.table(res)
+
+  late <- res[period == "late" & DrugName == "DrugA"]
+  early <- res[period == "early" & DrugName == "DrugA"]
+
+  # The denominator is what is unusable, not the measurement: the treated arm's own growth rate
+  # stays, and rate_0 stays visible so a reader can see why the ratio is missing.
+  expect_true(all(late$rate_0 <= 0))
+  expect_true(all(is.na(late$NormalizedGrowthRate)))
+  expect_true(all(is.finite(late$GrowthRate)))
+
+  # A healthy window in the same run is untouched.
+  expect_true(all(early$rate_0 > 0))
+  expect_true(all(is.finite(early$NormalizedGrowthRate)))
+  expect_equal(early$NormalizedGrowthRate, early$GrowthRate / early$rate_0)
+})
+
+test_that("compute_growth_rates refuses to normalize against a control that has stopped", {
+  # A flat control gives rate_0 == 0 exactly, which is a different failure from a declining one:
+  # the ratio is NaN or Inf rather than sign-flipped, and only the `<= 0` guard catches it.
+  se <- .make_tc_declining_ctrl_se(late_slope = 0)
+  periods <- list(early = c(0, 48), late = c(48, 96))
+  norm_map <- c(early = "early", late = "late")
+
+  expect_warning(
+    res <- compute_growth_rates(se, periods = periods, normalization_map = norm_map),
+    "not positive"
+  )
+  res <- data.table::as.data.table(res)
+  late <- res[period == "late" & DrugName == "DrugA"]
+
+  # lm() on a flat window returns a slope of order 1e-16, not an exact zero.
+  expect_true(all(abs(late$rate_0) < sqrt(.Machine$double.eps)))
+  expect_true(all(is.na(late$NormalizedGrowthRate)))
+  expect_true(all(is.finite(late$GrowthRate)))
+})
+
+test_that("compute_growth_rates names the cell line and period it could not normalize", {
+  se <- .make_tc_declining_ctrl_se()
+  expect_warning(
+    compute_growth_rates(se, periods = list(early = c(0, 48), late = c(48, 96)),
+                         normalization_map = c(early = "early", late = "late")),
+    "'MCF7' in period 'late'"
+  )
 })
