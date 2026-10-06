@@ -1,5 +1,20 @@
 # Changelog
 
+## gDRcore 1.11.17 - 2026-10-01
+
+- prevent normalizing a time-course growth rate against a control that
+  is not growing
+- fix the growth-rate guard to reject a plateaued control, whose fitted
+  rate is near zero but positive
+- ensure the default rate function fails clearly when the assay provides
+  no column of its name
+
+## gDRcore 1.11.16 - 2026-09-19
+
+- move the generic fitting layer to gDRutils, re-exporting it here for
+  one release cycle
+- remove the unused `fit_FUN()` and `.persist_metrics()` helpers
+
 ## gDRcore 1.11.15 - 2026-09-19
 
 - fix time-course fits being bounded as relative viability, which
@@ -12,7 +27,7 @@
 - fix constant fits reporting `xc50 = -Inf` regardless of the response
   level, which made inactive compounds read as maximally potent
 - add parity tests comparing
-  [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.md)
+  [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html)
   against
   [`gDRutils::logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html),
   pinning the branches where the two are known to differ
@@ -61,15 +76,15 @@
 ## gDRcore 1.11.8 - 2026-08-05
 
 - add
-  [`apply_custom_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md),
-  [`apply_custom_fits()`](https://gdrplatform.github.io/gDRcore/reference/apply_fits.md),
+  [`apply_custom_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_custom_fit.md),
+  [`apply_custom_fits()`](https://gdrplatform.github.io/gDRcore/reference/apply_custom_fits.md),
   [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md),
   [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md),
   [`apply_combo_scores()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.md)
   and composable `apply_combo_*()` steps
 - add fit profile registry
-  ([`get_fit_profile()`](https://gdrplatform.github.io/gDRcore/reference/get_fit_profile.md),
-  [`register_fit_profile()`](https://gdrplatform.github.io/gDRcore/reference/register_fit_profile.md))
+  ([`get_fit_profile()`](https://gdrplatform.github.io/gDRstyle/reference/get_fit_profile.html),
+  [`register_fit_profile()`](https://gdrplatform.github.io/gDRstyle/reference/register_fit_profile.html))
   with `nested_cols` documenting BumpyMatrix row structure per
   experiment type
 - refactor
@@ -77,15 +92,15 @@
   and
   [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
   as wrappers around
-  [`apply_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md);
+  [`apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html);
   fix non-monotonic (“checkerboard”) response on combo single-agent arms
 
 ## gDRcore 1.11.7 - 2026-07-29
 
 - add
-  [`apply_fit_to_se()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit_to_se.md)
+  [`apply_fit_to_se()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit_to_se.html)
   generic fit-function interface and
-  [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.md)
+  [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html)
   3-parameter Hill model matching
   [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
   output

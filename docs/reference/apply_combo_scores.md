@@ -84,7 +84,7 @@ before computing excess. This produces results numerically identical to
 The function requires a `Metrics` assay containing columns
 `dilution_drug`, `cotrt_value`, `ec50`, `h`, `x_inf`, `x_0`, and
 `normalization_type` — as produced by `fit_SE.combinations` or
-[`apply_fit_to_se`](https://gdrplatform.github.io/gDRcore/reference/apply_fit_to_se.md)
+[`apply_fit_to_se`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit_to_se.html)
 with `fit_drug_response_metrics`.
 
 Scoring steps (per drug-combo × cell-line × normalization_type):

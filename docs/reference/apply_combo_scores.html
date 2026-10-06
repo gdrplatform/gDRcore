@@ -9,7 +9,7 @@ exact scoring logic of fit_SE.combinations."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -121,7 +121,7 @@ excess.  This produces results numerically identical to <code>fit_SE.combination
 <p>The function requires a <code>Metrics</code> assay containing columns
 <code>dilution_drug</code>, <code>cotrt_value</code>, <code>ec50</code>, <code>h</code>,
 <code>x_inf</code>, <code>x_0</code>, and <code>normalization_type</code> — as produced by
-<code>fit_SE.combinations</code> or <code><a href="apply_fit_to_se.html">apply_fit_to_se</a></code> with
+<code>fit_SE.combinations</code> or <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit_to_se.html" class="external-link">apply_fit_to_se</a></code> with
 <code>fit_drug_response_metrics</code>.</p>
 <p>Scoring steps (per drug-combo × cell-line × normalization_type):</p><ol><li><p>Predict smooth SA responses at every combo concentration using
 <code>predict_efficacy_from_conc</code> on <code>drug_1</code> and <code>drug_2</code>

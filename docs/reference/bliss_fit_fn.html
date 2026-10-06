@@ -11,7 +11,7 @@ excess and score from raw averaged data."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,9 +72,9 @@ normalization_type) combination.  Must contain columns <code>Concentration</code
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Intended for use with <code><a href="apply_fit.html">apply_fit</a></code> on combination SEs:</p>
+    <p>Intended for use with <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></code> on combination SEs:</p>
 <div class="sourceCode"><pre><code><span></span>
-<span>  <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
+<span>  <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>    <span class="va">combo_se</span>, <span class="va">bliss_fit_fn</span>, <span class="st">"combination"</span>,</span>
 <span>    output_assay <span class="op">=</span> <span class="st">"custom_bliss"</span>, fit_source <span class="op">=</span> <span class="st">"bliss"</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
@@ -85,7 +85,7 @@ normalization_type) combination.  Must contain columns <code>Concentration</code
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/get_synthetic_data.html" class="external-link">get_synthetic_data</a></span><span class="op">(</span><span class="st">"finalMAE_combo_matrix_small"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">combo_se</span> <span class="op">&lt;-</span> <span class="va">mae</span><span class="op">[[</span><span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/get_supported_experiments.html" class="external-link">get_supported_experiments</a></span><span class="op">(</span><span class="st">"combo"</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span></span>
-<span class="r-in"><span><span class="va">combo_se_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="apply_fit.html">apply_fit</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">combo_se_out</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">combo_se</span>, <span class="va">bliss_fit_fn</span>, <span class="st">"combination"</span>,</span></span>
 <span class="r-in"><span>  output_assay <span class="op">=</span> <span class="st">"custom_bliss"</span>, fit_source <span class="op">=</span> <span class="st">"bliss"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>

@@ -10,23 +10,23 @@ gDRsuite.
 This vignette is dedicated to providing an in-depth exploration of the
 underlying data model employed in the gDR suite, with a focus on the
 versatile
-*[MultiAssayExperiment](https://bioconductor.org/packages/3.23/MultiAssayExperiment)*
+*[MultiAssayExperiment](https://bioconductor.org/packages/3.24/MultiAssayExperiment)*
 object – the cornerstone of the gDR ecosystem. The vignette delves into
 the intricacies of the data model, shedding light on how different
 components are organized within the
-*[MultiAssayExperiment](https://bioconductor.org/packages/3.23/MultiAssayExperiment)*
+*[MultiAssayExperiment](https://bioconductor.org/packages/3.24/MultiAssayExperiment)*
 object. As the basic and essential object in the gDR, the
-*[MultiAssayExperiment](https://bioconductor.org/packages/3.23/MultiAssayExperiment)*
+*[MultiAssayExperiment](https://bioconductor.org/packages/3.24/MultiAssayExperiment)*
 encapsulates the diverse dimensions of drug response data, providing a
 unified and coherent framework for analysis. Our primary goal is to
 equip users with a detailed understanding of the gDRsuite data model and
 its utilization within the
-*[MultiAssayExperiment](https://bioconductor.org/packages/3.23/MultiAssayExperiment)*
+*[MultiAssayExperiment](https://bioconductor.org/packages/3.24/MultiAssayExperiment)*
 object. Through practical examples and thorough explanations, we aim to
 demonstrate how gDRcore’s core functions and pipeline facilitate
 efficient analysis, providing valuable insights into drug response
 dynamics. More information about the data processing can be found in the
-*[gDRcore](https://bioconductor.org/packages/3.23/gDRcore)*.
+*[gDRcore](https://bioconductor.org/packages/3.24/gDRcore)*.
 
 ![gDR data model](data_model.svg)
 
@@ -36,14 +36,14 @@ gDR data model
 
 In the gDR suite, the culmination of drug response data is encapsulated
 in the form of a
-*[MultiAssayExperiment](https://bioconductor.org/packages/3.23/MultiAssayExperiment)*
+*[MultiAssayExperiment](https://bioconductor.org/packages/3.24/MultiAssayExperiment)*
 object, representing a versatile and cohesive framework for the analysis
 of diverse experimental scenarios.
 
 ### Supported Experiments:
 
 The gDR suite accommodates three primary types of experiments within the
-*[MultiAssayExperiment](https://bioconductor.org/packages/3.23/MultiAssayExperiment)*
+*[MultiAssayExperiment](https://bioconductor.org/packages/3.24/MultiAssayExperiment)*
 object:
 
 1.  `single-agent` experiment: This involves the assessment of drug
@@ -62,29 +62,29 @@ object:
 ### SummarizedExperiment objects:
 
 Each experiment within the
-*[MultiAssayExperiment](https://bioconductor.org/packages/3.23/MultiAssayExperiment)*
+*[MultiAssayExperiment](https://bioconductor.org/packages/3.24/MultiAssayExperiment)*
 is represented as a
-*[SummarizedExperiment](https://bioconductor.org/packages/3.23/SummarizedExperiment)*
+*[SummarizedExperiment](https://bioconductor.org/packages/3.24/SummarizedExperiment)*
 object. This encapsulates the essential components necessary for
 comprehensive analysis:
 
 - `assays`: Containing the actual data, assays provide a numerical
   representation of drug responses and associated experimental
   measurements. In gDR, assays are represented by
-  *[BumpyMatrix](https://bioconductor.org/packages/3.23/BumpyMatrix)*
+  *[BumpyMatrix](https://bioconductor.org/packages/3.24/BumpyMatrix)*
   object.
 
 - `rowData`: Encompassing information related to features, rowData
   provides context on the entities being analyzed, such as drugs,
   compounds, or concentrations. In gDR, rowData are represented by
   `DataFrame` object from
-  *[S4Vectors](https://bioconductor.org/packages/3.23/S4Vectors)*
+  *[S4Vectors](https://bioconductor.org/packages/3.24/S4Vectors)*
 
 - `colData`: Describing the experimental conditions, colData captures
   metadata associated with the cell lines, including tissues, reference
   division time, and any relevant covariates. In gDR, colData are
   represented by `DataFrame` object from
-  *[S4Vectors](https://bioconductor.org/packages/3.23/S4Vectors)*
+  *[S4Vectors](https://bioconductor.org/packages/3.24/S4Vectors)*
 
 - `metadata`: Offering additional information about the experiment,
   metadata provides a contextual layer to enhance the understanding of
@@ -93,23 +93,23 @@ comprehensive analysis:
 ## MultiAssayExperiment object
 
 At its core, the
-*[MultiAssayExperiment](https://bioconductor.org/packages/3.23/MultiAssayExperiment)*
+*[MultiAssayExperiment](https://bioconductor.org/packages/3.24/MultiAssayExperiment)*
 object is designed to hold a collection of
-*[SummarizedExperiment](https://bioconductor.org/packages/3.23/SummarizedExperiment)*
+*[SummarizedExperiment](https://bioconductor.org/packages/3.24/SummarizedExperiment)*
 objects, each representing a distinct experiment type within the gDR
 suite. This simplicity ensures a clean and efficient organization of
 data, facilitating a user-friendly experience.
 
 To extract specific experiments from the
-*[MultiAssayExperiment](https://bioconductor.org/packages/3.23/MultiAssayExperiment)*
+*[MultiAssayExperiment](https://bioconductor.org/packages/3.24/MultiAssayExperiment)*
 object, the `[[` operator can be used For example, to access the data
 related to combination experiments, one can use `MAE[["combination"]]`,
 where `MAE` represents the
-*[MultiAssayExperiment](https://bioconductor.org/packages/3.23/MultiAssayExperiment)*
+*[MultiAssayExperiment](https://bioconductor.org/packages/3.24/MultiAssayExperiment)*
 object.
 
 To gain insights into the available experiments within the
-*[MultiAssayExperiment](https://bioconductor.org/packages/3.23/MultiAssayExperiment)*
+*[MultiAssayExperiment](https://bioconductor.org/packages/3.24/MultiAssayExperiment)*
 object, the
 [`MultiAssayExperiment::experiments`](https://github.com/waldronlab/MultiAssayExperiment/reference/MultiAssayExperiment-methods.html)
 function can be used.
@@ -117,7 +117,7 @@ function can be used.
 ## SummarizedExperiment object
 
 The
-*[SummarizedExperiment](https://bioconductor.org/packages/3.23/SummarizedExperiment)*
+*[SummarizedExperiment](https://bioconductor.org/packages/3.24/SummarizedExperiment)*
 object emerges as a pivotal structure, integrating drug response data
 with essential metadata. This versatile container plays a central role
 in the storage of information related to drugs, cell lines, and
@@ -125,7 +125,7 @@ experimental conditions, providing a comprehensive foundation for
 nuanced analysis within the gDR.
 
 The
-*[SummarizedExperiment](https://bioconductor.org/packages/3.23/SummarizedExperiment)*
+*[SummarizedExperiment](https://bioconductor.org/packages/3.24/SummarizedExperiment)*
 object in gDR contains four essential components:
 
 ### Assays
@@ -138,12 +138,12 @@ list of available assays for a given gDR experiment can be obtained
 using
 [`SummarizedExperiment::assayNames`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)
 on the
-*[SummarizedExperiment](https://bioconductor.org/packages/3.23/SummarizedExperiment)*
+*[SummarizedExperiment](https://bioconductor.org/packages/3.24/SummarizedExperiment)*
 object. The extraction of a specific `assay` can be done using
 [`SummarizedExperiment::assay`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)
 function, i.e. `SummarizedExperiment::assay(se, "Normalized")`, where
 `se` is the
-*[SummarizedExperiment](https://bioconductor.org/packages/3.23/SummarizedExperiment)*
+*[SummarizedExperiment](https://bioconductor.org/packages/3.24/SummarizedExperiment)*
 object, and `Normalized` is the name of the assay within the experiment.
 
 The gDR experiments contain two sets of assays. One set is for
@@ -169,7 +169,7 @@ asterisk):
     score, Bliss Score, and CI (combination index) scores)
 
 All assays are stored as
-*[BumpyMatrix](https://bioconductor.org/packages/3.23/BumpyMatrix)*
+*[BumpyMatrix](https://bioconductor.org/packages/3.24/BumpyMatrix)*
 objects.
 
 Assays represented by numbers 3-9 additionally contain information about
@@ -177,7 +177,7 @@ Assays represented by numbers 3-9 additionally contain information about
 each normalization type (RelativeViability and GRValues by default).
 
 In gDR
-*[BumpyMatrix](https://bioconductor.org/packages/3.23/BumpyMatrix)*
+*[BumpyMatrix](https://bioconductor.org/packages/3.24/BumpyMatrix)*
 objects can be easily transformed into the
 *[data.table](https://CRAN.R-project.org/package=data.table)* object
 using
@@ -193,7 +193,7 @@ their annotations from the database. Additional perturbations and
 replicates might be also stored in the `rowData`.
 
 `rowData` can be extracted from the
-*[SummarizedExperiment](https://bioconductor.org/packages/3.23/SummarizedExperiment)*
+*[SummarizedExperiment](https://bioconductor.org/packages/3.24/SummarizedExperiment)*
 object using
 [`SummarizedExperiment::rowData`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)
 function.
@@ -204,7 +204,7 @@ function.
 about the cell lines and their annotations.
 
 `colData` can be extracted from the
-*[SummarizedExperiment](https://bioconductor.org/packages/3.23/SummarizedExperiment)*
+*[SummarizedExperiment](https://bioconductor.org/packages/3.24/SummarizedExperiment)*
 object using
 [`SummarizedExperiment::colData`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)
 function.
@@ -243,7 +243,7 @@ function. In gDR object the metadata information is stored as a list.
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] BiocStyle_2.40.0
+    ## [1] BiocStyle_2.41.0
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] digest_0.6.39       desc_1.4.3          R6_2.6.1           
@@ -255,4 +255,4 @@ function. In gDR object the metadata information is stored as a list.
     ## [19] tools_4.6.1         ragg_1.5.2          bslib_0.12.0       
     ## [22] evaluate_1.0.5      yaml_2.3.12         BiocManager_1.30.27
     ## [25] otel_0.2.0          jsonlite_2.0.0      rlang_1.3.0        
-    ## [28] fs_2.1.0            htmlwidgets_1.6.4
+    ## [28] fs_2.1.0

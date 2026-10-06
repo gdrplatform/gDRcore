@@ -183,13 +183,13 @@ The standard pipeline uses
 with a fixed 4-parameter log-logistic model. If you need a different
 fitting approach — alternative models, Bayesian fits, or custom metrics
 — the
-[`apply_custom_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+[`apply_custom_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_custom_fit.md)
 family lets you plug in any fitting function without modifying the
 pipeline internals.
 
 #### apply_custom_fit() — generic interface
 
-[`apply_custom_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+[`apply_custom_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_custom_fit.md)
 is the primary entry point. It applies a user-supplied `fit_fn` to every
 (row × column × normalization_type) triplet in the input assay and
 persists results into any named output assay. Experiment type is
@@ -249,7 +249,7 @@ combo_se_out <- apply_custom_fit(
 
 #### apply_fit_to_se() — single-agent convenience wrapper
 
-[`apply_fit_to_se()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit_to_se.md)
+[`apply_fit_to_se()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit_to_se.html)
 is a convenience wrapper for the single-agent case that writes into the
 standard Metrics assay:
 
@@ -275,11 +275,11 @@ se_out <- apply_fit_to_se(
 
 #### Reference implementations
 
-| Function                                                                                                      | Data type    | Output assay | What it computes                        |
-|---------------------------------------------------------------------------------------------------------------|--------------|--------------|-----------------------------------------|
-| [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.md) | single-agent | any          | 4-parameter Hill fit (mirrors `fit_SE`) |
-| [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md)                           | combination  | any          | Bliss independence score and excess     |
-| [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md)                               | combination  | any          | Highest Single Agent score and excess   |
+| Function                                                                                                         | Data type    | Output assay | What it computes                        |
+|------------------------------------------------------------------------------------------------------------------|--------------|--------------|-----------------------------------------|
+| [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html) | single-agent | any          | 4-parameter Hill fit (mirrors `fit_SE`) |
+| [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md)                              | combination  | any          | Bliss independence score and excess     |
+| [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md)                                  | combination  | any          | Highest Single Agent score and excess   |
 
 ## SessionInfo
 
@@ -306,54 +306,54 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] gDRcore_1.11.15    gDRtestData_1.10.0 BiocStyle_2.40.0  
+#> [1] gDRcore_1.11.17    gDRtestData_1.11.8 BiocStyle_2.41.0  
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
-#>  [3] BumpyMatrix_1.20.0          TH.data_1.1-5              
+#>  [3] BumpyMatrix_1.21.0          TH.data_1.1-5              
 #>  [5] digest_0.6.39               lifecycle_1.0.5            
-#>  [7] gDRutils_1.10.0             survival_3.8-6             
+#>  [7] gDRutils_1.11.14            survival_3.8-6             
 #>  [9] magrittr_2.0.5              compiler_4.6.1             
 #> [11] rlang_1.3.0                 sass_0.4.10                
-#> [13] drc_3.0-1                   tools_4.6.1                
+#> [13] drc_4.0-0                   tools_4.6.1                
 #> [15] plotrix_3.8-14              yaml_2.3.12                
 #> [17] data.table_1.18.6.1         knitr_1.52                 
-#> [19] lambda.r_1.2.4              S4Arrays_1.12.0            
-#> [21] htmlwidgets_1.6.4           DelayedArray_0.38.2        
-#> [23] RColorBrewer_1.1-3          abind_1.4-8                
-#> [25] multcomp_1.4-32             BiocParallel_1.46.0        
-#> [27] purrr_1.2.2                 BiocGenerics_0.58.1        
-#> [29] desc_1.4.3                  grid_4.6.1                 
-#> [31] stats4_4.6.1                scales_1.4.0               
-#> [33] MASS_7.3-65                 gtools_3.9.5               
-#> [35] MultiAssayExperiment_1.38.0 SummarizedExperiment_1.42.0
-#> [37] cli_3.6.6                   mvtnorm_1.4-2              
-#> [39] rmarkdown_2.32              ragg_1.5.2                 
-#> [41] generics_0.1.4              otel_0.2.0                 
-#> [43] readxl_1.5.0.1              cachem_1.1.0               
-#> [45] stringr_1.6.0               splines_4.6.1              
-#> [47] gDRimport_1.10.0            assertthat_0.2.1           
-#> [49] parallel_4.6.1              formatR_1.14               
-#> [51] BiocManager_1.30.27         cellranger_1.1.0           
-#> [53] XVector_0.52.0              matrixStats_1.5.0          
-#> [55] vctrs_0.7.3                 Matrix_1.7-5               
-#> [57] sandwich_3.1-3              jsonlite_2.0.0             
-#> [59] carData_3.0-6               bookdown_0.48              
-#> [61] car_3.1-5                   IRanges_2.46.0             
-#> [63] S4Vectors_0.50.3            Formula_1.2-6              
-#> [65] systemfonts_1.3.2           testthat_3.3.2             
-#> [67] jquerylib_0.1.4             rematch_2.0.0              
-#> [69] glue_1.8.1                  pkgdown_2.2.1              
-#> [71] codetools_0.2-20            stringi_1.8.9              
-#> [73] futile.logger_1.4.9         GenomicRanges_1.64.0       
-#> [75] tibble_3.3.1                pillar_1.11.1              
-#> [77] htmltools_0.5.9             Seqinfo_1.2.0              
-#> [79] brio_1.1.5                  R6_2.6.1                   
-#> [81] textshaping_1.0.5           evaluate_1.0.5             
-#> [83] lattice_0.22-9              Biobase_2.72.0             
-#> [85] futile.options_1.0.1        backports_1.5.1            
-#> [87] bslib_0.12.0                SparseArray_1.12.2         
-#> [89] checkmate_2.3.4             xfun_0.61                  
-#> [91] fs_2.1.0                    MatrixGenerics_1.24.0      
-#> [93] zoo_1.9-0                   pkgconfig_2.0.3
+#> [19] lambda.r_1.2.4              S4Arrays_1.13.2            
+#> [21] DelayedArray_0.39.8         RColorBrewer_1.1-3         
+#> [23] abind_1.4-8                 multcomp_1.4-32            
+#> [25] BiocParallel_1.47.0         purrr_1.2.2                
+#> [27] BiocGenerics_0.59.12        desc_1.4.3                 
+#> [29] grid_4.6.1                  stats4_4.6.1               
+#> [31] scales_1.4.0                gtools_3.9.5               
+#> [33] MASS_7.3-65                 MultiAssayExperiment_1.39.1
+#> [35] SummarizedExperiment_1.43.0 cli_3.6.6                  
+#> [37] mvtnorm_1.4-2               rmarkdown_2.32             
+#> [39] ragg_1.5.2                  generics_0.1.4             
+#> [41] otel_0.2.0                  readxl_1.5.0.1             
+#> [43] cachem_1.1.0                stringr_1.6.0              
+#> [45] splines_4.6.1               gDRimport_1.11.7           
+#> [47] assertthat_0.2.1            parallel_4.6.1             
+#> [49] formatR_1.14                BiocManager_1.30.27        
+#> [51] cellranger_1.1.0            XVector_0.53.0             
+#> [53] matrixStats_1.5.0           vctrs_0.7.3                
+#> [55] Matrix_1.7-5                sandwich_3.1-3             
+#> [57] jsonlite_2.0.0              carData_3.0-6              
+#> [59] bookdown_0.48               car_3.1-5                  
+#> [61] IRanges_2.47.5              S4Vectors_0.51.10          
+#> [63] Formula_1.2-6               systemfonts_1.3.2          
+#> [65] testthat_3.3.2              jquerylib_0.1.4            
+#> [67] rematch_2.0.0               glue_1.8.1                 
+#> [69] pkgdown_2.2.1               codetools_0.2-20           
+#> [71] stringi_1.8.9               futile.logger_1.4.9        
+#> [73] GenomicRanges_1.65.4        tibble_3.3.1               
+#> [75] pillar_1.11.1               htmltools_0.5.9            
+#> [77] Seqinfo_1.3.2               brio_1.1.5                 
+#> [79] R6_2.6.1                    textshaping_1.0.5          
+#> [81] evaluate_1.0.5              lattice_0.22-9             
+#> [83] Biobase_2.73.2              futile.options_1.0.1       
+#> [85] backports_1.5.1             bslib_0.12.0               
+#> [87] SparseArray_1.13.4          checkmate_2.3.4            
+#> [89] xfun_0.61                   fs_2.1.0                   
+#> [91] MatrixGenerics_1.25.0       zoo_1.9-1                  
+#> [93] pkgconfig_2.0.3
 ```

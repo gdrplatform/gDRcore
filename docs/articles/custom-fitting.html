@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,9 +84,15 @@
 need something different: an alternative curve model, custom synergy
 metrics, Bayesian estimates, or bespoke pharmacology metrics for your
 assay.</p>
-<p><code><a href="../reference/apply_fit.html">apply_fit()</a></code> and <code><a href="../reference/apply_fits.html">apply_fits()</a></code> let you plug
+<p><code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit()</a></code> and <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fits.html" class="external-link">apply_fits()</a></code> let you plug
 <strong>any R function</strong> into the gDR SE/MAE pipeline without
 touching the pipeline internals.</p>
+<p>These functions, the fit profile registry and
+<code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">fit_drug_response_metrics()</a></code> now live in
+<strong>gDRutils</strong>, next to the curve-fitting maths they are
+built on. gDRcore re-exports them for one release cycle, so the code
+below keeps working as written; call them as
+<code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">gDRutils::apply_fit()</a></code> in new code.</p>
 <p>Key properties:</p>
 <ul>
 <li>Works with <strong>single-agent</strong>,
@@ -98,7 +104,7 @@ no risk of overwriting native gDR assays (<code>"Metrics"</code>,
 <li>Results are <strong>idempotent</strong>: calling twice with the same
 <code>fit_source</code> overwrites rather than duplicates.</li>
 <li>
-<code><a href="../reference/apply_fits.html">apply_fits()</a></code> applies N fit functions in a
+<code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fits.html" class="external-link">apply_fits()</a></code> applies N fit functions in a
 <strong>single</strong> BumpyMatrix traversal — efficient when you have
 several metrics to compute on the same data.</li>
 </ul>
@@ -136,22 +142,22 @@ line) pair:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">avg_cell</span><span class="op">[</span><span class="va">avg_cell</span><span class="op">$</span><span class="va">row</span> <span class="op">==</span> <span class="va">avg_cell</span><span class="op">$</span><span class="va">row</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&amp;</span></span>
 <span>              <span class="va">avg_cell</span><span class="op">$</span><span class="va">column</span> <span class="op">==</span> <span class="va">avg_cell</span><span class="op">$</span><span class="va">column</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt; DataFrame with 6 rows and 6 columns</span></span>
-<span><span class="co">#&gt;                         row                 column normalization_type</span></span>
-<span><span class="co">#&gt;                 &lt;character&gt;            &lt;character&gt;           &lt;factor&gt;</span></span>
-<span><span class="co">#&gt; 1_RV G00002_drug_002_moa_.. CL00011_cellline_BA_..                 RV</span></span>
-<span><span class="co">#&gt; 1_GR G00002_drug_002_moa_.. CL00011_cellline_BA_..                 GR</span></span>
-<span><span class="co">#&gt; 2_RV G00002_drug_002_moa_.. CL00011_cellline_BA_..                 RV</span></span>
-<span><span class="co">#&gt; 2_GR G00002_drug_002_moa_.. CL00011_cellline_BA_..                 GR</span></span>
-<span><span class="co">#&gt; 3_RV G00002_drug_002_moa_.. CL00011_cellline_BA_..                 RV</span></span>
-<span><span class="co">#&gt; 3_GR G00002_drug_002_moa_.. CL00011_cellline_BA_..                 GR</span></span>
-<span><span class="co">#&gt;      Concentration         x      x_std</span></span>
-<span><span class="co">#&gt;          &lt;numeric&gt; &lt;numeric&gt;  &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1_RV    0.00100000  0.924967 0.01066130</span></span>
-<span><span class="co">#&gt; 1_GR    0.00100000  0.944433 0.00805874</span></span>
-<span><span class="co">#&gt; 2_RV    0.00316228  0.739100 0.01484621</span></span>
-<span><span class="co">#&gt; 2_GR    0.00316228  0.793100 0.01302152</span></span>
-<span><span class="co">#&gt; 3_RV    0.01000000  0.435933 0.03071503</span></span>
-<span><span class="co">#&gt; 3_GR    0.01000000  0.481333 0.03811841</span></span></code></pre></div>
+<span><span class="co">#&gt;                      row                 column normalization_type</span></span>
+<span><span class="co">#&gt;              &lt;character&gt;            &lt;character&gt;           &lt;factor&gt;</span></span>
+<span><span class="co">#&gt; 1 G00002_drug_002_moa_.. CL00011_cellline_BA_..                 RV</span></span>
+<span><span class="co">#&gt; 2 G00002_drug_002_moa_.. CL00011_cellline_BA_..                 GR</span></span>
+<span><span class="co">#&gt; 3 G00002_drug_002_moa_.. CL00011_cellline_BA_..                 RV</span></span>
+<span><span class="co">#&gt; 4 G00002_drug_002_moa_.. CL00011_cellline_BA_..                 GR</span></span>
+<span><span class="co">#&gt; 5 G00002_drug_002_moa_.. CL00011_cellline_BA_..                 RV</span></span>
+<span><span class="co">#&gt; 6 G00002_drug_002_moa_.. CL00011_cellline_BA_..                 GR</span></span>
+<span><span class="co">#&gt;   Concentration         x      x_std</span></span>
+<span><span class="co">#&gt;       &lt;numeric&gt; &lt;numeric&gt;  &lt;numeric&gt;</span></span>
+<span><span class="co">#&gt; 1    0.00100000  0.924967 0.01066130</span></span>
+<span><span class="co">#&gt; 2    0.00100000  0.944433 0.00805874</span></span>
+<span><span class="co">#&gt; 3    0.00316228  0.739100 0.01484621</span></span>
+<span><span class="co">#&gt; 4    0.00316228  0.793100 0.01302152</span></span>
+<span><span class="co">#&gt; 5    0.01000000  0.435933 0.03071503</span></span>
+<span><span class="co">#&gt; 6    0.01000000  0.481333 0.03811841</span></span></code></pre></div>
 <p>Each cell has four columns:</p>
 <table class="table">
 <thead><tr class="header">
@@ -216,7 +222,7 @@ return value.</p>
 normalization_type) triplet and write results to a custom assay named
 <code>"custom_summary"</code>.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sa_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">sa_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">sa_se</span>,</span>
 <span>  fit_fn <span class="op">=</span> <span class="va">summary_fn</span>,</span>
 <span>  data_type <span class="op">=</span> <span class="st">"single-agent"</span>,</span>
@@ -264,7 +270,7 @@ when replacing the standard gDR Hill fit with your own model:</p>
 <span><span class="co">#&gt; [1] TRUE</span></span>
 <span></span>
 <span><span class="co"># Apply a custom fit to the same assay, coexisting alongside gDR rows</span></span>
-<span><span class="va">custom_hill</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
+<span><span class="va">custom_hill</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">sa_se</span>,</span>
 <span>  fit_fn <span class="op">=</span> <span class="va">fit_drug_response_metrics</span>,</span>
 <span>  data_type <span class="op">=</span> <span class="st">"single-agent"</span>,</span>
@@ -296,7 +302,7 @@ assay.</p>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Call again — same fit_source, same data</span></span>
-<span><span class="va">sa_out2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
+<span><span class="va">sa_out2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">sa_out</span>,</span>
 <span>  fit_fn <span class="op">=</span> <span class="va">summary_fn</span>,</span>
 <span>  data_type <span class="op">=</span> <span class="st">"single-agent"</span>,</span>
@@ -320,7 +326,7 @@ side</strong> in the same assay:</p>
 <code class="sourceCode R"><span><span class="va">extra_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">avg_dt</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">avg_dt</span><span class="op">$</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">sa_two</span> <span class="op">&lt;-</span> <span class="va">sa_out</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span><span class="va">extra_fn</span>, <span class="st">"single-agent"</span>,</span>
+<span>  <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span><span class="va">extra_fn</span>, <span class="st">"single-agent"</span>,</span>
 <span>                   output_assay <span class="op">=</span> <span class="st">"custom_summary"</span>,</span>
 <span>                   fit_source <span class="op">=</span> <span class="st">"extremes"</span><span class="op">)</span></span>
 <span></span>
@@ -335,7 +341,7 @@ side</strong> in the same assay:</p>
 <div class="section level2">
 <h2 id="reference-hill-fit-fit_drug_response_metrics">Reference Hill fit: fit_drug_response_metrics()<a class="anchor" aria-label="anchor" href="#reference-hill-fit-fit_drug_response_metrics"></a>
 </h2>
-<p><code><a href="../reference/fit_drug_response_metrics.html">fit_drug_response_metrics()</a></code> is a reference single-agent
+<p><code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">fit_drug_response_metrics()</a></code> is a reference single-agent
 fit function that replicates the standard <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code> /
 <code><a href="https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html" class="external-link">logisticFit()</a></code> output exactly.</p>
 <table class="table">
@@ -384,7 +390,7 @@ behaviour)</td>
 <div class="section level3">
 <h3 id="numerical-equivalence-with-fit_se">Numerical equivalence with fit_SE()<a class="anchor" aria-label="anchor" href="#numerical-equivalence-with-fit_se"></a>
 </h3>
-<p><code><a href="../reference/fit_drug_response_metrics.html">fit_drug_response_metrics()</a></code> is <strong>numerically
+<p><code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">fit_drug_response_metrics()</a></code> is <strong>numerically
 identical</strong> to <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code>. The fit is deterministic —
 <code><a href="https://rdrr.io/pkg/drc/man/drm.html" class="external-link">drc::drm</a></code> does not use random number generation, so
 <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> has no effect. Differences between the two are
@@ -406,12 +412,12 @@ assay</li>
 <p>These parameters can be overridden if your data requires it:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Loosen the significance threshold or force the sigmoidal fit</span></span>
-<span><span class="fu"><a href="../reference/fit_drug_response_metrics.html">fit_drug_response_metrics</a></span><span class="op">(</span><span class="va">avg_dt</span>, pcutoff <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/fit_drug_response_metrics.html">fit_drug_response_metrics</a></span><span class="op">(</span><span class="va">avg_dt</span>, force_fit <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">fit_drug_response_metrics</a></span><span class="op">(</span><span class="va">avg_dt</span>, pcutoff <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">fit_drug_response_metrics</a></span><span class="op">(</span><span class="va">avg_dt</span>, force_fit <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co"># Different range for x_AOC_range computation</span></span>
-<span><span class="fu"><a href="../reference/fit_drug_response_metrics.html">fit_drug_response_metrics</a></span><span class="op">(</span><span class="va">avg_dt</span>, range_conc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1e-3</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">fit_drug_response_metrics</a></span><span class="op">(</span><span class="va">avg_dt</span>, range_conc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1e-3</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hill_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">hill_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">sa_se</span>,</span>
 <span>  fit_fn <span class="op">=</span> <span class="va">fit_drug_response_metrics</span>,</span>
 <span>  data_type <span class="op">=</span> <span class="st">"single-agent"</span>,</span>
@@ -467,7 +473,7 @@ whether the result is synergistic across both GR and RV.</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">hill_with_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
+<span><span class="va">hill_with_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">sa_se</span>,</span>
 <span>  fit_fn <span class="op">=</span> <span class="va">fit_drug_response_metrics</span>,</span>
 <span>  data_type <span class="op">=</span> <span class="st">"single-agent"</span>,</span>
@@ -763,7 +769,7 @@ indicate synergy.</p>
 needed<a class="anchor" aria-label="anchor" href="#approach-2-bliss_fit_fn-hss_fit_fn-simplified-no-sa-fits-needed"></a>
 </h3>
 <p><code><a href="../reference/bliss_fit_fn.html">bliss_fit_fn()</a></code> and <code><a href="../reference/hss_fit_fn.html">hss_fit_fn()</a></code> are
-lower-level fit functions for <code><a href="../reference/apply_fit.html">apply_fit()</a></code> that compute
+lower-level fit functions for <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit()</a></code> that compute
 synergy scores directly from the raw Averaged data, without requiring
 prior SA curve fits.</p>
 <table class="table">
@@ -813,7 +819,7 @@ prior SA curve fits.</p>
 <span><span class="op">)</span></span>
 <span><span class="va">combo_se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></span><span class="op">(</span>assays <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Averaged <span class="op">=</span> <span class="va">combo_bumpy</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bliss_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">bliss_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">combo_se</span>,</span>
 <span>  fit_fn <span class="op">=</span> <span class="va">bliss_fit_fn</span>,</span>
 <span>  data_type <span class="op">=</span> <span class="st">"combination"</span>,</span>
@@ -841,7 +847,7 @@ prior SA curve fits.</p>
 <span><span class="co">#&gt; 3              4</span></span>
 <span><span class="co">#&gt; 4              4</span></span></code></pre></div>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hss_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">hss_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">combo_se</span>,</span>
 <span>  fit_fn <span class="op">=</span> <span class="va">hss_fit_fn</span>,</span>
 <span>  data_type <span class="op">=</span> <span class="st">"combination"</span>,</span>
@@ -869,11 +875,11 @@ prior SA curve fits.</p>
 <h2 id="efficient-multi-fit-apply_fits">Efficient multi-fit: apply_fits()<a class="anchor" aria-label="anchor" href="#efficient-multi-fit-apply_fits"></a>
 </h2>
 <p>When several fit functions operate on the <strong>same input
-assay</strong>, use <code><a href="../reference/apply_fits.html">apply_fits()</a></code> to traverse each
+assay</strong>, use <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fits.html" class="external-link">apply_fits()</a></code> to traverse each
 BumpyMatrix cell <strong>once</strong> and apply all functions in that
 single pass.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">combo_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_fits.html">apply_fits</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">combo_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fits.html" class="external-link">apply_fits</a></span><span class="op">(</span></span>
 <span>  <span class="va">combo_se</span>,</span>
 <span>  fit_fns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    custom_bliss <span class="op">=</span> <span class="va">bliss_fit_fn</span>,</span>
@@ -885,7 +891,7 @@ single pass.</p>
 <span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assayNames</a></span><span class="op">(</span><span class="va">combo_multi</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Averaged"     "custom_bliss" "custom_hss"</span></span></code></pre></div>
 <p>Both assays are written in one traversal — equivalent to chaining two
-<code><a href="../reference/apply_fit.html">apply_fit()</a></code> calls but without the overhead of a second
+<code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit()</a></code> calls but without the overhead of a second
 unsplit + iteration.</p>
 <div class="section level3">
 <h3 id="shared-pre-computation-pattern">Shared pre-computation pattern<a class="anchor" aria-label="anchor" href="#shared-pre-computation-pattern"></a>
@@ -907,7 +913,7 @@ computation:</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/apply_fits.html">apply_fits</a></span><span class="op">(</span></span>
+<span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fits.html" class="external-link">apply_fits</a></span><span class="op">(</span></span>
 <span>  <span class="va">combo_se</span>,</span>
 <span>  fit_fns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>custom_bliss <span class="op">=</span> <span class="va">bliss_and_hss_combined</span>,</span>
 <span>                    custom_hss <span class="op">=</span> <span class="va">bliss_and_hss_combined</span><span class="op">)</span>,</span>
@@ -924,13 +930,13 @@ computation:</p>
 SE:</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result_se</span> <span class="op">&lt;-</span> <span class="va">combo_se</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span><span class="va">bliss_fit_fn</span>, <span class="st">"combination"</span>,</span>
+<span>  <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span><span class="va">bliss_fit_fn</span>, <span class="st">"combination"</span>,</span>
 <span>                   output_assay <span class="op">=</span> <span class="st">"custom_bliss"</span>,</span>
 <span>                   fit_source <span class="op">=</span> <span class="st">"bliss"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span><span class="va">hss_fit_fn</span>, <span class="st">"combination"</span>,</span>
+<span>  <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span><span class="va">hss_fit_fn</span>, <span class="st">"combination"</span>,</span>
 <span>                   output_assay <span class="op">=</span> <span class="st">"custom_hss"</span>,</span>
 <span>                   fit_source <span class="op">=</span> <span class="st">"hss"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>    <span class="kw">function</span><span class="op">(</span><span class="va">dt</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n_obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">NROW</a></span><span class="op">(</span><span class="va">dt</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    <span class="st">"combination"</span>,</span>
 <span>    output_assay <span class="op">=</span> <span class="st">"combo_diagnostics"</span>,</span>
@@ -956,7 +962,7 @@ fit function.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">se_partial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">withCallingHandlers</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>    <span class="va">sa_se</span>, <span class="va">buggy_fn</span>, <span class="st">"single-agent"</span>,</span>
 <span>    output_assay <span class="op">=</span> <span class="st">"rv_only"</span>,</span>
 <span>    fit_source <span class="op">=</span> <span class="st">"rv_fn"</span>,</span>
@@ -1100,7 +1106,7 @@ when the growth phase has to be selected per well:</p>
 <span>  rate_fn <span class="op">=</span> <span class="va">endpoint_rate_fn</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>The stages can also be run separately, which is the same two-step
-workflow as <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">average_SE()</a></code> → <code><a href="../reference/apply_fit.html">apply_fit()</a></code> for
+workflow as <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">average_SE()</a></code> → <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit()</a></code> for
 single-agent data. <code><a href="../reference/compute_growth_rates.html">compute_growth_rates()</a></code> returns the
 growth rate table — one row per
 <code>(CellLine, Drug, Concentration, partner slots, period)</code>,
@@ -1110,7 +1116,7 @@ growth rate table — one row per
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">growth_dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_growth_rates.html">compute_growth_rates</a></span><span class="op">(</span><span class="va">se_tc</span>, <span class="va">periods</span>, <span class="va">norm_map</span>, rate_fn <span class="op">=</span> <span class="va">endpoint_rate_fn</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">se_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
+<span><span class="va">se_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/growth_rates_to_se.html">growth_rates_to_se</a></span><span class="op">(</span><span class="va">growth_dt</span><span class="op">)</span>,</span>
 <span>  fit_fn <span class="op">=</span> <span class="va">auc_fn</span>,</span>
 <span>  data_type <span class="op">=</span> <span class="st">"time-course-metrics"</span>, <span class="co"># profile supplies input_assay = "GrowthRates"</span></span>
@@ -1146,12 +1152,12 @@ curve.</li>
 <code>get_env_identifiers("untreated_tag")</code> rather than hardcoded
 strings.</li>
 <li>
-<strong>Two profiles, one <code><a href="../reference/apply_fit.html">apply_fit()</a></code> pass</strong> —
+<strong>Two profiles, one <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit()</a></code> pass</strong> —
 <code>"time-course"</code> supplies the default input assay of stage 1,
 <code>"time-course-metrics"</code> drives the stage 2 slicing. Stage 1
 aggregates replicates and normalises against control wells that live in
 <em>other</em> BumpyMatrix cells, so it cannot be expressed as an
-<code><a href="../reference/apply_fit.html">apply_fit()</a></code> pass; that is why it is pluggable through
+<code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit()</a></code> pass; that is why it is pluggable through
 <code>rate_fn</code> instead. See GDR-3506 for the planned multi-stage
 profile model.</li>
 </ul>
@@ -1166,7 +1172,7 @@ profile model.</li>
 </h3>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Single fit → one output assay</span></span>
-<span><span class="fu"><a href="../reference/apply_fit.html">apply_fit</a></span><span class="op">(</span></span>
+<span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">se</span>,</span>
 <span>  <span class="va">fit_fn</span>,</span>
 <span>  data_type <span class="op">=</span> <span class="st">"single-agent"</span>, <span class="co"># or "combination", "time-course-metrics"</span></span>
@@ -1182,7 +1188,7 @@ profile model.</li>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Multiple fits → one BumpyMatrix pass</span></span>
-<span><span class="fu"><a href="../reference/apply_fits.html">apply_fits</a></span><span class="op">(</span></span>
+<span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fits.html" class="external-link">apply_fits</a></span><span class="op">(</span></span>
 <span>  <span class="va">se</span>,</span>
 <span>  <span class="va">fit_fns</span>, <span class="co"># named list: name = output assay, value = fit function</span></span>
 <span>  data_type <span class="op">=</span> <span class="st">"single-agent"</span>,</span>
@@ -1272,7 +1278,7 @@ at least one type?”)</td>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code><a href="../reference/fit_drug_response_metrics.html">fit_drug_response_metrics()</a></code></td>
+<td><code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">fit_drug_response_metrics()</a></code></td>
 <td>3p LL.3u, <code>x_0 = 1</code>
 </td>
 <td>
@@ -1285,7 +1291,7 @@ at least one type?”)</td>
 </td>
 </tr>
 <tr class="even">
-<td><code><a href="../reference/fit_drug_response_metrics_4p.html">fit_drug_response_metrics_4p()</a></code></td>
+<td><code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics_4p.html" class="external-link">fit_drug_response_metrics_4p()</a></code></td>
 <td>4p LL.4, <code>x_0</code> free</td>
 <td>— (extended variant)</td>
 <td>
@@ -1407,7 +1413,7 @@ four in order.</p>
 </table>
 <p><strong>When to use which:</strong> - Use
 <code><a href="../reference/apply_combo_scores.html">apply_combo_scores()</a></code> when you have a fully fitted SE (after
-<code><a href="../reference/fit_SE.combinations.html">fit_SE.combinations()</a></code> or <code><a href="../reference/apply_fit_to_se.html">apply_fit_to_se()</a></code>)
+<code><a href="../reference/fit_SE.combinations.html">fit_SE.combinations()</a></code> or <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit_to_se.html" class="external-link">apply_fit_to_se()</a></code>)
 and want scores numerically consistent with the standard gDR pipeline. -
 Use <code><a href="../reference/bliss_fit_fn.html">bliss_fit_fn()</a></code> / <code><a href="../reference/hss_fit_fn.html">hss_fit_fn()</a></code> when
 prototyping a new scoring approach, when SA fits are unavailable, or
@@ -1445,14 +1451,14 @@ when embedding score computation inside a larger custom
 <span><span class="co">#&gt; [8] base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt;  [1] data.table_1.18.6.1         BumpyMatrix_1.20.0         </span></span>
-<span><span class="co">#&gt;  [3] SummarizedExperiment_1.42.0 Biobase_2.72.0             </span></span>
-<span><span class="co">#&gt;  [5] GenomicRanges_1.64.0        Seqinfo_1.2.0              </span></span>
-<span><span class="co">#&gt;  [7] IRanges_2.46.0              S4Vectors_0.50.3           </span></span>
-<span><span class="co">#&gt;  [9] BiocGenerics_0.58.1         generics_0.1.4             </span></span>
-<span><span class="co">#&gt; [11] MatrixGenerics_1.24.0       matrixStats_1.5.0          </span></span>
-<span><span class="co">#&gt; [13] gDRutils_1.10.0             gDRtestData_1.10.0         </span></span>
-<span><span class="co">#&gt; [15] gDRcore_1.11.15             BiocStyle_2.40.0           </span></span>
+<span><span class="co">#&gt;  [1] data.table_1.18.6.1         BumpyMatrix_1.21.0         </span></span>
+<span><span class="co">#&gt;  [3] SummarizedExperiment_1.43.0 Biobase_2.73.2             </span></span>
+<span><span class="co">#&gt;  [5] GenomicRanges_1.65.4        Seqinfo_1.3.2              </span></span>
+<span><span class="co">#&gt;  [7] IRanges_2.47.5              S4Vectors_0.51.10          </span></span>
+<span><span class="co">#&gt;  [9] BiocGenerics_0.59.12        generics_0.1.4             </span></span>
+<span><span class="co">#&gt; [11] MatrixGenerics_1.25.0       matrixStats_1.5.0          </span></span>
+<span><span class="co">#&gt; [13] gDRutils_1.11.14            gDRtestData_1.11.8         </span></span>
+<span><span class="co">#&gt; [15] gDRcore_1.11.17             BiocStyle_2.41.0           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] farver_2.1.2                fastmap_1.2.0              </span></span>
@@ -1460,36 +1466,35 @@ when embedding score computation inside a larger custom
 <span><span class="co">#&gt;  [5] digest_0.6.39               lifecycle_1.0.5            </span></span>
 <span><span class="co">#&gt;  [7] survival_3.8-6              compiler_4.6.1             </span></span>
 <span><span class="co">#&gt;  [9] rlang_1.3.0                 sass_0.4.10                </span></span>
-<span><span class="co">#&gt; [11] drc_3.0-1                   tools_4.6.1                </span></span>
+<span><span class="co">#&gt; [11] drc_4.0-0                   tools_4.6.1                </span></span>
 <span><span class="co">#&gt; [13] plotrix_3.8-14              yaml_2.3.12                </span></span>
 <span><span class="co">#&gt; [15] knitr_1.52                  lambda.r_1.2.4             </span></span>
-<span><span class="co">#&gt; [17] S4Arrays_1.12.0             htmlwidgets_1.6.4          </span></span>
-<span><span class="co">#&gt; [19] DelayedArray_0.38.2         RColorBrewer_1.1-3         </span></span>
-<span><span class="co">#&gt; [21] multcomp_1.4-32             abind_1.4-8                </span></span>
-<span><span class="co">#&gt; [23] BiocParallel_1.46.0         desc_1.4.3                 </span></span>
-<span><span class="co">#&gt; [25] grid_4.6.1                  scales_1.4.0               </span></span>
-<span><span class="co">#&gt; [27] gtools_3.9.5                MASS_7.3-65                </span></span>
-<span><span class="co">#&gt; [29] MultiAssayExperiment_1.38.0 cli_3.6.6                  </span></span>
-<span><span class="co">#&gt; [31] mvtnorm_1.4-2               rmarkdown_2.32             </span></span>
-<span><span class="co">#&gt; [33] ragg_1.5.2                  otel_0.2.0                 </span></span>
-<span><span class="co">#&gt; [35] RcppParallel_6.2.1          cachem_1.1.0               </span></span>
-<span><span class="co">#&gt; [37] splines_4.6.1               parallel_4.6.1             </span></span>
-<span><span class="co">#&gt; [39] BiocManager_1.30.27         formatR_1.14               </span></span>
-<span><span class="co">#&gt; [41] XVector_0.52.0              Matrix_1.7-5               </span></span>
-<span><span class="co">#&gt; [43] sandwich_3.1-3              jsonlite_2.0.0             </span></span>
-<span><span class="co">#&gt; [45] carData_3.0-6               bookdown_0.48              </span></span>
-<span><span class="co">#&gt; [47] car_3.1-5                   Formula_1.2-6              </span></span>
-<span><span class="co">#&gt; [49] systemfonts_1.3.2           jquerylib_0.1.4            </span></span>
-<span><span class="co">#&gt; [51] glue_1.8.1                  pkgdown_2.2.1              </span></span>
-<span><span class="co">#&gt; [53] codetools_0.2-20            futile.logger_1.4.9        </span></span>
-<span><span class="co">#&gt; [55] htmltools_0.5.9             R6_2.6.1                   </span></span>
-<span><span class="co">#&gt; [57] textshaping_1.0.5           evaluate_1.0.5             </span></span>
-<span><span class="co">#&gt; [59] lattice_0.22-9              futile.options_1.0.1       </span></span>
-<span><span class="co">#&gt; [61] backports_1.5.1             bslib_0.12.0               </span></span>
-<span><span class="co">#&gt; [63] Rcpp_1.1.2                  SparseArray_1.12.2         </span></span>
-<span><span class="co">#&gt; [65] checkmate_2.3.4             qs2_0.3.1                  </span></span>
-<span><span class="co">#&gt; [67] xfun_0.61                   fs_2.1.0                   </span></span>
-<span><span class="co">#&gt; [69] zoo_1.9-0</span></span></code></pre></div>
+<span><span class="co">#&gt; [17] S4Arrays_1.13.2             DelayedArray_0.39.8        </span></span>
+<span><span class="co">#&gt; [19] RColorBrewer_1.1-3          abind_1.4-8                </span></span>
+<span><span class="co">#&gt; [21] multcomp_1.4-32             BiocParallel_1.47.0        </span></span>
+<span><span class="co">#&gt; [23] desc_1.4.3                  grid_4.6.1                 </span></span>
+<span><span class="co">#&gt; [25] scales_1.4.0                gtools_3.9.5               </span></span>
+<span><span class="co">#&gt; [27] MASS_7.3-65                 MultiAssayExperiment_1.39.1</span></span>
+<span><span class="co">#&gt; [29] cli_3.6.6                   mvtnorm_1.4-2              </span></span>
+<span><span class="co">#&gt; [31] rmarkdown_2.32              ragg_1.5.2                 </span></span>
+<span><span class="co">#&gt; [33] otel_0.2.0                  RcppParallel_6.2.1         </span></span>
+<span><span class="co">#&gt; [35] cachem_1.1.0                splines_4.6.1              </span></span>
+<span><span class="co">#&gt; [37] parallel_4.6.1              BiocManager_1.30.27        </span></span>
+<span><span class="co">#&gt; [39] formatR_1.14                XVector_0.53.0             </span></span>
+<span><span class="co">#&gt; [41] Matrix_1.7-5                sandwich_3.1-3             </span></span>
+<span><span class="co">#&gt; [43] jsonlite_2.0.0              carData_3.0-6              </span></span>
+<span><span class="co">#&gt; [45] bookdown_0.48               car_3.1-5                  </span></span>
+<span><span class="co">#&gt; [47] Formula_1.2-6               systemfonts_1.3.2          </span></span>
+<span><span class="co">#&gt; [49] jquerylib_0.1.4             glue_1.8.1                 </span></span>
+<span><span class="co">#&gt; [51] pkgdown_2.2.1               codetools_0.2-20           </span></span>
+<span><span class="co">#&gt; [53] futile.logger_1.4.9         htmltools_0.5.9            </span></span>
+<span><span class="co">#&gt; [55] R6_2.6.1                    textshaping_1.0.5          </span></span>
+<span><span class="co">#&gt; [57] evaluate_1.0.5              lattice_0.22-9             </span></span>
+<span><span class="co">#&gt; [59] futile.options_1.0.1        backports_1.5.1            </span></span>
+<span><span class="co">#&gt; [61] bslib_0.12.0                Rcpp_1.1.2                 </span></span>
+<span><span class="co">#&gt; [63] SparseArray_1.13.4          checkmate_2.3.4            </span></span>
+<span><span class="co">#&gt; [65] qs2_0.3.1                   xfun_0.61                  </span></span>
+<span><span class="co">#&gt; [67] fs_2.1.0                    zoo_1.9-1</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

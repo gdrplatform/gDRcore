@@ -21,7 +21,7 @@ each (Drug, CellLine, period) combination.
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -128,7 +128,7 @@ Default <code>"Metrics"</code>.</p></dd>
 <dt id="arg-fit-fn">fit_fn<a class="anchor" aria-label="anchor" href="#arg-fit-fn"></a></dt>
 <dd><p>function or <code>NULL</code>; dose-response fit applied to each
 <code>normalization_type</code> slice of the <code>GrowthRates</code> assay.
-<code>NULL</code> uses <code><a href="fit_drug_response_metrics.html">fit_drug_response_metrics</a></code> on
+<code>NULL</code> uses <code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">fit_drug_response_metrics</a></code> on
 <code>NormalizedGrowthRate</code>.  When a custom function is supplied,
 <code>n_point_cutoff</code>, <code>range_conc</code>, <code>force_fit</code>,
 <code>pcutoff</code> and <code>cap</code> are not used.</p></dd>
@@ -182,14 +182,14 @@ time-course data the same way it does for single-agent and combination
 screens.  The two stages can also be run separately:
 <code><a href="compute_growth_rates.html">compute_growth_rates</a></code> returns the growth rate table (controls
 included) and <code><a href="growth_rates_to_se.html">growth_rates_to_se</a></code> turns it into the input of
-<code><a href="apply_fit.html">apply_fit</a></code> with <code>data_type = "time-course-metrics"</code>.</p>
+<code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></code> with <code>data_type = "time-course-metrics"</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="compute_growth_rates.html">compute_growth_rates</a></code> for stage 1 on its own,
 <code><a href="runDrugResponseProcessingPipelineFxns.html">fit_SE</a></code> for single-agent fitting,
 <code><a href="fit_SE.combinations.html">fit_SE.combinations</a></code> for combination screens,
-<code><a href="apply_fit.html">apply_fit</a></code> for the generic fitting engine.</p></div>
+<code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></code> for the generic fitting engine.</p></div>
     </div>
 
     <div class="section level2">

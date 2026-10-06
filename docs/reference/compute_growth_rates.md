@@ -45,7 +45,7 @@ compute_growth_rates(
 
   string or `NULL`; name of the log-fold-change assay. `NULL` uses the
   `input_assay` of the `"time-course"` fit profile (see
-  [`get_fit_profile`](https://gdrplatform.github.io/gDRcore/reference/get_fit_profile.md)).
+  [`get_fit_profile`](https://gdrplatform.github.io/gDRstyle/reference/get_fit_profile.html)).
 
 - rate_fn:
 
@@ -64,7 +64,11 @@ replicate wells, `rate_0` (the control baseline used, `NA` for periods
 mapped to `"None"` and when no control rows are present),
 `NormalizedGrowthRate` and `normalization_type`. All of these columns
 are always present, whatever the normalization map or the availability
-of controls.
+of controls. `NormalizedGrowthRate` is `NA` where the control baseline
+is not meaningfully positive: such a denominator either inverts the sign
+of the ratio (when negative) or leaves it undefined (when zero, within
+fitting tolerance) rather than scaling it, so no meaningful normalized
+rate exists. A warning names the cell line and period.
 
 ## Details
 
@@ -79,7 +83,7 @@ per `(CellLine, period)` is used for normalization.
 
 [`growth_rates_to_se`](https://gdrplatform.github.io/gDRcore/reference/growth_rates_to_se.md),
 [`fit_SE.timecourse`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.timecourse.md),
-[`apply_fit`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+[`apply_fit`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
 
 ## Examples
 
@@ -90,7 +94,7 @@ norm_map <- c(early = "None", late = "early")
 growth_dt <- compute_growth_rates(se_tc, periods, norm_map)
 
 # Stage 2 with any custom fit function:
-se_fit <- apply_fit(
+se_fit <- gDRutils::apply_fit(
   growth_rates_to_se(growth_dt),
   fit_fn = my_fit_fn,
   data_type = "time-course-metrics",

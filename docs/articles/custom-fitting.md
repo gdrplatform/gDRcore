@@ -18,11 +18,19 @@ Sometimes you need something different: an alternative curve model,
 custom synergy metrics, Bayesian estimates, or bespoke pharmacology
 metrics for your assay.
 
-[`apply_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+[`apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
 and
-[`apply_fits()`](https://gdrplatform.github.io/gDRcore/reference/apply_fits.md)
+[`apply_fits()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fits.html)
 let you plug **any R function** into the gDR SE/MAE pipeline without
 touching the pipeline internals.
+
+These functions, the fit profile registry and
+[`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html)
+now live in **gDRutils**, next to the curve-fitting maths they are built
+on. gDRcore re-exports them for one release cycle, so the code below
+keeps working as written; call them as
+[`gDRutils::apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
+in new code.
 
 Key properties:
 
@@ -33,7 +41,7 @@ Key properties:
   …).
 - Results are **idempotent**: calling twice with the same `fit_source`
   overwrites rather than duplicates.
-- [`apply_fits()`](https://gdrplatform.github.io/gDRcore/reference/apply_fits.md)
+- [`apply_fits()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fits.html)
   applies N fit functions in a **single** BumpyMatrix traversal —
   efficient when you have several metrics to compute on the same data.
 
@@ -72,22 +80,22 @@ avg_cell <- BumpyMatrix::unsplitAsDataFrame(
 head(avg_cell[avg_cell$row == avg_cell$row[1] &
               avg_cell$column == avg_cell$column[1], ])
 #> DataFrame with 6 rows and 6 columns
-#>                         row                 column normalization_type
-#>                 <character>            <character>           <factor>
-#> 1_RV G00002_drug_002_moa_.. CL00011_cellline_BA_..                 RV
-#> 1_GR G00002_drug_002_moa_.. CL00011_cellline_BA_..                 GR
-#> 2_RV G00002_drug_002_moa_.. CL00011_cellline_BA_..                 RV
-#> 2_GR G00002_drug_002_moa_.. CL00011_cellline_BA_..                 GR
-#> 3_RV G00002_drug_002_moa_.. CL00011_cellline_BA_..                 RV
-#> 3_GR G00002_drug_002_moa_.. CL00011_cellline_BA_..                 GR
-#>      Concentration         x      x_std
-#>          <numeric> <numeric>  <numeric>
-#> 1_RV    0.00100000  0.924967 0.01066130
-#> 1_GR    0.00100000  0.944433 0.00805874
-#> 2_RV    0.00316228  0.739100 0.01484621
-#> 2_GR    0.00316228  0.793100 0.01302152
-#> 3_RV    0.01000000  0.435933 0.03071503
-#> 3_GR    0.01000000  0.481333 0.03811841
+#>                      row                 column normalization_type
+#>              <character>            <character>           <factor>
+#> 1 G00002_drug_002_moa_.. CL00011_cellline_BA_..                 RV
+#> 2 G00002_drug_002_moa_.. CL00011_cellline_BA_..                 GR
+#> 3 G00002_drug_002_moa_.. CL00011_cellline_BA_..                 RV
+#> 4 G00002_drug_002_moa_.. CL00011_cellline_BA_..                 GR
+#> 5 G00002_drug_002_moa_.. CL00011_cellline_BA_..                 RV
+#> 6 G00002_drug_002_moa_.. CL00011_cellline_BA_..                 GR
+#>   Concentration         x      x_std
+#>       <numeric> <numeric>  <numeric>
+#> 1    0.00100000  0.924967 0.01066130
+#> 2    0.00100000  0.944433 0.00805874
+#> 3    0.00316228  0.739100 0.01484621
+#> 4    0.00316228  0.793100 0.01302152
+#> 5    0.01000000  0.435933 0.03071503
+#> 6    0.01000000  0.481333 0.03811841
 ```
 
 Each cell has four columns:
@@ -262,7 +270,7 @@ message("fit_source values in assay: ", paste(sources, collapse = ", "))
 
 ## Reference Hill fit: fit_drug_response_metrics()
 
-[`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.md)
+[`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html)
 is a reference single-agent fit function that replicates the standard
 [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
 /
@@ -279,7 +287,7 @@ output exactly.
 
 ### Numerical equivalence with fit_SE()
 
-[`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.md)
+[`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html)
 is **numerically identical** to
 [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md).
 The fit is deterministic —
@@ -570,7 +578,7 @@ scores_df[, c("row", "column", "normalization_type", "bliss_score", "hsa_score")
 and
 [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md)
 are lower-level fit functions for
-[`apply_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+[`apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
 that compute synergy scores directly from the raw Averaged data, without
 requiring prior SA curve fits.
 
@@ -662,7 +670,7 @@ hss_df[, c("row", "column", "normalization_type",
 ## Efficient multi-fit: apply_fits()
 
 When several fit functions operate on the **same input assay**, use
-[`apply_fits()`](https://gdrplatform.github.io/gDRcore/reference/apply_fits.md)
+[`apply_fits()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fits.html)
 to traverse each BumpyMatrix cell **once** and apply all functions in
 that single pass.
 
@@ -681,7 +689,7 @@ assayNames(combo_multi)
 ```
 
 Both assays are written in one traversal — equivalent to chaining two
-[`apply_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+[`apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
 calls but without the overhead of a second unsplit + iteration.
 
 ### Shared pre-computation pattern
@@ -883,7 +891,7 @@ The stages can also be run separately, which is the same two-step
 workflow as
 [`average_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
 →
-[`apply_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+[`apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
 for single-agent data.
 [`compute_growth_rates()`](https://gdrplatform.github.io/gDRcore/reference/compute_growth_rates.md)
 returns the growth rate table — one row per
@@ -923,12 +931,12 @@ can be re-fitted with a different `fit_fn` without recomputing stage 1.
 - **`untreated_tag` from `gDRutils`** — DMSO detection uses
   `get_env_identifiers("untreated_tag")` rather than hardcoded strings.
 - **Two profiles, one
-  [`apply_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+  [`apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
   pass** — `"time-course"` supplies the default input assay of stage 1,
   `"time-course-metrics"` drives the stage 2 slicing. Stage 1 aggregates
   replicates and normalises against control wells that live in *other*
   BumpyMatrix cells, so it cannot be expressed as an
-  [`apply_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+  [`apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
   pass; that is why it is pluggable through `rate_fn` instead. See
   GDR-3506 for the planned multi-stage profile model.
 
@@ -986,10 +994,10 @@ apply_fits(
 
 #### Single-agent fit functions (for `apply_fit()`)
 
-| Function                                                                                                            | Model               | Equivalent to                                                                                                                                                                                 | Key output columns                                                                  |
-|---------------------------------------------------------------------------------------------------------------------|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.md)       | 3p LL.3u, `x_0 = 1` | [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md) / [`logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html) | `ec50`, `xc50`, `h`, `r2`, `x_mean`, `x_AOC`, `fit_type = "DRC3pHillFitModelFixS0"` |
-| [`fit_drug_response_metrics_4p()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics_4p.md) | 4p LL.4, `x_0` free | — (extended variant)                                                                                                                                                                          | `ec50`, `xc50`, `h`, `r2`, `x_0`, `x_mean`, `fit_type = "DRC4pHillFitModel"`        |
+| Function                                                                                                               | Model               | Equivalent to                                                                                                                                                                                 | Key output columns                                                                  |
+|------------------------------------------------------------------------------------------------------------------------|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html)       | 3p LL.3u, `x_0 = 1` | [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md) / [`logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html) | `ec50`, `xc50`, `h`, `r2`, `x_mean`, `x_AOC`, `fit_type = "DRC3pHillFitModelFixS0"` |
+| [`fit_drug_response_metrics_4p()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics_4p.html) | 4p LL.4, `x_0` free | — (extended variant)                                                                                                                                                                          | `ec50`, `xc50`, `h`, `r2`, `x_0`, `x_mean`, `fit_type = "DRC4pHillFitModel"`        |
 
 #### Combination scoring
 
@@ -1018,7 +1026,7 @@ is a thin wrapper that calls all four in order.
 when you have a fully fitted SE (after
 [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
 or
-[`apply_fit_to_se()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit_to_se.md))
+[`apply_fit_to_se()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit_to_se.html))
 and want scores numerically consistent with the standard gDR pipeline. -
 Use
 [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md)
@@ -1055,14 +1063,14 @@ sessionInfo()
 #> [8] base     
 #> 
 #> other attached packages:
-#>  [1] data.table_1.18.6.1         BumpyMatrix_1.20.0         
-#>  [3] SummarizedExperiment_1.42.0 Biobase_2.72.0             
-#>  [5] GenomicRanges_1.64.0        Seqinfo_1.2.0              
-#>  [7] IRanges_2.46.0              S4Vectors_0.50.3           
-#>  [9] BiocGenerics_0.58.1         generics_0.1.4             
-#> [11] MatrixGenerics_1.24.0       matrixStats_1.5.0          
-#> [13] gDRutils_1.10.0             gDRtestData_1.10.0         
-#> [15] gDRcore_1.11.15             BiocStyle_2.40.0           
+#>  [1] data.table_1.18.6.1         BumpyMatrix_1.21.0         
+#>  [3] SummarizedExperiment_1.43.0 Biobase_2.73.2             
+#>  [5] GenomicRanges_1.65.4        Seqinfo_1.3.2              
+#>  [7] IRanges_2.47.5              S4Vectors_0.51.10          
+#>  [9] BiocGenerics_0.59.12        generics_0.1.4             
+#> [11] MatrixGenerics_1.25.0       matrixStats_1.5.0          
+#> [13] gDRutils_1.11.14            gDRtestData_1.11.8         
+#> [15] gDRcore_1.11.17             BiocStyle_2.41.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
@@ -1070,34 +1078,33 @@ sessionInfo()
 #>  [5] digest_0.6.39               lifecycle_1.0.5            
 #>  [7] survival_3.8-6              compiler_4.6.1             
 #>  [9] rlang_1.3.0                 sass_0.4.10                
-#> [11] drc_3.0-1                   tools_4.6.1                
+#> [11] drc_4.0-0                   tools_4.6.1                
 #> [13] plotrix_3.8-14              yaml_2.3.12                
 #> [15] knitr_1.52                  lambda.r_1.2.4             
-#> [17] S4Arrays_1.12.0             htmlwidgets_1.6.4          
-#> [19] DelayedArray_0.38.2         RColorBrewer_1.1-3         
-#> [21] multcomp_1.4-32             abind_1.4-8                
-#> [23] BiocParallel_1.46.0         desc_1.4.3                 
-#> [25] grid_4.6.1                  scales_1.4.0               
-#> [27] gtools_3.9.5                MASS_7.3-65                
-#> [29] MultiAssayExperiment_1.38.0 cli_3.6.6                  
-#> [31] mvtnorm_1.4-2               rmarkdown_2.32             
-#> [33] ragg_1.5.2                  otel_0.2.0                 
-#> [35] RcppParallel_6.2.1          cachem_1.1.0               
-#> [37] splines_4.6.1               parallel_4.6.1             
-#> [39] BiocManager_1.30.27         formatR_1.14               
-#> [41] XVector_0.52.0              Matrix_1.7-5               
-#> [43] sandwich_3.1-3              jsonlite_2.0.0             
-#> [45] carData_3.0-6               bookdown_0.48              
-#> [47] car_3.1-5                   Formula_1.2-6              
-#> [49] systemfonts_1.3.2           jquerylib_0.1.4            
-#> [51] glue_1.8.1                  pkgdown_2.2.1              
-#> [53] codetools_0.2-20            futile.logger_1.4.9        
-#> [55] htmltools_0.5.9             R6_2.6.1                   
-#> [57] textshaping_1.0.5           evaluate_1.0.5             
-#> [59] lattice_0.22-9              futile.options_1.0.1       
-#> [61] backports_1.5.1             bslib_0.12.0               
-#> [63] Rcpp_1.1.2                  SparseArray_1.12.2         
-#> [65] checkmate_2.3.4             qs2_0.3.1                  
-#> [67] xfun_0.61                   fs_2.1.0                   
-#> [69] zoo_1.9-0
+#> [17] S4Arrays_1.13.2             DelayedArray_0.39.8        
+#> [19] RColorBrewer_1.1-3          abind_1.4-8                
+#> [21] multcomp_1.4-32             BiocParallel_1.47.0        
+#> [23] desc_1.4.3                  grid_4.6.1                 
+#> [25] scales_1.4.0                gtools_3.9.5               
+#> [27] MASS_7.3-65                 MultiAssayExperiment_1.39.1
+#> [29] cli_3.6.6                   mvtnorm_1.4-2              
+#> [31] rmarkdown_2.32              ragg_1.5.2                 
+#> [33] otel_0.2.0                  RcppParallel_6.2.1         
+#> [35] cachem_1.1.0                splines_4.6.1              
+#> [37] parallel_4.6.1              BiocManager_1.30.27        
+#> [39] formatR_1.14                XVector_0.53.0             
+#> [41] Matrix_1.7-5                sandwich_3.1-3             
+#> [43] jsonlite_2.0.0              carData_3.0-6              
+#> [45] bookdown_0.48               car_3.1-5                  
+#> [47] Formula_1.2-6               systemfonts_1.3.2          
+#> [49] jquerylib_0.1.4             glue_1.8.1                 
+#> [51] pkgdown_2.2.1               codetools_0.2-20           
+#> [53] futile.logger_1.4.9         htmltools_0.5.9            
+#> [55] R6_2.6.1                    textshaping_1.0.5          
+#> [57] evaluate_1.0.5              lattice_0.22-9             
+#> [59] futile.options_1.0.1        backports_1.5.1            
+#> [61] bslib_0.12.0                Rcpp_1.1.2                 
+#> [63] SparseArray_1.13.4          checkmate_2.3.4            
+#> [65] qs2_0.3.1                   xfun_0.61                  
+#> [67] fs_2.1.0                    zoo_1.9-1
 ```

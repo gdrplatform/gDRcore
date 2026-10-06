@@ -27,16 +27,16 @@ convert_se_to_raw_data(se)
 #>       Barcode Concentration BackgroundValue record_id ReadoutValue Gnumber
 #>        <char>         <num>           <num>     <int>        <num>  <char>
 #>    1: plate_1   0.001000000               0       601         93.5  G00002
-#>    2: plate_1   0.003162278               0       901         74.8  G00002
-#>    3: plate_1   0.010000000               0      1201         40.1  G00002
-#>    4: plate_1   0.031622777               0      1501         33.2  G00002
-#>    5: plate_1   0.100000000               0      1801         31.5  G00002
+#>    2: plate_2   0.001000000               0       701         92.0  G00002
+#>    3: plate_3   0.001000000               0       801         91.2  G00002
+#>    4: plate_1   0.003162278               0       901         74.8  G00002
+#>    5: plate_2   0.003162278               0      1001         74.3  G00002
 #>   ---                                                                     
-#> 8696: plate_2   0.000000000               0       110        104.0 vehicle
-#> 8697: plate_2   0.000000000               0       190        104.1 vehicle
-#> 8698: plate_1   0.000000000               0        80        104.4 vehicle
-#> 8699: plate_3   0.000000000               0       560        104.6 vehicle
-#> 8700: plate_3   0.000000000               0       570        104.7 vehicle
+#> 8696: plate_3   0.000000000               0       560        104.6 vehicle
+#> 8697: plate_3   0.000000000               0       570        104.7 vehicle
+#> 8698: plate_3   0.000000000               0       580         98.9 vehicle
+#> 8699: plate_3   0.000000000               0       590         98.9 vehicle
+#> 8700: plate_3   0.000000000               0       600        100.1 vehicle
 #>       DrugName drug_moa Duration    clid CellLineName   Tissue
 #>         <char>   <char>    <num>  <char>       <char>   <char>
 #>    1: drug_002    moa_A       72 CL00011  cellline_BA tissue_x

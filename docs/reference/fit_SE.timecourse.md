@@ -75,7 +75,7 @@ fit_SE.timecourse(
 
   function or `NULL`; dose-response fit applied to each
   `normalization_type` slice of the `GrowthRates` assay. `NULL` uses
-  [`fit_drug_response_metrics`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.md)
+  [`fit_drug_response_metrics`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html)
   on `NormalizedGrowthRate`. When a custom function is supplied,
   `n_point_cutoff`, `range_conc`, `force_fit`, `pcutoff` and `cap` are
   not used.
@@ -131,7 +131,7 @@ screens. The two stages can also be run separately:
 returns the growth rate table (controls included) and
 [`growth_rates_to_se`](https://gdrplatform.github.io/gDRcore/reference/growth_rates_to_se.md)
 turns it into the input of
-[`apply_fit`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+[`apply_fit`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
 with `data_type = "time-course-metrics"`.
 
 ## See also
@@ -142,7 +142,7 @@ for stage 1 on its own,
 for single-agent fitting,
 [`fit_SE.combinations`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
 for combination screens,
-[`apply_fit`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+[`apply_fit`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
 for the generic fitting engine.
 
 ## Examples

@@ -26,10 +26,10 @@ and `normalization_type`.
 ## Details
 
 Intended for use with
-[`apply_fit`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+[`apply_fit`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
 on combination SEs:
 
-      apply_fit(
+      gDRutils::apply_fit(
         combo_se, bliss_fit_fn, "combination",
         output_assay = "custom_bliss", fit_source = "bliss"
       )
@@ -39,7 +39,7 @@ on combination SEs:
 ``` r
 mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
 combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
-combo_se_out <- apply_fit(
+combo_se_out <- gDRutils::apply_fit(
   combo_se, bliss_fit_fn, "combination",
   output_assay = "custom_bliss", fit_source = "bliss"
 )

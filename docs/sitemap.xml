@@ -20,9 +20,8 @@
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/apply_combo_isobolograms.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/apply_combo_sa_fits.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.html</loc></url>
-<url><loc>https://gdrplatform.github.io/gDRcore/reference/apply_fit.html</loc></url>
-<url><loc>https://gdrplatform.github.io/gDRcore/reference/apply_fit_to_se.html</loc></url>
-<url><loc>https://gdrplatform.github.io/gDRcore/reference/apply_fits.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/apply_custom_fit.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/apply_custom_fits.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/assert_cell_line_annotation.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/assert_drug_annotation.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.html</loc></url>
@@ -38,15 +37,10 @@
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/data_model.data.table.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/data_model.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/do_skip_step.html</loc></url>
-<url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-apply_summary_fn.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-get_untreated_tag_count.html</loc></url>
-<url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-make_fit_wrapper.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-map_references.html</loc></url>
-<url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-persist_assay.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/fit_SE.timecourse.html</loc></url>
-<url><loc>https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.html</loc></url>
-<url><loc>https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics_4p.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/gDRcore-package.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/generateCodilution.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/generateCodilutionSmall.html</loc></url>
@@ -66,8 +60,6 @@
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/get_default_nested_identifiers.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/get_drug_annotation.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/get_drug_annotation_from_dt.html</loc></url>
-<url><loc>https://gdrplatform.github.io/gDRcore/reference/get_fit_profile.html</loc></url>
-<url><loc>https://gdrplatform.github.io/gDRcore/reference/get_fit_profiles.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/get_mae_from_intermediate_data.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/get_period_timepoints.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/get_pipeline_steps.html</loc></url>
@@ -89,7 +81,7 @@
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/prepare_input.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/process_perturbations.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/read_intermediate_data.html</loc></url>
-<url><loc>https://gdrplatform.github.io/gDRcore/reference/register_fit_profile.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/reexports.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/replace_conc_with_standardized_conc.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/save_intermediate_data.html</loc></url>

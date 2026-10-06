@@ -1,7 +1,7 @@
 # Convert a growth rate table into the stage 2 SummarizedExperiment
 
 Builds the `GrowthRates` SummarizedExperiment consumed by
-[`apply_fit`](https://gdrplatform.github.io/gDRcore/reference/apply_fit.md)
+[`apply_fit`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
 with `data_type = "time-course-metrics"`: rows are
 `(Drug, partner drug/concentration slots, CellLine)` — so every
 combination arm is fitted as its own dose-response curve — and columns

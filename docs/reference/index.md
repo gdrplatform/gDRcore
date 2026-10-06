@@ -136,14 +136,11 @@ fit the processed data (fit_SE).
 - [`test_synthetic_data()`](https://gdrplatform.github.io/gDRcore/reference/test_synthetic_data.md)
   : Testing synthetic data form gDRtestData package
 
-## Custom fit interface
+## Combination fit interface
 
-Generic interface for applying custom fit functions to
-SummarizedExperiment objects, and reference implementations for drug
-response metrics and combination synergy scoring.
+Reference implementations for combination synergy scoring, applied
+through the generic fit interface in gDRutils.
 
-- [`apply_fit_to_se()`](https://gdrplatform.github.io/gDRcore/reference/apply_fit_to_se.md)
-  : apply_fit_to_se
 - [`apply_combo_sa_fits()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_sa_fits.md)
   : apply_combo_sa_fits
 - [`apply_combo_excess()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_excess.md)
@@ -152,23 +149,28 @@ response metrics and combination synergy scoring.
   : apply_combo_isobolograms
 - [`apply_combo_scores()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.md)
   : apply_combo_scores
-- [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics.md)
-  : fit_drug_response_metrics
-- [`fit_drug_response_metrics_4p()`](https://gdrplatform.github.io/gDRcore/reference/fit_drug_response_metrics_4p.md)
-  : fit_drug_response_metrics_4p
 - [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md)
   : bliss_fit_fn
 - [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md)
   : hss_fit_fn
 
-## Fit profile registry
+## Moved to gDRutils
 
-Register and retrieve fit profiles that define slicing behaviour for
-each experiment type.
+The generic fit interface and the fit profile registry now live in
+gDRutils. They are re-exported here for one release cycle, together with
+the two deprecated aliases.
 
-- [`get_fit_profiles()`](https://gdrplatform.github.io/gDRcore/reference/get_fit_profiles.md)
-  : Get all registered fit profiles
-- [`get_fit_profile()`](https://gdrplatform.github.io/gDRcore/reference/get_fit_profile.md)
-  : Get a single fit profile by name
-- [`register_fit_profile()`](https://gdrplatform.github.io/gDRcore/reference/register_fit_profile.md)
-  : Register or update a fit profile
+- [`reexports`](https://gdrplatform.github.io/gDRcore/reference/reexports.md)
+  [`apply_fit`](https://gdrplatform.github.io/gDRcore/reference/reexports.md)
+  [`apply_fit_to_se`](https://gdrplatform.github.io/gDRcore/reference/reexports.md)
+  [`apply_fits`](https://gdrplatform.github.io/gDRcore/reference/reexports.md)
+  [`fit_drug_response_metrics`](https://gdrplatform.github.io/gDRcore/reference/reexports.md)
+  [`fit_drug_response_metrics_4p`](https://gdrplatform.github.io/gDRcore/reference/reexports.md)
+  [`get_fit_profile`](https://gdrplatform.github.io/gDRcore/reference/reexports.md)
+  [`get_fit_profiles`](https://gdrplatform.github.io/gDRcore/reference/reexports.md)
+  [`register_fit_profile`](https://gdrplatform.github.io/gDRcore/reference/reexports.md)
+  : Objects exported from other packages
+- [`apply_custom_fit()`](https://gdrplatform.github.io/gDRcore/reference/apply_custom_fit.md)
+  : Deprecated alias for apply_fit
+- [`apply_custom_fits()`](https://gdrplatform.github.io/gDRcore/reference/apply_custom_fits.md)
+  : Deprecated alias for apply_fits

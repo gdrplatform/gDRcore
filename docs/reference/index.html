@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -446,9 +446,9 @@
         </dt>
         <dd>Testing synthetic data form gDRtestData package</dd>
       </dl></div><div class="section level2">
-      <h2 id="custom-fit-interface">Custom fit interface<a class="anchor" aria-label="anchor" href="#custom-fit-interface"></a></h2>
+      <h2 id="combination-fit-interface">Combination fit interface<a class="anchor" aria-label="anchor" href="#combination-fit-interface"></a></h2>
 
-      <div class="section-desc"><p>Generic interface for applying custom fit functions to SummarizedExperiment objects, and reference implementations for drug response metrics and combination synergy scoring.</p></div>
+      <div class="section-desc"><p>Reference implementations for combination synergy scoring, applied through the generic fit interface in gDRutils.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -456,13 +456,6 @@
 
 
       <dl><dt>
-
-          <code><a href="apply_fit_to_se.html">apply_fit_to_se()</a></code>
-
-        </dt>
-        <dd>apply_fit_to_se</dd>
-
-        <dt>
 
           <code><a href="apply_combo_sa_fits.html">apply_combo_sa_fits()</a></code>
 
@@ -492,20 +485,6 @@
 
         <dt>
 
-          <code><a href="fit_drug_response_metrics.html">fit_drug_response_metrics()</a></code>
-
-        </dt>
-        <dd>fit_drug_response_metrics</dd>
-
-        <dt>
-
-          <code><a href="fit_drug_response_metrics_4p.html">fit_drug_response_metrics_4p()</a></code>
-
-        </dt>
-        <dd>fit_drug_response_metrics_4p</dd>
-
-        <dt>
-
           <code><a href="bliss_fit_fn.html">bliss_fit_fn()</a></code>
 
         </dt>
@@ -518,9 +497,9 @@
         </dt>
         <dd>hss_fit_fn</dd>
       </dl></div><div class="section level2">
-      <h2 id="fit-profile-registry">Fit profile registry<a class="anchor" aria-label="anchor" href="#fit-profile-registry"></a></h2>
+      <h2 id="moved-to-gdrutils">Moved to gDRutils<a class="anchor" aria-label="anchor" href="#moved-to-gdrutils"></a></h2>
 
-      <div class="section-desc"><p>Register and retrieve fit profiles that define slicing behaviour for each experiment type.</p></div>
+      <div class="section-desc"><p>The generic fit interface and the fit profile registry now live in gDRutils. They are re-exported here for one release cycle, together with the two deprecated aliases.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -529,24 +508,24 @@
 
       <dl><dt>
 
-          <code><a href="get_fit_profiles.html">get_fit_profiles()</a></code>
+          <code><a href="reexports.html">reexports</a></code> <code><a href="reexports.html">apply_fit</a></code> <code><a href="reexports.html">apply_fit_to_se</a></code> <code><a href="reexports.html">apply_fits</a></code> <code><a href="reexports.html">fit_drug_response_metrics</a></code> <code><a href="reexports.html">fit_drug_response_metrics_4p</a></code> <code><a href="reexports.html">get_fit_profile</a></code> <code><a href="reexports.html">get_fit_profiles</a></code> <code><a href="reexports.html">register_fit_profile</a></code>
 
         </dt>
-        <dd>Get all registered fit profiles</dd>
+        <dd>Objects exported from other packages</dd>
 
         <dt>
 
-          <code><a href="get_fit_profile.html">get_fit_profile()</a></code>
+          <code><a href="apply_custom_fit.html">apply_custom_fit()</a></code>
 
         </dt>
-        <dd>Get a single fit profile by name</dd>
+        <dd>Deprecated alias for apply_fit</dd>
 
         <dt>
 
-          <code><a href="register_fit_profile.html">register_fit_profile()</a></code>
+          <code><a href="apply_custom_fits.html">apply_custom_fits()</a></code>
 
         </dt>
-        <dd>Register or update a fit profile</dd>
+        <dd>Deprecated alias for apply_fits</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

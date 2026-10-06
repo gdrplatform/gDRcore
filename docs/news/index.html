@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +40,17 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.17" id="gdrcore-11117---2026-10-01">gDRcore 1.11.17 - 2026-10-01<a class="anchor" aria-label="anchor" href="#gdrcore-11117---2026-10-01"></a></h2>
+<ul><li>prevent normalizing a time-course growth rate against a control that is not growing</li>
+<li>fix the growth-rate guard to reject a plateaued control, whose fitted rate is near zero but positive</li>
+<li>ensure the default rate function fails clearly when the assay provides no column of its name</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.16" id="gdrcore-11116---2026-09-19">gDRcore 1.11.16 - 2026-09-19<a class="anchor" aria-label="anchor" href="#gdrcore-11116---2026-09-19"></a></h2>
+<ul><li>move the generic fitting layer to gDRutils, re-exporting it here for one release cycle</li>
+<li>remove the unused <code>fit_FUN()</code> and <code>.persist_metrics()</code> helpers</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.11.15" id="gdrcore-11115---2026-09-19">gDRcore 1.11.15 - 2026-09-19<a class="anchor" aria-label="anchor" href="#gdrcore-11115---2026-09-19"></a></h2>
 <ul><li>fix time-course fits being bounded as relative viability, which clipped negative normalized growth-rate asymptotes to zero</li>
 <li>add per-normalization-type priors and asymptote bounds, replacing the GR/else branch</li>
@@ -47,7 +58,7 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.11.14" id="gdrcore-11114---2026-09-17">gDRcore 1.11.14 - 2026-09-17<a class="anchor" aria-label="anchor" href="#gdrcore-11114---2026-09-17"></a></h2>
 <ul><li>fix constant fits reporting <code>xc50 = -Inf</code> regardless of the response level, which made inactive compounds read as maximally potent</li>
-<li>add parity tests comparing <code><a href="../reference/fit_drug_response_metrics.html">fit_drug_response_metrics()</a></code> against <code><a href="https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html" class="external-link">gDRutils::logisticFit()</a></code>, pinning the branches where the two are known to differ</li>
+<li>add parity tests comparing <code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">fit_drug_response_metrics()</a></code> against <code><a href="https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html" class="external-link">gDRutils::logisticFit()</a></code>, pinning the branches where the two are known to differ</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.11.13" id="gdrcore-11113---2026-08-19">gDRcore 1.11.13 - 2026-08-19<a class="anchor" aria-label="anchor" href="#gdrcore-11113---2026-08-19"></a></h2>
@@ -74,13 +85,13 @@
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.11.8" id="gdrcore-1118---2026-08-05">gDRcore 1.11.8 - 2026-08-05<a class="anchor" aria-label="anchor" href="#gdrcore-1118---2026-08-05"></a></h2>
-<ul><li>add <code><a href="../reference/apply_fit.html">apply_custom_fit()</a></code>, <code><a href="../reference/apply_fits.html">apply_custom_fits()</a></code>, <code><a href="../reference/bliss_fit_fn.html">bliss_fit_fn()</a></code>, <code><a href="../reference/hss_fit_fn.html">hss_fit_fn()</a></code>, <code><a href="../reference/apply_combo_scores.html">apply_combo_scores()</a></code> and composable <code>apply_combo_*()</code> steps</li>
-<li>add fit profile registry (<code><a href="../reference/get_fit_profile.html">get_fit_profile()</a></code>, <code><a href="../reference/register_fit_profile.html">register_fit_profile()</a></code>) with <code>nested_cols</code> documenting BumpyMatrix row structure per experiment type</li>
-<li>refactor <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code> and <code><a href="../reference/fit_SE.combinations.html">fit_SE.combinations()</a></code> as wrappers around <code><a href="../reference/apply_fit.html">apply_fit()</a></code>; fix non-monotonic (“checkerboard”) response on combo single-agent arms</li>
+<ul><li>add <code><a href="../reference/apply_custom_fit.html">apply_custom_fit()</a></code>, <code><a href="../reference/apply_custom_fits.html">apply_custom_fits()</a></code>, <code><a href="../reference/bliss_fit_fn.html">bliss_fit_fn()</a></code>, <code><a href="../reference/hss_fit_fn.html">hss_fit_fn()</a></code>, <code><a href="../reference/apply_combo_scores.html">apply_combo_scores()</a></code> and composable <code>apply_combo_*()</code> steps</li>
+<li>add fit profile registry (<code><a href="https://gdrplatform.github.io/gDRstyle/reference/get_fit_profile.html" class="external-link">get_fit_profile()</a></code>, <code><a href="https://gdrplatform.github.io/gDRstyle/reference/register_fit_profile.html" class="external-link">register_fit_profile()</a></code>) with <code>nested_cols</code> documenting BumpyMatrix row structure per experiment type</li>
+<li>refactor <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code> and <code><a href="../reference/fit_SE.combinations.html">fit_SE.combinations()</a></code> as wrappers around <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit()</a></code>; fix non-monotonic (“checkerboard”) response on combo single-agent arms</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.11.7" id="gdrcore-1117---2026-07-29">gDRcore 1.11.7 - 2026-07-29<a class="anchor" aria-label="anchor" href="#gdrcore-1117---2026-07-29"></a></h2>
-<ul><li>add <code><a href="../reference/apply_fit_to_se.html">apply_fit_to_se()</a></code> generic fit-function interface and <code><a href="../reference/fit_drug_response_metrics.html">fit_drug_response_metrics()</a></code> 3-parameter Hill model matching <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code> output</li>
+<ul><li>add <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit_to_se.html" class="external-link">apply_fit_to_se()</a></code> generic fit-function interface and <code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">fit_drug_response_metrics()</a></code> 3-parameter Hill model matching <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code> output</li>
 <li>improve pipeline performance by removing redundant data copies, enabling parallel averaging, and vectorizing NA-filling</li>
 </ul></div>
     <div class="section level2">
