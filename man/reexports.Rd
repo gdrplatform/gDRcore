@@ -18,6 +18,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{gDRutils}{\code{\link[gDRutils]{apply_fit}}, \code{\link[gDRutils]{apply_fit_to_se}}, \code{\link[gDRutils]{apply_fits}}, \code{\link[gDRutils]{fit_drug_response_metrics}}, \code{\link[gDRutils]{fit_drug_response_metrics_4p}}, \code{\link[gDRutils]{get_fit_profile}}, \code{\link[gDRutils]{get_fit_profiles}}, \code{\link[gDRutils]{register_fit_profile}}}
+  \item{gDRutils}{\code{\link[gDRutils:apply_fit]{apply_fit()}}, \code{\link[gDRutils:apply_fit_to_se]{apply_fit_to_se()}}, \code{\link[gDRutils:apply_fits]{apply_fits()}}, \code{\link[gDRutils:fit_drug_response_metrics]{fit_drug_response_metrics()}}, \code{\link[gDRutils:fit_drug_response_metrics_4p]{fit_drug_response_metrics_4p()}}, \code{\link[gDRutils:get_fit_profile]{get_fit_profile()}}, \code{\link[gDRutils:get_fit_profiles]{get_fit_profiles()}}, \code{\link[gDRutils:register_fit_profile]{register_fit_profile()}}}
 }}
 
