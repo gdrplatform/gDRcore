@@ -1,5 +1,9 @@
 # Changelog
 
+## gDRcore 1.11.18 - 2026-10-08
+
+- update authors data
+
 ## gDRcore 1.11.17 - 2026-10-01
 
 - prevent normalizing a time-course growth rate against a control that

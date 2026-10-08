@@ -306,13 +306,13 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] gDRcore_1.11.17    gDRtestData_1.11.8 BiocStyle_2.41.0  
+#> [1] gDRcore_1.11.18    gDRtestData_1.11.9 BiocStyle_2.41.0  
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
 #>  [3] BumpyMatrix_1.21.0          TH.data_1.1-5              
 #>  [5] digest_0.6.39               lifecycle_1.0.5            
-#>  [7] gDRutils_1.11.14            survival_3.8-6             
+#>  [7] gDRutils_1.11.15            survival_3.8-6             
 #>  [9] magrittr_2.0.5              compiler_4.6.1             
 #> [11] rlang_1.3.0                 sass_0.4.10                
 #> [13] drc_4.0-0                   tools_4.6.1                
