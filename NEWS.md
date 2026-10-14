@@ -1,6 +1,6 @@
 ## gDRcore 1.11.19 - 2026-10-14
 * identify time-course plates in identify_data_type() and process them in runDrugResponseProcessingPipeline()
-* add periods and normalization_map to runDrugResponseProcessingPipeline() to fit time-course data
+* prevent split_raw_data() from reordering the drugs of time-course combinations
 * make fit_SE() stop on time-course data with a pointer to fit_SE.timecourse()
 
 ## gDRcore 1.11.18 - 2026-10-08

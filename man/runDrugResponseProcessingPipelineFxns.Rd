@@ -92,9 +92,7 @@ runDrugResponseProcessingPipeline(
   data_dir = NULL,
   partial_run = FALSE,
   start_from = get_pipeline_steps()[1],
-  selected_experiments = NULL,
-  periods = NULL,
-  normalization_map = NULL
+  selected_experiments = NULL
 )
 }
 \arguments{
@@ -183,10 +181,6 @@ run should be launched}
 \item{selected_experiments}{character vector with experiments for which
 pipeline should be run. This option works only for the pipeline being run
 partially (i.e. with \code{partial_run} flag set to \code{TRUE})}
-
-\item{periods, normalization_map}{time-course only, passed to
-\code{\link{fit_SE.timecourse}}. Without them a time-course experiment stops
-at its \code{"LogFoldChange"} assay, as there is no default time window.}
 }
 \value{
 MAE object
@@ -226,9 +220,11 @@ launched. However, partial run of the pipeline is possible only if the whole
 pipeline was launched at least once with defined \code{data_dir} and intermediate
 data was saved as qs2 files into \code{data_dir}.
 
-Time-course data is recognized by repeated readings of the same well. It
-skips averaging, since growth rates are computed from the replicates, and is
-fitted with \code{\link{fit_SE.timecourse}} when \code{periods} are given.
+Time-course data is recognized by repeated readings of the same well. It is
+created and normalized, and stops at the \code{"LogFoldChange"} assay: growth
+rates depend on time windows chosen per experiment, so they are computed
+afterwards with \code{\link{compute_growth_rates}} or
+\code{\link{fit_SE.timecourse}}.
 
 Pipeline can be run for the selected experiments by changing the default
 value of \code{selected_experiments} param. This scenario only works when

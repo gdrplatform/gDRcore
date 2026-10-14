@@ -657,18 +657,16 @@ se_fit <- fit_SE.timecourse(
 )
 ```
 
-The same fit runs from raw data in one call. `runDrugResponseProcessingPipeline()`
-recognizes time-course plates by repeated readings of a well, starting at time
-zero, and fits them when given the same two arguments; without them it stops at
-the `LogFoldChange` assay:
+Starting from raw data, `runDrugResponseProcessingPipeline()` recognizes
+time-course plates by repeated readings of a well, starting at time zero, and
+returns them as a `"time-course"` experiment ending at the `LogFoldChange`
+assay, ready for this call:
 
 ```{r timecourse-pipeline, eval = FALSE}
-mae <- runDrugResponseProcessingPipeline(
-  merged_dt,                      # output of merge_data()
-  periods = periods,
-  normalization_map = norm_map
-)
-se_fit <- mae[["time-course"]]
+mae <- runDrugResponseProcessingPipeline(merged_dt)  # output of merge_data()
+se_fit <- fit_SE.timecourse(mae[["time-course"]],
+                            periods = periods,
+                            normalization_map = norm_map)
 ```
 
 ## Output structure

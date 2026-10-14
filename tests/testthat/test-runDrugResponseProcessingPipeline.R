@@ -128,31 +128,24 @@ test_that("runDrugResponseProcessingPipeline processes time-course data", {
                                            (1 - Concentration / (Concentration + potency[Gnumber])))]
   input_dt[, replicate := NULL]
 
-  expect_warning(
+  expect_message(
     mae <- runDrugResponseProcessingPipeline(data.table::copy(input_dt),
                                              nested_confounders = "Barcode"),
-    "Time-course data is not fitted"
+    "Time-course data stops at the LogFoldChange assay"
   )
   expect_equal(names(MultiAssayExperiment::experiments(mae)), tc_name)
   expect_equal(SummarizedExperiment::assayNames(mae[[tc_name]]),
                c("RawTreated", "Controls", "LogFoldChange"))
 
-  periods <- list(early = c(0, 24), late = c(24, 72))
-  normalization_map <- c(early = "None", late = "early")
-  mae_fit <- purrr::quietly(runDrugResponseProcessingPipeline)(
-    data.table::copy(input_dt),
-    nested_confounders = "Barcode",
-    periods = periods,
-    normalization_map = normalization_map
-  )$result
+  # the same SE as the time-course report builds step by step
+  .drop_record_id <- function(dt) dt[, setdiff(names(dt), "record_id"), with = FALSE]
   se_ref <- normalize_SE(create_SE(data.table::copy(input_dt), data_type = tc_name),
                          data_type = tc_name)
-  se_ref <- purrr::quietly(fit_SE.timecourse)(se_ref, periods = periods,
-                                              normalization_map = normalization_map)$result
-  for (assay_name in c("GrowthRates", "Metrics")) {
+  for (assay_name in SummarizedExperiment::assayNames(se_ref)) {
     expect_equal(
-      gDRutils::convert_se_assay_to_dt(mae_fit[[tc_name]], assay_name),
-      gDRutils::convert_se_assay_to_dt(se_ref, assay_name)
+      .drop_record_id(gDRutils::convert_se_assay_to_dt(mae[[tc_name]], assay_name)),
+      gDRutils::convert_se_assay_to_dt(se_ref, assay_name),
+      ignore_attr = TRUE
     )
   }
 })
