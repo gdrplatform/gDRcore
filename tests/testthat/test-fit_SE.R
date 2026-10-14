@@ -214,3 +214,37 @@ test_that("fit_SE.combinations passes score_FUN to apply_combo_scores", {
   expect_true(all(scores$bliss_score == 42 | is.na(scores$bliss_score)))
   expect_true(all(scores$hsa_score == 42 | is.na(scores$hsa_score)))
 })
+
+
+test_that("fit_SE records the gDR fit by reference with its settings", {
+  maeReal <- gDRutils::get_synthetic_data("finalMAE_combo_2dose_nonoise2")
+  se <- MultiAssayExperiment::experiments(maeReal)["single-agent"][[1]]
+  SummarizedExperiment::assay(se, "Metrics") <- NULL
+  S4Vectors::metadata(se)[[".internal"]] <- NULL
+  S4Vectors::metadata(se)[["fit_parameters"]] <- NULL
+
+  fit_se <- suppressWarnings(fit_SE(se, pcutoff = 0.1))
+  recipe <- gDRutils::get_fit_provenance(fit_se, "Metrics", "gDR")
+  expect_identical(recipe$fn$name, "fit_drug_response_metrics")
+  expect_identical(recipe$fn$package, "gDRutils")
+  expect_null(recipe$fn$source)
+  expect_identical(recipe$fit_args$pcutoff, 0.1)
+  expect_true(gDRutils::check_reproducibility(fit_se)$reproducible)
+  # fitting the same data again gives an identical object
+  expect_identical(fit_se, suppressWarnings(fit_SE(se, pcutoff = 0.1)))
+})
+
+
+test_that("fit_SE.combinations records each step with its arguments", {
+  fmae_cms <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+  se1 <- fmae_cms[[gDRutils::get_supported_experiments("combo")]]
+  SummarizedExperiment::assays(se1) <- SummarizedExperiment::assays(se1)["Averaged"]
+
+  fit_se <- suppressWarnings(fit_SE.combinations(se1[1, 1]))
+  summary <- gDRutils::summarize_fit_provenance(fit_se)
+  expect_setequal(summary$assay, c("Metrics", "excess", "isobolograms", "all_iso_points", "scores"))
+  expect_true(all(grepl("^gDRcore::apply_combo_", summary$fn)))
+  scores <- gDRutils::get_fit_provenance(fit_se, "scores", "gDR")
+  expect_identical(scores$fn_args$score_FUN$name, "calculate_score")
+  expect_true(all(gDRutils::check_reproducibility(fit_se)$reproducible))
+})
