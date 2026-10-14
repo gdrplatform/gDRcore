@@ -190,3 +190,29 @@ test_that("identify_data_type recognizes time-course plates", {
   expect_equal(NROW(dt_list[[tc_name]]), NROW(time_course))
   expect_equal(unique(dt_list[[sa_name]]$Barcode), "EP_PLATE")
 })
+
+test_that("split_raw_data keeps the drug order of time-course combinations", {
+  tc_name <- gDRutils::get_supported_experiments("time-course")
+  wells <- data.table::data.table(
+    WellRow = "A",
+    WellColumn = c("1", "2", "3"),
+    Gnumber = c("vehicle", "DrugA", "vehicle"),
+    DrugName = c("vehicle", "DrugA", "vehicle"),
+    drug_moa = "unknown",
+    Concentration = c(0, 0.1, 0),
+    Gnumber_2 = c("vehicle", "DrugB", "DrugB"),
+    DrugName_2 = c("vehicle", "DrugB", "DrugB"),
+    drug_moa_2 = "unknown",
+    Concentration_2 = c(0, 0.5, 0.5),
+    clid = "CL1",
+    Barcode = "TC_PLATE"
+  )
+  dt <- data.table::rbindlist(lapply(c(0, 24, 48), function(d) {
+    data.table::copy(wells)[, Duration := d]
+  }))
+
+  dt_list <- split_raw_data(identify_data_type(data.table::copy(dt)))
+  partner_alone <- dt_list[[tc_name]][WellColumn == "3"]
+  expect_equal(unique(partner_alone$Gnumber), "vehicle")
+  expect_equal(unique(partner_alone$Gnumber_2), "DrugB")
+})

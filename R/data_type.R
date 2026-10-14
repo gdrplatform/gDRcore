@@ -180,6 +180,15 @@ identify_data_type <- function(dt,
 split_raw_data <- function(dt,
                            type_col = "type") {
 
+  # time-course rows keep the drug order of the plate, as the time-course
+  # normalization reads it, and they already carry their controls
+  tc_name <- gDRutils::get_supported_experiments("time-course")
+  is_time_course <- dt[[type_col]] %in% tc_name
+  if (any(is_time_course)) {
+    time_course <- dt[is_time_course]
+    dt <- dt[!is_time_course]
+  }
+
   dt <- collapse_drugs(dt)
 
   drug_ids <- unlist(gDRutils::get_env_identifiers(
@@ -201,13 +210,10 @@ split_raw_data <- function(dt,
   types <- setdiff(names(dt_list), "control")
   control <- dt_list[["control"]]
   dt_list[["control"]] <- NULL
-  # time-course rows already carry their controls, see identify_data_type()
-  tc_name <- gDRutils::get_supported_experiments("time-course")
-  cotrt_types <- setdiff(names(dt_list), c(sa_name, tc_name))
+  cotrt_types <- setdiff(names(dt_list), sa_name)
 
   control_sa_idx <- which(
-    rowSums(dt[, conc_idx, with = FALSE] == 0) == length(conc_idx) &
-      dt[[type_col]] != tc_name
+    rowSums(dt[, conc_idx, with = FALSE] == 0) == length(conc_idx)
   )
   control_sa <- dt[control_sa_idx, ]
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
@@ -269,6 +275,10 @@ split_raw_data <- function(dt,
       dt_list[[sa_name]],
       control_sa[, selected_columns, with = FALSE]
     )
+  }
+
+  if (any(is_time_course)) {
+    dt_list[[tc_name]] <- time_course
   }
 
   Map(function(x) {
