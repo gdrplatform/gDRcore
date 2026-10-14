@@ -1,4 +1,23 @@
 ####
+# Provenance of the combination steps
+####
+
+# Record the recipe of a combination step for each assay it wrote. The steps rewrite
+# whole assays, so the recipes of other fit sources in those assays no longer apply.
+#' @keywords internal
+#' @noRd
+.record_combo_step <- function(se, assays, fn, fit_args, input_assay, fit_source = "gDR") {
+  for (assay_nm in assays) {
+    se <- gDRutils::record_fit_provenance(
+      se, assay_nm, fit_source,
+      fn = fn, fit_args = fit_args, input_assay = input_assay, replace = TRUE
+    )
+  }
+  se
+}
+
+
+####
 # apply_combo_sa_fits — Step 1+2 of fit_SE.combinations: SA fits → Metrics assay
 ####
 
@@ -184,7 +203,13 @@ apply_combo_sa_fits <- function(se,
   all_metrics <- rbindParallelList(out_list, "metrics")
   SummarizedExperiment::assays(se)[[metrics_assay]] <-
     convertDFtoBumpyMatrixUsingIds(all_metrics)
-  se
+  .record_combo_step(se, metrics_assay, apply_combo_sa_fits, list(
+    series_identifiers = series_identifiers,
+    normalization_types = normalization_types,
+    averaged_assay = averaged_assay,
+    metrics_assay = metrics_assay,
+    fit_source = fit_source
+  ), averaged_assay, fit_source)
 }
 
 
@@ -358,7 +383,13 @@ apply_combo_excess <- function(se,
   all_excess <- rbindParallelList(out_list, "excess")
   SummarizedExperiment::assays(se)[[excess_assay]] <-
     convertDFtoBumpyMatrixUsingIds(all_excess)
-  se
+  .record_combo_step(se, excess_assay, apply_combo_excess, list(
+    series_identifiers = series_identifiers,
+    normalization_types = normalization_types,
+    averaged_assay = averaged_assay,
+    metrics_assay = metrics_assay,
+    excess_assay = excess_assay
+  ), averaged_assay)
 }
 
 
@@ -517,7 +548,14 @@ apply_combo_isobolograms <- function(se,
     convertDFtoBumpyMatrixUsingIds(all_isobolograms)
   SummarizedExperiment::assays(se)[[iso_points_assay]] <-
     convertDFtoBumpyMatrixUsingIds(all_iso_points)
-  se
+  .record_combo_step(se, c(isobolograms_assay, iso_points_assay), apply_combo_isobolograms, list(
+    series_identifiers = series_identifiers,
+    normalization_types = normalization_types,
+    averaged_assay = averaged_assay,
+    metrics_assay = metrics_assay,
+    isobolograms_assay = isobolograms_assay,
+    iso_points_assay = iso_points_assay
+  ), averaged_assay)
 }
 
 
@@ -605,6 +643,15 @@ apply_combo_scores <- function(se,
   checkmate::assert_function(score_FUN)
   gDRutils::validate_se_assay_name(se, averaged_assay)
   gDRutils::validate_se_assay_name(se, metrics_assay)
+  scores_args <- list(
+    scores_assay = scores_assay,
+    averaged_assay = averaged_assay,
+    metrics_assay = metrics_assay,
+    excess_assay = excess_assay,
+    normalization_types = normalization_types,
+    fit_source = fit_source,
+    score_FUN = score_FUN
+  )
 
   # Fast path: if excess assay already exists, score directly from it.
   # This gives results numerically identical to fit_SE.combinations()
@@ -632,7 +679,8 @@ apply_combo_scores <- function(se,
     scores_dt <- data.table::rbindlist(score_rows)
     se <- gDRutils::persist_fit_assay(se, scores_dt, "replace", scores_assay, "row", "column",
                          upsert_key_cols = c("fit_source", "normalization_type"))
-    return(se)
+    return(.record_combo_step(se, scores_assay, apply_combo_scores, scores_args, averaged_assay,
+                              fit_source))
   }
 
   conc1_col <- gDRutils::get_env_identifiers("concentration")
@@ -749,6 +797,8 @@ apply_combo_scores <- function(se,
     scores_dt <- data.table::rbindlist(score_rows[seq_len(idx)])
     se <- gDRutils::persist_fit_assay(se, scores_dt, "replace", scores_assay, "row", "column",
                          upsert_key_cols = c("fit_source", "normalization_type"))
+    se <- .record_combo_step(se, scores_assay, apply_combo_scores, scores_args, averaged_assay,
+                             fit_source)
   }
   se
 }
