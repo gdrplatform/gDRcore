@@ -37,19 +37,16 @@ fit_SE <- function(se,
     )
   }
 
-  # Build a fit_fn closure that forwards all fit_SE parameters.
-  # slicing_values = curve_type filters to only the requested normalization types.
-  fit_fn <- function(avg_dt) {
-    gDRutils::fit_drug_response_metrics(
-      avg_dt,
-      capping_fold = 5,
-      range_conc = range_conc,
-      pcutoff = pcutoff,
-      n_point_cutoff = n_point_cutoff,
-      force_fit = force_fit,
-      cap = cap
-    )
-  }
+  # Pass the settings through fit_args rather than a closure, so the recipe that
+  # apply_fit() records names gDRutils::fit_drug_response_metrics and its arguments.
+  fit_args <- list(
+    capping_fold = 5,
+    range_conc = range_conc,
+    pcutoff = pcutoff,
+    n_point_cutoff = n_point_cutoff,
+    force_fit = force_fit,
+    cap = cap
+  )
 
   # slicing_cols: use nested_identifiers only when they extend beyond the default
   # "normalization_type" (e.g. co-dilution adds "ratio"). For standard SA data
@@ -61,9 +58,10 @@ fit_SE <- function(se,
     slicing_cols <- nested_identifiers
   }
 
+  # slicing_values = curve_type filters to only the requested normalization types.
   se <- gDRutils::apply_fit(
     se = se,
-    fit_fn = fit_fn,
+    fit_fn = gDRutils::fit_drug_response_metrics,
     data_type = data_type,
     slicing_cols = slicing_cols,
     slicing_values = curve_type,
@@ -71,7 +69,8 @@ fit_SE <- function(se,
     output_assay = metrics_assay,
     merge = "replace",
     on_error = "warn",
-    fit_source = "gDR"
+    fit_source = "gDR",
+    fit_args = fit_args
   )
 
   # Ensure the Metrics assay always exists after fitting, even when apply_fit
