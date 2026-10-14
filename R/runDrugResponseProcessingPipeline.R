@@ -64,6 +64,9 @@
 #' @param selected_experiments character vector with experiments for which
 #' pipeline should be run. This option works only for the pipeline being run
 #' partially (i.e. with `partial_run` flag set to `TRUE`)
+#' @param periods,normalization_map time-course only, passed to
+#' \code{\link{fit_SE.timecourse}}. Without them a time-course experiment stops
+#' at its \code{"LogFoldChange"} assay, as there is no default time window.
 #'
 #' @details
 #' \code{runDrugResponseProcessingPipeline} is made up of 3 separate steps:
@@ -93,6 +96,10 @@
 #' launched. However, partial run of the pipeline is possible only if the whole
 #' pipeline was launched at least once with defined `data_dir` and intermediate
 #' data was saved as qs2 files into `data_dir`.
+#'
+#' Time-course data is recognized by repeated readings of the same well. It
+#' skips averaging, since growth rates are computed from the replicates, and is
+#' fitted with \code{\link{fit_SE.timecourse}} when \code{periods} are given.
 #'
 #' Pipeline can be run for the selected experiments by changing the default
 #' value of `selected_experiments` param. This scenario only works when
@@ -200,7 +207,9 @@ runDrugResponseProcessingPipeline <- function(x,
                                               partial_run = FALSE,
                                               start_from =
                                                 get_pipeline_steps()[1],
-                                              selected_experiments = NULL) {
+                                              selected_experiments = NULL,
+                                              periods = NULL,
+                                              normalization_map = NULL) {
 
   checkmate::assert_multi_class(x, c("data.table", "MultiAssayExperiment"))
   if (data.table::is.data.table(x)) {
@@ -230,6 +239,8 @@ runDrugResponseProcessingPipeline <- function(x,
   checkmate::assert_character(selected_experiments, null.ok = TRUE)
   checkmate::assert_subset(selected_experiments,
                            gDRutils::get_supported_experiments())
+  checkmate::assert_list(periods, null.ok = TRUE)
+  checkmate::assert_character(normalization_map, null.ok = TRUE)
 
   if (!is.null(selected_experiments) && !partial_run) {
     stop("Selected experiments are only supported with partial_run enabled")
@@ -319,12 +330,20 @@ runDrugResponseProcessingPipeline <- function(x,
         )
       )
 
+      is_time_course <- data_type == gDRutils::get_supported_experiments("time-course")
+
       # 3rd step - Average SE
+      # time-course passes its SE through, so that partial runs keep their steps
+      if (is_time_course) {
+        average_fun <- .pass_se
+      } else {
+        average_fun <- average_SE
+      }
       se <- run_pipeline_step(
         run_vars = run_vars,
         step = "average_SE",
         se = se,
-        step_fun = average_SE,
+        step_fun = average_fun,
         step_args = list(
           se = se$result,
           data_type = data_type,
@@ -336,7 +355,16 @@ runDrugResponseProcessingPipeline <- function(x,
       )
 
       # 4th step - Fit SE
-      if (data_type == gDRutils::get_supported_experiments("combo")) {
+      if (is_time_course) {
+        step_args <- list(
+          se = se$result,
+          periods = periods,
+          normalization_map = normalization_map,
+          metrics_assay = metrics_assay,
+          n_point_cutoff = n_point_cutoff
+        )
+        step_fun <- .fit_time_course_step
+      } else if (data_type == gDRutils::get_supported_experiments("combo")) {
         step_args <- list(
           se = se$result,
           data_type = data_type,
@@ -371,4 +399,20 @@ runDrugResponseProcessingPipeline <- function(x,
 
   gDRutils::reset_env_identifiers()
   MultiAssayExperiment::MultiAssayExperiment(experiments = sel)
+}
+
+#' @keywords internal
+.pass_se <- function(se, ...) {
+  se
+}
+
+#' @keywords internal
+.fit_time_course_step <- function(se, periods, normalization_map, ...) {
+  if (is.null(periods)) {
+    warning("Time-course data is not fitted: no 'periods' given. ",
+            "Pass 'periods' and 'normalization_map', or call fit_SE.timecourse().",
+            call. = FALSE)
+    return(se)
+  }
+  fit_SE.timecourse(se, periods = periods, normalization_map = normalization_map, ...)
 }

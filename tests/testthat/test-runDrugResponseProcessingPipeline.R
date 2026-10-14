@@ -112,3 +112,47 @@ test_that("main pipeline functions works as expected", {
   expect_error(prepare_input(input_data, list(), NULL), "nested_confounders")
   expect_error(prepare_input(input_data, NULL, list()), "nested_identifiers")
 })
+
+test_that("runDrugResponseProcessingPipeline processes time-course data", {
+  tc_name <- gDRutils::get_supported_experiments("time-course")
+  concs <- c(0.01, 0.1, 1, 10)
+  layout <- rbind(
+    data.table::data.table(Gnumber = "vehicle", Concentration = 0, replicate = 1:4),
+    data.table::CJ(Gnumber = c("DrugA", "DrugB"), Concentration = concs, replicate = 1:2)
+  )
+  layout[, `:=`(WellRow = LETTERS[seq_len(.N)], WellColumn = "1", DrugName = Gnumber,
+                drug_moa = "unknown", clid = "CL1", CellLineName = "CL1", Barcode = "PLATE1")]
+  input_dt <- layout[, .(Duration = seq(0, 72, 12)), by = names(layout)]
+  potency <- c(vehicle = Inf, DrugA = 0.1, DrugB = 1)
+  input_dt[, ReadoutValue := 1000 * 2 ^ (Duration / 24 *
+                                           (1 - Concentration / (Concentration + potency[Gnumber])))]
+  input_dt[, replicate := NULL]
+
+  expect_warning(
+    mae <- runDrugResponseProcessingPipeline(data.table::copy(input_dt),
+                                             nested_confounders = "Barcode"),
+    "Time-course data is not fitted"
+  )
+  expect_equal(names(MultiAssayExperiment::experiments(mae)), tc_name)
+  expect_equal(SummarizedExperiment::assayNames(mae[[tc_name]]),
+               c("RawTreated", "Controls", "LogFoldChange"))
+
+  periods <- list(early = c(0, 24), late = c(24, 72))
+  normalization_map <- c(early = "None", late = "early")
+  mae_fit <- purrr::quietly(runDrugResponseProcessingPipeline)(
+    data.table::copy(input_dt),
+    nested_confounders = "Barcode",
+    periods = periods,
+    normalization_map = normalization_map
+  )$result
+  se_ref <- normalize_SE(create_SE(data.table::copy(input_dt), data_type = tc_name),
+                         data_type = tc_name)
+  se_ref <- purrr::quietly(fit_SE.timecourse)(se_ref, periods = periods,
+                                              normalization_map = normalization_map)$result
+  for (assay_name in c("GrowthRates", "Metrics")) {
+    expect_equal(
+      gDRutils::convert_se_assay_to_dt(mae_fit[[tc_name]], assay_name),
+      gDRutils::convert_se_assay_to_dt(se_ref, assay_name)
+    )
+  }
+})

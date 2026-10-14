@@ -69,6 +69,9 @@ identify_data_type <- function(dt,
   dt$type <- ifelse(controls, "control",
                     ifelse(single_agent, sa_name, NA))
 
+  # a time-course plate keeps its controls, they are its time-zero reference
+  time_course <- .is_time_course_plate(dt)
+  dt$type[time_course] <- gDRutils::get_supported_experiments("time-course")
 
   if (length(conc_ids) > 1) {
     missing_type_rows <- is.na(dt$type)
@@ -87,6 +90,29 @@ identify_data_type <- function(dt,
     dt$type[missing_type_rows] <- type
   }
   dt
+}
+
+#' Flag rows of plates imaged more than once
+#'
+#' A well read at several time points has several records, which is how
+#' \code{data_model()} recognizes time-course data. A plate also needs a reading
+#' at time zero, the reference of the time-course normalization, so that an
+#' end-point plate read twice keeps its type. The check is made per plate.
+#'
+#' @param dt data.table of raw drug response data
+#'
+#' @return logical vector, one element per row of \code{dt}
+#' @keywords internal
+.is_time_course_plate <- function(dt) {
+  barcode <- intersect(gDRutils::get_env_identifiers("barcode"), names(dt))[1]
+  wells <- intersect(gDRutils::get_env_identifiers("well_position"), names(dt))
+  duration <- gDRutils::get_env_identifiers("duration")
+  if (is.na(barcode) || length(wells) == 0 || !duration %in% names(dt)) {
+    return(rep(FALSE, NROW(dt)))
+  }
+  repeated <- duplicated(dt, by = c(barcode, wells))
+  tc_plates <- intersect(dt[[barcode]][repeated], dt[[barcode]][dt[[duration]] == 0])
+  dt[[barcode]] %in% tc_plates
 }
 
 #' Split raw data into list based on the data types
@@ -175,10 +201,13 @@ split_raw_data <- function(dt,
   types <- setdiff(names(dt_list), "control")
   control <- dt_list[["control"]]
   dt_list[["control"]] <- NULL
-  cotrt_types <- setdiff(names(dt_list), sa_name)
+  # time-course rows already carry their controls, see identify_data_type()
+  tc_name <- gDRutils::get_supported_experiments("time-course")
+  cotrt_types <- setdiff(names(dt_list), c(sa_name, tc_name))
 
   control_sa_idx <- which(
-    rowSums(dt[, conc_idx, with = FALSE] == 0) == length(conc_idx)
+    rowSums(dt[, conc_idx, with = FALSE] == 0) == length(conc_idx) &
+      dt[[type_col]] != tc_name
   )
   control_sa <- dt[control_sa_idx, ]
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")

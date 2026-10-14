@@ -214,3 +214,9 @@ test_that("fit_SE.combinations passes score_FUN to apply_combo_scores", {
   expect_true(all(scores$bliss_score == 42 | is.na(scores$bliss_score)))
   expect_true(all(scores$hsa_score == 42 | is.na(scores$hsa_score)))
 })
+
+test_that("fit_SE points time-course data to fit_SE.timecourse", {
+  se <- SummarizedExperiment::SummarizedExperiment()
+  expect_error(fit_SE(se, data_type = gDRutils::get_supported_experiments("time-course")),
+               "use fit_SE.timecourse")
+})

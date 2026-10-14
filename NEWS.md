@@ -1,3 +1,8 @@
+## gDRcore 1.11.19 - 2026-10-14
+* identify time-course plates in identify_data_type() and process them in runDrugResponseProcessingPipeline()
+* add periods and normalization_map to runDrugResponseProcessingPipeline() to fit time-course data
+* make fit_SE() stop on time-course data with a pointer to fit_SE.timecourse()
+
 ## gDRcore 1.11.18 - 2026-10-08
 * update authors data
 
@@ -752,3 +757,4 @@
 
 ## gDRcore 0.0.1.15 - 2020-07-08
 * dependencies
+

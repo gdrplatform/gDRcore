@@ -157,3 +157,36 @@ test_that("process_perturbations works as expected", {
   )
   expect_equal(result, expected)
 })
+
+test_that("identify_data_type recognizes time-course plates", {
+  tc_name <- gDRutils::get_supported_experiments("time-course")
+  sa_name <- gDRutils::get_supported_experiments("sa")
+  wells <- data.table::data.table(
+    WellRow = c("A", "A", "B"),
+    WellColumn = c("1", "2", "1"),
+    Gnumber = c("vehicle", "DrugA", "DrugA"),
+    DrugName = c("vehicle", "DrugA", "DrugA"),
+    drug_moa = "unknown",
+    Concentration = c(0, 0.1, 1),
+    clid = "CL1"
+  )
+  time_course <- data.table::rbindlist(lapply(c(0, 24, 48), function(d) {
+    data.table::copy(wells)[, `:=`(Barcode = "TC_PLATE", Duration = d)]
+  }))
+  end_point <- data.table::copy(wells)[, `:=`(Barcode = "EP_PLATE", Duration = 72)]
+  read_twice <- data.table::rbindlist(lapply(c(72, 144), function(d) {
+    data.table::copy(wells)[, `:=`(Barcode = "EP_PLATE_2", Duration = d)]
+  }))
+
+  dt <- identify_data_type(rbind(time_course, end_point, read_twice))
+  expect_true(all(dt[Barcode == "TC_PLATE", type] == tc_name))
+  expect_equal(dt[Barcode == "EP_PLATE", type], c("control", sa_name, sa_name))
+  expect_false(any(dt[Barcode == "EP_PLATE_2", type] == tc_name))
+  dt <- dt[Barcode != "EP_PLATE_2"]
+
+  dt_list <- split_raw_data(dt)
+  expect_setequal(names(dt_list), c(tc_name, sa_name))
+  expect_equal(unique(dt_list[[tc_name]]$Barcode), "TC_PLATE")
+  expect_equal(NROW(dt_list[[tc_name]]), NROW(time_course))
+  expect_equal(unique(dt_list[[sa_name]]$Barcode), "EP_PLATE")
+})
