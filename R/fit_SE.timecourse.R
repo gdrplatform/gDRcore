@@ -74,6 +74,9 @@
 #'   statistically significant. Default \code{FALSE}.
 #' @param pcutoff numeric; p-value threshold for the F-test. Default \code{0.05}.
 #' @param cap numeric; upper-capping fold above \code{x_0 = 1}. Default \code{0.1}.
+#' @param fit_args named list of extra arguments passed to a custom \code{fit_fn}
+#'   after the data.  Not used with the default fit, which takes the arguments
+#'   above.
 #'
 #' @return A new \code{SummarizedExperiment} where rows = (Drug, CellLine) and
 #'   columns = period names, holding the \code{GrowthRates} assay from stage 1
@@ -81,7 +84,10 @@
 #'   the default \code{fit_fn} the metrics are: \code{ec50}, \code{xc50},
 #'   \code{h}, \code{x_inf}, \code{x_0}, \code{r2}, \code{x_mean}, \code{x_AOC},
 #'   \code{x_AOC_range}, \code{x_max}, \code{fit_type}, \code{N_conc},
-#'   \code{maxlog10Concentration}, and \code{period}.
+#'   \code{maxlog10Concentration}, and \code{period}.  The metadata of
+#'   \code{se} is carried over, and the provenance records both stages: the
+#'   growth-rate step under \code{steps$growth_rates} and the fit under
+#'   \code{fits} (see \code{\link[gDRutils]{get_fit_provenance}}).
 #'
 #' @examples
 #' \dontrun{
@@ -122,7 +128,8 @@ fit_SE.timecourse <- function(se,
                               range_conc = c(5e-3, 5),
                               force_fit = FALSE,
                               pcutoff = 0.05,
-                              cap = 0.1) {
+                              cap = 0.1,
+                              fit_args = list()) {
 
   # --- Input validation (stage 1 arguments are validated by compute_growth_rates) ---
   checkmate::assert_string(metrics_assay)
@@ -135,6 +142,7 @@ fit_SE.timecourse <- function(se,
   checkmate::assert_logical(force_fit, len = 1L)
   checkmate::assert_number(pcutoff, lower = 0, upper = 1)
   checkmate::assert_number(cap, lower = 0)
+  checkmate::assert_list(fit_args, names = "unique")
 
   # --- Stage 1: growth rates ---
   se_gr <- growth_rates_to_se(
@@ -147,19 +155,23 @@ fit_SE.timecourse <- function(se,
     )
   )
 
+  # The output is a new SE (rows = treatments, columns = periods); keep what the input
+  # recorded, together with the growth-rate step that growth_rates_to_se() added.
+  se_gr <- .carry_metadata(se, se_gr)
+
   # --- Stage 2: dose-response fit via apply_fit ---
+  # The default fit goes in as gDRutils::fit_drug_response_metrics with fit_args,
+  # so its recipe names the function and its settings.
   if (is.null(fit_fn)) {
-    fit_fn <- function(dt) {
-      gDRutils::fit_drug_response_metrics(
-        dt,
-        x_col = "NormalizedGrowthRate",
-        n_point_cutoff = n_point_cutoff,
-        range_conc = range_conc,
-        force_fit = force_fit,
-        pcutoff = pcutoff,
-        cap = cap
-      )
-    }
+    fit_fn <- gDRutils::fit_drug_response_metrics
+    fit_args <- list(
+      x_col = "NormalizedGrowthRate",
+      n_point_cutoff = n_point_cutoff,
+      range_conc = range_conc,
+      force_fit = force_fit,
+      pcutoff = pcutoff,
+      cap = cap
+    )
     default_source <- "gDR"
   } else {
     default_source <- "custom"
@@ -178,8 +190,34 @@ fit_SE.timecourse <- function(se,
     output_assay = metrics_assay,
     merge = "replace",
     on_error = "warn",
-    fit_source = fit_source
+    fit_source = fit_source,
+    fit_args = fit_args
   )
+}
+
+
+#' Carry the metadata of the input SE over to a newly built one
+#'
+#' Entries of \code{to} win, except \code{provenance}, whose steps are merged so
+#' that the steps recorded on the input are kept next to the new ones.
+#'
+#' @param from \code{SummarizedExperiment} the metadata comes from.
+#' @param to \code{SummarizedExperiment} built from it.
+#' @return \code{to} with the merged metadata.
+#' @keywords internal
+#' @noRd
+.carry_metadata <- function(from, to) {
+  md <- S4Vectors::metadata(from)
+  new_md <- S4Vectors::metadata(to)
+  prov <- md[["provenance"]]
+  new_prov <- new_md[["provenance"]]
+  if (!is.null(prov) && !is.null(new_prov)) {
+    prov$steps[names(new_prov$steps)] <- new_prov$steps
+    new_md[["provenance"]] <- prov
+  }
+  md[names(new_md)] <- new_md
+  S4Vectors::metadata(to) <- md
+  to
 }
 
 
@@ -284,6 +322,16 @@ compute_growth_rates <- function(se,
          "overlap the durations present in the '", lfc_assay, "' assay.")
   }
 
+  # Describe stage 1 for the provenance: growth_rates_to_se() records it, since
+  # the growth rates cannot be recomputed from the SE it returns.
+  if (is.null(rate_fn)) {
+    rate_fn <- .default_rate_fn(gDRutils::get_env_identifiers("duration"), lfc_assay)
+  }
+  data.table::setattr(growth_dt, "growth_rates_step", list(
+    settings = list(periods = periods, normalization_map = normalization_map, lfc_assay = lfc_assay),
+    fns = list(rate_fn = rate_fn)
+  ))
+
   growth_dt
 }
 
@@ -316,7 +364,15 @@ compute_growth_rates <- function(se,
 #' @export
 growth_rates_to_se <- function(growth_dt) {
   checkmate::assert_data_table(growth_dt, min.rows = 1L)
-  .growth_dt_to_se(growth_dt)
+  se <- .growth_dt_to_se(growth_dt)
+  # present when growth_dt comes straight from compute_growth_rates()
+  step <- attr(growth_dt, "growth_rates_step")
+  if (!is.null(step)) {
+    se <- gDRutils::record_processing_step(
+      se, "growth_rates", settings = step$settings, fns = step$fns
+    )
+  }
+  se
 }
 
 
@@ -332,15 +388,25 @@ growth_rates_to_se <- function(growth_dt) {
 #' @keywords internal
 #' @noRd
 .default_rate_fn <- function(dur_col, lfc_col) {
-  lm_formula <- stats::as.formula(paste(lfc_col, "~", dur_col))
-  function(dt) {
+  # The closure keeps only the two column names: they are plain data, so the
+  # fit provenance can store them. A formula built here would carry its
+  # environment along and could not be stored.
+  rate_fn <- function(dt) {
     if (NROW(dt) < 2L) {
       NA_real_
     } else {
       # the slope is in doublings per hour; downstream works in doublings per day
+      lm_formula <- stats::as.formula(paste(lfc_col, "~", dur_col))
       unname(stats::coef(stats::lm(lm_formula, data = dt))[2L]) * 24
     }
   }
+  gDRutils::set_fit_fn_info(
+    rate_fn,
+    model = "linear growth rate",
+    description = sprintf(
+      "Slope of lm(%s ~ %s) per well and time window, in doublings per day.", lfc_col, dur_col
+    )
+  )
 }
 
 
