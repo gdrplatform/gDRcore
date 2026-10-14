@@ -1,3 +1,9 @@
+# References quoted in the descriptions that the fit recipes carry.
+.ref_bliss <- "Bliss 1939, Annals of Applied Biology, doi:10.1111/j.1744-7348.1939.tb06990.x"
+.ref_holbeck <- "Holbeck et al. 2017, Cancer Research, doi:10.1158/0008-5472.CAN-17-0489"
+.ref_berenbaum <- "Berenbaum 1989, Pharmacological Reviews, doi:10.1016/S0031-6997(25)00026-2"
+
+
 ####
 # Provenance of the combination steps
 ####
@@ -212,6 +218,16 @@ apply_combo_sa_fits <- function(se,
   ), averaged_assay, fit_source)
 }
 
+apply_combo_sa_fits <- gDRutils::set_fit_fn_info(
+  apply_combo_sa_fits,
+  model = "single-agent Hill fits along each axis of the combination grid",
+  description = paste(
+    "Fits a dose-response curve with gDRutils::fit_curves() for each drug at every",
+    "concentration of its partner and along the co-dilution diagonals, and writes them",
+    "to Metrics."
+  )
+)
+
 
 ####
 # .compute_smooth_matrix — shared helper: rebuild smooth values from Metrics SA fits
@@ -392,6 +408,17 @@ apply_combo_excess <- function(se,
   ), averaged_assay)
 }
 
+apply_combo_excess <- gDRutils::set_fit_fn_info(
+  apply_combo_excess,
+  model = "HSA and Bliss excess over smoothed single-agent responses",
+  description = paste(
+    "Predicts single-agent responses at each combination point from the fitted curves;",
+    "the expected response is the stronger agent (HSA) or the Bliss product (GR: Holbeck",
+    "adaptation), and excess is expected minus observed."
+  ),
+  reference = paste(.ref_bliss, .ref_holbeck, sep = "; ")
+)
+
 
 ####
 # apply_combo_isobolograms — Step 4 of fit_SE.combinations: Loewe CI → isobolograms assay
@@ -557,6 +584,16 @@ apply_combo_isobolograms <- function(se,
     iso_points_assay = iso_points_assay
   ), averaged_assay)
 }
+
+apply_combo_isobolograms <- gDRutils::set_fit_fn_info(
+  apply_combo_isobolograms,
+  model = "Loewe isobolograms and combination index",
+  description = paste(
+    "Builds isobolograms at a series of response levels and the combination index",
+    "(CI below 1 means synergy) from the smoothed combination surface."
+  ),
+  reference = .ref_berenbaum
+)
 
 
 ####
@@ -803,6 +840,12 @@ apply_combo_scores <- function(se,
   se
 }
 
+apply_combo_scores <- gDRutils::set_fit_fn_info(
+  apply_combo_scores,
+  model = "Bliss and HSA scores per drug pair and cell line",
+  description = "Reduces the per-point Bliss and HSA excess to one score each with score_FUN."
+)
+
 
 #' bliss_fit_fn
 #'
@@ -883,6 +926,17 @@ bliss_fit_fn <- function(avg_dt) {
   }
 }
 
+bliss_fit_fn <- gDRutils::set_fit_fn_info(
+  bliss_fit_fn,
+  model = "Bliss independence on raw single-agent responses",
+  description = paste(
+    "Expected response is the product of the single-agent responses (GR: Holbeck",
+    "adaptation, the more toxic agent when either is negative); the score is the mean",
+    "of the top 10% of excess values. No curve smoothing."
+  ),
+  reference = paste(.ref_bliss, .ref_holbeck, sep = "; ")
+)
+
 
 #' hss_fit_fn
 #'
@@ -950,6 +1004,16 @@ hss_fit_fn <- function(avg_dt) {
     )
   }
 }
+
+hss_fit_fn <- gDRutils::set_fit_fn_info(
+  hss_fit_fn,
+  model = "highest single agent (HSA) on raw single-agent responses",
+  description = paste(
+    "Expected response is the stronger single agent at each combination point; the",
+    "score is the mean of the top 10% of excess values. No curve smoothing."
+  ),
+  reference = .ref_berenbaum
+)
 
 
 
