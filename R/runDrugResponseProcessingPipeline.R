@@ -95,8 +95,9 @@
 #' data was saved as qs2 files into `data_dir`.
 #'
 #' Time-course data is recognized by repeated readings of the same well on a
-#' plate that also has a reading at exactly time zero; a plate read repeatedly
-#' without one is processed as end-point data, with a warning. Time-course data
+#' plate that also has a reading at exactly time zero and at least three time
+#' points; a plate read repeatedly without a reading at time zero is processed
+#' as end-point data, with a warning. Time-course data
 #' is created and normalized, and stops at the \code{"LogFoldChange"} assay: growth
 #' rates depend on time windows chosen per experiment, so they are computed
 #' afterwards with \code{\link{compute_growth_rates}} or

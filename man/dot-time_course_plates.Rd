@@ -11,7 +11,9 @@
 }
 \value{
 list with \code{time_course}, the plates imaged more than once that
-have a reading at time zero, and \code{no_time_zero}, those that do not
+have a reading at time zero and at least three time points, and
+\code{no_time_zero}, the plates imaged more than once without a reading at
+time zero
 }
 \description{
 Barcodes of plates imaged more than once

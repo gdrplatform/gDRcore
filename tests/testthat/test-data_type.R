@@ -193,6 +193,17 @@ test_that("identify_data_type recognizes time-course plates", {
   expect_equal(NROW(dt_list[[tc_name]]), NROW(time_course))
   expect_equal(unique(dt_list[[sa_name]]$Barcode), "EP_PLATE")
 
+  # an end-point plate read at time zero and at the end point, or a day 0 plate
+  # scanned twice, keeps its type: time-course needs at least three time points
+  t0_and_end <- data.table::rbindlist(lapply(c(0, 72), function(d) {
+    data.table::copy(wells)[, `:=`(Barcode = "T0_END", Duration = d)]
+  }))
+  day0_twice <- data.table::rbindlist(lapply(1:2, function(i) {
+    data.table::copy(wells)[, `:=`(Barcode = "DAY0_TWICE", Duration = 0)]
+  }))
+  dt_short <- identify_data_type(rbind(t0_and_end, day0_twice))
+  expect_false(any(dt_short$type == tc_name))
+
   # data_model() applies the same rule
   expect_equal(data_model(time_course), tc_name)
   expect_equal(data_model(read_twice), sa_name)

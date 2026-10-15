@@ -101,8 +101,9 @@ identify_data_type <- function(dt,
 #'
 #' A well read at several time points has several records, which is how
 #' \code{data_model()} recognizes time-course data. A plate also needs a reading
-#' at time zero, the reference of the time-course normalization, so that an
-#' end-point plate read twice keeps its type. The check is made per plate.
+#' at time zero, the reference of the time-course normalization, and at least
+#' three time points, so that an end-point plate read twice, or read at time
+#' zero and at the end point, keeps its type. The check is made per plate.
 #'
 #' @param dt data.table of raw drug response data
 #'
@@ -121,7 +122,9 @@ identify_data_type <- function(dt,
 #' @param dt data.table of raw drug response data
 #'
 #' @return list with \code{time_course}, the plates imaged more than once that
-#'   have a reading at time zero, and \code{no_time_zero}, those that do not
+#'   have a reading at time zero and at least three time points, and
+#'   \code{no_time_zero}, the plates imaged more than once without a reading at
+#'   time zero
 #' @keywords internal
 .time_course_plates <- function(dt) {
   barcode <- intersect(gDRutils::get_env_identifiers("barcode"), names(dt))[1]
@@ -132,7 +135,9 @@ identify_data_type <- function(dt,
   }
   repeated <- unique(dt[[barcode]][duplicated(dt, by = c(barcode, wells))])
   with_time_zero <- unique(dt[[barcode]][dt[[duration]] == 0])
-  list(time_course = intersect(repeated, with_time_zero),
+  n_durations <- dt[, .(n = data.table::uniqueN(get(duration))), by = barcode]
+  with_series <- n_durations[[barcode]][n_durations$n >= 3]
+  list(time_course = intersect(intersect(repeated, with_time_zero), with_series),
        no_time_zero = setdiff(repeated, with_time_zero))
 }
 
