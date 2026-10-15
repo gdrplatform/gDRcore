@@ -17,7 +17,7 @@ test_that("the pipeline records create, normalize and average next to the fit", 
 
   create <- prov$steps$create$settings
   expect_identical(create$readout, "ReadoutValue")
-  expect_false(create$background_subtracted)
+  expect_identical(create$masked$n_wells, 0L)
 
   normalize <- prov$steps$normalize
   expect_identical(normalize$settings$ndigit_rounding, 4)
@@ -33,6 +33,20 @@ test_that("the pipeline records create, normalize and average next to the fit", 
   se_again <- .run_pipeline(raw_small)
   expect_identical(gDRutils::get_SE_provenance(se_again), prov)
   expect_identical(SummarizedExperiment::assays(se_again), SummarizedExperiment::assays(se))
+})
+
+
+test_that("re-running the pipeline on its own output records the same steps", {
+  # reprocessing a processed MAE must give the same object as processing the raw data,
+  # so the steps may only record settings, not the form the input came in
+  raw <- data.table::copy(raw_small)
+  raw$BackgroundValue <- 0
+  mae <- suppressWarnings(suppressMessages(runDrugResponseProcessingPipeline(raw)))
+  mae_again <- suppressWarnings(suppressMessages(runDrugResponseProcessingPipeline(mae)))
+  expect_identical(
+    gDRutils::get_SE_provenance(mae_again[["single-agent"]]),
+    gDRutils::get_SE_provenance(mae[["single-agent"]])
+  )
 })
 
 
