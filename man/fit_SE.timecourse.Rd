@@ -17,7 +17,8 @@ fit_SE.timecourse(
   range_conc = c(0.005, 5),
   force_fit = FALSE,
   pcutoff = 0.05,
-  cap = 0.1
+  cap = 0.1,
+  fit_args = list()
 )
 }
 \arguments{
@@ -72,6 +73,10 @@ statistically significant. Default \code{FALSE}.}
 \item{pcutoff}{numeric; p-value threshold for the F-test. Default \code{0.05}.}
 
 \item{cap}{numeric; upper-capping fold above \code{x_0 = 1}. Default \code{0.1}.}
+
+\item{fit_args}{named list of extra arguments passed to a custom \code{fit_fn}
+after the data.  Must be empty with the default fit, which takes the
+arguments above.}
 }
 \value{
 A new \code{SummarizedExperiment} where rows = (Drug, CellLine) and
@@ -80,7 +85,10 @@ and the \code{Metrics} assay (or \code{metrics_assay}) from stage 2.  With
 the default \code{fit_fn} the metrics are: \code{ec50}, \code{xc50},
 \code{h}, \code{x_inf}, \code{x_0}, \code{r2}, \code{x_mean}, \code{x_AOC},
 \code{x_AOC_range}, \code{x_max}, \code{fit_type}, \code{N_conc},
-\code{maxlog10Concentration}, and \code{period}.
+\code{maxlog10Concentration}, and \code{period}.  The metadata of
+\code{se} is carried over, and the provenance records both stages: the
+growth-rate step under \code{steps$growth_rates} and the fit under
+\code{fits} (see \code{\link[gDRutils]{get_fit_provenance}}).
 }
 \description{
 Two-stage pipeline for time-course dose-response data:
