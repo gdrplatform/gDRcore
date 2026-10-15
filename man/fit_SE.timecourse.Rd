@@ -75,8 +75,8 @@ statistically significant. Default \code{FALSE}.}
 \item{cap}{numeric; upper-capping fold above \code{x_0 = 1}. Default \code{0.1}.}
 
 \item{fit_args}{named list of extra arguments passed to a custom \code{fit_fn}
-after the data.  Not used with the default fit, which takes the arguments
-above.}
+after the data.  Must be empty with the default fit, which takes the
+arguments above.}
 }
 \value{
 A new \code{SummarizedExperiment} where rows = (Drug, CellLine) and

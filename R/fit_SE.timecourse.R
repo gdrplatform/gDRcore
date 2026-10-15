@@ -75,8 +75,8 @@
 #' @param pcutoff numeric; p-value threshold for the F-test. Default \code{0.05}.
 #' @param cap numeric; upper-capping fold above \code{x_0 = 1}. Default \code{0.1}.
 #' @param fit_args named list of extra arguments passed to a custom \code{fit_fn}
-#'   after the data.  Not used with the default fit, which takes the arguments
-#'   above.
+#'   after the data.  Must be empty with the default fit, which takes the
+#'   arguments above.
 #'
 #' @return A new \code{SummarizedExperiment} where rows = (Drug, CellLine) and
 #'   columns = period names, holding the \code{GrowthRates} assay from stage 1
@@ -143,6 +143,13 @@ fit_SE.timecourse <- function(se,
   checkmate::assert_number(pcutoff, lower = 0, upper = 1)
   checkmate::assert_number(cap, lower = 0)
   checkmate::assert_list(fit_args, names = "unique")
+  # the default fit builds its own arguments, so a caller's fit_args would be dropped
+  if (is.null(fit_fn) && length(fit_args) > 0L) {
+    stop(paste(
+      "'fit_args' is only used with a custom 'fit_fn'; set the default fit through",
+      "'n_point_cutoff', 'range_conc', 'force_fit', 'pcutoff' and 'cap'"
+    ))
+  }
 
   # --- Stage 1: growth rates ---
   se_gr <- growth_rates_to_se(
