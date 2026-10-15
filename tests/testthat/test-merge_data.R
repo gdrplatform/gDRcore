@@ -72,3 +72,16 @@ test_that("merge_data works as expected with duplicated cols", {
         and some templates with inconsistent values;
         values in template supersede the ones in the manifest")
 })
+
+
+test_that("merge_data keeps the import record of the loaded data", {
+  data_dir <- system.file(package = "gDRimport", "extdata", "data1")
+  l_data <- purrr::quietly(gDRimport::load_data)(
+    list.files(data_dir, pattern = "manifest", full.names = TRUE),
+    list.files(data_dir, pattern = "^Template", full.names = TRUE),
+    list.files(data_dir, pattern = "^RawData", full.names = TRUE)
+  )$result
+  merged <- purrr::quietly(merge_data)(l_data$manifest, l_data$treatments, l_data$data)$result
+  expect_identical(attr(merged, "gDR_import"), gDRimport::get_import_provenance(l_data$data))
+  expect_false(is.null(attr(merged, "gDR_import")))
+})

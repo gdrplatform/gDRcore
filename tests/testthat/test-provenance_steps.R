@@ -90,3 +90,21 @@ test_that(".gr_method follows the branches of calculate_GR_value()", {
   expect_identical(.gr_method(NA, duration = 72, ref_div_time = 120), "none")
   expect_identical(.gr_method(NA, duration = NA, ref_div_time = 30), "none")
 })
+
+
+test_that("the import record of the input data becomes the first step", {
+  raw <- data.table::copy(raw_small)
+  files <- data.frame(role = c("manifest", "results"), name = c("manifest.xlsx", "RawData.xlsx"),
+                      size = c(100, 200), md5 = c(strrep("a", 32), strrep("b", 32)))
+  record <- list(gDRimport = "1.11.9", instrument = "EnVision", files = files)
+  data.table::setattr(raw, "gDR_import", record)
+
+  mae <- suppressWarnings(suppressMessages(runDrugResponseProcessingPipeline(raw)))
+  prov <- gDRutils::get_SE_provenance(mae[["single-agent"]])
+  expect_identical(names(prov$steps), c("import", "create", "normalize", "average"))
+  expect_identical(prov$steps$import$settings, record)
+
+  # re-running on the processed MAE keeps the import step it recorded
+  mae_again <- suppressWarnings(suppressMessages(runDrugResponseProcessingPipeline(mae)))
+  expect_identical(gDRutils::get_SE_provenance(mae_again[["single-agent"]]), prov)
+})
