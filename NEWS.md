@@ -1,3 +1,6 @@
+## gDRcore 1.11.21 - 2026-10-15
+* add the gDRimport record of the input files to the SE provenance as the import step
+
 ## gDRcore 1.11.20 - 2026-10-15
 * add the create, normalize and average steps to the SE provenance, with masked wells and the GR method of each pair
 * fix the "could not calculate GR values" message of `normalize_SE()`, which never reached the log
