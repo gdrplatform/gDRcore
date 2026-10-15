@@ -58,7 +58,6 @@ create_SE <- function(df_,
     df_ <- df_[!get(identifiers$masked_tag)]
     df_[, (identifiers$masked_tag) := NULL]
   }
-  background_subtracted <- any("BackgroundValue" == colnames(df_))
 
   # Remove background value from readout (at least 1e-10 to avoid artefactual
   # normalized values).
@@ -302,7 +301,6 @@ create_SE <- function(df_,
       nested_identifiers = nested_identifiers,
       nested_confounders = nested_confounders,
       override_untrt_controls = override_untrt_controls,
-      background_subtracted = background_subtracted,
       masked = masked
     )
   )
