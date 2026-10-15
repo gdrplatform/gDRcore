@@ -70,6 +70,11 @@ identify_data_type <- function(dt,
                     ifelse(single_agent, sa_name, NA))
 
   # a time-course plate keeps its controls, they are its time-zero reference
+  no_time_zero <- .time_course_plates(dt)$no_time_zero
+  if (length(no_time_zero) > 0) {
+    warning("plate(s) imaged more than once without a reading at time zero are ",
+            "processed as end-point data: ", toString(no_time_zero), call. = FALSE)
+  }
   time_course <- .is_time_course_plate(dt)
   dt$type[time_course] <- gDRutils::get_supported_experiments("time-course")
 
@@ -105,14 +110,30 @@ identify_data_type <- function(dt,
 #' @keywords internal
 .is_time_course_plate <- function(dt) {
   barcode <- intersect(gDRutils::get_env_identifiers("barcode"), names(dt))[1]
+  if (is.na(barcode)) {
+    return(rep(FALSE, NROW(dt)))
+  }
+  dt[[barcode]] %in% .time_course_plates(dt)$time_course
+}
+
+#' Barcodes of plates imaged more than once
+#'
+#' @param dt data.table of raw drug response data
+#'
+#' @return list with \code{time_course}, the plates imaged more than once that
+#'   have a reading at time zero, and \code{no_time_zero}, those that do not
+#' @keywords internal
+.time_course_plates <- function(dt) {
+  barcode <- intersect(gDRutils::get_env_identifiers("barcode"), names(dt))[1]
   wells <- intersect(gDRutils::get_env_identifiers("well_position"), names(dt))
   duration <- gDRutils::get_env_identifiers("duration")
   if (is.na(barcode) || length(wells) == 0 || !duration %in% names(dt)) {
-    return(rep(FALSE, NROW(dt)))
+    return(list(time_course = character(0), no_time_zero = character(0)))
   }
-  repeated <- duplicated(dt, by = c(barcode, wells))
-  tc_plates <- intersect(dt[[barcode]][repeated], dt[[barcode]][dt[[duration]] == 0])
-  dt[[barcode]] %in% tc_plates
+  repeated <- unique(dt[[barcode]][duplicated(dt, by = c(barcode, wells))])
+  with_time_zero <- unique(dt[[barcode]][dt[[duration]] == 0])
+  list(time_course = intersect(repeated, with_time_zero),
+       no_time_zero = setdiff(repeated, with_time_zero))
 }
 
 #' Split raw data into list based on the data types

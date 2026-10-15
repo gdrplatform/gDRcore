@@ -1,6 +1,7 @@
 ## gDRcore 1.11.19 - 2026-10-14
-* identify time-course plates in identify_data_type() and process them in runDrugResponseProcessingPipeline()
-* prevent split_raw_data() from reordering the drugs of time-course combinations
+* identify time-course plates in identify_data_type() and process them in runDrugResponseProcessingPipeline(),
+  keeping the drug order of time-course combinations; warn about plates imaged more than once without
+  a reading at time zero
 * make fit_SE() stop on time-course data with a pointer to fit_SE.timecourse()
 
 ## gDRcore 1.11.18 - 2026-10-08
@@ -757,4 +758,3 @@
 
 ## gDRcore 0.0.1.15 - 2020-07-08
 * dependencies
-

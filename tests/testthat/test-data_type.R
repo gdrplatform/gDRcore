@@ -178,7 +178,10 @@ test_that("identify_data_type recognizes time-course plates", {
     data.table::copy(wells)[, `:=`(Barcode = "EP_PLATE_2", Duration = d)]
   }))
 
-  dt <- identify_data_type(rbind(time_course, end_point, read_twice))
+  expect_warning(
+    dt <- identify_data_type(rbind(time_course, end_point, read_twice)),
+    "without a reading at time zero.*EP_PLATE_2"
+  )
   expect_true(all(dt[Barcode == "TC_PLATE", type] == tc_name))
   expect_equal(dt[Barcode == "EP_PLATE", type], c("control", sa_name, sa_name))
   expect_false(any(dt[Barcode == "EP_PLATE_2", type] == tc_name))
@@ -189,6 +192,10 @@ test_that("identify_data_type recognizes time-course plates", {
   expect_equal(unique(dt_list[[tc_name]]$Barcode), "TC_PLATE")
   expect_equal(NROW(dt_list[[tc_name]]), NROW(time_course))
   expect_equal(unique(dt_list[[sa_name]]$Barcode), "EP_PLATE")
+
+  # data_model() applies the same rule
+  expect_equal(data_model(time_course), tc_name)
+  expect_equal(data_model(read_twice), sa_name)
 })
 
 test_that("split_raw_data keeps the drug order of time-course combinations", {
