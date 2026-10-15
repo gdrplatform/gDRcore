@@ -1,3 +1,7 @@
+## gDRcore 1.11.20 - 2026-10-15
+* add the create, normalize and average steps to the SE provenance, with masked wells and the GR method of each pair
+* fix the "could not calculate GR values" message of `normalize_SE()`, which never reached the log
+
 ## gDRcore 1.11.19 - 2026-10-14
 * add fit recipes to the SE provenance for `fit_SE()`, each `fit_SE.combinations()` step and both time-course stages
 * add `fit_args` to `fit_SE.timecourse()` and keep the metadata of its input in the output
