@@ -244,8 +244,7 @@ normalize_SE <- function(se,
   out <- lapply(out, `[[`, "df")
   no_gr <- sort(unique(gr_methods$cell_line[gr_methods$method == "none"]))
   if (length(no_gr) > 0L) {
-    futile.logger::flog.warn(paste(sprintf("could not calculate GR values for '%s'", no_gr),
-                                   collapse = "\n"))
+    futile.logger::flog.warn(.no_gr_message(no_gr))
   }
 
   out <- S4Vectors::DataFrame(do.call("rbind", out))
@@ -271,6 +270,24 @@ normalize_SE <- function(se,
     ),
     fns = list(control_mean_fxn = control_mean_fxn)
   )
+}
+
+
+#' One log line for the cell lines without a GR value
+#'
+#' A screen without day 0 plates or division times can have hundreds of such cell
+#' lines, so the message gives the count and the first few names.
+#'
+#' @param no_gr character vector of cell line names.
+#' @param n_shown integer; number of names to list.
+#' @return string.
+#' @keywords internal
+#' @noRd
+.no_gr_message <- function(no_gr, n_shown = 5L) {
+  shown <- no_gr[seq_len(min(n_shown, length(no_gr)))]
+  more <- if (length(no_gr) > length(shown)) sprintf(" and %d more", length(no_gr) - length(shown)) else ""
+  sprintf("could not calculate GR values for %d cell line(s): %s%s",
+          length(no_gr), toString(sQuote(shown, FALSE)), more)
 }
 
 
