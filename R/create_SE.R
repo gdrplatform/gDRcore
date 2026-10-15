@@ -51,7 +51,10 @@ create_SE <- function(df_,
   identifiers <- gDRutils::get_env_identifiers()
   Keys <- identify_keys(df_, nested_keys, override_untrt_controls, identifiers)
 
+  # Masked wells leave the data here, so count them for the provenance first.
+  masked <- list(n_wells = 0L)
   if (identifiers$masked_tag %chin% colnames(df_)) {
+    masked <- .summarize_masked(df_, identifiers)
     df_ <- df_[!get(identifiers$masked_tag)]
     df_[, (identifiers$masked_tag) := NULL]
   }
@@ -290,7 +293,49 @@ create_SE <- function(df_,
   se <- gDRutils::set_SE_experiment_metadata(se, exp_md)
   se <- gDRutils::set_SE_keys(se, lapply(Keys, sort))
 
-  se
+  gDRutils::record_processing_step(
+    se, "create",
+    settings = list(
+      data_type = data_type,
+      readout = readout,
+      nested_identifiers = nested_identifiers,
+      nested_confounders = nested_confounders,
+      override_untrt_controls = override_untrt_controls,
+      masked = masked
+    )
+  )
+}
+
+
+#' Count the masked wells that create_SE() drops
+#'
+#' @param df_ data.table of wells with a logical masked column.
+#' @param identifiers list of gDR identifiers.
+#' @return list with the number of dropped wells (masked or with a missing flag),
+#'   the number of drug x cell line pairs they belong to, and the count per cell
+#'   line when that list is small.
+#' @keywords internal
+#' @noRd
+.summarize_masked <- function(df_, identifiers) {
+  flag <- as.logical(df_[[identifiers$masked_tag]])
+  # create_SE() keeps only rows where the flag is FALSE, so a missing flag drops the
+  # well as well; count those separately
+  is_masked <- is.na(flag) | flag
+  out <- list(n_wells = sum(is_masked))
+  if (any(is.na(flag))) out$n_flag_missing <- sum(is.na(flag))
+  if (out$n_wells == 0L) return(out)
+
+  drug_col <- intersect(identifiers$drug, colnames(df_))
+  cl_col <- intersect(identifiers$cellline, colnames(df_))
+  if (length(drug_col) == 0L || length(cl_col) == 0L) return(out)
+
+  drugs <- df_[[drug_col[1L]]][is_masked]
+  lines <- df_[[cl_col[1L]]][is_masked]
+  out$n_pairs <- NROW(unique(data.table::data.table(drugs, lines)))
+  by_cell_line <- table(as.character(lines))
+  by_cell_line <- stats::setNames(as.integer(by_cell_line), names(by_cell_line))
+  if (as.numeric(utils::object.size(by_cell_line)) <= 4096) out$by_cell_line <- by_cell_line
+  out
 }
 
 

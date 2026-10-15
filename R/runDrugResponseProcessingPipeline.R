@@ -88,6 +88,14 @@
 #' For fit_SE, take the averaged assay and fit curves to obtain metrics, one
 #' set of metrics for each normalization type set.
 #'
+#' Each step records its settings in \code{metadata(se)$provenance}: create_SE
+#' under \code{steps$create} (including the number of masked wells it dropped),
+#' normalize_SE under \code{steps$normalize} (including how GR was computed for
+#' each drug x cell line pair), average_SE under \code{steps$average}, and the
+#' fit under \code{fits} (see \code{\link[gDRutils]{get_SE_provenance}}).
+#' Steps read back from intermediate files in a partial run keep what they
+#' recorded when they were written.
+#'
 #' Pipeline can be run partially with `partial_run` flag set to TRUE. The
 #' `start_from` string defines the step from which the pipeline will be
 #' launched. However, partial run of the pipeline is possible only if the whole
