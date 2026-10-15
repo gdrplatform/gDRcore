@@ -6,7 +6,8 @@ create_SE_step <- function(inl,
                            readout,
                            control_mean_fxn,
                            nested_identifiers,
-                           override_untrt_controls) {
+                           override_untrt_controls,
+                           import_info = NULL) {
   df <- inl$df_list[[exp]]
   if (is.null(df)) {
 
@@ -29,7 +30,8 @@ create_SE_step <- function(inl,
     readout = readout,
     nested_identifiers = nested_identifiers,
     nested_confounders = inl$nested_confounders,
-    override_untrt_controls = override_untrt_controls
+    override_untrt_controls = override_untrt_controls,
+    import_info = import_info
   )
   invisible(se)
 }

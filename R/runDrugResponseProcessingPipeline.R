@@ -28,6 +28,10 @@
 #' or \code{runDrugResponseProcessingPipeline}.
 #' @param series_identifiers character vector of identifiers in
 #' \code{measured} or \code{metric} which define a unique data point.
+#' @param import_info list or \code{NULL}; record of the input files that
+#' gDRimport attaches to the loaded data (see
+#' \code{\link[gDRimport]{get_import_provenance}}). It is stored under
+#' \code{provenance$steps$import}.
 #' @param override_untrt_controls named list containing defining factors in
 #' the treatments. Defaults to \code{NULL}.
 #' @param ndigit_rounding integer indicating number of digits to round to
@@ -252,7 +256,14 @@ runDrugResponseProcessingPipeline <- function(x,
   # when running pipeline with x = MAE the identifiers from MAE's metadata
   # should be restored
   if (inherits(x, "MultiAssayExperiment")) {
+    # an MAE processed before keeps the import step it recorded then
+    import_info <- lapply(names(x), function(e) {
+      gDRutils::get_SE_provenance(x[[e]])$steps$import$settings
+    })
+    names(import_info) <- names(x)
     x <- gDRutils::standardize_mae(x, use_default = FALSE)
+  } else {
+    import_info <- attr(x, "gDR_import", exact = TRUE)
   }
 
   inl <- prepare_input(x,
@@ -304,7 +315,8 @@ runDrugResponseProcessingPipeline <- function(x,
           data_type = data_type,
           readout = readout,
           nested_identifiers = nested_identifiers,
-          override_untrt_controls = override_untrt_controls
+          override_untrt_controls = override_untrt_controls,
+          import_info = if (inherits(x, "MultiAssayExperiment")) import_info[[experiment]] else import_info
           )
       )
 

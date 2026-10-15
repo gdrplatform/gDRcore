@@ -176,5 +176,8 @@ merge_data <- function(manifest, treatments, data,
   # reorder the columns
   df_raw_data <- order_result_df(df_raw_data)
 
+  # keep the record of the input files that gDRimport attached to the results
+  data.table::setattr(df_raw_data, "gDR_import", attr(data, "gDR_import", exact = TRUE))
+
   return(df_raw_data)
 }
