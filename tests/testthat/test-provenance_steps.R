@@ -83,6 +83,13 @@ test_that("normalize_SE records which cell lines got no GR value", {
 })
 
 
+test_that("the message about missing GR values stays one short line", {
+  expect_identical(.no_gr_message(c("A", "B")), "could not calculate GR values for 2 cell line(s): 'A', 'B'")
+  msg <- .no_gr_message(sprintf("CL%03d", 1:300))
+  expect_match(msg, "for 300 cell line(s): 'CL001', 'CL002', 'CL003', 'CL004', 'CL005' and 295 more", fixed = TRUE)
+})
+
+
 test_that(".gr_method follows the branches of calculate_GR_value()", {
   expect_identical(.gr_method(c(1, 2), duration = 72, ref_div_time = 30), "day0")
   expect_identical(.gr_method(c(1, NA), duration = 72, ref_div_time = 30), "ref_div_time")
