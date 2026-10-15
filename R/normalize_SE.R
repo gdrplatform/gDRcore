@@ -148,7 +148,6 @@ normalize_SE <- function(se,
   out <- vector("list", NROW(se) * NCOL(se))
   ref_rel_viability <- ref_GR_value <- div_time <-
     matrix(NA, nrow = NROW(se), ncol = NCOL(se), dimnames = dimnames(se))
-  msgs <- NULL
   iterator <- unique(rbind(refs[, c("column", "row")],
                            trt[, c("column", "row")]))
 
@@ -214,11 +213,7 @@ normalize_SE <- function(se,
       duration = duration,
       ref_div_time = ref_div_time
     )
-
-    if (any(is.na(all_readouts_df$Day0Readout))) {
-      msgs <- c(msgs,
-                sprintf("could not calculate GR values for '%s'", cl_name))
-    }
+    gr_method <- .gr_method(all_readouts_df$Day0Readout, duration, ref_div_time)
 
     # Carry over present treated keys.
     keep <- intersect(
@@ -237,11 +232,20 @@ normalize_SE <- function(se,
       normalized$normalization_type,
       sep = "_"
     )
-    S4Vectors::DataFrame(normalized, row.names = rownames)
+    list(
+      df = S4Vectors::DataFrame(normalized, row.names = rownames),
+      gr = data.table::data.table(cell_line = as.character(cl_name), method = gr_method)
+    )
   })
 
-  if (!is.null(msgs)) {
-    futile.logger::flog.warn(paste(msgs, collapse = "\n"))
+  # How GR was computed for each drug x cell line pair; the messages used to be
+  # collected inside the loop function, where they never reached this point.
+  gr_methods <- data.table::rbindlist(lapply(out, `[[`, "gr"))
+  out <- lapply(out, `[[`, "df")
+  no_gr <- sort(unique(gr_methods$cell_line[gr_methods$method == "none"]))
+  if (length(no_gr) > 0L) {
+    futile.logger::flog.warn(paste(sprintf("could not calculate GR values for '%s'", no_gr),
+                                   collapse = "\n"))
   }
 
   out <- S4Vectors::DataFrame(do.call("rbind", out))
@@ -253,7 +257,47 @@ normalize_SE <- function(se,
   )
 
   SummarizedExperiment::assays(se)[[normalized_assay]] <- norm
-  se
+  gDRutils::record_processing_step(
+    se, "normalize",
+    settings = list(
+      data_type = data_type,
+      nested_identifiers = nested_identifiers,
+      nested_confounders = nested_confounders,
+      ndigit_rounding = ndigit_rounding,
+      control_assay = control_assay,
+      raw_treated_assay = raw_treated_assay,
+      normalized_assay = normalized_assay,
+      gr = .summarize_gr_methods(gr_methods)
+    ),
+    fns = list(control_mean_fxn = control_mean_fxn)
+  )
+}
+
+
+#' Summarize how GR was computed, for the provenance of normalize_SE()
+#'
+#' Counts drug x cell line pairs per method and lists the cell lines that used the
+#' reference division time or got no GR value. The lists are left out when they
+#' would make the record large (e.g. a screen without day 0 plates); the division
+#' times themselves are in colData.
+#'
+#' @param gr_methods data.table with columns \code{cell_line} and \code{method}.
+#' @return named list.
+#' @keywords internal
+#' @noRd
+.summarize_gr_methods <- function(gr_methods) {
+  methods <- c("day0", "ref_div_time", "none")
+  counts <- vapply(methods, function(m) sum(gr_methods$method == m), integer(1))
+  lines_for <- function(m) {
+    lines <- sort(unique(gr_methods$cell_line[gr_methods$method == m]))
+    if (length(lines) > 0L && as.numeric(utils::object.size(lines)) <= 4096) lines
+  }
+  out <- list(
+    n_pairs = counts,
+    ref_div_time_cell_lines = lines_for("ref_div_time"),
+    no_gr_cell_lines = lines_for("none")
+  )
+  out[!vapply(out, is.null, logical(1))]
 }
 
 
@@ -335,7 +379,15 @@ normalize_SE_time_course <- function(se_tc) {
   )
 
   SummarizedExperiment::assays(se_tc)[["LogFoldChange"]] <- bm
-  return(se_tc)
+  gDRutils::record_processing_step(
+    se_tc, "normalize",
+    settings = list(
+      data_type = gDRutils::get_supported_experiments("time-course"),
+      method = "log2(ReadoutValue) - log2(ReadoutValue at Duration 0), matched by plate and well",
+      keys = keys,
+      n_without_time0 = sum(is.na(dt_norm$LogFoldChange))
+    )
+  )
 }
 
 
