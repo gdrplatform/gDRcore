@@ -938,6 +938,15 @@ test_that("fit_SE.timecourse records both stages and keeps the input metadata", 
 })
 
 
+test_that("fit_SE.timecourse rejects fit_args with the default fit", {
+  expect_error(
+    fit_SE.timecourse(se_tc_small, periods = periods_std, normalization_map = norm_map_std,
+                      fit_args = list(cap = 0.2)),
+    "only used with a custom 'fit_fn'"
+  )
+})
+
+
 test_that("fit_SE.timecourse passes fit_args to a custom fit function", {
   q_fn <- function(dt, q) list(x_q = stats::quantile(dt$NormalizedGrowthRate, q, names = FALSE))
   se_fit <- suppressWarnings(fit_SE.timecourse(
