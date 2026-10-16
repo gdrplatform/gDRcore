@@ -824,6 +824,19 @@ se_fit <- fit_SE.timecourse(
 )
 ```
 
+Starting from raw data,
+[`runDrugResponseProcessingPipeline()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
+recognizes time-course plates by repeated readings of a well, starting
+at time zero, and returns them as a `"time-course"` experiment ending at
+the `LogFoldChange` assay, ready for this call:
+
+``` r
+mae <- runDrugResponseProcessingPipeline(merged_dt)  # output of merge_data()
+se_fit <- fit_SE.timecourse(mae[["time-course"]],
+                            periods = periods,
+                            normalization_map = norm_map)
+```
+
 ### Output structure
 
 The result is a `SummarizedExperiment` where **columns = period names**:
@@ -1069,8 +1082,8 @@ sessionInfo()
 #>  [7] IRanges_2.47.5              S4Vectors_0.51.10          
 #>  [9] BiocGenerics_0.59.12        generics_0.1.4             
 #> [11] MatrixGenerics_1.25.0       matrixStats_1.5.0          
-#> [13] gDRutils_1.11.15            gDRtestData_1.11.9         
-#> [15] gDRcore_1.11.18             BiocStyle_2.41.0           
+#> [13] gDRutils_1.11.17            gDRtestData_1.11.10        
+#> [15] gDRcore_1.11.19             BiocStyle_2.41.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
@@ -1080,7 +1093,7 @@ sessionInfo()
 #>  [9] rlang_1.3.0                 sass_0.4.10                
 #> [11] drc_4.0-0                   tools_4.6.1                
 #> [13] plotrix_3.8-14              yaml_2.3.12                
-#> [15] knitr_1.52                  lambda.r_1.2.4             
+#> [15] knitr_1.52                  lambda.r_1.2.6             
 #> [17] S4Arrays_1.13.2             DelayedArray_0.39.8        
 #> [19] RColorBrewer_1.1-3          abind_1.4-8                
 #> [21] multcomp_1.4-32             BiocParallel_1.47.0        

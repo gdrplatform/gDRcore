@@ -38,7 +38,9 @@
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/data_model.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/do_skip_step.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-get_untreated_tag_count.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-is_time_course_plate.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-map_references.html</loc></url>
+<url><loc>https://gdrplatform.github.io/gDRcore/reference/dot-time_course_plates.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/fit_SE.timecourse.html</loc></url>
 <url><loc>https://gdrplatform.github.io/gDRcore/reference/gDRcore-package.html</loc></url>

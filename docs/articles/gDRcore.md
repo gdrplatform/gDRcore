@@ -306,19 +306,19 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] gDRcore_1.11.18    gDRtestData_1.11.9 BiocStyle_2.41.0  
+#> [1] gDRcore_1.11.19     gDRtestData_1.11.10 BiocStyle_2.41.0   
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
 #>  [3] BumpyMatrix_1.21.0          TH.data_1.1-5              
 #>  [5] digest_0.6.39               lifecycle_1.0.5            
-#>  [7] gDRutils_1.11.15            survival_3.8-6             
+#>  [7] gDRutils_1.11.17            survival_3.8-6             
 #>  [9] magrittr_2.0.5              compiler_4.6.1             
 #> [11] rlang_1.3.0                 sass_0.4.10                
 #> [13] drc_4.0-0                   tools_4.6.1                
 #> [15] plotrix_3.8-14              yaml_2.3.12                
 #> [17] data.table_1.18.6.1         knitr_1.52                 
-#> [19] lambda.r_1.2.4              S4Arrays_1.13.2            
+#> [19] lambda.r_1.2.6              S4Arrays_1.13.2            
 #> [21] DelayedArray_0.39.8         RColorBrewer_1.1-3         
 #> [23] abind_1.4-8                 multcomp_1.4-32            
 #> [25] BiocParallel_1.47.0         purrr_1.2.2                
@@ -331,7 +331,7 @@ sessionInfo()
 #> [39] ragg_1.5.2                  generics_0.1.4             
 #> [41] otel_0.2.0                  readxl_1.5.0.1             
 #> [43] cachem_1.1.0                stringr_1.6.0              
-#> [45] splines_4.6.1               gDRimport_1.11.7           
+#> [45] splines_4.6.1               gDRimport_1.11.8           
 #> [47] assertthat_0.2.1            parallel_4.6.1             
 #> [49] formatR_1.14                BiocManager_1.30.27        
 #> [51] cellranger_1.1.0            XVector_0.53.0             

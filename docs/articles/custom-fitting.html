@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.18</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.19</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -1046,13 +1046,23 @@ assay — the output of
 <span>  periods <span class="op">=</span> <span class="va">periods</span>,</span>
 <span>  normalization_map <span class="op">=</span> <span class="va">norm_map</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p>Starting from raw data,
+<code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">runDrugResponseProcessingPipeline()</a></code> recognizes time-course
+plates by repeated readings of a well, starting at time zero, and
+returns them as a <code>"time-course"</code> experiment ending at the
+<code>LogFoldChange</code> assay, ready for this call:</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runDrugResponseProcessingPipelineFxns.html">runDrugResponseProcessingPipeline</a></span><span class="op">(</span><span class="va">merged_dt</span><span class="op">)</span>  <span class="co"># output of merge_data()</span></span>
+<span><span class="va">se_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_SE.timecourse.html">fit_SE.timecourse</a></span><span class="op">(</span><span class="va">mae</span><span class="op">[[</span><span class="st">"time-course"</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>                            periods <span class="op">=</span> <span class="va">periods</span>,</span>
+<span>                            normalization_map <span class="op">=</span> <span class="va">norm_map</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="output-structure">Output structure<a class="anchor" aria-label="anchor" href="#output-structure"></a>
 </h3>
 <p>The result is a <code>SummarizedExperiment</code> where
 <strong>columns = period names</strong>:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># One column per period</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">se_fit</span><span class="op">)</span>   <span class="co"># c("early", "late")</span></span>
 <span></span>
@@ -1076,7 +1086,7 @@ screens.</p>
 receives one <code>normalization_type = "NGR"</code> slice of the
 <code>GrowthRates</code> assay, with <code>NormalizedGrowthRate</code>
 as the response and <code>Concentration</code> as the x axis:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">auc_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dt</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>auc_ngr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">dt</span><span class="op">$</span><span class="va">NormalizedGrowthRate</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
@@ -1093,7 +1103,7 @@ doublings per day. Replace it when the default
 <code>lm(LogFoldChange ~ Duration)</code> slope is not the right
 estimator — for example for screens with only two usable timepoints, or
 when the growth phase has to be selected per well:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">endpoint_rate_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dt</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">ord</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">dt</span><span class="op">$</span><span class="va">Duration</span><span class="op">)</span></span>
 <span>  <span class="fl">24</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">dt</span><span class="op">$</span><span class="va">LogFoldChange</span><span class="op">[</span><span class="va">ord</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">dt</span><span class="op">$</span><span class="va">Duration</span><span class="op">[</span><span class="va">ord</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
@@ -1113,7 +1123,7 @@ growth rate table — one row per
 <strong>controls included</strong>, with <code>GrowthRate</code>,
 <code>sd_GrowthRate</code> and <code>rate_0</code> — and
 <code><a href="../reference/growth_rates_to_se.html">growth_rates_to_se()</a></code> turns it into the stage 2 input:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">growth_dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_growth_rates.html">compute_growth_rates</a></span><span class="op">(</span><span class="va">se_tc</span>, <span class="va">periods</span>, <span class="va">norm_map</span>, rate_fn <span class="op">=</span> <span class="va">endpoint_rate_fn</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">se_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
@@ -1170,7 +1180,7 @@ profile model.</li>
 <div class="section level3">
 <h3 id="function-signatures">Function signatures<a class="anchor" aria-label="anchor" href="#function-signatures"></a>
 </h3>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Single fit → one output assay</span></span>
 <span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">se</span>,</span>
@@ -1427,7 +1437,7 @@ when embedding score computation inside a larger custom
 <div class="section level2">
 <h2 class="unnumbered" id="sessioninfo">SessionInfo<a class="anchor" aria-label="anchor" href="#sessioninfo"></a>
 </h2>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -1457,8 +1467,8 @@ when embedding score computation inside a larger custom
 <span><span class="co">#&gt;  [7] IRanges_2.47.5              S4Vectors_0.51.10          </span></span>
 <span><span class="co">#&gt;  [9] BiocGenerics_0.59.12        generics_0.1.4             </span></span>
 <span><span class="co">#&gt; [11] MatrixGenerics_1.25.0       matrixStats_1.5.0          </span></span>
-<span><span class="co">#&gt; [13] gDRutils_1.11.15            gDRtestData_1.11.9         </span></span>
-<span><span class="co">#&gt; [15] gDRcore_1.11.18             BiocStyle_2.41.0           </span></span>
+<span><span class="co">#&gt; [13] gDRutils_1.11.17            gDRtestData_1.11.10        </span></span>
+<span><span class="co">#&gt; [15] gDRcore_1.11.19             BiocStyle_2.41.0           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] farver_2.1.2                fastmap_1.2.0              </span></span>
@@ -1468,7 +1478,7 @@ when embedding score computation inside a larger custom
 <span><span class="co">#&gt;  [9] rlang_1.3.0                 sass_0.4.10                </span></span>
 <span><span class="co">#&gt; [11] drc_4.0-0                   tools_4.6.1                </span></span>
 <span><span class="co">#&gt; [13] plotrix_3.8-14              yaml_2.3.12                </span></span>
-<span><span class="co">#&gt; [15] knitr_1.52                  lambda.r_1.2.4             </span></span>
+<span><span class="co">#&gt; [15] knitr_1.52                  lambda.r_1.2.6             </span></span>
 <span><span class="co">#&gt; [17] S4Arrays_1.13.2             DelayedArray_0.39.8        </span></span>
 <span><span class="co">#&gt; [19] RColorBrewer_1.1-3          abind_1.4-8                </span></span>
 <span><span class="co">#&gt; [21] multcomp_1.4-32             BiocParallel_1.47.0        </span></span>
