@@ -69,6 +69,14 @@ identify_data_type <- function(dt,
   dt$type <- ifelse(controls, "control",
                     ifelse(single_agent, sa_name, NA))
 
+  # a time-course plate keeps its controls, they are its time-zero reference
+  no_time_zero <- .time_course_plates(dt)$no_time_zero
+  if (length(no_time_zero) > 0) {
+    warning("plate(s) imaged more than once without a reading at time zero are ",
+            "processed as end-point data: ", toString(no_time_zero), call. = FALSE)
+  }
+  time_course <- .is_time_course_plate(dt)
+  dt$type[time_course] <- gDRutils::get_supported_experiments("time-course")
 
   if (length(conc_ids) > 1) {
     missing_type_rows <- is.na(dt$type)
@@ -87,6 +95,50 @@ identify_data_type <- function(dt,
     dt$type[missing_type_rows] <- type
   }
   dt
+}
+
+#' Flag rows of plates imaged more than once
+#'
+#' A well read at several time points has several records, which is how
+#' \code{data_model()} recognizes time-course data. A plate also needs a reading
+#' at time zero, the reference of the time-course normalization, and at least
+#' three time points, so that an end-point plate read twice, or read at time
+#' zero and at the end point, keeps its type. The check is made per plate.
+#'
+#' @param dt data.table of raw drug response data
+#'
+#' @return logical vector, one element per row of \code{dt}
+#' @keywords internal
+.is_time_course_plate <- function(dt) {
+  barcode <- intersect(gDRutils::get_env_identifiers("barcode"), names(dt))[1]
+  if (is.na(barcode)) {
+    return(rep(FALSE, NROW(dt)))
+  }
+  dt[[barcode]] %in% .time_course_plates(dt)$time_course
+}
+
+#' Barcodes of plates imaged more than once
+#'
+#' @param dt data.table of raw drug response data
+#'
+#' @return list with \code{time_course}, the plates imaged more than once that
+#'   have a reading at time zero and at least three time points, and
+#'   \code{no_time_zero}, the plates imaged more than once without a reading at
+#'   time zero
+#' @keywords internal
+.time_course_plates <- function(dt) {
+  barcode <- intersect(gDRutils::get_env_identifiers("barcode"), names(dt))[1]
+  wells <- intersect(gDRutils::get_env_identifiers("well_position"), names(dt))
+  duration <- gDRutils::get_env_identifiers("duration")
+  if (is.na(barcode) || length(wells) == 0 || !duration %in% names(dt)) {
+    return(list(time_course = character(0), no_time_zero = character(0)))
+  }
+  repeated <- unique(dt[[barcode]][duplicated(dt, by = c(barcode, wells))])
+  with_time_zero <- unique(dt[[barcode]][dt[[duration]] == 0])
+  n_durations <- dt[, .(n = data.table::uniqueN(get(duration))), by = barcode]
+  with_series <- n_durations[[barcode]][n_durations$n >= 3]
+  list(time_course = intersect(intersect(repeated, with_time_zero), with_series),
+       no_time_zero = setdiff(repeated, with_time_zero))
 }
 
 #' Split raw data into list based on the data types
@@ -153,6 +205,15 @@ identify_data_type <- function(dt,
 #' @author Bartosz Czech <czech.bartosz@@external.gene.com>
 split_raw_data <- function(dt,
                            type_col = "type") {
+
+  # time-course rows keep the drug order of the plate, as the time-course
+  # normalization reads it, and they already carry their controls
+  tc_name <- gDRutils::get_supported_experiments("time-course")
+  is_time_course <- dt[[type_col]] %in% tc_name
+  if (any(is_time_course)) {
+    time_course <- dt[is_time_course]
+    dt <- dt[!is_time_course]
+  }
 
   dt <- collapse_drugs(dt)
 
@@ -240,6 +301,10 @@ split_raw_data <- function(dt,
       dt_list[[sa_name]],
       control_sa[, selected_columns, with = FALSE]
     )
+  }
+
+  if (any(is_time_course)) {
+    dt_list[[tc_name]] <- time_course
   }
 
   Map(function(x) {
