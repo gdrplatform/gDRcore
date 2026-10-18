@@ -751,7 +751,8 @@ se_fit <- apply_fit(
 
 Note that `fit_SE.timecourse()` keeps the `GrowthRates` assay in its output, so
 an already-fitted object can be re-fitted with a different `fit_fn` without
-recomputing stage 1.
+recomputing stage 1.  A custom `fit_fn` receives the arguments in `fit_args`,
+and both stages are recorded in the provenance of the output (see below).
 
 ## Key design notes
 
@@ -774,6 +775,73 @@ recomputing stage 1.
 
 ***
 
+# Provenance: how each fit was produced
+
+Every call to `apply_fit()` and `apply_fits()` stores the recipe of the fit in
+`metadata(se)$provenance`: the function that produced it, the arguments it got,
+and the call settings.  `fit_SE()`, `fit_SE.combinations()` and
+`fit_SE.timecourse()` record their fits the same way, so a stored object says
+which code produced each result, and the fit can be re-run later.
+
+Pass settings through `fit_args` rather than wrapping the function in a
+closure, so they appear in the recipe:
+
+```{r provenance-record}
+prov_se <- apply_fit(
+  sa_se,
+  fit_fn = fit_drug_response_metrics,
+  data_type = "single-agent",
+  output_assay = "custom_hill",
+  fit_source = "hill_loose",
+  fit_args = list(pcutoff = 0.1)
+)
+gDRutils::summarize_fit_provenance(prov_se)
+```
+
+The `fit_source` column of the assay is the key into the recipes:
+
+```{r provenance-recipe}
+recipe <- gDRutils::get_fit_provenance(prov_se, "custom_hill", "hill_loose")
+recipe$fn[c("name", "package", "version")]
+recipe$fn$info$model
+recipe$fit_args
+```
+
+A function from an installed package is stored by reference (package, name,
+version and a hash of its code).  A function written in the session is stored
+as source code, together with the values it reads from its environment.
+`check_reproducibility()` re-runs each recorded fit and compares the results;
+it evaluates stored source code only with `allow_source = TRUE`, since the
+object may come from someone else:
+
+```{r provenance-check}
+gDRutils::check_reproducibility(prov_se)
+```
+
+`set_fit_fn_info()` attaches a short description of what a fit function
+computes, which is copied into its recipe:
+
+```{r provenance-describe}
+summary_fn <- gDRutils::set_fit_fn_info(
+  summary_fn,
+  model = "mean and SD of the response",
+  description = "Mean and standard deviation of the averaged response over all concentrations."
+)
+```
+
+For combination data each step of `fit_SE.combinations()` has a recipe under
+its assay (`Metrics`, `excess`, `isobolograms`, `all_iso_points`, `scores`),
+including the `score_FUN` used for the scores.  For time-course data the
+growth-rate stage is recorded under `provenance$steps$growth_rates`, with the
+`rate_fn`, `periods` and `normalization_map`, because it cannot be recomputed
+from the fitted object.
+
+The recipe holds plain lists, strings and numbers (about 1 KB per fit) and no
+timestamp, so fitting the same data with the same code gives an identical
+object.
+
+***
+
 # Quick reference
 
 ## Function signatures
@@ -792,7 +860,8 @@ apply_fit(
   summary_assay = NULL,
   merge = "merge", # or "replace"
   on_error = "warn", # or "stop"
-  fit_source                         # REQUIRED — upsert key tag
+  fit_source, # REQUIRED — upsert key tag
+  fit_args = list() # extra arguments for fit_fn, recorded in the provenance
 )
 
 # Multiple fits → one BumpyMatrix pass

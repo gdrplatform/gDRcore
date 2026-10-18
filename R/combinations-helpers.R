@@ -137,6 +137,13 @@ calculate_score <- function(excess) {
   mean(excess[excess >= stats::quantile(excess, 0.9, na.rm = TRUE)], na.rm = TRUE)
 }
 
+# What the score does, copied into the recipe of the scores assay.
+calculate_score <- gDRutils::set_fit_fn_info(
+  calculate_score,
+  model = "mean of the top 10% of excess values",
+  description = "Reduces the per-point excess of a combination to one score per drug pair and cell line."
+)
+
 
 #' @keywords internal
 #' @noRd

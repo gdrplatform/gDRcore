@@ -908,3 +908,64 @@ test_that("compute_growth_rates names the cell line and period it could not norm
     "'MCF7' in period 'late'"
   )
 })
+
+
+test_that("fit_SE.timecourse records both stages and keeps the input metadata", {
+  se_in <- se_tc_small
+  S4Vectors::metadata(se_in)$experiment_metadata <- list(title = "time-course test")
+  se_fit <- suppressWarnings(fit_SE.timecourse(
+    se_in,
+    periods = periods_std,
+    normalization_map = norm_map_std,
+    pcutoff = 0.2
+  ))
+  expect_identical(S4Vectors::metadata(se_fit)$experiment_metadata, list(title = "time-course test"))
+
+  prov <- gDRutils::get_SE_provenance(se_fit)
+  step <- prov$steps$growth_rates
+  expect_identical(step$settings$periods, periods_std)
+  expect_identical(step$settings$normalization_map, norm_map_std)
+  expect_identical(step$functions$rate_fn$package, "gDRcore")
+  expect_identical(step$functions$rate_fn$captured,
+                   list(dur_col = "Duration", lfc_col = "LogFoldChange"))
+  expect_match(step$functions$rate_fn$info$description, "lm(LogFoldChange ~ Duration)", fixed = TRUE)
+
+  recipe <- prov$fits$Metrics$gDR
+  expect_identical(recipe$fn$name, "fit_drug_response_metrics")
+  expect_identical(recipe$fit_args$x_col, "NormalizedGrowthRate")
+  expect_identical(recipe$fit_args$pcutoff, 0.2)
+  expect_true(gDRutils::check_reproducibility(se_fit)$reproducible)
+})
+
+
+test_that("fit_SE.timecourse rejects fit_args with the default fit", {
+  expect_error(
+    fit_SE.timecourse(se_tc_small, periods = periods_std, normalization_map = norm_map_std,
+                      fit_args = list(cap = 0.2)),
+    "only used with a custom 'fit_fn'"
+  )
+})
+
+
+test_that("fit_SE.timecourse passes fit_args to a custom fit function", {
+  q_fn <- function(dt, q) list(x_q = stats::quantile(dt$NormalizedGrowthRate, q, names = FALSE))
+  se_fit <- suppressWarnings(fit_SE.timecourse(
+    se_tc_small,
+    periods = periods_std,
+    normalization_map = norm_map_std,
+    fit_fn = q_fn,
+    fit_args = list(q = 0.25)
+  ))
+  recipe <- gDRutils::get_fit_provenance(se_fit, "Metrics", "custom")
+  expect_identical(recipe$fit_args, list(q = 0.25))
+  expect_false(is.null(recipe$fn$source))
+})
+
+
+test_that("the two-step time-course workflow records the growth-rate step", {
+  se_gr <- growth_rates_to_se(compute_growth_rates(se_tc_small, periods_std, norm_map_std))
+  expect_identical(
+    names(gDRutils::get_SE_provenance(se_gr)$steps$growth_rates$functions),
+    "rate_fn"
+  )
+})
