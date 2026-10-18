@@ -23,7 +23,8 @@ create_SE <- function(df_,
                       readout = "ReadoutValue",
                       nested_identifiers = NULL,
                       nested_confounders = intersect(names(df_), gDRutils::get_env_identifiers("barcode")),
-                      override_untrt_controls = NULL) {
+                      override_untrt_controls = NULL,
+                      import_info = attr(df_, "gDR_import", exact = TRUE)) {
 
   # Assertions:
   checkmate::assert_multi_class(df_, c("data.table", "DataFrame"))
@@ -32,6 +33,7 @@ create_SE <- function(df_,
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
   checkmate::assert_character(nested_confounders, null.ok = TRUE)
   checkmate::assert_vector(override_untrt_controls, null.ok = TRUE)
+  checkmate::assert_list(import_info, null.ok = TRUE)
 
   tc_name <- gDRutils::get_supported_experiments("time-course")
 
@@ -293,6 +295,10 @@ create_SE <- function(df_,
   se <- gDRutils::set_SE_experiment_metadata(se, exp_md)
   se <- gDRutils::set_SE_keys(se, lapply(Keys, sort))
 
+  # the list of input files can be long, so the import step gets a larger limit
+  if (!is.null(import_info)) {
+    se <- gDRutils::record_processing_step(se, "import", settings = import_info, max_bytes = 1e6)
+  }
   gDRutils::record_processing_step(
     se, "create",
     settings = list(

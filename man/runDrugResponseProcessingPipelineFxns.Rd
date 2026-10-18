@@ -25,7 +25,8 @@ create_SE(
   readout = "ReadoutValue",
   nested_identifiers = NULL,
   nested_confounders = intersect(names(df_), gDRutils::get_env_identifiers("barcode")),
-  override_untrt_controls = NULL
+  override_untrt_controls = NULL,
+  import_info = attr(df_, "gDR_import", exact = TRUE)
 )
 
 fit_SE(
@@ -128,6 +129,11 @@ or \code{runDrugResponseProcessingPipeline}.}
 
 \item{override_untrt_controls}{named list containing defining factors in
 the treatments. Defaults to \code{NULL}.}
+
+\item{import_info}{list or \code{NULL}; record of the input files that
+gDRimport attaches to the loaded data (see
+\code{\link[gDRimport]{get_import_provenance}}). It is stored under
+\code{provenance$steps$import}.}
 
 \item{metrics_assay}{string of the name of the metrics assay to output
 in the returned \linkS4class{SummarizedExperiment}
