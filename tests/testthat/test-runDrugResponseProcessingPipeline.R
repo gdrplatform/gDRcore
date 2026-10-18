@@ -112,3 +112,40 @@ test_that("main pipeline functions works as expected", {
   expect_error(prepare_input(input_data, list(), NULL), "nested_confounders")
   expect_error(prepare_input(input_data, NULL, list()), "nested_identifiers")
 })
+
+test_that("runDrugResponseProcessingPipeline processes time-course data", {
+  tc_name <- gDRutils::get_supported_experiments("time-course")
+  concs <- c(0.01, 0.1, 1, 10)
+  layout <- rbind(
+    data.table::data.table(Gnumber = "vehicle", Concentration = 0, replicate = 1:4),
+    data.table::CJ(Gnumber = c("DrugA", "DrugB"), Concentration = concs, replicate = 1:2)
+  )
+  layout[, `:=`(WellRow = LETTERS[seq_len(.N)], WellColumn = "1", DrugName = Gnumber,
+                drug_moa = "unknown", clid = "CL1", CellLineName = "CL1", Barcode = "PLATE1")]
+  input_dt <- layout[, .(Duration = seq(0, 72, 12)), by = names(layout)]
+  potency <- c(vehicle = Inf, DrugA = 0.1, DrugB = 1)
+  input_dt[, ReadoutValue := 1000 * 2 ^ (Duration / 24 *
+                                           (1 - Concentration / (Concentration + potency[Gnumber])))]
+  input_dt[, replicate := NULL]
+
+  expect_message(
+    mae <- runDrugResponseProcessingPipeline(data.table::copy(input_dt),
+                                             nested_confounders = "Barcode"),
+    "Time-course data stops at the LogFoldChange assay"
+  )
+  expect_equal(names(MultiAssayExperiment::experiments(mae)), tc_name)
+  expect_equal(SummarizedExperiment::assayNames(mae[[tc_name]]),
+               c("RawTreated", "Controls", "LogFoldChange"))
+
+  # the same SE as the time-course report builds step by step
+  .drop_record_id <- function(dt) dt[, setdiff(names(dt), "record_id"), with = FALSE]
+  se_ref <- normalize_SE(create_SE(data.table::copy(input_dt), data_type = tc_name),
+                         data_type = tc_name)
+  for (assay_name in SummarizedExperiment::assayNames(se_ref)) {
+    expect_equal(
+      .drop_record_id(gDRutils::convert_se_assay_to_dt(mae[[tc_name]], assay_name)),
+      gDRutils::convert_se_assay_to_dt(se_ref, assay_name),
+      ignore_attr = TRUE
+    )
+  }
+})

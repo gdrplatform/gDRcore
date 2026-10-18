@@ -157,3 +157,80 @@ test_that("process_perturbations works as expected", {
   )
   expect_equal(result, expected)
 })
+
+test_that("identify_data_type recognizes time-course plates", {
+  tc_name <- gDRutils::get_supported_experiments("time-course")
+  sa_name <- gDRutils::get_supported_experiments("sa")
+  wells <- data.table::data.table(
+    WellRow = c("A", "A", "B"),
+    WellColumn = c("1", "2", "1"),
+    Gnumber = c("vehicle", "DrugA", "DrugA"),
+    DrugName = c("vehicle", "DrugA", "DrugA"),
+    drug_moa = "unknown",
+    Concentration = c(0, 0.1, 1),
+    clid = "CL1"
+  )
+  time_course <- data.table::rbindlist(lapply(c(0, 24, 48), function(d) {
+    data.table::copy(wells)[, `:=`(Barcode = "TC_PLATE", Duration = d)]
+  }))
+  end_point <- data.table::copy(wells)[, `:=`(Barcode = "EP_PLATE", Duration = 72)]
+  read_twice <- data.table::rbindlist(lapply(c(72, 144), function(d) {
+    data.table::copy(wells)[, `:=`(Barcode = "EP_PLATE_2", Duration = d)]
+  }))
+
+  expect_warning(
+    dt <- identify_data_type(rbind(time_course, end_point, read_twice)),
+    "without a reading at time zero.*EP_PLATE_2"
+  )
+  expect_true(all(dt[Barcode == "TC_PLATE", type] == tc_name))
+  expect_equal(dt[Barcode == "EP_PLATE", type], c("control", sa_name, sa_name))
+  expect_false(any(dt[Barcode == "EP_PLATE_2", type] == tc_name))
+  dt <- dt[Barcode != "EP_PLATE_2"]
+
+  dt_list <- split_raw_data(dt)
+  expect_setequal(names(dt_list), c(tc_name, sa_name))
+  expect_equal(unique(dt_list[[tc_name]]$Barcode), "TC_PLATE")
+  expect_equal(NROW(dt_list[[tc_name]]), NROW(time_course))
+  expect_equal(unique(dt_list[[sa_name]]$Barcode), "EP_PLATE")
+
+  # an end-point plate read at time zero and at the end point, or a day 0 plate
+  # scanned twice, keeps its type: time-course needs at least three time points
+  t0_and_end <- data.table::rbindlist(lapply(c(0, 72), function(d) {
+    data.table::copy(wells)[, `:=`(Barcode = "T0_END", Duration = d)]
+  }))
+  day0_twice <- data.table::rbindlist(lapply(1:2, function(i) {
+    data.table::copy(wells)[, `:=`(Barcode = "DAY0_TWICE", Duration = 0)]
+  }))
+  dt_short <- identify_data_type(rbind(t0_and_end, day0_twice))
+  expect_false(any(dt_short$type == tc_name))
+
+  # data_model() applies the same rule
+  expect_equal(data_model(time_course), tc_name)
+  expect_equal(data_model(read_twice), sa_name)
+})
+
+test_that("split_raw_data keeps the drug order of time-course combinations", {
+  tc_name <- gDRutils::get_supported_experiments("time-course")
+  wells <- data.table::data.table(
+    WellRow = "A",
+    WellColumn = c("1", "2", "3"),
+    Gnumber = c("vehicle", "DrugA", "vehicle"),
+    DrugName = c("vehicle", "DrugA", "vehicle"),
+    drug_moa = "unknown",
+    Concentration = c(0, 0.1, 0),
+    Gnumber_2 = c("vehicle", "DrugB", "DrugB"),
+    DrugName_2 = c("vehicle", "DrugB", "DrugB"),
+    drug_moa_2 = "unknown",
+    Concentration_2 = c(0, 0.5, 0.5),
+    clid = "CL1",
+    Barcode = "TC_PLATE"
+  )
+  dt <- data.table::rbindlist(lapply(c(0, 24, 48), function(d) {
+    data.table::copy(wells)[, Duration := d]
+  }))
+
+  dt_list <- split_raw_data(identify_data_type(data.table::copy(dt)))
+  partner_alone <- dt_list[[tc_name]][WellColumn == "3"]
+  expect_equal(unique(partner_alone$Gnumber), "vehicle")
+  expect_equal(unique(partner_alone$Gnumber_2), "DrugB")
+})

@@ -16,6 +16,9 @@ fit_SE <- function(se,
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_string(data_type)
+  if (data_type == gDRutils::get_supported_experiments("time-course")) {
+    stop("fit_SE() does not fit time-course data, use fit_SE.timecourse()")
+  }
   checkmate::assert_choice(data_type, choices = c(gDRutils::get_supported_experiments("sa"),
                                                   gDRutils::get_supported_experiments("cd")))
   checkmate::assert_character(nested_identifiers, null.ok = TRUE)
