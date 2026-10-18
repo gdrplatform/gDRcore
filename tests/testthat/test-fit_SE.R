@@ -215,6 +215,12 @@ test_that("fit_SE.combinations passes score_FUN to apply_combo_scores", {
   expect_true(all(scores$hsa_score == 42 | is.na(scores$hsa_score)))
 })
 
+test_that("fit_SE points time-course data to fit_SE.timecourse", {
+  se <- SummarizedExperiment::SummarizedExperiment()
+  expect_error(fit_SE(se, data_type = gDRutils::get_supported_experiments("time-course")),
+               "use fit_SE.timecourse")
+})
+
 
 test_that("fit_SE records the gDR fit by reference with its settings", {
   maeReal <- gDRutils::get_synthetic_data("finalMAE_combo_2dose_nonoise2")
