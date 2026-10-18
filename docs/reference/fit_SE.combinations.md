@@ -104,7 +104,7 @@ fit_SE.combinations(se1[1, 1])
 #> Warning: NaNs produced
 #> class: SummarizedExperiment 
 #> dim: 1 1 
-#> metadata(3): identifiers experiment_metadata Keys
+#> metadata(4): identifiers experiment_metadata Keys provenance
 #> assays(6): Averaged Metrics ... all_iso_points scores
 #> rownames(1): G00004_drug_004_moa_A_G00021_drug_021_moa_D_72
 #> rowData names(7): Gnumber DrugName ... drug_moa_2 Duration

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.19</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.20</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,13 @@
       <small>Source: <a href="https://github.com/gdrplatform/gDRcore/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.20" id="gdrcore-11120---2026-10-18">gDRcore 1.11.20 - 2026-10-18<a class="anchor" aria-label="anchor" href="#gdrcore-11120---2026-10-18"></a></h2>
+<ul><li>add fit recipes to the SE provenance for <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code>, each <code><a href="../reference/fit_SE.combinations.html">fit_SE.combinations()</a></code> step and both time-course stages</li>
+<li>add <code>fit_args</code> to <code><a href="../reference/fit_SE.timecourse.html">fit_SE.timecourse()</a></code> and keep the metadata of its input in the output</li>
+<li>provide model descriptions for the combination steps, <code><a href="../reference/bliss_fit_fn.html">bliss_fit_fn()</a></code>, <code><a href="../reference/hss_fit_fn.html">hss_fit_fn()</a></code> and <code><a href="../reference/calculate_score.html">calculate_score()</a></code>
+</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.11.19" id="gdrcore-11119---2026-10-14">gDRcore 1.11.19 - 2026-10-14<a class="anchor" aria-label="anchor" href="#gdrcore-11119---2026-10-14"></a></h2>
 <ul><li>identify time-course plates in identify_data_type() and process them in runDrugResponseProcessingPipeline(), keeping the drug order of time-course combinations; warn about plates imaged more than once without a reading at time zero</li>

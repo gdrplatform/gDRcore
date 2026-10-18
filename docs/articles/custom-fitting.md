@@ -930,6 +930,8 @@ Note that
 [`fit_SE.timecourse()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.timecourse.md)
 keeps the `GrowthRates` assay in its output, so an already-fitted object
 can be re-fitted with a different `fit_fn` without recomputing stage 1.
+A custom `fit_fn` receives the arguments in `fit_args`, and both stages
+are recorded in the provenance of the output (see below).
 
 ### Key design notes
 
@@ -955,6 +957,108 @@ can be re-fitted with a different `fit_fn` without recomputing stage 1.
 
 ------------------------------------------------------------------------
 
+## Provenance: how each fit was produced
+
+Every call to
+[`apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
+and
+[`apply_fits()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fits.html)
+stores the recipe of the fit in `metadata(se)$provenance`: the function
+that produced it, the arguments it got, and the call settings.
+[`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md),
+[`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
+and
+[`fit_SE.timecourse()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.timecourse.md)
+record their fits the same way, so a stored object says which code
+produced each result, and the fit can be re-run later.
+
+Pass settings through `fit_args` rather than wrapping the function in a
+closure, so they appear in the recipe:
+
+``` r
+prov_se <- apply_fit(
+  sa_se,
+  fit_fn = fit_drug_response_metrics,
+  data_type = "single-agent",
+  output_assay = "custom_hill",
+  fit_source = "hill_loose",
+  fit_args = list(pcutoff = 0.1)
+)
+gDRutils::summarize_fit_provenance(prov_se)
+#>          assay fit_source                                            fn
+#>         <char>     <char>                                        <char>
+#> 1: custom_hill hill_loose gDRutils::fit_drug_response_metrics (1.11.18)
+#>         fit_args
+#>           <char>
+#> 1: pcutoff = 0.1
+#>                                                                model
+#>                                                               <char>
+#> 1: 3-parameter log-logistic (drc::LL.3u), upper asymptote fixed at 1
+```
+
+The `fit_source` column of the assay is the key into the recipes:
+
+``` r
+recipe <- gDRutils::get_fit_provenance(prov_se, "custom_hill", "hill_loose")
+recipe$fn[c("name", "package", "version")]
+#> $name
+#> [1] "fit_drug_response_metrics"
+#> 
+#> $package
+#> [1] "gDRutils"
+#> 
+#> $version
+#> [1] "1.11.18"
+recipe$fn$info$model
+#> [1] "3-parameter log-logistic (drc::LL.3u), upper asymptote fixed at 1"
+recipe$fit_args
+#> $pcutoff
+#> [1] 0.1
+```
+
+A function from an installed package is stored by reference (package,
+name, version and a hash of its code). A function written in the session
+is stored as source code, together with the values it reads from its
+environment.
+[`check_reproducibility()`](https://gdrplatform.github.io/gDRstyle/reference/check_reproducibility.html)
+re-runs each recorded fit and compares the results; it evaluates stored
+source code only with `allow_source = TRUE`, since the object may come
+from someone else:
+
+``` r
+gDRutils::check_reproducibility(prov_se)
+#>          assay fit_source reproducible n_rows        detail
+#>         <char>     <char>       <lgcl>  <int>        <char>
+#> 1: custom_hill hill_loose         TRUE    200 results match
+```
+
+[`set_fit_fn_info()`](https://gdrplatform.github.io/gDRstyle/reference/set_fit_fn_info.html)
+attaches a short description of what a fit function computes, which is
+copied into its recipe:
+
+``` r
+summary_fn <- gDRutils::set_fit_fn_info(
+  summary_fn,
+  model = "mean and SD of the response",
+  description = "Mean and standard deviation of the averaged response over all concentrations."
+)
+```
+
+For combination data each step of
+[`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
+has a recipe under its assay (`Metrics`, `excess`, `isobolograms`,
+`all_iso_points`, `scores`), including the `score_FUN` used for the
+scores. For time-course data the growth-rate stage is recorded under
+`provenance$steps$growth_rates`, with the `rate_fn`, `periods` and
+`normalization_map`, because it cannot be recomputed from the fitted
+object.
+
+The recipe holds plain lists, strings and numbers (about 1 KB per fit)
+and no timestamp, so fitting the same data with the same code gives an
+identical object.
+
+------------------------------------------------------------------------
+
 ## Quick reference
 
 ### Function signatures
@@ -973,7 +1077,8 @@ apply_fit(
   summary_assay = NULL,
   merge = "merge", # or "replace"
   on_error = "warn", # or "stop"
-  fit_source                         # REQUIRED — upsert key tag
+  fit_source, # REQUIRED — upsert key tag
+  fit_args = list() # extra arguments for fit_fn, recorded in the provenance
 )
 
 # Multiple fits → one BumpyMatrix pass
@@ -1082,8 +1187,8 @@ sessionInfo()
 #>  [7] IRanges_2.47.5              S4Vectors_0.51.10          
 #>  [9] BiocGenerics_0.59.12        generics_0.1.4             
 #> [11] MatrixGenerics_1.25.0       matrixStats_1.5.0          
-#> [13] gDRutils_1.11.17            gDRtestData_1.11.10        
-#> [15] gDRcore_1.11.19             BiocStyle_2.41.0           
+#> [13] gDRutils_1.11.18            gDRtestData_1.11.10        
+#> [15] gDRcore_1.11.20             BiocStyle_2.41.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
@@ -1118,6 +1223,6 @@ sessionInfo()
 #> [59] futile.options_1.0.1        backports_1.5.1            
 #> [61] bslib_0.12.0                Rcpp_1.1.2                 
 #> [63] SparseArray_1.13.4          checkmate_2.3.4            
-#> [65] qs2_0.3.1                   xfun_0.61                  
+#> [65] qs2_0.3.1                   xfun_0.62                  
 #> [67] fs_2.1.0                    zoo_1.9-1
 ```

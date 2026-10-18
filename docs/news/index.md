@@ -1,5 +1,21 @@
 # Changelog
 
+## gDRcore 1.11.20 - 2026-10-18
+
+- add fit recipes to the SE provenance for
+  [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md),
+  each
+  [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
+  step and both time-course stages
+- add `fit_args` to
+  [`fit_SE.timecourse()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.timecourse.md)
+  and keep the metadata of its input in the output
+- provide model descriptions for the combination steps,
+  [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md),
+  [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md)
+  and
+  [`calculate_score()`](https://gdrplatform.github.io/gDRcore/reference/calculate_score.md)
+
 ## gDRcore 1.11.19 - 2026-10-14
 
 - identify time-course plates in identify_data_type() and process them

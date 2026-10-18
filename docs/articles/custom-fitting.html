@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.19</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.20</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -1137,7 +1137,9 @@ growth rate table — one row per
 <p>Note that <code><a href="../reference/fit_SE.timecourse.html">fit_SE.timecourse()</a></code> keeps the
 <code>GrowthRates</code> assay in its output, so an already-fitted
 object can be re-fitted with a different <code>fit_fn</code> without
-recomputing stage 1.</p>
+recomputing stage 1. A custom <code>fit_fn</code> receives the arguments
+in <code>fit_args</code>, and both stages are recorded in the provenance
+of the output (see below).</p>
 </div>
 <div class="section level3">
 <h3 id="key-design-notes">Key design notes<a class="anchor" aria-label="anchor" href="#key-design-notes"></a>
@@ -1175,12 +1177,95 @@ profile model.</li>
 </div>
 </div>
 <div class="section level2">
+<h2 id="provenance-how-each-fit-was-produced">Provenance: how each fit was produced<a class="anchor" aria-label="anchor" href="#provenance-how-each-fit-was-produced"></a>
+</h2>
+<p>Every call to <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit()</a></code> and <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fits.html" class="external-link">apply_fits()</a></code>
+stores the recipe of the fit in <code>metadata(se)$provenance</code>:
+the function that produced it, the arguments it got, and the call
+settings. <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code>, <code><a href="../reference/fit_SE.combinations.html">fit_SE.combinations()</a></code> and
+<code><a href="../reference/fit_SE.timecourse.html">fit_SE.timecourse()</a></code> record their fits the same way, so a
+stored object says which code produced each result, and the fit can be
+re-run later.</p>
+<p>Pass settings through <code>fit_args</code> rather than wrapping the
+function in a closure, so they appear in the recipe:</p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">prov_se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
+<span>  <span class="va">sa_se</span>,</span>
+<span>  fit_fn <span class="op">=</span> <span class="va">fit_drug_response_metrics</span>,</span>
+<span>  data_type <span class="op">=</span> <span class="st">"single-agent"</span>,</span>
+<span>  output_assay <span class="op">=</span> <span class="st">"custom_hill"</span>,</span>
+<span>  fit_source <span class="op">=</span> <span class="st">"hill_loose"</span>,</span>
+<span>  fit_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>pcutoff <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_provenance.html" class="external-link">summarize_fit_provenance</a></span><span class="op">(</span><span class="va">prov_se</span><span class="op">)</span></span>
+<span><span class="co">#&gt;          assay fit_source                                            fn</span></span>
+<span><span class="co">#&gt;         &lt;char&gt;     &lt;char&gt;                                        &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1: custom_hill hill_loose gDRutils::fit_drug_response_metrics (1.11.18)</span></span>
+<span><span class="co">#&gt;         fit_args</span></span>
+<span><span class="co">#&gt;           &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1: pcutoff = 0.1</span></span>
+<span><span class="co">#&gt;                                                                model</span></span>
+<span><span class="co">#&gt;                                                               &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1: 3-parameter log-logistic (drc::LL.3u), upper asymptote fixed at 1</span></span></code></pre></div>
+<p>The <code>fit_source</code> column of the assay is the key into the
+recipes:</p>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">recipe</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_provenance.html" class="external-link">get_fit_provenance</a></span><span class="op">(</span><span class="va">prov_se</span>, <span class="st">"custom_hill"</span>, <span class="st">"hill_loose"</span><span class="op">)</span></span>
+<span><span class="va">recipe</span><span class="op">$</span><span class="va">fn</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"name"</span>, <span class="st">"package"</span>, <span class="st">"version"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt; $name</span></span>
+<span><span class="co">#&gt; [1] "fit_drug_response_metrics"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $package</span></span>
+<span><span class="co">#&gt; [1] "gDRutils"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $version</span></span>
+<span><span class="co">#&gt; [1] "1.11.18"</span></span>
+<span><span class="va">recipe</span><span class="op">$</span><span class="va">fn</span><span class="op">$</span><span class="va">info</span><span class="op">$</span><span class="va">model</span></span>
+<span><span class="co">#&gt; [1] "3-parameter log-logistic (drc::LL.3u), upper asymptote fixed at 1"</span></span>
+<span><span class="va">recipe</span><span class="op">$</span><span class="va">fit_args</span></span>
+<span><span class="co">#&gt; $pcutoff</span></span>
+<span><span class="co">#&gt; [1] 0.1</span></span></code></pre></div>
+<p>A function from an installed package is stored by reference (package,
+name, version and a hash of its code). A function written in the session
+is stored as source code, together with the values it reads from its
+environment. <code><a href="https://gdrplatform.github.io/gDRstyle/reference/check_reproducibility.html" class="external-link">check_reproducibility()</a></code> re-runs each recorded
+fit and compares the results; it evaluates stored source code only with
+<code>allow_source = TRUE</code>, since the object may come from someone
+else:</p>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/check_reproducibility.html" class="external-link">check_reproducibility</a></span><span class="op">(</span><span class="va">prov_se</span><span class="op">)</span></span>
+<span><span class="co">#&gt;          assay fit_source reproducible n_rows        detail</span></span>
+<span><span class="co">#&gt;         &lt;char&gt;     &lt;char&gt;       &lt;lgcl&gt;  &lt;int&gt;        &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1: custom_hill hill_loose         TRUE    200 results match</span></span></code></pre></div>
+<p><code><a href="https://gdrplatform.github.io/gDRstyle/reference/set_fit_fn_info.html" class="external-link">set_fit_fn_info()</a></code> attaches a short description of what a
+fit function computes, which is copied into its recipe:</p>
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">summary_fn</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/set_fit_fn_info.html" class="external-link">set_fit_fn_info</a></span><span class="op">(</span></span>
+<span>  <span class="va">summary_fn</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"mean and SD of the response"</span>,</span>
+<span>  description <span class="op">=</span> <span class="st">"Mean and standard deviation of the averaged response over all concentrations."</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>For combination data each step of <code><a href="../reference/fit_SE.combinations.html">fit_SE.combinations()</a></code>
+has a recipe under its assay (<code>Metrics</code>, <code>excess</code>,
+<code>isobolograms</code>, <code>all_iso_points</code>,
+<code>scores</code>), including the <code>score_FUN</code> used for the
+scores. For time-course data the growth-rate stage is recorded under
+<code>provenance$steps$growth_rates</code>, with the
+<code>rate_fn</code>, <code>periods</code> and
+<code>normalization_map</code>, because it cannot be recomputed from the
+fitted object.</p>
+<p>The recipe holds plain lists, strings and numbers (about 1 KB per
+fit) and no timestamp, so fitting the same data with the same code gives
+an identical object.</p>
+<hr>
+</div>
+<div class="section level2">
 <h2 id="quick-reference">Quick reference<a class="anchor" aria-label="anchor" href="#quick-reference"></a>
 </h2>
 <div class="section level3">
 <h3 id="function-signatures">Function signatures<a class="anchor" aria-label="anchor" href="#function-signatures"></a>
 </h3>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Single fit → one output assay</span></span>
 <span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">se</span>,</span>
@@ -1194,7 +1279,8 @@ profile model.</li>
 <span>  summary_assay <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  merge <span class="op">=</span> <span class="st">"merge"</span>, <span class="co"># or "replace"</span></span>
 <span>  on_error <span class="op">=</span> <span class="st">"warn"</span>, <span class="co"># or "stop"</span></span>
-<span>  <span class="va">fit_source</span>                         <span class="co"># REQUIRED — upsert key tag</span></span>
+<span>  <span class="va">fit_source</span>, <span class="co"># REQUIRED — upsert key tag</span></span>
+<span>  fit_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># extra arguments for fit_fn, recorded in the provenance</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Multiple fits → one BumpyMatrix pass</span></span>
@@ -1437,7 +1523,7 @@ when embedding score computation inside a larger custom
 <div class="section level2">
 <h2 class="unnumbered" id="sessioninfo">SessionInfo<a class="anchor" aria-label="anchor" href="#sessioninfo"></a>
 </h2>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -1467,8 +1553,8 @@ when embedding score computation inside a larger custom
 <span><span class="co">#&gt;  [7] IRanges_2.47.5              S4Vectors_0.51.10          </span></span>
 <span><span class="co">#&gt;  [9] BiocGenerics_0.59.12        generics_0.1.4             </span></span>
 <span><span class="co">#&gt; [11] MatrixGenerics_1.25.0       matrixStats_1.5.0          </span></span>
-<span><span class="co">#&gt; [13] gDRutils_1.11.17            gDRtestData_1.11.10        </span></span>
-<span><span class="co">#&gt; [15] gDRcore_1.11.19             BiocStyle_2.41.0           </span></span>
+<span><span class="co">#&gt; [13] gDRutils_1.11.18            gDRtestData_1.11.10        </span></span>
+<span><span class="co">#&gt; [15] gDRcore_1.11.20             BiocStyle_2.41.0           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] farver_2.1.2                fastmap_1.2.0              </span></span>
@@ -1503,7 +1589,7 @@ when embedding score computation inside a larger custom
 <span><span class="co">#&gt; [59] futile.options_1.0.1        backports_1.5.1            </span></span>
 <span><span class="co">#&gt; [61] bslib_0.12.0                Rcpp_1.1.2                 </span></span>
 <span><span class="co">#&gt; [63] SparseArray_1.13.4          checkmate_2.3.4            </span></span>
-<span><span class="co">#&gt; [65] qs2_0.3.1                   xfun_0.61                  </span></span>
+<span><span class="co">#&gt; [65] qs2_0.3.1                   xfun_0.62                  </span></span>
 <span><span class="co">#&gt; [67] fs_2.1.0                    zoo_1.9-1</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

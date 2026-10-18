@@ -26,7 +26,8 @@ fit_SE.timecourse(
   range_conc = c(0.005, 5),
   force_fit = FALSE,
   pcutoff = 0.05,
-  cap = 0.1
+  cap = 0.1,
+  fit_args = list()
 )
 ```
 
@@ -109,6 +110,12 @@ fit_SE.timecourse(
 
   numeric; upper-capping fold above `x_0 = 1`. Default `0.1`.
 
+- fit_args:
+
+  named list of extra arguments passed to a custom `fit_fn` after the
+  data. Must be empty with the default fit, which takes the arguments
+  above.
+
 ## Value
 
 A new `SummarizedExperiment` where rows = (Drug, CellLine) and columns =
@@ -116,7 +123,10 @@ period names, holding the `GrowthRates` assay from stage 1 and the
 `Metrics` assay (or `metrics_assay`) from stage 2. With the default
 `fit_fn` the metrics are: `ec50`, `xc50`, `h`, `x_inf`, `x_0`, `r2`,
 `x_mean`, `x_AOC`, `x_AOC_range`, `x_max`, `fit_type`, `N_conc`,
-`maxlog10Concentration`, and `period`.
+`maxlog10Concentration`, and `period`. The metadata of `se` is carried
+over, and the provenance records both stages: the growth-rate step under
+`steps$growth_rates` and the fit under `fits` (see
+[`get_fit_provenance`](https://gdrplatform.github.io/gDRstyle/reference/fit_provenance.html)).
 
 ## Details
 

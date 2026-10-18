@@ -155,7 +155,7 @@ SummarizedExperiment specific to any data type, e.g.
 mae[["single-agent"]]
 #> class: SummarizedExperiment 
 #> dim: 3 6 
-#> metadata(5): identifiers experiment_metadata Keys fit_parameters
+#> metadata(6): identifiers experiment_metadata ... fit_parameters
 #>   .internal
 #> assays(5): RawTreated Controls Normalized Averaged Metrics
 #> rownames(3): G00002_drug_002_moa_A_168 G00004_drug_004_moa_A_168
@@ -306,13 +306,13 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] gDRcore_1.11.19     gDRtestData_1.11.10 BiocStyle_2.41.0   
+#> [1] gDRcore_1.11.20     gDRtestData_1.11.10 BiocStyle_2.41.0   
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
 #>  [3] BumpyMatrix_1.21.0          TH.data_1.1-5              
 #>  [5] digest_0.6.39               lifecycle_1.0.5            
-#>  [7] gDRutils_1.11.17            survival_3.8-6             
+#>  [7] gDRutils_1.11.18            survival_3.8-6             
 #>  [9] magrittr_2.0.5              compiler_4.6.1             
 #> [11] rlang_1.3.0                 sass_0.4.10                
 #> [13] drc_4.0-0                   tools_4.6.1                
@@ -353,7 +353,7 @@ sessionInfo()
 #> [83] Biobase_2.73.2              futile.options_1.0.1       
 #> [85] backports_1.5.1             bslib_0.12.0               
 #> [87] SparseArray_1.13.4          checkmate_2.3.4            
-#> [89] xfun_0.61                   fs_2.1.0                   
+#> [89] xfun_0.62                   fs_2.1.0                   
 #> [91] MatrixGenerics_1.25.0       zoo_1.9-1                  
 #> [93] pkgconfig_2.0.3
 ```
