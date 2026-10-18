@@ -657,6 +657,18 @@ se_fit <- fit_SE.timecourse(
 )
 ```
 
+Starting from raw data, `runDrugResponseProcessingPipeline()` recognizes
+time-course plates by repeated readings of a well, starting at time zero, and
+returns them as a `"time-course"` experiment ending at the `LogFoldChange`
+assay, ready for this call:
+
+```{r timecourse-pipeline, eval = FALSE}
+mae <- runDrugResponseProcessingPipeline(merged_dt)  # output of merge_data()
+se_fit <- fit_SE.timecourse(mae[["time-course"]],
+                            periods = periods,
+                            normalization_map = norm_map)
+```
+
 ## Output structure
 
 The result is a `SummarizedExperiment` where **columns = period names**:

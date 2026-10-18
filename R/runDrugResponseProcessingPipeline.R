@@ -106,6 +106,15 @@
 #' pipeline was launched at least once with defined `data_dir` and intermediate
 #' data was saved as qs2 files into `data_dir`.
 #'
+#' Time-course data is recognized by repeated readings of the same well on a
+#' plate that also has a reading at exactly time zero and at least three time
+#' points; a plate read repeatedly without a reading at time zero is processed
+#' as end-point data, with a warning. Time-course data
+#' is created and normalized, and stops at the \code{"LogFoldChange"} assay: growth
+#' rates depend on time windows chosen per experiment, so they are computed
+#' afterwards with \code{\link{compute_growth_rates}} or
+#' \code{\link{fit_SE.timecourse}}.
+#'
 #' Pipeline can be run for the selected experiments by changing the default
 #' value of `selected_experiments` param. This scenario only works when
 #' `partial_run` is enabled.
@@ -339,12 +348,24 @@ runDrugResponseProcessingPipeline <- function(x,
         )
       )
 
+      is_time_course <- data_type == gDRutils::get_supported_experiments("time-course")
+      if (is_time_course) {
+        message("Time-course data stops at the LogFoldChange assay, ",
+                "see compute_growth_rates() and fit_SE.timecourse()")
+      }
+
       # 3rd step - Average SE
+      # time-course passes its SE through, so that partial runs keep their steps
+      if (is_time_course) {
+        average_fun <- .pass_se
+      } else {
+        average_fun <- average_SE
+      }
       se <- run_pipeline_step(
         run_vars = run_vars,
         step = "average_SE",
         se = se,
-        step_fun = average_SE,
+        step_fun = average_fun,
         step_args = list(
           se = se$result,
           data_type = data_type,
@@ -356,7 +377,10 @@ runDrugResponseProcessingPipeline <- function(x,
       )
 
       # 4th step - Fit SE
-      if (data_type == gDRutils::get_supported_experiments("combo")) {
+      if (is_time_course) {
+        step_args <- list(se = se$result)
+        step_fun <- .pass_se
+      } else if (data_type == gDRutils::get_supported_experiments("combo")) {
         step_args <- list(
           se = se$result,
           data_type = data_type,
@@ -391,4 +415,9 @@ runDrugResponseProcessingPipeline <- function(x,
 
   gDRutils::reset_env_identifiers()
   MultiAssayExperiment::MultiAssayExperiment(experiments = sel)
+}
+
+#' @keywords internal
+.pass_se <- function(se, ...) {
+  se
 }

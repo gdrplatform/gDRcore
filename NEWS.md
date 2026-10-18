@@ -1,14 +1,20 @@
-## gDRcore 1.11.21 - 2026-10-15
+## gDRcore 1.11.22 - 2026-10-18
 * add the gDRimport record of the input files to the SE provenance as the import step
 
-## gDRcore 1.11.20 - 2026-10-15
+## gDRcore 1.11.21 - 2026-10-18
 * add the create, normalize and average steps to the SE provenance, with masked wells and the GR method of each pair
 * fix the "could not calculate GR values" message of `normalize_SE()`, which never reached the log
 
-## gDRcore 1.11.19 - 2026-10-14
+## gDRcore 1.11.20 - 2026-10-18
 * add fit recipes to the SE provenance for `fit_SE()`, each `fit_SE.combinations()` step and both time-course stages
 * add `fit_args` to `fit_SE.timecourse()` and keep the metadata of its input in the output
 * provide model descriptions for the combination steps, `bliss_fit_fn()`, `hss_fit_fn()` and `calculate_score()`
+
+## gDRcore 1.11.19 - 2026-10-14
+* identify time-course plates in identify_data_type() and process them in runDrugResponseProcessingPipeline(),
+  keeping the drug order of time-course combinations; warn about plates imaged more than once without
+  a reading at time zero
+* make fit_SE() stop on time-course data with a pointer to fit_SE.timecourse()
 
 ## gDRcore 1.11.18 - 2026-10-08
 * update authors data

@@ -234,6 +234,15 @@ launched. However, partial run of the pipeline is possible only if the whole
 pipeline was launched at least once with defined \code{data_dir} and intermediate
 data was saved as qs2 files into \code{data_dir}.
 
+Time-course data is recognized by repeated readings of the same well on a
+plate that also has a reading at exactly time zero and at least three time
+points; a plate read repeatedly without a reading at time zero is processed
+as end-point data, with a warning. Time-course data
+is created and normalized, and stops at the \code{"LogFoldChange"} assay: growth
+rates depend on time windows chosen per experiment, so they are computed
+afterwards with \code{\link{compute_growth_rates}} or
+\code{\link{fit_SE.timecourse}}.
+
 Pipeline can be run for the selected experiments by changing the default
 value of \code{selected_experiments} param. This scenario only works when
 \code{partial_run} is enabled.
