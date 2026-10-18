@@ -87,31 +87,53 @@ calculate_GR_value <- function(rel_viability,
     )
   }
 
-  # TODO: Is it correct to put the 'any' here?
-  # Note: we should back-calculate only if we cannot use the day0_readout (i.e. line by line)
-  if (any(is.na(day0_readout))) {
+  method <- .gr_method(day0_readout, duration, ref_div_time)
+  if (method == "ref_div_time") {
     ## Back-calculate the day0_readout using the reference doubling time
     ## and the duration of treatment.
-    GRvalue <- if (is.null(ref_div_time) || is.na(ref_div_time) || is.null(duration) || is.na(duration)) {
-      rep(NA, length(rel_viability))
-    } else if (ref_div_time > 1.5 * duration) {
-      rep(NA, length(rel_viability))
-    } else {
-      calculate_endpt_GR_value(
-        rel_viability = rel_viability,
-        duration = duration,
-        ref_div_time = ref_div_time,
-        cap = cap,
-        ndigit_rounding = ndigit_rounding
-      )
-    }
-  } else {
-    GRvalue <- calculate_time_dep_GR_value(corrected_readout,
+    calculate_endpt_GR_value(
+      rel_viability = rel_viability,
+      duration = duration,
+      ref_div_time = ref_div_time,
+      cap = cap,
+      ndigit_rounding = ndigit_rounding
+    )
+  } else if (method == "day0") {
+    calculate_time_dep_GR_value(corrected_readout,
       day0_readout,
       untrt_readout,
       ndigit_rounding)
+  } else {
+    rep(NA, length(rel_viability))
   }
-  GRvalue
+}
+
+
+#' How the GR value of one set of wells is computed
+#'
+#' \code{"day0"} when every well has a day 0 readout, \code{"ref_div_time"} when the
+#' day 0 readout is back-calculated from the reference division time, and
+#' \code{"none"} when neither is possible (no division time, no duration, or a
+#' division time longer than 1.5 times the duration). \code{calculate_GR_value()}
+#' and the provenance of \code{normalize_SE()} both use it, so they cannot disagree.
+#'
+#' @param day0_readout numeric vector of day 0 readouts.
+#' @param duration numeric duration of the treatment.
+#' @param ref_div_time numeric reference division time of the cell line.
+#' @return one of \code{"day0"}, \code{"ref_div_time"}, \code{"none"}.
+#' @keywords internal
+#' @noRd
+.gr_method <- function(day0_readout, duration, ref_div_time) {
+  # TODO: Is it correct to put the 'any' here?
+  # Note: we should back-calculate only if we cannot use the day0_readout (i.e. line by line)
+  if (!any(is.na(day0_readout))) {
+    "day0"
+  } else if (is.null(ref_div_time) || is.na(ref_div_time) || is.null(duration) ||
+             is.na(duration) || ref_div_time > 1.5 * duration) {
+    "none"
+  } else {
+    "ref_div_time"
+  }
 }
 
 

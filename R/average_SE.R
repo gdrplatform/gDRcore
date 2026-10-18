@@ -53,13 +53,24 @@ average_SE <- function(se,
                               min.chars = 1,
                               info = "unexpected treated keys on 'se' object")
 
-  gDRutils::apply_bumpy_function(se = se,
-                                 FUN = average_FUN,
-                                 req_assay_name = normalized_assay,
-                                 out_assay_name = averaged_assay,
-                                 parallelize = FALSE,
-                                 series_identifiers = series_identifiers,
-                                 trt_keys = trt_keys)
+  se <- gDRutils::apply_bumpy_function(se = se,
+                                       FUN = average_FUN,
+                                       req_assay_name = normalized_assay,
+                                       out_assay_name = averaged_assay,
+                                       parallelize = FALSE,
+                                       series_identifiers = series_identifiers,
+                                       trt_keys = trt_keys)
+  gDRutils::record_processing_step(
+    se, "average",
+    settings = list(
+      data_type = data_type,
+      series_identifiers = series_identifiers,
+      trt_keys = trt_keys,
+      normalized_assay = normalized_assay,
+      averaged_assay = averaged_assay
+    ),
+    fns = list(average_FUN = average_FUN)
+  )
 }
 
 
