@@ -1,5 +1,13 @@
 # Changelog
 
+## gDRcore 1.11.21 - 2026-10-18
+
+- add the create, normalize and average steps to the SE provenance, with
+  masked wells and the GR method of each pair
+- fix the “could not calculate GR values” message of
+  [`normalize_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md),
+  which never reached the log
+
 ## gDRcore 1.11.20 - 2026-10-18
 
 - add fit recipes to the SE provenance for

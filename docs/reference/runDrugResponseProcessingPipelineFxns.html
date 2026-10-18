@@ -13,7 +13,7 @@ processed data (fit_SE). See details for more in-depth explanations."></head><bo
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.20</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.21</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -307,6 +307,13 @@ two metrics:</p>
 <code>DataFrame</code>s across unique<code>nested_identifiers</code>.</p>
 <p>For fit_SE, take the averaged assay and fit curves to obtain metrics, one
 set of metrics for each normalization type set.</p>
+<p>Each step records its settings in <code>metadata(se)$provenance</code>: create_SE
+under <code>steps$create</code> (including the number of masked wells it dropped),
+normalize_SE under <code>steps$normalize</code> (including how GR was computed for
+each drug x cell line pair), average_SE under <code>steps$average</code>, and the
+fit under <code>fits</code> (see <code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_provenance.html" class="external-link">get_SE_provenance</a></code>).
+Steps read back from intermediate files in a partial run keep what they
+recorded when they were written.</p>
 <p>Pipeline can be run partially with <code>partial_run</code> flag set to TRUE. The
 <code>start_from</code> string defines the step from which the pipeline will be
 launched. However, partial run of the pipeline is possible only if the whole
@@ -357,13 +364,13 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-in"><span>  df_template_files <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/template_path-method.html" class="external-link">template_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  results_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/result_path-method.html" class="external-link">result_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Manifest loaded successfully</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Reading Template_7daytreated.xlsx with load_templates_xlsx</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Reading Template_Untreated.xlsx with load_templates_xlsx</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Loading Template_7daytreated.xlsx</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Loading Template_Untreated.xlsx</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Templates loaded successfully!</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Manifest loaded successfully</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Reading Template_7daytreated.xlsx with load_templates_xlsx</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Reading Template_Untreated.xlsx with load_templates_xlsx</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Loading Template_7daytreated.xlsx</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Loading Template_Untreated.xlsx</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Templates loaded successfully!</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> New names:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...1`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...2`</span>
@@ -390,14 +397,14 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...23`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...24`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...25`</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Plate 201904190a read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Plate 201904190b read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Plate 201904190c read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Plate 201904190d read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Plate 201904190e read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Plate 201904190f read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] File done</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:39] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Plate 201904190a read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Plate 201904190b read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Plate 201904190c read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Plate 201904190d read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Plate 201904190e read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Plate 201904190f read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] File done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> New names:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...1`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...2`</span>
@@ -424,21 +431,21 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...23`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...24`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...25`</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904197a read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904197b read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904197c read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904197d read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904197e read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904197f read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] File done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Plate 201904197a read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Plate 201904197b read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Plate 201904197c read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Plate 201904197d read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Plate 201904197e read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Plate 201904197f read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] File done</span>
 <span class="r-in"><span><span class="va">imported_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="merge_data.html">merge_data</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">manifest</span>,</span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">treatments</span>,</span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">data</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Merging data</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Merging the metadata (manifest and treatment files)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> WARN [2026-10-18 19:34:40] 4608 well loaded, 768 wells discarded for lack of annotation,</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Merging data</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Merging the metadata (manifest and treatment files)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> WARN [2026-10-18 20:01:54] 4608 well loaded, 768 wells discarded for lack of annotation,</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     3840 data point selected</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/quietly.html" class="external-link">quietly</a></span><span class="op">(</span><span class="va">create_SE</span><span class="op">)</span><span class="op">(</span><span class="va">imported_data</span>, data_type <span class="op">=</span> <span class="st">"single-agent"</span><span class="op">)</span></span></span>
@@ -450,13 +457,13 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-in"><span>  df_template_files <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/template_path-method.html" class="external-link">template_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  results_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/result_path-method.html" class="external-link">result_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Manifest loaded successfully</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Reading Template_7daytreated.xlsx with load_templates_xlsx</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Reading Template_Untreated.xlsx with load_templates_xlsx</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Loading Template_7daytreated.xlsx</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Loading Template_Untreated.xlsx</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Templates loaded successfully!</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Manifest loaded successfully</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Reading Template_7daytreated.xlsx with load_templates_xlsx</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Reading Template_Untreated.xlsx with load_templates_xlsx</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Loading Template_7daytreated.xlsx</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Loading Template_Untreated.xlsx</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Templates loaded successfully!</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:54] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> New names:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...1`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...2`</span>
@@ -483,14 +490,14 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...23`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...24`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...25`</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904190a read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904190b read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904190c read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904190d read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904190e read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904190f read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] File done</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904190a read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904190b read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904190c read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904190d read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904190e read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904190f read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] File done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> New names:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...1`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...2`</span>
@@ -517,21 +524,21 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...23`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...24`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...25`</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904197a read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904197b read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904197c read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904197d read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904197e read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Plate 201904197f read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] File done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904197a read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904197b read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904197c read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904197d read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904197e read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904197f read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] File done</span>
 <span class="r-in"><span><span class="va">imported_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="merge_data.html">merge_data</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">manifest</span>,</span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">treatments</span>,</span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">data</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Merging data</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:40] Merging the metadata (manifest and treatment files)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> WARN [2026-10-18 19:34:40] 4608 well loaded, 768 wells discarded for lack of annotation,</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Merging data</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Merging the metadata (manifest and treatment files)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> WARN [2026-10-18 20:01:55] 4608 well loaded, 768 wells discarded for lack of annotation,</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     3840 data point selected</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">inl</span> <span class="op">&lt;-</span> <span class="fu"><a href="prepare_input.html">prepare_input</a></span><span class="op">(</span><span class="va">imported_data</span><span class="op">)</span></span></span>
@@ -545,7 +552,7 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-in"><span><span class="fu">normalize_SE</span><span class="op">(</span><span class="va">se</span>, data_type <span class="op">=</span> <span class="st">"single-agent"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> class: SummarizedExperiment </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> dim: 3 6 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> metadata(3): identifiers experiment_metadata Keys</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> metadata(4): identifiers experiment_metadata Keys provenance</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> assays(3): RawTreated Controls Normalized</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> rownames(3): G00002_drug_002_moa_A_168 G00004_drug_004_moa_A_168</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   G00011_drug_011_moa_B_168</span>
@@ -563,13 +570,13 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-in"><span>  df_template_files <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/template_path-method.html" class="external-link">template_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  results_file <span class="op">=</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/result_path-method.html" class="external-link">result_path</a></span><span class="op">(</span><span class="va">td</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Manifest loaded successfully</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Reading Template_7daytreated.xlsx with load_templates_xlsx</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Reading Template_Untreated.xlsx with load_templates_xlsx</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Loading Template_7daytreated.xlsx</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Loading Template_Untreated.xlsx</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Templates loaded successfully!</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Manifest loaded successfully</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Reading Template_7daytreated.xlsx with load_templates_xlsx</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Reading Template_Untreated.xlsx with load_templates_xlsx</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Loading Template_7daytreated.xlsx</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Loading Template_Untreated.xlsx</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Templates loaded successfully!</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> New names:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...1`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...2`</span>
@@ -596,14 +603,14 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...23`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...24`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...25`</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Plate 201904190a read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Plate 201904190b read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Plate 201904190c read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Plate 201904190d read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Plate 201904190e read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Plate 201904190f read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] File done</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904190a read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904190b read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904190c read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904190d read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904190e read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904190f read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] File done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> New names:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...1`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...2`</span>
@@ -630,21 +637,21 @@ value of <code>selected_experiments</code> param. This scenario only works when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...23`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...24`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">•</span> `` -&gt; `...25`</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Plate 201904197a read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Plate 201904197b read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Plate 201904197c read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Plate 201904197d read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Plate 201904197e read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Plate 201904197f read; 384 wells</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] File done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904197a read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904197b read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904197c read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904197d read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904197e read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Plate 201904197f read; 384 wells</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] File done</span>
 <span class="r-in"><span><span class="va">imported_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="merge_data.html">merge_data</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">manifest</span>,</span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">treatments</span>,</span></span>
 <span class="r-in"><span>  <span class="va">l_tbl</span><span class="op">$</span><span class="va">data</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Merging data</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 19:34:41] Merging the metadata (manifest and treatment files)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> WARN [2026-10-18 19:34:41] 4608 well loaded, 768 wells discarded for lack of annotation,</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Merging data</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> INFO [2026-10-18 20:01:55] Merging the metadata (manifest and treatment files)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> WARN [2026-10-18 20:01:55] 4608 well loaded, 768 wells discarded for lack of annotation,</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     3840 data point selected</span>
 <span class="r-in"><span><span class="fu">runDrugResponseProcessingPipeline</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">imported_data</span>,</span></span>
