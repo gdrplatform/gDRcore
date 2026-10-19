@@ -130,12 +130,13 @@ test_that("apply_combo_sa_fits produces Metrics assay matching fit_SE.combinatio
 })
 
 test_that("apply_combo_excess produces excess assay matching fit_SE.combinations", {
-  fmae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
-  se <- fmae[[gDRutils::get_supported_experiments("combo")]][1, 1]
+  # Reference from a fresh fit: the stored test data predate the arm fix
+  se <- suppressWarnings(fit_SE.combinations(.make_combo_se_averaged_only()))
   ref_excess <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
     SummarizedExperiment::assay(se, "excess"),
     row.field = "row", column.field = "column"
   ))
+  SummarizedExperiment::assays(se) <- SummarizedExperiment::assays(se)[c("Averaged", "Metrics")]
 
   se_out <- suppressWarnings(apply_combo_excess(se))
   expect_true("excess" %in% SummarizedExperiment::assayNames(se_out))
@@ -197,6 +198,75 @@ test_that("apply_combo_scores with excess_assay gives scores matching fit_SE.com
   expect_equal(NROW(comp), NROW(ref_scores))
   expect_lt(max(abs(comp$bliss_score_ref - comp$bliss_score_new), na.rm = TRUE), 1e-10)
   expect_lt(max(abs(comp$hsa_score_ref - comp$hsa_score_new), na.rm = TRUE), 1e-10)
+})
+
+test_that("fit_SE.combinations single-agent arms follow the fit along the arm", {
+  fit <- suppressWarnings(fit_SE.combinations(.make_combo_se_averaged_only()))
+  ex <- data.table::as.data.table(
+    BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(fit, "excess")))
+  met <- data.table::as.data.table(
+    BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(fit, "Metrics")))
+
+  for (nt in unique(ex$normalization_type)) {
+    p1 <- met[normalization_type == nt & dilution_drug == "drug_1" & cotrt_value == 0][1L]
+    p2 <- met[normalization_type == nt & dilution_drug == "drug_2" & cotrt_value == 0][1L]
+    arm1 <- ex[normalization_type == nt & Concentration_2 == 0 & Concentration > 0]
+    arm2 <- ex[normalization_type == nt & Concentration == 0 & Concentration_2 > 0]
+    expect_equal(arm1$smooth, gDRutils::predict_efficacy_from_conc(
+      arm1$Concentration, p1$x_inf, p1$x_0, p1$ec50, p1$h), tolerance = 1e-6)
+    expect_equal(arm2$smooth, gDRutils::predict_efficacy_from_conc(
+      arm2$Concentration_2, p2$x_inf, p2$x_0, p2$ec50, p2$h), tolerance = 1e-6)
+  }
+})
+
+test_that("fit_SE.combinations reports CIScore_50 and CIScore_80 from the isobolograms", {
+  se_out <- suppressWarnings(fit_SE.combinations(.make_combo_se_averaged_only()))
+  scores <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se_out, "scores"),
+    row.field = "row", column.field = "column"
+  ))
+  iso <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se_out, "isobolograms"),
+    row.field = "row", column.field = "column"
+  ))
+  expect_true("CI_100x" %in% names(iso))
+  expect_false(anyNA(scores$CIScore_50))
+  expect_false(anyNA(scores$CIScore_80))
+
+  # CIScore_X is the CI of the isobologram at the lowest response level >= cutoff
+  for (nt in scores$normalization_type) {
+    iso_nt <- iso[iso$normalization_type == nt, ]
+    levels <- as.numeric(iso_nt$iso_level)
+    expect_equal(scores[normalization_type == nt, CIScore_50],
+                 unique(iso_nt$CI_100x[levels == min(levels[levels >= 0.5])]))
+    expect_equal(scores[normalization_type == nt, CIScore_80],
+                 unique(iso_nt$CI_100x[levels == min(levels[levels >= 0.2])]))
+  }
+})
+
+test_that("apply_combo_scores leaves CIScore NA without isobolograms", {
+  fmae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+  se <- fmae[[gDRutils::get_supported_experiments("combo")]][1, 1]
+  SummarizedExperiment::assays(se) <-
+    SummarizedExperiment::assays(se)[c("Averaged", "Metrics", "excess")]
+
+  se_out <- suppressWarnings(apply_combo_scores(se, excess_assay = "excess"))
+  scores <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se_out, "scores"))
+  expect_true(all(is.na(scores$CIScore_50)))
+  expect_true(all(is.na(scores$CIScore_80)))
+})
+
+test_that(".ci_scores picks the lowest response level at or above the cutoff", {
+  curves <- data.table::data.table(
+    iso_level = c("-0.05", "0.2", "0.25", "0.45", "0.55", "0.55"),
+    CI_100x = c(5, 3, 4, 1, 2, 2)
+  )
+  expect_equal(.ci_scores(curves), c(CIScore_50 = 2, CIScore_80 = 3))
+  expect_equal(.ci_scores(curves[iso_level != "0.2"]), c(CIScore_50 = 2, CIScore_80 = 4))
+  expect_equal(.ci_scores(curves[iso_level %in% c("-0.05", "0.2")]),
+               c(CIScore_50 = NA_real_, CIScore_80 = 3))
+  expect_equal(.ci_scores(data.table::data.table(row_id = 1)),
+               c(CIScore_50 = NA_real_, CIScore_80 = NA_real_))
 })
 
 test_that("fit_SE.combinations passes score_FUN to apply_combo_scores", {
