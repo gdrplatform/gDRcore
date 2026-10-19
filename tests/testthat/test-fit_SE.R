@@ -46,6 +46,17 @@ test_that("fit_SE works as expected", {
   expect_identical(SummarizedExperiment::assayNames(fit_se), c(ext_ass, "testing"))
 })
 
+test_that("fit_SE refits a processed co-dilution experiment", {
+  cd_name <- gDRutils::get_supported_experiments("cd")
+  se <- gDRutils::get_synthetic_data("finalMAE_combo_codilution_small")[[cd_name]]
+  SummarizedExperiment::assays(se) <- SummarizedExperiment::assays(se)["Averaged"]
+
+  # the processing metadata of the earlier run stays in place
+  fit_se <- suppressWarnings(fit_SE(se, data_type = cd_name))
+  expect_true("Metrics" %in% SummarizedExperiment::assayNames(fit_se))
+  expect_gt(NROW(gDRutils::convert_se_assay_to_dt(fit_se, "Metrics")), 0L)
+})
+
 test_that("fit_SE.combinations works as expected", {
 
   # combo data

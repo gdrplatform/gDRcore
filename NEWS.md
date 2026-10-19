@@ -1,3 +1,6 @@
+## gDRcore 1.11.23 - 2026-10-19
+* fix the fit step for co-dilution experiments, which stopped on a missing fit profile
+
 ## gDRcore 1.11.22 - 2026-10-18
 * add the gDRimport record of the input files to the SE provenance as the import step
 
