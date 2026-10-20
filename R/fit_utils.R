@@ -340,14 +340,19 @@ apply_combo_sa_fits <- gDRutils::set_fit_fn_info(
     SummarizedExperiment::assay(se, isobolograms_assay),
     row.field = "row", column.field = "column"
   ))
-  if (!all(c("normalization_type", "CI_100x") %in% colnames(iso))) return(scores_dt)
-  for (k in seq_len(NROW(scores_dt))) {
-    curves <- iso[iso$row == scores_dt$row[k] & iso$column == scores_dt$column[k] &
-                    iso$normalization_type %in% scores_dt$normalization_type[k], ]
-    ci <- .ci_scores(curves)
-    data.table::set(scores_dt, k, "CIScore_50", ci[["CIScore_50"]])
-    data.table::set(scores_dt, k, "CIScore_80", ci[["CIScore_80"]])
+  if (!all(c("normalization_type", "iso_level", "CI_100x") %in% colnames(iso))) {
+    return(scores_dt)
   }
+  # one pass over the isobolograms, grouped by drug pair, cell line and
+  # normalization type, then matched to the score rows by the same key
+  keys <- c("row", "column", "normalization_type")
+  iso <- iso[!is.na(iso$normalization_type), ]
+  ci <- iso[, as.list(.ci_scores(.SD)), by = keys, .SDcols = c("iso_level", "CI_100x")]
+  if (NROW(ci) == 0L) return(scores_dt)
+  .key <- function(dt) do.call(paste, c(lapply(dt[, keys, with = FALSE], as.character), sep = "\r"))
+  idx <- match(.key(scores_dt), .key(ci))
+  scores_dt$CIScore_50 <- ci$CIScore_50[idx]
+  scores_dt$CIScore_80 <- ci$CIScore_80[idx]
   scores_dt
 }
 
