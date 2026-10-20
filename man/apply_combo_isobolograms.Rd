@@ -35,7 +35,9 @@ Default \code{"all_iso_points"}.}
 }
 \value{
 Updated SE with \code{isobolograms_assay} and \code{iso_points_assay}
-assays.
+assays. Each isobologram point carries the combination index of its curve
+(\code{CI_100x}), which \code{\link{apply_combo_scores}} uses for
+\code{CIScore_50} and \code{CIScore_80}.
 }
 \description{
 Compute Loewe combination index isobolograms for a combination SE,
