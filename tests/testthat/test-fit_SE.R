@@ -46,6 +46,20 @@ test_that("fit_SE works as expected", {
   expect_identical(SummarizedExperiment::assayNames(fit_se), c(ext_ass, "testing"))
 })
 
+test_that("fit_SE refits a processed co-dilution experiment", {
+  cd_name <- gDRutils::get_supported_experiments("cd")
+  se <- gDRutils::get_synthetic_data("finalMAE_combo_codilution_small")[[cd_name]]
+  SummarizedExperiment::assays(se) <- SummarizedExperiment::assays(se)["Averaged"]
+
+  # the SE still holds the processing metadata of the earlier run, with a
+  # sessionInfo; the refit replaces it instead of stopping on it
+  expect_s3_class(gDRutils::get_SE_processing_metadata(se)$session_info, "sessionInfo")
+  fit_se <- suppressWarnings(fit_SE(se, data_type = cd_name))
+  expect_true("Metrics" %in% SummarizedExperiment::assayNames(fit_se))
+  expect_gt(NROW(gDRutils::convert_se_assay_to_dt(fit_se, "Metrics")), 0L)
+  expect_equal(gDRutils::get_SE_processing_metadata(fit_se)$date_processed, Sys.Date())
+})
+
 test_that("fit_SE.combinations works as expected", {
 
   # combo data

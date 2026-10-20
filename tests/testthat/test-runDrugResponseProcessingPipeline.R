@@ -149,3 +149,16 @@ test_that("runDrugResponseProcessingPipeline processes time-course data", {
     )
   }
 })
+
+test_that("runDrugResponseProcessingPipeline processes co-dilution data", {
+  cd_name <- gDRutils::get_supported_experiments("cd")
+  set.seed(2)
+  cell_lines <- gDRtestData::create_synthetic_cell_lines()
+  drugs <- gDRtestData::create_synthetic_drugs()
+
+  mae <- suppressWarnings(generateCodilutionSmall(cell_lines, drugs, save = FALSE))
+  expect_equal(names(MultiAssayExperiment::experiments(mae)), cd_name)
+  expect_true("Metrics" %in% SummarizedExperiment::assayNames(mae[[cd_name]]))
+  metrics <- gDRutils::convert_se_assay_to_dt(mae[[cd_name]], "Metrics")
+  expect_gt(NROW(metrics), 0L)
+})

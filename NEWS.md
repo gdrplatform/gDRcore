@@ -1,3 +1,6 @@
+## gDRcore 1.11.24 - 2026-10-20
+* fix the fit step for co-dilution experiments, which stopped on a missing fit profile
+
 ## gDRcore 1.11.23 - 2026-10-19
 * fix missing `CIScore_50` and `CIScore_80` in the combination scores
 * restore the single-agent fit on the arms of the combination matrix, dropped when the steps were split
