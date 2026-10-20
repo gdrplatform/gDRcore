@@ -274,11 +274,86 @@ apply_combo_sa_fits <- gDRutils::set_fit_fn_info(
 
   keep <- intersect(colnames(complete_sub), c("x", "row_values", "col_values", "codil_values"))
   mat <- as.matrix(complete_sub[, keep, with = FALSE])
-  complete_sub$smooth <- rowMeans(mat, na.rm = TRUE)
+  smooth_values <- rowMeans(mat, na.rm = TRUE)
+
+  # On the single-agent arms use only the fit run along that arm. The
+  # perpendicular fit gives its intercept (x_0) there, which is an unreliable
+  # extrapolation: when the orthogonal series is not significant, the fit
+  # collapses to the series mean. Averaging these intercepts into 'smooth'
+  # gives a checkerboard pattern on the arms (worst on flat curves). The matrix
+  # interior is unchanged; where the parallel fit is NA the mean is kept.
+  on_arm_1 <- which(complete_sub[[id2]] == 0 & !is.na(complete_sub$col_values))
+  smooth_values[on_arm_1] <- complete_sub$col_values[on_arm_1]
+  on_arm_2 <- which(complete_sub[[id]] == 0 & !is.na(complete_sub$row_values))
+  smooth_values[on_arm_2] <- complete_sub$row_values[on_arm_2]
+  complete_sub$smooth <- smooth_values
   av_matrix <- complete_sub[, c(id, id2, "smooth"), with = FALSE]
   av_matrix[, normalization_type := norm_type]
   av_matrix[get(id) == 0 & get(id2) == 0, smooth := 1]
   av_matrix
+}
+
+
+# Add the combination index of each isobologram (CI_100x from calculate_Loewe())
+# to its curve points, so apply_combo_scores() can read CIScore_50/80 from the
+# isobolograms assay.
+#' @keywords internal
+.add_ci_to_curves <- function(isobologram_out) {
+  ci <- isobologram_out$df_all_AUC_log2CI
+  curves <- isobologram_out$df_all_iso_curves
+  if (NROW(ci) == 0L || NROW(curves) == 0L) return(isobologram_out)
+  curves$CI_100x <- ci$CI_100x[match(curves$iso_level, ci$iso_level)]
+  isobologram_out$df_all_iso_curves <- curves
+  isobologram_out
+}
+
+
+# CIScore_50 and CIScore_80 of one drug pair and cell line: the combination index
+# of the isobologram at the lowest response level >= 0.5 and >= 0.2. NA when
+# there is no isobologram at or above that level.
+#' @keywords internal
+.ci_scores <- function(curves) {
+  out <- c(CIScore_50 = NA_real_, CIScore_80 = NA_real_)
+  if (!all(c("iso_level", "CI_100x") %in% colnames(curves))) return(out)
+  levels <- as.numeric(curves$iso_level)
+  pick <- function(cutoff) {
+    above <- which(levels >= cutoff)
+    if (length(above) == 0L) return(NA_real_)
+    curves$CI_100x[above][levels[above] == min(levels[above])][1L]
+  }
+  out[["CIScore_50"]] <- pick(0.5)
+  out[["CIScore_80"]] <- pick(0.2)
+  out
+}
+
+
+# Add CIScore_50 and CIScore_80 to the scores table from the isobolograms assay.
+#' @keywords internal
+.add_ci_scores <- function(scores_dt, se, isobolograms_assay) {
+  scores_dt$CIScore_50 <- NA_real_
+  scores_dt$CIScore_80 <- NA_real_
+  if (is.null(isobolograms_assay) ||
+      !isobolograms_assay %in% SummarizedExperiment::assayNames(se)) {
+    return(scores_dt)
+  }
+  iso <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se, isobolograms_assay),
+    row.field = "row", column.field = "column"
+  ))
+  if (!all(c("normalization_type", "iso_level", "CI_100x") %in% colnames(iso))) {
+    return(scores_dt)
+  }
+  # one pass over the isobolograms, grouped by drug pair, cell line and
+  # normalization type, then matched to the score rows by the same key
+  keys <- c("row", "column", "normalization_type")
+  iso <- iso[!is.na(iso$normalization_type), ]
+  ci <- iso[, as.list(.ci_scores(.SD)), by = keys, .SDcols = c("iso_level", "CI_100x")]
+  if (NROW(ci) == 0L) return(scores_dt)
+  .key <- function(dt) do.call(paste, c(lapply(dt[, keys, with = FALSE], as.character), sep = "\r"))
+  idx <- match(.key(scores_dt), .key(ci))
+  scores_dt$CIScore_50 <- ci$CIScore_50[idx]
+  scores_dt$CIScore_80 <- ci$CIScore_80[idx]
+  scores_dt
 }
 
 
@@ -449,7 +524,9 @@ apply_combo_excess <- gDRutils::set_fit_fn_info(
 #'   Default \code{"all_iso_points"}.
 #'
 #' @return Updated SE with \code{isobolograms_assay} and \code{iso_points_assay}
-#'   assays.
+#'   assays. Each isobologram point carries the combination index of its curve
+#'   (\code{CI_100x}), which \code{\link{apply_combo_scores}} uses for
+#'   \code{CIScore_50} and \code{CIScore_80}.
 #'
 #' @seealso \code{\link{apply_combo_sa_fits}}, \code{\link{apply_combo_excess}},
 #'   \code{\link{apply_combo_scores}}, \code{\link{fit_SE.combinations}}
@@ -540,11 +617,11 @@ apply_combo_isobolograms <- function(se,
         sum((av_dense[[id]] * av_dense[[id2]]) > 0) > 9 &&
         NROW(drug2_p) > 0L && any(drug2_p$cotrt_value == 0, na.rm = TRUE)
       ) {
-        calculate_Loewe(
+        .add_ci_to_curves(calculate_Loewe(
           av_matrix, drug2_p, drug1_p, codil_p,
           series_identifiers = c(id, id2),
           normalization_type = norm_type
-        )
+        ))
       } else {
         list(
           df_all_iso_points = data.table::data.table(row_id = NA, col_id = NA),
@@ -631,6 +708,12 @@ apply_combo_isobolograms <- gDRutils::set_fit_fn_info(
 #'   \item Score = mean of top 10-percentile excess via \code{\link{calculate_score}}.
 #' }
 #'
+#' \code{CIScore_50} and \code{CIScore_80} are read from the
+#' \code{isobolograms_assay} written by \code{\link{apply_combo_isobolograms}}:
+#' the combination index of the isobologram at the lowest response level
+#' \eqn{\ge} 0.5 and \eqn{\ge} 0.2. They are \code{NA} when that assay is
+#' missing or has no isobologram for the drug pair and cell line.
+#'
 #' @param se \code{\link[SummarizedExperiment]{SummarizedExperiment}} with
 #'   \code{"Averaged"} and \code{"Metrics"} assays (combination experiment).
 #' @param scores_assay string; name of the output assay to write scores into.
@@ -648,9 +731,13 @@ apply_combo_isobolograms <- gDRutils::set_fit_fn_info(
 #'   \code{"gDR"}.
 #' @param score_FUN function to reduce per-point excess values to a scalar
 #'   score. Default \code{\link{calculate_score}} (mean of top 10-percentile).
+#' @param isobolograms_assay string or \code{NULL}; name of the assay with the
+#'   Loewe isobolograms used for \code{CIScore_50} and \code{CIScore_80}.
+#'   Default \code{"isobolograms"}.
 #'
 #' @return Updated \code{SummarizedExperiment} with a \code{scores_assay}
-#'   assay containing \code{bliss_score} and \code{hsa_score} per triplet.
+#'   assay containing \code{bliss_score}, \code{hsa_score}, \code{CIScore_50}
+#'   and \code{CIScore_80} per triplet.
 #'
 #' @seealso \code{\link{bliss_fit_fn}}, \code{\link{hss_fit_fn}} for the
 #'   simplified raw-data variants.
@@ -670,7 +757,8 @@ apply_combo_scores <- function(se,
                                excess_assay = NULL,
                                normalization_types = c("GR", "RV"),
                                fit_source = "gDR",
-                               score_FUN = calculate_score) {
+                               score_FUN = calculate_score,
+                               isobolograms_assay = "isobolograms") {
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_string(scores_assay)
   checkmate::assert_string(averaged_assay)
@@ -678,6 +766,7 @@ apply_combo_scores <- function(se,
   checkmate::assert_string(excess_assay, null.ok = TRUE)
   checkmate::assert_character(normalization_types, min.len = 1L)
   checkmate::assert_function(score_FUN)
+  checkmate::assert_string(isobolograms_assay, null.ok = TRUE)
   gDRutils::validate_se_assay_name(se, averaged_assay)
   gDRutils::validate_se_assay_name(se, metrics_assay)
   scores_args <- list(
@@ -687,7 +776,8 @@ apply_combo_scores <- function(se,
     excess_assay = excess_assay,
     normalization_types = normalization_types,
     fit_source = fit_source,
-    score_FUN = score_FUN
+    score_FUN = score_FUN,
+    isobolograms_assay = isobolograms_assay
   )
 
   # Fast path: if excess assay already exists, score directly from it.
@@ -713,7 +803,7 @@ apply_combo_scores <- function(se,
         )
       }
     )
-    scores_dt <- data.table::rbindlist(score_rows)
+    scores_dt <- .add_ci_scores(data.table::rbindlist(score_rows), se, isobolograms_assay)
     se <- gDRutils::persist_fit_assay(se, scores_dt, "replace", scores_assay, "row", "column",
                          upsert_key_cols = c("fit_source", "normalization_type"))
     return(.record_combo_step(se, scores_assay, apply_combo_scores, scores_args, averaged_assay,
@@ -831,7 +921,8 @@ apply_combo_scores <- function(se,
   }
 
   if (idx > 0L) {
-    scores_dt <- data.table::rbindlist(score_rows[seq_len(idx)])
+    scores_dt <- .add_ci_scores(data.table::rbindlist(score_rows[seq_len(idx)]), se,
+                                isobolograms_assay)
     se <- gDRutils::persist_fit_assay(se, scores_dt, "replace", scores_assay, "row", "column",
                          upsert_key_cols = c("fit_source", "normalization_type"))
     se <- .record_combo_step(se, scores_assay, apply_combo_scores, scores_args, averaged_assay,
@@ -842,8 +933,11 @@ apply_combo_scores <- function(se,
 
 apply_combo_scores <- gDRutils::set_fit_fn_info(
   apply_combo_scores,
-  model = "Bliss and HSA scores per drug pair and cell line",
-  description = "Reduces the per-point Bliss and HSA excess to one score each with score_FUN."
+  model = "Bliss, HSA and CI scores per drug pair and cell line",
+  description = paste(
+    "Reduces the per-point Bliss and HSA excess to one score each with score_FUN and",
+    "reads CIScore_50/80 from the isobolograms."
+  )
 )
 
 

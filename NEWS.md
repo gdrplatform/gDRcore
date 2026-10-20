@@ -1,3 +1,8 @@
+## gDRcore 1.11.23 - 2026-10-19
+* fix missing `CIScore_50` and `CIScore_80` in the combination scores
+* restore the single-agent fit on the arms of the combination matrix, dropped when the steps were split
+* add the combination index of each isobologram (`CI_100x`) to the isobolograms assay
+
 ## gDRcore 1.11.22 - 2026-10-18
 * add the gDRimport record of the input files to the SE provenance as the import step
 

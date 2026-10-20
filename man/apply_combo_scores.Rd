@@ -12,7 +12,8 @@ apply_combo_scores(
   excess_assay = NULL,
   normalization_types = c("GR", "RV"),
   fit_source = "gDR",
-  score_FUN = calculate_score
+  score_FUN = calculate_score,
+  isobolograms_assay = "isobolograms"
 )
 }
 \arguments{
@@ -40,10 +41,15 @@ Default \code{c("GR", "RV")}.}
 
 \item{score_FUN}{function to reduce per-point excess values to a scalar
 score. Default \code{\link{calculate_score}} (mean of top 10-percentile).}
+
+\item{isobolograms_assay}{string or \code{NULL}; name of the assay with the
+Loewe isobolograms used for \code{CIScore_50} and \code{CIScore_80}.
+Default \code{"isobolograms"}.}
 }
 \value{
 Updated \code{SummarizedExperiment} with a \code{scores_assay}
-assay containing \code{bliss_score} and \code{hsa_score} per triplet.
+assay containing \code{bliss_score}, \code{hsa_score}, \code{CIScore_50}
+and \code{CIScore_80} per triplet.
 }
 \description{
 Compute Bliss and HSA synergy scores for a combination SE, replicating the
@@ -74,6 +80,12 @@ HSA-expected using \code{\link{calculate_HSA}} on the smooth SA edges.
 \item Compute excess via \code{\link{calculate_excess}}.
 \item Score = mean of top 10-percentile excess via \code{\link{calculate_score}}.
 }
+
+\code{CIScore_50} and \code{CIScore_80} are read from the
+\code{isobolograms_assay} written by \code{\link{apply_combo_isobolograms}}:
+the combination index of the isobologram at the lowest response level
+\eqn{\ge} 0.5 and \eqn{\ge} 0.2. They are \code{NA} when that assay is
+missing or has no isobologram for the drug pair and cell line.
 }
 \examples{
 mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
