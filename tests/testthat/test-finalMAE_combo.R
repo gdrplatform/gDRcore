@@ -37,5 +37,11 @@ test_that("combo_triple: test_synthetic_data", {
     cell_lines, drugs, FALSE
   )
 
-  test_synthetic_data(original, mae$result, data, assays = combo_assays, tolerance = combo_tolerance)
+  test_synthetic_data(
+    original, mae$result, data, assays = setdiff(combo_assays, "scores"), tolerance = combo_tolerance
+  )
+  # CIScore comes from the first isobologram at or above a response level, so a
+  # small change in the fits can move it; for the triple combinations it differs
+  # by about 3% on average between Linux and macOS
+  test_synthetic_data(original, mae$result, data, assays = "scores", tolerance = 5e-2)
 })
