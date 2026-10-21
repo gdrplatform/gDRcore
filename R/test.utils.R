@@ -63,6 +63,15 @@ test_synthetic_data <- function(original,
               # a column missing on one side is reported as a failure; the values
               # are compared on the columns both tables have
               common <- intersect(names(dt_reprocessed), names(dt_original))
+              # sort on the identifiers first (text columns, concentrations and the
+              # co-treatment or ratio of combination fits): sorting on the measured
+              # values would pair different rows as soon as a value moves slightly
+              measured <- common[vapply(dt_reprocessed[, common, with = FALSE], is.double, logical(1))]
+              conc <- gDRutils::get_env_identifiers("concentration")
+              keys <- c(setdiff(common, measured),
+                        intersect(measured, c(grep(paste0("^", conc), measured, value = TRUE),
+                                              "cotrt_value", "ratio")))
+              common <- c(keys, setdiff(common, keys))
               testthat::test_that(
                 sprintf(
                   "reprocessed data %s is identical to data stored in gDRtestData",

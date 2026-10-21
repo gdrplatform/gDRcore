@@ -1,6 +1,7 @@
 ## gDRcore 1.11.25 - 2026-10-20
 * add reference tests for the combination datasets, including the excess and scores assays
 * fix `test_synthetic_data()`, which compared the input instead of the reprocessed data when given raw data
+* fix `test_synthetic_data()` pairing rows by their measured values instead of their identifiers
 
 ## gDRcore 1.11.24 - 2026-10-20
 * fix the fit step for co-dilution experiments, which stopped on a missing fit profile
