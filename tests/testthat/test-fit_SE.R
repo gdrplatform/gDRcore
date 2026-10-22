@@ -68,9 +68,9 @@ test_that("fit_SE gives the same object when other packages get loaded in betwee
   # loading a package changes sessionInfo(), which .internal used to store
   extra <- setdiff(c("yaml", "knitr", "BiocStyle"), loadedNamespaces())
   skip_if(length(extra) == 0L, "all candidate packages are loaded already")
-  fit_1 <- suppressWarnings(fit_SE(se))
+  fit_1 <- purrr::quietly(fit_SE)(se)$result
   loadNamespace(extra[[1]])
-  fit_2 <- suppressWarnings(fit_SE(se))
+  fit_2 <- purrr::quietly(fit_SE)(se)$result
   expect_identical(fit_1, fit_2)
 
   internal <- gDRutils::get_SE_processing_metadata(fit_1)
