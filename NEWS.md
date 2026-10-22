@@ -1,3 +1,6 @@
+## gDRcore 1.11.25 - 2026-10-23
+* store the R, gDRcore and gDRutils versions in `.internal` instead of the whole `sessionInfo()`, so a refit is identical
+
 ## gDRcore 1.11.24 - 2026-10-20
 * fix the fit step for co-dilution experiments, which stopped on a missing fit profile
 
