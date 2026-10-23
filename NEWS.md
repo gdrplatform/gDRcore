@@ -1,3 +1,6 @@
+## gDRcore 1.11.26 - 2026-10-21
+* document fitting a new assay, from a long table to a fit profile and `apply_fit()`, in the custom-fitting vignette
+
 ## gDRcore 1.11.24 - 2026-10-20
 * fix the fit step for co-dilution experiments, which stopped on a missing fit profile
 
@@ -778,3 +781,4 @@
 
 ## gDRcore 0.0.1.15 - 2020-07-08
 * dependencies
+
