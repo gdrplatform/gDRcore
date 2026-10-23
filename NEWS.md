@@ -1,3 +1,6 @@
+## gDRcore 1.11.27 - 2026-10-23
+* fix inflated time-course error bars by normalizing each well to the control of its own plate
+
 ## gDRcore 1.11.24 - 2026-10-20
 * fix the fit step for co-dilution experiments, which stopped on a missing fit profile
 
