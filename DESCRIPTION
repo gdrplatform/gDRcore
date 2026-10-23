@@ -2,7 +2,7 @@ Type: Package
 Package: gDRcore
 Title: Processing functions and interface to process and analyze drug
     dose-response data
-Version: 1.11.25
+Version: 1.11.26
 Date: 2026-10-23
 Authors@R: c(
     person("Bartosz", "Czech", , "czech.bartosz@external.gene.com", role = "aut",
@@ -43,7 +43,7 @@ Suggests:
     BiocStyle,
     gDRstyle (>= 1.7.1),
     gDRimport (>= 1.11.9),
-    gDRtestData (>= 1.7.1),
+    gDRtestData (>= 1.11.11),
     IRanges,
     knitr,
     pkgbuild,
