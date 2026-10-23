@@ -42,7 +42,7 @@ test_synthetic_data <- function(original,
                 dt_original[, (masked_tag) := NULL]
               }
 
-              dt_reprocessed <- gDRutils::convert_mae_assay_to_dt(data, x)
+              dt_reprocessed <- gDRutils::convert_mae_assay_to_dt(reprocessed, x)
               if (masked_tag %in% names(dt_reprocessed)) {
                 dt_reprocessed[, (masked_tag) := NULL]
               }
@@ -60,15 +60,28 @@ test_synthetic_data <- function(original,
               dt_original <- .coerce_factors(dt_original)
               dt_reprocessed <- .coerce_factors(dt_reprocessed)
 
-              data.table::setcolorder(dt_original, names(dt_reprocessed))
-              data.table::setorderv(dt_original, names(dt_original))
-              data.table::setorderv(dt_reprocessed, names(dt_reprocessed))
-
+              # a column missing on one side is reported as a failure; the values
+              # are compared on the columns both tables have
+              common <- intersect(names(dt_reprocessed), names(dt_original))
+              # sort on the identifiers first (text columns, concentrations and the
+              # co-treatment or ratio of combination fits): sorting on the measured
+              # values would pair different rows as soon as a value moves slightly
+              measured <- common[vapply(dt_reprocessed[, common, with = FALSE], is.double, logical(1))]
+              conc <- gDRutils::get_env_identifiers("concentration")
+              keys <- c(setdiff(common, measured),
+                        intersect(measured, c(grep(paste0("^", conc), measured, value = TRUE),
+                                              "cotrt_value", "ratio")))
+              common <- c(keys, setdiff(common, keys))
               testthat::test_that(
                 sprintf(
                   "reprocessed data %s is identical to data stored in gDRtestData",
                   dataName
                 ), {
+                  testthat::expect_setequal(names(dt_reprocessed), names(dt_original))
+                  dt_original <- dt_original[, common, with = FALSE]
+                  dt_reprocessed <- dt_reprocessed[, common, with = FALSE]
+                  data.table::setorderv(dt_original, common)
+                  data.table::setorderv(dt_reprocessed, common)
                   testthat::expect_equal(
                     dt_original, dt_reprocessed, tolerance = tolerance
                   )
