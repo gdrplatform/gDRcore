@@ -969,3 +969,59 @@ test_that("the two-step time-course workflow records the growth-rate step", {
     "rate_fn"
   )
 })
+
+
+# ---------------------------------------------------------------------------
+# Plate-level normalization: noise-free plates whose controls grow at different
+# rates, each treated well growing at a fixed fraction of its own plate's control.
+# ---------------------------------------------------------------------------
+.make_tc_plates_se <- function(ctrl_rates = c(PL01 = 1, PL02 = 0.5), fraction = 0.5,
+                               treated_only = character(0), durs = c(0, 6, 12, 18)) {
+  rows <- data.table::rbindlist(lapply(names(ctrl_rates), function(pl) {
+    arms <- data.table::data.table(DrugName = c("DMSO", "DrugA"), Concentration = c(0, 1),
+                                   rate = ctrl_rates[[pl]] * c(1, fraction))
+    if (pl %in% treated_only) arms <- arms[DrugName != "DMSO"]
+    data.table::CJ(arm = seq_len(NROW(arms)), Duration = durs, WellRow = c("A", "B"))[,
+      `:=`(DrugName = arms$DrugName[arm], Concentration = arms$Concentration[arm],
+           LogFoldChange = arms$rate[arm] * Duration / 24, Barcode = pl,
+           WellColumn = as.character(arm), CellLineName = "MCF7")][, arm := NULL]
+  }))
+  bm <- BumpyMatrix::splitAsBumpyMatrix(rows, row = paste0(rows$DrugName, "|MCF7"),
+                                        col = rows$Barcode)
+  SummarizedExperiment::SummarizedExperiment(assays = list(LogFoldChange = bm))
+}
+
+test_that("compute_growth_rates normalizes each well to the control of its own plate", {
+  gr <- compute_growth_rates(.make_tc_plates_se(), list(early = c(0, 24)),
+                             c(early = "early"))
+  treated <- gr[DrugName == "DrugA"]
+  # the raw rates differ twofold between the plates; relative to their own controls they do not
+  expect_equal(treated$sd_GrowthRate, stats::sd(c(1, 1, 0.5, 0.5) * 0.5))
+  expect_equal(treated$NormalizedGrowthRate, 0.5)
+  expect_equal(treated$sd_NormalizedGrowthRate, 0)
+  expect_equal(treated$rate_0, 0.75)
+})
+
+test_that("compute_growth_rates gives the pooled ratio on a single plate", {
+  gr <- compute_growth_rates(.make_tc_plates_se(ctrl_rates = c(PL01 = 0.8), fraction = 0.25),
+                             list(early = c(0, 24)), c(early = "early"))
+  treated <- gr[DrugName == "DrugA"]
+  expect_equal(treated$NormalizedGrowthRate, treated$GrowthRate / treated$rate_0)
+  expect_equal(treated$NormalizedGrowthRate, 0.25)
+})
+
+test_that("compute_growth_rates falls back to the pooled control for a plate without one", {
+  se <- .make_tc_plates_se(ctrl_rates = c(PL01 = 1, PL02 = 0.5), treated_only = "PL02")
+  expect_warning(
+    gr <- compute_growth_rates(se, list(early = c(0, 24)), c(early = "early")),
+    "No control on the same plate for MCF7 on PL02"
+  )
+  treated <- gr[DrugName == "DrugA"]
+  # PL01 wells: 0.5 / 1; PL02 wells: 0.25 / 1, as the only control (PL01) is the pooled one
+  expect_equal(treated$NormalizedGrowthRate, mean(c(0.5, 0.5, 0.25, 0.25)))
+})
+
+test_that("compute_growth_rates reports sd_NormalizedGrowthRate on every path", {
+  none <- compute_growth_rates(.make_tc_plates_se(), list(early = c(0, 24)), c(early = "None"))
+  expect_equal(none$sd_NormalizedGrowthRate, none$sd_GrowthRate)
+})
