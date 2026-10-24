@@ -27,12 +27,10 @@ test_that("the pipeline records create, normalize and average next to the fit", 
   expect_identical(average$functions$average_FUN$name, "average_FUN")
   expect_identical(average$functions$average_FUN$package, "gDRcore")
 
-  # the steps stay small and are the same when the pipeline runs again; .internal is
-  # left out because its sessionInfo lists whatever packages got loaded meanwhile
+  # the steps stay small, and running the pipeline again gives the same object
   expect_lt(length(qs2::qs_serialize(prov)), 4000)
   se_again <- .run_pipeline(raw_small)
-  expect_identical(gDRutils::get_SE_provenance(se_again), prov)
-  expect_identical(SummarizedExperiment::assays(se_again), SummarizedExperiment::assays(se))
+  expect_identical(se_again, se)
 })
 
 
