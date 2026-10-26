@@ -1,5 +1,13 @@
-## gDRcore 1.11.27 - 2026-10-23
+## gDRcore 1.11.28 - 2026-10-26
 * fix inflated time-course error bars by normalizing each well to the control of its own plate
+
+## gDRcore 1.11.26 - 2026-10-23
+* replace the whole `sessionInfo()` in `.internal` with the R, gDRcore and gDRutils versions, so a refit is identical
+
+## gDRcore 1.11.25 - 2026-10-20
+* add reference tests for the combination datasets, including the excess and scores assays
+* fix `test_synthetic_data()`, which compared the input instead of the reprocessed data when given raw data
+* fix `test_synthetic_data()` pairing rows by their measured values instead of their identifiers
 
 ## gDRcore 1.11.24 - 2026-10-20
 * fix the fit step for co-dilution experiments, which stopped on a missing fit profile
