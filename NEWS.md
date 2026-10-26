@@ -1,6 +1,9 @@
 ## gDRcore 1.11.28 - 2026-10-26
 * fix inflated time-course error bars by normalizing each well to the control of its own plate
 
+## gDRcore 1.11.27 - 2026-10-26
+* document fitting a new assay, from a long table to a fit profile and `apply_fit()`, in the custom-fitting vignette
+
 ## gDRcore 1.11.26 - 2026-10-23
 * replace the whole `sessionInfo()` in `.internal` with the R, gDRcore and gDRutils versions, so a refit is identical
 
