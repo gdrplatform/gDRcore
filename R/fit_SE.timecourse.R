@@ -728,9 +728,10 @@ get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
 
 #' Normalise per-well growth rates to the control of the same plate
 #'
-#' Divides every well by the mean control rate of its own plate and cell line in
-#' the reference period, then averages per treatment arm. A plate with no control
-#' of its own falls back to the pooled baseline, with a warning.
+#' Divides every well by the control rate of its own plate and cell line in the
+#' reference period - the mean over control arms, as in the pooled baseline - then
+#' averages per treatment arm. A plate with no control of its own falls back to
+#' the pooled baseline, with a warning.
 #'
 #' @param all_rates \code{data.table}; per-well rates with a \code{period} column.
 #' @param ctrl logical; which rows of \code{all_rates} are controls.
@@ -745,7 +746,10 @@ get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
 #' @noRd
 .normalize_wells <- function(all_rates, ctrl, norm_dt, pooled, cl_col, barcode_col, agg_by) {
   plate_col <- intersect(barcode_col, names(all_rates))
-  plate_baselines <- all_rates[ctrl,
+  # Averaged per control arm first, as the pooled baseline is, so that one plate gives the
+  # pooled ratio whatever the number of wells in each arm.
+  plate_arms <- all_rates[ctrl, .(rate = mean(rate, na.rm = TRUE)), by = c(agg_by, plate_col)]
+  plate_baselines <- plate_arms[,
     .(rate_0_plate = mean(rate, na.rm = TRUE)),
     by = c(cl_col, plate_col, "period")
   ]
@@ -759,7 +763,7 @@ get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
   if (any(no_plate_ctrl)) {
     offenders <- unique(wells[no_plate_ctrl, c(cl_col, plate_col), with = FALSE])
     warning(sprintf(
-      "No control on the same plate for %s; those wells are normalised to the pooled control.",
+      "No usable control on the same plate for %s; those wells are normalised to the pooled control.",
       toString(do.call(paste, c(offenders, sep = " on ")))
     ))
   }

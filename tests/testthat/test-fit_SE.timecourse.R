@@ -1010,11 +1010,29 @@ test_that("compute_growth_rates gives the pooled ratio on a single plate", {
   expect_equal(treated$NormalizedGrowthRate, 0.25)
 })
 
+test_that("compute_growth_rates weights control arms equally on a single plate", {
+  # vehicle in 2 wells, untreated in 6: a mean over wells (0.7) would differ from the pooled 0.8
+  arms <- data.table::data.table(DrugName = c("vehicle", "untreated", "DrugA"),
+                                 Concentration = c(0, 0, 1), rate = c(1, 0.6, 0.4), n = c(2, 6, 2))
+  rows <- data.table::rbindlist(lapply(seq_len(NROW(arms)), function(a) {
+    data.table::CJ(Duration = c(0, 6, 12, 18), w = seq_len(arms$n[a]))[,
+      `:=`(DrugName = arms$DrugName[a], Concentration = arms$Concentration[a],
+           LogFoldChange = arms$rate[a] * Duration / 24, Barcode = "PL01",
+           WellRow = LETTERS[w], WellColumn = as.character(a), CellLineName = "MCF7")][, w := NULL]
+  }))
+  bm <- BumpyMatrix::splitAsBumpyMatrix(rows, row = paste0(rows$DrugName, "|MCF7"),
+                                        col = rows$Barcode)
+  se <- SummarizedExperiment::SummarizedExperiment(assays = list(LogFoldChange = bm))
+  treated <- compute_growth_rates(se, list(early = c(0, 24)), c(early = "early"))[DrugName == "DrugA"]
+  expect_equal(treated$rate_0, 0.8)
+  expect_equal(treated$NormalizedGrowthRate, 0.5)
+})
+
 test_that("compute_growth_rates falls back to the pooled control for a plate without one", {
   se <- .make_tc_plates_se(ctrl_rates = c(PL01 = 1, PL02 = 0.5), treated_only = "PL02")
   expect_warning(
     gr <- compute_growth_rates(se, list(early = c(0, 24)), c(early = "early")),
-    "No control on the same plate for MCF7 on PL02"
+    "No usable control on the same plate for MCF7 on PL02"
   )
   treated <- gr[DrugName == "DrugA"]
   # PL01 wells: 0.5 / 1; PL02 wells: 0.25 / 1, as the only control (PL01) is the pooled one
