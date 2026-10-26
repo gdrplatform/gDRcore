@@ -241,8 +241,11 @@ fit_SE.timecourse <- function(se,
 #' Growth rates are computed per \code{(Barcode, WellRow, WellColumn, CellLine,
 #' Drug, Concentration, partner drug/concentration slots)} group, so
 #' single-agent, doublet and triplet arms are never pooled.  Control wells are
-#' detected via \code{gDRutils::get_env_identifiers("untreated_tag")} and a
-#' single baseline per \code{(CellLine, period)} is used for normalization.
+#' detected via \code{gDRutils::get_env_identifiers("untreated_tag")}.  Each well
+#' is normalized to the mean control rate of its own plate and cell line before
+#' the replicates are averaged, so plates that grow at different rates do not
+#' widen the spread; a plate without a control of its own falls back to the
+#' baseline pooled over all plates, with a warning.
 #'
 #' @param se \code{\link[SummarizedExperiment]{SummarizedExperiment}} with a
 #'   log-fold-change assay.
@@ -262,9 +265,10 @@ fit_SE.timecourse <- function(se,
 #' @return A \code{data.table} with one row per
 #'   \code{(CellLine, Drug, Concentration, partner slots, period)} — controls
 #'   included — holding \code{GrowthRate} (doublings/day), \code{sd_GrowthRate}
-#'   across replicate wells, \code{rate_0} (the control baseline used, \code{NA}
-#'   for periods mapped to \code{"None"} and when no control rows are present),
-#'   \code{NormalizedGrowthRate} and \code{normalization_type}.  All of these
+#'   across replicate wells, \code{rate_0} (the control baseline pooled over all
+#'   plates, \code{NA} for periods mapped to \code{"None"} and when no control rows
+#'   are present), \code{NormalizedGrowthRate} with \code{sd_NormalizedGrowthRate}
+#'   across replicate wells, and \code{normalization_type}.  All of these
 #'   columns are always present, whatever the normalization map or the
 #'   availability of controls.  \code{NormalizedGrowthRate} is \code{NA} where
 #'   the control baseline is not meaningfully positive: such a denominator
@@ -564,7 +568,8 @@ get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
 #' @return \code{data.table} with columns:
 #'   \code{CellLineName}, \code{DrugName}, \code{Concentration},
 #'   \code{period}, \code{GrowthRate}, \code{sd_GrowthRate},
-#'   \code{NormalizedGrowthRate}, \code{normalization_type}.
+#'   \code{NormalizedGrowthRate}, \code{sd_NormalizedGrowthRate},
+#'   \code{normalization_type}.
 #' @keywords internal
 #' @noRd
 .compute_growth_rates <- function(se, periods, normalization_map, lfc_assay,
@@ -647,22 +652,23 @@ get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
   # untreated_tag = c("vehicle", "untreated") by default — the canonical list of
   # control drug name values in gDRutils; no need to hardcode "DMSO"/"vehicle".
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
-  is_primary_ctrl <- av_rates[[drug_col]] %in% untreated_tag |
-                     av_rates[[conc_col]] == 0
-  # Exclude rows that have any real partner drug in any slot (doublet or triplet)
-  has_partner <- if (length(partner_drug_cols) == 0L) {
-    rep(FALSE, NROW(av_rates))
-  } else {
-    Reduce("|", lapply(partner_drug_cols, function(dc) {
-      !is.na(av_rates[[dc]]) & !av_rates[[dc]] %in% untreated_tag
-    }))
+  is_control <- function(dt) {
+    is_primary_ctrl <- dt[[drug_col]] %in% untreated_tag | dt[[conc_col]] == 0
+    # Exclude rows that have any real partner drug in any slot (doublet or triplet)
+    has_partner <- if (length(partner_drug_cols) == 0L) {
+      rep(FALSE, NROW(dt))
+    } else {
+      Reduce("|", lapply(partner_drug_cols, function(dc) {
+        !is.na(dt[[dc]]) & !dt[[dc]] %in% untreated_tag
+      }))
+    }
+    is_primary_ctrl & !has_partner
   }
-  is_dmso <- is_primary_ctrl & !has_partner
 
   # One baseline per (CellLine, period): combo layouts hold several control rows
   # per cell line (different partner slots/concentrations), which would turn the
   # merge below into a many-to-many join and duplicate NormalizedGrowthRate.
-  dmso_baselines <- av_rates[is_dmso,
+  dmso_baselines <- av_rates[is_control(av_rates),
     .(rate_0 = mean(GrowthRate, na.rm = TRUE)),
     by = c(cl_col, "period")
   ]
@@ -673,64 +679,43 @@ get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
     # path - callers should not have to guard against a missing column.
     av_rates[, rate_0 := NA_real_]
     av_rates[, NormalizedGrowthRate := NA_real_]
+    av_rates[, sd_NormalizedGrowthRate := NA_real_]
     av_rates[, normalization_type := "NGR"]
     return(av_rates)
   }
 
   # Apply normalization_map.
   # "None" → NormalizedGrowthRate = GrowthRate (raw doublings/day, no DMSO division).
-  # Any other value (e.g. "early") → NormalizedGrowthRate = GrowthRate / DMSO_rate[ref_period].
+  # Any other value (e.g. "early") → each well is divided by the DMSO rate of its own
+  # plate in the reference period, then averaged. Plates dosed on different days can
+  # grow at very different rates, and a pooled control turns that into the error bar.
   norm_dt <- data.table::data.table(
     period = names(normalization_map),
     norm_target = unname(normalization_map)
   )
-
   av_rates <- merge(av_rates, norm_dt, by = "period", all.x = TRUE)
-
-  # Rows where normalization is requested (norm_target != "None")
   needs_norm <- av_rates$norm_target != "None"
 
   if (any(needs_norm, na.rm = TRUE)) {
-    av_norm <- av_rates[needs_norm == TRUE]
-    av_norm <- merge(
-      av_norm,
-      data.table::setnames(
-        data.table::copy(dmso_baselines),
-        "period", "norm_period"
-      ),
-      by.x = c(cl_col, "norm_target"),
-      by.y = c(cl_col, "norm_period"),
-      all.x = TRUE
-    )
-    # A control rate that is not positive is not a valid denominator: dividing by it inverts the
-    # sign of the ratio (rate_0 < 0) or leaves it undefined (rate_0 == 0) rather than scaling it.
-    # Set NA per (cell line, period) - not fatal, as other lines of the same run usually fit fine.
-    # The comparison carries a tolerance because a plateaued control never fits to exactly zero:
-    # lm() on a flat window returns a slope of order 1e-16, which is positive and would divide a
-    # healthy treated rate into ~1e15. Note a small but genuinely positive rate_0 still inflates
-    # the ratio without a sign flip; catching that needs the control's own peak rate, which this
-    # function does not see.
-    unusable <- !is.na(av_norm$rate_0) & av_norm$rate_0 <= sqrt(.Machine$double.eps)
-    if (any(unusable)) {
-      offenders <- unique(av_norm[unusable, c(cl_col, "period"), with = FALSE])
-      warning(sprintf(
-        paste("The control growth rate is not positive for %s, so NormalizedGrowthRate is NA",
-              "there; the window does not capture growth of the untreated arm."),
-        toString(sprintf("'%s' in period '%s'", offenders[[cl_col]], offenders[["period"]]))
-      ))
-    }
-    av_norm[, NormalizedGrowthRate := GrowthRate / rate_0]
-    av_norm[unusable, NormalizedGrowthRate := NA_real_]
+    pooled <- data.table::setnames(data.table::copy(dmso_baselines), "period", "norm_target")
+    av_norm <- merge(av_rates[needs_norm == TRUE], pooled, by = c(cl_col, "norm_target"),
+                     all.x = TRUE)
+    ngr <- .normalize_wells(all_rates, is_control(all_rates), norm_dt, pooled,
+                            cl_col, barcode_col, agg_by)
+    av_norm <- merge(av_norm, ngr, by = agg_by, all.x = TRUE)
     av_rates <- data.table::rbindlist(
       list(
         av_norm,
-        av_rates[needs_norm == FALSE][, NormalizedGrowthRate := GrowthRate][, rate_0 := NA_real_]
+        av_rates[needs_norm == FALSE][, `:=`(NormalizedGrowthRate = GrowthRate,
+                                             sd_NormalizedGrowthRate = sd_GrowthRate,
+                                             rate_0 = NA_real_)]
       ),
       fill = TRUE
     )
   } else {
     # All periods are "None" — keep raw growth rate
     av_rates[, NormalizedGrowthRate := GrowthRate]
+    av_rates[, sd_NormalizedGrowthRate := sd_GrowthRate]
     av_rates[, rate_0 := NA_real_]
   }
 
@@ -738,6 +723,75 @@ get_period_timepoints <- function(se, periods, lfc_assay = NULL) {
   # single-agent "GR" (GR value from gDRutils). Time-course has no RV/GR split.
   av_rates[, normalization_type := "NGR"]
   av_rates
+}
+
+
+#' Normalise per-well growth rates to the control of the same plate
+#'
+#' Divides every well by the control rate of its own plate and cell line in the
+#' reference period - the mean over control arms, as in the pooled baseline - then
+#' averages per treatment arm. A plate with no control of its own falls back to
+#' the pooled baseline, with a warning.
+#'
+#' @param all_rates \code{data.table}; per-well rates with a \code{period} column.
+#' @param ctrl logical; which rows of \code{all_rates} are controls.
+#' @param norm_dt \code{data.table} with \code{period} and \code{norm_target}.
+#' @param pooled \code{data.table}; pooled baselines with \code{norm_target} and
+#'   \code{rate_0}.
+#' @param cl_col,barcode_col string; cell line and plate identifiers.
+#' @param agg_by character; columns that define a treatment arm and period.
+#' @return \code{data.table} with \code{agg_by}, \code{NormalizedGrowthRate} and
+#'   \code{sd_NormalizedGrowthRate}.
+#' @keywords internal
+#' @noRd
+.normalize_wells <- function(all_rates, ctrl, norm_dt, pooled, cl_col, barcode_col, agg_by) {
+  plate_col <- intersect(barcode_col, names(all_rates))
+  # Averaged per control arm first, as the pooled baseline is, so that one plate gives the
+  # pooled ratio whatever the number of wells in each arm.
+  plate_arms <- all_rates[ctrl, .(rate = mean(rate, na.rm = TRUE)), by = c(agg_by, plate_col)]
+  plate_baselines <- plate_arms[,
+    .(rate_0_plate = mean(rate, na.rm = TRUE)),
+    by = c(cl_col, plate_col, "period")
+  ]
+  data.table::setnames(plate_baselines, "period", "norm_target")
+
+  wells <- merge(all_rates, norm_dt[norm_target != "None"], by = "period")
+  wells <- merge(wells, plate_baselines, by = c(cl_col, plate_col, "norm_target"), all.x = TRUE)
+  wells <- merge(wells, pooled, by = c(cl_col, "norm_target"), all.x = TRUE)
+
+  no_plate_ctrl <- is.na(wells$rate_0_plate) & !is.na(wells$rate_0)
+  if (any(no_plate_ctrl)) {
+    offenders <- unique(wells[no_plate_ctrl, c(cl_col, plate_col), with = FALSE])
+    warning(sprintf(
+      "No usable control on the same plate for %s; those wells are normalised to the pooled control.",
+      toString(do.call(paste, c(offenders, sep = " on ")))
+    ))
+  }
+  wells[, base := data.table::fifelse(is.na(rate_0_plate), rate_0, rate_0_plate)]
+
+  # A control rate that is not positive is not a valid denominator: dividing by it inverts the
+  # sign of the ratio (base < 0) or leaves it undefined (base == 0) rather than scaling it.
+  # Set NA per (cell line, period) - not fatal, as other lines of the same run usually fit fine.
+  # The comparison carries a tolerance because a plateaued control never fits to exactly zero:
+  # lm() on a flat window returns a slope of order 1e-16, which is positive and would divide a
+  # healthy treated rate into ~1e15. Note a small but genuinely positive control rate still
+  # inflates the ratio without a sign flip; catching that needs the control's own peak rate,
+  # which this function does not see.
+  unusable <- !is.na(wells$base) & wells$base <= sqrt(.Machine$double.eps)
+  if (any(unusable)) {
+    offenders <- unique(wells[unusable, c(cl_col, "period"), with = FALSE])
+    warning(sprintf(
+      paste("The control growth rate is not positive for %s, so NormalizedGrowthRate is NA",
+            "there; the window does not capture growth of the untreated arm."),
+      toString(sprintf("'%s' in period '%s'", offenders[[cl_col]], offenders[["period"]]))
+    ))
+  }
+  wells[, ngr := rate / base]
+  wells[unusable, ngr := NA_real_]
+
+  wells[, .(NormalizedGrowthRate = if (all(is.na(ngr))) NA_real_ else mean(ngr, na.rm = TRUE),
+            sd_NormalizedGrowthRate = stats::sd(ngr, na.rm = TRUE)),
+        by = agg_by]
 }
 
 

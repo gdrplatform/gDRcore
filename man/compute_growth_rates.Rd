@@ -36,9 +36,10 @@ return a single numeric value: the growth rate in doublings per day.
 A \code{data.table} with one row per
 \code{(CellLine, Drug, Concentration, partner slots, period)} — controls
 included — holding \code{GrowthRate} (doublings/day), \code{sd_GrowthRate}
-across replicate wells, \code{rate_0} (the control baseline used, \code{NA}
-for periods mapped to \code{"None"} and when no control rows are present),
-\code{NormalizedGrowthRate} and \code{normalization_type}.  All of these
+across replicate wells, \code{rate_0} (the control baseline pooled over all
+plates, \code{NA} for periods mapped to \code{"None"} and when no control rows
+are present), \code{NormalizedGrowthRate} with \code{sd_NormalizedGrowthRate}
+across replicate wells, and \code{normalization_type}.  All of these
 columns are always present, whatever the normalization map or the
 availability of controls.  \code{NormalizedGrowthRate} is \code{NA} where
 the control baseline is not meaningfully positive: such a denominator
@@ -60,8 +61,11 @@ it can be reported on directly.  Pass it through
 Growth rates are computed per \code{(Barcode, WellRow, WellColumn, CellLine,
 Drug, Concentration, partner drug/concentration slots)} group, so
 single-agent, doublet and triplet arms are never pooled.  Control wells are
-detected via \code{gDRutils::get_env_identifiers("untreated_tag")} and a
-single baseline per \code{(CellLine, period)} is used for normalization.
+detected via \code{gDRutils::get_env_identifiers("untreated_tag")}.  Each well
+is normalized to the mean control rate of its own plate and cell line before
+the replicates are averaged, so plates that grow at different rates do not
+widen the spread; a plate without a control of its own falls back to the
+baseline pooled over all plates, with a warning.
 }
 \examples{
 \dontrun{
