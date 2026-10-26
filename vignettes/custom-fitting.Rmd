@@ -622,6 +622,79 @@ unique(rv_df$normalization_type)
 
 ***
 
+# A new assay
+
+`apply_fit()` does not need drugs and cell lines. Any SE whose cells hold a
+long table will do, once a fit profile tells `apply_fit()` how to slice the
+cells. The example below is a biochemical screen: compounds × targets, percent
+activity over a dilution series.
+
+## From a long table to an SE
+
+`convert_dt_to_se()` puts the row and column identifiers into `rowData` and
+`colData` and nests the remaining columns in one BumpyMatrix assay.
+
+```{r new-assay-data}
+set.seed(1)
+ic50 <- c(cmpdA = 0.01, cmpdB = 0.3, cmpdC = 5)
+biochem_dt <- CJ(
+  compound = names(ic50), target = c("PI3Ka", "PI3Kb"),
+  Concentration = 10^seq(-3, 1, length.out = 8), replicate = 1:2
+)
+biochem_dt[, Activity := 100 / (1 + (Concentration / ic50[compound])^1.2) + rnorm(.N, 0, 3)]
+biochem_dt[, assay_type := "IC50"]
+
+# cmpdC was run at three concentrations only
+biochem_dt <- biochem_dt[!(compound == "cmpdC" & Concentration < 0.5)]
+
+biochem_se <- convert_dt_to_se(biochem_dt, "compound", "target", "Biochemical")
+biochem_se
+```
+
+## A profile and a fit function
+
+The profile names the input assay and the columns that split a cell into
+sub-experiments. It lives in the current R session only, so register it again
+after a restart.
+
+```{r new-assay-profile}
+register_fit_profile(
+  "biochemical",
+  slicing_cols = "assay_type",
+  input_assay = "Biochemical",
+  description = "biochemical activity, % of control"
+)
+
+fit_4pl <- function(dt) {
+  if (uniqueN(dt$Concentration) < 4) stop("fewer than 4 concentrations")
+  m <- stats::nls(
+    Activity ~ bottom + (top - bottom) / (1 + 10^((log10(Concentration) - logic50) * h)),
+    data = dt,
+    start = list(bottom = 0, top = 100, logic50 = median(log10(dt$Concentration)), h = 1),
+    algorithm = "port", lower = c(-20, 50, -6, 0.1), upper = c(50, 150, 3, 5)
+  )
+  cf <- stats::coef(m)
+  list(bottom = cf[["bottom"]], top = cf[["top"]], ic50 = 10^cf[["logic50"]], h = cf[["h"]])
+}
+```
+
+## Fitting and reading the result
+
+```{r new-assay-fit}
+biochem_out <- apply_fit(
+  biochem_se, fit_4pl, "biochemical",
+  output_assay = "BiochemFits",
+  fit_source = "4pl"
+)
+biochem_fits <- convert_se_assay_to_dt(biochem_out, "BiochemFits")
+biochem_fits[, .(compound, target, ic50 = signif(ic50, 2), h = round(h, 2))]
+```
+
+Both cmpdC fits failed with a warning, so its row is empty; the other four
+results are kept, and so is the assay.
+
+***
+
 # Time-course data: `fit_SE.timecourse()`
 
 Live-cell imaging experiments (e.g. Incucyte) produce per-well cell counts at
