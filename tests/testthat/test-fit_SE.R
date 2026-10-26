@@ -60,6 +60,24 @@ test_that("fit_SE refits a processed co-dilution experiment", {
   expect_equal(gDRutils::get_SE_processing_metadata(fit_se)$date_processed, Sys.Date())
 })
 
+test_that("fit_SE gives the same object when other packages get loaded in between", {
+  se <- gDRutils::get_synthetic_data("finalMAE_small")[["single-agent"]]
+  SummarizedExperiment::assays(se) <- SummarizedExperiment::assays(se)["Averaged"]
+  S4Vectors::metadata(se)[[".internal"]] <- NULL
+
+  # loading a package changes sessionInfo(), which .internal used to store
+  extra <- setdiff(c("yaml", "knitr", "BiocStyle"), loadedNamespaces())
+  skip_if(length(extra) == 0L, "all candidate packages are loaded already")
+  fit_1 <- purrr::quietly(fit_SE)(se)$result
+  loadNamespace(extra[[1]])
+  fit_2 <- purrr::quietly(fit_SE)(se)$result
+  expect_identical(fit_1, fit_2)
+
+  internal <- gDRutils::get_SE_processing_metadata(fit_1)
+  expect_identical(names(internal), c("date_processed", "versions"))
+  expect_identical(internal$versions$gDRcore, as.character(utils::packageVersion("gDRcore")))
+})
+
 test_that("fit_SE.combinations works as expected", {
 
   # combo data
