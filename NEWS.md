@@ -1,3 +1,6 @@
+## gDRcore 1.11.29 - 2026-10-30
+* add `musyc_fit_fn()` and `musyc_summary_fn()`, a MuSyC synergy fit for `apply_fit()` via Python synergy
+
 ## gDRcore 1.11.28 - 2026-10-26
 * fix inflated time-course error bars by normalizing each well to the control of its own plate
 

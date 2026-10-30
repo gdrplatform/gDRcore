@@ -509,6 +509,37 @@ hss_df[, c("row", "column", "normalization_type",
            "hss_score", "hss_excess_mean")]
 ```
 
+## Approach 3: musyc_fit_fn — a fitted synergy model
+
+`musyc_fit_fn()` fits the MuSyC dose-response surface (Meyer et al. 2019) to the
+whole grid and returns its parameters: `alpha12`/`alpha21` measure synergy of
+potency, `beta` synergy of efficacy. The fit runs in the Python `synergy`
+package through `reticulate`, so the chunks below run only where it is
+installed (`reticulate::py_install("synergy", pip = TRUE)`). The Python,
+`synergy`, `numpy` and `scipy` versions go into the fit provenance.
+
+`musyc_summary_fn()` collapses the fits of all normalization types into one
+row per cell.
+
+```{r combo-musyc, eval = requireNamespace("reticulate", quietly = TRUE) && reticulate::py_module_available("synergy")}
+musyc_out <- apply_fit(
+  combo_se,
+  fit_fn = musyc_fit_fn,
+  data_type = "combination",
+  output_assay = "musyc_params",
+  summary_fn = musyc_summary_fn,
+  summary_assay = "musyc_summary",
+  fit_source = "musyc"
+)
+
+musyc_df <- BumpyMatrix::unsplitAsDataFrame(
+  assay(musyc_out, "musyc_params"),
+  row.field = "row", column.field = "column"
+)
+musyc_df[, c("row", "column", "normalization_type",
+             "alpha12", "alpha21", "beta", "r2")]
+```
+
 ***
 
 # Efficient multi-fit: apply_fits()
@@ -995,6 +1026,7 @@ apply_fits(
 | `apply_combo_scores(se)` | SE-level (recommended) | `Averaged` + `Metrics` | `fit_SE.combinations()` Bliss & HSA | `bliss_score`, `hsa_score` |
 | `bliss_fit_fn()` | triplet `fit_fn` | `Averaged` only | — (simplified, no SA fits) | `bliss_score`, `bliss_excess_mean`, `n_combo_points` |
 | `hss_fit_fn()` | triplet `fit_fn` | `Averaged` only | — (simplified, no SA fits) | `hss_score`, `hss_excess_mean`, `n_combo_points` |
+| `musyc_fit_fn()` | triplet `fit_fn` | `Averaged` + Python `synergy` | — (MuSyC surface fit) | `alpha12`, `alpha21`, `beta`, `r2` |
 
 **When to use which:**
 - Use `apply_combo_scores()` when you have a fully fitted SE (after `fit_SE.combinations()` or
