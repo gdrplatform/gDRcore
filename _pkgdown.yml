@@ -52,6 +52,8 @@ reference:
   - apply_combo_scores
   - bliss_fit_fn
   - hss_fit_fn
+  - musyc_fit_fn
+  - musyc_summary_fn
 - title: Moved to gDRutils
   desc: >
     The generic fit interface and the fit profile registry now live in gDRutils.
