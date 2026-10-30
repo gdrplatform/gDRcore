@@ -1,3 +1,6 @@
+## gDRcore 1.11.29 - 2026-10-30
+* export `read_intermediate_data()`, which reads the SummarizedExperiment saved after a pipeline step
+
 ## gDRcore 1.11.28 - 2026-10-26
 * fix inflated time-course error bars by normalizing each well to the control of its own plate
 
