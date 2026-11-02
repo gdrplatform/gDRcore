@@ -55,8 +55,9 @@ test_that("musyc_fit_fn returns an NA result for a grid it cannot fit", {
 })
 
 test_that("musyc_available returns a flag and restores the reticulate setting", {
+  before <- Sys.getenv("RETICULATE_USE_MANAGED_VENV", unset = NA)
   expect_true(checkmate::test_flag(musyc_available()))
-  expect_true(is.na(Sys.getenv("RETICULATE_USE_MANAGED_VENV", unset = NA)))
+  expect_identical(Sys.getenv("RETICULATE_USE_MANAGED_VENV", unset = NA), before)
 })
 
 test_that("musyc_fit_fn stops with an install hint when synergy is missing", {
@@ -162,4 +163,11 @@ test_that("musyc_summary_fn averages converged fits only", {
   expect_true(result$any_converged)
   expect_gt(result$mean_log2_alpha, 0)
   expect_error(musyc_summary_fn(list(converged = TRUE)), "fit_dt")
+})
+
+test_that("musyc_summary_fn clips extreme alpha values before averaging", {
+  rows <- .fake_musyc_rows()
+  rows[, alpha21 := c(2e-13, 1)]
+  result <- musyc_summary_fn(rows)
+  expect_equal(result$mean_log2_alpha, mean(c(1, 1, -10, 0)))
 })

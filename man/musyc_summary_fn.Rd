@@ -12,7 +12,8 @@ cell.}
 }
 \value{
 Named list with \code{mean_beta}, \code{mean_log2_alpha} (mean of
-\code{log2(alpha12)} and \code{log2(alpha21)}), \code{mean_r2},
+\code{log2(alpha12)} and \code{log2(alpha21)}, each clipped to
+\code{[-10, 10]}), \code{mean_r2},
 \code{any_converged} and \code{synergy_call} (\code{"synergistic"},
 \code{"antagonistic"}, \code{"additive"} or \code{"unknown"}, from
 \code{mean_beta} with a dead zone of 0.1).  \code{synergy_call} reflects

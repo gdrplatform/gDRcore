@@ -129,7 +129,8 @@ musyc_fit_fn <- gDRutils::set_fit_fn_info(
 #'   cell.
 #'
 #' @return Named list with \code{mean_beta}, \code{mean_log2_alpha} (mean of
-#'   \code{log2(alpha12)} and \code{log2(alpha21)}), \code{mean_r2},
+#'   \code{log2(alpha12)} and \code{log2(alpha21)}, each clipped to
+#'   \code{[-10, 10]}), \code{mean_r2},
 #'   \code{any_converged} and \code{synergy_call} (\code{"synergistic"},
 #'   \code{"antagonistic"}, \code{"additive"} or \code{"unknown"}, from
 #'   \code{mean_beta} with a dead zone of 0.1).  \code{synergy_call} reflects
@@ -152,10 +153,10 @@ musyc_summary_fn <- function(fit_dt) {
 
   converged <- fit_dt[["converged"]] %in% TRUE
   mean_beta <- mean(fit_dt[["beta"]][converged], na.rm = TRUE)
-  mean_log2_alpha <- mean(
-    log2(c(fit_dt[["alpha12"]][converged], fit_dt[["alpha21"]][converged])),
-    na.rm = TRUE
-  )
+  # alpha is weakly constrained for a drug with little effect, so one extreme
+  # value would dominate the mean
+  log2_alpha <- log2(c(fit_dt[["alpha12"]][converged], fit_dt[["alpha21"]][converged]))
+  mean_log2_alpha <- mean(pmin(pmax(log2_alpha, -10), 10), na.rm = TRUE)
   synergy_call <- if (is.na(mean_beta)) {
     "unknown"
   } else if (mean_beta > 0.1) {
@@ -179,7 +180,7 @@ musyc_summary_fn <- gDRutils::set_fit_fn_info(
   musyc_summary_fn,
   model = "MuSyC synergy summary",
   description = paste(
-    "Averages beta, log2 alpha and R-squared of the MuSyC fits over the normalization types",
+    "Averages beta, clipped log2 alpha and R-squared of the MuSyC fits over the normalization types",
     "and calls the pair synergistic, antagonistic or additive from the mean beta."
   )
 )
