@@ -34,7 +34,7 @@ test_that("cleanup_metadata works as expected", {
 })
 
 test_that("data_model.character works as expected", {
-  expect_equal(data_model("co-dilution"), "single-agent")
+  expect_equal(data_model("co-dilution"), "co-dilution")
   expect_equal(data_model("combination"), "combination")
 
   expect_error(data_model("single-a"))

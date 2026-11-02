@@ -1,3 +1,8 @@
+## gDRcore 1.11.30 - 2026-11-02
+* add a fit of co-dilution experiments along the total concentration, one curve per ratio, with both concentrations nested
+* fix `convert_mae_to_raw_data()` returning no rows for an MAE with one experiment and failing on co-dilution
+* bump the gDRutils requirement to 1.11.23, which adds `fit_codilution_metrics()`
+
 ## gDRcore 1.11.29 - 2026-10-30
 * export `read_intermediate_data()`, which reads the SummarizedExperiment saved after a pipeline step
 

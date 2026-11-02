@@ -33,13 +33,6 @@ fit_SE <- function(se,
   checkmate::assert_true(all(curve_type %in% c("GR", "RV")))
   gDRutils::validate_se_assay_name(se, averaged_assay)
 
-  if (is.null(nested_identifiers)) {
-    nested_identifiers <- get_default_nested_identifiers(
-      se,
-      data_model(data_type)
-    )
-  }
-
   # Pass the settings through fit_args rather than a closure, so the recipe that
   # apply_fit() records names gDRutils::fit_drug_response_metrics and its arguments.
   fit_args <- list(
@@ -51,22 +44,20 @@ fit_SE <- function(se,
     cap = cap
   )
 
-  # slicing_cols: use nested_identifiers only when they extend beyond the default
-  # "normalization_type" (e.g. co-dilution adds "ratio"). For standard SA data
-  # the profile default ("normalization_type") is used.
-  default_nested <- get_default_nested_identifiers(se, data_model(data_type))
-  if (identical(nested_identifiers, default_nested)) {
-    slicing_cols <- NULL  # let apply_fit use the profile default (normalization_type)
+  # A co-dilution cell holds both concentrations; fit_codilution_metrics() fits each
+  # ratio along the total concentration and returns one row per ratio.
+  fit_fn <- if (data_type == gDRutils::get_supported_experiments("cd")) {
+    gDRutils::fit_codilution_metrics
   } else {
-    slicing_cols <- nested_identifiers
+    gDRutils::fit_drug_response_metrics
   }
 
-  # slicing_values = curve_type filters to only the requested normalization types.
+  # The fit profile of data_type slices by normalization_type; slicing_values =
+  # curve_type keeps only the requested normalization types.
   se <- gDRutils::apply_fit(
     se = se,
-    fit_fn = gDRutils::fit_drug_response_metrics,
+    fit_fn = fit_fn,
     data_type = data_type,
-    slicing_cols = slicing_cols,
     slicing_values = curve_type,
     input_assay = averaged_assay,
     output_assay = metrics_assay,

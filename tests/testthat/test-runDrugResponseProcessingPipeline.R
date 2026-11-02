@@ -180,7 +180,35 @@ test_that("runDrugResponseProcessingPipeline processes co-dilution data", {
 
   mae <- suppressWarnings(generateCodilutionSmall(cell_lines, drugs, save = FALSE))
   expect_equal(names(MultiAssayExperiment::experiments(mae)), cd_name)
-  expect_true("Metrics" %in% SummarizedExperiment::assayNames(mae[[cd_name]]))
+  se <- mae[[cd_name]]
+  # one row per drug pair, both concentrations nested, so each cell holds the whole series
+  expect_false(gDRutils::get_env_identifiers("concentration2") %in% names(SummarizedExperiment::rowData(se)))
+  averaged <- gDRutils::convert_se_assay_to_dt(se, "Averaged")
+  expect_true(all(averaged[, .N, by = c("rId", "cId", "normalization_type")]$N == 9L))
+
+  # one fit per ratio along the total concentration (the test data have ratio 1)
+  metrics <- gDRutils::convert_se_assay_to_dt(se, "Metrics")
+  expect_identical(NROW(metrics), 2L * NROW(se) * NCOL(se))
+  expect_true(all(metrics$ratio == 1))
+  expect_true(all(metrics$N_conc == 9L))
+  expect_false(any(metrics$fit_type %in% c("DRCTooFewPointsToFit", "DRCInvalidFitResult")))
+})
+
+test_that("runDrugResponseProcessingPipeline fits each ratio of co-dilution data", {
+  cd_name <- gDRutils::get_supported_experiments("cd")
+  set.seed(2)
+  df <- gDRtestData::prepareCodilutionData(gDRtestData::create_synthetic_cell_lines()[seq_len(2), ],
+                                           gDRtestData::create_synthetic_drugs()[seq_len(3), ],
+                                           noise = 0)
+  # the same wells with three times more drug 2: a second ratio
+  conc2 <- gDRutils::get_env_identifiers("concentration2")
+  second <- df[df[[conc2]] > 0]
+  second[[conc2]] <- 3 * second[[conc2]]
+  second$Barcode <- paste0(second$Barcode, "_r3")
+  mae <- suppressWarnings(runDrugResponseProcessingPipeline(rbind(df, second), nested_confounders = "Barcode"))
+
+  expect_equal(names(MultiAssayExperiment::experiments(mae)), cd_name)
   metrics <- gDRutils::convert_se_assay_to_dt(mae[[cd_name]], "Metrics")
-  expect_gt(NROW(metrics), 0L)
+  expect_setequal(unique(metrics$ratio), c(1, 3))
+  expect_true(all(metrics[, .N, by = c("rId", "cId", "normalization_type")]$N == 2L))
 })

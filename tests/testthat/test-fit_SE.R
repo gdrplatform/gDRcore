@@ -48,16 +48,24 @@ test_that("fit_SE works as expected", {
 
 test_that("fit_SE refits a processed co-dilution experiment", {
   cd_name <- gDRutils::get_supported_experiments("cd")
-  se <- gDRutils::get_synthetic_data("finalMAE_combo_codilution_small")[[cd_name]]
+  set.seed(2)
+  mae <- suppressWarnings(generateCodilutionSmall(gDRtestData::create_synthetic_cell_lines(),
+                                                  gDRtestData::create_synthetic_drugs(), save = FALSE))
+  se <- mae[[cd_name]]
+  metrics <- gDRutils::convert_se_assay_to_dt(se, "Metrics")
   SummarizedExperiment::assays(se) <- SummarizedExperiment::assays(se)["Averaged"]
+  S4Vectors::metadata(se)[[".internal"]] <- NULL
+  S4Vectors::metadata(se)[["fit_parameters"]] <- NULL
 
-  # the SE still holds the processing metadata of the earlier run, with a
-  # sessionInfo; the refit replaces it instead of stopping on it
-  expect_s3_class(gDRutils::get_SE_processing_metadata(se)$session_info, "sessionInfo")
-  fit_se <- suppressWarnings(fit_SE(se, data_type = cd_name))
-  expect_true("Metrics" %in% SummarizedExperiment::assayNames(fit_se))
-  expect_gt(NROW(gDRutils::convert_se_assay_to_dt(fit_se, "Metrics")), 0L)
+  fit_se <- fit_SE(se, data_type = cd_name)
+  refit <- gDRutils::convert_se_assay_to_dt(fit_se, "Metrics")
+  cols <- c("rId", "cId", "normalization_type", "ratio", "fit_type", "xc50")
+  data.table::setorderv(metrics, cols[1:4])
+  data.table::setorderv(refit, cols[1:4])
+  expect_equal(refit[, cols, with = FALSE], metrics[, cols, with = FALSE])
   expect_equal(gDRutils::get_SE_processing_metadata(fit_se)$date_processed, Sys.Date())
+  # the fit provenance names the co-dilution fit function
+  expect_match(paste(capture.output(str(S4Vectors::metadata(fit_se))), collapse = " "), "fit_codilution_metrics")
 })
 
 test_that("fit_SE gives the same object when other packages get loaded in between", {

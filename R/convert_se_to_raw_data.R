@@ -20,20 +20,28 @@ convert_mae_to_raw_data <- function(mae) {
 
   data <- gDRutils::MAEpply(mae, convert_se_to_raw_data)
 
-  # Remove duplicates shared between assays to keep only original single-agent
-  common_records <- Reduce(intersect, lapply(data, "[[", "record_id"))
-  sa_name <- gDRutils::get_supported_experiments("sa")
+  # Records shared between experiments (single-agent arms and controls) are kept from one
+  # experiment only. With a single experiment there is nothing to share.
+  if (length(data) > 1L) {
+    common_records <- Reduce(intersect, lapply(data, "[[", "record_id"))
+    sa_name <- gDRutils::get_supported_experiments("sa")
 
-  # Get combo exp name (also support extracting the obsolete name for reprocessing purposes)
-  combo_name <- intersect(names(data), c(gDRutils::get_supported_experiments("combo"), "matrix"))
-  # check if data contains combination data and shared single-agent records are unique (true for internal data)
-  if (length(names(data)) > 1 && max(table(unique(data[[combo_name]])[record_id %in% common_records]$record_id)) == 1) {
-    data[[sa_name]] <- data[[sa_name]][!record_id %in% common_records]
-  } else {
-    data[setdiff(names(data), sa_name)] <-
-      lapply(data[setdiff(names(data), sa_name)], function(x) {
-        x[!record_id %in% common_records]
-      })
+    # Get combo exp name (also support extracting the obsolete name for reprocessing purposes)
+    combo_name <- intersect(names(data), c(gDRutils::get_supported_experiments("combo"), "matrix"))
+    combo_shared <- if (length(combo_name) == 1L) {
+      unique(data[[combo_name]])[record_id %in% common_records]$record_id
+    } else {
+      character(0)
+    }
+    # check if shared single-agent records of the combination data are unique (true for internal data)
+    if (sa_name %in% names(data) && length(combo_shared) > 0L && max(table(combo_shared)) == 1) {
+      data[[sa_name]] <- data[[sa_name]][!record_id %in% common_records]
+    } else {
+      # keep the shared records in the single-agent experiment, or in the first one without it
+      others <- setdiff(names(data), sa_name)
+      if (!sa_name %in% names(data)) others <- others[-1]
+      data[others] <- lapply(data[others], function(x) x[!record_id %in% common_records])
+    }
   }
 
   data_df <- data.table::rbindlist(data, fill = TRUE)
