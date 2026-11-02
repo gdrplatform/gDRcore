@@ -338,10 +338,13 @@ get_default_nested_identifiers.SummarizedExperiment <- function(
   tc_name <- gDRutils::get_supported_experiments("time-course")
   sa_name <- gDRutils::get_supported_experiments("sa")
   combo_name <- gDRutils::get_supported_experiments("combo")
+  cd_name <- gDRutils::get_supported_experiments("cd")
 
   ml <- list()
   ml[[sa_name]] <- .get_default_single_agent_nested_identifiers(se)
   ml[[combo_name]] <- .get_default_combination_nested_identifiers(se)
+  # co-dilution nests both concentrations, like combination, so each cell holds a whole series
+  ml[[cd_name]] <- .get_default_combination_nested_identifiers(se)
   ml[[tc_name]] <- .get_default_time_course_nested_identifiers(se)
 
   if (is.null(data_model)) {
@@ -540,10 +543,10 @@ get_assays_per_pipeline_step <-
            status = c("created", "present")) {
 
     checkmate::assert_choice(step, get_pipeline_steps())
-    checkmate::assert_choice(data_model, c("single-agent", "combination"))
+    checkmate::assert_choice(data_model, c("single-agent", "co-dilution", "combination"))
     checkmate::assert_choice(status, c("created", "present"))
 
-    fit_se <- if (data_model == "single-agent") {
+    fit_se <- if (data_model %in% c("single-agent", "co-dilution")) {
       "Metrics"
     } else {
       c(
