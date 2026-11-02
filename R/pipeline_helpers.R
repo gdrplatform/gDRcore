@@ -149,14 +149,33 @@ save_intermediate_data <- function(path, step, experiment, se) {
   qs2::qs_save(se, fpath)
 }
 
-#' read intermediate data for the given experiment and step to qs2 file
+#' Read the SummarizedExperiment saved after a pipeline step
 #'
-#' @param path string with the input directory of the qs2 file
-#' @param step, string with the step name
-#' @param experiment string with the experiment name
+#' Run with \code{data_dir}, \code{\link{runDrugResponseProcessingPipeline}} saves the
+#' SummarizedExperiment of every experiment after every step as
+#' \code{<data_dir>/<experiment>__<step>.qs2}. This reads one of them back.
 #'
-#' @keywords internal
-#' @return se
+#' @param path string with the directory passed as \code{data_dir}
+#' @param step string with the step name: \code{"create_SE"}, \code{"normalize_SE"},
+#' \code{"average_SE"} or \code{"fit_SE"}
+#' @param experiment string with the experiment name, e.g. \code{"single-agent"}
+#'
+#' @examples
+#' p_dir <- file.path(tempdir(), "read_step")
+#' dir.create(p_dir)
+#' td <- gDRimport::get_test_data()
+#' l_tbl <- gDRimport::load_data(
+#'   manifest_file = gDRimport::manifest_path(td),
+#'   df_template_files = gDRimport::template_path(td),
+#'   results_file = gDRimport::result_path(td)
+#' )
+#' imported_data <- merge_data(l_tbl$manifest, l_tbl$treatments, l_tbl$data)
+#' mae <- runDrugResponseProcessingPipeline(imported_data, data_dir = p_dir)
+#' read_intermediate_data(p_dir, "normalize_SE", "single-agent")
+#'
+#' @keywords runDrugResponseProcessingPipeline
+#' @export
+#' @return SummarizedExperiment
 #'
 read_intermediate_data <- function(path, step, experiment) {
 
@@ -164,10 +183,11 @@ read_intermediate_data <- function(path, step, experiment) {
     stop("Package 'qs2' is required to read intermediate data. Please install it.")
   }
   checkmate::assert_directory(path, "r")
-  checkmate::assert_string(step)
+  checkmate::assert_choice(step, get_pipeline_steps())
   checkmate::assert_string(experiment)
 
   fpath <- file.path(path, paste0(experiment, "__", step, ".qs2"))
+  checkmate::assert_file_exists(fpath)
   qs2::qs_read(fpath)
 }
 
