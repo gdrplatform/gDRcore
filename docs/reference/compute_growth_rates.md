@@ -60,13 +60,14 @@ compute_growth_rates(
 A `data.table` with one row per
 `(CellLine, Drug, Concentration, partner slots, period)` — controls
 included — holding `GrowthRate` (doublings/day), `sd_GrowthRate` across
-replicate wells, `rate_0` (the control baseline used, `NA` for periods
-mapped to `"None"` and when no control rows are present),
-`NormalizedGrowthRate` and `normalization_type`. All of these columns
-are always present, whatever the normalization map or the availability
-of controls. `NormalizedGrowthRate` is `NA` where the control baseline
-is not meaningfully positive: such a denominator either inverts the sign
-of the ratio (when negative) or leaves it undefined (when zero, within
+replicate wells, `rate_0` (the control baseline pooled over all plates,
+`NA` for periods mapped to `"None"` and when no control rows are
+present), `NormalizedGrowthRate` with `sd_NormalizedGrowthRate` across
+replicate wells, and `normalization_type`. All of these columns are
+always present, whatever the normalization map or the availability of
+controls. `NormalizedGrowthRate` is `NA` where the control baseline is
+not meaningfully positive: such a denominator either inverts the sign of
+the ratio (when negative) or leaves it undefined (when zero, within
 fitting tolerance) rather than scaling it, so no meaningful normalized
 rate exists. A warning names the cell line and period.
 
@@ -76,8 +77,11 @@ Growth rates are computed per
 `(Barcode, WellRow, WellColumn, CellLine, Drug, Concentration, partner drug/concentration slots)`
 group, so single-agent, doublet and triplet arms are never pooled.
 Control wells are detected via
-`gDRutils::get_env_identifiers("untreated_tag")` and a single baseline
-per `(CellLine, period)` is used for normalization.
+`gDRutils::get_env_identifiers("untreated_tag")`. Each well is
+normalized to the mean control rate of its own plate and cell line
+before the replicates are averaged, so plates that grow at different
+rates do not widen the spread; a plate without a control of its own
+falls back to the baseline pooled over all plates, with a warning.
 
 ## See also
 

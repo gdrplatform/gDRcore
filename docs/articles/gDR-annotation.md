@@ -142,7 +142,7 @@ results from the pipeline.
 
 ``` r
 sessionInfo()
-#> R version 4.6.1 (2026-06-24)
+#> R version 4.6.2 (2026-10-29)
 #> Platform: x86_64-pc-linux-gnu
 #> Running under: Ubuntu 24.04.5 LTS
 #> 
@@ -171,8 +171,8 @@ sessionInfo()
 #>  [7] cachem_1.1.0        knitr_1.52          htmltools_0.5.9    
 #> [10] rmarkdown_2.32      lifecycle_1.0.5     cli_3.6.6          
 #> [13] sass_0.4.10         pkgdown_2.2.1       textshaping_1.0.5  
-#> [16] jquerylib_0.1.4     systemfonts_1.3.2   compiler_4.6.1     
-#> [19] tools_4.6.1         ragg_1.5.2          bslib_0.12.0       
+#> [16] jquerylib_0.1.4     systemfonts_1.3.2   compiler_4.6.2     
+#> [19] tools_4.6.2         ragg_1.5.2          bslib_0.12.0       
 #> [22] evaluate_1.0.5      yaml_2.3.12         BiocManager_1.30.27
 #> [25] otel_0.2.0          jsonlite_2.0.0      rlang_1.3.0        
 #> [28] fs_2.1.0

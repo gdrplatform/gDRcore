@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.29</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,42 @@
       <small>Source: <a href="https://github.com/gdrplatform/gDRcore/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.29" id="gdrcore-11129---2026-10-30">gDRcore 1.11.29 - 2026-10-30<a class="anchor" aria-label="anchor" href="#gdrcore-11129---2026-10-30"></a></h2>
+<ul><li>export <code><a href="../reference/read_intermediate_data.html">read_intermediate_data()</a></code>, which reads the SummarizedExperiment saved after a pipeline step</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.28" id="gdrcore-11128---2026-10-26">gDRcore 1.11.28 - 2026-10-26<a class="anchor" aria-label="anchor" href="#gdrcore-11128---2026-10-26"></a></h2>
+<ul><li>fix inflated time-course error bars by normalizing each well to the control of its own plate</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.27" id="gdrcore-11127---2026-10-26">gDRcore 1.11.27 - 2026-10-26<a class="anchor" aria-label="anchor" href="#gdrcore-11127---2026-10-26"></a></h2>
+<ul><li>document fitting a new assay, from a long table to a fit profile and <code><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit()</a></code>, in the custom-fitting vignette</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.26" id="gdrcore-11126---2026-10-23">gDRcore 1.11.26 - 2026-10-23<a class="anchor" aria-label="anchor" href="#gdrcore-11126---2026-10-23"></a></h2>
+<ul><li>replace the whole <code><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo()</a></code> in <code>.internal</code> with the R, gDRcore and gDRutils versions, so a refit is identical</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.25" id="gdrcore-11125---2026-10-20">gDRcore 1.11.25 - 2026-10-20<a class="anchor" aria-label="anchor" href="#gdrcore-11125---2026-10-20"></a></h2>
+<ul><li>add reference tests for the combination datasets, including the excess and scores assays</li>
+<li>fix <code><a href="../reference/test_synthetic_data.html">test_synthetic_data()</a></code>, which compared the input instead of the reprocessed data when given raw data</li>
+<li>fix <code><a href="../reference/test_synthetic_data.html">test_synthetic_data()</a></code> pairing rows by their measured values instead of their identifiers</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.24" id="gdrcore-11124---2026-10-20">gDRcore 1.11.24 - 2026-10-20<a class="anchor" aria-label="anchor" href="#gdrcore-11124---2026-10-20"></a></h2>
+<ul><li>fix the fit step for co-dilution experiments, which stopped on a missing fit profile</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.23" id="gdrcore-11123---2026-10-19">gDRcore 1.11.23 - 2026-10-19<a class="anchor" aria-label="anchor" href="#gdrcore-11123---2026-10-19"></a></h2>
+<ul><li>fix missing <code>CIScore_50</code> and <code>CIScore_80</code> in the combination scores</li>
+<li>restore the single-agent fit on the arms of the combination matrix, dropped when the steps were split</li>
+<li>add the combination index of each isobologram (<code>CI_100x</code>) to the isobolograms assay</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.22" id="gdrcore-11122---2026-10-18">gDRcore 1.11.22 - 2026-10-18<a class="anchor" aria-label="anchor" href="#gdrcore-11122---2026-10-18"></a></h2>
+<ul><li>add the gDRimport record of the input files to the SE provenance as the import step</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.11.21" id="gdrcore-11121---2026-10-18">gDRcore 1.11.21 - 2026-10-18<a class="anchor" aria-label="anchor" href="#gdrcore-11121---2026-10-18"></a></h2>
 <ul><li>add the create, normalize and average steps to the SE provenance, with masked wells and the GR method of each pair</li>

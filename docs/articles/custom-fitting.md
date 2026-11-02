@@ -432,13 +432,13 @@ function does. It is a single loop over each (drug-combo × cell-line)
 pair that executes **five sequential steps**, each writing to a separate
 assay:
 
-| Step | Key functions                                                                                                                                                                                                                                                                                   | Output assay                     | Description                                                                                                                                  |
-|------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| 1    | `fit_combo_cotreatments()`, `fit_combo_codilutions()`                                                                                                                                                                                                                                           | `Metrics`                        | Fit SA dose-response curves at each co-treatment concentration; produces `ec50`, `h`, `x_inf`, `x_0` per SA series                           |
-| 2    | [`map_ids_to_fits()`](https://gdrplatform.github.io/gDRcore/reference/map_ids_to_fits.md)                                                                                                                                                                                                       | *(internal)*                     | Predict **smooth** single-agent responses at every combo concentration using the SA fits from step 1; average col/row/codilution predictions |
-| 3    | [`calculate_HSA()`](https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.md), [`calculate_Bliss()`](https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.md), [`calculate_excess()`](https://gdrplatform.github.io/gDRcore/reference/calculate_excess.md) | `excess`                         | Compute expected response (HSA = min of SAs; Bliss = product/GR formula); compute per-point excess = expected − observed                     |
-| 4    | `calculate_Loewe()`                                                                                                                                                                                                                                                                             | `isobolograms`, `all_iso_points` | Compute combination index (CI) via isobologram analysis; CI \< 1 = synergy                                                                   |
-| 5    | [`calculate_score()`](https://gdrplatform.github.io/gDRcore/reference/calculate_score.md)                                                                                                                                                                                                       | `scores`                         | Reduce per-point excess to a scalar: mean of top-10-percentile values → `bliss_score`, `hsa_score`, `CIScore_50`, `CIScore_80`               |
+| Step | Key functions                                                                                                                                                                                                                                                                                   | Output assay                     | Description                                                                                                                                                                                               |
+|------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1    | `fit_combo_cotreatments()`, `fit_combo_codilutions()`                                                                                                                                                                                                                                           | `Metrics`                        | Fit SA dose-response curves at each co-treatment concentration; produces `ec50`, `h`, `x_inf`, `x_0` per SA series                                                                                        |
+| 2    | [`map_ids_to_fits()`](https://gdrplatform.github.io/gDRcore/reference/map_ids_to_fits.md)                                                                                                                                                                                                       | *(internal)*                     | Predict **smooth** single-agent responses at every combo concentration using the SA fits from step 1; average col/row/codilution predictions; on the single-agent arms only the fit along the arm is used |
+| 3    | [`calculate_HSA()`](https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.md), [`calculate_Bliss()`](https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.md), [`calculate_excess()`](https://gdrplatform.github.io/gDRcore/reference/calculate_excess.md) | `excess`                         | Compute expected response (HSA = min of SAs; Bliss = product/GR formula); compute per-point excess = expected − observed                                                                                  |
+| 4    | `calculate_Loewe()`                                                                                                                                                                                                                                                                             | `isobolograms`, `all_iso_points` | Compute combination index (CI, column `CI_100x`) via isobologram analysis; CI \< 1 = synergy                                                                                                              |
+| 5    | [`calculate_score()`](https://gdrplatform.github.io/gDRcore/reference/calculate_score.md)                                                                                                                                                                                                       | `scores`                         | Reduce per-point excess to a scalar: mean of top-10-percentile values → `bliss_score`, `hsa_score`; `CIScore_50`, `CIScore_80` are the CI of the isobolograms from step 4 at response levels 0.5 and 0.2  |
 
 **The key insight:** step 2 (smooth) depends on step 1 (SA fits), and
 steps 3–5 all depend on step 2. The boundaries between steps are clean,
@@ -498,6 +498,9 @@ assayNames(se2)  # no "isobolograms" or "all_iso_points"
 #> [1] "Averaged" "Metrics"  "excess"   "scores"
 ```
 
+Without isobolograms, `CIScore_50` and `CIScore_80` in the `scores`
+assay are `NA`.
+
 ------------------------------------------------------------------------
 
 ### Two approaches for combination scoring in the new API
@@ -531,8 +534,8 @@ combo_se_full <- combo_mae[[combo_name]]
 combo_scored <- apply_combo_scores(combo_se_full)
 assayNames(combo_scored)
 #> [1] "RawTreated"     "Controls"       "Normalized"     "Averaged"      
-#> [5] "excess"         "all_iso_points" "isobolograms"   "scores"        
-#> [9] "Metrics"
+#> [5] "Metrics"        "excess"         "isobolograms"   "all_iso_points"
+#> [9] "scores"
 ```
 
 ``` r
@@ -561,7 +564,7 @@ scores_df[, c("row", "column", "normalization_type", "bliss_score", "hsa_score")
 #> 2   0.002358668 0.002358668
 #> 3   0.000674575 0.000674575
 #> 4   0.000298478 0.000298478
-#> 5   0.009101157 0.009101157
+#> 5   0.009101249 0.009101249
 #> ...         ...         ...
 #> 20  0.000151856 0.000151856
 #> 21  0.031880296 0.031880296
@@ -783,6 +786,96 @@ unique(rv_df$normalization_type)
 
 ------------------------------------------------------------------------
 
+## A new assay
+
+[`apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
+does not need drugs and cell lines. Any SE whose cells hold a long table
+will do, once a fit profile tells
+[`apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
+how to slice the cells. The example below is a biochemical screen:
+compounds × targets, percent activity over a dilution series.
+
+### From a long table to an SE
+
+[`convert_dt_to_se()`](https://gdrplatform.github.io/gDRstyle/reference/convert_dt_to_se.html)
+puts the row and column identifiers into `rowData` and `colData` and
+nests the remaining columns in one BumpyMatrix assay.
+
+``` r
+set.seed(1)
+ic50 <- c(cmpdA = 0.01, cmpdB = 0.3, cmpdC = 5)
+biochem_dt <- CJ(
+  compound = names(ic50), target = c("PI3Ka", "PI3Kb"),
+  Concentration = 10^seq(-3, 1, length.out = 8), replicate = 1:2
+)
+biochem_dt[, Activity := 100 / (1 + (Concentration / ic50[compound])^1.2) + rnorm(.N, 0, 3)]
+biochem_dt[, assay_type := "IC50"]
+
+# cmpdC was run at three concentrations only
+biochem_dt <- biochem_dt[!(compound == "cmpdC" & Concentration < 0.5)]
+
+biochem_se <- convert_dt_to_se(biochem_dt, "compound", "target", "Biochemical")
+biochem_se
+#> class: SummarizedExperiment 
+#> dim: 3 2 
+#> metadata(0):
+#> assays(1): Biochemical
+#> rownames(3): cmpdA cmpdB cmpdC
+#> rowData names(1): compound
+#> colnames(2): PI3Ka PI3Kb
+#> colData names(1): target
+```
+
+### A profile and a fit function
+
+The profile names the input assay and the columns that split a cell into
+sub-experiments. It lives in the current R session only, so register it
+again after a restart.
+
+``` r
+register_fit_profile(
+  "biochemical",
+  slicing_cols = "assay_type",
+  input_assay = "Biochemical",
+  description = "biochemical activity, % of control"
+)
+
+fit_4pl <- function(dt) {
+  if (uniqueN(dt$Concentration) < 4) stop("fewer than 4 concentrations")
+  m <- stats::nls(
+    Activity ~ bottom + (top - bottom) / (1 + 10^((log10(Concentration) - logic50) * h)),
+    data = dt,
+    start = list(bottom = 0, top = 100, logic50 = median(log10(dt$Concentration)), h = 1),
+    algorithm = "port", lower = c(-20, 50, -6, 0.1), upper = c(50, 150, 3, 5)
+  )
+  cf <- stats::coef(m)
+  list(bottom = cf[["bottom"]], top = cf[["top"]], ic50 = 10^cf[["logic50"]], h = cf[["h"]])
+}
+```
+
+### Fitting and reading the result
+
+``` r
+biochem_out <- apply_fit(
+  biochem_se, fit_4pl, "biochemical",
+  output_assay = "BiochemFits",
+  fit_source = "4pl"
+)
+biochem_fits <- convert_se_assay_to_dt(biochem_out, "BiochemFits")
+biochem_fits[, .(compound, target, ic50 = signif(ic50, 2), h = round(h, 2))]
+#>    compound target  ic50     h
+#>      <char> <char> <num> <num>
+#> 1:    cmpdA  PI3Ka 0.010  1.18
+#> 2:    cmpdB  PI3Ka 0.310  1.26
+#> 3:    cmpdA  PI3Kb 0.011  1.34
+#> 4:    cmpdB  PI3Kb 0.280  1.27
+```
+
+Both cmpdC fits failed with a warning, so its row is empty; the other
+four results are kept, and so is the assay.
+
+------------------------------------------------------------------------
+
 ## Time-course data: `fit_SE.timecourse()`
 
 Live-cell imaging experiments (e.g. Incucyte) produce per-well cell
@@ -987,7 +1080,7 @@ prov_se <- apply_fit(
 gDRutils::summarize_fit_provenance(prov_se)
 #>          assay fit_source                                            fn
 #>         <char>     <char>                                        <char>
-#> 1: custom_hill hill_loose gDRutils::fit_drug_response_metrics (1.11.18)
+#> 1: custom_hill hill_loose gDRutils::fit_drug_response_metrics (1.11.22)
 #>         fit_args
 #>           <char>
 #> 1: pcutoff = 0.1
@@ -1008,7 +1101,7 @@ recipe$fn[c("name", "package", "version")]
 #> [1] "gDRutils"
 #> 
 #> $version
-#> [1] "1.11.18"
+#> [1] "1.11.22"
 recipe$fn$info$model
 #> [1] "3-parameter log-logistic (drc::LL.3u), upper asymptote fixed at 1"
 recipe$fit_args
@@ -1159,7 +1252,7 @@ or when embedding score computation inside a larger custom `fit_fn`.
 
 ``` r
 sessionInfo()
-#> R version 4.6.1 (2026-06-24)
+#> R version 4.6.2 (2026-10-29)
 #> Platform: x86_64-pc-linux-gnu
 #> Running under: Ubuntu 24.04.5 LTS
 #> 
@@ -1187,31 +1280,31 @@ sessionInfo()
 #>  [7] IRanges_2.47.5              S4Vectors_0.51.10          
 #>  [9] BiocGenerics_0.59.12        generics_0.1.4             
 #> [11] MatrixGenerics_1.25.0       matrixStats_1.5.0          
-#> [13] gDRutils_1.11.18            gDRtestData_1.11.10        
-#> [15] gDRcore_1.11.21             BiocStyle_2.41.0           
+#> [13] gDRutils_1.11.22            gDRtestData_1.11.11        
+#> [15] gDRcore_1.11.29             BiocStyle_2.41.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
 #>  [3] TH.data_1.1-5               stringfish_0.19.2          
 #>  [5] digest_0.6.39               lifecycle_1.0.5            
-#>  [7] survival_3.8-6              compiler_4.6.1             
+#>  [7] survival_3.8-12             compiler_4.6.2             
 #>  [9] rlang_1.3.0                 sass_0.4.10                
-#> [11] drc_4.0-0                   tools_4.6.1                
+#> [11] drc_4.0-0                   tools_4.6.2                
 #> [13] plotrix_3.8-14              yaml_2.3.12                
 #> [15] knitr_1.52                  lambda.r_1.2.6             
 #> [17] S4Arrays_1.13.2             DelayedArray_0.39.8        
 #> [19] RColorBrewer_1.1-3          abind_1.4-8                
 #> [21] multcomp_1.4-32             BiocParallel_1.47.0        
-#> [23] desc_1.4.3                  grid_4.6.1                 
+#> [23] desc_1.4.3                  grid_4.6.2                 
 #> [25] scales_1.4.0                gtools_3.9.5               
-#> [27] MASS_7.3-65                 MultiAssayExperiment_1.39.1
+#> [27] MASS_7.3-66                 MultiAssayExperiment_1.39.1
 #> [29] cli_3.6.6                   mvtnorm_1.4-2              
 #> [31] rmarkdown_2.32              ragg_1.5.2                 
 #> [33] otel_0.2.0                  RcppParallel_6.2.1         
-#> [35] cachem_1.1.0                splines_4.6.1              
-#> [37] parallel_4.6.1              BiocManager_1.30.27        
+#> [35] cachem_1.1.0                splines_4.6.2              
+#> [37] parallel_4.6.2              BiocManager_1.30.27        
 #> [39] formatR_1.14                XVector_0.53.0             
-#> [41] Matrix_1.7-5                sandwich_3.1-3             
+#> [41] Matrix_1.7-6                sandwich_3.1-3             
 #> [43] jsonlite_2.0.0              carData_3.0-6              
 #> [45] bookdown_0.48               car_3.1-5                  
 #> [47] Formula_1.2-6               systemfonts_1.3.2          
@@ -1219,7 +1312,7 @@ sessionInfo()
 #> [51] pkgdown_2.2.1               codetools_0.2-20           
 #> [53] futile.logger_1.4.9         htmltools_0.5.9            
 #> [55] R6_2.6.1                    textshaping_1.0.5          
-#> [57] evaluate_1.0.5              lattice_0.22-9             
+#> [57] evaluate_1.0.5              lattice_0.23-1             
 #> [59] futile.options_1.0.1        backports_1.5.1            
 #> [61] bslib_0.12.0                Rcpp_1.1.2                 
 #> [63] SparseArray_1.13.4          checkmate_2.3.4            

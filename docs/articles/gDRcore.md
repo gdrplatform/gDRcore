@@ -285,7 +285,7 @@ se_out <- apply_fit_to_se(
 
 ``` r
 sessionInfo()
-#> R version 4.6.1 (2026-06-24)
+#> R version 4.6.2 (2026-10-29)
 #> Platform: x86_64-pc-linux-gnu
 #> Running under: Ubuntu 24.04.5 LTS
 #> 
@@ -306,16 +306,16 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] gDRcore_1.11.21     gDRtestData_1.11.10 BiocStyle_2.41.0   
+#> [1] gDRcore_1.11.29     gDRtestData_1.11.11 BiocStyle_2.41.0   
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
 #>  [3] BumpyMatrix_1.21.0          TH.data_1.1-5              
 #>  [5] digest_0.6.39               lifecycle_1.0.5            
-#>  [7] gDRutils_1.11.18            survival_3.8-6             
-#>  [9] magrittr_2.0.5              compiler_4.6.1             
+#>  [7] gDRutils_1.11.22            survival_3.8-12            
+#>  [9] magrittr_2.0.5              compiler_4.6.2             
 #> [11] rlang_1.3.0                 sass_0.4.10                
-#> [13] drc_4.0-0                   tools_4.6.1                
+#> [13] drc_4.0-0                   tools_4.6.2                
 #> [15] plotrix_3.8-14              yaml_2.3.12                
 #> [17] data.table_1.18.6.1         knitr_1.52                 
 #> [19] lambda.r_1.2.6              S4Arrays_1.13.2            
@@ -323,20 +323,20 @@ sessionInfo()
 #> [23] abind_1.4-8                 multcomp_1.4-32            
 #> [25] BiocParallel_1.47.0         purrr_1.2.2                
 #> [27] BiocGenerics_0.59.12        desc_1.4.3                 
-#> [29] grid_4.6.1                  stats4_4.6.1               
+#> [29] grid_4.6.2                  stats4_4.6.2               
 #> [31] scales_1.4.0                gtools_3.9.5               
-#> [33] MASS_7.3-65                 MultiAssayExperiment_1.39.1
+#> [33] MASS_7.3-66                 MultiAssayExperiment_1.39.1
 #> [35] SummarizedExperiment_1.43.0 cli_3.6.6                  
 #> [37] mvtnorm_1.4-2               rmarkdown_2.32             
 #> [39] ragg_1.5.2                  generics_0.1.4             
-#> [41] otel_0.2.0                  readxl_1.5.0.1             
+#> [41] otel_0.2.0                  readxl_1.6.0               
 #> [43] cachem_1.1.0                stringr_1.6.0              
-#> [45] splines_4.6.1               gDRimport_1.11.8           
-#> [47] assertthat_0.2.1            parallel_4.6.1             
+#> [45] splines_4.6.2               gDRimport_1.11.14          
+#> [47] assertthat_0.2.1            parallel_4.6.2             
 #> [49] formatR_1.14                BiocManager_1.30.27        
 #> [51] cellranger_1.1.0            XVector_0.53.0             
 #> [53] matrixStats_1.5.0           vctrs_0.7.3                
-#> [55] Matrix_1.7-5                sandwich_3.1-3             
+#> [55] Matrix_1.7-6                sandwich_3.1-3             
 #> [57] jsonlite_2.0.0              carData_3.0-6              
 #> [59] bookdown_0.48               car_3.1-5                  
 #> [61] IRanges_2.47.5              S4Vectors_0.51.10          
@@ -349,7 +349,7 @@ sessionInfo()
 #> [75] pillar_1.11.1               htmltools_0.5.9            
 #> [77] Seqinfo_1.3.2               brio_1.1.5                 
 #> [79] R6_2.6.1                    textshaping_1.0.5          
-#> [81] evaluate_1.0.5              lattice_0.22-9             
+#> [81] evaluate_1.0.5              lattice_0.23-1             
 #> [83] Biobase_2.73.2              futile.options_1.0.1       
 #> [85] backports_1.5.1             bslib_0.12.0               
 #> [87] SparseArray_1.13.4          checkmate_2.3.4            

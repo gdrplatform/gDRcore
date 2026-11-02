@@ -1,5 +1,59 @@
 # Changelog
 
+## gDRcore 1.11.29 - 2026-10-30
+
+- export
+  [`read_intermediate_data()`](https://gdrplatform.github.io/gDRcore/reference/read_intermediate_data.md),
+  which reads the SummarizedExperiment saved after a pipeline step
+
+## gDRcore 1.11.28 - 2026-10-26
+
+- fix inflated time-course error bars by normalizing each well to the
+  control of its own plate
+
+## gDRcore 1.11.27 - 2026-10-26
+
+- document fitting a new assay, from a long table to a fit profile and
+  [`apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html),
+  in the custom-fitting vignette
+
+## gDRcore 1.11.26 - 2026-10-23
+
+- replace the whole
+  [`sessionInfo()`](https://rdrr.io/r/utils/sessionInfo.html) in
+  `.internal` with the R, gDRcore and gDRutils versions, so a refit is
+  identical
+
+## gDRcore 1.11.25 - 2026-10-20
+
+- add reference tests for the combination datasets, including the excess
+  and scores assays
+- fix
+  [`test_synthetic_data()`](https://gdrplatform.github.io/gDRcore/reference/test_synthetic_data.md),
+  which compared the input instead of the reprocessed data when given
+  raw data
+- fix
+  [`test_synthetic_data()`](https://gdrplatform.github.io/gDRcore/reference/test_synthetic_data.md)
+  pairing rows by their measured values instead of their identifiers
+
+## gDRcore 1.11.24 - 2026-10-20
+
+- fix the fit step for co-dilution experiments, which stopped on a
+  missing fit profile
+
+## gDRcore 1.11.23 - 2026-10-19
+
+- fix missing `CIScore_50` and `CIScore_80` in the combination scores
+- restore the single-agent fit on the arms of the combination matrix,
+  dropped when the steps were split
+- add the combination index of each isobologram (`CI_100x`) to the
+  isobolograms assay
+
+## gDRcore 1.11.22 - 2026-10-18
+
+- add the gDRimport record of the input files to the SE provenance as
+  the import step
+
 ## gDRcore 1.11.21 - 2026-10-18
 
 - add the create, normalize and average steps to the SE provenance, with

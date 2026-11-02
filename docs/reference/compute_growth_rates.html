@@ -19,7 +19,7 @@ fit_SE.timecourse to run both stages at once."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.29</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -111,9 +111,10 @@ return a single numeric value: the growth rate in doublings per day.
     <p>A <code>data.table</code> with one row per
 <code>(CellLine, Drug, Concentration, partner slots, period)</code> — controls
 included — holding <code>GrowthRate</code> (doublings/day), <code>sd_GrowthRate</code>
-across replicate wells, <code>rate_0</code> (the control baseline used, <code>NA</code>
-for periods mapped to <code>"None"</code> and when no control rows are present),
-<code>NormalizedGrowthRate</code> and <code>normalization_type</code>.  All of these
+across replicate wells, <code>rate_0</code> (the control baseline pooled over all
+plates, <code>NA</code> for periods mapped to <code>"None"</code> and when no control rows
+are present), <code>NormalizedGrowthRate</code> with <code>sd_NormalizedGrowthRate</code>
+across replicate wells, and <code>normalization_type</code>.  All of these
 columns are always present, whatever the normalization map or the
 availability of controls.  <code>NormalizedGrowthRate</code> is <code>NA</code> where
 the control baseline is not meaningfully positive: such a denominator
@@ -127,8 +128,11 @@ period.</p>
     <p>Growth rates are computed per <code>(Barcode, WellRow, WellColumn, CellLine,
 Drug, Concentration, partner drug/concentration slots)</code> group, so
 single-agent, doublet and triplet arms are never pooled.  Control wells are
-detected via <code>gDRutils::get_env_identifiers("untreated_tag")</code> and a
-single baseline per <code>(CellLine, period)</code> is used for normalization.</p>
+detected via <code>gDRutils::get_env_identifiers("untreated_tag")</code>.  Each well
+is normalized to the mean control rate of its own plate and cell line before
+the replicates are averaged, so plates that grow at different rates do not
+widen the spread; a plate without a control of its own falls back to the
+baseline pooled over all plates, with a warning.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

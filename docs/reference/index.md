@@ -17,6 +17,8 @@ fit the processed data (fit_SE).
   : List the measurement timepoints entering each growth-rate window
 - [`growth_rates_to_se()`](https://gdrplatform.github.io/gDRcore/reference/growth_rates_to_se.md)
   : Convert a growth rate table into the stage 2 SummarizedExperiment
+- [`read_intermediate_data()`](https://gdrplatform.github.io/gDRcore/reference/read_intermediate_data.md)
+  : Read the SummarizedExperiment saved after a pipeline step
 - [`average_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
   [`create_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
   [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)

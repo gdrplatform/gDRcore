@@ -9,7 +9,7 @@ exact scoring logic of fit_SE.combinations."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.29</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,7 +57,8 @@ exact scoring logic of <code><a href="fit_SE.combinations.html">fit_SE.combinati
 <span>  excess_assay <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  normalization_types <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GR"</span>, <span class="st">"RV"</span><span class="op">)</span>,</span>
 <span>  fit_source <span class="op">=</span> <span class="st">"gDR"</span>,</span>
-<span>  score_FUN <span class="op">=</span> <span class="va">calculate_score</span></span>
+<span>  score_FUN <span class="op">=</span> <span class="va">calculate_score</span>,</span>
+<span>  isobolograms_assay <span class="op">=</span> <span class="st">"isobolograms"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -105,11 +106,18 @@ Default <code>c("GR", "RV")</code>.</p></dd>
 <dd><p>function to reduce per-point excess values to a scalar
 score. Default <code><a href="calculate_score.html">calculate_score</a></code> (mean of top 10-percentile).</p></dd>
 
+
+<dt id="arg-isobolograms-assay">isobolograms_assay<a class="anchor" aria-label="anchor" href="#arg-isobolograms-assay"></a></dt>
+<dd><p>string or <code>NULL</code>; name of the assay with the
+Loewe isobolograms used for <code>CIScore_50</code> and <code>CIScore_80</code>.
+Default <code>"isobolograms"</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>Updated <code>SummarizedExperiment</code> with a <code>scores_assay</code>
-assay containing <code>bliss_score</code> and <code>hsa_score</code> per triplet.</p>
+assay containing <code>bliss_score</code>, <code>hsa_score</code>, <code>CIScore_50</code>
+and <code>CIScore_80</code> per triplet.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -132,7 +140,12 @@ parameter sets from <code>Metrics</code>.</p></li>
 HSA-expected using <code><a href="calculate_matrix_metric.html">calculate_HSA</a></code> on the smooth SA edges.</p></li>
 <li><p>Compute excess via <code><a href="calculate_excess.html">calculate_excess</a></code>.</p></li>
 <li><p>Score = mean of top 10-percentile excess via <code><a href="calculate_score.html">calculate_score</a></code>.</p></li>
-</ol></div>
+</ol><p><code>CIScore_50</code> and <code>CIScore_80</code> are read from the
+<code>isobolograms_assay</code> written by <code><a href="apply_combo_isobolograms.html">apply_combo_isobolograms</a></code>:
+the combination index of the isobologram at the lowest response level
+\(\ge\) 0.5 and \(\ge\) 0.2. They are <code>NA</code> when that assay is
+missing or has no isobologram for the drug pair and cell line.</p>
+    </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="bliss_fit_fn.html">bliss_fit_fn</a></code>, <code><a href="hss_fit_fn.html">hss_fit_fn</a></code> for the

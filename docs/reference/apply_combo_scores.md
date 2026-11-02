@@ -15,7 +15,8 @@ apply_combo_scores(
   excess_assay = NULL,
   normalization_types = c("GR", "RV"),
   fit_source = "gDR",
-  score_FUN = calculate_score
+  score_FUN = calculate_score,
+  isobolograms_assay = "isobolograms"
 )
 ```
 
@@ -63,10 +64,15 @@ apply_combo_scores(
   [`calculate_score`](https://gdrplatform.github.io/gDRcore/reference/calculate_score.md)
   (mean of top 10-percentile).
 
+- isobolograms_assay:
+
+  string or `NULL`; name of the assay with the Loewe isobolograms used
+  for `CIScore_50` and `CIScore_80`. Default `"isobolograms"`.
+
 ## Value
 
 Updated `SummarizedExperiment` with a `scores_assay` assay containing
-`bliss_score` and `hsa_score` per triplet.
+`bliss_score`, `hsa_score`, `CIScore_50` and `CIScore_80` per triplet.
 
 ## Details
 
@@ -107,6 +113,13 @@ Scoring steps (per drug-combo × cell-line × normalization_type):
 
 5.  Score = mean of top 10-percentile excess via
     [`calculate_score`](https://gdrplatform.github.io/gDRcore/reference/calculate_score.md).
+
+`CIScore_50` and `CIScore_80` are read from the `isobolograms_assay`
+written by
+[`apply_combo_isobolograms`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_isobolograms.md):
+the combination index of the isobologram at the lowest response level
+\\\ge\\ 0.5 and \\\ge\\ 0.2. They are `NA` when that assay is missing or
+has no isobologram for the drug pair and cell line.
 
 ## See also
 

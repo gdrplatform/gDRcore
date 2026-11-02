@@ -56,7 +56,11 @@ apply_combo_isobolograms(
 
 ## Value
 
-Updated SE with `isobolograms_assay` and `iso_points_assay` assays.
+Updated SE with `isobolograms_assay` and `iso_points_assay` assays. Each
+isobologram point carries the combination index of its curve
+(`CI_100x`), which
+[`apply_combo_scores`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.md)
+uses for `CIScore_50` and `CIScore_80`.
 
 ## Details
 

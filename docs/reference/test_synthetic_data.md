@@ -54,7 +54,7 @@ drugs <- gDRtestData::create_synthetic_drugs()
 data <- "finalMAE_small"
 original <- gDRutils::get_synthetic_data(data)
 test_synthetic_data(original, original, "test")
-#> Test passed with 1 success 🥇.
-#> Test passed with 1 success 🎊.
-#> Test passed with 1 success 🎉.
+#> Test passed with 2 successes 🥇.
+#> Test passed with 2 successes 🎊.
+#> Test passed with 2 successes 🎉.
 ```
