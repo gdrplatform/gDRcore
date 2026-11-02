@@ -15,26 +15,22 @@
 #' \code{reticulate::py_install("synergy", pip = TRUE)}.  The fit provenance
 #' records the Python, \code{synergy}, \code{numpy} and \code{scipy} versions.
 #'
-#' The whole grid is fitted, single-agent edges included.  The untreated
-#' corner is set to 1 (added when absent), parameters are bounded
-#' (\code{E} from -1 for GR and from 0 for RV, up to 1.5) and the fit is
-#' restarted from random initial values until \code{r2} exceeds
-#' \code{r2_threshold} or \code{patience} restarts in a row bring no
-#' improvement.
+#' The whole grid is fitted, single-agent edges included, with the
+#' \code{synergy} defaults and three additions: the untreated corner is set
+#' to 1 (added when absent), \code{E} is bounded from -1 for GR and from 0 for
+#' RV up to 1.5, and \code{C1}/\code{C2} stay within a factor of 1000 of the
+#' tested doses.  The fit starts from the \code{synergy} initial guess and
+#' from \code{n_restarts} random initial values; the fit with the best
+#' \code{r2}, computed on the measured points, is kept.
 #'
 #' \code{alpha > 1} means synergistic potency, \code{beta > 0} synergistic
-#' efficacy.
+#' efficacy.  \code{alpha} is weakly constrained when a drug has little
+#' effect, so extreme values of it are not a measure of synergy.
 #'
 #' @param avg_dt \code{data.table} for one (drug1 x drug2 x cell line x
 #'   normalization_type) combination.  Must contain columns \code{Concentration},
 #'   \code{Concentration_2}, \code{x}, and \code{normalization_type}.
-#' @param fit_gamma logical; whether to fit the cooperativity parameters
-#'   \code{gamma12} and \code{gamma21}.
-#' @param n_restarts integer; maximum number of restarts from random initial
-#'   values.
-#' @param r2_threshold numeric; restarts stop once \code{r2} exceeds this value.
-#' @param patience integer; restarts stop after this many restarts in a row
-#'   without improvement.
+#' @param n_restarts integer; number of restarts from random initial values.
 #' @param seed integer; seed for the random initial values.  The global random
 #'   number generator is left as it was.
 #'
@@ -45,8 +41,7 @@
 #'   \code{NA_real_} when the fit does not converge.
 #'
 #' @examples
-#' if (requireNamespace("reticulate", quietly = TRUE) &&
-#'     reticulate::py_module_available("synergy")) {
+#' if (musyc_available()) {
 #'   mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
 #'   combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
 #'   combo_se_out <- gDRutils::apply_fit(
@@ -59,17 +54,9 @@
 #'
 #' @seealso \code{\link{musyc_summary_fn}}
 #' @export
-musyc_fit_fn <- function(avg_dt,
-                         fit_gamma = FALSE,
-                         n_restarts = 100L,
-                         r2_threshold = 0.5,
-                         patience = 20L,
-                         seed = 1L) {
+musyc_fit_fn <- function(avg_dt, n_restarts = 10L, seed = 1L) {
   checkmate::assert_data_table(avg_dt)
-  checkmate::assert_flag(fit_gamma)
   checkmate::assert_count(n_restarts)
-  checkmate::assert_number(r2_threshold)
-  checkmate::assert_count(patience)
   checkmate::assert_int(seed)
 
   norm_type <- as.character(avg_dt$normalization_type[1])
@@ -90,35 +77,25 @@ musyc_fit_fn <- function(avg_dt,
 
   .check_synergy_available()
   e_lower <- if (norm_type == "RV") 0 else -1
-  bounds <- .musyc_bounds(e_lower)
+  dose1 <- conc1[conc1 > 0]
+  dose2 <- conc2[conc2 > 0]
+  bounds <- .musyc_bounds(e_lower, dose1, dose2)
   corners <- .musyc_corners(obs, e_lower)
-  med_d1 <- stats::median(conc1[conc1 > 0])
-  med_d2 <- stats::median(conc2[conc2 > 0])
-  p0_default <- c(corners, 1, 1, med_d1, med_d2, 1, 1)
-  log_low <- log10(c(0.01, 0.01, med_d1 / 100, med_d2 / 100, 0.001, 0.001))
-  log_high <- log10(c(100, 100, med_d1 * 100, med_d2 * 100, 1000, 1000))
-
-  synergy <- reticulate::import("synergy.combination", convert = FALSE)
-  warnings_mod <- reticulate::import("warnings", convert = FALSE)
-  warnings_mod$filterwarnings("ignore")
-
-  best <- .musyc_fit_once(synergy, obs, bounds, p0_default, fit_gamma)
+  # h1, h2, C1, C2, alpha12, alpha21
+  log_low <- log10(c(0.1, 0.1, min(dose1), min(dose2), 0.01, 0.01))
+  log_high <- log10(c(10, 10, max(dose1), max(dose2), 100, 100))
   random_p0 <- .with_local_seed(seed, lapply(seq_len(n_restarts), function(i) {
     c(corners, 10^stats::runif(length(log_low), log_low, log_high))
   }))
-  no_improve <- 0L
-  for (p0 in random_p0) {
-    if (isTRUE(best$r2 > r2_threshold) || no_improve >= patience) {
-      break
-    }
-    candidate <- .musyc_fit_once(synergy, obs, bounds, p0, fit_gamma)
-    if (is.na(best$r2) || isTRUE(candidate$r2 > best$r2)) {
-      best <- candidate
-      no_improve <- 0L
-    } else {
-      no_improve <- no_improve + 1L
-    }
-  }
+
+  synergy <- reticulate::import("synergy.combination", convert = FALSE)
+  warnings_mod <- reticulate::import("warnings", convert = FALSE)
+  best <- with(warnings_mod$catch_warnings(), {
+    warnings_mod$simplefilter("ignore")
+    fits <- lapply(c(list(NULL), random_p0), function(p0) .musyc_fit_once(synergy, obs, bounds, p0))
+    r2 <- vapply(fits, function(fit) fit$r2, numeric(1))
+    if (all(is.na(r2))) fits[[1]] else fits[[which.max(r2)]]
+  })
 
   if (is.null(best$params)) {
     return(na_result)
@@ -126,7 +103,7 @@ musyc_fit_fn <- function(avg_dt,
   c(
     list(normalization_type = norm_type),
     best$params,
-    list(beta = best$beta, r2 = best$r2, converged = TRUE)
+    list(beta = best$beta, r2 = best$r2, converged = best$converged)
   )
 }
 
@@ -134,9 +111,9 @@ musyc_fit_fn <- gDRutils::set_fit_fn_info(
   musyc_fit_fn,
   model = "MuSyC (multi-dimensional synergy of combinations)",
   description = paste(
-    "Fits the bounded MuSyC dose-response surface to the whole grid with the Python",
-    "synergy package, restarting from random initial values, and returns its parameters,",
-    "the efficacy synergy beta and the R-squared of the fit."
+    "Fits the MuSyC dose-response surface to the whole grid with the Python synergy",
+    "package, keeps the best of several starts, and returns its parameters, the efficacy",
+    "synergy beta and the R-squared of the fit."
   ),
   reference = .ref_musyc,
   env = function() .musyc_runtime()
@@ -155,7 +132,10 @@ musyc_fit_fn <- gDRutils::set_fit_fn_info(
 #'   \code{log2(alpha12)} and \code{log2(alpha21)}), \code{mean_r2},
 #'   \code{any_converged} and \code{synergy_call} (\code{"synergistic"},
 #'   \code{"antagonistic"}, \code{"additive"} or \code{"unknown"}, from
-#'   \code{mean_beta} with a dead zone of 0.1).
+#'   \code{mean_beta} with a dead zone of 0.1).  \code{synergy_call} reflects
+#'   efficacy only: a pair with strong potency synergy (\code{alpha > 1}) and
+#'   \code{beta} near 0 is called \code{"additive"}, so read it together with
+#'   \code{mean_log2_alpha}.
 #'
 #' @examples
 #' fit_dt <- data.table::data.table(
@@ -205,6 +185,34 @@ musyc_summary_fn <- gDRutils::set_fit_fn_info(
 )
 
 
+#' musyc_available
+#'
+#' Whether \code{\link{musyc_fit_fn}} can run: \code{reticulate} is installed
+#' and the configured Python has the \code{synergy} package.  The check never
+#' provisions a Python of its own, which recent \code{reticulate} versions do
+#' when no Python is configured.
+#'
+#' @return Logical scalar.
+#'
+#' @examples
+#' musyc_available()
+#'
+#' @seealso \code{\link{musyc_fit_fn}}
+#' @export
+musyc_available <- function() {
+  if (!requireNamespace("reticulate", quietly = TRUE)) {
+    return(FALSE)
+  }
+  managed <- Sys.getenv("RETICULATE_USE_MANAGED_VENV", unset = NA)
+  Sys.setenv(RETICULATE_USE_MANAGED_VENV = "no")
+  on.exit(if (is.na(managed)) {
+    Sys.unsetenv("RETICULATE_USE_MANAGED_VENV")
+  } else {
+    Sys.setenv(RETICULATE_USE_MANAGED_VENV = managed)
+  })
+  reticulate::py_module_available("synergy")
+}
+
 #' @keywords internal
 .musyc_na_result <- function(norm_type) {
   list(
@@ -226,19 +234,17 @@ musyc_summary_fn <- gDRutils::set_fit_fn_info(
   obs[order(obs$d1, obs$d2), ]
 }
 
+# E bounds from the normalization, C within a factor of 1000 of the tested
+# doses; h and alpha keep the synergy defaults
 #' @keywords internal
-.musyc_bounds <- function(e_lower) {
+.musyc_bounds <- function(e_lower, dose1, dose2) {
   list(
     E0_bounds = c(0.99, 1.01),
     E1_bounds = c(e_lower, 1.5),
     E2_bounds = c(e_lower, 1.5),
     E3_bounds = c(e_lower, 1.5),
-    h1_bounds = c(0.01, 100),
-    h2_bounds = c(0.01, 100),
-    C1_bounds = c(1e-4, 1e4),
-    C2_bounds = c(1e-4, 1e4),
-    alpha12_bounds = c(1e-3, 1e3),
-    alpha21_bounds = c(1e-3, 1e3)
+    C1_bounds = c(min(dose1) / 1000, max(dose1) * 1000),
+    C2_bounds = c(min(dose2) / 1000, max(dose2) * 1000)
   )
 }
 
@@ -257,20 +263,17 @@ musyc_summary_fn <- gDRutils::set_fit_fn_info(
 }
 
 #' @keywords internal
-.musyc_fit_once <- function(synergy, obs, bounds, p0, fit_gamma) {
-  failed <- list(params = NULL, beta = NA_real_, r2 = NA_real_)
+.musyc_fit_once <- function(synergy, obs, bounds, p0 = NULL) {
+  failed <- list(params = NULL, beta = NA_real_, r2 = NA_real_, converged = FALSE)
   bounds <- lapply(bounds, function(b) reticulate::tuple(b[1], b[2]))
-  model <- do.call(synergy$MuSyC, c(list(fit_gamma = fit_gamma), bounds))
-  if (fit_gamma) {
-    p0 <- c(p0, 1, 1)
-  }
+  model <- do.call(synergy$MuSyC, c(list(fit_gamma = FALSE), bounds))
+  # without p0 synergy starts from its own guess, from single-agent Hill fits
+  start <- if (is.null(p0)) list() else list(p0 = reticulate::r_to_py(as.list(p0)))
   fitted <- tryCatch({
-    model$fit(
-      reticulate::np_array(obs$d1),
-      reticulate::np_array(obs$d2),
-      reticulate::np_array(obs$E),
-      p0 = reticulate::r_to_py(as.list(p0))
-    )
+    do.call(model$fit, c(
+      list(reticulate::np_array(obs$d1), reticulate::np_array(obs$d2), reticulate::np_array(obs$E)),
+      start
+    ))
     reticulate::py_to_r(model$is_specified)
   }, error = function(e) FALSE)
   if (!isTRUE(fitted)) {
@@ -279,22 +282,28 @@ musyc_summary_fn <- gDRutils::set_fit_fn_info(
 
   param_names <- c("E0", "E1", "E2", "E3", "h1", "h2", "C1", "C2", "alpha12", "alpha21")
   params <- lapply(reticulate::py_to_r(model$get_parameters())[param_names], as.numeric)
+  # r2 on the measured points; the untreated corner is set, not measured
+  measured <- obs[!(obs$d1 == 0 & obs$d2 == 0), ]
   predicted <- as.numeric(reticulate::py_to_r(
-    model$E(reticulate::np_array(obs$d1), reticulate::np_array(obs$d2))
+    model$E(reticulate::np_array(measured$d1), reticulate::np_array(measured$d2))
   ))
-  ss_res <- sum((obs$E - predicted)^2)
-  ss_tot <- sum((obs$E - mean(obs$E))^2)
+  ss_res <- sum((measured$E - predicted)^2)
+  ss_tot <- sum((measured$E - mean(measured$E))^2)
   r2 <- if (ss_tot > 0) 1 - ss_res / ss_tot else NA_real_
   if (!is.finite(r2)) {
     return(failed)
   }
-  list(params = params, beta = as.numeric(reticulate::py_to_r(model$beta)), r2 = r2)
+  list(
+    params = params,
+    beta = as.numeric(reticulate::py_to_r(model$beta)),
+    r2 = r2,
+    converged = isTRUE(reticulate::py_to_r(model$is_converged))
+  )
 }
 
 #' @keywords internal
 .check_synergy_available <- function() {
-  if (!requireNamespace("reticulate", quietly = TRUE) ||
-      !reticulate::py_module_available("synergy")) {
+  if (!musyc_available()) {
     stop(
       "musyc_fit_fn requires the Python 'synergy' package through 'reticulate'; ",
       "install it with reticulate::py_install(\"synergy\", pip = TRUE)"

@@ -513,7 +513,9 @@ hss_df[, c("row", "column", "normalization_type",
 
 `musyc_fit_fn()` fits the MuSyC dose-response surface (Meyer et al. 2019) to the
 whole grid and returns its parameters: `alpha12`/`alpha21` measure synergy of
-potency, `beta` synergy of efficacy. The fit runs in the Python `synergy`
+potency, `beta` synergy of efficacy. It keeps the `synergy` defaults, bounds
+`E` by the normalization and `C` to the tested dose range, and keeps the best
+of several starts. The fit runs in the Python `synergy`
 package through `reticulate`, so the chunks below run only where it is
 installed (`reticulate::py_install("synergy", pip = TRUE)`). The Python,
 `synergy`, `numpy` and `scipy` versions go into the fit provenance.
@@ -521,7 +523,7 @@ installed (`reticulate::py_install("synergy", pip = TRUE)`). The Python,
 `musyc_summary_fn()` collapses the fits of all normalization types into one
 row per cell.
 
-```{r combo-musyc, eval = requireNamespace("reticulate", quietly = TRUE) && reticulate::py_module_available("synergy")}
+```{r combo-musyc, eval = musyc_available()}
 musyc_out <- apply_fit(
   combo_se,
   fit_fn = musyc_fit_fn,

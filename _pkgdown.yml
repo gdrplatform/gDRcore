@@ -54,6 +54,7 @@ reference:
   - hss_fit_fn
   - musyc_fit_fn
   - musyc_summary_fn
+  - musyc_available
 - title: Moved to gDRutils
   desc: >
     The generic fit interface and the fit profile registry now live in gDRutils.

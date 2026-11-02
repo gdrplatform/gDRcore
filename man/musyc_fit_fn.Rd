@@ -4,30 +4,14 @@
 \alias{musyc_fit_fn}
 \title{musyc_fit_fn}
 \usage{
-musyc_fit_fn(
-  avg_dt,
-  fit_gamma = FALSE,
-  n_restarts = 100L,
-  r2_threshold = 0.5,
-  patience = 20L,
-  seed = 1L
-)
+musyc_fit_fn(avg_dt, n_restarts = 10L, seed = 1L)
 }
 \arguments{
 \item{avg_dt}{\code{data.table} for one (drug1 x drug2 x cell line x
 normalization_type) combination.  Must contain columns \code{Concentration},
 \code{Concentration_2}, \code{x}, and \code{normalization_type}.}
 
-\item{fit_gamma}{logical; whether to fit the cooperativity parameters
-\code{gamma12} and \code{gamma21}.}
-
-\item{n_restarts}{integer; maximum number of restarts from random initial
-values.}
-
-\item{r2_threshold}{numeric; restarts stop once \code{r2} exceeds this value.}
-
-\item{patience}{integer; restarts stop after this many restarts in a row
-without improvement.}
+\item{n_restarts}{integer; number of restarts from random initial values.}
 
 \item{seed}{integer; seed for the random initial values.  The global random
 number generator is left as it was.}
@@ -50,19 +34,20 @@ The surface is fitted with the Python \code{synergy} package through
 \code{reticulate::py_install("synergy", pip = TRUE)}.  The fit provenance
 records the Python, \code{synergy}, \code{numpy} and \code{scipy} versions.
 
-The whole grid is fitted, single-agent edges included.  The untreated
-corner is set to 1 (added when absent), parameters are bounded
-(\code{E} from -1 for GR and from 0 for RV, up to 1.5) and the fit is
-restarted from random initial values until \code{r2} exceeds
-\code{r2_threshold} or \code{patience} restarts in a row bring no
-improvement.
+The whole grid is fitted, single-agent edges included, with the
+\code{synergy} defaults and three additions: the untreated corner is set
+to 1 (added when absent), \code{E} is bounded from -1 for GR and from 0 for
+RV up to 1.5, and \code{C1}/\code{C2} stay within a factor of 1000 of the
+tested doses.  The fit starts from the \code{synergy} initial guess and
+from \code{n_restarts} random initial values; the fit with the best
+\code{r2}, computed on the measured points, is kept.
 
 \code{alpha > 1} means synergistic potency, \code{beta > 0} synergistic
-efficacy.
+efficacy.  \code{alpha} is weakly constrained when a drug has little
+effect, so extreme values of it are not a measure of synergy.
 }
 \examples{
-if (requireNamespace("reticulate", quietly = TRUE) &&
-    reticulate::py_module_available("synergy")) {
+if (musyc_available()) {
   mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
   combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
   combo_se_out <- gDRutils::apply_fit(
