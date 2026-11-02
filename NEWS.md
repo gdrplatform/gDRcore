@@ -1,3 +1,6 @@
+## gDRcore 1.11.30 - 2026-11-02
+* fix `fit_SE()` dropping the other entries of `.internal`, e.g. the record of a dataset pulled from a registry
+
 ## gDRcore 1.11.29 - 2026-10-30
 * export `read_intermediate_data()`, which reads the SummarizedExperiment saved after a pipeline step
 

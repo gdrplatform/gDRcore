@@ -110,18 +110,19 @@ fit_SE <- function(se,
   )
   # the versions that produced the fit, as in the provenance run block; the whole
   # sessionInfo() also listed every package loaded at that moment, so two fits of
-  # the same data gave different objects
-  se <- gDRutils::set_SE_processing_metadata(
-    se,
-    value = list(
-      date_processed = Sys.Date(),
-      versions = list(
-        R = paste(R.version$major, R.version$minor, sep = "."),
-        gDRcore = as.character(utils::packageVersion("gDRcore")),
-        gDRutils = as.character(utils::packageVersion("gDRutils"))
-      )
-    )
+  # the same data gave different objects. Other entries of .internal belong to other
+  # code (e.g. the DataSetDB record of a pulled dataset) and are kept; session_info
+  # is the field that versions replaced.
+  internal <- gDRutils::get_SE_processing_metadata(se)
+  if (!is.list(internal)) internal <- list()
+  internal$session_info <- NULL
+  internal$date_processed <- Sys.Date()
+  internal$versions <- list(
+    R = paste(R.version$major, R.version$minor, sep = "."),
+    gDRcore = as.character(utils::packageVersion("gDRcore")),
+    gDRutils = as.character(utils::packageVersion("gDRutils"))
   )
+  se <- gDRutils::set_SE_processing_metadata(se, value = internal)
 
   se
 }
