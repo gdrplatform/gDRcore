@@ -146,6 +146,32 @@ test_that("runDrugResponseProcessingPipeline processes time-course data", {
   }
 })
 
+test_that("read_intermediate_data returns the SE saved after each step", {
+  p_dir <- file.path(tempdir(), "read_step")
+  dir.create(p_dir)
+  on.exit(unlink(p_dir, TRUE))
+  td <- gDRimport::get_test_data()
+  l_tbl <- purrr::quietly(gDRimport::load_data)(
+    gDRimport::manifest_path(td), gDRimport::template_path(td), gDRimport::result_path(td)
+  )$result
+  input_data <- purrr::quietly(merge_data)(l_tbl$manifest, l_tbl$treatments, l_tbl$data)$result
+  input_data <- input_data[input_data$CellLineName %in% unique(input_data$CellLineName)[1] &
+                           input_data$DrugName_2 %in% gDRutils::get_env_identifiers("untreated_tag"), ]
+  sa <- gDRutils::get_supported_experiments("sa")
+  mae <- purrr::quietly(runDrugResponseProcessingPipeline)(input_data, data_dir = p_dir)$result
+
+  assays <- lapply(get_pipeline_steps(), function(s) {
+    SummarizedExperiment::assayNames(read_intermediate_data(p_dir, s, sa))
+  })
+  expect_identical(assays[[1]], c("RawTreated", "Controls"))
+  expect_true("Normalized" %in% assays[[2]])
+  expect_true("Averaged" %in% assays[[3]])
+  expect_identical(read_intermediate_data(p_dir, "fit_SE", sa), mae[[sa]])
+
+  expect_error(read_intermediate_data(p_dir, "fit", sa), "Must be element of set")
+  expect_error(read_intermediate_data(p_dir, "fit_SE", "combination"), "does not exist")
+})
+
 test_that("runDrugResponseProcessingPipeline processes co-dilution data", {
   cd_name <- gDRutils::get_supported_experiments("cd")
   set.seed(2)

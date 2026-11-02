@@ -2,21 +2,38 @@
 % Please edit documentation in R/pipeline_helpers.R
 \name{read_intermediate_data}
 \alias{read_intermediate_data}
-\title{read intermediate data for the given experiment and step to qs2 file}
+\title{Read the SummarizedExperiment saved after a pipeline step}
 \usage{
 read_intermediate_data(path, step, experiment)
 }
 \arguments{
-\item{path}{string with the input directory of the qs2 file}
+\item{path}{string with the directory passed as \code{data_dir}}
 
-\item{step, }{string with the step name}
+\item{step}{string with the step name: \code{"create_SE"}, \code{"normalize_SE"},
+\code{"average_SE"} or \code{"fit_SE"}}
 
-\item{experiment}{string with the experiment name}
+\item{experiment}{string with the experiment name, e.g. \code{"single-agent"}}
 }
 \value{
-se
+SummarizedExperiment
 }
 \description{
-read intermediate data for the given experiment and step to qs2 file
+Run with \code{data_dir}, \code{\link{runDrugResponseProcessingPipeline}} saves the
+SummarizedExperiment of every experiment after every step as
+\code{<data_dir>/<experiment>__<step>.qs2}. This reads one of them back.
 }
-\keyword{internal}
+\examples{
+p_dir <- file.path(tempdir(), "read_step")
+dir.create(p_dir)
+td <- gDRimport::get_test_data()
+l_tbl <- gDRimport::load_data(
+  manifest_file = gDRimport::manifest_path(td),
+  df_template_files = gDRimport::template_path(td),
+  results_file = gDRimport::result_path(td)
+)
+imported_data <- merge_data(l_tbl$manifest, l_tbl$treatments, l_tbl$data)
+mae <- runDrugResponseProcessingPipeline(imported_data, data_dir = p_dir)
+read_intermediate_data(p_dir, "normalize_SE", "single-agent")
+
+}
+\keyword{runDrugResponseProcessingPipeline}
