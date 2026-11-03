@@ -1,3 +1,7 @@
+## gDRcore 1.11.30 - 2026-11-02
+* add `musyc_fit_fn()` and `musyc_summary_fn()`, a MuSyC synergy fit for `apply_fit()` via Python synergy
+* add `musyc_available()`, which checks for Python synergy without provisioning a Python
+
 ## gDRcore 1.11.29 - 2026-10-30
 * export `read_intermediate_data()`, which reads the SummarizedExperiment saved after a pipeline step
 
