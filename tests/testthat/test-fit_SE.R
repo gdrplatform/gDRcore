@@ -78,6 +78,23 @@ test_that("fit_SE gives the same object when other packages get loaded in betwee
   expect_identical(internal$versions$gDRcore, as.character(utils::packageVersion("gDRcore")))
 })
 
+test_that("fit_SE keeps the entries of .internal it does not own", {
+  se <- gDRutils::get_synthetic_data("finalMAE_small")[["single-agent"]]
+  SummarizedExperiment::assays(se) <- SummarizedExperiment::assays(se)["Averaged"]
+  # a dataset pulled from a dataset registry carries its record in .internal
+  dsdb <- list(summarized_experiment = list(title = "pulled title"), `_extra` = list(version = 3L))
+  S4Vectors::metadata(se)[[".internal"]] <- list(DataSetDB = dsdb, date_processed = as.Date("2020-01-01"),
+                                                 session_info = utils::sessionInfo())
+
+  internal <- gDRutils::get_SE_processing_metadata(purrr::quietly(fit_SE)(se)$result)
+
+  expect_identical(internal$DataSetDB, dsdb)
+  expect_equal(internal$date_processed, Sys.Date())
+  expect_identical(internal$versions$gDRutils, as.character(utils::packageVersion("gDRutils")))
+  # the whole sessionInfo() is the field the versions replaced
+  expect_null(internal$session_info)
+})
+
 test_that("fit_SE.combinations works as expected", {
 
   # combo data

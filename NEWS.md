@@ -1,3 +1,6 @@
+## gDRcore 1.11.31 - 2026-11-03
+* fix `fit_SE()` dropping the other entries of `.internal`, e.g. the record of a dataset pulled from a registry
+
 ## gDRcore 1.11.30 - 2026-11-02
 * add `musyc_fit_fn()` and `musyc_summary_fn()`, a MuSyC synergy fit for `apply_fit()` via Python synergy
 * add `musyc_available()`, which checks for Python synergy without provisioning a Python
