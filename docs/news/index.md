@@ -1,5 +1,12 @@
 # Changelog
 
+## gDRcore 1.11.31 - 2026-11-03
+
+- fix
+  [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
+  dropping the other entries of `.internal`, e.g. the record of a
+  dataset pulled from a registry
+
 ## gDRcore 1.11.30 - 2026-11-02
 
 - add
