@@ -155,6 +155,12 @@ through the generic fit interface in gDRutils.
   : bliss_fit_fn
 - [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md)
   : hss_fit_fn
+- [`musyc_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/musyc_fit_fn.md)
+  : musyc_fit_fn
+- [`musyc_summary_fn()`](https://gdrplatform.github.io/gDRcore/reference/musyc_summary_fn.md)
+  : musyc_summary_fn
+- [`musyc_available()`](https://gdrplatform.github.io/gDRcore/reference/musyc_available.md)
+  : musyc_available
 
 ## Moved to gDRutils
 

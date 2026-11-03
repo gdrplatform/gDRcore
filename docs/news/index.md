@@ -1,5 +1,18 @@
 # Changelog
 
+## gDRcore 1.11.30 - 2026-11-02
+
+- add
+  [`musyc_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/musyc_fit_fn.md)
+  and
+  [`musyc_summary_fn()`](https://gdrplatform.github.io/gDRcore/reference/musyc_summary_fn.md),
+  a MuSyC synergy fit for
+  [`apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html)
+  via Python synergy
+- add
+  [`musyc_available()`](https://gdrplatform.github.io/gDRcore/reference/musyc_available.md),
+  which checks for Python synergy without provisioning a Python
+
 ## gDRcore 1.11.29 - 2026-10-30
 
 - export
