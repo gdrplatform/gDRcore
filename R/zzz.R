@@ -74,7 +74,7 @@ patterns <- NULL
 
 
 # The synergy fits this package exports, announced to the gDRutils registry so
-# that a caller can list what is available instead of hardcoding it (GDR-3788).
+# that a caller can list what is available instead of hardcoding it.
 # Registration is by name, so nothing is loaded here beyond the entry itself.
 #
 # MuSyC carries musyc_available as its predicate: it fits through the Python
