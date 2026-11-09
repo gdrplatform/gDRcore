@@ -68,4 +68,38 @@ patterns <- NULL
       "x.N"
     ),
     pkgname)
+
+  .register_fit_fns()
+}
+
+
+# The synergy fits this package exports, announced to the gDRutils registry so
+# that a caller can list what is available instead of hardcoding it (GDR-3788).
+# Registration is by name, so nothing is loaded here beyond the entry itself.
+#
+# MuSyC carries musyc_available as its predicate: it fits through the Python
+# synergy package, so it is registered everywhere but only offered where that
+# is provisioned.
+#' @keywords internal
+.register_fit_fns <- function() {
+  if (!isTRUE(.fit_fn_registry_available())) {
+    return(invisible(NULL))
+  }
+  gDRutils::register_fit_fn("bliss_fit_fn", package = "gDRcore",
+                            data_type = "combination")
+  gDRutils::register_fit_fn("hss_fit_fn", package = "gDRcore",
+                            data_type = "combination")
+  gDRutils::register_fit_fn("musyc_fit_fn", package = "gDRcore",
+                            data_type = "combination",
+                            available = musyc_available)
+  invisible(NULL)
+}
+
+
+# gDRutils is a hard dependency, but the registry arrived in 1.11.24 and the
+# DESCRIPTION floor is lower. Registering is an optional extra, so an older
+# gDRutils should mean no catalogue rather than a package that will not load.
+#' @keywords internal
+.fit_fn_registry_available <- function() {
+  exists("register_fit_fn", envir = asNamespace("gDRutils"), inherits = FALSE)
 }

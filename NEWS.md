@@ -1,3 +1,6 @@
+## gDRcore 1.11.32 - 2026-11-08
+* register `bliss_fit_fn()`, `hss_fit_fn()` and `musyc_fit_fn()` in the gDRutils fit function registry, so they can be listed instead of hardcoded
+
 ## gDRcore 1.11.31 - 2026-11-03
 * fix `fit_SE()` dropping the other entries of `.internal`, e.g. the record of a dataset pulled from a registry
 
