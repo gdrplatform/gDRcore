@@ -37,13 +37,13 @@ l_tbl <- gDRimport::load_data(
   df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
-#> INFO [2026-11-03 14:10:31] Manifest loaded successfully
-#> INFO [2026-11-03 14:10:31] Reading Template_7daytreated.xlsx with load_templates_xlsx
-#> INFO [2026-11-03 14:10:31] Reading Template_Untreated.xlsx with load_templates_xlsx
-#> INFO [2026-11-03 14:10:31] Loading Template_7daytreated.xlsx
-#> INFO [2026-11-03 14:10:31] Loading Template_Untreated.xlsx
-#> INFO [2026-11-03 14:10:31] Templates loaded successfully!
-#> INFO [2026-11-03 14:10:31] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-11-10 09:59:34] Manifest loaded successfully
+#> INFO [2026-11-10 09:59:34] Reading Template_7daytreated.xlsx with load_templates_xlsx
+#> INFO [2026-11-10 09:59:34] Reading Template_Untreated.xlsx with load_templates_xlsx
+#> INFO [2026-11-10 09:59:34] Loading Template_7daytreated.xlsx
+#> INFO [2026-11-10 09:59:34] Loading Template_Untreated.xlsx
+#> INFO [2026-11-10 09:59:34] Templates loaded successfully!
+#> INFO [2026-11-10 09:59:34] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -70,14 +70,14 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-11-03 14:10:31] Plate 201904190a read; 384 wells
-#> INFO [2026-11-03 14:10:31] Plate 201904190b read; 384 wells
-#> INFO [2026-11-03 14:10:31] Plate 201904190c read; 384 wells
-#> INFO [2026-11-03 14:10:31] Plate 201904190d read; 384 wells
-#> INFO [2026-11-03 14:10:31] Plate 201904190e read; 384 wells
-#> INFO [2026-11-03 14:10:31] Plate 201904190f read; 384 wells
-#> INFO [2026-11-03 14:10:31] File done
-#> INFO [2026-11-03 14:10:31] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-11-10 09:59:34] Plate 201904190a read; 384 wells
+#> INFO [2026-11-10 09:59:34] Plate 201904190b read; 384 wells
+#> INFO [2026-11-10 09:59:34] Plate 201904190c read; 384 wells
+#> INFO [2026-11-10 09:59:34] Plate 201904190d read; 384 wells
+#> INFO [2026-11-10 09:59:34] Plate 201904190e read; 384 wells
+#> INFO [2026-11-10 09:59:34] Plate 201904190f read; 384 wells
+#> INFO [2026-11-10 09:59:34] File done
+#> INFO [2026-11-10 09:59:34] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -104,21 +104,21 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-11-03 14:10:31] Plate 201904197a read; 384 wells
-#> INFO [2026-11-03 14:10:31] Plate 201904197b read; 384 wells
-#> INFO [2026-11-03 14:10:31] Plate 201904197c read; 384 wells
-#> INFO [2026-11-03 14:10:31] Plate 201904197d read; 384 wells
-#> INFO [2026-11-03 14:10:31] Plate 201904197e read; 384 wells
-#> INFO [2026-11-03 14:10:31] Plate 201904197f read; 384 wells
-#> INFO [2026-11-03 14:10:31] File done
+#> INFO [2026-11-10 09:59:34] Plate 201904197a read; 384 wells
+#> INFO [2026-11-10 09:59:34] Plate 201904197b read; 384 wells
+#> INFO [2026-11-10 09:59:34] Plate 201904197c read; 384 wells
+#> INFO [2026-11-10 09:59:34] Plate 201904197d read; 384 wells
+#> INFO [2026-11-10 09:59:34] Plate 201904197e read; 384 wells
+#> INFO [2026-11-10 09:59:34] Plate 201904197f read; 384 wells
+#> INFO [2026-11-10 09:59:34] File done
 df_ <- merge_data(
   l_tbl$manifest,
   l_tbl$treatments,
   l_tbl$data
 )
-#> INFO [2026-11-03 14:10:31] Merging data
-#> INFO [2026-11-03 14:10:31] Merging the metadata (manifest and treatment files)
-#> WARN [2026-11-03 14:10:31] 4608 well loaded, 768 wells discarded for lack of annotation,
+#> INFO [2026-11-10 09:59:34] Merging data
+#> INFO [2026-11-10 09:59:34] Merging the metadata (manifest and treatment files)
+#> WARN [2026-11-10 09:59:34] 4608 well loaded, 768 wells discarded for lack of annotation,
 #>     3840 data point selected
 nested_confounders = intersect(
   names(df_),

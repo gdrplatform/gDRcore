@@ -275,11 +275,11 @@ se_out <- apply_fit_to_se(
 
 #### Reference implementations
 
-| Function                                                                                                         | Data type    | Output assay | What it computes                        |
-|------------------------------------------------------------------------------------------------------------------|--------------|--------------|-----------------------------------------|
-| [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html) | single-agent | any          | 4-parameter Hill fit (mirrors `fit_SE`) |
-| [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md)                              | combination  | any          | Bliss independence score and excess     |
-| [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md)                                  | combination  | any          | Highest Single Agent score and excess   |
+| Function | Data type | Output assay | What it computes |
+|----|----|----|----|
+| [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html) | single-agent | any | 4-parameter Hill fit (mirrors `fit_SE`) |
+| [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md) | combination | any | Bliss independence score and excess |
+| [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md) | combination | any | Highest Single Agent score and excess |
 
 ## SessionInfo
 
@@ -287,11 +287,11 @@ se_out <- apply_fit_to_se(
 sessionInfo()
 #> R version 4.6.2 (2026-10-29)
 #> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.5 LTS
+#> Running under: Ubuntu 26.04.1 LTS
 #> 
 #> Matrix products: default
 #> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
-#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.32.so;  LAPACK version 3.12.0
 #> 
 #> locale:
 #>  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
@@ -306,13 +306,13 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] gDRcore_1.11.31     gDRtestData_1.11.11 BiocStyle_2.41.0   
+#> [1] gDRcore_1.11.32     gDRtestData_1.11.11 BiocStyle_2.41.0   
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
 #>  [3] BumpyMatrix_1.21.0          TH.data_1.1-5              
 #>  [5] digest_0.6.39               lifecycle_1.0.5            
-#>  [7] gDRutils_1.11.22            survival_3.8-12            
+#>  [7] gDRutils_1.11.23            survival_3.8-12            
 #>  [9] magrittr_2.0.5              compiler_4.6.2             
 #> [11] rlang_1.3.0                 sass_0.4.10                
 #> [13] drc_4.0-0                   tools_4.6.2                
@@ -329,9 +329,9 @@ sessionInfo()
 #> [35] SummarizedExperiment_1.43.0 cli_3.6.6                  
 #> [37] mvtnorm_1.4-2               rmarkdown_2.32             
 #> [39] ragg_1.5.2                  generics_0.1.4             
-#> [41] otel_0.2.0                  readxl_1.6.0               
+#> [41] otel_0.3.0                  readxl_1.6.0               
 #> [43] cachem_1.1.0                stringr_1.6.0              
-#> [45] splines_4.6.2               gDRimport_1.11.14          
+#> [45] splines_4.6.2               gDRimport_1.11.15          
 #> [47] assertthat_0.2.1            parallel_4.6.2             
 #> [49] formatR_1.14                BiocManager_1.30.27        
 #> [51] cellranger_1.1.0            XVector_0.53.0             

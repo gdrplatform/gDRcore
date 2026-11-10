@@ -1,5 +1,14 @@
 # Changelog
 
+## gDRcore 1.11.32 - 2026-11-08
+
+- add
+  [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md),
+  [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md)
+  and
+  [`musyc_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/musyc_fit_fn.md)
+  to the gDRutils fit function registry
+
 ## gDRcore 1.11.31 - 2026-11-03
 
 - fix

@@ -100,12 +100,12 @@ head(avg_cell[avg_cell$row == avg_cell$row[1] &
 
 Each cell has four columns:
 
-| Column               | Description                                                   |
-|----------------------|---------------------------------------------------------------|
-| `normalization_type` | `"GR"` or `"RV"`                                              |
-| `Concentration`      | drug concentration (µM)                                       |
-| `x`                  | averaged normalized response (GR value or relative viability) |
-| `x_std`              | standard deviation across replicates                          |
+| Column | Description |
+|----|----|
+| `normalization_type` | `"GR"` or `"RV"` |
+| `Concentration` | drug concentration (µM) |
+| `x` | averaged normalized response (GR value or relative viability) |
+| `x_std` | standard deviation across replicates |
 
 ------------------------------------------------------------------------
 
@@ -277,13 +277,13 @@ is a reference single-agent fit function that replicates the standard
 [`logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html)
 output exactly.
 
-| Property         | Value                                                                                                                                                                                                   |
-|------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Model            | 3-parameter log-logistic ([`drc::LL.3u`](https://rdrr.io/pkg/drc/man/LL.3.html), `x_0` fixed at 1)                                                                                                      |
-| Equivalent to    | [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md) / [`gDRutils::logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html) |
-| `x_mean`         | Predicted from fitted curve (matches `logisticFit` behaviour)                                                                                                                                           |
-| `fit_type` value | `"DRC3pHillFitModelFixS0"` or `"DRCConstantFitResult"`                                                                                                                                                  |
-| Output columns   | Full `Metrics` assay schema including `p_value`, `rss`, `x_AOC_range`, `x_max`, `x_sd_avg`                                                                                                              |
+| Property | Value |
+|----|----|
+| Model | 3-parameter log-logistic ([`drc::LL.3u`](https://rdrr.io/pkg/drc/man/LL.3.html), `x_0` fixed at 1) |
+| Equivalent to | [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md) / [`gDRutils::logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html) |
+| `x_mean` | Predicted from fitted curve (matches `logisticFit` behaviour) |
+| `fit_type` value | `"DRC3pHillFitModelFixS0"` or `"DRCConstantFitResult"` |
+| Output columns | Full `Metrics` assay schema including `p_value`, `rss`, `x_AOC_range`, `x_max`, `x_sd_avg` |
 
 ### Numerical equivalence with fit_SE()
 
@@ -432,13 +432,13 @@ function does. It is a single loop over each (drug-combo × cell-line)
 pair that executes **five sequential steps**, each writing to a separate
 assay:
 
-| Step | Key functions                                                                                                                                                                                                                                                                                   | Output assay                     | Description                                                                                                                                                                                               |
-|------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1    | `fit_combo_cotreatments()`, `fit_combo_codilutions()`                                                                                                                                                                                                                                           | `Metrics`                        | Fit SA dose-response curves at each co-treatment concentration; produces `ec50`, `h`, `x_inf`, `x_0` per SA series                                                                                        |
-| 2    | [`map_ids_to_fits()`](https://gdrplatform.github.io/gDRcore/reference/map_ids_to_fits.md)                                                                                                                                                                                                       | *(internal)*                     | Predict **smooth** single-agent responses at every combo concentration using the SA fits from step 1; average col/row/codilution predictions; on the single-agent arms only the fit along the arm is used |
-| 3    | [`calculate_HSA()`](https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.md), [`calculate_Bliss()`](https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.md), [`calculate_excess()`](https://gdrplatform.github.io/gDRcore/reference/calculate_excess.md) | `excess`                         | Compute expected response (HSA = min of SAs; Bliss = product/GR formula); compute per-point excess = expected − observed                                                                                  |
-| 4    | `calculate_Loewe()`                                                                                                                                                                                                                                                                             | `isobolograms`, `all_iso_points` | Compute combination index (CI, column `CI_100x`) via isobologram analysis; CI \< 1 = synergy                                                                                                              |
-| 5    | [`calculate_score()`](https://gdrplatform.github.io/gDRcore/reference/calculate_score.md)                                                                                                                                                                                                       | `scores`                         | Reduce per-point excess to a scalar: mean of top-10-percentile values → `bliss_score`, `hsa_score`; `CIScore_50`, `CIScore_80` are the CI of the isobolograms from step 4 at response levels 0.5 and 0.2  |
+| Step | Key functions | Output assay | Description |
+|----|----|----|----|
+| 1 | `fit_combo_cotreatments()`, `fit_combo_codilutions()` | `Metrics` | Fit SA dose-response curves at each co-treatment concentration; produces `ec50`, `h`, `x_inf`, `x_0` per SA series |
+| 2 | [`map_ids_to_fits()`](https://gdrplatform.github.io/gDRcore/reference/map_ids_to_fits.md) | *(internal)* | Predict **smooth** single-agent responses at every combo concentration using the SA fits from step 1; average col/row/codilution predictions; on the single-agent arms only the fit along the arm is used |
+| 3 | [`calculate_HSA()`](https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.md), [`calculate_Bliss()`](https://gdrplatform.github.io/gDRcore/reference/calculate_matrix_metric.md), [`calculate_excess()`](https://gdrplatform.github.io/gDRcore/reference/calculate_excess.md) | `excess` | Compute expected response (HSA = min of SAs; Bliss = product/GR formula); compute per-point excess = expected − observed |
+| 4 | `calculate_Loewe()` | `isobolograms`, `all_iso_points` | Compute combination index (CI, column `CI_100x`) via isobologram analysis; CI \< 1 = synergy |
+| 5 | [`calculate_score()`](https://gdrplatform.github.io/gDRcore/reference/calculate_score.md) | `scores` | Reduce per-point excess to a scalar: mean of top-10-percentile values → `bliss_score`, `hsa_score`; `CIScore_50`, `CIScore_80` are the CI of the isobolograms from step 4 at response levels 0.5 and 0.2 |
 
 **The key insight:** step 2 (smooth) depends on step 1 (SA fits), and
 steps 3–5 all depend on step 2. The boundaries between steps are clean,
@@ -446,12 +446,12 @@ which means they can be extracted as independent public functions.
 
 **All five steps are now available as independent public functions:**
 
-| Step | Public function                                                                                             | Output assay                     |
-|------|-------------------------------------------------------------------------------------------------------------|----------------------------------|
-| 1+2  | [`apply_combo_sa_fits()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_sa_fits.md)           | `Metrics`                        |
-| 3    | [`apply_combo_excess()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_excess.md)             | `excess`                         |
-| 4    | [`apply_combo_isobolograms()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_isobolograms.md) | `isobolograms`, `all_iso_points` |
-| 5    | [`apply_combo_scores()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.md)             | `scores`                         |
+| Step | Public function | Output assay |
+|----|----|----|
+| 1+2 | [`apply_combo_sa_fits()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_sa_fits.md) | `Metrics` |
+| 3 | [`apply_combo_excess()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_excess.md) | `excess` |
+| 4 | [`apply_combo_isobolograms()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_isobolograms.md) | `isobolograms`, `all_iso_points` |
+| 5 | [`apply_combo_scores()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.md) | `scores` |
 
 [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
 is now a thin wrapper that calls these four functions in sequence. You
@@ -517,12 +517,12 @@ of
 exactly, using fitted SA curves from the `Metrics` assay to generate
 smooth single-agent predictions.
 
-| Property      | Value                                                                                                                  |
-|---------------|------------------------------------------------------------------------------------------------------------------------|
-| Requires      | `Averaged` + `Metrics` assay (with `dilution_drug`, `ec50`, `h`, …)                                                    |
+| Property | Value |
+|----|----|
+| Requires | `Averaged` + `Metrics` assay (with `dilution_drug`, `ec50`, `h`, …) |
 | Equivalent to | [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md) Bliss and HSA scores |
-| Accuracy      | cor \> 0.998 with `fit_SE.combinations` on real data                                                                   |
-| Use when      | Replacing or extending `fit_SE.combinations` for standard data                                                         |
+| Accuracy | cor \> 0.998 with `fit_SE.combinations` on real data |
+| Use when | Replacing or extending `fit_SE.combinations` for standard data |
 
 ``` r
 # Use the small synthetic combo dataset which has both Averaged and Metrics
@@ -920,10 +920,10 @@ pipeline is not appropriate for this layout.
 [`fit_SE.timecourse()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.timecourse.md)
 provides a dedicated two-stage pipeline:
 
-| Stage | What it does                                                                                                 | Output              |
-|-------|--------------------------------------------------------------------------------------------------------------|---------------------|
-| 1     | `lm(LogFoldChange ~ Duration)` per well per time window → mean growth rate (doublings/day) across replicates | `GrowthRates` assay |
-| 2     | Logistic Hill fit on `NormalizedGrowthRate ~ log10(Concentration)` per `(Drug, CellLine, period)`            | `Metrics` assay     |
+| Stage | What it does | Output |
+|----|----|----|
+| 1 | `lm(LogFoldChange ~ Duration)` per well per time window → mean growth rate (doublings/day) across replicates | `GrowthRates` assay |
+| 2 | Logistic Hill fit on `NormalizedGrowthRate ~ log10(Concentration)` per `(Drug, CellLine, period)` | `Metrics` assay |
 
 ### Inputs
 
@@ -1114,7 +1114,7 @@ prov_se <- apply_fit(
 gDRutils::summarize_fit_provenance(prov_se)
 #>          assay fit_source                                            fn
 #>         <char>     <char>                                        <char>
-#> 1: custom_hill hill_loose gDRutils::fit_drug_response_metrics (1.11.22)
+#> 1: custom_hill hill_loose gDRutils::fit_drug_response_metrics (1.11.23)
 #>         fit_args
 #>           <char>
 #> 1: pcutoff = 0.1
@@ -1135,7 +1135,7 @@ recipe$fn[c("name", "package", "version")]
 #> [1] "gDRutils"
 #> 
 #> $version
-#> [1] "1.11.22"
+#> [1] "1.11.23"
 recipe$fn$info$model
 #> [1] "3-parameter log-logistic (drc::LL.3u), upper asymptote fixed at 1"
 recipe$fit_args
@@ -1220,52 +1220,52 @@ apply_fits(
 
 ### fit_fn contract
 
-|                     |                                                                                                         |
-|---------------------|---------------------------------------------------------------------------------------------------------|
-| **Input**           | `data.table` — one BumpyMatrix cell, filtered to one `slicing_cols` value                               |
-| **Output**          | Named list → one row in `output_assay`; or named list of named lists for multi-assay pattern            |
-| **fit_source**      | Stamped by the generic layer — do **not** include in the return value                                   |
+|  |  |
+|----|----|
+| **Input** | `data.table` — one BumpyMatrix cell, filtered to one `slicing_cols` value |
+| **Output** | Named list → one row in `output_assay`; or named list of named lists for multi-assay pattern |
+| **fit_source** | Stamped by the generic layer — do **not** include in the return value |
 | **slicing columns** | The caller’s value (e.g. `normalization_type`) IS available in the data.table — no need to filter again |
 
 ### summary_fn contract
 
-|                 |                                                                                           |
-|-----------------|-------------------------------------------------------------------------------------------|
-| **Input**       | `data.table` — all rows written by `fit_fn` for one (row × column) cell                   |
-| **Output**      | Named list → one row in `summary_assay`                                                   |
+|  |  |
+|----|----|
+| **Input** | `data.table` — all rows written by `fit_fn` for one (row × column) cell |
+| **Output** | Named list → one row in `summary_assay` |
 | **When to use** | Aggregated metrics that span normalization types (e.g. “converged in at least one type?”) |
 
 ### Reference implementations
 
 #### Single-agent fit functions (for `apply_fit()`)
 
-| Function                                                                                                               | Model               | Equivalent to                                                                                                                                                                                 | Key output columns                                                                  |
-|------------------------------------------------------------------------------------------------------------------------|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html)       | 3p LL.3u, `x_0 = 1` | [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md) / [`logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html) | `ec50`, `xc50`, `h`, `r2`, `x_mean`, `x_AOC`, `fit_type = "DRC3pHillFitModelFixS0"` |
-| [`fit_drug_response_metrics_4p()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics_4p.html) | 4p LL.4, `x_0` free | — (extended variant)                                                                                                                                                                          | `ec50`, `xc50`, `h`, `r2`, `x_0`, `x_mean`, `fit_type = "DRC4pHillFitModel"`        |
+| Function | Model | Equivalent to | Key output columns |
+|----|----|----|----|
+| [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html) | 3p LL.3u, `x_0 = 1` | [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md) / [`logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html) | `ec50`, `xc50`, `h`, `r2`, `x_mean`, `x_AOC`, `fit_type = "DRC3pHillFitModelFixS0"` |
+| [`fit_drug_response_metrics_4p()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics_4p.html) | 4p LL.4, `x_0` free | — (extended variant) | `ec50`, `xc50`, `h`, `r2`, `x_0`, `x_mean`, `fit_type = "DRC4pHillFitModel"` |
 
 #### Combination scoring
 
 ##### Composable step functions
 
-| Function                       | Step | Output assay                     | Description                        |
-|--------------------------------|------|----------------------------------|------------------------------------|
-| `apply_combo_sa_fits(se)`      | 1+2  | `Metrics`                        | SA curve fits + smooth predictions |
-| `apply_combo_excess(se)`       | 3    | `excess`                         | HSA/Bliss excess per combo point   |
-| `apply_combo_isobolograms(se)` | 4    | `isobolograms`, `all_iso_points` | Loewe CI isobologram               |
-| `apply_combo_scores(se)`       | 5    | `scores`                         | Bliss/HSA scalar scores            |
+| Function | Step | Output assay | Description |
+|----|----|----|----|
+| `apply_combo_sa_fits(se)` | 1+2 | `Metrics` | SA curve fits + smooth predictions |
+| `apply_combo_excess(se)` | 3 | `excess` | HSA/Bliss excess per combo point |
+| `apply_combo_isobolograms(se)` | 4 | `isobolograms`, `all_iso_points` | Loewe CI isobologram |
+| `apply_combo_scores(se)` | 5 | `scores` | Bliss/HSA scalar scores |
 
 [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)
 is a thin wrapper that calls all four in order.
 
 ##### Lower-level scoring functions (for `apply_fit()`)
 
-| Function                                                                            | Level                  | Requires                      | Equivalent to                                                                                                 | Key output columns                                   |
-|-------------------------------------------------------------------------------------|------------------------|-------------------------------|---------------------------------------------------------------------------------------------------------------|------------------------------------------------------|
-| `apply_combo_scores(se)`                                                            | SE-level (recommended) | `Averaged` + `Metrics`        | [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md) Bliss & HSA | `bliss_score`, `hsa_score`                           |
-| [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md) | triplet `fit_fn`       | `Averaged` only               | — (simplified, no SA fits)                                                                                    | `bliss_score`, `bliss_excess_mean`, `n_combo_points` |
-| [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md)     | triplet `fit_fn`       | `Averaged` only               | — (simplified, no SA fits)                                                                                    | `hss_score`, `hss_excess_mean`, `n_combo_points`     |
-| [`musyc_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/musyc_fit_fn.md) | triplet `fit_fn`       | `Averaged` + Python `synergy` | — (MuSyC surface fit)                                                                                         | `alpha12`, `alpha21`, `beta`, `r2`                   |
+| Function | Level | Requires | Equivalent to | Key output columns |
+|----|----|----|----|----|
+| `apply_combo_scores(se)` | SE-level (recommended) | `Averaged` + `Metrics` | [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md) Bliss & HSA | `bliss_score`, `hsa_score` |
+| [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md) | triplet `fit_fn` | `Averaged` only | — (simplified, no SA fits) | `bliss_score`, `bliss_excess_mean`, `n_combo_points` |
+| [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md) | triplet `fit_fn` | `Averaged` only | — (simplified, no SA fits) | `hss_score`, `hss_excess_mean`, `n_combo_points` |
+| [`musyc_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/musyc_fit_fn.md) | triplet `fit_fn` | `Averaged` + Python `synergy` | — (MuSyC surface fit) | `alpha12`, `alpha21`, `beta`, `r2` |
 
 **When to use which:** - Use
 [`apply_combo_scores()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.md)
@@ -1289,11 +1289,11 @@ or when embedding score computation inside a larger custom `fit_fn`.
 sessionInfo()
 #> R version 4.6.2 (2026-10-29)
 #> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.5 LTS
+#> Running under: Ubuntu 26.04.1 LTS
 #> 
 #> Matrix products: default
 #> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
-#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.32.so;  LAPACK version 3.12.0
 #> 
 #> locale:
 #>  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
@@ -1315,8 +1315,8 @@ sessionInfo()
 #>  [7] IRanges_2.47.5              S4Vectors_0.51.10          
 #>  [9] BiocGenerics_0.59.12        generics_0.1.4             
 #> [11] MatrixGenerics_1.25.0       matrixStats_1.5.0          
-#> [13] gDRutils_1.11.22            gDRtestData_1.11.11        
-#> [15] gDRcore_1.11.31             BiocStyle_2.41.0           
+#> [13] gDRutils_1.11.23            gDRtestData_1.11.11        
+#> [15] gDRcore_1.11.32             BiocStyle_2.41.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
@@ -1330,31 +1330,31 @@ sessionInfo()
 #> [17] here_1.0.2                  reticulate_1.47.0          
 #> [19] DelayedArray_0.39.8         RColorBrewer_1.1-3         
 #> [21] abind_1.4-8                 multcomp_1.4-32            
-#> [23] BiocParallel_1.47.0         withr_3.0.3                
-#> [25] desc_1.4.3                  grid_4.6.2                 
-#> [27] scales_1.4.0                gtools_3.9.5               
-#> [29] MASS_7.3-66                 MultiAssayExperiment_1.39.1
-#> [31] cli_3.6.6                   mvtnorm_1.4-2              
-#> [33] rmarkdown_2.32              ragg_1.5.2                 
-#> [35] otel_0.2.0                  RcppParallel_6.2.1         
-#> [37] cachem_1.1.0                splines_4.6.2              
-#> [39] parallel_4.6.2              BiocManager_1.30.27        
-#> [41] formatR_1.14                XVector_0.53.0             
-#> [43] vctrs_0.7.3                 Matrix_1.7-6               
-#> [45] sandwich_3.1-3              jsonlite_2.0.0             
-#> [47] carData_3.0-6               bookdown_0.48              
-#> [49] car_3.1-5                   Formula_1.2-6              
-#> [51] systemfonts_1.3.2           jquerylib_0.1.4            
-#> [53] glue_1.8.1                  pkgdown_2.2.1              
-#> [55] codetools_0.2-20            futile.logger_1.4.9        
-#> [57] pillar_1.11.1               rappdirs_0.3.4             
-#> [59] htmltools_0.5.9             R6_2.6.1                   
-#> [61] textshaping_1.0.5           rprojroot_2.1.1            
-#> [63] evaluate_1.0.5              lattice_0.23-1             
-#> [65] png_0.1-9                   futile.options_1.0.1       
-#> [67] backports_1.5.1             bslib_0.12.0               
-#> [69] Rcpp_1.1.2                  charport_0.1.1             
-#> [71] SparseArray_1.13.4          checkmate_2.3.4            
-#> [73] qs2_0.4.0                   xfun_0.62                  
-#> [75] fs_2.1.0                    zoo_1.9-1
+#> [23] BiocParallel_1.47.0         desc_1.4.3                 
+#> [25] grid_4.6.2                  scales_1.4.0               
+#> [27] gtools_3.9.5                MASS_7.3-66                
+#> [29] MultiAssayExperiment_1.39.1 cli_3.6.6                  
+#> [31] mvtnorm_1.4-2               rmarkdown_2.32             
+#> [33] ragg_1.5.2                  otel_0.3.0                 
+#> [35] RcppParallel_6.2.1          cachem_1.1.0               
+#> [37] splines_4.6.2               parallel_4.6.2             
+#> [39] BiocManager_1.30.27         formatR_1.14               
+#> [41] XVector_0.53.0              vctrs_0.7.3                
+#> [43] Matrix_1.7-6                sandwich_3.1-3             
+#> [45] jsonlite_2.0.0              carData_3.0-6              
+#> [47] bookdown_0.48               car_3.1-5                  
+#> [49] Formula_1.2-6               systemfonts_1.3.2          
+#> [51] jquerylib_0.1.4             glue_1.8.1                 
+#> [53] pkgdown_2.2.1               codetools_0.2-20           
+#> [55] futile.logger_1.4.9         pillar_1.11.1              
+#> [57] rappdirs_0.3.4              htmltools_0.5.9            
+#> [59] R6_2.6.1                    textshaping_1.0.5          
+#> [61] rprojroot_2.1.1             evaluate_1.0.5             
+#> [63] lattice_0.23-1              png_0.1-9                  
+#> [65] futile.options_1.0.1        backports_1.5.1            
+#> [67] bslib_0.12.0                Rcpp_1.1.2                 
+#> [69] charport_0.2.0              SparseArray_1.13.4         
+#> [71] checkmate_2.3.4             qs2_0.4.0                  
+#> [73] xfun_0.62                   fs_2.1.0                   
+#> [75] zoo_1.9-1
 ```

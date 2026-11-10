@@ -224,11 +224,11 @@ function. In gDR object the metadata information is stored as a list.
 
     ## R version 4.6.2 (2026-10-29)
     ## Platform: x86_64-pc-linux-gnu
-    ## Running under: Ubuntu 24.04.5 LTS
+    ## Running under: Ubuntu 26.04.1 LTS
     ## 
     ## Matrix products: default
     ## BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
-    ## LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+    ## LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.32.so;  LAPACK version 3.12.0
     ## 
     ## locale:
     ##  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
@@ -254,5 +254,5 @@ function. In gDR object the metadata information is stored as a list.
     ## [16] jquerylib_0.1.4     systemfonts_1.3.2   compiler_4.6.2     
     ## [19] tools_4.6.2         ragg_1.5.2          bslib_0.12.0       
     ## [22] evaluate_1.0.5      yaml_2.3.12         BiocManager_1.30.27
-    ## [25] otel_0.2.0          jsonlite_2.0.0      rlang_1.3.0        
+    ## [25] otel_0.3.0          jsonlite_2.0.0      rlang_1.3.0        
     ## [28] fs_2.1.0
