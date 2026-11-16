@@ -65,6 +65,16 @@ test_that(".musyc_surface matches the MuSyC model of the synergy package", {
   expect_equal(.musyc_surface(.musyc_theta(.musyc_known_params), d1, d2), expected, tolerance = 1e-12)
 })
 
+test_that("predict_musyc_surface evaluates a fit at the given concentrations", {
+  d1 <- c(0, 0.1, 0, 1, 10, 0.05)
+  d2 <- c(0, 0, 0.1, 1, 0.01, 5)
+  expected <- .musyc_surface(.musyc_theta(.musyc_known_params), d1, d2)
+  expect_equal(predict_musyc_surface(d1, d2, .musyc_known_params), expected)
+  expect_equal(predict_musyc_surface(d1, d2, data.table::as.data.table(.musyc_known_params)), expected)
+  expect_error(predict_musyc_surface(d1, d2[-1], .musyc_known_params), "conc_2")
+  expect_error(predict_musyc_surface(d1, d2, .musyc_known_params[-10]), "alpha21")
+})
+
 test_that(".musyc_surface returns the Jacobian of the surface", {
   d1 <- rep(c(0, 10^seq(-3, 1, length.out = 6)), each = 7)
   d2 <- rep(c(0, 10^seq(-3, 1, length.out = 6)), times = 7)
@@ -102,6 +112,14 @@ test_that(".musyc_hill_fit recovers the parameters of a Hill curve", {
   E <- 1 + (0.2 - 1) * d^1.5 / (0.05^1.5 + d^1.5)
   fit <- .musyc_hill_fit(d, E)
   expect_equal(unlist(fit), c(E0 = 1, Emax = 0.2, h = 1.5, C = 0.05), tolerance = 1e-4)
+})
+
+test_that(".musyc_best_fit prefers a converged fit to a better one that ran out of iterations", {
+  fit <- function(r2, converged) list(params = list(), r2 = r2, converged = converged)
+  expect_equal(.musyc_best_fit(list(fit(0.9, TRUE), fit(0.95, FALSE), fit(0.8, TRUE)))$r2, 0.9)
+  expect_equal(.musyc_best_fit(list(fit(0.9, FALSE), fit(0.95, FALSE)))$r2, 0.95)
+  expect_equal(.musyc_best_fit(list(fit(NA_real_, FALSE), fit(0.7, TRUE)))$r2, 0.7)
+  expect_true(is.na(.musyc_best_fit(list(fit(NA_real_, FALSE), fit(NA_real_, FALSE)))$r2))
 })
 
 test_that(".musyc_grid adds the untreated corner and drops missing responses", {

@@ -42,7 +42,7 @@ tested doses.  \code{h}, \code{C} and \code{alpha} are fitted on a log
 scale.  The fit starts from the \code{synergy} initial guess (Hill fits of
 the two single-agent edges) and from \code{n_restarts} random initial
 values; the fit with the best \code{r2}, computed on the measured points,
-is kept.
+is kept, preferring fits that converged within the iteration limit.
 
 \code{alpha > 1} means synergistic potency, \code{beta > 0} synergistic
 efficacy.  \code{alpha} is weakly constrained when a drug has little

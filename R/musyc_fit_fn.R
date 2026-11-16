@@ -23,7 +23,7 @@
 #' scale.  The fit starts from the \code{synergy} initial guess (Hill fits of
 #' the two single-agent edges) and from \code{n_restarts} random initial
 #' values; the fit with the best \code{r2}, computed on the measured points,
-#' is kept.
+#' is kept, preferring fits that converged within the iteration limit.
 #'
 #' \code{alpha > 1} means synergistic potency, \code{beta > 0} synergistic
 #' efficacy.  \code{alpha} is weakly constrained when a drug has little
@@ -88,9 +88,7 @@ musyc_fit_fn <- function(avg_dt, n_restarts = 10L, seed = 1L) {
   }))
 
   starts <- c(list(.musyc_default_p0(obs)), random_p0)
-  fits <- lapply(starts, function(p0) .musyc_fit_once(obs, limits, p0))
-  r2 <- vapply(fits, function(fit) fit$r2, numeric(1))
-  best <- if (all(is.na(r2))) fits[[1]] else fits[[which.max(r2)]]
+  best <- .musyc_best_fit(lapply(starts, function(p0) .musyc_fit_once(obs, limits, p0)))
 
   if (is.null(best$params)) {
     return(na_result)
@@ -179,6 +177,37 @@ musyc_summary_fn <- gDRutils::set_fit_fn_info(
   )
 )
 
+
+
+#' predict_musyc_surface
+#'
+#' Response of a fitted MuSyC surface (\code{gamma12 = gamma21 = 1}) at the
+#' given concentrations, e.g. to compare a \code{\link{musyc_fit_fn}} fit
+#' with the measured grid.
+#'
+#' @param conc,conc_2 numeric vectors of the same length; concentrations of
+#'   drug 1 and drug 2.
+#' @param params named list or one-row \code{data.table} with \code{E0},
+#'   \code{E1}, \code{E2}, \code{E3}, \code{h1}, \code{h2}, \code{C1},
+#'   \code{C2}, \code{alpha12} and \code{alpha21}, as returned by
+#'   \code{musyc_fit_fn}.
+#'
+#' @return Numeric vector of responses, one per concentration pair.
+#'
+#' @examples
+#' params <- list(E0 = 1, E1 = 0.4, E2 = 0.3, E3 = -0.2, h1 = 1.2, h2 = 0.9,
+#'                C1 = 0.5, C2 = 0.2, alpha12 = 3, alpha21 = 0.5)
+#' predict_musyc_surface(c(0, 0.1, 1), c(0, 1, 1), params)
+#'
+#' @seealso \code{\link{musyc_fit_fn}}
+#' @export
+predict_musyc_surface <- function(conc, conc_2, params) {
+  checkmate::assert_numeric(conc, lower = 0)
+  checkmate::assert_numeric(conc_2, lower = 0, len = length(conc))
+  checkmate::assert_names(names(params), must.include = .musyc_param_names)
+  values <- vapply(.musyc_param_names, function(name) as.numeric(params[[name]][1]), numeric(1))
+  .musyc_surface(c(values[1:4], log(values[5:10])), conc, conc_2)
+}
 
 
 #' musyc_available
@@ -426,6 +455,18 @@ musyc_available <- function() {
     r2 = r2,
     converged = fit$converged
   )
+}
+
+# The fit with the best r2 among the converged ones, as in synergy, where a
+# start that runs out of iterations fails; among all fits when none converged
+.musyc_best_fit <- function(fits) {
+  r2 <- vapply(fits, function(fit) fit$r2, numeric(1))
+  converged <- vapply(fits, function(fit) isTRUE(fit$converged), logical(1))
+  pool <- which(!is.na(r2) & converged)
+  if (length(pool) == 0L) {
+    pool <- which(!is.na(r2))
+  }
+  if (length(pool) == 0L) fits[[1]] else fits[[pool[which.max(r2[pool])]]]
 }
 
 # Evaluate expr with the given seed and restore the global RNG state afterwards
