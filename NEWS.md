@@ -1,6 +1,6 @@
 ## gDRcore 1.11.33 - 2026-11-16
-* change `musyc_fit_fn()` to fit in R, so MuSyC no longer needs Python and `reticulate`
-* change `musyc_available()` to always return `TRUE`
+* change `musyc_fit_fn()` to fit in R without Python; results can differ slightly, mostly `beta` on flat surfaces
+* deprecate `musyc_available()`, which now always returns `TRUE`
 * add `predict_musyc_surface()`, the response of a fitted MuSyC surface at given concentrations
 
 ## gDRcore 1.11.32 - 2026-11-08

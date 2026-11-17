@@ -52,8 +52,8 @@ test_that("musyc_fit_fn returns an NA result for a grid it cannot fit", {
   expect_identical(names(result), names(.musyc_na_result("GR")))
 })
 
-test_that("musyc_available is always TRUE", {
-  expect_true(musyc_available())
+test_that("musyc_available is deprecated and always TRUE", {
+  expect_true(expect_warning(musyc_available(), class = "deprecatedWarning"))
 })
 
 test_that(".musyc_surface matches the MuSyC model of the synergy package", {
@@ -79,6 +79,19 @@ test_that(".musyc_surface returns the Jacobian of the surface", {
   d1 <- rep(c(0, 10^seq(-3, 1, length.out = 6)), each = 7)
   d2 <- rep(c(0, 10^seq(-3, 1, length.out = 6)), times = 7)
   theta <- .musyc_theta(.musyc_known_params)
+  numeric_jacobian <- vapply(seq_along(theta), function(k) {
+    step <- replace(numeric(length(theta)), k, 1e-6)
+    (.musyc_surface(theta + step, d1, d2) - .musyc_surface(theta - step, d1, d2)) / 2e-6
+  }, numeric(length(d1)))
+  expect_equal(unname(.musyc_surface(theta, d1, d2, jacobian = TRUE)), numeric_jacobian,
+               tolerance = 1e-7)
+})
+
+test_that(".musyc_surface returns a finite Jacobian for a very steep curve", {
+  d1 <- rep(c(0, 10^seq(-3, 1, length.out = 6)), each = 7)
+  d2 <- rep(c(0, 10^seq(-3, 1, length.out = 6)), times = 7)
+  # with h1 = 400 the dose ratio powers reach exp(200), so the squared denominator overflows
+  theta <- .musyc_theta(replace(.musyc_known_params, "h1", 400))
   numeric_jacobian <- vapply(seq_along(theta), function(k) {
     step <- replace(numeric(length(theta)), k, 1e-6)
     (.musyc_surface(theta + step, d1, d2) - .musyc_surface(theta - step, d1, d2)) / 2e-6
@@ -153,6 +166,21 @@ test_that(".with_local_seed leaves the global random number generator untouched"
   first <- .with_local_seed(1L, stats::runif(3))
   expect_identical(.Random.seed, before)
   expect_identical(.with_local_seed(1L, stats::runif(3)), first)
+})
+
+test_that("musyc_fit_fn stays close to the synergy fits of public Goetz pairs", {
+  # averaged grids of Goetz et al., Cancers 2024, and the fits of synergy 1.0.0 on them
+  grids <- data.table::fread(test_path("testdata", "musyc_goetz_grids.csv"))
+  ref <- data.table::fread(test_path("testdata", "musyc_goetz_synergy.csv"))
+  keys <- c("CellLineName", "DrugName", "DrugName_2", "normalization_type")
+  fits <- grids[, suppressWarnings(musyc_fit_fn(.SD))[c("r2", "beta")], by = keys,
+                .SDcols = c("Concentration", "Concentration_2", "x", "normalization_type")]
+  fits <- merge(fits, ref, by = keys)
+  expect_identical(NROW(fits), 4L)
+  expect_true(all(fits$r2 > fits$r2_synergy - 0.02))
+  # A2058 GR is flat: both fits reach a similar r2 with a different beta
+  regular <- fits[fits$CellLineName != "A2058"]
+  expect_true(all(abs(regular$beta - regular$beta_synergy) < 0.02))
 })
 
 test_that("musyc_fit_fn recovers the parameters of a known surface", {

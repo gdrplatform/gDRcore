@@ -10,12 +10,12 @@ musyc_available()
 Logical scalar, \code{TRUE}.
 }
 \description{
-Whether \code{\link{musyc_fit_fn}} can run.  Always \code{TRUE}: the fit
-no longer needs Python.  Kept so that code written for the Python version
-keeps working.
+Deprecated.  Whether \code{\link{musyc_fit_fn}} can run, which is always the
+case now that the fit no longer needs Python.  Will be removed in the next
+release.
 }
 \examples{
-musyc_available()
+suppressWarnings(musyc_available())
 
 }
 \seealso{

@@ -212,18 +212,19 @@ predict_musyc_surface <- function(conc, conc_2, params) {
 
 #' musyc_available
 #'
-#' Whether \code{\link{musyc_fit_fn}} can run.  Always \code{TRUE}: the fit
-#' no longer needs Python.  Kept so that code written for the Python version
-#' keeps working.
+#' Deprecated.  Whether \code{\link{musyc_fit_fn}} can run, which is always the
+#' case now that the fit no longer needs Python.  Will be removed in the next
+#' release.
 #'
 #' @return Logical scalar, \code{TRUE}.
 #'
 #' @examples
-#' musyc_available()
+#' suppressWarnings(musyc_available())
 #'
 #' @seealso \code{\link{musyc_fit_fn}}
 #' @export
 musyc_available <- function() {
+  .Deprecated(msg = "'musyc_available()' is deprecated: 'musyc_fit_fn()' no longer needs Python.")
   TRUE
 }
 
@@ -324,7 +325,8 @@ musyc_available <- function() {
     return(e3 + num / den)
   }
 
-  d_e <- function(d_num, d_den) (d_num * den - num * d_den) / den^2
+  # quotient rule without den^2, which overflows for a large h
+  d_e <- function(d_num, d_den) (d_num - num / den * d_den) / den
   d_x1 <- d_e((2 + y1) * (e1 - e3) + y2 * (e2 - e3), (2 + y1) * (1 + y2))
   d_x2 <- d_e(y1 * (e1 - e3) + (2 + y2) * (e2 - e3), (2 + y2) * (1 + y1))
   d_y1 <- d_e((e0 - e3) + (x1 + x2) * (e1 - e3), 1 + x1 * (1 + y2) + x2 * (2 + y2))
@@ -370,7 +372,9 @@ musyc_available <- function() {
   fit <- stats::nlminb(start, objective, gradient = gradient, hessian = hessian,
                        lower = lower, upper = upper,
                        control = list(iter.max = 1000L, eval.max = 1500L))
-  # like synergy, the fit failed to converge only when it ran out of iterations
+  # like synergy, the fit failed to converge only when it ran out of iterations;
+  # singular and false convergence count as converged, since rejecting them
+  # selects starts with a lower r2
   c(best, list(converged = !grepl("limit reached", fit$message, fixed = TRUE)))
 }
 
