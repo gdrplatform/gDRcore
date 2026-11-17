@@ -21,7 +21,7 @@ Named list with \code{normalization_type}, the parameters
 \code{E0}, \code{E1}, \code{E2}, \code{E3}, \code{h1}, \code{h2},
 \code{C1}, \code{C2}, \code{alpha12}, \code{alpha21}, the efficacy synergy
 \code{beta}, \code{r2} and \code{converged}.  Numeric fields are
-\code{NA_real_} when the fit does not converge.
+\code{NA_real_} when no fit succeeds.
 }
 \description{
 Fit function for the MuSyC (multi-dimensional synergy of combinations)
@@ -29,34 +29,34 @@ model on combination dose-response data, for use with
 \code{\link[gDRutils]{apply_fit}}.
 }
 \details{
-The surface is fitted with the Python \code{synergy} package through
-\code{reticulate}; install it with
-\code{reticulate::py_install("synergy", pip = TRUE)}.  The fit provenance
-records the Python, \code{synergy}, \code{numpy} and \code{scipy} versions.
+The surface (with \code{gamma12 = gamma21 = 1}) is fitted in R by bounded
+least squares, \code{\link[stats]{nlminb}} with the analytic Jacobian; the
+settings follow the Python \code{synergy} package, which an earlier version
+of this function called.
 
-The whole grid is fitted, single-agent edges included, with the
-\code{synergy} defaults and three additions: the untreated corner is set
+The whole grid is fitted, single-agent edges included, with three
+additions to the \code{synergy} defaults: the untreated corner is set
 to 1 (added when absent), \code{E} is bounded from -1 for GR and from 0 for
 RV up to 1.5, and \code{C1}/\code{C2} stay within a factor of 1000 of the
-tested doses.  The fit starts from the \code{synergy} initial guess and
-from \code{n_restarts} random initial values; the fit with the best
-\code{r2}, computed on the measured points, is kept.
+tested doses.  \code{h}, \code{C} and \code{alpha} are fitted on a log
+scale.  The fit starts from the \code{synergy} initial guess (Hill fits of
+the two single-agent edges) and from \code{n_restarts} random initial
+values; the fit with the best \code{r2}, computed on the measured points,
+is kept, preferring fits that converged within the iteration limit.
 
 \code{alpha > 1} means synergistic potency, \code{beta > 0} synergistic
 efficacy.  \code{alpha} is weakly constrained when a drug has little
 effect, so extreme values of it are not a measure of synergy.
 }
 \examples{
-if (musyc_available()) {
-  mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
-  combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
-  combo_se_out <- gDRutils::apply_fit(
-    combo_se, musyc_fit_fn, "combination",
-    output_assay = "musyc_params",
-    summary_fn = musyc_summary_fn, summary_assay = "musyc_summary",
-    fit_source = "musyc"
-  )
-}
+mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
+combo_se_out <- gDRutils::apply_fit(
+  combo_se, musyc_fit_fn, "combination",
+  output_assay = "musyc_params",
+  summary_fn = musyc_summary_fn, summary_assay = "musyc_summary",
+  fit_source = "musyc"
+)
 
 }
 \seealso{
