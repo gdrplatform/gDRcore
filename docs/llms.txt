@@ -18,6 +18,8 @@ Either create a SummarizedExperiment and normalize raw treated and
 control data (create_and_normalize_SE), average data (average_SE), or
 fit the processed data (fit_SE).
 
+- [`add_PRISM_metrics()`](https://gdrplatform.github.io/gDRcore/reference/add_PRISM_metrics.md)
+  : Add the curve fits delivered by PRISM to the Metrics assay
 - [`compute_growth_rates()`](https://gdrplatform.github.io/gDRcore/reference/compute_growth_rates.md)
   : Compute per-period growth rates for time-course screens
 - [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md)

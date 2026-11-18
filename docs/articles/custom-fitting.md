@@ -57,7 +57,7 @@ sa_se <- mae[["single-agent"]]
 sa_se
 #> class: SummarizedExperiment 
 #> dim: 10 10 
-#> metadata(5): identifiers experiment_metadata Keys fit_parameters
+#> metadata(6): identifiers experiment_metadata ... fit_parameters
 #>   .internal
 #> assays(5): RawTreated Controls Normalized Averaged Metrics
 #> rownames(10): G00002_drug_002_moa_A_72 G00003_drug_003_moa_A_72 ...
@@ -1114,13 +1114,16 @@ prov_se <- apply_fit(
 gDRutils::summarize_fit_provenance(prov_se)
 #>          assay fit_source                                            fn
 #>         <char>     <char>                                        <char>
-#> 1: custom_hill hill_loose gDRutils::fit_drug_response_metrics (1.11.23)
-#>         fit_args
-#>           <char>
-#> 1: pcutoff = 0.1
+#> 1:     Metrics        gDR gDRutils::fit_drug_response_metrics (1.11.22)
+#> 2: custom_hill hill_loose gDRutils::fit_drug_response_metrics (1.11.26)
+#>                                                                                                        fit_args
+#>                                                                                                          <char>
+#> 1: capping_fold = 5, range_conc = c(0.005, 5), pcutoff = 0.05, n_point_cutoff = 4, force_fit = FALSE, cap = 0.1
+#> 2:                                                                                                pcutoff = 0.1
 #>                                                                model
 #>                                                               <char>
 #> 1: 3-parameter log-logistic (drc::LL.3u), upper asymptote fixed at 1
+#> 2: 3-parameter log-logistic (drc::LL.3u), upper asymptote fixed at 1
 ```
 
 The `fit_source` column of the assay is the key into the recipes:
@@ -1135,7 +1138,7 @@ recipe$fn[c("name", "package", "version")]
 #> [1] "gDRutils"
 #> 
 #> $version
-#> [1] "1.11.23"
+#> [1] "1.11.26"
 recipe$fn$info$model
 #> [1] "3-parameter log-logistic (drc::LL.3u), upper asymptote fixed at 1"
 recipe$fit_args
@@ -1154,9 +1157,14 @@ from someone else:
 
 ``` r
 gDRutils::check_reproducibility(prov_se)
-#>          assay fit_source reproducible n_rows        detail
-#>         <char>     <char>       <lgcl>  <int>        <char>
-#> 1: custom_hill hill_loose         TRUE    200 results match
+#>          assay fit_source reproducible n_rows
+#>         <char>     <char>       <lgcl>  <int>
+#> 1:     Metrics        gDR        FALSE    200
+#> 2: custom_hill hill_loose         TRUE    200
+#>                                                                                                                                                                          detail
+#>                                                                                                                                                                          <char>
+#> 1: Column 'ec50': Mean relative difference: 0.0000002838961; gDRutils::fit_drug_response_metrics was recorded with version 1.11.22 but 1.11.26 is installed; results may differ
+#> 2:                                                                                                                                                                results match
 ```
 
 [`set_fit_fn_info()`](https://gdrplatform.github.io/gDRstyle/reference/set_fit_fn_info.html)
@@ -1313,10 +1321,10 @@ sessionInfo()
 #>  [3] SummarizedExperiment_1.43.0 Biobase_2.73.2             
 #>  [5] GenomicRanges_1.65.4        Seqinfo_1.3.2              
 #>  [7] IRanges_2.47.5              S4Vectors_0.51.10          
-#>  [9] BiocGenerics_0.59.12        generics_0.1.4             
+#>  [9] BiocGenerics_0.59.13        generics_0.1.4             
 #> [11] MatrixGenerics_1.25.0       matrixStats_1.5.0          
-#> [13] gDRutils_1.11.23            gDRtestData_1.11.11        
-#> [15] gDRcore_1.11.32             BiocStyle_2.41.0           
+#> [13] gDRutils_1.11.26            gDRtestData_1.11.13        
+#> [15] gDRcore_1.11.33             BiocStyle_2.41.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
@@ -1343,7 +1351,7 @@ sessionInfo()
 #> [43] Matrix_1.7-6                sandwich_3.1-3             
 #> [45] jsonlite_2.0.0              carData_3.0-6              
 #> [47] bookdown_0.48               car_3.1-5                  
-#> [49] Formula_1.2-6               systemfonts_1.3.2          
+#> [49] Formula_1.2-6               systemfonts_1.3.3          
 #> [51] jquerylib_0.1.4             glue_1.8.1                 
 #> [53] pkgdown_2.2.1               codetools_0.2-20           
 #> [55] futile.logger_1.4.9         pillar_1.11.1              
@@ -1353,7 +1361,7 @@ sessionInfo()
 #> [63] lattice_0.23-1              png_0.1-9                  
 #> [65] futile.options_1.0.1        backports_1.5.1            
 #> [67] bslib_0.12.0                Rcpp_1.1.2                 
-#> [69] charport_0.2.0              SparseArray_1.13.4         
+#> [69] charport_0.2.0              SparseArray_1.13.5         
 #> [71] checkmate_2.3.4             qs2_0.4.0                  
 #> [73] xfun_0.62                   fs_2.1.0                   
 #> [75] zoo_1.9-1

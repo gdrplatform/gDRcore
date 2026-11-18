@@ -1,5 +1,12 @@
 # Changelog
 
+## gDRcore 1.11.33 - 2026-11-12
+
+- add
+  [`add_PRISM_metrics()`](https://gdrplatform.github.io/gDRcore/reference/add_PRISM_metrics.md)
+  to add the curve fits delivered by PRISM to Metrics, with fit_source
+  PRISM
+
 ## gDRcore 1.11.32 - 2026-11-08
 
 - add

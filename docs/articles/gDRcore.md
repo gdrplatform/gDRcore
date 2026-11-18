@@ -306,13 +306,13 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] gDRcore_1.11.32     gDRtestData_1.11.11 BiocStyle_2.41.0   
+#> [1] gDRcore_1.11.33     gDRtestData_1.11.13 BiocStyle_2.41.0   
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
 #>  [3] BumpyMatrix_1.21.0          TH.data_1.1-5              
 #>  [5] digest_0.6.39               lifecycle_1.0.5            
-#>  [7] gDRutils_1.11.23            survival_3.8-12            
+#>  [7] gDRutils_1.11.26            survival_3.8-12            
 #>  [9] magrittr_2.0.5              compiler_4.6.2             
 #> [11] rlang_1.3.0                 sass_0.4.10                
 #> [13] drc_4.0-0                   tools_4.6.2                
@@ -322,7 +322,7 @@ sessionInfo()
 #> [21] DelayedArray_0.39.8         RColorBrewer_1.1-3         
 #> [23] abind_1.4-8                 multcomp_1.4-32            
 #> [25] BiocParallel_1.47.0         purrr_1.2.2                
-#> [27] BiocGenerics_0.59.12        desc_1.4.3                 
+#> [27] BiocGenerics_0.59.13        desc_1.4.3                 
 #> [29] grid_4.6.2                  stats4_4.6.2               
 #> [31] scales_1.4.0                gtools_3.9.5               
 #> [33] MASS_7.3-66                 MultiAssayExperiment_1.39.1
@@ -340,7 +340,7 @@ sessionInfo()
 #> [57] jsonlite_2.0.0              carData_3.0-6              
 #> [59] bookdown_0.48               car_3.1-5                  
 #> [61] IRanges_2.47.5              S4Vectors_0.51.10          
-#> [63] Formula_1.2-6               systemfonts_1.3.2          
+#> [63] Formula_1.2-6               systemfonts_1.3.3          
 #> [65] testthat_3.3.2              jquerylib_0.1.4            
 #> [67] rematch_2.0.0               glue_1.8.1                 
 #> [69] pkgdown_2.2.1               codetools_0.2-20           
@@ -352,7 +352,7 @@ sessionInfo()
 #> [81] evaluate_1.0.5              lattice_0.23-1             
 #> [83] Biobase_2.73.2              futile.options_1.0.1       
 #> [85] backports_1.5.1             bslib_0.12.0               
-#> [87] SparseArray_1.13.4          checkmate_2.3.4            
+#> [87] SparseArray_1.13.5          checkmate_2.3.4            
 #> [89] xfun_0.62                   fs_2.1.0                   
 #> [91] MatrixGenerics_1.25.0       zoo_1.9-1                  
 #> [93] pkgconfig_2.0.3
