@@ -1,3 +1,6 @@
+## gDRcore 1.11.33 - 2026-11-12
+* add `add_PRISM_metrics()` to add the curve fits delivered by PRISM to Metrics, with fit_source PRISM
+
 ## gDRcore 1.11.32 - 2026-11-08
 * add `bliss_fit_fn()`, `hss_fit_fn()` and `musyc_fit_fn()` to the gDRutils fit function registry
 
