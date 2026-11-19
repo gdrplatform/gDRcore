@@ -1,3 +1,6 @@
+## gDRcore 1.11.34 - 2026-11-19
+* fix N_conc of the PRISM curves counting the concentrations of every normalization type
+
 ## gDRcore 1.11.33 - 2026-11-12
 * add `add_PRISM_metrics()` to add the curve fits delivered by PRISM to Metrics, with fit_source PRISM
 

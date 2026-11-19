@@ -117,3 +117,26 @@ test_that("add_PRISM_metrics works on the curves read by gDRimport", {
   expect_identical(S4Vectors::metadata(out)$provenance$steps$prism_drc_import$settings$files$role,
                    c("prism_drc", "meta_data"))
 })
+
+test_that("N_conc counts the concentrations of the PRISM normalization type only", {
+  se <- prism_se()
+  conc <- gDRutils::get_env_identifiers("concentration")
+  avg <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
+    SummarizedExperiment::assay(se, "Averaged"), row.field = "row", column.field = "column"
+  ))
+  is_rv <- avg$normalization_type == "RV" & !is.na(avg$x) & avg[[conc]] > 0
+  cell <- avg[is_rv][1, c("row", "column")]
+  in_cell <- avg$row == cell$row & avg$column == cell$column
+  n <- data.table::uniqueN(avg[in_cell & is_rv][[conc]])
+  # a GR copy of the cell keeps the value RV is missing at its highest concentration
+  gr <- avg[in_cell & avg$normalization_type == "RV"]
+  gr$normalization_type <- "GR"
+  avg$x[in_cell & is_rv & avg[[conc]] == max(avg[in_cell & is_rv][[conc]])] <- NA
+  avg <- rbind(avg, gr)
+  bm <- BumpyMatrix::splitAsBumpyMatrix(avg[, setdiff(names(avg), c("row", "column")), with = FALSE],
+                                        row = avg$row, column = avg$column)
+  se_avg <- SummarizedExperiment::SummarizedExperiment(assays = list(Averaged = bm))
+
+  expect_identical(.count_concentrations(se_avg, "Averaged", cell$row, cell$column, "RV", conc), n - 1L)
+  expect_identical(.count_concentrations(se_avg, "Averaged", cell$row, cell$column, "GR", conc), n)
+})
