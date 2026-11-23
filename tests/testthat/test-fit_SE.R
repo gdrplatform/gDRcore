@@ -408,7 +408,7 @@ test_that("fit_SE gives a custom fit_fn only the settings it takes", {
     seen <<- pcutoff
     gDRutils::fit_drug_response_metrics(avg_dt, pcutoff = pcutoff)
   }
-  fit_SE(se, fit_fn = hill_no_capping, pcutoff = 0.2)
+  suppressWarnings(fit_SE(se, fit_fn = hill_no_capping, pcutoff = 0.2))  # se is already fitted
   expect_equal(seen, 0.2)
 })
 
