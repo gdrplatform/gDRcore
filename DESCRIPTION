@@ -31,7 +31,7 @@ Imports:
     checkmate,
     drc,
     futile.logger,
-    gDRutils (>= 1.11.27),
+    gDRutils (>= 1.11.31),
     jsonlite,
     MultiAssayExperiment,
     purrr,

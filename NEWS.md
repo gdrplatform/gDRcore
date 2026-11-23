@@ -1,6 +1,9 @@
 ## gDRcore 1.11.37 - 2026-11-23
 * fix `musyc_fit_fn()` computing the Jacobian twice per iteration; fits are identical and about 1.75x faster
 
+## gDRcore 1.11.36 - 2026-11-23
+* fix the combination fits not recording their `fit_args`, so a replay used the default solver
+
 ## gDRcore 1.11.35 - 2026-11-23
 * add `fit_fn` and `fit_args` to `fit_SE()` and the pipeline, plus the documented `range_conc`, `pcutoff` and others
 * make the combination single-agent fits use `gDRutils::fit_drug_response_metrics()`, the one gDR Hill fit
