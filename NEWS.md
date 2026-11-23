@@ -1,3 +1,6 @@
+## gDRcore 1.11.37 - 2026-11-23
+* fix `musyc_fit_fn()` computing the Jacobian twice per iteration; fits are identical and about 1.75x faster
+
 ## gDRcore 1.11.36 - 2026-11-23
 * fix the combination fits not recording their `fit_args`, so a replay used the default solver
 

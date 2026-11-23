@@ -367,8 +367,18 @@ musyc_available <- function() {
     }
     value
   }
-  gradient <- function(p) finite_or_zero(2 * crossprod(jac(p), f(p))[, 1])
-  hessian <- function(p) finite_or_zero(2 * crossprod(jac(p)))
+  # nlminb asks for the gradient and the Hessian at the same point, so compute the
+  # residuals and the Jacobian once per point instead of once for each
+  last <- list(p = NULL)
+  at <- function(p) {
+    if (!identical(p, last$p)) last <<- list(p = p, j = jac(p), r = f(p))
+    last
+  }
+  gradient <- function(p) {
+    x <- at(p)
+    finite_or_zero(2 * crossprod(x$j, x$r)[, 1])
+  }
+  hessian <- function(p) finite_or_zero(2 * crossprod(at(p)$j))
   fit <- stats::nlminb(start, objective, gradient = gradient, hessian = hessian,
                        lower = lower, upper = upper,
                        control = list(iter.max = 1000L, eval.max = 1500L))
