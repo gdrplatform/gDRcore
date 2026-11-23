@@ -27,6 +27,47 @@
 # apply_combo_sa_fits — Step 1+2 of fit_SE.combinations: SA fits → Metrics assay
 ####
 
+# One series of a combination (a co-treatment row/column or a co-dilution diagonal),
+# fitted with the gDR Hill fit, gDRutils::fit_drug_response_metrics(), once per
+# normalization type with that type's x_0. One row per type, fit_source "gDR", rownames
+# "<type>_gDR". A series with no concentrations is one all-NA row, which
+# apply_combo_sa_fits() drops by its NA fit_type. `fit_args` (e.g. solver,
+# solver_control, pcutoff) override the defaults of the fit, except x_0, cap and
+# force_fit, which the series sets.
+#' @keywords internal
+.fit_combo_series <- function(df_, conc_col, e_0, GR_0, normalization_type,
+                              cap, force_fit = FALSE, fit_args = list()) {
+  checkmate::assert_string(conc_col)
+  checkmate::assert_list(fit_args, names = "unique")
+  conc <- df_[[conc_col]]
+  conc_id <- gDRutils::get_env_identifiers("concentration")
+  args <- utils::modifyList(list(cap = cap, force_fit = force_fit),
+                            fit_args[setdiff(names(fit_args), c("x_0", "cap", "force_fit"))])
+  has_std <- "x_std" %in% names(df_)
+
+  out <- lapply(intersect(c("RV", "GR"), normalization_type), function(nt) {
+    sel <- which(df_$normalization_type == nt)
+    avg <- data.table::data.table(
+      conc = conc[sel],
+      x = df_$x[sel],
+      x_std = if (has_std) df_$x_std[sel] else rep(NA_real_, length(sel)),
+      normalization_type = rep(nt, length(sel))
+    )
+    data.table::setnames(avg, "conc", conc_id)
+    res <- do.call(gDRutils::fit_drug_response_metrics,
+                   c(list(avg, x_0 = if (nt == "RV") e_0 else GR_0), args))
+    data.table::as.data.table(res)
+  })
+  out <- data.table::rbindlist(out, fill = TRUE)
+  out$fit_source <- "gDR"
+  rownames(out) <- paste0(out$normalization_type, "_", out$fit_source)
+  if (all(is.na(unique(conc)))) {
+    out[] <- NA
+  }
+  out
+}
+
+
 #' apply_combo_sa_fits
 #'
 #' Fit single-agent dose-response curves for each co-treatment concentration
@@ -56,6 +97,9 @@
 #' @param averaged_assay string; name of the input assay. Default \code{"Averaged"}.
 #' @param metrics_assay string; name of the output assay. Default \code{"Metrics"}.
 #' @param fit_source string recorded in the \code{fit_source} column. Default \code{"gDR"}.
+#' @param fit_args named list of arguments for the curve fits, passed to
+#'   \code{gDRutils::fit_drug_response_metrics()} (e.g. \code{solver}). Each series keeps its
+#'   own \code{x_0}, \code{cap} and \code{force_fit}. Default \code{list()}.
 #'
 #' @return Updated \code{SummarizedExperiment} with a \code{metrics_assay}
 #'   assay containing SA fit parameters per co-treatment concentration.
@@ -78,13 +122,15 @@ apply_combo_sa_fits <- function(se,
                                 normalization_types = c("GR", "RV"),
                                 averaged_assay = "Averaged",
                                 metrics_assay = "Metrics",
-                                fit_source = "gDR") {
+                                fit_source = "gDR",
+                                fit_args = list()) {
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_character(series_identifiers, null.ok = TRUE, len = 2L)
   checkmate::assert_character(normalization_types, min.len = 1L)
   checkmate::assert_string(averaged_assay)
   checkmate::assert_string(metrics_assay)
   checkmate::assert_string(fit_source)
+  checkmate::assert_list(fit_args, names = "unique")
   gDRutils::validate_se_assay_name(se, averaged_assay)
 
   if (is.null(series_identifiers)) {
@@ -143,7 +189,8 @@ apply_combo_sa_fits <- function(se,
       complete_subset[is.na(normalization_type), normalization_type := norm_type]
 
       # SA fits per co-treatment concentration (drug_1: series=conc1, cotrt=conc2)
-      drug_1 <- fit_combo_cotreatments(avg_subset, series_id = id, cotrt_id = id2, norm_type)
+      drug_1 <- fit_combo_cotreatments(avg_subset, series_id = id, cotrt_id = id2, norm_type,
+                                       fit_args = fit_args)
       drug_1 <- if (all(is.na(drug_1$fit_type))) {
         x_tmp <- drug_1[1, ]
         x_tmp[, "cotrt_value"] <- NA
@@ -154,13 +201,14 @@ apply_combo_sa_fits <- function(se,
 
       # SA fits per co-treatment concentration (drug_2: series=conc2, cotrt=conc1)
       drug_2 <- na.omit(
-        fit_combo_cotreatments(avg_subset, series_id = id2, cotrt_id = id, norm_type),
+        fit_combo_cotreatments(avg_subset, series_id = id2, cotrt_id = id, norm_type,
+                               fit_args = fit_args),
         col = "fit_type"
       )
 
       # Codilution fits (diagonal)
       codilution <- na.omit(
-        fit_combo_codilutions(avg_subset, series_identifiers, norm_type),
+        fit_combo_codilutions(avg_subset, series_identifiers, norm_type, fit_args = fit_args),
         col = "fit_type"
       )
 
@@ -214,7 +262,8 @@ apply_combo_sa_fits <- function(se,
     normalization_types = normalization_types,
     averaged_assay = averaged_assay,
     metrics_assay = metrics_assay,
-    fit_source = fit_source
+    fit_source = fit_source,
+    fit_args = fit_args
   ), averaged_assay, fit_source)
 }
 
@@ -222,7 +271,7 @@ apply_combo_sa_fits <- gDRutils::set_fit_fn_info(
   apply_combo_sa_fits,
   model = "single-agent Hill fits along each axis of the combination grid",
   description = paste(
-    "Fits a dose-response curve with gDRutils::fit_curves() for each drug at every",
+    "Fits a dose-response curve with gDRutils::fit_drug_response_metrics() for each drug at every",
     "concentration of its partner and along the co-dilution diagonals, and writes them",
     "to Metrics."
   )

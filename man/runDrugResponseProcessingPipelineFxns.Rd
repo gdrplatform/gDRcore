@@ -40,7 +40,9 @@ fit_SE(
   force_fit = FALSE,
   pcutoff = 0.05,
   cap = 0.1,
-  curve_type = c("GR", "RV")
+  curve_type = c("GR", "RV"),
+  fit_fn = gDRutils::fit_drug_response_metrics,
+  fit_args = list()
 )
 
 normalize_SE(
@@ -93,7 +95,14 @@ runDrugResponseProcessingPipeline(
   data_dir = NULL,
   partial_run = FALSE,
   start_from = get_pipeline_steps()[1],
-  selected_experiments = NULL
+  selected_experiments = NULL,
+  range_conc = c(0.005, 5),
+  force_fit = FALSE,
+  pcutoff = 0.05,
+  cap = 0.1,
+  curve_type = c("GR", "RV"),
+  fit_fn = gDRutils::fit_drug_response_metrics,
+  fit_args = list()
 )
 }
 \arguments{
@@ -152,6 +161,19 @@ minimum required to try to fit a curve. Defaults to \code{4}.}
 relative viability at.}
 
 \item{curve_type}{vector of curve type values.}
+
+\item{fit_fn}{function fitting each single-agent curve, called by
+\code{gDRutils::apply_fit()}. Defaults to \code{gDRutils::fit_drug_response_metrics},
+the gDR Hill fit. A replacement must return the Metrics columns
+(\code{gDRutils::get_header("response_metrics")}).}
+
+\item{fit_args}{named list of further arguments for the fits, e.g.
+\code{list(solver = my_solver)} to fit the Hill curve with another optimiser (see
+\code{gDRutils::get_solvers()}). Passed to \code{fit_fn} for single-agent data, and
+to \code{gDRutils::fit_drug_response_metrics()} for the single-agent fits of a
+combination. \code{range_conc}, \code{force_fit}, \code{pcutoff}, \code{cap},
+\code{curve_type} and \code{fit_fn} apply to single-agent data only; the fits of a
+combination take their settings from \code{fit_args} alone.}
 
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}

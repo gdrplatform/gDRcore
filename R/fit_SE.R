@@ -11,7 +11,9 @@ fit_SE <- function(se,
                    force_fit = FALSE,
                    pcutoff = 0.05,
                    cap = 0.1,
-                   curve_type = c("GR", "RV")) {
+                   curve_type = c("GR", "RV"),
+                   fit_fn = gDRutils::fit_drug_response_metrics,
+                   fit_args = list()) {
 
   # Assertions:
   checkmate::assert_class(se, "SummarizedExperiment")
@@ -40,9 +42,14 @@ fit_SE <- function(se,
     )
   }
 
+  checkmate::assert_function(fit_fn)
+  checkmate::assert_list(fit_args, names = "unique")
+
   # Pass the settings through fit_args rather than a closure, so the recipe that
-  # apply_fit() records names gDRutils::fit_drug_response_metrics and its arguments.
-  fit_args <- list(
+  # apply_fit() records names the fit function and its arguments. The built-in settings
+  # go only to a fit_fn that takes them; the caller's fit_args (e.g. a solver) override
+  # them and are always passed.
+  default_args <- list(
     capping_fold = 5,
     range_conc = range_conc,
     pcutoff = pcutoff,
@@ -50,6 +57,11 @@ fit_SE <- function(se,
     force_fit = force_fit,
     cap = cap
   )
+  fn_formals <- names(formals(fit_fn))
+  if (!"..." %in% fn_formals) {
+    default_args <- default_args[names(default_args) %in% fn_formals]
+  }
+  fit_args <- utils::modifyList(default_args, fit_args)
 
   # slicing_cols: use nested_identifiers only when they extend beyond the default
   # "normalization_type" (e.g. co-dilution adds "ratio"). For standard SA data
@@ -64,7 +76,7 @@ fit_SE <- function(se,
   # slicing_values = curve_type filters to only the requested normalization types.
   se <- gDRutils::apply_fit(
     se = se,
-    fit_fn = gDRutils::fit_drug_response_metrics,
+    fit_fn = fit_fn,
     data_type = data_type,
     slicing_cols = slicing_cols,
     slicing_values = curve_type,
@@ -75,6 +87,24 @@ fit_SE <- function(se,
     fit_source = "gDR",
     fit_args = fit_args
   )
+
+  # Plots, the report and the combination stages read the Metrics columns by name, so a
+  # replacement fit function has to produce them; stop here rather than downstream.
+  if (!identical(fit_fn, gDRutils::fit_drug_response_metrics) &&
+      metrics_assay %in% SummarizedExperiment::assayNames(se)) {
+    fitted <- BumpyMatrix::unsplitAsDataFrame(SummarizedExperiment::assay(se, metrics_assay))
+    required <- gDRutils::get_header("response_metrics")
+    required <- required[!endsWith(required, "_sd")]  # added by replicate averaging, not by a fit
+    missing <- setdiff(required, names(fitted))
+    if (NROW(fitted) > 0L && length(missing) > 0L) {
+      stop(sprintf(
+        paste("fit_fn must return the Metrics columns; missing: %s.",
+              "To store another model's own parameters, use gDRutils::apply_fit()",
+              "with its own output_assay."),
+        toString(missing)
+      ))
+    }
+  }
 
   # Ensure the Metrics assay always exists after fitting, even when apply_fit
   # returns the original SE without it (all-empty results scenario where

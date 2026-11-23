@@ -58,6 +58,17 @@
 #' @param cap numeric value representing the value to cap the highest allowed
 #' relative viability at.
 #' @param curve_type vector of curve type values.
+#' @param fit_fn function fitting each single-agent curve, called by
+#' \code{gDRutils::apply_fit()}. Defaults to \code{gDRutils::fit_drug_response_metrics},
+#' the gDR Hill fit. A replacement must return the Metrics columns
+#' (\code{gDRutils::get_header("response_metrics")}).
+#' @param fit_args named list of further arguments for the fits, e.g.
+#' \code{list(solver = my_solver)} to fit the Hill curve with another optimiser (see
+#' \code{gDRutils::get_solvers()}). Passed to \code{fit_fn} for single-agent data, and
+#' to \code{gDRutils::fit_drug_response_metrics()} for the single-agent fits of a
+#' combination. \code{range_conc}, \code{force_fit}, \code{pcutoff}, \code{cap},
+#' \code{curve_type} and \code{fit_fn} apply to single-agent data only; the fits of a
+#' combination take their settings from \code{fit_args} alone.
 #' @param data_dir string with the path to the directory with intermediate data
 #' of experiments (qs2 files). If set to NULL (default) intermediate data is not
 #' saved/read in.
@@ -221,7 +232,14 @@ runDrugResponseProcessingPipeline <- function(x,
                                               partial_run = FALSE,
                                               start_from =
                                                 get_pipeline_steps()[1],
-                                              selected_experiments = NULL) {
+                                              selected_experiments = NULL,
+                                              range_conc = c(5e-3, 5),
+                                              force_fit = FALSE,
+                                              pcutoff = 0.05,
+                                              cap = 0.1,
+                                              curve_type = c("GR", "RV"),
+                                              fit_fn = gDRutils::fit_drug_response_metrics,
+                                              fit_args = list()) {
 
   checkmate::assert_multi_class(x, c("data.table", "MultiAssayExperiment"))
   if (data.table::is.data.table(x)) {
@@ -385,7 +403,9 @@ runDrugResponseProcessingPipeline <- function(x,
           se = se$result,
           data_type = data_type,
           series_identifiers = nested_identifiers,
-          averaged_assay = averaged_assay
+          averaged_assay = averaged_assay,
+          fit_args = fit_args[names(fit_args) %in%
+                                names(formals(gDRutils::fit_drug_response_metrics))]
         )
         step_fun <- fit_SE.combinations
       } else {
@@ -394,7 +414,14 @@ runDrugResponseProcessingPipeline <- function(x,
           data_type = data_type,
           averaged_assay = averaged_assay,
           metrics_assay = metrics_assay,
-          n_point_cutoff = n_point_cutoff
+          n_point_cutoff = n_point_cutoff,
+          range_conc = range_conc,
+          force_fit = force_fit,
+          pcutoff = pcutoff,
+          cap = cap,
+          curve_type = curve_type,
+          fit_fn = fit_fn,
+          fit_args = fit_args
         )
         step_fun <- fit_SE
       }
