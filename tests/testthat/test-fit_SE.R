@@ -429,7 +429,6 @@ test_that("the combination fits use the single gDR fit and its fit_args", {
     expect_equal(gDRutils::convert_se_assay_to_dt(got, assay),
                  gDRutils::convert_se_assay_to_dt(ref, assay), info = assay)
   }
-
 })
 
 
