@@ -7,16 +7,15 @@
 musyc_available()
 }
 \value{
-Logical scalar.
+Logical scalar, \code{TRUE}.
 }
 \description{
-Whether \code{\link{musyc_fit_fn}} can run: \code{reticulate} is installed
-and the configured Python has the \code{synergy} package.  The check never
-provisions a Python of its own, which recent \code{reticulate} versions do
-when no Python is configured.
+Deprecated.  Whether \code{\link{musyc_fit_fn}} can run, which is always the
+case now that the fit no longer needs Python.  Will be removed in the next
+release.
 }
 \examples{
-musyc_available()
+suppressWarnings(musyc_available())
 
 }
 \seealso{

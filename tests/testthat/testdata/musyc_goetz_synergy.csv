@@ -1,0 +1,5 @@
+CellLineName,DrugName,DrugName_2,normalization_type,r2_synergy,beta_synergy
+A-375,Vemurafenib,Cobimetinib,RV,0.985447159314847,0.0200108981126347
+A2058,Vemurafenib,Cobimetinib,GR,0.918349315092886,6.4624203446446
+HSC-1,Vemurafenib,Cobimetinib,RV,0.957470446274246,0.760667767183974
+MEL-JUSO,Belvarafenib,Cobimetinib,GR,0.97155119643112,-0.20211683759548

@@ -76,10 +76,6 @@ patterns <- NULL
 # The synergy fits this package exports, announced to the gDRutils registry so
 # that a caller can list what is available instead of hardcoding it.
 # Registration is by name, so nothing is loaded here beyond the entry itself.
-#
-# MuSyC carries musyc_available as its predicate: it fits through the Python
-# synergy package, so it is registered everywhere but only offered where that
-# is provisioned.
 #' @keywords internal
 .register_fit_fns <- function() {
   if (!isTRUE(.fit_fn_registry_available())) {
@@ -90,8 +86,7 @@ patterns <- NULL
   gDRutils::register_fit_fn("hss_fit_fn", package = "gDRcore",
                             data_type = "combination")
   gDRutils::register_fit_fn("musyc_fit_fn", package = "gDRcore",
-                            data_type = "combination",
-                            available = musyc_available)
+                            data_type = "combination")
   invisible(NULL)
 }
 
