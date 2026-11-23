@@ -98,6 +98,7 @@ annotate_dt_with_cell_line <- function(
 ) {
   checkmate::assert_data_table(data)
   assert_cell_line_annotation(cell_line_annotation)
+  import_record <- attr(data, "gDR_import", exact = TRUE)
 
   cellline <- gDRutils::get_env_identifiers("cellline")
   add_clid <- gDRutils::get_header("add_clid")
@@ -131,9 +132,13 @@ annotate_dt_with_cell_line <- function(
       subtype = fill
     )
     data.table::setnames(missing_tbl_cell_lines, names(cell_line_annotation))
-    data <- rbind(data[data[[cellline]] != missing_cell_lines],
-                  missing_tbl_cell_lines, fill = TRUE)
+    # Fill the annotation into the rows of the missing cell lines, which the join kept
+    # with empty annotation; their measurements stay.
+    ann_cols <- setdiff(names(missing_tbl_cell_lines), cellline)
+    data[missing_tbl_cell_lines, (ann_cols) := mget(paste0("i.", ann_cols)), on = cellline]
   }
+  # The joins return a new table, which drops the import record (see merge_data()).
+  data.table::setattr(data, "gDR_import", import_record)
   (data)
 }
 
@@ -237,6 +242,7 @@ annotate_dt_with_drug <- function(
 ) {
   checkmate::assert_data_table(data)
   assert_drug_annotation(drug_annotation)
+  import_record <- attr(data, "gDR_import", exact = TRUE)
 
   drug <- unlist(gDRutils::get_env_identifiers(c("drug", "drug2", "drug3"), simplify = FALSE))
   untreated_tag <- gDRutils::get_env_identifiers("untreated_tag")
@@ -306,6 +312,8 @@ annotate_dt_with_drug <- function(
     data$batch <- NULL
   }
 
+  # The joins return a new table, which drops the import record (see merge_data()).
+  data.table::setattr(data, "gDR_import", import_record)
   (data)
 }
 
