@@ -66,7 +66,9 @@
 #' \code{list(solver = my_solver)} to fit the Hill curve with another optimiser (see
 #' \code{gDRutils::get_solvers()}). Passed to \code{fit_fn} for single-agent data, and
 #' to \code{gDRutils::fit_drug_response_metrics()} for the single-agent fits of a
-#' combination.
+#' combination. \code{range_conc}, \code{force_fit}, \code{pcutoff}, \code{cap},
+#' \code{curve_type} and \code{fit_fn} apply to single-agent data only; the fits of a
+#' combination take their settings from \code{fit_args} alone.
 #' @param data_dir string with the path to the directory with intermediate data
 #' of experiments (qs2 files). If set to NULL (default) intermediate data is not
 #' saved/read in.

@@ -171,7 +171,9 @@ the gDR Hill fit. A replacement must return the Metrics columns
 \code{list(solver = my_solver)} to fit the Hill curve with another optimiser (see
 \code{gDRutils::get_solvers()}). Passed to \code{fit_fn} for single-agent data, and
 to \code{gDRutils::fit_drug_response_metrics()} for the single-agent fits of a
-combination.}
+combination. \code{range_conc}, \code{force_fit}, \code{pcutoff}, \code{cap},
+\code{curve_type} and \code{fit_fn} apply to single-agent data only; the fits of a
+combination take their settings from \code{fit_args} alone.}
 
 \item{control_mean_fxn}{function indicating how to average controls.
 Defaults to \code{mean(x, trim = 0.25)}.}
