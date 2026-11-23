@@ -373,3 +373,92 @@ test_that("fit_SE.combinations records each step with its arguments", {
   expect_identical(scores$fn_args$score_FUN$name, "calculate_score")
   expect_true(all(gDRutils::check_reproducibility(fit_se)$reproducible))
 })
+
+
+test_that("fit_SE passes fit_args, such as a solver, to the fit", {
+  se <- gDRutils::get_synthetic_data("finalMAE_small")[["single-agent"]][1:2, 1:2]
+  calls <- 0L
+  spy <- function(conc, x, model, control = list()) {
+    calls <<- calls + 1L
+    gDRutils::solver_drc(conc, x, model, control)
+  }
+  # se is already fitted; refitting overwrites its fit metadata, which warns
+  ref <- suppressWarnings(fit_SE(se))
+  got <- suppressWarnings(fit_SE(se, fit_args = list(solver = spy)))
+  expect_gt(calls, 0L)
+  m_ref <- gDRutils::convert_se_assay_to_dt(ref, "Metrics")
+  m_got <- gDRutils::convert_se_assay_to_dt(got, "Metrics")
+  expect_equal(m_got, m_ref)
+  rec <- gDRutils::get_fit_provenance(got, "Metrics", "gDR")
+  expect_true("solver" %in% names(rec$fn_args))
+})
+
+
+test_that("fit_SE stops when a replacement fit_fn does not return the Metrics columns", {
+  se <- gDRutils::get_synthetic_data("finalMAE_small")[["single-agent"]][1, 1]
+  mean_only <- function(avg_dt, ...) list(x_mean = mean(avg_dt$x))
+  expect_error(fit_SE(se, fit_fn = mean_only), "fit_fn must return the Metrics columns")
+})
+
+
+test_that("fit_SE gives a custom fit_fn only the settings it takes", {
+  se <- gDRutils::get_synthetic_data("finalMAE_small")[["single-agent"]][1, 1]
+  seen <- NULL
+  hill_no_capping <- function(avg_dt, pcutoff = 0.05) {
+    seen <<- pcutoff
+    gDRutils::fit_drug_response_metrics(avg_dt, pcutoff = pcutoff)
+  }
+  suppressWarnings(fit_SE(se, fit_fn = hill_no_capping, pcutoff = 0.2))  # se is already fitted
+  expect_equal(seen, 0.2)
+})
+
+
+test_that("the combination fits use the single gDR fit and its fit_args", {
+  se <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")[[
+    gDRutils::get_supported_experiments("combo")]][1, 1]
+  SummarizedExperiment::assays(se) <- SummarizedExperiment::assays(se)["Averaged"]
+  calls <- 0L
+  spy <- function(conc, x, model, control = list()) {
+    calls <<- calls + 1L
+    gDRutils::solver_drc(conc, x, model, control)
+  }
+  ref <- suppressWarnings(fit_SE.combinations(se))
+  got <- suppressWarnings(fit_SE.combinations(se, fit_args = list(solver = spy)))
+  expect_gt(calls, 0L)
+  for (assay in c("Metrics", "excess", "scores")) {
+    expect_equal(gDRutils::convert_se_assay_to_dt(got, assay),
+                 gDRutils::convert_se_assay_to_dt(ref, assay), info = assay)
+  }
+})
+
+
+test_that("fit_args keep the per-series cap and force_fit of the combination fits", {
+  se <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")[[
+    gDRutils::get_supported_experiments("combo")]][1, 1]
+  SummarizedExperiment::assays(se) <- SummarizedExperiment::assays(se)["Averaged"]
+  ref <- suppressWarnings(fit_SE.combinations(se))
+  got <- suppressWarnings(fit_SE.combinations(se, fit_args = list(force_fit = FALSE, cap = 0.5)))
+  expect_equal(gDRutils::convert_se_assay_to_dt(got, "Metrics"),
+               gDRutils::convert_se_assay_to_dt(ref, "Metrics"))
+})
+
+
+test_that(".fit_combo_series fits each normalization type with its own x_0", {
+  df_ <- data.table::data.table(
+    conc = rep(10 ^ seq(-3, 1, length.out = 8), 2),
+    x = c(0.80, 0.78, 0.72, 0.58, 0.40, 0.25, 0.15, 0.12,
+          0.95, 0.90, 0.80, 0.55, 0.20, -0.10, -0.25, -0.30),
+    x_std = 0.02,
+    normalization_type = rep(c("RV", "GR"), each = 8)
+  )
+  out <- .fit_combo_series(df_, "conc", e_0 = 0.8, GR_0 = 1,
+                           normalization_type = c("GR", "RV"), cap = 0.1)
+  expect_equal(out$normalization_type, c("RV", "GR"))
+  expect_equal(rownames(out), c("RV_gDR", "GR_gDR"))
+  expect_equal(out$x_0, c(0.8, 1))
+  expect_equal(unique(out$fit_source), "gDR")
+  # a series with no concentrations is one all-NA row, which apply_combo_sa_fits() drops
+  empty <- .fit_combo_series(df_[0], "conc", e_0 = 1, GR_0 = 1,
+                             normalization_type = "RV", cap = 0.1)
+  expect_true(all(is.na(empty$fit_type)))
+})

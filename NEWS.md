@@ -1,3 +1,8 @@
+## gDRcore 1.11.35 - 2026-11-23
+* add `fit_fn` and `fit_args` to `fit_SE()` and the pipeline, plus the documented `range_conc`, `pcutoff` and others
+* make the combination single-agent fits use `gDRutils::fit_drug_response_metrics()`, the one gDR Hill fit
+* add `fit_args` to `fit_SE.combinations()`, so a solver reaches the combination fits too
+
 ## gDRcore 1.11.34 - 2026-11-22
 * change `musyc_fit_fn()` to fit in R without Python; results can differ slightly, mostly `beta` on flat surfaces
 * deprecate `musyc_available()`, which now always returns `TRUE`
