@@ -515,15 +515,13 @@ hss_df[, c("row", "column", "normalization_type",
 whole grid and returns its parameters: `alpha12`/`alpha21` measure synergy of
 potency, `beta` synergy of efficacy. It keeps the `synergy` defaults, bounds
 `E` by the normalization and `C` to the tested dose range, and keeps the best
-of several starts. The fit runs in the Python `synergy`
-package through `reticulate`, so the chunks below run only where it is
-installed (`reticulate::py_install("synergy", pip = TRUE)`). The Python,
-`synergy`, `numpy` and `scipy` versions go into the fit provenance.
+of several starts. The fit runs in R, with the settings of the Python
+`synergy` package.
 
 `musyc_summary_fn()` collapses the fits of all normalization types into one
 row per cell.
 
-```{r combo-musyc, eval = musyc_available()}
+```{r combo-musyc}
 musyc_out <- apply_fit(
   combo_se,
   fit_fn = musyc_fit_fn,
@@ -1028,7 +1026,7 @@ apply_fits(
 | `apply_combo_scores(se)` | SE-level (recommended) | `Averaged` + `Metrics` | `fit_SE.combinations()` Bliss & HSA | `bliss_score`, `hsa_score` |
 | `bliss_fit_fn()` | triplet `fit_fn` | `Averaged` only | — (simplified, no SA fits) | `bliss_score`, `bliss_excess_mean`, `n_combo_points` |
 | `hss_fit_fn()` | triplet `fit_fn` | `Averaged` only | — (simplified, no SA fits) | `hss_score`, `hss_excess_mean`, `n_combo_points` |
-| `musyc_fit_fn()` | triplet `fit_fn` | `Averaged` + Python `synergy` | — (MuSyC surface fit) | `alpha12`, `alpha21`, `beta`, `r2` |
+| `musyc_fit_fn()` | triplet `fit_fn` | `Averaged` only | — (MuSyC surface fit) | `alpha12`, `alpha21`, `beta`, `r2` |
 
 **When to use which:**
 - Use `apply_combo_scores()` when you have a fully fitted SE (after `fit_SE.combinations()` or

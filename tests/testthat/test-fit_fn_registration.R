@@ -22,17 +22,14 @@ test_that("a registered name resolves to the function itself", {
 })
 
 
-test_that("MuSyC availability tracks musyc_available()", {
+test_that("MuSyC is offered everywhere", {
   skip_if_not(
     exists("get_fit_fns", envir = asNamespace("gDRutils"), inherits = FALSE),
     "gDRutils predates the fit function registry"
   )
   row <- gDRutils::get_fit_fns()[
     gDRutils::get_fit_fns()$name == "musyc_fit_fn", ]
-  # Asserted against the predicate rather than against TRUE: whether Python
-  # synergy is provisioned differs between a developer machine and CI, and the
-  # point is that the registry reports it rather than what it reports.
-  expect_identical(row$available, isTRUE(musyc_available()))
+  expect_true(row$available)
 })
 
 
