@@ -402,7 +402,8 @@ runDrugResponseProcessingPipeline <- function(x,
           data_type = data_type,
           series_identifiers = nested_identifiers,
           averaged_assay = averaged_assay,
-          fit_args = fit_args
+          fit_args = fit_args[names(fit_args) %in%
+                                names(formals(gDRutils::fit_drug_response_metrics))]
         )
         step_fun <- fit_SE.combinations
       } else {
