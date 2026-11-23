@@ -10,7 +10,8 @@ apply_combo_sa_fits(
   normalization_types = c("GR", "RV"),
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
-  fit_source = "gDR"
+  fit_source = "gDR",
+  fit_args = list()
 )
 }
 \arguments{
@@ -29,6 +30,9 @@ Default \code{c("GR", "RV")}.}
 \item{metrics_assay}{string; name of the output assay. Default \code{"Metrics"}.}
 
 \item{fit_source}{string recorded in the \code{fit_source} column. Default \code{"gDR"}.}
+
+\item{fit_args}{named list of arguments for the curve fits, passed to
+\code{gDRutils::fit_drug_response_metrics()} (e.g. \code{solver}). Default \code{list()}.}
 }
 \value{
 Updated \code{SummarizedExperiment} with a \code{metrics_assay}

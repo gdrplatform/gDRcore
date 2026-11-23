@@ -227,13 +227,13 @@ message("fit_source values in assay: ", paste(sources, collapse = ", "))
 # Reference Hill fit: fit_drug_response_metrics()
 
 `fit_drug_response_metrics()` is a reference single-agent fit function that
-replicates the standard `fit_SE()` / `logisticFit()` output exactly.
+is the standard `fit_SE()` fit.
 
 | Property | Value |
 |---|---|
 | Model | 3-parameter log-logistic (`drc::LL.3u`, `x_0` fixed at 1) |
-| Equivalent to | `fit_SE()` / `gDRutils::logisticFit()` |
-| `x_mean` | Predicted from fitted curve (matches `logisticFit` behaviour) |
+| Equivalent to | `fit_SE()` |
+| `x_mean` | Predicted from the fitted curve |
 | `fit_type` value | `"DRC3pHillFitModelFixS0"` or `"DRCConstantFitResult"` |
 | Output columns | Full `Metrics` assay schema including `p_value`, `rss`, `x_AOC_range`, `x_max`, `x_sd_avg` |
 
@@ -247,7 +247,7 @@ algorithmic:
 - Same `drc::LL.3u` model, `x_0 = 1`, identical priors and concentration bounds
 - Same `x_mean`: predicted from the fitted curve over the observed concentration range
 - Same `pcutoff = 0.05` fallback: when the F-test gives `p_value ≥ pcutoff`, the
-  result is replaced by a flat `DRCConstantFitResult` (same as `logisticFit()`)
+  result is replaced by a flat `DRCConstantFitResult`
 - Same `n_point_cutoff = 4`: fewer unique concentrations → constant fit without
   attempting the sigmoidal model
 - All output columns present in the native `"Metrics"` assay
@@ -282,6 +282,27 @@ head(hill_df[, c("row", "column", "normalization_type",
 `ec50` is the raw model parameter (concentration at half-maximal effect);
 `xc50` is the capped version (capped at `capping_fold × max(Concentration)`)
 as reported in the native `"Metrics"` assay.
+
+## Changing the optimiser: solvers
+
+`fit_drug_response_metrics()` is the one Hill fit in gDR: single-agent, co-dilution and
+the single-agent fits inside a combination all go through it. What finds the curve's
+parameters is its `solver` argument, `gDRutils::solver_drc()` by default (`drc::drm`,
+`L-BFGS-B` within the model bounds). A solver is any function of
+`(conc, x, model, control)` that returns the Hill parameters, the residual sum of squares
+and whether it converged, so another optimiser plugs in without rewriting the fit, and
+everything around it (capping, the constant-fit test, the metrics) stays the same.
+
+```{r solver, eval = FALSE}
+names(gDRutils::get_solvers())
+# one curve
+fit_drug_response_metrics(avg_dt, solver = my_solver)
+# the whole pipeline: single-agent fits and the combination fits
+runDrugResponseProcessingPipeline(x, fit_args = list(solver = my_solver))
+```
+
+The solver is recorded in the provenance like any other fit argument, so
+`refit_from_provenance()` re-runs the same optimiser.
 
 ***
 
@@ -1005,7 +1026,7 @@ apply_fits(
 
 | Function | Model | Equivalent to | Key output columns |
 |---|---|---|---|
-| `fit_drug_response_metrics()` | 3p LL.3u, `x_0 = 1` | `fit_SE()` / `logisticFit()` | `ec50`, `xc50`, `h`, `r2`, `x_mean`, `x_AOC`, `fit_type = "DRC3pHillFitModelFixS0"` |
+| `fit_drug_response_metrics()` | 3p LL.3u, `x_0 = 1` | `fit_SE()` | `ec50`, `xc50`, `h`, `r2`, `x_mean`, `x_AOC`, `fit_type = "DRC3pHillFitModelFixS0"` |
 | `fit_drug_response_metrics_4p()` | 4p LL.4, `x_0` free | — (extended variant) | `ec50`, `xc50`, `h`, `r2`, `x_0`, `x_mean`, `fit_type = "DRC4pHillFitModel"` |
 
 ### Combination scoring

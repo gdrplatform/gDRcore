@@ -3,7 +3,8 @@ fit_combo_codilutions <- function(measured,
                                   nested_identifiers,
                                   normalization_type,
                                   e_0 = 1,
-                                  GR_0 = 1) {
+                                  GR_0 = 1,
+                                  fit_args = list()) {
   id <- nested_identifiers[1]
   id2 <- nested_identifiers[2]
 
@@ -33,7 +34,8 @@ fit_combo_codilutions <- function(measured,
       id2,
       e_0 = e_0,
       GR_0 = GR_0,
-      normalization_type
+      normalization_type,
+      fit_args = fit_args
     )
   }
 
@@ -51,7 +53,8 @@ fit_codilution_series <- function(measured,
                                   series_2,
                                   e_0,
                                   GR_0,
-                                  normalization_type) {
+                                  normalization_type,
+                                  fit_args = list()) {
   ratio <- unique(
     gDRutils::round_concentration(
       measured[[series_2]] / measured[[series_1]],
@@ -64,14 +67,15 @@ fit_codilution_series <- function(measured,
 
   measured$summed_conc <- measured[[series_1]] + measured[[series_2]]
   keep <- setdiff(colnames(measured), c(series_1, series_2))
-  codilution_fit <- gDRutils::fit_curves(
-    df_ = measured[, keep, with = FALSE],
-    series_identifiers = "summed_conc",
+  codilution_fit <- .fit_combo_series(
+    measured[, keep, with = FALSE],
+    conc_col = "summed_conc",
     e_0 = e_0,
     GR_0 = GR_0,
-    force_fit = TRUE,
+    normalization_type = normalization_type,
     cap = 0.2,
-    normalization_type = normalization_type
+    force_fit = TRUE,
+    fit_args = fit_args
   )
 
   codilution_fit$ratio <- ratio

@@ -47,7 +47,8 @@ test_that("fit_codilution_series works as expected", {
     normalization_type = "GR"
   )
 
-  expect_length(res$warnings, 4)
+  # the single gDR fit labels its outcome in fit_type instead of warning per curve
+  expect_false(any(grepl("overriding original x_0", res$warnings)))
 
   obs <- res$result
   expect_equal(dim(obs), c(1, 19))

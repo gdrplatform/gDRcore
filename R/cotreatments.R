@@ -2,7 +2,8 @@
 fit_combo_cotreatments <- function(measured,
                                    series_id,
                                    cotrt_id,
-                                   normalization_type) {
+                                   normalization_type,
+                                   fit_args = list()) {
 
   series_concs <- setdiff(unlist(unique(measured[, series_id, with = FALSE])), 0)
   # keep the single agent for the series_id
@@ -25,7 +26,8 @@ fit_combo_cotreatments <- function(measured,
     cotrt_value = 0,
     normalization_type = normalization_type,
     e_0 = 1,
-    GR_0 = 1
+    GR_0 = 1,
+    fit_args = fit_args
   )
 
   # Fit cotreatments in matrix.
@@ -56,7 +58,8 @@ fit_combo_cotreatments <- function(measured,
       cotrt_value = conc,
       normalization_type = normalization_type,
       e_0 = sa,
-      GR_0 = sa
+      GR_0 = sa,
+      fit_args = fit_args
     )
   }
 
@@ -71,20 +74,22 @@ fit_cotreatment_series <- function(measured,
                                    cotrt_value,
                                    normalization_type,
                                    e_0,
-                                   GR_0) {
+                                   GR_0,
+                                   fit_args = list()) {
   checkmate::assert_numeric(cotrt_value)
 
   df_ <- measured[
     measured[[cotrt_id]] == cotrt_value & measured[[series_id]] > 0, ,
     drop = FALSE
   ]
-  cotrt_fit <- gDRutils::fit_curves(
-    df_ = df_,
-    series_identifiers = series_id,
+  cotrt_fit <- .fit_combo_series(
+    df_,
+    conc_col = series_id,
     e_0 = e_0,
     GR_0 = GR_0,
+    normalization_type = normalization_type,
     cap = 0.1,
-    normalization_type = normalization_type
+    fit_args = fit_args
   )
 
   cotrt_fit$cotrt_value <- cotrt_value

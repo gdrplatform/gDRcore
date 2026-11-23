@@ -11,7 +11,8 @@ fit_SE.combinations(
   normalization_types = c("GR", "RV"),
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
-  score_FUN = calculate_score
+  score_FUN = calculate_score,
+  fit_args = list()
 )
 }
 \arguments{
@@ -34,6 +35,11 @@ in the returned \linkS4class{SummarizedExperiment}.
 whose combination represents a unique series for which to fit curves.}
 
 \item{score_FUN}{function used to calculate score for HSA and Bliss}
+
+\item{fit_args}{named list of arguments for the single-agent curve fits of the
+combination, passed to \code{gDRutils::fit_drug_response_metrics()}, e.g.
+\code{list(solver = my_solver)} to fit with another optimiser. Each series keeps its
+own \code{x_0}.}
 }
 \value{
 A \code{SummarizedExperiment} object with an additional assay

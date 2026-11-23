@@ -14,6 +14,10 @@
 #' in the returned \linkS4class{SummarizedExperiment}.
 #' whose combination represents a unique series for which to fit curves.
 #' @param score_FUN function used to calculate score for HSA and Bliss
+#' @param fit_args named list of arguments for the single-agent curve fits of the
+#' combination, passed to \code{gDRutils::fit_drug_response_metrics()}, e.g.
+#' \code{list(solver = my_solver)} to fit with another optimiser. Each series keeps its
+#' own \code{x_0}.
 #'
 #' @details
 #' This function assumes that the combination is set up with both
@@ -39,7 +43,8 @@ fit_SE.combinations <- function(se,
                                 normalization_types = c("GR", "RV"),
                                 averaged_assay = "Averaged",
                                 metrics_assay = "Metrics",
-                                score_FUN = calculate_score) {
+                                score_FUN = calculate_score,
+                                fit_args = list()) {
 
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_character(series_identifiers, null.ok = TRUE)
@@ -47,6 +52,7 @@ fit_SE.combinations <- function(se,
   checkmate::assert_string(averaged_assay)
   checkmate::assert_string(metrics_assay)
   checkmate::assert_function(score_FUN)
+  checkmate::assert_list(fit_args, names = "unique")
 
   if (is.null(series_identifiers)) {
     series_identifiers <- get_default_nested_identifiers(
@@ -74,7 +80,8 @@ fit_SE.combinations <- function(se,
     normalization_types = normalization_types,
     averaged_assay = averaged_assay,
     metrics_assay = metrics_assay,
-    fit_source = "gDR"
+    fit_source = "gDR",
+    fit_args = fit_args
   )
   se <- apply_combo_excess(
     se,
