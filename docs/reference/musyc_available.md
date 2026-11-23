@@ -1,10 +1,9 @@
 # musyc_available
 
-Whether
+Deprecated. Whether
 [`musyc_fit_fn`](https://gdrplatform.github.io/gDRcore/reference/musyc_fit_fn.md)
-can run: `reticulate` is installed and the configured Python has the
-`synergy` package. The check never provisions a Python of its own, which
-recent `reticulate` versions do when no Python is configured.
+can run, which is always the case now that the fit no longer needs
+Python. Will be removed in the next release.
 
 ## Usage
 
@@ -14,7 +13,7 @@ musyc_available()
 
 ## Value
 
-Logical scalar.
+Logical scalar, `TRUE`.
 
 ## See also
 
@@ -23,6 +22,6 @@ Logical scalar.
 ## Examples
 
 ``` r
-musyc_available()
-#> [1] FALSE
+suppressWarnings(musyc_available())
+#> [1] TRUE
 ```

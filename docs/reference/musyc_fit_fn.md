@@ -31,23 +31,25 @@ musyc_fit_fn(avg_dt, n_restarts = 10L, seed = 1L)
 
 Named list with `normalization_type`, the parameters `E0`, `E1`, `E2`,
 `E3`, `h1`, `h2`, `C1`, `C2`, `alpha12`, `alpha21`, the efficacy synergy
-`beta`, `r2` and `converged`. Numeric fields are `NA_real_` when the fit
-does not converge.
+`beta`, `r2` and `converged`. Numeric fields are `NA_real_` when no fit
+succeeds.
 
 ## Details
 
-The surface is fitted with the Python `synergy` package through
-`reticulate`; install it with
-`reticulate::py_install("synergy", pip = TRUE)`. The fit provenance
-records the Python, `synergy`, `numpy` and `scipy` versions.
+The surface (with `gamma12 = gamma21 = 1`) is fitted in R by bounded
+least squares, [`nlminb`](https://rdrr.io/r/stats/nlminb.html) with the
+analytic Jacobian; the settings follow the Python `synergy` package,
+which an earlier version of this function called.
 
-The whole grid is fitted, single-agent edges included, with the
-`synergy` defaults and three additions: the untreated corner is set to 1
+The whole grid is fitted, single-agent edges included, with three
+additions to the `synergy` defaults: the untreated corner is set to 1
 (added when absent), `E` is bounded from -1 for GR and from 0 for RV up
 to 1.5, and `C1`/`C2` stay within a factor of 1000 of the tested doses.
-The fit starts from the `synergy` initial guess and from `n_restarts`
-random initial values; the fit with the best `r2`, computed on the
-measured points, is kept.
+`h`, `C` and `alpha` are fitted on a log scale. The fit starts from the
+`synergy` initial guess (Hill fits of the two single-agent edges) and
+from `n_restarts` random initial values; the fit with the best `r2`,
+computed on the measured points, is kept, preferring fits that converged
+within the iteration limit.
 
 `alpha > 1` means synergistic potency, `beta > 0` synergistic efficacy.
 `alpha` is weakly constrained when a drug has little effect, so extreme
@@ -60,14 +62,12 @@ values of it are not a measure of synergy.
 ## Examples
 
 ``` r
-if (musyc_available()) {
-  mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
-  combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
-  combo_se_out <- gDRutils::apply_fit(
-    combo_se, musyc_fit_fn, "combination",
-    output_assay = "musyc_params",
-    summary_fn = musyc_summary_fn, summary_assay = "musyc_summary",
-    fit_source = "musyc"
-  )
-}
+mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
+combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
+combo_se_out <- gDRutils::apply_fit(
+  combo_se, musyc_fit_fn, "combination",
+  output_assay = "musyc_params",
+  summary_fn = musyc_summary_fn, summary_assay = "musyc_summary",
+  fit_source = "musyc"
+)
 ```

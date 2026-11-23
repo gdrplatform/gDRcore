@@ -306,7 +306,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] gDRcore_1.11.33     gDRtestData_1.11.13 BiocStyle_2.41.0   
+#> [1] gDRcore_1.11.34     gDRtestData_1.11.13 BiocStyle_2.41.0   
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] farver_2.1.2                fastmap_1.2.0              
@@ -314,11 +314,11 @@ sessionInfo()
 #>  [5] digest_0.6.39               lifecycle_1.0.5            
 #>  [7] gDRutils_1.11.26            survival_3.8-12            
 #>  [9] magrittr_2.0.5              compiler_4.6.2             
-#> [11] rlang_1.3.0                 sass_0.4.10                
+#> [11] rlang_1.3.0                 sass_0.5.0                 
 #> [13] drc_4.0-0                   tools_4.6.2                
 #> [15] plotrix_3.8-14              yaml_2.3.12                
 #> [17] data.table_1.18.6.1         knitr_1.52                 
-#> [19] lambda.r_1.2.6              S4Arrays_1.13.2            
+#> [19] lambda.r_1.2.6              S4Arrays_1.13.3            
 #> [21] DelayedArray_0.39.8         RColorBrewer_1.1-3         
 #> [23] abind_1.4-8                 multcomp_1.4-32            
 #> [25] BiocParallel_1.47.0         purrr_1.2.2                
@@ -331,7 +331,7 @@ sessionInfo()
 #> [39] ragg_1.5.2                  generics_0.1.4             
 #> [41] otel_0.3.0                  readxl_1.6.0               
 #> [43] cachem_1.1.0                stringr_1.6.0              
-#> [45] splines_4.6.2               gDRimport_1.11.15          
+#> [45] splines_4.6.2               gDRimport_1.11.17          
 #> [47] assertthat_0.2.1            parallel_4.6.2             
 #> [49] formatR_1.14                BiocManager_1.30.27        
 #> [51] cellranger_1.1.0            XVector_0.53.0             
@@ -340,7 +340,7 @@ sessionInfo()
 #> [57] jsonlite_2.0.0              carData_3.0-6              
 #> [59] bookdown_0.48               car_3.1-5                  
 #> [61] IRanges_2.47.5              S4Vectors_0.51.10          
-#> [63] Formula_1.2-6               systemfonts_1.3.3          
+#> [63] Formula_1.2-6               systemfonts_1.3.4          
 #> [65] testthat_3.3.2              jquerylib_0.1.4            
 #> [67] rematch_2.0.0               glue_1.8.1                 
 #> [69] pkgdown_2.2.1               codetools_0.2-20           
@@ -348,7 +348,7 @@ sessionInfo()
 #> [73] GenomicRanges_1.65.4        tibble_3.3.1               
 #> [75] pillar_1.11.1               htmltools_0.5.9            
 #> [77] Seqinfo_1.3.2               brio_1.1.5                 
-#> [79] R6_2.6.1                    textshaping_1.0.5          
+#> [79] R6_2.6.1                    textshaping_1.1.0          
 #> [81] evaluate_1.0.5              lattice_0.23-1             
 #> [83] Biobase_2.73.2              futile.options_1.0.1       
 #> [85] backports_1.5.1             bslib_0.12.0               

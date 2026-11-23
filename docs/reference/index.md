@@ -163,6 +163,8 @@ through the generic fit interface in gDRutils.
   : musyc_summary_fn
 - [`musyc_available()`](https://gdrplatform.github.io/gDRcore/reference/musyc_available.md)
   : musyc_available
+- [`predict_musyc_surface()`](https://gdrplatform.github.io/gDRcore/reference/predict_musyc_surface.md)
+  : predict_musyc_surface
 
 ## Moved to gDRutils
 

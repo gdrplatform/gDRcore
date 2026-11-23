@@ -11,7 +11,7 @@ gDR fits. The curves are not refitted, so the values match the PRISM delivery ex
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.33</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.34</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,7 +45,7 @@ gDR fits. The curves are not refitted, so the values match the PRISM delivery ex
     </div>
 
     <div class="ref-description section level2">
-    <p>Adds the curves PRISM fitted (read with <code>gDRimport::read_PRISM_drc()</code>) to the
+    <p>Adds the curves PRISM fitted (read with <code><a href="https://gdrplatform.github.io/gDRimport/reference/read_PRISM_drc.html" class="external-link">gDRimport::read_PRISM_drc()</a></code>) to the
 <code>Metrics</code> assay of processed PRISM data, with <code>fit_source = "PRISM"</code>, next to the
 gDR fits. The curves are not refitted, so the values match the PRISM delivery exactly.</p>
     </div>
@@ -72,7 +72,7 @@ gDR fits. The curves are not refitted, so the values match the PRISM delivery ex
 
 <dt id="arg-prism-curves">prism_curves<a class="anchor" aria-label="anchor" href="#arg-prism-curves"></a></dt>
 <dd><p><code>data.table</code> of PRISM curves, as returned by
-<code>gDRimport::read_PRISM_drc()</code>: the columns of the DRC table, the cell line identifier
+<code><a href="https://gdrplatform.github.io/gDRimport/reference/read_PRISM_drc.html" class="external-link">gDRimport::read_PRISM_drc()</a></code>: the columns of the DRC table, the cell line identifier
 and Duration.</p></dd>
 
 
@@ -125,7 +125,7 @@ out with a warning. Running the function again replaces the PRISM rows of the ea
 <span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/exists.html" class="external-link">exists</a></span><span class="op">(</span><span class="st">"read_PRISM_drc"</span>, <span class="fu"><a href="https://rdrr.io/r/base/ns-internal.html" class="external-link">asNamespace</a></span><span class="op">(</span><span class="st">"gDRimport"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/get_synthetic_data.html" class="external-link">get_synthetic_data</a></span><span class="op">(</span><span class="st">"finalMAE_prism"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="va">se</span> <span class="op">&lt;-</span> <span class="fu">MultiAssayExperiment</span><span class="fu">::</span><span class="fu"><a href="https://github.com/waldronlab/MultiAssayExperiment/reference/MultiAssayExperiment-methods.html" class="external-link">experiments</a></span><span class="op">(</span><span class="va">mae</span><span class="op">)</span><span class="op">[[</span><span class="st">"single-agent"</span><span class="op">]</span><span class="op">]</span></span></span>
-<span class="r-in"><span>  <span class="va">curves</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu">read_PRISM_drc</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">curves</span> <span class="op">&lt;-</span> <span class="fu">gDRimport</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRimport/reference/read_PRISM_drc.html" class="external-link">read_PRISM_drc</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    drc_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"testdata/prism_drc.csv"</span>, package <span class="op">=</span> <span class="st">"gDRimport"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    meta_data_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"testdata/prism_drc_model.csv"</span>, package <span class="op">=</span> <span class="st">"gDRimport"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
@@ -133,6 +133,78 @@ out with a warning. Running the function again replaces the PRISM rows of the ea
 <span class="r-in"><span>  <span class="va">metrics</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/convert_se_assay_to_dt.html" class="external-link">convert_se_assay_to_dt</a></span><span class="op">(</span><span class="va">se</span>, <span class="st">"Metrics"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="va">metrics</span><span class="op">[</span><span class="va">metrics</span><span class="op">$</span><span class="va">fit_source</span> <span class="op">==</span> <span class="st">"PRISM"</span>, <span class="op">]</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                            rId</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                         &lt;char&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: G00106_GDC-8025_TEAD1|TEAD2|TEAD3|TEAD4_120</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2: G00106_GDC-8025_TEAD1|TEAD2|TEAD3|TEAD4_120</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3: G00106_GDC-8025_TEAD1|TEAD2|TEAD3|TEAD4_120</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4: G00106_GDC-8025_TEAD1|TEAD2|TEAD3|TEAD4_120</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                                   cId</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                                &lt;char&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:           HEL_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_HEL_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_Myeloid_unknown_unknown_NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:   HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_Myeloid_unknown_unknown_NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:   HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_Myeloid_unknown_unknown_NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4: MONOMAC6_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_MONOMAC6_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_Myeloid_unknown_unknown_NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    x_mean x_AOC x_AOC_range  xc50 x_max  ec50 x_inf   x_0     h    r2 p_value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;num&gt; &lt;num&gt;       &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;   &lt;num&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:     NA    NA          NA    NA    NA  0.85  0.21  0.98   1.4  0.91      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:     NA    NA          NA    NA    NA  2.40  0.35  1.01   0.9  0.77      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:     NA    NA          NA    NA    NA  1.70  0.29  0.96   1.1  0.83      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:     NA    NA          NA    NA    NA    NA    NA    NA    NA    NA      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      rss maxlog10Concentration N_conc x_sd_avg                fit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;num&gt;                 &lt;num&gt;  &lt;int&gt;    &lt;num&gt;                  &lt;char&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:    NA                     1      8       NA     drc_drm_constrained</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:    NA                     1      8       NA dr4pl_initL_constrained</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:    NA                     1      8       NA   drc_drm_unconstrained</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:    NA                     1      8       NA                    &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    normalization_type fit_source prism_auc prism_log2_auc prism_auc_riemann</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                &lt;char&gt;     &lt;char&gt;     &lt;num&gt;          &lt;num&gt;             &lt;num&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:                 RV      PRISM    0.6012        -0.7341              0.58</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:                 RV      PRISM    0.7208        -0.4723              0.71</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:                 RV      PRISM    0.6705        -0.5767              0.66</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:                 RV      PRISM        NA             NA              0.97</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    prism_ic50 prism_log2_ic50 prism_mse prism_mad prism_successful_fit</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;num&gt;           &lt;num&gt;     &lt;num&gt;     &lt;num&gt;               &lt;lgcl&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:     1.0750          0.1043     0.011      0.08                 TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:         NA              NA     0.014      0.09                 TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:     1.9378          0.9543     0.012      0.07                 TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:         NA              NA        NA        NA                FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    prism_minimum_dose prism_maximum_dose  depmap_id              pert_id</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;num&gt;              &lt;int&gt;     &lt;char&gt;               &lt;char&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:            0.00046                 10 ACH-000004 PRC-000000001-001-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:            0.00046                 10 ACH-000005 PRC-000000001-001-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:            0.00046                 10 ACH-000005 PRC-000000001-001-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:            0.00046                 10 ACH-000006 PRC-000000001-001-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    pool_id      lua cell_set pert_plate x_project_id      screen Gnumber</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;char&gt;   &lt;char&gt;   &lt;char&gt;     &lt;char&gt;       &lt;char&gt;      &lt;char&gt;  &lt;char&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:      P1 LUA-0001      CS1     PLATE1 TEST_PROJECT TEST_SCREEN  G00106</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:      P1 LUA-0002      CS1     PLATE1 TEST_PROJECT TEST_SCREEN  G00106</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:      P2 LUA-0003      CS1     PLATE2 TEST_PROJECT TEST_SCREEN  G00106</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:      P1 LUA-0004      CS1     PLATE1 TEST_PROJECT TEST_SCREEN  G00106</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    DrugName                drug_moa Duration</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;char&gt;                  &lt;char&gt;    &lt;num&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: GDC-8025 TEAD1|TEAD2|TEAD3|TEAD4      120</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2: GDC-8025 TEAD1|TEAD2|TEAD3|TEAD4      120</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3: GDC-8025 TEAD1|TEAD2|TEAD3|TEAD4      120</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4: GDC-8025 TEAD1|TEAD2|TEAD3|TEAD4      120</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                           clid</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                         &lt;char&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:      HEL_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:  HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:  HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4: MONOMAC6_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                   CellLineName  Tissue parental_identifier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                         &lt;char&gt;  &lt;char&gt;              &lt;char&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:      HEL_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE Myeloid             unknown</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:  HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE Myeloid             unknown</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:  HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE Myeloid             unknown</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4: MONOMAC6_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE Myeloid             unknown</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    subtype ReferenceDivisionTime</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;char&gt;                &lt;lgcl&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: unknown                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2: unknown                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3: unknown                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4: unknown                    NA</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

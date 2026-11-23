@@ -11,7 +11,7 @@ apply_fit."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.33</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.34</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -80,21 +80,23 @@ number generator is left as it was.</p></dd>
 <code>E0</code>, <code>E1</code>, <code>E2</code>, <code>E3</code>, <code>h1</code>, <code>h2</code>,
 <code>C1</code>, <code>C2</code>, <code>alpha12</code>, <code>alpha21</code>, the efficacy synergy
 <code>beta</code>, <code>r2</code> and <code>converged</code>.  Numeric fields are
-<code>NA_real_</code> when the fit does not converge.</p>
+<code>NA_real_</code> when no fit succeeds.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The surface is fitted with the Python <code>synergy</code> package through
-<code>reticulate</code>; install it with
-<code>reticulate::py_install("synergy", pip = TRUE)</code>.  The fit provenance
-records the Python, <code>synergy</code>, <code>numpy</code> and <code>scipy</code> versions.</p>
-<p>The whole grid is fitted, single-agent edges included, with the
-<code>synergy</code> defaults and three additions: the untreated corner is set
+    <p>The surface (with <code>gamma12 = gamma21 = 1</code>) is fitted in R by bounded
+least squares, <code><a href="https://rdrr.io/r/stats/nlminb.html" class="external-link">nlminb</a></code> with the analytic Jacobian; the
+settings follow the Python <code>synergy</code> package, which an earlier version
+of this function called.</p>
+<p>The whole grid is fitted, single-agent edges included, with three
+additions to the <code>synergy</code> defaults: the untreated corner is set
 to 1 (added when absent), <code>E</code> is bounded from -1 for GR and from 0 for
 RV up to 1.5, and <code>C1</code>/<code>C2</code> stay within a factor of 1000 of the
-tested doses.  The fit starts from the <code>synergy</code> initial guess and
-from <code>n_restarts</code> random initial values; the fit with the best
-<code>r2</code>, computed on the measured points, is kept.</p>
+tested doses.  <code>h</code>, <code>C</code> and <code>alpha</code> are fitted on a log
+scale.  The fit starts from the <code>synergy</code> initial guess (Hill fits of
+the two single-agent edges) and from <code>n_restarts</code> random initial
+values; the fit with the best <code>r2</code>, computed on the measured points,
+is kept, preferring fits that converged within the iteration limit.</p>
 <p><code>alpha &gt; 1</code> means synergistic potency, <code>beta &gt; 0</code> synergistic
 efficacy.  <code>alpha</code> is weakly constrained when a drug has little
 effect, so extreme values of it are not a measure of synergy.</p>
@@ -106,16 +108,14 @@ effect, so extreme values of it are not a measure of synergy.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="musyc_available.html">musyc_available</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/get_synthetic_data.html" class="external-link">get_synthetic_data</a></span><span class="op">(</span><span class="st">"finalMAE_combo_matrix_small"</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="va">combo_se</span> <span class="op">&lt;-</span> <span class="va">mae</span><span class="op">[[</span><span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/get_supported_experiments.html" class="external-link">get_supported_experiments</a></span><span class="op">(</span><span class="st">"combo"</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span></span>
-<span class="r-in"><span>  <span class="va">combo_se_out</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="va">combo_se</span>, <span class="va">musyc_fit_fn</span>, <span class="st">"combination"</span>,</span></span>
-<span class="r-in"><span>    output_assay <span class="op">=</span> <span class="st">"musyc_params"</span>,</span></span>
-<span class="r-in"><span>    summary_fn <span class="op">=</span> <span class="va">musyc_summary_fn</span>, summary_assay <span class="op">=</span> <span class="st">"musyc_summary"</span>,</span></span>
-<span class="r-in"><span>    fit_source <span class="op">=</span> <span class="st">"musyc"</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/get_synthetic_data.html" class="external-link">get_synthetic_data</a></span><span class="op">(</span><span class="st">"finalMAE_combo_matrix_small"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">combo_se</span> <span class="op">&lt;-</span> <span class="va">mae</span><span class="op">[[</span><span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/get_supported_experiments.html" class="external-link">get_supported_experiments</a></span><span class="op">(</span><span class="st">"combo"</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">combo_se_out</span> <span class="op">&lt;-</span> <span class="fu">gDRutils</span><span class="fu">::</span><span class="fu"><a href="https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html" class="external-link">apply_fit</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">combo_se</span>, <span class="va">musyc_fit_fn</span>, <span class="st">"combination"</span>,</span></span>
+<span class="r-in"><span>  output_assay <span class="op">=</span> <span class="st">"musyc_params"</span>,</span></span>
+<span class="r-in"><span>  summary_fn <span class="op">=</span> <span class="va">musyc_summary_fn</span>, summary_assay <span class="op">=</span> <span class="st">"musyc_summary"</span>,</span></span>
+<span class="r-in"><span>  fit_source <span class="op">=</span> <span class="st">"musyc"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

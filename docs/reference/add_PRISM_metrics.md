@@ -1,6 +1,7 @@
 # Add the curve fits delivered by PRISM to the Metrics assay
 
-Adds the curves PRISM fitted (read with `gDRimport::read_PRISM_drc()`)
+Adds the curves PRISM fitted (read with
+[`gDRimport::read_PRISM_drc()`](https://gdrplatform.github.io/gDRimport/reference/read_PRISM_drc.html))
 to the `Metrics` assay of processed PRISM data, with
 `fit_source = "PRISM"`, next to the gDR fits. The curves are not
 refitted, so the values match the PRISM delivery exactly.
@@ -27,8 +28,8 @@ add_PRISM_metrics(
 - prism_curves:
 
   `data.table` of PRISM curves, as returned by
-  `gDRimport::read_PRISM_drc()`: the columns of the DRC table, the cell
-  line identifier and Duration.
+  [`gDRimport::read_PRISM_drc()`](https://gdrplatform.github.io/gDRimport/reference/read_PRISM_drc.html):
+  the columns of the DRC table, the cell line identifier and Duration.
 
 - drug_map:
 
@@ -95,4 +96,76 @@ if (requireNamespace("gDRimport", quietly = TRUE) &&
   metrics <- gDRutils::convert_se_assay_to_dt(se, "Metrics")
   metrics[metrics$fit_source == "PRISM", ]
 }
+#>                                            rId
+#>                                         <char>
+#> 1: G00106_GDC-8025_TEAD1|TEAD2|TEAD3|TEAD4_120
+#> 2: G00106_GDC-8025_TEAD1|TEAD2|TEAD3|TEAD4_120
+#> 3: G00106_GDC-8025_TEAD1|TEAD2|TEAD3|TEAD4_120
+#> 4: G00106_GDC-8025_TEAD1|TEAD2|TEAD3|TEAD4_120
+#>                                                                                                                   cId
+#>                                                                                                                <char>
+#> 1:           HEL_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_HEL_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_Myeloid_unknown_unknown_NA
+#> 2:   HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_Myeloid_unknown_unknown_NA
+#> 3:   HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_Myeloid_unknown_unknown_NA
+#> 4: MONOMAC6_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_MONOMAC6_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE_Myeloid_unknown_unknown_NA
+#>    x_mean x_AOC x_AOC_range  xc50 x_max  ec50 x_inf   x_0     h    r2 p_value
+#>     <num> <num>       <num> <num> <num> <num> <num> <num> <num> <num>   <num>
+#> 1:     NA    NA          NA    NA    NA  0.85  0.21  0.98   1.4  0.91      NA
+#> 2:     NA    NA          NA    NA    NA  2.40  0.35  1.01   0.9  0.77      NA
+#> 3:     NA    NA          NA    NA    NA  1.70  0.29  0.96   1.1  0.83      NA
+#> 4:     NA    NA          NA    NA    NA    NA    NA    NA    NA    NA      NA
+#>      rss maxlog10Concentration N_conc x_sd_avg                fit_type
+#>    <num>                 <num>  <int>    <num>                  <char>
+#> 1:    NA                     1      8       NA     drc_drm_constrained
+#> 2:    NA                     1      8       NA dr4pl_initL_constrained
+#> 3:    NA                     1      8       NA   drc_drm_unconstrained
+#> 4:    NA                     1      8       NA                    <NA>
+#>    normalization_type fit_source prism_auc prism_log2_auc prism_auc_riemann
+#>                <char>     <char>     <num>          <num>             <num>
+#> 1:                 RV      PRISM    0.6012        -0.7341              0.58
+#> 2:                 RV      PRISM    0.7208        -0.4723              0.71
+#> 3:                 RV      PRISM    0.6705        -0.5767              0.66
+#> 4:                 RV      PRISM        NA             NA              0.97
+#>    prism_ic50 prism_log2_ic50 prism_mse prism_mad prism_successful_fit
+#>         <num>           <num>     <num>     <num>               <lgcl>
+#> 1:     1.0750          0.1043     0.011      0.08                 TRUE
+#> 2:         NA              NA     0.014      0.09                 TRUE
+#> 3:     1.9378          0.9543     0.012      0.07                 TRUE
+#> 4:         NA              NA        NA        NA                FALSE
+#>    prism_minimum_dose prism_maximum_dose  depmap_id              pert_id
+#>                 <num>              <int>     <char>               <char>
+#> 1:            0.00046                 10 ACH-000004 PRC-000000001-001-01
+#> 2:            0.00046                 10 ACH-000005 PRC-000000001-001-01
+#> 3:            0.00046                 10 ACH-000005 PRC-000000001-001-01
+#> 4:            0.00046                 10 ACH-000006 PRC-000000001-001-01
+#>    pool_id      lua cell_set pert_plate x_project_id      screen Gnumber
+#>     <char>   <char>   <char>     <char>       <char>      <char>  <char>
+#> 1:      P1 LUA-0001      CS1     PLATE1 TEST_PROJECT TEST_SCREEN  G00106
+#> 2:      P1 LUA-0002      CS1     PLATE1 TEST_PROJECT TEST_SCREEN  G00106
+#> 3:      P2 LUA-0003      CS1     PLATE2 TEST_PROJECT TEST_SCREEN  G00106
+#> 4:      P1 LUA-0004      CS1     PLATE1 TEST_PROJECT TEST_SCREEN  G00106
+#>    DrugName                drug_moa Duration
+#>      <char>                  <char>    <num>
+#> 1: GDC-8025 TEAD1|TEAD2|TEAD3|TEAD4      120
+#> 2: GDC-8025 TEAD1|TEAD2|TEAD3|TEAD4      120
+#> 3: GDC-8025 TEAD1|TEAD2|TEAD3|TEAD4      120
+#> 4: GDC-8025 TEAD1|TEAD2|TEAD3|TEAD4      120
+#>                                           clid
+#>                                         <char>
+#> 1:      HEL_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE
+#> 2:  HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE
+#> 3:  HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE
+#> 4: MONOMAC6_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE
+#>                                   CellLineName  Tissue parental_identifier
+#>                                         <char>  <char>              <char>
+#> 1:      HEL_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE Myeloid             unknown
+#> 2:  HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE Myeloid             unknown
+#> 3:  HEL9217_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE Myeloid             unknown
+#> 4: MONOMAC6_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE Myeloid             unknown
+#>    subtype ReferenceDivisionTime
+#>     <char>                <lgcl>
+#> 1: unknown                    NA
+#> 2: unknown                    NA
+#> 3: unknown                    NA
+#> 4: unknown                    NA
 ```

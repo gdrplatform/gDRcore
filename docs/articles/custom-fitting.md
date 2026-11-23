@@ -675,10 +675,8 @@ fits the MuSyC dose-response surface (Meyer et al. 2019) to the whole
 grid and returns its parameters: `alpha12`/`alpha21` measure synergy of
 potency, `beta` synergy of efficacy. It keeps the `synergy` defaults,
 bounds `E` by the normalization and `C` to the tested dose range, and
-keeps the best of several starts. The fit runs in the Python `synergy`
-package through `reticulate`, so the chunks below run only where it is
-installed (`reticulate::py_install("synergy", pip = TRUE)`). The Python,
-`synergy`, `numpy` and `scipy` versions go into the fit provenance.
+keeps the best of several starts. The fit runs in R, with the settings
+of the Python `synergy` package.
 
 [`musyc_summary_fn()`](https://gdrplatform.github.io/gDRcore/reference/musyc_summary_fn.md)
 collapses the fits of all normalization types into one row per cell.
@@ -700,6 +698,19 @@ musyc_df <- BumpyMatrix::unsplitAsDataFrame(
 )
 musyc_df[, c("row", "column", "normalization_type",
              "alpha12", "alpha21", "beta", "r2")]
+#> DataFrame with 4 rows and 7 columns
+#>           row      column normalization_type      alpha12              alpha21
+#>   <character> <character>        <character>    <numeric>            <numeric>
+#> 1       DrugA   CellLine1                 GR 30145.433476 394440123733.4261475
+#> 2       DrugA   CellLine1                 RV     3.356148            0.9636621
+#> 3       DrugB   CellLine1                 GR     7.246754            0.3385268
+#> 4       DrugB   CellLine1                 RV     0.792896            0.0333442
+#>        beta        r2
+#>   <numeric> <numeric>
+#> 1 -0.852232  0.997432
+#> 2  1.225538  0.998352
+#> 3  1.205367  0.982340
+#> 4  1.823369  0.999359
 ```
 
 ------------------------------------------------------------------------
@@ -1273,7 +1284,7 @@ is a thin wrapper that calls all four in order.
 | `apply_combo_scores(se)` | SE-level (recommended) | `Averaged` + `Metrics` | [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md) Bliss & HSA | `bliss_score`, `hsa_score` |
 | [`bliss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/bliss_fit_fn.md) | triplet `fit_fn` | `Averaged` only | — (simplified, no SA fits) | `bliss_score`, `bliss_excess_mean`, `n_combo_points` |
 | [`hss_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/hss_fit_fn.md) | triplet `fit_fn` | `Averaged` only | — (simplified, no SA fits) | `hss_score`, `hss_excess_mean`, `n_combo_points` |
-| [`musyc_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/musyc_fit_fn.md) | triplet `fit_fn` | `Averaged` + Python `synergy` | — (MuSyC surface fit) | `alpha12`, `alpha21`, `beta`, `r2` |
+| [`musyc_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/musyc_fit_fn.md) | triplet `fit_fn` | `Averaged` only | — (MuSyC surface fit) | `alpha12`, `alpha21`, `beta`, `r2` |
 
 **When to use which:** - Use
 [`apply_combo_scores()`](https://gdrplatform.github.io/gDRcore/reference/apply_combo_scores.md)
@@ -1324,45 +1335,41 @@ sessionInfo()
 #>  [9] BiocGenerics_0.59.13        generics_0.1.4             
 #> [11] MatrixGenerics_1.25.0       matrixStats_1.5.0          
 #> [13] gDRutils_1.11.26            gDRtestData_1.11.13        
-#> [15] gDRcore_1.11.33             BiocStyle_2.41.0           
+#> [15] gDRcore_1.11.34             BiocStyle_2.41.0           
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] farver_2.1.2                fastmap_1.2.0              
-#>  [3] TH.data_1.1-5               digest_0.6.39              
-#>  [5] lifecycle_1.0.5             survival_3.8-12            
-#>  [7] compiler_4.6.2              rlang_1.3.0                
-#>  [9] sass_0.4.10                 drc_4.0-0                  
-#> [11] tools_4.6.2                 plotrix_3.8-14             
-#> [13] yaml_2.3.12                 knitr_1.52                 
-#> [15] lambda.r_1.2.6              S4Arrays_1.13.2            
-#> [17] here_1.0.2                  reticulate_1.47.0          
-#> [19] DelayedArray_0.39.8         RColorBrewer_1.1-3         
-#> [21] abind_1.4-8                 multcomp_1.4-32            
-#> [23] BiocParallel_1.47.0         desc_1.4.3                 
-#> [25] grid_4.6.2                  scales_1.4.0               
-#> [27] gtools_3.9.5                MASS_7.3-66                
-#> [29] MultiAssayExperiment_1.39.1 cli_3.6.6                  
-#> [31] mvtnorm_1.4-2               rmarkdown_2.32             
-#> [33] ragg_1.5.2                  otel_0.3.0                 
-#> [35] RcppParallel_6.2.1          cachem_1.1.0               
-#> [37] splines_4.6.2               parallel_4.6.2             
-#> [39] BiocManager_1.30.27         formatR_1.14               
-#> [41] XVector_0.53.0              vctrs_0.7.3                
-#> [43] Matrix_1.7-6                sandwich_3.1-3             
-#> [45] jsonlite_2.0.0              carData_3.0-6              
-#> [47] bookdown_0.48               car_3.1-5                  
-#> [49] Formula_1.2-6               systemfonts_1.3.3          
-#> [51] jquerylib_0.1.4             glue_1.8.1                 
-#> [53] pkgdown_2.2.1               codetools_0.2-20           
-#> [55] futile.logger_1.4.9         pillar_1.11.1              
-#> [57] rappdirs_0.3.4              htmltools_0.5.9            
-#> [59] R6_2.6.1                    textshaping_1.0.5          
-#> [61] rprojroot_2.1.1             evaluate_1.0.5             
-#> [63] lattice_0.23-1              png_0.1-9                  
-#> [65] futile.options_1.0.1        backports_1.5.1            
-#> [67] bslib_0.12.0                Rcpp_1.1.2                 
-#> [69] charport_0.2.0              SparseArray_1.13.5         
-#> [71] checkmate_2.3.4             qs2_0.4.0                  
-#> [73] xfun_0.62                   fs_2.1.0                   
-#> [75] zoo_1.9-1
+#>  [1] xfun_0.62                   bslib_0.12.0               
+#>  [3] lattice_0.23-1              tools_4.6.2                
+#>  [5] sandwich_3.1-3              parallel_4.6.2             
+#>  [7] drc_4.0-0                   Matrix_1.7-6               
+#>  [9] checkmate_2.3.4             RColorBrewer_1.1-3         
+#> [11] desc_1.4.3                  RcppParallel_6.2.1         
+#> [13] lifecycle_1.0.5             farver_2.1.2               
+#> [15] compiler_4.6.2              textshaping_1.1.0          
+#> [17] codetools_0.2-20            carData_3.0-6              
+#> [19] htmltools_0.5.9             sass_0.5.0                 
+#> [21] yaml_2.3.12                 charport_0.2.0             
+#> [23] Formula_1.2-6               pkgdown_2.2.1              
+#> [25] car_3.1-5                   jquerylib_0.1.4            
+#> [27] MASS_7.3-66                 BiocParallel_1.47.0        
+#> [29] DelayedArray_0.39.8         cachem_1.1.0               
+#> [31] multcomp_1.4-32             abind_1.4-8                
+#> [33] qs2_0.4.0                   gtools_3.9.5               
+#> [35] digest_0.6.39               mvtnorm_1.4-2              
+#> [37] bookdown_0.48               splines_4.6.2              
+#> [39] fastmap_1.2.0               grid_4.6.2                 
+#> [41] cli_3.6.6                   SparseArray_1.13.5         
+#> [43] S4Arrays_1.13.3             survival_3.8-12            
+#> [45] TH.data_1.1-5               scales_1.4.0               
+#> [47] backports_1.5.1             plotrix_3.8-14             
+#> [49] lambda.r_1.2.6              rmarkdown_2.32             
+#> [51] XVector_0.53.0              otel_0.3.0                 
+#> [53] futile.logger_1.4.9         zoo_1.9-1                  
+#> [55] ragg_1.5.2                  evaluate_1.0.5             
+#> [57] knitr_1.52                  MultiAssayExperiment_1.39.1
+#> [59] futile.options_1.0.1        rlang_1.3.0                
+#> [61] Rcpp_1.1.2                  glue_1.8.1                 
+#> [63] formatR_1.14                BiocManager_1.30.27        
+#> [65] jsonlite_2.0.0              R6_2.6.1                   
+#> [67] systemfonts_1.3.4           fs_2.1.0
 ```

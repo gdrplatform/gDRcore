@@ -71,7 +71,6 @@ or `fit_SE.combinations`).
 mae <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")
 combo_se <- mae[[gDRutils::get_supported_experiments("combo")]]
 combo_se_excess <- apply_combo_excess(combo_se[1, 1])
-#> Loading required namespace: BumpyMatrix
 "excess" %in% SummarizedExperiment::assayNames(combo_se_excess)
 #> [1] TRUE
 ```
