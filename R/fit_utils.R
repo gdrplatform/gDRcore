@@ -32,8 +32,8 @@
 # normalization type with that type's x_0. One row per type, fit_source "gDR", rownames
 # "<type>_gDR". A series with no concentrations is one all-NA row, which
 # apply_combo_sa_fits() drops by its NA fit_type. `fit_args` (e.g. solver,
-# solver_control, pcutoff) override the defaults of the fit, except x_0, which the series
-# sets.
+# solver_control, pcutoff) override the defaults of the fit, except x_0, cap and
+# force_fit, which the series sets.
 #' @keywords internal
 .fit_combo_series <- function(df_, conc_col, e_0, GR_0, normalization_type,
                               cap, force_fit = FALSE, fit_args = list()) {
@@ -42,7 +42,7 @@
   conc <- df_[[conc_col]]
   conc_id <- gDRutils::get_env_identifiers("concentration")
   args <- utils::modifyList(list(cap = cap, force_fit = force_fit),
-                            fit_args[setdiff(names(fit_args), "x_0")])
+                            fit_args[setdiff(names(fit_args), c("x_0", "cap", "force_fit"))])
   has_std <- "x_std" %in% names(df_)
 
   out <- lapply(intersect(c("RV", "GR"), normalization_type), function(nt) {
@@ -98,7 +98,8 @@
 #' @param metrics_assay string; name of the output assay. Default \code{"Metrics"}.
 #' @param fit_source string recorded in the \code{fit_source} column. Default \code{"gDR"}.
 #' @param fit_args named list of arguments for the curve fits, passed to
-#'   \code{gDRutils::fit_drug_response_metrics()} (e.g. \code{solver}). Default \code{list()}.
+#'   \code{gDRutils::fit_drug_response_metrics()} (e.g. \code{solver}). Each series keeps its
+#'   own \code{x_0}, \code{cap} and \code{force_fit}. Default \code{list()}.
 #'
 #' @return Updated \code{SummarizedExperiment} with a \code{metrics_assay}
 #'   assay containing SA fit parameters per co-treatment concentration.

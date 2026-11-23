@@ -17,7 +17,7 @@
 #' @param fit_args named list of arguments for the single-agent curve fits of the
 #' combination, passed to \code{gDRutils::fit_drug_response_metrics()}, e.g.
 #' \code{list(solver = my_solver)} to fit with another optimiser. Each series keeps its
-#' own \code{x_0}.
+#' own \code{x_0}, \code{cap} and \code{force_fit}.
 #'
 #' @details
 #' This function assumes that the combination is set up with both

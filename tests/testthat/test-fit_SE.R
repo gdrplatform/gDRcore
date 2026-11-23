@@ -432,6 +432,17 @@ test_that("the combination fits use the single gDR fit and its fit_args", {
 })
 
 
+test_that("fit_args keep the per-series cap and force_fit of the combination fits", {
+  se <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")[[
+    gDRutils::get_supported_experiments("combo")]][1, 1]
+  SummarizedExperiment::assays(se) <- SummarizedExperiment::assays(se)["Averaged"]
+  ref <- suppressWarnings(fit_SE.combinations(se))
+  got <- suppressWarnings(fit_SE.combinations(se, fit_args = list(force_fit = FALSE, cap = 0.5)))
+  expect_equal(gDRutils::convert_se_assay_to_dt(got, "Metrics"),
+               gDRutils::convert_se_assay_to_dt(ref, "Metrics"))
+})
+
+
 test_that(".fit_combo_series fits each normalization type with its own x_0", {
   df_ <- data.table::data.table(
     conc = rep(10 ^ seq(-3, 1, length.out = 8), 2),

@@ -32,7 +32,8 @@ Default \code{c("GR", "RV")}.}
 \item{fit_source}{string recorded in the \code{fit_source} column. Default \code{"gDR"}.}
 
 \item{fit_args}{named list of arguments for the curve fits, passed to
-\code{gDRutils::fit_drug_response_metrics()} (e.g. \code{solver}). Default \code{list()}.}
+\code{gDRutils::fit_drug_response_metrics()} (e.g. \code{solver}). Each series keeps its
+own \code{x_0}, \code{cap} and \code{force_fit}. Default \code{list()}.}
 }
 \value{
 Updated \code{SummarizedExperiment} with a \code{metrics_assay}
