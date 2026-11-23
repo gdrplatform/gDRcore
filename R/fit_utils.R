@@ -262,7 +262,8 @@ apply_combo_sa_fits <- function(se,
     normalization_types = normalization_types,
     averaged_assay = averaged_assay,
     metrics_assay = metrics_assay,
-    fit_source = fit_source
+    fit_source = fit_source,
+    fit_args = fit_args
   ), averaged_assay, fit_source)
 }
 
