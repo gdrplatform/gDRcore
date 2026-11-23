@@ -1,7 +1,10 @@
-## gDRcore 1.11.33 - 2026-11-16
+## gDRcore 1.11.34 - 2026-11-22
 * change `musyc_fit_fn()` to fit in R without Python; results can differ slightly, mostly `beta` on flat surfaces
 * deprecate `musyc_available()`, which now always returns `TRUE`
 * add `predict_musyc_surface()`, the response of a fitted MuSyC surface at given concentrations
+
+## gDRcore 1.11.33 - 2026-11-12
+* add `add_PRISM_metrics()` to add the curve fits delivered by PRISM to Metrics, with fit_source PRISM
 
 ## gDRcore 1.11.32 - 2026-11-08
 * add `bliss_fit_fn()`, `hss_fit_fn()` and `musyc_fit_fn()` to the gDRutils fit function registry
