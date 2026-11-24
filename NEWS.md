@@ -1,3 +1,6 @@
+## gDRcore 1.13.6 - 2026-11-24
+* update the fit tests for the `fit_id` and `fit_message` columns of the fits in gDRutils 1.13.4
+
 ## gDRcore 1.13.4 - 2026-11-24
 * fix N_conc of the PRISM curves counting the concentrations of every normalization type
 
