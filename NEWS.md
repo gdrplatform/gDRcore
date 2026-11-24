@@ -1,5 +1,9 @@
-## gDRcore 1.13.3 - 2026-11-24
+## gDRcore 1.13.4 - 2026-11-24
 * fix N_conc of the PRISM curves counting the concentrations of every normalization type
+
+## gDRcore 1.13.3 - 2026-11-24
+* fix `annotate_dt_with_cell_line()` dropping the measurements of cell lines missing from the annotation
+* fix `annotate_dt_with_cell_line()` and `annotate_dt_with_drug()` dropping the `gDR_import` record
 
 ## gDRcore 1.13.2 - 2026-11-24
 * restore the Bioconductor devel history in main, so that the sync to Bioconductor can merge again
