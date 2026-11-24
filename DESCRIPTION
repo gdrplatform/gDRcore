@@ -2,8 +2,8 @@ Type: Package
 Package: gDRcore
 Title: Processing functions and interface to process and analyze drug
     dose-response data
-Version: 1.11.36
-Date: 2026-11-23
+Version: 1.13.5
+Date: 2026-11-24
 Authors@R: c(
     person("Bartosz", "Czech", , "czech.bartosz@external.gene.com", role = "aut",
            comment = c(ORCID = "0000-0002-9908-3007")),
@@ -31,7 +31,7 @@ Imports:
     checkmate,
     drc,
     futile.logger,
-    gDRutils (>= 1.11.27),
+    gDRutils (>= 1.11.31),
     jsonlite,
     MultiAssayExperiment,
     purrr,

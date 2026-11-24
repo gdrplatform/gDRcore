@@ -191,7 +191,9 @@ add_PRISM_metrics <- function(se,
   avg <- data.table::as.data.table(BumpyMatrix::unsplitAsDataFrame(
     SummarizedExperiment::assay(se, averaged_assay), row.field = "row", column.field = "column"
   ))
-  avg <- avg[avg$normalization_type == normalization_type & !is.na(avg$x) & avg[[conc]] > 0]
+  # built outside [], where 'normalization_type' would name the column, not the argument
+  keep <- avg$normalization_type == normalization_type & !is.na(avg$x) & avg[[conc]] > 0
+  avg <- avg[keep]
   counts <- avg[, list(N_conc = data.table::uniqueN(get(conc))), by = c("row", "column")]
   n <- counts$N_conc[match(paste(rows, columns), paste(counts$row, counts$column))]
   as.integer(n)

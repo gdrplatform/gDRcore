@@ -1,5 +1,24 @@
-## gDRcore 1.11.36 - 2026-11-23
+## gDRcore 1.13.5 - 2026-11-24
 * add fit_prism_curve() and fits with PRISM's algorithm, of PRISM's replicate data or of gDR's Normalized assay
+
+## gDRcore 1.13.4 - 2026-11-24
+* fix N_conc of the PRISM curves counting the concentrations of every normalization type
+
+## gDRcore 1.13.3 - 2026-11-24
+* fix `annotate_dt_with_cell_line()` dropping the measurements of cell lines missing from the annotation
+* fix `annotate_dt_with_cell_line()` and `annotate_dt_with_drug()` dropping the `gDR_import` record
+
+## gDRcore 1.13.2 - 2026-11-24
+* restore the Bioconductor devel history in main, so that the sync to Bioconductor can merge again
+
+## gDRcore 1.13.1 - 2026-11-24
+* synchronize Bioconductor and GitHub versioning
+
+## gDRcore 1.11.37 - 2026-11-23
+* fix `musyc_fit_fn()` computing the Jacobian twice per iteration; fits are identical and about 1.75x faster
+
+## gDRcore 1.11.36 - 2026-11-23
+* fix the combination fits not recording their `fit_args`, so a replay used the default solver
 
 ## gDRcore 1.11.35 - 2026-11-23
 * add `fit_fn` and `fit_args` to `fit_SE()` and the pipeline, plus the documented `range_conc`, `pcutoff` and others

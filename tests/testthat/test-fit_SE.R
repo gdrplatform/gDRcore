@@ -432,6 +432,25 @@ test_that("the combination fits use the single gDR fit and its fit_args", {
 })
 
 
+test_that("the combination fits record their solver, so a replay uses it", {
+  se <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")[[
+    gDRutils::get_supported_experiments("combo")]][1, 1]
+  SummarizedExperiment::assays(se) <- SummarizedExperiment::assays(se)["Averaged"]
+  # deliberately off (ec50 x 1.5), so a replay with the default solver could not match
+  shifted <- function(conc, x, model, control = list()) {
+    r <- gDRutils::solver_drc(conc, x, model, control)
+    r$params[["ec50"]] <- r$params[["ec50"]] * 1.5
+    r
+  }
+  got <- suppressWarnings(fit_SE.combinations(se, fit_args = list(solver = shifted)))
+  rec <- gDRutils::get_fit_provenance(got, "Metrics", "gDR")
+  expect_true("fit_args$solver" %in% names(rec$fn_args))
+  chk <- suppressWarnings(
+    gDRutils::check_reproducibility(got, "Metrics", "gDR", allow_source = TRUE))
+  expect_true(all(chk$reproducible), info = paste(chk$detail, collapse = "; "))
+})
+
+
 test_that("fit_args keep the per-series cap and force_fit of the combination fits", {
   se <- gDRutils::get_synthetic_data("finalMAE_combo_matrix_small")[[
     gDRutils::get_supported_experiments("combo")]][1, 1]
