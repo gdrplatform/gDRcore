@@ -1,3 +1,6 @@
+## gDRcore 1.13.2 - 2026-11-24
+* restore the Bioconductor devel history in main, so that the sync to Bioconductor can merge again
+
 ## gDRcore 1.13.1 - 2026-11-24
 * synchronize Bioconductor and GitHub versioning
 
