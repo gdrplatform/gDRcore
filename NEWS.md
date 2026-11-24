@@ -1,3 +1,6 @@
+## gDRcore 1.13.1 - 2026-11-24
+* synchronize Bioconductor and GitHub versioning
+
 ## gDRcore 1.11.37 - 2026-11-23
 * fix `musyc_fit_fn()` computing the Jacobian twice per iteration; fits are identical and about 1.75x faster
 
