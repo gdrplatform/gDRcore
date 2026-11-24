@@ -1,5 +1,11 @@
-## gDRcore 1.11.38 - 2026-11-23
+## gDRcore 1.13.3 - 2026-11-24
 * fix N_conc of the PRISM curves counting the concentrations of every normalization type
+
+## gDRcore 1.13.2 - 2026-11-24
+* restore the Bioconductor devel history in main, so that the sync to Bioconductor can merge again
+
+## gDRcore 1.13.1 - 2026-11-24
+* synchronize Bioconductor and GitHub versioning
 
 ## gDRcore 1.11.37 - 2026-11-23
 * fix `musyc_fit_fn()` computing the Jacobian twice per iteration; fits are identical and about 1.75x faster
