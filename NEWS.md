@@ -1,6 +1,15 @@
-## gDRcore 1.11.38 - 2026-11-23
+## gDRcore 1.13.3 - 2026-11-24
 * fix `annotate_dt_with_cell_line()` dropping the measurements of cell lines missing from the annotation
 * fix `annotate_dt_with_cell_line()` and `annotate_dt_with_drug()` dropping the `gDR_import` record
+
+## gDRcore 1.13.2 - 2026-11-24
+* restore the Bioconductor devel history in main, so that the sync to Bioconductor can merge again
+
+## gDRcore 1.13.1 - 2026-11-24
+* synchronize Bioconductor and GitHub versioning
+
+## gDRcore 1.11.37 - 2026-11-23
+* fix `musyc_fit_fn()` computing the Jacobian twice per iteration; fits are identical and about 1.75x faster
 
 ## gDRcore 1.11.36 - 2026-11-23
 * fix the combination fits not recording their `fit_args`, so a replay used the default solver

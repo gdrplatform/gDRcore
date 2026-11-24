@@ -120,6 +120,36 @@ test_that(".musyc_least_squares returns the best point it evaluated", {
   expect_lt(fit$objective, sum(residuals(start)^2))
 })
 
+test_that(".musyc_least_squares computes the Jacobian once per point, with the same fit", {
+  dt <- .musyc_truth_dt(.musyc_known_params)
+  obs <- .musyc_grid(dt$Concentration, dt$Concentration_2, dt$x)
+  conc <- unique(dt$Concentration)
+  limits <- .musyc_fit_limits(.musyc_bounds(-1, conc[conc > 0], conc[conc > 0]))
+  p0 <- .musyc_default_p0(obs)
+  start <- pmin(pmax(c(p0[1:4], log(p0[5:10])), limits$lower), limits$upper)
+  residuals <- function(theta) .musyc_surface(theta, obs$d1, obs$d2) - obs$E
+  calls <- 0L
+  jac <- function(theta) {
+    calls <<- calls + 1L
+    .musyc_surface(theta, obs$d1, obs$d2, jacobian = TRUE)
+  }
+  fit <- .musyc_least_squares(residuals, jac, start, limits$lower, limits$upper)
+  cached_calls <- calls
+
+  # the same optimisation without the cache: gradient and Hessian each take the Jacobian
+  calls <- 0L
+  uncached <- stats::nlminb(
+    start, function(p) sum(residuals(p)^2),
+    gradient = function(p) 2 * crossprod(jac(p), residuals(p))[, 1],
+    hessian = function(p) 2 * crossprod(jac(p)),
+    lower = limits$lower, upper = limits$upper,
+    control = list(iter.max = 1000L, eval.max = 1500L)
+  )
+  expect_equal(fit$par, uncached$par)
+  expect_equal(fit$objective, uncached$objective)
+  expect_lte(cached_calls, ceiling(calls / 2))
+})
+
 test_that(".musyc_hill_fit recovers the parameters of a Hill curve", {
   d <- c(0, 10^seq(-3, 1, length.out = 9))
   E <- 1 + (0.2 - 1) * d^1.5 / (0.05^1.5 + d^1.5)
