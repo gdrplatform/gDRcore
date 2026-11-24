@@ -29,6 +29,34 @@ test_that("annotate_dt_with_cell_line works correctly", {
   expect_equal(result$subtype, c(cell_line_annotation$subtype, "unknown"))
 })
 
+test_that("annotate_dt_with_cell_line keeps the measurements of cell lines missing from the annotation", {
+  data <- data.table::data.table(
+    clid = rep(c("CL1", "CL3", "CL4"), each = 2),
+    ReadoutValue = c(0.9, 0.8, 0.7, 0.6, 0.5, 0.4)
+  )
+  data.table::setattr(data, "gDR_import", list(source = "test"))
+  cell_line_annotation <- data.table::data.table(
+    clid = "CL1", CellLineName = "Cell Line 1", Tissue = "Tissue 1",
+    ReferenceDivisionTime = 24, parental_identifier = "Parent 1", subtype = "Subtype 1"
+  )
+  result <- annotate_dt_with_cell_line(data.table::copy(data), cell_line_annotation)
+  expect_equal(NROW(result), NROW(data))
+  expect_equal(sort(result$ReadoutValue), sort(data$ReadoutValue))
+  expect_equal(result[clid == "CL4", CellLineName], c("CL4", "CL4"))
+  expect_equal(result[clid == "CL3", Tissue], c("unknown", "unknown"))
+  expect_equal(result[clid == "CL1", CellLineName], c("Cell Line 1", "Cell Line 1"))
+  expect_identical(attr(result, "gDR_import"), list(source = "test"))
+})
+
+test_that("annotate_dt_with_drug keeps the import record", {
+  data <- data.table::data.table(Gnumber = c("drug1", "drug2"), ReadoutValue = c(0.9, 0.5))
+  data.table::setattr(data, "gDR_import", list(source = "test"))
+  drug_annotation <- data.table::data.table(Gnumber = "drug1", DrugName = "Drug 1", drug_moa = "MoA 1")
+  result <- annotate_dt_with_drug(data.table::copy(data), drug_annotation)
+  expect_equal(NROW(result), NROW(data))
+  expect_identical(attr(result, "gDR_import"), list(source = "test"))
+})
+
 test_that("get_drug_annotation works correctly", {
   data <- data.table::data.table(Gnumber = c("drug1", "drug2", "drug3"))
   # Assuming the annotation file "drugs.csv" is available in the package "gDRtestData"
