@@ -930,7 +930,8 @@ test_that("fit_SE.timecourse records both stages and keeps the input metadata", 
                    list(dur_col = "Duration", lfc_col = "LogFoldChange"))
   expect_match(step$functions$rate_fn$info$description, "lm(LogFoldChange ~ Duration)", fixed = TRUE)
 
-  recipe <- prov$fits$Metrics$gDR
+  recipe <- gDRutils::get_fit_provenance(se_fit, "Metrics", "gDR")
+  expect_true(recipe$fit_id %in% names(prov$fits$Metrics))
   expect_identical(recipe$fn$name, "fit_drug_response_metrics")
   expect_identical(recipe$fit_args$x_col, "NormalizedGrowthRate")
   expect_identical(recipe$fit_args$pcutoff, 0.2)
