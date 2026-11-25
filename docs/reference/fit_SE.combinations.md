@@ -12,7 +12,8 @@ fit_SE.combinations(
   normalization_types = c("GR", "RV"),
   averaged_assay = "Averaged",
   metrics_assay = "Metrics",
-  score_FUN = calculate_score
+  score_FUN = calculate_score,
+  fit_args = list()
 )
 ```
 
@@ -51,6 +52,14 @@ fit_SE.combinations(
 
   function used to calculate score for HSA and Bliss
 
+- fit_args:
+
+  named list of arguments for the single-agent curve fits of the
+  combination, passed to
+  [`gDRutils::fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html),
+  e.g. `list(solver = my_solver)` to fit with another optimiser. Each
+  series keeps its own `x_0`, `cap` and `force_fit`.
+
 ## Value
 
 A `SummarizedExperiment` object with an additional assay containing the
@@ -70,34 +79,6 @@ se1 <- fmae_cms[[gDRutils::get_supported_experiments("combo")]]
 SummarizedExperiment::assays(se1) <-
   SummarizedExperiment::assays(se1)["Averaged"]
 fit_SE.combinations(se1[1, 1])
-#> Warning: overriding original x_0 argument '1' with '1' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '1' with '1' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '0.937720959525109' with '0.9563' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '0.411661143403854' with '0.4075' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '-0.466087101282739' with '-0.4678' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '-0.638711813666041' with '-0.5972' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '-0.65250302581968' with '-0.6296' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '-0.653485583859142' with '-0.692' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '-0.6535552708396' with '-0.7039' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '-0.653560191565661' with '-0.7046' (only 1 normalized value detected, setting constant fit)
-#> Warning: NaNs produced
-#> Warning: NaNs produced
-#> Warning: NaNs produced
-#> Warning: NaNs produced
-#> Warning: NaNs produced
-#> Warning: NaNs produced
-#> Warning: overriding original x_0 argument '1' with '1' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '1' with '1' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '0.960100165903776' with '0.966' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '0.5788597758991' with '0.577' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '0.123503648078604' with '0.1259' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '0.0689925257550939' with '0.0814' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '0.0658336504167401' with '0.0714' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '0.0656619818287123' with '0.0535' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '0.0656526460997817' with '0.0503' (only 1 normalized value detected, setting constant fit)
-#> Warning: overriding original x_0 argument '0.0656521405542196' with '0.0501' (only 1 normalized value detected, setting constant fit)
-#> Warning: NaNs produced
-#> Warning: NaNs produced
 #> Warning: NaNs produced
 #> Warning: NaNs produced
 #> Warning: NaNs produced

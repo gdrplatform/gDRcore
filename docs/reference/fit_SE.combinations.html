@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.34</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,7 +53,8 @@
 <span>  normalization_types <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GR"</span>, <span class="st">"RV"</span><span class="op">)</span>,</span>
 <span>  averaged_assay <span class="op">=</span> <span class="st">"Averaged"</span>,</span>
 <span>  metrics_assay <span class="op">=</span> <span class="st">"Metrics"</span>,</span>
-<span>  score_FUN <span class="op">=</span> <span class="va">calculate_score</span></span>
+<span>  score_FUN <span class="op">=</span> <span class="va">calculate_score</span>,</span>
+<span>  fit_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -94,6 +95,13 @@ whose combination represents a unique series for which to fit curves.</p></dd>
 <dt id="arg-score-fun">score_FUN<a class="anchor" aria-label="anchor" href="#arg-score-fun"></a></dt>
 <dd><p>function used to calculate score for HSA and Bliss</p></dd>
 
+
+<dt id="arg-fit-args">fit_args<a class="anchor" aria-label="anchor" href="#arg-fit-args"></a></dt>
+<dd><p>named list of arguments for the single-agent curve fits of the
+combination, passed to <code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">gDRutils::fit_drug_response_metrics()</a></code>, e.g.
+<code>list(solver = my_solver)</code> to fit with another optimiser. Each series keeps its
+own <code>x_0</code>, <code>cap</code> and <code>force_fit</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -114,34 +122,6 @@ concentrations nested in the assay.</p>
 <span class="r-in"><span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assays</a></span><span class="op">(</span><span class="va">se1</span><span class="op">)</span> <span class="op">&lt;-</span></span></span>
 <span class="r-in"><span>  <span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assays</a></span><span class="op">(</span><span class="va">se1</span><span class="op">)</span><span class="op">[</span><span class="st">"Averaged"</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="fu">fit_SE.combinations</span><span class="op">(</span><span class="va">se1</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '1' with '1' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '1' with '1' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '0.937720959525109' with '0.9563' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '0.411661143403854' with '0.4075' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '-0.466087101282739' with '-0.4678' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '-0.638711813666041' with '-0.5972' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '-0.65250302581968' with '-0.6296' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '-0.653485583859142' with '-0.692' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '-0.6535552708396' with '-0.7039' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '-0.653560191565661' with '-0.7046' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '1' with '1' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '1' with '1' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '0.960100165903776' with '0.966' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '0.5788597758991' with '0.577' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '0.123503648078604' with '0.1259' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '0.0689925257550939' with '0.0814' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '0.0658336504167401' with '0.0714' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '0.0656619818287123' with '0.0535' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '0.0656526460997817' with '0.0503' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>overriding original x_0 argument '0.0656521405542196' with '0.0501' (only 1 normalized value detected, setting constant fit)</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>

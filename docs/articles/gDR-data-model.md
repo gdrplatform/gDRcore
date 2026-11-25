@@ -243,7 +243,7 @@ function. In gDR object the metadata information is stored as a list.
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] BiocStyle_2.41.0
+    ## [1] BiocStyle_2.42.0
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] digest_0.6.39       desc_1.4.3          R6_2.6.1           

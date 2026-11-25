@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gDRcore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.34</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,41 @@
       <small>Source: <a href="https://github.com/gdrplatform/gDRcore/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.13.6" id="gdrcore-1136---2026-11-24">gDRcore 1.13.6 - 2026-11-24<a class="anchor" aria-label="anchor" href="#gdrcore-1136---2026-11-24"></a></h2>
+<ul><li>update the fit tests for the <code>fit_id</code> and <code>fit_message</code> columns of the fits in gDRutils 1.13.4</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.13.4" id="gdrcore-1134---2026-11-24">gDRcore 1.13.4 - 2026-11-24<a class="anchor" aria-label="anchor" href="#gdrcore-1134---2026-11-24"></a></h2>
+<ul><li>fix N_conc of the PRISM curves counting the concentrations of every normalization type</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.13.3" id="gdrcore-1133---2026-11-24">gDRcore 1.13.3 - 2026-11-24<a class="anchor" aria-label="anchor" href="#gdrcore-1133---2026-11-24"></a></h2>
+<ul><li>fix <code><a href="../reference/annotate_dt_with_cell_line.html">annotate_dt_with_cell_line()</a></code> dropping the measurements of cell lines missing from the annotation</li>
+<li>fix <code><a href="../reference/annotate_dt_with_cell_line.html">annotate_dt_with_cell_line()</a></code> and <code><a href="../reference/annotate_dt_with_drug.html">annotate_dt_with_drug()</a></code> dropping the <code>gDR_import</code> record</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.13.2" id="gdrcore-1132---2026-11-24">gDRcore 1.13.2 - 2026-11-24<a class="anchor" aria-label="anchor" href="#gdrcore-1132---2026-11-24"></a></h2>
+<ul><li>restore the Bioconductor devel history in main, so that the sync to Bioconductor can merge again</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.13.1" id="gdrcore-1131---2026-11-24">gDRcore 1.13.1 - 2026-11-24<a class="anchor" aria-label="anchor" href="#gdrcore-1131---2026-11-24"></a></h2>
+<ul><li>synchronize Bioconductor and GitHub versioning</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.37" id="gdrcore-11137---2026-11-23">gDRcore 1.11.37 - 2026-11-23<a class="anchor" aria-label="anchor" href="#gdrcore-11137---2026-11-23"></a></h2>
+<ul><li>fix <code><a href="../reference/musyc_fit_fn.html">musyc_fit_fn()</a></code> computing the Jacobian twice per iteration; fits are identical and about 1.75x faster</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.36" id="gdrcore-11136---2026-11-23">gDRcore 1.11.36 - 2026-11-23<a class="anchor" aria-label="anchor" href="#gdrcore-11136---2026-11-23"></a></h2>
+<ul><li>fix the combination fits not recording their <code>fit_args</code>, so a replay used the default solver</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.35" id="gdrcore-11135---2026-11-23">gDRcore 1.11.35 - 2026-11-23<a class="anchor" aria-label="anchor" href="#gdrcore-11135---2026-11-23"></a></h2>
+<ul><li>add <code>fit_fn</code> and <code>fit_args</code> to <code><a href="../reference/runDrugResponseProcessingPipelineFxns.html">fit_SE()</a></code> and the pipeline, plus the documented <code>range_conc</code>, <code>pcutoff</code> and others</li>
+<li>make the combination single-agent fits use <code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">gDRutils::fit_drug_response_metrics()</a></code>, the one gDR Hill fit</li>
+<li>add <code>fit_args</code> to <code><a href="../reference/fit_SE.combinations.html">fit_SE.combinations()</a></code>, so a solver reaches the combination fits too</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.11.34" id="gdrcore-11134---2026-11-22">gDRcore 1.11.34 - 2026-11-22<a class="anchor" aria-label="anchor" href="#gdrcore-11134---2026-11-22"></a></h2>
 <ul><li>change <code><a href="../reference/musyc_fit_fn.html">musyc_fit_fn()</a></code> to fit in R without Python; results can differ slightly, mostly <code>beta</code> on flat surfaces</li>
@@ -139,7 +174,7 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.11.14" id="gdrcore-11114---2026-09-17">gDRcore 1.11.14 - 2026-09-17<a class="anchor" aria-label="anchor" href="#gdrcore-11114---2026-09-17"></a></h2>
 <ul><li>fix constant fits reporting <code>xc50 = -Inf</code> regardless of the response level, which made inactive compounds read as maximally potent</li>
-<li>add parity tests comparing <code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">fit_drug_response_metrics()</a></code> against <code><a href="https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html" class="external-link">gDRutils::logisticFit()</a></code>, pinning the branches where the two are known to differ</li>
+<li>add parity tests comparing <code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html" class="external-link">fit_drug_response_metrics()</a></code> against <code><a href="https://gdrplatform.github.io/gDRstyle/reference/fit_curves-defunct.html" class="external-link">gDRutils::logisticFit()</a></code>, pinning the branches where the two are known to differ</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.11.13" id="gdrcore-11113---2026-08-19">gDRcore 1.11.13 - 2026-08-19<a class="anchor" aria-label="anchor" href="#gdrcore-11113---2026-08-19"></a></h2>

@@ -41,13 +41,13 @@ l_tbl <- gDRimport::load_data(
   df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
-#> INFO [2026-11-23 02:35:17] Manifest loaded successfully
-#> INFO [2026-11-23 02:35:17] Reading Template_7daytreated.xlsx with load_templates_xlsx
-#> INFO [2026-11-23 02:35:17] Reading Template_Untreated.xlsx with load_templates_xlsx
-#> INFO [2026-11-23 02:35:17] Loading Template_7daytreated.xlsx
-#> INFO [2026-11-23 02:35:17] Loading Template_Untreated.xlsx
-#> INFO [2026-11-23 02:35:17] Templates loaded successfully!
-#> INFO [2026-11-23 02:35:17] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-11-25 19:47:29] Manifest loaded successfully
+#> INFO [2026-11-25 19:47:29] Reading Template_7daytreated.xlsx with load_templates_xlsx
+#> INFO [2026-11-25 19:47:29] Reading Template_Untreated.xlsx with load_templates_xlsx
+#> INFO [2026-11-25 19:47:29] Loading Template_7daytreated.xlsx
+#> INFO [2026-11-25 19:47:29] Loading Template_Untreated.xlsx
+#> INFO [2026-11-25 19:47:29] Templates loaded successfully!
+#> INFO [2026-11-25 19:47:29] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -74,14 +74,14 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-11-23 02:35:18] Plate 201904190a read; 384 wells
-#> INFO [2026-11-23 02:35:18] Plate 201904190b read; 384 wells
-#> INFO [2026-11-23 02:35:18] Plate 201904190c read; 384 wells
-#> INFO [2026-11-23 02:35:18] Plate 201904190d read; 384 wells
-#> INFO [2026-11-23 02:35:18] Plate 201904190e read; 384 wells
-#> INFO [2026-11-23 02:35:18] Plate 201904190f read; 384 wells
-#> INFO [2026-11-23 02:35:18] File done
-#> INFO [2026-11-23 02:35:18] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-11-25 19:47:29] Plate 201904190a read; 384 wells
+#> INFO [2026-11-25 19:47:29] Plate 201904190b read; 384 wells
+#> INFO [2026-11-25 19:47:29] Plate 201904190c read; 384 wells
+#> INFO [2026-11-25 19:47:29] Plate 201904190d read; 384 wells
+#> INFO [2026-11-25 19:47:29] Plate 201904190e read; 384 wells
+#> INFO [2026-11-25 19:47:29] Plate 201904190f read; 384 wells
+#> INFO [2026-11-25 19:47:29] File done
+#> INFO [2026-11-25 19:47:29] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -108,173 +108,150 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-11-23 02:35:18] Plate 201904197a read; 384 wells
-#> INFO [2026-11-23 02:35:18] Plate 201904197b read; 384 wells
-#> INFO [2026-11-23 02:35:18] Plate 201904197c read; 384 wells
-#> INFO [2026-11-23 02:35:18] Plate 201904197d read; 384 wells
-#> INFO [2026-11-23 02:35:18] Plate 201904197e read; 384 wells
-#> INFO [2026-11-23 02:35:18] Plate 201904197f read; 384 wells
-#> INFO [2026-11-23 02:35:18] File done
+#> INFO [2026-11-25 19:47:30] Plate 201904197a read; 384 wells
+#> INFO [2026-11-25 19:47:30] Plate 201904197b read; 384 wells
+#> INFO [2026-11-25 19:47:30] Plate 201904197c read; 384 wells
+#> INFO [2026-11-25 19:47:30] Plate 201904197d read; 384 wells
+#> INFO [2026-11-25 19:47:30] Plate 201904197e read; 384 wells
+#> INFO [2026-11-25 19:47:30] Plate 201904197f read; 384 wells
+#> INFO [2026-11-25 19:47:30] File done
 imported_data <- merge_data(l_tbl$manifest, l_tbl$treatments, l_tbl$data)
-#> INFO [2026-11-23 02:35:18] Merging data
-#> INFO [2026-11-23 02:35:18] Merging the metadata (manifest and treatment files)
-#> WARN [2026-11-23 02:35:18] 4608 well loaded, 768 wells discarded for lack of annotation,
+#> INFO [2026-11-25 19:47:30] Merging data
+#> INFO [2026-11-25 19:47:30] Merging the metadata (manifest and treatment files)
+#> WARN [2026-11-25 19:47:30] 4608 well loaded, 768 wells discarded for lack of annotation,
 #>     3840 data point selected
 mae <- runDrugResponseProcessingPipeline(imported_data, data_dir = p_dir)
 #> Warning: 'Plate' nested confounder(s) is/are not present in the data.
 #>     Switching into 'Barcode' nested confounder(s).
 #> Processing combination
 #> Warning: mapping original concentration '0.00457247142398638' to '0.00437'
-#> not enough data points (1 < 4) to perform fitting
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> mapping original concentration '0.00457247142398638' to '0.00437'
-#> not enough data points (1 < 4) to perform fitting
 #> NaNs produced
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> mapping original concentration '0.00457247142398638' to '0.00437'
-#> not enough data points (1 < 4) to perform fitting
 #> NaNs produced
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> NaNs produced
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> NaNs produced
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> mapping original concentration '0.00457247142398638' to '0.00437'
-#> not enough data points (1 < 4) to perform fitting
 #> NaNs produced
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> mapping original concentration '0.00457247142398638' to '0.00437'
-#> not enough data points (1 < 4) to perform fitting
 #> NaNs produced
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitt
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> NaNs produced
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> NaNs produced
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping orig
 #> Processing single-agent
 #> Warning: method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'

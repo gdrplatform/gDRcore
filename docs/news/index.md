@@ -1,5 +1,60 @@
 # Changelog
 
+## gDRcore 1.13.6 - 2026-11-24
+
+- update the fit tests for the `fit_id` and `fit_message` columns of the
+  fits in gDRutils 1.13.4
+
+## gDRcore 1.13.4 - 2026-11-24
+
+- fix N_conc of the PRISM curves counting the concentrations of every
+  normalization type
+
+## gDRcore 1.13.3 - 2026-11-24
+
+- fix
+  [`annotate_dt_with_cell_line()`](https://gdrplatform.github.io/gDRcore/reference/annotate_dt_with_cell_line.md)
+  dropping the measurements of cell lines missing from the annotation
+- fix
+  [`annotate_dt_with_cell_line()`](https://gdrplatform.github.io/gDRcore/reference/annotate_dt_with_cell_line.md)
+  and
+  [`annotate_dt_with_drug()`](https://gdrplatform.github.io/gDRcore/reference/annotate_dt_with_drug.md)
+  dropping the `gDR_import` record
+
+## gDRcore 1.13.2 - 2026-11-24
+
+- restore the Bioconductor devel history in main, so that the sync to
+  Bioconductor can merge again
+
+## gDRcore 1.13.1 - 2026-11-24
+
+- synchronize Bioconductor and GitHub versioning
+
+## gDRcore 1.11.37 - 2026-11-23
+
+- fix
+  [`musyc_fit_fn()`](https://gdrplatform.github.io/gDRcore/reference/musyc_fit_fn.md)
+  computing the Jacobian twice per iteration; fits are identical and
+  about 1.75x faster
+
+## gDRcore 1.11.36 - 2026-11-23
+
+- fix the combination fits not recording their `fit_args`, so a replay
+  used the default solver
+
+## gDRcore 1.11.35 - 2026-11-23
+
+- add `fit_fn` and `fit_args` to
+  [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
+  and the pipeline, plus the documented `range_conc`, `pcutoff` and
+  others
+- make the combination single-agent fits use
+  [`gDRutils::fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html),
+  the one gDR Hill fit
+- add `fit_args` to
+  [`fit_SE.combinations()`](https://gdrplatform.github.io/gDRcore/reference/fit_SE.combinations.md),
+  so a solver reaches the combination fits too
+
 ## gDRcore 1.11.34 - 2026-11-22
 
 - change
@@ -169,7 +224,7 @@
 - add parity tests comparing
   [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html)
   against
-  [`gDRutils::logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html),
+  [`gDRutils::logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/fit_curves-defunct.html),
   pinning the branches where the two are known to differ
 
 ## gDRcore 1.11.13 - 2026-08-19

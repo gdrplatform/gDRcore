@@ -38,7 +38,9 @@ fit_SE(
   force_fit = FALSE,
   pcutoff = 0.05,
   cap = 0.1,
-  curve_type = c("GR", "RV")
+  curve_type = c("GR", "RV"),
+  fit_fn = gDRutils::fit_drug_response_metrics,
+  fit_args = list()
 )
 
 normalize_SE(
@@ -91,7 +93,14 @@ runDrugResponseProcessingPipeline(
   data_dir = NULL,
   partial_run = FALSE,
   start_from = get_pipeline_steps()[1],
-  selected_experiments = NULL
+  selected_experiments = NULL,
+  range_conc = c(0.005, 5),
+  force_fit = FALSE,
+  pcutoff = 0.05,
+  cap = 0.1,
+  curve_type = c("GR", "RV"),
+  fit_fn = gDRutils::fit_drug_response_metrics,
+  fit_args = list()
 )
 ```
 
@@ -186,6 +195,28 @@ runDrugResponseProcessingPipeline(
 - curve_type:
 
   vector of curve type values.
+
+- fit_fn:
+
+  function fitting each single-agent curve, called by
+  [`gDRutils::apply_fit()`](https://gdrplatform.github.io/gDRstyle/reference/apply_fit.html).
+  Defaults to
+  [`gDRutils::fit_drug_response_metrics`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html),
+  the gDR Hill fit. A replacement must return the Metrics columns
+  (`gDRutils::get_header("response_metrics")`).
+
+- fit_args:
+
+  named list of further arguments for the fits, e.g.
+  `list(solver = my_solver)` to fit the Hill curve with another
+  optimiser (see
+  [`gDRutils::get_solvers()`](https://gdrplatform.github.io/gDRstyle/reference/get_solvers.html)).
+  Passed to `fit_fn` for single-agent data, and to
+  [`gDRutils::fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html)
+  for the single-agent fits of a combination. `range_conc`, `force_fit`,
+  `pcutoff`, `cap`, `curve_type` and `fit_fn` apply to single-agent data
+  only; the fits of a combination take their settings from `fit_args`
+  alone.
 
 - control_mean_fxn:
 
@@ -332,13 +363,13 @@ l_tbl <- gDRimport::load_data(
   df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
-#> INFO [2026-11-23 02:35:22] Manifest loaded successfully
-#> INFO [2026-11-23 02:35:22] Reading Template_7daytreated.xlsx with load_templates_xlsx
-#> INFO [2026-11-23 02:35:22] Reading Template_Untreated.xlsx with load_templates_xlsx
-#> INFO [2026-11-23 02:35:22] Loading Template_7daytreated.xlsx
-#> INFO [2026-11-23 02:35:22] Loading Template_Untreated.xlsx
-#> INFO [2026-11-23 02:35:22] Templates loaded successfully!
-#> INFO [2026-11-23 02:35:22] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-11-25 19:47:34] Manifest loaded successfully
+#> INFO [2026-11-25 19:47:34] Reading Template_7daytreated.xlsx with load_templates_xlsx
+#> INFO [2026-11-25 19:47:34] Reading Template_Untreated.xlsx with load_templates_xlsx
+#> INFO [2026-11-25 19:47:34] Loading Template_7daytreated.xlsx
+#> INFO [2026-11-25 19:47:34] Loading Template_Untreated.xlsx
+#> INFO [2026-11-25 19:47:34] Templates loaded successfully!
+#> INFO [2026-11-25 19:47:34] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -365,14 +396,14 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-11-23 02:35:22] Plate 201904190a read; 384 wells
-#> INFO [2026-11-23 02:35:22] Plate 201904190b read; 384 wells
-#> INFO [2026-11-23 02:35:22] Plate 201904190c read; 384 wells
-#> INFO [2026-11-23 02:35:22] Plate 201904190d read; 384 wells
-#> INFO [2026-11-23 02:35:22] Plate 201904190e read; 384 wells
-#> INFO [2026-11-23 02:35:22] Plate 201904190f read; 384 wells
-#> INFO [2026-11-23 02:35:22] File done
-#> INFO [2026-11-23 02:35:22] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-11-25 19:47:34] Plate 201904190a read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904190b read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904190c read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904190d read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904190e read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904190f read; 384 wells
+#> INFO [2026-11-25 19:47:34] File done
+#> INFO [2026-11-25 19:47:34] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -399,21 +430,21 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-11-23 02:35:23] Plate 201904197a read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904197b read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904197c read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904197d read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904197e read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904197f read; 384 wells
-#> INFO [2026-11-23 02:35:23] File done
+#> INFO [2026-11-25 19:47:34] Plate 201904197a read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904197b read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904197c read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904197d read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904197e read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904197f read; 384 wells
+#> INFO [2026-11-25 19:47:34] File done
 imported_data <- merge_data(
   l_tbl$manifest,
   l_tbl$treatments,
   l_tbl$data
 )
-#> INFO [2026-11-23 02:35:23] Merging data
-#> INFO [2026-11-23 02:35:23] Merging the metadata (manifest and treatment files)
-#> WARN [2026-11-23 02:35:23] 4608 well loaded, 768 wells discarded for lack of annotation,
+#> INFO [2026-11-25 19:47:34] Merging data
+#> INFO [2026-11-25 19:47:34] Merging the metadata (manifest and treatment files)
+#> WARN [2026-11-25 19:47:34] 4608 well loaded, 768 wells discarded for lack of annotation,
 #>     3840 data point selected
 
 se <- purrr::quietly(create_SE)(imported_data, data_type = "single-agent")
@@ -425,13 +456,13 @@ l_tbl <- gDRimport::load_data(
   df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
-#> INFO [2026-11-23 02:35:23] Manifest loaded successfully
-#> INFO [2026-11-23 02:35:23] Reading Template_7daytreated.xlsx with load_templates_xlsx
-#> INFO [2026-11-23 02:35:23] Reading Template_Untreated.xlsx with load_templates_xlsx
-#> INFO [2026-11-23 02:35:23] Loading Template_7daytreated.xlsx
-#> INFO [2026-11-23 02:35:23] Loading Template_Untreated.xlsx
-#> INFO [2026-11-23 02:35:23] Templates loaded successfully!
-#> INFO [2026-11-23 02:35:23] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-11-25 19:47:34] Manifest loaded successfully
+#> INFO [2026-11-25 19:47:34] Reading Template_7daytreated.xlsx with load_templates_xlsx
+#> INFO [2026-11-25 19:47:34] Reading Template_Untreated.xlsx with load_templates_xlsx
+#> INFO [2026-11-25 19:47:34] Loading Template_7daytreated.xlsx
+#> INFO [2026-11-25 19:47:34] Loading Template_Untreated.xlsx
+#> INFO [2026-11-25 19:47:34] Templates loaded successfully!
+#> INFO [2026-11-25 19:47:34] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -458,14 +489,14 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-11-23 02:35:23] Plate 201904190a read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904190b read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904190c read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904190d read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904190e read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904190f read; 384 wells
-#> INFO [2026-11-23 02:35:23] File done
-#> INFO [2026-11-23 02:35:23] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-11-25 19:47:34] Plate 201904190a read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904190b read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904190c read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904190d read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904190e read; 384 wells
+#> INFO [2026-11-25 19:47:34] Plate 201904190f read; 384 wells
+#> INFO [2026-11-25 19:47:34] File done
+#> INFO [2026-11-25 19:47:34] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -492,21 +523,21 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-11-23 02:35:23] Plate 201904197a read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904197b read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904197c read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904197d read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904197e read; 384 wells
-#> INFO [2026-11-23 02:35:23] Plate 201904197f read; 384 wells
-#> INFO [2026-11-23 02:35:23] File done
+#> INFO [2026-11-25 19:47:35] Plate 201904197a read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904197b read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904197c read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904197d read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904197e read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904197f read; 384 wells
+#> INFO [2026-11-25 19:47:35] File done
 imported_data <- merge_data(
   l_tbl$manifest,
   l_tbl$treatments,
   l_tbl$data
 )
-#> INFO [2026-11-23 02:35:23] Merging data
-#> INFO [2026-11-23 02:35:23] Merging the metadata (manifest and treatment files)
-#> WARN [2026-11-23 02:35:23] 4608 well loaded, 768 wells discarded for lack of annotation,
+#> INFO [2026-11-25 19:47:35] Merging data
+#> INFO [2026-11-25 19:47:35] Merging the metadata (manifest and treatment files)
+#> WARN [2026-11-25 19:47:35] 4608 well loaded, 768 wells discarded for lack of annotation,
 #>     3840 data point selected
 
 inl <- prepare_input(imported_data)
@@ -538,13 +569,13 @@ l_tbl <- gDRimport::load_data(
   df_template_files = gDRimport::template_path(td),
   results_file = gDRimport::result_path(td)
 )
-#> INFO [2026-11-23 02:35:24] Manifest loaded successfully
-#> INFO [2026-11-23 02:35:24] Reading Template_7daytreated.xlsx with load_templates_xlsx
-#> INFO [2026-11-23 02:35:24] Reading Template_Untreated.xlsx with load_templates_xlsx
-#> INFO [2026-11-23 02:35:24] Loading Template_7daytreated.xlsx
-#> INFO [2026-11-23 02:35:24] Loading Template_Untreated.xlsx
-#> INFO [2026-11-23 02:35:24] Templates loaded successfully!
-#> INFO [2026-11-23 02:35:24] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-11-25 19:47:35] Manifest loaded successfully
+#> INFO [2026-11-25 19:47:35] Reading Template_7daytreated.xlsx with load_templates_xlsx
+#> INFO [2026-11-25 19:47:35] Reading Template_Untreated.xlsx with load_templates_xlsx
+#> INFO [2026-11-25 19:47:35] Loading Template_7daytreated.xlsx
+#> INFO [2026-11-25 19:47:35] Loading Template_Untreated.xlsx
+#> INFO [2026-11-25 19:47:35] Templates loaded successfully!
+#> INFO [2026-11-25 19:47:35] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day0.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -571,14 +602,14 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-11-23 02:35:24] Plate 201904190a read; 384 wells
-#> INFO [2026-11-23 02:35:24] Plate 201904190b read; 384 wells
-#> INFO [2026-11-23 02:35:24] Plate 201904190c read; 384 wells
-#> INFO [2026-11-23 02:35:24] Plate 201904190d read; 384 wells
-#> INFO [2026-11-23 02:35:24] Plate 201904190e read; 384 wells
-#> INFO [2026-11-23 02:35:24] Plate 201904190f read; 384 wells
-#> INFO [2026-11-23 02:35:24] File done
-#> INFO [2026-11-23 02:35:24] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
+#> INFO [2026-11-25 19:47:35] Plate 201904190a read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904190b read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904190c read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904190d read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904190e read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904190f read; 384 wells
+#> INFO [2026-11-25 19:47:35] File done
+#> INFO [2026-11-25 19:47:35] Reading file /home/runner/work/_temp/Library/gDRimport/extdata/data1/RawData_day7.xlsx, sheet Readout_0077vs0068_day7
 #> New names:
 #> • `` -> `...1`
 #> • `` -> `...2`
@@ -605,21 +636,21 @@ l_tbl <- gDRimport::load_data(
 #> • `` -> `...23`
 #> • `` -> `...24`
 #> • `` -> `...25`
-#> INFO [2026-11-23 02:35:24] Plate 201904197a read; 384 wells
-#> INFO [2026-11-23 02:35:24] Plate 201904197b read; 384 wells
-#> INFO [2026-11-23 02:35:24] Plate 201904197c read; 384 wells
-#> INFO [2026-11-23 02:35:24] Plate 201904197d read; 384 wells
-#> INFO [2026-11-23 02:35:24] Plate 201904197e read; 384 wells
-#> INFO [2026-11-23 02:35:24] Plate 201904197f read; 384 wells
-#> INFO [2026-11-23 02:35:24] File done
+#> INFO [2026-11-25 19:47:35] Plate 201904197a read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904197b read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904197c read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904197d read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904197e read; 384 wells
+#> INFO [2026-11-25 19:47:35] Plate 201904197f read; 384 wells
+#> INFO [2026-11-25 19:47:35] File done
 imported_data <- merge_data(
   l_tbl$manifest,
   l_tbl$treatments,
   l_tbl$data
 )
-#> INFO [2026-11-23 02:35:24] Merging data
-#> INFO [2026-11-23 02:35:24] Merging the metadata (manifest and treatment files)
-#> WARN [2026-11-23 02:35:24] 4608 well loaded, 768 wells discarded for lack of annotation,
+#> INFO [2026-11-25 19:47:35] Merging data
+#> INFO [2026-11-25 19:47:35] Merging the metadata (manifest and treatment files)
+#> WARN [2026-11-25 19:47:35] 4608 well loaded, 768 wells discarded for lack of annotation,
 #>     3840 data point selected
 runDrugResponseProcessingPipeline(
   imported_data,
@@ -629,156 +660,133 @@ runDrugResponseProcessingPipeline(
 #>     Switching into 'Barcode' nested confounder(s).
 #> Processing combination
 #> Warning: mapping original concentration '0.00457247142398638' to '0.00437'
-#> not enough data points (1 < 4) to perform fitting
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> mapping original concentration '0.00457247142398638' to '0.00437'
-#> not enough data points (1 < 4) to perform fitting
 #> NaNs produced
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> mapping original concentration '0.00457247142398638' to '0.00437'
-#> not enough data points (1 < 4) to perform fitting
 #> NaNs produced
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> NaNs produced
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> NaNs produced
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> mapping original concentration '0.00457247142398638' to '0.00437'
-#> not enough data points (1 < 4) to perform fitting
 #> NaNs produced
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> mapping original concentration '0.00457247142398638' to '0.00437'
-#> not enough data points (1 < 4) to perform fitting
 #> NaNs produced
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitting
-#> not enough data points (1 < 4) to perform fitt
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> NaNs produced
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> NaNs produced
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> NaNs produced
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping original concentration '0.00457247142398638' to '0.00437'
+#> mapping orig
 #> Processing single-agent
 #> Warning: method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'
 #> method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'

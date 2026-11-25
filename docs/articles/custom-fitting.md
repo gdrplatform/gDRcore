@@ -271,17 +271,15 @@ message("fit_source values in assay: ", paste(sources, collapse = ", "))
 ## Reference Hill fit: fit_drug_response_metrics()
 
 [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html)
-is a reference single-agent fit function that replicates the standard
+is a reference single-agent fit function that is the standard
 [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md)
-/
-[`logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html)
-output exactly.
+fit.
 
 | Property | Value |
 |----|----|
 | Model | 3-parameter log-logistic ([`drc::LL.3u`](https://rdrr.io/pkg/drc/man/LL.3.html), `x_0` fixed at 1) |
-| Equivalent to | [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md) / [`gDRutils::logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html) |
-| `x_mean` | Predicted from fitted curve (matches `logisticFit` behaviour) |
+| Equivalent to | [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md) |
+| `x_mean` | Predicted from the fitted curve |
 | `fit_type` value | `"DRC3pHillFitModelFixS0"` or `"DRCConstantFitResult"` |
 | Output columns | Full `Metrics` assay schema including `p_value`, `rss`, `x_AOC_range`, `x_max`, `x_sd_avg` |
 
@@ -301,8 +299,7 @@ has no effect. Differences between the two are purely algorithmic:
   concentration range
 - Same `pcutoff = 0.05` fallback: when the F-test gives
   `p_value ≥ pcutoff`, the result is replaced by a flat
-  `DRCConstantFitResult` (same as
-  [`logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html))
+  `DRCConstantFitResult`
 - Same `n_point_cutoff = 4`: fewer unique concentrations → constant fit
   without attempting the sigmoidal model
 - All output columns present in the native `"Metrics"` assay
@@ -355,6 +352,32 @@ head(hill_df[, c("row", "column", "normalization_type",
 effect); `xc50` is the capped version (capped at
 `capping_fold × max(Concentration)`) as reported in the native
 `"Metrics"` assay.
+
+### Changing the optimiser: solvers
+
+[`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html)
+is the one Hill fit in gDR: single-agent, co-dilution and the
+single-agent fits inside a combination all go through it. What finds the
+curve’s parameters is its `solver` argument,
+[`gDRutils::solver_drc()`](https://gdrplatform.github.io/gDRstyle/reference/solver_drc.html)
+by default ([`drc::drm`](https://rdrr.io/pkg/drc/man/drm.html),
+`L-BFGS-B` within the model bounds). A solver is any function of
+`(conc, x, model, control)` that returns the Hill parameters, the
+residual sum of squares and whether it converged, so another optimiser
+plugs in without rewriting the fit, and everything around it (capping,
+the constant-fit test, the metrics) stays the same.
+
+``` r
+names(gDRutils::get_solvers())
+# one curve
+fit_drug_response_metrics(avg_dt, solver = my_solver)
+# the whole pipeline: single-agent fits and the combination fits
+runDrugResponseProcessingPipeline(x, fit_args = list(solver = my_solver))
+```
+
+The solver is recorded in the provenance like any other fit argument, so
+[`refit_from_provenance()`](https://gdrplatform.github.io/gDRstyle/reference/refit_from_provenance.html)
+re-runs the same optimiser.
 
 ------------------------------------------------------------------------
 
@@ -1126,15 +1149,15 @@ gDRutils::summarize_fit_provenance(prov_se)
 #>          assay fit_source                                            fn
 #>         <char>     <char>                                        <char>
 #> 1:     Metrics        gDR gDRutils::fit_drug_response_metrics (1.11.22)
-#> 2: custom_hill hill_loose gDRutils::fit_drug_response_metrics (1.11.26)
+#> 2: custom_hill hill_loose  gDRutils::fit_drug_response_metrics (1.12.0)
 #>                                                                                                        fit_args
 #>                                                                                                          <char>
 #> 1: capping_fold = 5, range_conc = c(0.005, 5), pcutoff = 0.05, n_point_cutoff = 4, force_fit = FALSE, cap = 0.1
 #> 2:                                                                                                pcutoff = 0.1
-#>                                                                model
-#>                                                               <char>
-#> 1: 3-parameter log-logistic (drc::LL.3u), upper asymptote fixed at 1
-#> 2: 3-parameter log-logistic (drc::LL.3u), upper asymptote fixed at 1
+#>                                                                                                 model
+#>                                                                                                <char>
+#> 1:                                  3-parameter log-logistic (drc::LL.3u), upper asymptote fixed at 1
+#> 2: 3-parameter log-logistic Hill, upper asymptote fixed at 1 (drc::LL.3u with the default solver_drc)
 ```
 
 The `fit_source` column of the assay is the key into the recipes:
@@ -1149,9 +1172,9 @@ recipe$fn[c("name", "package", "version")]
 #> [1] "gDRutils"
 #> 
 #> $version
-#> [1] "1.11.26"
+#> [1] "1.12.0"
 recipe$fn$info$model
-#> [1] "3-parameter log-logistic (drc::LL.3u), upper asymptote fixed at 1"
+#> [1] "3-parameter log-logistic Hill, upper asymptote fixed at 1 (drc::LL.3u with the default solver_drc)"
 recipe$fit_args
 #> $pcutoff
 #> [1] 0.1
@@ -1172,10 +1195,10 @@ gDRutils::check_reproducibility(prov_se)
 #>         <char>     <char>       <lgcl>  <int>
 #> 1:     Metrics        gDR        FALSE    200
 #> 2: custom_hill hill_loose         TRUE    200
-#>                                                                                                                                                                          detail
-#>                                                                                                                                                                          <char>
-#> 1: Column 'ec50': Mean relative difference: 0.0000002838961; gDRutils::fit_drug_response_metrics was recorded with version 1.11.22 but 1.11.26 is installed; results may differ
-#> 2:                                                                                                                                                                results match
+#>                                                                                                                                                                         detail
+#>                                                                                                                                                                         <char>
+#> 1: Column 'ec50': Mean relative difference: 0.0000002838961; gDRutils::fit_drug_response_metrics was recorded with version 1.11.22 but 1.12.0 is installed; results may differ
+#> 2:                                                                                                                                                               results match
 ```
 
 [`set_fit_fn_info()`](https://gdrplatform.github.io/gDRstyle/reference/set_fit_fn_info.html)
@@ -1260,7 +1283,7 @@ apply_fits(
 
 | Function | Model | Equivalent to | Key output columns |
 |----|----|----|----|
-| [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html) | 3p LL.3u, `x_0 = 1` | [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md) / [`logisticFit()`](https://gdrplatform.github.io/gDRstyle/reference/logisticFit.html) | `ec50`, `xc50`, `h`, `r2`, `x_mean`, `x_AOC`, `fit_type = "DRC3pHillFitModelFixS0"` |
+| [`fit_drug_response_metrics()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics.html) | 3p LL.3u, `x_0 = 1` | [`fit_SE()`](https://gdrplatform.github.io/gDRcore/reference/runDrugResponseProcessingPipelineFxns.md) | `ec50`, `xc50`, `h`, `r2`, `x_mean`, `x_AOC`, `fit_type = "DRC3pHillFitModelFixS0"` |
 | [`fit_drug_response_metrics_4p()`](https://gdrplatform.github.io/gDRstyle/reference/fit_drug_response_metrics_4p.html) | 4p LL.4, `x_0` free | — (extended variant) | `ec50`, `xc50`, `h`, `r2`, `x_0`, `x_mean`, `fit_type = "DRC4pHillFitModel"` |
 
 #### Combination scoring
@@ -1328,14 +1351,14 @@ sessionInfo()
 #> [8] base     
 #> 
 #> other attached packages:
-#>  [1] data.table_1.18.6.1         BumpyMatrix_1.21.0         
-#>  [3] SummarizedExperiment_1.43.0 Biobase_2.73.2             
-#>  [5] GenomicRanges_1.65.4        Seqinfo_1.3.2              
-#>  [7] IRanges_2.47.5              S4Vectors_0.51.10          
-#>  [9] BiocGenerics_0.59.13        generics_0.1.4             
-#> [11] MatrixGenerics_1.25.0       matrixStats_1.5.0          
-#> [13] gDRutils_1.11.26            gDRtestData_1.11.13        
-#> [15] gDRcore_1.11.34             BiocStyle_2.41.0           
+#>  [1] data.table_1.18.6.1         BumpyMatrix_1.22.0         
+#>  [3] SummarizedExperiment_1.44.0 Biobase_2.74.0             
+#>  [5] GenomicRanges_1.66.0        Seqinfo_1.4.0              
+#>  [7] IRanges_2.48.0              S4Vectors_0.52.0           
+#>  [9] BiocGenerics_0.60.0         generics_0.1.4             
+#> [11] MatrixGenerics_1.26.0       matrixStats_1.5.0          
+#> [13] gDRutils_1.12.0             gDRtestData_1.11.13        
+#> [15] gDRcore_1.13.6              BiocStyle_2.42.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] xfun_0.62                   bslib_0.12.0               
@@ -1351,22 +1374,22 @@ sessionInfo()
 #> [21] yaml_2.3.12                 charport_0.2.0             
 #> [23] Formula_1.2-6               pkgdown_2.2.1              
 #> [25] car_3.1-5                   jquerylib_0.1.4            
-#> [27] MASS_7.3-66                 BiocParallel_1.47.0        
-#> [29] DelayedArray_0.39.8         cachem_1.1.0               
+#> [27] MASS_7.3-66                 BiocParallel_1.48.0        
+#> [29] DelayedArray_0.40.0         cachem_1.1.0               
 #> [31] multcomp_1.4-32             abind_1.4-8                
 #> [33] qs2_0.4.0                   gtools_3.9.5               
-#> [35] digest_0.6.39               mvtnorm_1.4-2              
+#> [35] digest_0.6.39               mvtnorm_1.5-0              
 #> [37] bookdown_0.48               splines_4.6.2              
 #> [39] fastmap_1.2.0               grid_4.6.2                 
 #> [41] cli_3.6.6                   SparseArray_1.13.5         
-#> [43] S4Arrays_1.13.3             survival_3.8-12            
+#> [43] S4Arrays_1.14.0             survival_3.8-12            
 #> [45] TH.data_1.1-5               scales_1.4.0               
 #> [47] backports_1.5.1             plotrix_3.8-14             
 #> [49] lambda.r_1.2.6              rmarkdown_2.32             
-#> [51] XVector_0.53.0              otel_0.3.0                 
+#> [51] XVector_0.54.0              otel_0.3.0                 
 #> [53] futile.logger_1.4.9         zoo_1.9-1                  
 #> [55] ragg_1.5.2                  evaluate_1.0.5             
-#> [57] knitr_1.52                  MultiAssayExperiment_1.39.1
+#> [57] knitr_1.52                  MultiAssayExperiment_1.40.0
 #> [59] futile.options_1.0.1        rlang_1.3.0                
 #> [61] Rcpp_1.1.2                  glue_1.8.1                 
 #> [63] formatR_1.14                BiocManager_1.30.27        
