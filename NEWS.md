@@ -1,3 +1,6 @@
+## gDRcore 1.13.7 - 2026-11-26
+* add fit_prism_curve() and fits with PRISM's algorithm, of PRISM's replicate data or of gDR's Normalized assay
+
 ## gDRcore 1.13.6 - 2026-11-24
 * update the fit tests for the `fit_id` and `fit_message` columns of the fits in gDRutils 1.13.4
 

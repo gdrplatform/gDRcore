@@ -66,6 +66,40 @@ add_PRISM_metrics <- function(se,
   checkmate::assert_string(metrics_assay)
   checkmate::assert_string(averaged_assay)
 
+  added <- .add_prism_curves(se, prism_curves, drug_map, normalization_type, metrics_assay,
+                             averaged_assay, fit_source = "PRISM")
+  se <- added$se
+  curves <- added$curves
+  n_curves <- added$n_curves
+  matched <- added$matched
+
+  # PRISM fits the curves itself; the recipe adds the same curves again
+  se <- gDRutils::record_fit_provenance(
+    se, assay = metrics_assay, fit_source = "PRISM", fn = add_PRISM_metrics,
+    fit_args = list(drug_map = drug_map, normalization_type = normalization_type,
+                    metrics_assay = metrics_assay, averaged_assay = averaged_assay)
+  )
+  files <- attr(prism_curves, "gDR_import", exact = TRUE)$files
+  gDRutils::record_processing_step(
+    se, "prism_drc_import",
+    settings = list(
+      source = "PRISM DRC table",
+      files = if (!is.null(files)) as.list(files[, intersect(c("role", "name", "md5"), names(files))]),
+      screen = if ("screen" %in% names(curves)) unique(curves$screen),
+      n_curves = n_curves,
+      n_imported = sum(matched),
+      n_left_out = sum(!matched)
+    )
+  )
+}
+
+
+# Matches PRISM curves (a table shaped like the DRC table, with the cell line identifier and
+# Duration) to the cells of se and writes them to metrics_assay under fit_source. Returns the SE,
+# the curves table, the number of curves and which of them matched a cell.
+#' @keywords internal
+.add_prism_curves <- function(se, prism_curves, drug_map, normalization_type, metrics_assay,
+                              averaged_assay, fit_source) {
   idfs <- gDRutils::get_SE_identifiers(se, simplify = TRUE)
   curves <- data.table::as.data.table(prism_curves)
   checkmate::assert_names(names(curves), must.include = c(
@@ -102,7 +136,7 @@ add_PRISM_metrics <- function(se,
   }
   curves <- curves[matched]
 
-  new_dt <- .prism_curves_to_metrics(curves, normalization_type)
+  new_dt <- .prism_curves_to_metrics(curves, normalization_type, fit_source)
   new_dt$N_conc <- .count_concentrations(se, averaged_assay, curves$row, curves$column,
                                          normalization_type, idfs[["concentration"]])
   new_dt$row <- curves$row
@@ -111,32 +145,14 @@ add_PRISM_metrics <- function(se,
   se <- gDRutils::persist_fit_assay(se, new_dt, merge = "merge", assay_name = metrics_assay,
                                     row = "row", col = "column",
                                     upsert_key_cols = c("fit_source", "normalization_type"))
-
-  # PRISM fits the curves itself; the recipe adds the same curves again
-  se <- gDRutils::record_fit_provenance(
-    se, assay = metrics_assay, fit_source = "PRISM", fn = add_PRISM_metrics,
-    fit_args = list(drug_map = drug_map, normalization_type = normalization_type,
-                    metrics_assay = metrics_assay, averaged_assay = averaged_assay)
-  )
-  files <- attr(prism_curves, "gDR_import", exact = TRUE)$files
-  gDRutils::record_processing_step(
-    se, "prism_drc_import",
-    settings = list(
-      source = "PRISM DRC table",
-      files = if (!is.null(files)) as.list(files[, intersect(c("role", "name", "md5"), names(files))]),
-      screen = if ("screen" %in% names(curves)) unique(curves$screen),
-      n_curves = n_curves,
-      n_imported = sum(matched),
-      n_left_out = sum(!matched)
-    )
-  )
+  list(se = se, curves = curves, n_curves = n_curves, matched = matched)
 }
 
 
 # One Metrics row per PRISM curve. The curve parameters map onto the gDR model; PRISM's own
 # AUC and IC50 keep their names, because their definitions differ from x_AOC and xc50.
 #' @keywords internal
-.prism_curves_to_metrics <- function(curves, normalization_type) {
+.prism_curves_to_metrics <- function(curves, normalization_type, fit_source = "PRISM") {
   na <- rep(NA_real_, NROW(curves))
   fit_type <- as.character(curves$fit_name)
   fit_type[is.na(fit_type) | !nzchar(fit_type)] <- NA_character_
@@ -152,7 +168,7 @@ add_PRISM_metrics <- function(se,
     x_sd_avg = na,
     fit_type = fit_type,
     normalization_type = normalization_type,
-    fit_source = "PRISM"
+    fit_source = fit_source
   )
   prism_cols <- c(auc = "prism_auc", log2_auc = "prism_log2_auc", auc_riemann = "prism_auc_riemann",
                   ic50 = "prism_ic50", log2_ic50 = "prism_log2_ic50", mse = "prism_mse",

@@ -73,7 +73,7 @@ patterns <- NULL
 }
 
 
-# The synergy fits this package exports, announced to the gDRutils registry so
+# The fits this package exports (synergy and the PRISM fit), announced to the gDRutils registry so
 # that a caller can list what is available instead of hardcoding it.
 # Registration is by name, so nothing is loaded here beyond the entry itself.
 #' @keywords internal
@@ -87,6 +87,8 @@ patterns <- NULL
                             data_type = "combination")
   gDRutils::register_fit_fn("musyc_fit_fn", package = "gDRcore",
                             data_type = "combination")
+  gDRutils::register_fit_fn("prism_fit_fn", package = "gDRcore",
+                            data_type = "single-agent")
   invisible(NULL)
 }
 
