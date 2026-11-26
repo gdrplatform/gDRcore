@@ -42,3 +42,24 @@ test_that("convert_mae_to_raw_data works as expected with matrix data", {
   expect_true("G00026" %in% dt_raw1$Gnumber)
   expect_true(!"G00026" %in% dt_raw2$Gnumber)
 })
+
+test_that("convert_se_to_raw_data reads an SE with custom identifiers and keeps the session", {
+  se <- gDRutils::get_synthetic_data("finalMAE_small")[[1]]
+  ids <- gDRutils::get_SE_identifiers(se)
+  ids[c("drug", "cellline", "concentration", "duration")] <- list("compound_id", "cell_id", "dose_uM", "time_h")
+  S4Vectors::metadata(se)$identifiers <- ids
+  se_custom <- suppressWarnings(gDRutils::standardize_se(se, use_default = FALSE))
+  expect_true("time_h" %in% names(SummarizedExperiment::rowData(se_custom)))
+
+  gDRutils::reset_env_identifiers()
+  on.exit(gDRutils::reset_env_identifiers(), add = TRUE)
+  raw_default <- convert_se_to_raw_data(suppressWarnings(gDRutils::standardize_se(se_custom)))
+
+  # a session with its own names is the same after the call
+  gDRutils::set_env_identifier("drug", "my_drug")
+  session <- gDRutils::get_env_identifiers()
+  raw_custom <- convert_se_to_raw_data(se_custom)
+  expect_identical(gDRutils::get_env_identifiers(), session)
+  expect_equal(raw_custom, raw_default)
+  expect_true(all(c("Gnumber", "clid", "Concentration", "Duration") %in% names(raw_custom)))
+})
