@@ -1,5 +1,8 @@
 #' Transform mae into raw data
 #'
+#' The raw data uses the default identifiers, also for experiments built with
+#' custom ones. The session identifiers are the same after the call as before.
+#'
 #' @param mae MultiAssayExperiment object with SummarizedExperiments containing "RawTreated" and "Controls" assays
 #'
 #'
@@ -15,6 +18,12 @@ convert_mae_to_raw_data <- function(mae) {
   checkmate::assert_class(mae, "MultiAssayExperiment")
   checkmate::assert_true(all(vapply(gDRutils::MAEpply(mae, SummarizedExperiment::assayNames),
          function(x) all(c("RawTreated", "Controls") %in% x), FUN.VALUE = logical(1))))
+
+  # the raw data comes back with the default identifiers (see convert_se_to_raw_data()),
+  # so they are used for the whole call and the session is put back on exit
+  session_identifiers <- gDRutils::get_env_identifiers()
+  on.exit(restore_env_identifiers(session_identifiers), add = TRUE)
+  gDRutils::reset_env_identifiers()
 
   # Get the data from se
 
@@ -52,6 +61,10 @@ convert_mae_to_raw_data <- function(mae) {
 
 #' Transform se into raw_data
 #'
+#' The SE is first standardized, so the raw data uses the default identifiers
+#' also when the SE was built with custom ones. The session identifiers are the
+#' same after the call as before.
+#'
 #' @param se SummarizedExperiment object with "RawTreated" and "Controls" assays
 #'
 #' @return data.table with raw data
@@ -66,6 +79,11 @@ convert_mae_to_raw_data <- function(mae) {
 convert_se_to_raw_data <- function(se) {
   checkmate::assert_class(se, "SummarizedExperiment")
   checkmate::assert_true(all(c("RawTreated", "Controls") %in% SummarizedExperiment::assayNames(se)))
+
+  # standardize_se() resets the session identifiers, so they are put back on exit
+  session_identifiers <- gDRutils::get_env_identifiers()
+  on.exit(restore_env_identifiers(session_identifiers), add = TRUE)
+  se <- gDRutils::standardize_se(se)
 
   # Get the data from se
   trt <- gDRutils::convert_se_assay_to_dt(se, "RawTreated")
@@ -91,7 +109,7 @@ convert_se_to_raw_data <- function(se) {
 
   # Add required cols and correct the data
   ctrl[, (drug_cols) := NULL]
-  ctrl[, Duration := ifelse(!is.na(isDay0) & isDay0, 0, Duration)]
+  ctrl[, (duration) := ifelse(!is.na(isDay0) & isDay0, 0, get(duration))]
   ctrl[, c("control_type", "isDay0") := NULL]
   ctrl[, c(eval(conc_cols), "BackgroundValue") := 0]
   ctrl[, eval(drug_cols) := untreated_tag]
@@ -113,6 +131,21 @@ convert_se_to_raw_data <- function(se) {
 
   exp_metadata <- gDRutils::get_SE_experiment_metadata(se)
   na.omit(merged_df, col = "ReadoutValue")
+}
+
+
+#' Set the session identifiers back to a saved list
+#'
+#' @param identifiers named list from \code{gDRutils::get_env_identifiers()}.
+#'
+#' @return \code{NULL}, invisibly.
+#' @keywords internal
+restore_env_identifiers <- function(identifiers) {
+  gDRutils::reset_env_identifiers()
+  for (k in names(identifiers)) {
+    gDRutils::set_env_identifier(k, identifiers[[k]])
+  }
+  invisible(NULL)
 }
 
 
