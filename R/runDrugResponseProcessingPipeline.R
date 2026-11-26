@@ -280,15 +280,15 @@ runDrugResponseProcessingPipeline <- function(x,
     )
   }
 
-  # when running pipeline with x = MAE the identifiers from MAE's metadata
-  # should be restored
+  # an MAE processed before may carry custom identifiers; its columns are renamed
+  # to the default identifiers, which is what the session holds from here on
   if (inherits(x, "MultiAssayExperiment")) {
     # an MAE processed before keeps the import step it recorded then
     import_info <- lapply(names(x), function(e) {
       gDRutils::get_SE_provenance(x[[e]])$steps$import$settings
     })
     names(import_info) <- names(x)
-    x <- gDRutils::standardize_mae(x, use_default = FALSE)
+    x <- gDRutils::standardize_mae(x, use_default = TRUE)
   } else {
     import_info <- attr(x, "gDR_import", exact = TRUE)
   }
