@@ -388,7 +388,10 @@ test_that("fit_SE passes fit_args, such as a solver, to the fit", {
   expect_gt(calls, 0L)
   m_ref <- gDRutils::convert_se_assay_to_dt(ref, "Metrics")
   m_got <- gDRutils::convert_se_assay_to_dt(got, "Metrics")
-  expect_equal(m_got, m_ref)
+  # a solver of its own is another recipe, so its rows get another fit_id; the fits are the same
+  expect_false(identical(m_got$fit_id, m_ref$fit_id))
+  no_id <- function(dt) dt[, setdiff(names(dt), "fit_id"), with = FALSE]
+  expect_equal(no_id(m_got), no_id(m_ref))
   rec <- gDRutils::get_fit_provenance(got, "Metrics", "gDR")
   expect_true("solver" %in% names(rec$fn_args))
 })

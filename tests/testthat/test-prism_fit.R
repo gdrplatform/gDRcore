@@ -1,3 +1,12 @@
+# The fit recipe of a fit source: gDRutils keys the recipes by fit_source, or by fit_id from 1.13.
+.fit_recipe_of <- function(se, fit_source, assay = "Metrics") {
+  fits <- gDRutils::get_SE_provenance(se)$fits[[assay]]
+  if (!is.null(fits[[fit_source]])) {
+    return(fits[[fit_source]])
+  }
+  Filter(function(f) identical(f$fit_source, fit_source), fits)[1][[1]]
+}
+
 # replicate points of one decreasing curve, upper limit 1, lower limit 0.2, inflection 0.1
 prism_points_curve <- function(n_doses = 8L, inflection = 0.1, seed = 1L) {
   set.seed(seed)
@@ -134,7 +143,7 @@ test_that("add_PRISM_refit_metrics adds the refitted curves next to the gDR and 
   expect_identical(steps$prism_refit$settings$n_left_out, 1L)
   expect_identical(steps$prism_refit$settings$cap, 1.5)
   expect_true(all(c("drc", "dr4pl") %in% names(steps$prism_refit$settings$packages)))
-  expect_false(is.null(gDRutils::get_SE_provenance(out)$fits$Metrics$PRISM_refit))
+  expect_false(is.null(.fit_recipe_of(out, "PRISM_refit")))
 
   # running it again replaces the refitted rows
   again <- suppressWarnings(add_PRISM_refit_metrics(out, points))
@@ -155,7 +164,7 @@ test_that("prism_fit_fn fits gDR-processed data through apply_fit", {
   expect_identical(unique(refit$normalization_type), "RV")
   expect_true(all(refit$N_conc > 0))
   expect_true(any(!is.na(refit$prism_auc)))
-  recipe <- gDRutils::get_SE_provenance(out)$fits$Metrics$PRISM_refit
+  recipe <- .fit_recipe_of(out, "PRISM_refit")
   expect_false(is.null(recipe))
   expect_true(any(grepl("dr4pl", c(names(unlist(recipe)), unlist(recipe)))))
 })
