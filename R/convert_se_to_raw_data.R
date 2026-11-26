@@ -83,7 +83,13 @@ convert_se_to_raw_data <- function(se) {
   # standardize_se() resets the session identifiers, so they are put back on exit
   session_identifiers <- gDRutils::get_env_identifiers()
   on.exit(restore_env_identifiers(session_identifiers), add = TRUE)
-  se <- gDRutils::standardize_se(se)
+  # writing the default identifiers into the SE copy is the point here, so the
+  # warning about overwriting its identifiers is not passed on
+  se <- withCallingHandlers(gDRutils::standardize_se(se), warning = function(w) {
+    if (grepl("overwriting existing metadata entry: 'identifiers'", conditionMessage(w), fixed = TRUE)) {
+      invokeRestart("muffleWarning")
+    }
+  })
 
   # Get the data from se
   trt <- gDRutils::convert_se_assay_to_dt(se, "RawTreated")
