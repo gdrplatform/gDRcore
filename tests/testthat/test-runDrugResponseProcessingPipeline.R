@@ -184,3 +184,23 @@ test_that("runDrugResponseProcessingPipeline processes co-dilution data", {
   metrics <- gDRutils::convert_se_assay_to_dt(mae[[cd_name]], "Metrics")
   expect_gt(NROW(metrics), 0L)
 })
+
+test_that("runDrugResponseProcessingPipeline reprocesses an MAE with custom identifiers", {
+  mae <- gDRutils::get_synthetic_data("finalMAE_small")
+  mae_custom <- mae
+  for (e in names(mae_custom)) {
+    ids <- gDRutils::get_SE_identifiers(mae_custom[[e]])
+    ids[c("drug", "cellline", "concentration", "duration")] <- list("compound_id", "cell_id", "dose_uM", "time_h")
+    S4Vectors::metadata(mae_custom[[e]])$identifiers <- ids
+    mae_custom[[e]] <- gDRutils::standardize_se(mae_custom[[e]], use_default = FALSE)
+  }
+  gDRutils::reset_env_identifiers()
+  on.exit(gDRutils::reset_env_identifiers(), add = TRUE)
+
+  reprocessed <- purrr::quietly(runDrugResponseProcessingPipeline)(mae_custom)$result
+  reference <- purrr::quietly(runDrugResponseProcessingPipeline)(mae)$result
+  # the columns get the default names, and the metrics are the same as for the default MAE
+  expect_identical(gDRutils::get_SE_identifiers(reprocessed[[1]], "drug"), "Gnumber")
+  expect_equal(gDRutils::convert_se_assay_to_dt(reprocessed[[1]], "Metrics"),
+               gDRutils::convert_se_assay_to_dt(reference[[1]], "Metrics"))
+})
