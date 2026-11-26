@@ -1,3 +1,7 @@
+## gDRcore 1.13.7 - 2026-11-26
+* fix reprocessing an MAE with custom identifiers, which failed with 'subscript out of bounds'
+* fix `convert_se_to_raw_data()` for an SE with custom identifiers and keep the session identifiers
+
 ## gDRcore 1.13.6 - 2026-11-24
 * update the fit tests for the `fit_id` and `fit_message` columns of the fits in gDRutils 1.13.4
 
