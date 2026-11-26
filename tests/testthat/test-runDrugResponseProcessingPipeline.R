@@ -192,7 +192,7 @@ test_that("runDrugResponseProcessingPipeline reprocesses an MAE with custom iden
     ids <- gDRutils::get_SE_identifiers(mae_custom[[e]])
     ids[c("drug", "cellline", "concentration", "duration")] <- list("compound_id", "cell_id", "dose_uM", "time_h")
     S4Vectors::metadata(mae_custom[[e]])$identifiers <- ids
-    mae_custom[[e]] <- gDRutils::standardize_se(mae_custom[[e]], use_default = FALSE)
+    mae_custom[[e]] <- suppressWarnings(gDRutils::standardize_se(mae_custom[[e]], use_default = FALSE))
   }
   gDRutils::reset_env_identifiers()
   on.exit(gDRutils::reset_env_identifiers(), add = TRUE)

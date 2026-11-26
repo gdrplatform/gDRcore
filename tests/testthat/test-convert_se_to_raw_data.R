@@ -48,12 +48,12 @@ test_that("convert_se_to_raw_data reads an SE with custom identifiers and keeps 
   ids <- gDRutils::get_SE_identifiers(se)
   ids[c("drug", "cellline", "concentration", "duration")] <- list("compound_id", "cell_id", "dose_uM", "time_h")
   S4Vectors::metadata(se)$identifiers <- ids
-  se_custom <- gDRutils::standardize_se(se, use_default = FALSE)
+  se_custom <- suppressWarnings(gDRutils::standardize_se(se, use_default = FALSE))
   expect_true("time_h" %in% names(SummarizedExperiment::rowData(se_custom)))
 
   gDRutils::reset_env_identifiers()
   on.exit(gDRutils::reset_env_identifiers(), add = TRUE)
-  raw_default <- convert_se_to_raw_data(gDRutils::standardize_se(se_custom))
+  raw_default <- convert_se_to_raw_data(suppressWarnings(gDRutils::standardize_se(se_custom)))
 
   # a session with its own names is the same after the call
   gDRutils::set_env_identifier("drug", "my_drug")
