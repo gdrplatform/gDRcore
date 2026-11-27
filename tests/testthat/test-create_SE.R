@@ -46,6 +46,27 @@ test_that("create_SE works as expected", {
 })
 
 
+test_that("create_SE replaces only whole untreated tags, not substrings", {
+
+  td <- gDRimport::get_test_data()
+  l_tbl <- purrr::quietly(gDRimport::load_data)(gDRimport::manifest_path(td),
+                                                gDRimport::template_path(td),
+                                                gDRimport::result_path(td))
+  imported_data <- purrr::quietly(merge_data)(
+    data.table::setDT(l_tbl$result$manifest),
+    data.table::setDT(l_tbl$result$treatments),
+    data.table::setDT(l_tbl$result$data)
+  )$result
+  cl_name <- gDRutils::get_env_identifiers("cellline_name")
+  first_line <- imported_data[[cl_name]] == imported_data[[cl_name]][1]
+  imported_data[first_line, (cl_name) := "untreated_resistant"]
+
+  se <- purrr::quietly(create_SE)(imported_data, data_type = "single-agent", nested_confounders = NULL)$result
+
+  expect_true("untreated_resistant" %in% SummarizedExperiment::colData(se)[[cl_name]])
+})
+
+
 test_that("create_SE works with empty nested confounder", {
 
   td <- gDRimport::get_test_data()

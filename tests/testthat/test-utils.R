@@ -33,6 +33,15 @@ test_that("cleanup_metadata works as expected", {
   expect_equal(dim(cleanup_df$result), c(1, 11))
 })
 
+test_that("cleanup_metadata rounds Duration to six digits, not to whole hours", {
+  df <- data.table::data.table(clid = "CELL_LINE",
+                               Gnumber = "DRUG_1",
+                               Concentration = c(3, 3),
+                               Duration = c(0.5, 72.12345678))
+  cleanup_df <- purrr::quietly(cleanup_metadata)(df)$result
+  expect_identical(cleanup_df[[gDRutils::get_env_identifiers("duration")]], c(0.5, 72.123457))
+})
+
 test_that("data_model.character works as expected", {
   expect_equal(data_model("co-dilution"), "single-agent")
   expect_equal(data_model("combination"), "combination")

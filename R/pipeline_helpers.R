@@ -47,6 +47,10 @@ run_pipeline_step <- function(run_vars,
                               if_read_intermediate_data = TRUE) {
   if (!run_vars$partial_run || !do_skip_step(step, run_vars$start_from)) {
     se <- purrr::quietly(do.call)(step_fun, step_args)
+    # quietly() holds the messages back, the futile.logger output among them
+    for (msg in se$messages) {
+      message(msg, appendLF = FALSE)
+    }
 
     if (!is.null(run_vars$data_dir)) {
       save_intermediate_data(run_vars$data_dir, step, run_vars$exp, se$result)

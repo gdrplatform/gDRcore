@@ -121,7 +121,7 @@ create_SE <- function(df_,
 
   df_[, (names(df_)) := lapply(.SD, function(x) {
     if (is.character(x)) {
-      gsub(paste(untreated_tag, collapse = "|"), untreated_tag[1], x)
+      replace(x, x %in% untreated_tag, untreated_tag[1])
     } else {
       x
     }
