@@ -382,11 +382,11 @@ calculate_isobolograms <- function(drug_2,
       capped_idx <- codil_iso$conc_1 > max1_cap | codil_iso$conc_2 > max2_cap
       codil_iso$conc_1[capped_idx] <- pmin(
         max1_cap,
-        codilution$conc_ratio * max2_cap
+        max2_cap / codilution$ratio
       )[capped_idx]
       codil_iso$conc_2[capped_idx] <- pmin(
         max2_cap,
-        max1_cap / codilution$conc_ratio
+        max1_cap * codilution$ratio
       )[capped_idx]
 
       isobologram_values <- data.table::rbindlist(list(xy_iso, codil_iso), fill = TRUE)
