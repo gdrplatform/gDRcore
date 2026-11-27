@@ -177,7 +177,8 @@ test_that("annotate_mae_with_drug works correctly", {
 
 test_that("annotate_se_with_cell_line works correctly", {
   se <- SummarizedExperiment::SummarizedExperiment(
-    rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+    rowData = S4Vectors::DataFrame(Gnumber = "D1", row.names = "r1"),
+    colData = S4Vectors::DataFrame(clid = c("CL1", "CL2", "CL3"), row.names = c("c1", "c2", "c3"))
   )
   cell_line_annotation <- data.table::data.table(
     clid = c("CL1", "CL2"),
@@ -189,7 +190,11 @@ test_that("annotate_se_with_cell_line works correctly", {
   )
 
   annotated_se <- annotate_se_with_cell_line(se, cell_line_annotation, fill = "unknown")
-  result <- data.table::as.data.table(SummarizedExperiment::rowData(annotated_se))
+  result <- data.table::as.data.table(SummarizedExperiment::colData(annotated_se))
+
+  # cell lines are the columns of an SE: rowData and the column names stay as they were
+  expect_identical(SummarizedExperiment::rowData(annotated_se), SummarizedExperiment::rowData(se))
+  expect_identical(colnames(annotated_se), colnames(se))
 
   expect_true("data.table" %in% class(result))
   expect_equal(result$CellLineName, c("Cell Line 1", "Cell Line 2", "CL3"))
@@ -203,10 +208,10 @@ test_that("annotate_se_with_cell_line works correctly", {
 
 test_that("annotate_mae_with_cell_line works correctly", {
   se1 <- SummarizedExperiment::SummarizedExperiment(
-    rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+    colData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
   )
   se2 <- SummarizedExperiment::SummarizedExperiment(
-    rowData = data.table::data.table(clid = c("CL4", "CL5", "CL6"))
+    colData = data.table::data.table(clid = c("CL4", "CL5", "CL6"))
   )
   mae <- MultiAssayExperiment::MultiAssayExperiment(experiments = list(se1 = se1, se2 = se2))
 
@@ -221,9 +226,9 @@ test_that("annotate_mae_with_cell_line works correctly", {
 
   annotated_mae <- annotate_mae_with_cell_line(mae, cell_line_annotation, fill = "unknown")
 
-  result1 <- data.table::as.data.table(SummarizedExperiment::rowData(
+  result1 <- data.table::as.data.table(SummarizedExperiment::colData(
     MultiAssayExperiment::experiments(annotated_mae)[[1]]))
-  result2 <- data.table::as.data.table(SummarizedExperiment::rowData(
+  result2 <- data.table::as.data.table(SummarizedExperiment::colData(
     MultiAssayExperiment::experiments(annotated_mae)[[2]]))
 
   expect_true("data.table" %in% class(result1))

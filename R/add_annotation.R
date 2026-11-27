@@ -467,7 +467,7 @@ annotate_mae_with_drug <- function(
 
 #' annotate_se_with_cell_line
 #'
-#' Annotate SummarizedExperiment object with cell line annotations
+#' Annotate the colData of a SummarizedExperiment object with cell line annotations
 #'
 #' @param se SummarizedExperiment object containing dose-response data
 #' @param cell_line_annotation data.table with cell line annotations
@@ -476,9 +476,9 @@ annotate_mae_with_drug <- function(
 #' @keywords annotation
 #' @examples
 #' se <- SummarizedExperiment::SummarizedExperiment(
-#'    rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+#'    colData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
 #' )
-#' cell_line_annotation <- get_cell_line_annotation(data.table::as.data.table(SummarizedExperiment::rowData(se)))
+#' cell_line_annotation <- get_cell_line_annotation(data.table::as.data.table(SummarizedExperiment::colData(se)))
 #' annotated_se <- annotate_se_with_cell_line(se, cell_line_annotation)
 #' @export
 #'
@@ -491,9 +491,10 @@ annotate_se_with_cell_line <- function(
   assert_cell_line_annotation(cell_line_annotation)
   checkmate::assert_string(fill)
 
-  data <- data.table::as.data.table(SummarizedExperiment::rowData(se))
+  data <- data.table::as.data.table(SummarizedExperiment::colData(se))
   annotated_data <- annotate_dt_with_cell_line(data, cell_line_annotation, fill)
-  SummarizedExperiment::rowData(se) <- annotated_data
+  SummarizedExperiment::colData(se) <- S4Vectors::DataFrame(annotated_data, row.names = colnames(se),
+                                                            check.names = FALSE)
   se
 }
 
@@ -509,11 +510,11 @@ annotate_se_with_cell_line <- function(
 #' @examples
 #' mae <- MultiAssayExperiment::MultiAssayExperiment(
 #'    experiments = list(exp1 = SummarizedExperiment::SummarizedExperiment(
-#'      rowData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
+#'      colData = data.table::data.table(clid = c("CL1", "CL2", "CL3"))
 #'    ))
 #' )
 #' cell_line_annotation <- get_cell_line_annotation(data.table::as.data.table(
-#'    SummarizedExperiment::rowData(
+#'    SummarizedExperiment::colData(
 #'      MultiAssayExperiment::experiments(mae)[[1]])))
 #' annotated_mae <- annotate_mae_with_cell_line(mae, cell_line_annotation)
 #' @export
