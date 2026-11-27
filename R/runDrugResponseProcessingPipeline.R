@@ -344,7 +344,8 @@ runDrugResponseProcessingPipeline <- function(x,
           nested_identifiers = nested_identifiers,
           override_untrt_controls = override_untrt_controls,
           import_info = if (inherits(x, "MultiAssayExperiment")) import_info[[experiment]] else import_info
-          )
+          ),
+        if_paste_warnings = TRUE
       )
 
       # 2nd step - Normalize SE
@@ -363,7 +364,8 @@ runDrugResponseProcessingPipeline <- function(x,
           raw_treated_assay = raw_treated_assay,
           normalized_assay = normalized_assay,
           ndigit_rounding = ndigit_rounding
-        )
+        ),
+        if_paste_warnings = TRUE
       )
 
       is_time_course <- data_type == gDRutils::get_supported_experiments("time-course")

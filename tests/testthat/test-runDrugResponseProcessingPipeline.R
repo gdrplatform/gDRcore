@@ -184,3 +184,23 @@ test_that("runDrugResponseProcessingPipeline processes co-dilution data", {
   metrics <- gDRutils::convert_se_assay_to_dt(mae[[cd_name]], "Metrics")
   expect_gt(NROW(metrics), 0L)
 })
+
+test_that("runDrugResponseProcessingPipeline passes on the warnings and log messages of create_SE", {
+  td <- gDRimport::get_test_data()
+  l_tbl <- purrr::quietly(gDRimport::load_data)(gDRimport::manifest_path(td),
+                                                gDRimport::template_path(td),
+                                                gDRimport::result_path(td))$result
+  input <- purrr::quietly(merge_data)(
+    data.table::setDT(l_tbl$manifest),
+    data.table::setDT(l_tbl$treatments),
+    data.table::setDT(l_tbl$data)
+  )$result
+
+  # identify_keys(), called by create_SE(), warns about a control that is not a column
+  # and logs the partial matches it finds with futile.logger
+  out <- purrr::quietly(runDrugResponseProcessingPipeline)(
+    input, nested_confounders = NULL, override_untrt_controls = c(NotAColumn = "x")
+  )
+  expect_true(any(grepl("override_untrt_controls", out$warnings)))
+  expect_true(any(grepl("Found partial match", out$messages)))
+})
