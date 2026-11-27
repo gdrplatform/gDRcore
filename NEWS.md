@@ -3,6 +3,7 @@
 * fix the co-dilution cap of isobolograms, which read a missing column and gave `NA`; it now uses the `ratio` of the fits
 * replace only values equal to an untreated tag in `create_SE()`, not every substring of a character column
 * fix `annotate_se_with_cell_line()` and `annotate_mae_with_cell_line()` to annotate the `colData` of an SE, where the cell lines are
+* fix `runDrugResponseProcessingPipeline()` dropping the warnings of `create_SE()` and `normalize_SE()` and the log messages of every step
 
 ## gDRcore 1.13.6 - 2026-11-24
 * update the fit tests for the `fit_id` and `fit_message` columns of the fits in gDRutils 1.13.4
